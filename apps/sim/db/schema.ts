@@ -1591,3 +1591,195 @@ export const workflowCollaborators = pgTable(
     ),
   })
 )
+
+// Registry System Tables for Dynamic Tool and Block Registration
+
+export const registryTools = pgTable(
+  'registry_tools',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    displayName: text('display_name').notNull(),
+    description: text('description'),
+    icon: text('icon').default('tool-icon'),
+    category: text('category').default('custom'),
+    version: text('version').notNull().default('1.0.0'),
+    status: text('status').notNull().default('active'), // active, inactive, error, pending_approval
+
+    // Tool manifest and configuration
+    manifest: jsonb('manifest').notNull().default('{}'),
+    configSchema: jsonb('config_schema').notNull().default('{}'),
+    inputSchema: jsonb('input_schema').notNull().default('{}'),
+    outputSchema: jsonb('output_schema').notNull().default('{}'),
+
+    // Webhook integration
+    webhookUrl: text('webhook_url').notNull(),
+    webhookMethod: text('webhook_method').notNull().default('POST'),
+    webhookTimeout: integer('webhook_timeout').default(30000), // milliseconds
+    webhookRetryCount: integer('webhook_retry_count').default(3),
+
+    // Authentication configuration
+    authentication: jsonb('authentication').default('{}'),
+    apiKeyEncrypted: text('api_key_encrypted'), // Encrypted API key for the tool
+
+    // Usage tracking
+    usageCount: integer('usage_count').notNull().default(0),
+    lastUsedAt: timestamp('last_used_at'),
+    errorCount: integer('error_count').notNull().default(0),
+    lastErrorAt: timestamp('last_error_at'),
+    lastErrorMessage: text('last_error_message'),
+
+    // Metadata
+    tags: jsonb('tags').default('[]'),
+    metadata: jsonb('metadata').default('{}'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('registry_tools_user_id_idx').on(table.userId),
+    workspaceIdIdx: index('registry_tools_workspace_id_idx').on(table.workspaceId),
+    statusIdx: index('registry_tools_status_idx').on(table.status),
+    categoryIdx: index('registry_tools_category_idx').on(table.category),
+    usageIdx: index('registry_tools_usage_idx').on(table.usageCount, table.lastUsedAt),
+    nameUserUnique: uniqueIndex('registry_tools_name_user_unique').on(table.name, table.userId),
+  })
+)
+
+export const registryBlocks = pgTable(
+  'registry_blocks',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    displayName: text('display_name').notNull(),
+    description: text('description'),
+    icon: text('icon').default('block-icon'),
+    category: text('category').default('custom'),
+    version: text('version').notNull().default('1.0.0'),
+    status: text('status').notNull().default('active'), // active, inactive, error, pending_approval
+
+    // Block manifest and configuration
+    manifest: jsonb('manifest').notNull().default('{}'),
+    inputPorts: jsonb('input_ports').notNull().default('[]'),
+    outputPorts: jsonb('output_ports').notNull().default('[]'),
+    configSchema: jsonb('config_schema').notNull().default('{}'),
+
+    // Execution configuration
+    executionUrl: text('execution_url').notNull(),
+    validationUrl: text('validation_url'),
+    executionTimeout: integer('execution_timeout').default(300000), // 5 minutes default
+
+    // Usage tracking
+    usageCount: integer('usage_count').notNull().default(0),
+    lastUsedAt: timestamp('last_used_at'),
+    errorCount: integer('error_count').notNull().default(0),
+    lastErrorAt: timestamp('last_error_at'),
+    lastErrorMessage: text('last_error_message'),
+
+    // Metadata
+    tags: jsonb('tags').default('[]'),
+    metadata: jsonb('metadata').default('{}'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('registry_blocks_user_id_idx').on(table.userId),
+    workspaceIdIdx: index('registry_blocks_workspace_id_idx').on(table.workspaceId),
+    statusIdx: index('registry_blocks_status_idx').on(table.status),
+    categoryIdx: index('registry_blocks_category_idx').on(table.category),
+    usageIdx: index('registry_blocks_usage_idx').on(table.usageCount, table.lastUsedAt),
+    nameUserUnique: uniqueIndex('registry_blocks_name_user_unique').on(table.name, table.userId),
+  })
+)
+
+export const webhookExecutionLogs = pgTable(
+  'webhook_execution_logs',
+  {
+    id: text('id').primaryKey(),
+    registryItemId: text('registry_item_id').notNull(), // References either registry_tools.id or registry_blocks.id
+    registryType: text('registry_type').notNull(), // 'tool' or 'block'
+    executionId: text('execution_id').notNull(),
+    workflowId: text('workflow_id').references(() => workflow.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+
+    // Request details
+    webhookUrl: text('webhook_url').notNull(),
+    requestMethod: text('request_method').notNull(),
+    requestHeaders: jsonb('request_headers').default('{}'),
+    requestBody: jsonb('request_body'),
+    requestSignature: text('request_signature'), // HMAC signature for security validation
+
+    // Response details
+    responseStatus: integer('response_status'),
+    responseHeaders: jsonb('response_headers').default('{}'),
+    responseBody: jsonb('response_body'),
+    responseTimeMs: integer('response_time_ms'),
+
+    // Error handling
+    errorMessage: text('error_message'),
+    retryCount: integer('retry_count').default(0),
+    isSuccessful: boolean('is_successful').notNull().default(false),
+
+    // Timing
+    startedAt: timestamp('started_at').notNull().defaultNow(),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    registryItemIdx: index('webhook_execution_logs_registry_item_idx').on(
+      table.registryItemId,
+      table.registryType
+    ),
+    executionIdIdx: index('webhook_execution_logs_execution_id_idx').on(table.executionId),
+    workflowIdIdx: index('webhook_execution_logs_workflow_id_idx').on(table.workflowId),
+    userIdIdx: index('webhook_execution_logs_user_id_idx').on(table.userId),
+    startedAtIdx: index('webhook_execution_logs_started_at_idx').on(table.startedAt),
+    successIdx: index('webhook_execution_logs_success_idx').on(table.isSuccessful, table.startedAt),
+  })
+)
+
+export const registryApiKeys = pgTable(
+  'registry_api_keys',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    keyHash: text('key_hash').notNull().unique(), // Hashed API key
+    permissions: jsonb('permissions').notNull().default('["read"]'), // ["read", "write", "admin"]
+    rateLimit: integer('rate_limit').default(100), // requests per minute
+    lastUsedAt: timestamp('last_used_at'),
+    usageCount: integer('usage_count').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    expiresAt: timestamp('expires_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index('registry_api_keys_user_id_idx').on(table.userId),
+    activeIdx: index('registry_api_keys_active_idx').on(table.isActive, table.expiresAt),
+  })
+)
+
+export const registryRateLimits = pgTable('registry_rate_limits', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  toolRegistrations: integer('tool_registrations').notNull().default(0),
+  blockRegistrations: integer('block_registrations').notNull().default(0),
+  webhookCalls: integer('webhook_calls').notNull().default(0),
+  windowStart: timestamp('window_start').notNull().defaultNow(),
+  lastRequestAt: timestamp('last_request_at').notNull().defaultNow(),
+  isRateLimited: boolean('is_rate_limited').notNull().default(false),
+  rateLimitResetAt: timestamp('rate_limit_reset_at'),
+})

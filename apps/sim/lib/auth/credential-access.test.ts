@@ -1,22 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NextRequest } from 'next/server'
-import { authorizeCredentialUse, type CredentialAccessResult } from './credential-access'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { authorizeCredentialUse } from './credential-access'
 
 /**
  * Comprehensive Unit Tests for Authentication Credential Access System
- * 
+ *
  * CRITICAL SECURITY INFRASTRUCTURE TESTING
  * This module centralizes authentication and collaboration rules for credential use
  * and implements core security boundaries for the system.
- * 
+ *
  * SECURITY BOUNDARIES TESTED:
  * - Session-based credential ownership verification
- * - API key-based credential ownership verification  
+ * - API key-based credential ownership verification
  * - Internal JWT workflow-scoped access control
  * - Cross-workspace collaboration authorization
  * - Credential ownership validation
  * - Workflow-workspace association verification
- * 
+ *
  * ATTACK VECTORS TESTED:
  * - Unauthorized credential access attempts
  * - Cross-workspace credential hijacking
@@ -109,7 +109,7 @@ function createMockRequest(options: {
 describe('Credential Access Authorization - Critical Security Infrastructure', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Reset mock implementations for each test to ensure isolation
     mockDb.select.mockReset()
   })
@@ -121,22 +121,22 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should allow session user to access their own credential', async () => {
       const request = createMockRequest({})
-      
+
       // Mock successful session authentication
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       // Mock credential ownership lookup - user owns the credential
       const credentialChain = createMockDbChain([{ userId: 'user-123' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'session',
@@ -151,21 +151,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should require workflowId for session user accessing others credentials', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       // Mock credential owned by different user
       const credentialChain = createMockDbChain([{ userId: 'other-user-456' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'workflowId is required',
@@ -178,13 +178,13 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should allow session collaboration when both users have workspace access', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       // Mock credential owned by different user
       let callCount = 0
       mockDb.select.mockImplementation(() => {
@@ -192,22 +192,23 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
         if (callCount === 1) {
           // Credential lookup
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           // Workflow lookup
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock both users have workspace permissions
       mockGetUserEntityPermissions
         .mockResolvedValueOnce('write') // Requester has access
-        .mockResolvedValueOnce('read')  // Owner has access
-      
+        .mockResolvedValueOnce('read') // Owner has access
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'session',
@@ -223,33 +224,34 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should deny session collaboration when requester lacks workspace access', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock requester lacks workspace access, owner has access
       mockGetUserEntityPermissions
-        .mockResolvedValueOnce(null)   // Requester has no access
+        .mockResolvedValueOnce(null) // Requester has no access
         .mockResolvedValueOnce('read') // Owner has access
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Unauthorized',
@@ -262,33 +264,34 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should deny session collaboration when credential owner lacks workspace access', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock requester has access but owner lacks workspace access
       mockGetUserEntityPermissions
         .mockResolvedValueOnce('write') // Requester has access
-        .mockResolvedValueOnce(null)    // Owner has no access
-      
+        .mockResolvedValueOnce(null) // Owner has no access
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Unauthorized',
@@ -305,20 +308,20 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         apiKey: 'api-key-123',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'api_key',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'user-123' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'api_key',
@@ -335,33 +338,34 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         apiKey: 'api-key-123',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'api-user-123',
         authType: 'api_key',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'credential-owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock both users have workspace access
       mockGetUserEntityPermissions
         .mockResolvedValueOnce('admin') // API user has admin access
         .mockResolvedValueOnce('write') // Credential owner has write access
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'api_key',
@@ -379,16 +383,16 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         apiKey: 'invalid-api-key',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: false,
         error: 'Invalid API key',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Invalid API key',
@@ -405,33 +409,34 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         authorization: 'Bearer internal-jwt-token',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'system-workflow-owner-123',
         authType: 'internal_jwt',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           // Credential lookup
           return createMockDbChain([{ userId: 'credential-owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           // Workflow lookup
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock credential owner has workspace access
       mockGetUserEntityPermissions.mockResolvedValue('read')
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'internal_jwt',
@@ -449,31 +454,32 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         authorization: 'Bearer internal-jwt-token',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'system-user-123',
         authType: 'internal_jwt',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'credential-owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock credential owner has no workspace access
       mockGetUserEntityPermissions.mockResolvedValue(null)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Unauthorized',
@@ -488,16 +494,16 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         authorization: 'Bearer internal-jwt-token',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: false,
         error: 'workflowId required for internal JWT calls',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'workflowId required for internal JWT calls',
@@ -512,21 +518,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
       const request = createMockRequest({
         authorization: 'Bearer internal-jwt-token',
       })
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'credential-owner-123',
         authType: 'internal_jwt',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'credential-owner-123' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
         requireWorkflowIdForInternal: false,
       })
-      
+
       // Note: Based on the actual implementation, internal JWT always requires workflowId
       // unless it's the credential owner AND not internal_jwt type check line 52
       expect(result).toEqual({
@@ -543,16 +549,16 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject requests with no authentication', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: false,
         error: 'Authentication required',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Authentication required',
@@ -565,17 +571,17 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject authentication without user ID', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: undefined,
         authType: 'session',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Authentication required',
@@ -588,17 +594,17 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject authentication with null user ID', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: null,
         authType: 'session',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Authentication required',
@@ -613,21 +619,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject access to non-existent credential', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       // Mock credential not found
       const credentialChain = createMockDbChain([])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'non-existent-cred',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Credential not found',
@@ -640,30 +646,31 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject access with non-existent workflow', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           // Credential exists but owned by different user
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           // Workflow not found
           return createMockDbChain([])
         }
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'non-existent-workflow',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Workflow not found',
@@ -676,29 +683,30 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject access when workflow has no workspace', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           // Workflow exists but has null workspace
           return createMockDbChain([{ workspaceId: null }])
         }
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Workflow not found',
@@ -711,29 +719,30 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should reject access when workflow workspace is undefined', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           // Workflow exists but workspace is undefined
           return createMockDbChain([{ workspaceId: undefined }])
         }
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Workflow not found',
@@ -748,20 +757,20 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle empty credential ID gracefully', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       const credentialChain = createMockDbChain([])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: '',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Credential not found',
@@ -774,21 +783,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle empty workflow ID when collaboration required', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'owner-456' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: '',
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'workflowId is required',
@@ -801,21 +810,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle null workflow ID when collaboration required', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'owner-456' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: null as any,
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'workflowId is required',
@@ -828,21 +837,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle malformed credential IDs safely', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       // Simulate potential SQL injection attempt
       const credentialChain = createMockDbChain([])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: "'; DROP TABLE credentials; --",
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Credential not found',
@@ -855,21 +864,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle very long credential IDs', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       const credentialChain = createMockDbChain([])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const longCredentialId = 'a'.repeat(10000)
       const result = await authorizeCredentialUse(request, {
         credentialId: longCredentialId,
       })
-      
+
       expect(result).toEqual({
         ok: false,
         error: 'Credential not found',
@@ -882,21 +891,21 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle unicode characters in credential and workflow IDs', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'session',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'user-123' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-🔑-123',
         workflowId: 'workflow-🌊-456',
       })
-      
+
       expect(result).toEqual({
         ok: true,
         authType: 'session',
@@ -913,31 +922,34 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should handle permission system failures gracefully', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Mock permission system failure
       mockGetUserEntityPermissions.mockRejectedValue(new Error('Permission system error'))
-      
+
       // The function doesn't catch permission system errors, so it will throw
-      await expect(authorizeCredentialUse(request, {
-        credentialId: 'cred-789',
-        workflowId: 'workflow-123',
-      })).rejects.toThrow('Permission system error')
+      await expect(
+        authorizeCredentialUse(request, {
+          credentialId: 'cred-789',
+          workflowId: 'workflow-123',
+        })
+      ).rejects.toThrow('Permission system error')
     })
 
     /**
@@ -946,33 +958,32 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should accept different permission levels for workspace access', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'requester-123',
         authType: 'session',
       })
-      
+
       let callCount = 0
       mockDb.select.mockImplementation(() => {
         callCount++
         if (callCount === 1) {
           return createMockDbChain([{ userId: 'owner-456' }])
-        } else if (callCount === 2) {
+        }
+        if (callCount === 2) {
           return createMockDbChain([{ workspaceId: 'workspace-789' }])
         }
       })
-      
+
       // Test with admin permissions
-      mockGetUserEntityPermissions
-        .mockResolvedValueOnce('admin')
-        .mockResolvedValueOnce('admin')
-      
+      mockGetUserEntityPermissions.mockResolvedValueOnce('admin').mockResolvedValueOnce('admin')
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-789',
         workflowId: 'workflow-123',
       })
-      
+
       expect(result.ok).toBe(true)
       expect(result.authType).toBe('session')
       expect(result.workspaceId).toBe('workspace-789')
@@ -986,20 +997,20 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should return complete success response with all fields', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: true,
         userId: 'user-123',
         authType: 'api_key',
       })
-      
+
       const credentialChain = createMockDbChain([{ userId: 'user-123' }])
       mockDb.select.mockReturnValue(credentialChain)
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       // Validate complete success response structure
       expect(result).toHaveProperty('ok', true)
       expect(result).toHaveProperty('authType', 'api_key')
@@ -1015,16 +1026,16 @@ describe('Credential Access Authorization - Critical Security Infrastructure', (
      */
     it('should return proper error response structure', async () => {
       const request = createMockRequest({})
-      
+
       mockCheckHybridAuth.mockResolvedValue({
         success: false,
         error: 'Custom authentication error',
       })
-      
+
       const result = await authorizeCredentialUse(request, {
         credentialId: 'cred-456',
       })
-      
+
       // Validate error response structure
       expect(result).toHaveProperty('ok', false)
       expect(result).toHaveProperty('error', 'Custom authentication error')

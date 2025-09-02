@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { auth, getSession } from './auth'
 
 /**
  * Comprehensive Unit Tests for Main Authentication System
- * 
+ *
  * CRITICAL SECURITY INFRASTRUCTURE TESTING
  * This module tests the core authentication system built with Better Auth:
  * 1. Session management and cookie handling
@@ -14,7 +13,7 @@ import { auth, getSession } from './auth'
  * 6. Subscription integration with Stripe
  * 7. Database hooks and session lifecycle
  * 8. Security middleware and access controls
- * 
+ *
  * SECURITY BOUNDARIES TESTED:
  * - Session creation and validation
  * - Email verification and OTP flows
@@ -24,7 +23,7 @@ import { auth, getSession } from './auth'
  * - Access control and permissions
  * - CSRF and security headers
  * - Rate limiting and abuse prevention
- * 
+ *
  * ATTACK VECTORS TESTED:
  * - Session hijacking and fixation
  * - Email enumeration attacks
@@ -192,6 +191,7 @@ vi.mock('drizzle-orm', () => ({
   eq: vi.fn(),
 }))
 
+import { stripe } from '@better-auth/stripe'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
@@ -203,14 +203,13 @@ import {
   oneTimeToken,
   organization,
 } from 'better-auth/plugins'
-import { stripe } from '@better-auth/stripe'
+import { headers } from 'next/headers'
 import Stripe from 'stripe'
 import { sendEmail } from '@/lib/email/mailer'
 import { quickValidateEmail } from '@/lib/email/validation'
 import { env, isTruthy } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { headers } from 'next/headers'
 
 const mockBetterAuth = betterAuth as any
 const mockDrizzleAdapter = drizzleAdapter as any
@@ -257,7 +256,7 @@ function createMockDbChain(finalResult: any) {
 describe('Main Authentication System - Critical Security Infrastructure', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Reset all mocks to default behavior
     mockBetterAuth.mockReturnValue({
       api: {
@@ -266,7 +265,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         signUpEmail: vi.fn(),
       },
     })
-    
+
     mockDb.select.mockReset()
     mockSendEmail.mockReset()
     mockQuickValidateEmail.mockReset()
@@ -386,7 +385,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
-        
+
         expect(result).toEqual({
           data: {
             ...mockSessionData,
@@ -394,13 +393,10 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
           },
         })
 
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          'Found organization for user',
-          {
-            userId: 'user-123',
-            organizationId: 'org-789',
-          }
-        )
+        expect(mockLogger.info).toHaveBeenCalledWith('Found organization for user', {
+          userId: 'user-123',
+          organizationId: 'org-789',
+        })
       }
     })
 
@@ -423,15 +419,14 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
-        
+
         expect(result).toEqual({
           data: mockSessionData, // No activeOrganizationId added
         })
 
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          'No organizations found for user',
-          { userId: 'user-123' }
-        )
+        expect(mockLogger.info).toHaveBeenCalledWith('No organizations found for user', {
+          userId: 'user-123',
+        })
       }
     })
 
@@ -455,7 +450,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
-        
+
         expect(result).toEqual({
           data: mockSessionData, // Should return original session data
         })
@@ -487,11 +482,13 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
-        await expect(otpHandler({
-          email: 'invalid-email',
-          otp: '123456',
-          type: 'sign-in',
-        })).rejects.toThrow('Invalid email format')
+        await expect(
+          otpHandler({
+            email: 'invalid-email',
+            otp: '123456',
+            type: 'sign-in',
+          })
+        ).rejects.toThrow('Invalid email format')
 
         expect(mockLogger.warn).toHaveBeenCalledWith(
           'Email validation failed',
@@ -510,7 +507,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
     it('should send OTP emails in production environment', async () => {
       // Mock production environment
       vi.mocked(require('@/lib/environment')).isProd = true
-      
+
       mockQuickValidateEmail.mockReturnValue({
         isValid: true,
         checks: { format: true, mx: true },
@@ -564,9 +561,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
           type: 'sign-in',
         })
 
-        expect(mockLogger.info).toHaveBeenCalledWith(
-          'Skipping email verification in dev/docker'
-        )
+        expect(mockLogger.info).toHaveBeenCalledWith('Skipping email verification in dev/docker')
       }
     })
 
@@ -591,11 +586,13 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
-        await expect(otpHandler({
-          email: 'user@example.com',
-          otp: '123456',
-          type: 'sign-in',
-        })).rejects.toThrow('Failed to send verification code: SMTP service unavailable')
+        await expect(
+          otpHandler({
+            email: 'user@example.com',
+            otp: '123456',
+            type: 'sign-in',
+          })
+        ).rejects.toThrow('Failed to send verification code: SMTP service unavailable')
       }
 
       vi.mocked(require('@/lib/environment')).isProd = false
@@ -683,10 +680,9 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         const resetUrl = 'https://test.example.com/reset-password?token=xyz789'
         const resetToken = 'xyz789'
 
-        await expect(resetHandler(
-          { user: mockUser, url: resetUrl, token: resetToken },
-          {}
-        )).rejects.toThrow('Failed to send reset password email: Email delivery failed')
+        await expect(
+          resetHandler({ user: mockUser, url: resetUrl, token: resetToken }, {})
+        ).rejects.toThrow('Failed to send reset password email: Email delivery failed')
       }
     })
   })
@@ -1055,7 +1051,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: Long emails should be handled without crashes
      */
     it('should handle very long email addresses', async () => {
-      const longEmail = 'a'.repeat(1000) + '@example.com'
+      const longEmail = `${'a'.repeat(1000)}@example.com`
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = longEmail
       mockIsTruthy.mockReturnValue(false)
 
@@ -1121,11 +1117,13 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
 
       if (otpHandler) {
         for (const email of specialEmails) {
-          await expect(otpHandler({
-            email,
-            otp: '123456',
-            type: 'sign-in',
-          })).resolves.not.toThrow()
+          await expect(
+            otpHandler({
+              email,
+              otp: '123456',
+              type: 'sign-in',
+            })
+          ).resolves.not.toThrow()
         }
       }
     })

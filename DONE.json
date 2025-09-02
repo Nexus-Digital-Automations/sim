@@ -713,9 +713,60 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756808412388_b1oaxj8lk",
+      "title": "Implement comprehensive unit tests for core business logic modules",
+      "description": "Create comprehensive unit test coverage for critical business logic modules that require 100% test coverage. Current analysis shows significant gaps in core module testing.\n\nCRITICAL MODULES REQUIRING 100% COVERAGE:\n- apps/sim/lib/workflows/ (versioning, collaboration, validation)\n- apps/sim/lib/auth/ (authentication, permissions, session management)\n- apps/sim/lib/permissions/ (authorization, access control)\n- apps/sim/serializer/ (workflow serialization, YAML conversion)\n- apps/sim/tools/ (tool execution, parameter validation)\n- apps/sim/blocks/ (block validation, execution logic)\n\nTEST REQUIREMENTS:\n- Unit tests for all public functions and methods\n- Edge case testing for error conditions\n- Input validation and sanitization testing\n- Performance testing for critical paths\n- Mock external dependencies properly\n- Production-ready test scenarios\n\nSUCCESS CRITERIA:\n- 100% line coverage for all critical modules\n- All business logic edge cases tested\n- Comprehensive error handling validation\n- Integration with existing test infrastructure",
+      "mode": "DEVELOPMENT",
+      "category": "missing-test",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/lib/workflows/",
+        "apps/sim/lib/auth/",
+        "apps/sim/lib/permissions/",
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/blocks/"
+      ],
+      "success_criteria": [],
+      "estimate": "2-3 weeks",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T10:20:12.388Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756808492688_1_general_432c058b",
+      "started_at": "2025-09-02T10:21:45.488Z",
+      "claimed_by": "development_session_1756808492688_1_general_432c058b",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756808492688_1_general_432c058b",
+          "role": "primary",
+          "assignedAt": "2025-09-02T10:21:45.488Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T18:56:20.169Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T18:56:20.169Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 18,
-  "last_completion": "2025-09-02T10:20:55.133Z",
+  "total_completed": 19,
+  "last_completion": "2025-09-02T18:56:20.169Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

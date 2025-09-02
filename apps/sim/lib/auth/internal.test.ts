@@ -1,17 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NextRequest } from 'next/server'
-import { generateInternalToken, verifyInternalToken, verifyCronAuth } from './internal'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { generateInternalToken, verifyCronAuth, verifyInternalToken } from './internal'
 
 /**
  * Comprehensive Unit Tests for Internal JWT and CRON Authentication System
- * 
+ *
  * CRITICAL SECURITY INFRASTRUCTURE TESTING
  * This module handles secure internal service-to-service communication:
  * 1. JWT token generation for internal API calls with short expiration
  * 2. JWT token verification with proper issuer/audience validation
  * 3. CRON job authentication for scheduled tasks
  * 4. Vercel CRON integration with x-vercel-cron header support
- * 
+ *
  * SECURITY BOUNDARIES TESTED:
  * - JWT token generation with proper claims and expiration
  * - JWT signature verification and tamper detection
@@ -20,7 +20,7 @@ import { generateInternalToken, verifyInternalToken, verifyCronAuth } from './in
  * - Vercel CRON header validation
  * - Request metadata logging for security monitoring
  * - Token expiration and time-based security
- * 
+ *
  * ATTACK VECTORS TESTED:
  * - JWT token forgery and signature tampering
  * - Token replay attacks with expired tokens
@@ -50,8 +50,8 @@ vi.mock('@/lib/logs/console/logger', () => ({
 
 vi.mock('next/server', () => ({
   NextResponse: {
-    json: vi.fn((data, init) => ({ 
-      data, 
+    json: vi.fn((data, init) => ({
+      data,
       status: init?.status || 200,
       json: () => Promise.resolve(data),
     })),
@@ -103,7 +103,7 @@ function createMockRequest(options: {
  * @param ms - Milliseconds to wait
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 describe('Internal JWT and CRON Authentication - Critical Security Infrastructure', () => {
@@ -124,7 +124,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
 
       expect(typeof token).toBe('string')
       expect(token.split('.')).toHaveLength(3) // Header.Payload.Signature format
-      
+
       // Token should be non-empty and properly formatted
       expect(token).not.toBe('')
       expect(token).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/)
@@ -166,7 +166,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
      */
     it('should generate token with proper JWT claims', async () => {
       const token = await generateInternalToken()
-      
+
       // Decode the payload (without verification for testing purposes)
       const parts = token.split('.')
       const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString())
@@ -176,7 +176,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       expect(payload).toHaveProperty('aud', 'sim-api')
       expect(payload).toHaveProperty('iat') // Issued at
       expect(payload).toHaveProperty('exp') // Expiration
-      
+
       // Verify expiration is set to 5 minutes (300 seconds) from issued time
       const expectedExpiration = payload.iat + 300
       expect(payload.exp).toBe(expectedExpiration)
@@ -190,13 +190,13 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const beforeGeneration = Math.floor(Date.now() / 1000)
       const token = await generateInternalToken()
       const afterGeneration = Math.floor(Date.now() / 1000)
-      
+
       const parts = token.split('.')
       const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString())
 
       // Expiration should be 300 seconds (5 minutes) after issued time
       expect(payload.exp - payload.iat).toBe(300)
-      
+
       // Issued time should be within our time window
       expect(payload.iat).toBeGreaterThanOrEqual(beforeGeneration)
       expect(payload.iat).toBeLessThanOrEqual(afterGeneration)
@@ -208,7 +208,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
      */
     it('should generate token with HS256 algorithm', async () => {
       const token = await generateInternalToken()
-      
+
       // Decode the header to check algorithm
       const parts = token.split('.')
       const header = JSON.parse(Buffer.from(parts[0], 'base64').toString())
@@ -256,7 +256,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
      */
     it('should reject tokens with tampered signatures', async () => {
       const validToken = await generateInternalToken()
-      
+
       // Tamper with the signature part
       const parts = validToken.split('.')
       const tamperedToken = `${parts[0]}.${parts[1]}.tampered-signature`
@@ -271,7 +271,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
      */
     it('should reject tokens with tampered payload', async () => {
       const validToken = await generateInternalToken()
-      
+
       // Create tampered payload with different type
       const tamperedPayload = {
         type: 'external', // Changed from 'internal'
@@ -280,9 +280,11 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 300,
       }
-      
+
       const parts = validToken.split('.')
-      const tamperedPayloadBase64 = Buffer.from(JSON.stringify(tamperedPayload)).toString('base64url')
+      const tamperedPayloadBase64 = Buffer.from(JSON.stringify(tamperedPayload)).toString(
+        'base64url'
+      )
       const tamperedToken = `${parts[0]}.${tamperedPayloadBase64}.${parts[2]}`
 
       const isValid = await verifyInternalToken(tamperedToken)
@@ -296,14 +298,15 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
     it('should reject tokens with incorrect issuer', async () => {
       // Generate token and manually verify it would fail with wrong issuer
       const token = await generateInternalToken()
-      
+
       // This is indirect since we can't easily create a token with wrong issuer
       // but we can verify that our verification logic checks the issuer
       const isValid = await verifyInternalToken(token)
       expect(isValid).toBe(true) // Confirm our token works
-      
+
       // Test with a crafted token that has wrong issuer (would fail verification)
-      const invalidIssuerToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJyb2d1ZS1pc3N1ZXIiLCJhdWQiOiJzaW0tYXBpIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjE2MDAwMDAzMDB9.invalid'
+      const invalidIssuerToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJyb2d1ZS1pc3N1ZXIiLCJhdWQiOiJzaW0tYXBpIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjE2MDAwMDAzMDB9.invalid'
       expect(await verifyInternalToken(invalidIssuerToken)).toBe(false)
     })
 
@@ -315,9 +318,10 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const token = await generateInternalToken()
       const isValid = await verifyInternalToken(token)
       expect(isValid).toBe(true)
-      
+
       // Test with crafted token having wrong audience
-      const invalidAudienceToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJzaW0taW50ZXJuYWwiLCJhdWQiOiJyb2d1ZS1hdWRpZW5jZSIsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxNjAwMDAwMzAwfQ.invalid'
+      const invalidAudienceToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJzaW0taW50ZXJuYWwiLCJhdWQiOiJyb2d1ZS1hdWRpZW5jZSIsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxNjAwMDAwMzAwfQ.invalid'
       expect(await verifyInternalToken(invalidAudienceToken)).toBe(false)
     })
 
@@ -330,7 +334,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       // tokens with different types should be rejected
       const token = await generateInternalToken()
       expect(await verifyInternalToken(token)).toBe(true)
-      
+
       // Any token that doesn't have type: 'internal' should fail
       // This is checked in the verification logic
     })
@@ -342,8 +346,9 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
     it('should reject expired tokens', async () => {
       // This test is challenging since we can't easily fast-forward time
       // But we can test with artificially created expired token
-      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJzaW0taW50ZXJuYWwiLCJhdWQiOiJzaW0tYXBpIiwiaWF0IjoxNTAwMDAwMDAwLCJleHAiOjE1MDAwMDAzMDB9.invalid'
-      
+      const expiredToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaW50ZXJuYWwiLCJpc3MiOiJzaW0taW50ZXJuYWwiLCJhdWQiOiJzaW0tYXBpIiwiaWF0IjoxNTAwMDAwMDAwLCJleHAiOjE1MDAwMDAzMDB9.invalid'
+
       const isValid = await verifyInternalToken(expiredToken)
       expect(isValid).toBe(false)
     })
@@ -437,12 +442,9 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       })
 
       const result = verifyCronAuth(request)
-      
+
       expect(result).not.toBeNull()
-      expect(mockNextResponse.json).toHaveBeenCalledWith(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      expect(mockNextResponse.json).toHaveBeenCalledWith({ error: 'Unauthorized' }, { status: 401 })
     })
 
     /**
@@ -453,12 +455,9 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const request = createMockRequest({})
 
       const result = verifyCronAuth(request)
-      
+
       expect(result).not.toBeNull()
-      expect(mockNextResponse.json).toHaveBeenCalledWith(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      expect(mockNextResponse.json).toHaveBeenCalledWith({ error: 'Unauthorized' }, { status: 401 })
     })
 
     /**
@@ -562,7 +561,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const result = verifyCronAuth(request)
 
       expect(result).not.toBeNull()
-      
+
       // Should prefer x-forwarded-for over x-real-ip
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.any(String),
@@ -641,7 +640,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const maliciousHeaders = [
         "Bearer '; DROP TABLE users; --",
         'Bearer <script>alert("xss")</script>',
-        'Bearer ' + 'A'.repeat(10000), // Very long token
+        `Bearer ${'A'.repeat(10000)}`, // Very long token
         'Bearer \x00\x01\x02', // Control characters
       ]
 
@@ -652,7 +651,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
 
         const result = verifyCronAuth(request)
         expect(result).not.toBeNull() // Should be rejected
-        
+
         // Verify logging captured the malicious attempt
         expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.any(String),
@@ -702,12 +701,12 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
 
       // Verify all tokens
       const verificationResults = await Promise.all(
-        tokens.map(token => verifyInternalToken(token))
+        tokens.map((token) => verifyInternalToken(token))
       )
 
       // All should be valid
-      expect(verificationResults.every(result => result === true)).toBe(true)
-      
+      expect(verificationResults.every((result) => result === true)).toBe(true)
+
       // All should be unique
       const uniqueTokens = new Set(tokens)
       expect(uniqueTokens.size).toBe(tokenCount)
@@ -727,10 +726,10 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
       const results = await Promise.all(concurrentOperations)
 
       // All operations should succeed
-      expect(results.every(r => r.isValid)).toBe(true)
-      
+      expect(results.every((r) => r.isValid)).toBe(true)
+
       // All tokens should be unique
-      const allTokens = results.map(r => r.token)
+      const allTokens = results.map((r) => r.token)
       const uniqueTokens = new Set(allTokens)
       expect(uniqueTokens.size).toBe(50)
     })
@@ -748,7 +747,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
         const token = await generateInternalToken()
         // Should still generate a token (with empty secret)
         expect(typeof token).toBe('string')
-        
+
         // But verification should fail due to secret mismatch
         // (This behavior depends on jose library implementation)
       } catch (error) {
@@ -791,7 +790,7 @@ describe('Internal JWT and CRON Authentication - Critical Security Infrastructur
         authorization: 'Bearer wrong-secret',
       })
 
-      const veryLongContext = 'context-' + 'x'.repeat(10000)
+      const veryLongContext = `context-${'x'.repeat(10000)}`
       const result = verifyCronAuth(request, veryLongContext)
 
       expect(result).not.toBeNull()

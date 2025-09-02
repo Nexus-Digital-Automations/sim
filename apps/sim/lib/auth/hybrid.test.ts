@@ -1,16 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NextRequest } from 'next/server'
-import { checkHybridAuth, type AuthResult } from './hybrid'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { checkHybridAuth } from './hybrid'
 
 /**
  * Comprehensive Unit Tests for Hybrid Authentication System
- * 
+ *
  * CRITICAL SECURITY INFRASTRUCTURE TESTING
  * This module handles three primary authentication methods:
  * 1. Session authentication (cookies for web UI)
  * 2. API key authentication (X-API-Key header for programmatic access)
  * 3. Internal JWT authentication (Bearer token for internal service calls)
- * 
+ *
  * SECURITY BOUNDARIES TESTED:
  * - Session cookie validation and user context extraction
  * - API key lookup and user association verification
@@ -19,7 +19,7 @@ import { checkHybridAuth, type AuthResult } from './hybrid'
  * - Workflow-based user context determination for internal calls
  * - Request body parsing for workflow ID extraction
  * - Error handling and security failure scenarios
- * 
+ *
  * ATTACK VECTORS TESTED:
  * - Invalid session tokens and cookie tampering
  * - API key brute force and enumeration attempts
@@ -132,7 +132,7 @@ function createMockRequest(options: {
 describe('Hybrid Authentication System - Critical Security Infrastructure', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Reset all mock implementations for test isolation
     mockDb.select.mockReset()
     mockGetSession.mockReset()
@@ -152,7 +152,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
 
       // Mock successful JWT verification
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       // Mock workflow lookup returning valid user context
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-456' }])
       mockDb.select.mockReturnValue(workflowChain)
@@ -164,7 +164,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
         userId: 'workflow-owner-456',
         authType: 'internal_jwt',
       })
-      
+
       expect(mockVerifyInternalToken).toHaveBeenCalledWith('valid-internal-jwt')
     })
 
@@ -180,7 +180,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-123' }])
       mockDb.select.mockReturnValue(workflowChain)
 
@@ -204,9 +204,10 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       // Mock request clone that returns invalid JSON
-      request.clone = () => ({
-        text: () => Promise.resolve('invalid-json{'),
-      }) as any
+      request.clone = () =>
+        ({
+          text: () => Promise.resolve('invalid-json{'),
+        }) as any
 
       mockVerifyInternalToken.mockResolvedValue(true)
 
@@ -248,7 +249,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       // Mock workflow not found
       const workflowChain = createMockDbChain([])
       mockDb.select.mockReturnValue(workflowChain)
@@ -491,7 +492,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([{ userId: 'api-user-456' }])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -514,7 +515,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -536,7 +537,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -558,7 +559,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -581,7 +582,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -603,7 +604,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([{ userId: 'unicode-user-123' }])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -745,7 +746,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
 
       mockVerifyInternalToken.mockResolvedValue(false)
       mockGetSession.mockResolvedValue(null)
-      
+
       const apiKeyChain = createMockDbChain([])
       mockDb.select.mockReturnValue(apiKeyChain)
 
@@ -770,7 +771,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-123' }])
       mockDb.select.mockReturnValue(workflowChain)
 
@@ -796,7 +797,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-789' }])
       mockDb.select.mockReturnValue(workflowChain)
 
@@ -804,7 +805,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
 
       expect(result.success).toBe(true)
       expect(result.authType).toBe('internal_jwt')
-      
+
       // Verify the database was queried with the query parameter workflow ID
       expect(mockDb.select).toHaveBeenCalled()
     })
@@ -840,7 +841,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-123' }])
       mockDb.select.mockReturnValue(workflowChain)
 
@@ -870,7 +871,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-123' }])
       mockDb.select.mockReturnValue(workflowChain)
 
@@ -889,10 +890,9 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
     it('should handle authentication timeouts gracefully', async () => {
       const request = createMockRequest({})
 
-      mockGetSession.mockImplementation(() => 
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Network timeout')), 100)
-        )
+      mockGetSession.mockImplementation(
+        () =>
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Network timeout')), 100))
       )
 
       const result = await checkHybridAuth(request)
@@ -914,7 +914,7 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       mockDb.select.mockImplementation(() => {
         throw new Error('Database connection lost')
       })
@@ -983,9 +983,10 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
       })
 
       // Mock request clone that returns non-JSON content
-      request.clone = () => ({
-        text: () => Promise.resolve('not-json-content'),
-      }) as any
+      request.clone = () =>
+        ({
+          text: () => Promise.resolve('not-json-content'),
+        }) as any
 
       mockVerifyInternalToken.mockResolvedValue(true)
 
@@ -1012,12 +1013,13 @@ describe('Hybrid Authentication System - Critical Security Infrastructure', () =
         workflowId: 'workflow-123',
         largeData: 'x'.repeat(100000),
       })
-      request.clone = () => ({
-        text: () => Promise.resolve(largeContent),
-      }) as any
+      request.clone = () =>
+        ({
+          text: () => Promise.resolve(largeContent),
+        }) as any
 
       mockVerifyInternalToken.mockResolvedValue(true)
-      
+
       const workflowChain = createMockDbChain([{ userId: 'workflow-owner-123' }])
       mockDb.select.mockReturnValue(workflowChain)
 

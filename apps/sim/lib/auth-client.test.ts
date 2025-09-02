@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * Comprehensive Unit Tests for Client-Side Authentication System
@@ -671,7 +671,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      * SECURITY BOUNDARY: Very long URLs should not break configuration
      */
     it('should handle extremely long base URLs', () => {
-      const longUrl = 'https://' + 'a'.repeat(10000) + '.com'
+      const longUrl = `https://${'a'.repeat(10000)}.com`
       vi.mocked(env).BETTER_AUTH_URL = longUrl
       
       vi.resetModules()
@@ -728,7 +728,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should prevent React context pollution', () => {
       const maliciousContext = {
         user: { id: 'user-123' },
-        pollute: function() { global.hacked = true },
+        pollute: () => { global.hacked = true },
       }
       
       mockUseContext.mockReturnValue(maliciousContext)
