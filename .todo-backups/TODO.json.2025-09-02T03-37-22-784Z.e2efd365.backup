@@ -33,6 +33,32 @@
       "prompt": "Read and analyze all files in the development/ directory. Based on the content of these files, create a comprehensive set of tasks that will implement the guidelines, setup requirements, and development workflow described in the documentation. Focus on:\n\n1. Development guidelines from general.md\n2. Mode-specific requirements from modes/ directory\n3. Project setup tasks based on README.md\n4. Dependency and configuration tasks from package.json\n5. Production-ready requirements from CLAUDE.md\n6. Any other requirements found in development documentation\n\nIMPORTANT: ALL CODE AND FEATURES MUST BE PRODUCTION-READY - NO SIMPLIFIED OR MOCK IMPLEMENTATIONS.\n\nCreate specific, actionable tasks with clear success criteria, appropriate categories (use TaskManager categories: linter-error, build-error, missing-feature, bug, enhancement, etc.), and proper dependencies. Ensure the task list provides complete coverage for setting up and developing the project according to the documented standards with enterprise-grade quality."
     },
     {
+      "id": "task_1756784140312_71y510dzp",
+      "title": "Research: Implement comprehensive workflow versioning and history API",
+      "description": "Research and analysis required for implementing: \"Implement comprehensive workflow versioning and history API\"\n\n**Implementation Task Details:**\n\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756784140311_gt8wpycj2\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756784140312_71y510dzp.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756784140312_71y510dzp.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T03:35:40.312Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756784140311_gt8wpycj2"
+    },
+    {
       "id": "task_1756783519850_4do8ds9sh",
       "title": "Research: Implement comprehensive workflow template management API",
       "description": "Research and analysis required for implementing: \"Implement comprehensive workflow template management API\"\n\n**Implementation Task Details:**\nCreate complete template API with endpoints for CRUD operations, template categories, filtering, pagination, ratings, and usage from templates\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756783519850_owiemx4f0\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
@@ -107,28 +133,23 @@
       "strike_number": 1
     },
     {
-      "id": "task_1756783566079_6ismy0the",
-      "title": "Complete research for comprehensive template management API",
-      "description": "Analyze existing template API patterns, database schema, authentication, and identify comprehensive features to implement",
-      "mode": "RESEARCH",
-      "category": "research",
-      "priority": "high",
+      "id": "task_1756784140311_gt8wpycj2",
+      "title": "Implement comprehensive workflow versioning and history API",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
       "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "apps/sim/db/schema.ts",
-        "apps/sim/app/api/templates/",
-        "apps/sim/app/api/workflows/route.ts",
-        "./development/research-reports/research-report-task_1756783566079_6ismy0the.md"
+      "dependencies": [
+        "task_1756784140312_71y510dzp"
       ],
-      "success_criteria": [
-        "Research report created: ./development/research-reports/research-report-task_1756783566079_6ismy0the.md"
-      ],
+      "important_files": [],
+      "success_criteria": [],
       "estimate": "",
-      "requires_research": false,
+      "requires_research": true,
       "subtasks": [],
-      "created_at": "2025-09-02T03:26:06.079Z",
-      "auto_research_created": false
+      "created_at": "2025-09-02T03:35:40.315Z",
+      "auto_research_created": true,
+      "description": "No description provided"
     },
     {
       "id": "task_1756783519850_owiemx4f0",

@@ -1163,3 +1163,261 @@ export const copilotFeedback = pgTable(
     createdAtIdx: index('copilot_feedback_created_at_idx').on(table.createdAt),
   })
 )
+
+// Workflow Versioning System Tables - Comprehensive version management with semantic versioning
+export const workflowVersions = pgTable(
+  'workflow_versions',
+  {
+    id: text('id').primaryKey(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    
+    // Semantic versioning fields
+    versionNumber: text('version_number').notNull(), // e.g., "1.2.3"
+    versionMajor: integer('version_major').notNull().default(0),
+    versionMinor: integer('version_minor').notNull().default(0), 
+    versionPatch: integer('version_patch').notNull().default(1),
+    
+    // Version metadata
+    versionType: text('version_type').notNull().default('auto'), // 'auto', 'manual', 'checkpoint', 'branch'
+    versionTag: text('version_tag'), // optional tag like 'stable', 'beta', 'production'
+    versionDescription: text('version_description'),
+    changeSummary: jsonb('change_summary').default('{}'),
+    
+    // Workflow state storage
+    workflowState: jsonb('workflow_state').notNull(),
+    stateHash: text('state_hash').notNull(),
+    stateSize: integer('state_size').notNull(),
+    compressionType: text('compression_type').default('none'), // 'none', 'gzip', 'delta'
+    
+    // Version relationships
+    parentVersionId: text('parent_version_id').references(() => workflowVersions.id),
+    branchName: text('branch_name').default('main'),
+    
+    // Audit fields
+    createdByUserId: text('created_by_user_id').references(() => user.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    
+    // Status flags
+    isCurrent: boolean('is_current').default(false),
+    isDeployed: boolean('is_deployed').default(false),
+    deployedAt: timestamp('deployed_at'),
+    
+    // Performance metadata
+    creationDurationMs: integer('creation_duration_ms'),
+    serializationTimeMs: integer('serialization_time_ms'),
+  },
+  (table) => ({
+    workflowIdIdx: index('workflow_versions_workflow_id_idx').on(table.workflowId),
+    versionNumberIdx: index('workflow_versions_version_number_idx').on(
+      table.workflowId, 
+      table.versionMajor.desc(), 
+      table.versionMinor.desc(), 
+      table.versionPatch.desc()
+    ),
+    createdAtIdx: index('workflow_versions_created_at_idx').on(table.workflowId, table.createdAt.desc()),
+    currentIdx: index('workflow_versions_current_idx').on(table.workflowId, table.isCurrent),
+    deployedIdx: index('workflow_versions_deployed_idx').on(table.workflowId, table.isDeployed),
+    branchIdx: index('workflow_versions_branch_idx').on(table.workflowId, table.branchName),
+    typeIdx: index('workflow_versions_type_idx').on(table.workflowId, table.versionType),
+    hashIdx: index('workflow_versions_hash_idx').on(table.stateHash),
+    uniqueVersionConstraint: uniqueIndex('workflow_versions_unique_version_idx').on(
+      table.workflowId, 
+      table.versionNumber
+    ),
+    uniqueCurrentConstraint: uniqueIndex('workflow_versions_unique_current_idx').on(
+      table.workflowId
+    ),
+  })
+)
+
+export const workflowVersionChanges = pgTable(
+  'workflow_version_changes',
+  {
+    id: text('id').primaryKey(),
+    versionId: text('version_id')
+      .notNull()
+      .references(() => workflowVersions.id, { onDelete: 'cascade' }),
+    
+    // Change classification
+    changeType: text('change_type').notNull(), // 'block_added', 'block_removed', 'block_modified', etc.
+    
+    // Entity identification
+    entityType: text('entity_type').notNull(), // 'block', 'edge', 'loop', 'parallel', 'metadata', 'variable'
+    entityId: text('entity_id').notNull(),
+    entityName: text('entity_name'), // Human-readable entity name for UI display
+    
+    // Change data
+    oldData: jsonb('old_data'),
+    newData: jsonb('new_data'),
+    changeDescription: text('change_description'),
+    
+    // Change impact assessment
+    impactLevel: text('impact_level'), // 'low', 'medium', 'high', 'critical'
+    breakingChange: boolean('breaking_change').default(false),
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    versionIdIdx: index('version_changes_version_id_idx').on(table.versionId),
+    typeIdx: index('version_changes_type_idx').on(table.versionId, table.changeType),
+    entityIdx: index('version_changes_entity_idx').on(table.versionId, table.entityType, table.entityId),
+    impactIdx: index('version_changes_impact_idx').on(table.versionId, table.impactLevel),
+    breakingIdx: index('version_changes_breaking_idx').on(table.versionId, table.breakingChange),
+  })
+)
+
+export const workflowVersionActivity = pgTable(
+  'workflow_version_activity',
+  {
+    id: text('id').primaryKey(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    versionId: text('version_id').references(() => workflowVersions.id, { onDelete: 'cascade' }),
+    
+    // Activity details
+    activityType: text('activity_type').notNull(), // 'version_created', 'version_restored', etc.
+    activityDescription: text('activity_description').notNull(),
+    activityDetails: jsonb('activity_details').default('{}'),
+    
+    // User context
+    userId: text('user_id').references(() => user.id),
+    userAgent: text('user_agent'),
+    ipAddress: text('ip_address'),
+    
+    // Related entities
+    relatedVersionId: text('related_version_id').references(() => workflowVersions.id),
+    relatedEntityType: text('related_entity_type'),
+    relatedEntityId: text('related_entity_id'),
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    workflowIdIdx: index('version_activity_workflow_id_idx').on(table.workflowId, table.createdAt.desc()),
+    versionIdIdx: index('version_activity_version_id_idx').on(table.versionId, table.createdAt.desc()),
+    userIdIdx: index('version_activity_user_id_idx').on(table.userId, table.createdAt.desc()),
+    typeIdx: index('version_activity_type_idx').on(table.workflowId, table.activityType),
+  })
+)
+
+export const workflowVersionConflicts = pgTable(
+  'workflow_version_conflicts',
+  {
+    id: text('id').primaryKey(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    sourceVersionId: text('source_version_id')
+      .notNull()
+      .references(() => workflowVersions.id),
+    targetVersionId: text('target_version_id')
+      .notNull()
+      .references(() => workflowVersions.id),
+    
+    // Conflict details
+    conflictType: text('conflict_type').notNull(), // 'block_conflict', 'edge_conflict', etc.
+    entityPath: text('entity_path').notNull(), // JSON path to conflicting entity
+    conflictDescription: text('conflict_description'),
+    
+    // Resolution data
+    resolutionStrategy: text('resolution_strategy'), // 'use_source', 'use_target', 'merge_auto', etc.
+    resolutionData: jsonb('resolution_data'),
+    resolvedByUserId: text('resolved_by_user_id').references(() => user.id),
+    resolvedAt: timestamp('resolved_at'),
+    
+    // Status
+    status: text('status').default('unresolved'), // 'unresolved', 'resolved', 'deferred'
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    workflowIdx: index('version_conflicts_workflow_idx').on(table.workflowId, table.status),
+    sourceIdx: index('version_conflicts_source_idx').on(table.sourceVersionId),
+    targetIdx: index('version_conflicts_target_idx').on(table.targetVersionId),
+    statusIdx: index('version_conflicts_status_idx').on(table.status, table.createdAt.desc()),
+  })
+)
+
+export const workflowVersionTags = pgTable(
+  'workflow_version_tags',
+  {
+    id: text('id').primaryKey(),
+    versionId: text('version_id')
+      .notNull()
+      .references(() => workflowVersions.id, { onDelete: 'cascade' }),
+    
+    // Tag details
+    tagName: text('tag_name').notNull(),
+    tagColor: text('tag_color').default('#6B7280'),
+    tagDescription: text('tag_description'),
+    
+    // Tag metadata
+    isSystemTag: boolean('is_system_tag').default(false),
+    tagOrder: integer('tag_order').default(0),
+    
+    // Audit
+    createdByUserId: text('created_by_user_id').references(() => user.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    versionIdIdx: index('version_tags_version_id_idx').on(table.versionId),
+    nameIdx: index('version_tags_name_idx').on(table.tagName),
+    systemIdx: index('version_tags_system_idx').on(table.isSystemTag),
+    uniqueVersionTagConstraint: uniqueIndex('version_tags_version_tag_unique_idx').on(
+      table.versionId,
+      table.tagName
+    ),
+  })
+)
+
+export const workflowVersionStats = pgTable(
+  'workflow_version_stats',
+  {
+    id: text('id').primaryKey(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    versionId: text('version_id').references(() => workflowVersions.id, { onDelete: 'cascade' }),
+    
+    // Version statistics
+    totalVersions: integer('total_versions').default(0),
+    totalStorageBytes: integer('total_storage_bytes').default(0),
+    avgVersionSizeBytes: integer('avg_version_size_bytes').default(0),
+    
+    // Change statistics
+    totalChanges: integer('total_changes').default(0),
+    breakingChanges: integer('breaking_changes').default(0),
+    blocksAdded: integer('blocks_added').default(0),
+    blocksRemoved: integer('blocks_removed').default(0),
+    blocksModified: integer('blocks_modified').default(0),
+    
+    // Usage statistics
+    restoreCount: integer('restore_count').default(0),
+    comparisonCount: integer('comparison_count').default(0),
+    downloadCount: integer('download_count').default(0),
+    
+    // Performance metrics
+    avgCreationTimeMs: integer('avg_creation_time_ms').default(0),
+    avgRestoreTimeMs: integer('avg_restore_time_ms').default(0),
+    
+    // Time windows
+    statsPeriod: text('stats_period').default('all_time'), // 'all_time', 'last_30_days', 'last_7_days'
+    calculatedAt: timestamp('calculated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    workflowIdx: index('version_stats_workflow_idx').on(table.workflowId, table.statsPeriod),
+    calculatedIdx: index('version_stats_calculated_idx').on(table.calculatedAt.desc()),
+    uniqueStatsConstraint: uniqueIndex('version_stats_unique_idx').on(
+      table.workflowId,
+      table.versionId,
+      table.statsPeriod
+    ),
+  })
+)

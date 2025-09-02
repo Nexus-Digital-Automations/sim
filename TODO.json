@@ -59,6 +59,23 @@
       "auto_created_for": "task_1756783519850_owiemx4f0"
     },
     {
+      "id": "task_1756784140311_gt8wpycj2",
+      "title": "Implement comprehensive workflow versioning and history API",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-02T03:35:40.315Z",
+      "auto_research_created": true,
+      "description": "No description provided"
+    },
+    {
       "id": "task_1756781766328_review2",
       "title": "Review Strike 2: Verify no lint errors exist in the codebase with enterprise-grade standards",
       "description": "Perform a comprehensive code review with focus on: Verify no lint errors exist in the codebase with enterprise-grade standards\n\nCheck the entire codebase and ensure this criterion is met.\n\n## CRITICAL FAILURE RESPONSE PROTOCOL\n\nIF LINT ERRORS FOUND: Create specific tasks with appropriate categories to achieve zero lint errors:\n- Linting tool setup and configuration tasks (category: 'linter-error')\n- Code style correction tasks (category: 'linter-error')\n- Import organization tasks (category: 'linter-error')\n- Naming convention fixes tasks (category: 'linter-error')\n- Dead code removal tasks (category: 'refactor')\n\nCRITICAL: Use TaskManager API to add these tasks immediately when lint errors are detected. Follow production-ready standards, not quick fixes.\n\n## SUCCESS CRITERIA\n- Mark this review task as completed ONLY if the criterion is fully met\n- If criterion fails, you MUST create remediation tasks using TaskManager API before marking review as completed\n- All new tasks should be actionable, specific, and include proper dependencies/important_files parameters\n\n## TASK CREATION REQUIREMENT\nWhen creating remediation tasks, ensure each task includes:\n- Clear success criteria\n- Appropriate category (linter-error, build-error, missing-feature, bug, enhancement, etc.)\n- Specific file dependencies\n- Realistic time estimates\n- High priority for critical issues\n- Production-ready implementation requirements\n\nUse the task-creation.md guidelines for optimal task structure.",
