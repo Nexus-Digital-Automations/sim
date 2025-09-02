@@ -563,16 +563,16 @@ async function enhanceVersionsWithOptionalData(
 
     // Remove large state object unless explicitly requested
     if (!options.includeState) {
-      delete (enhanced as any).workflowState
+      ;(enhanced as any).workflowState = undefined
     }
 
     // Add placeholder for future enhancements
     if (options.includeChanges) {
-      (enhanced as any).changes = [] // Would fetch actual changes
+      ;(enhanced as any).changes = [] // Would fetch actual changes
     }
 
     if (options.includeTags) {
-      (enhanced as any).tags = [] // Would fetch actual tags
+      ;(enhanced as any).tags = [] // Would fetch actual tags
     }
 
     return enhanced

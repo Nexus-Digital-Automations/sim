@@ -1,9 +1,9 @@
 /**
  * Enhanced Test Utilities - Bun/Vitest 3.x Compatible
- * 
+ *
  * This file provides backward compatibility with existing tests while offering
  * enhanced functionality that works reliably with bun and vitest 3.x.
- * 
+ *
  * Key improvements:
  * - Maintains existing API for easy migration
  * - Adds new bun-compatible alternatives
@@ -56,36 +56,38 @@ export interface EnhancedTestMocks {
 export const enhancedMockUser: MockUser = {
   id: 'user-123',
   email: 'test@example.com',
-  name: 'Test User'
+  name: 'Test User',
 }
 
 /**
  * Enhanced version of setupComprehensiveTestMocks that works with bun/vitest
  * Provides the same API but uses the new mock infrastructure under the hood
  */
-export function setupEnhancedTestMocks(options: {
-  auth?: {
-    authenticated?: boolean
-    user?: MockUser
-  }
-  database?: {
-    select?: { results?: any[][] }
-    insert?: { results?: any[] }
-    update?: { results?: any[] }
-    delete?: { results?: any[] }
-  }
-  permissions?: {
-    level?: string
-  }
-  internalAuth?: {
-    tokenValid?: boolean
-  }
-} = {}): EnhancedTestMocks {
+export function setupEnhancedTestMocks(
+  options: {
+    auth?: {
+      authenticated?: boolean
+      user?: MockUser
+    }
+    database?: {
+      select?: { results?: any[][] }
+      insert?: { results?: any[] }
+      update?: { results?: any[] }
+      delete?: { results?: any[] }
+    }
+    permissions?: {
+      level?: string
+    }
+    internalAuth?: {
+      tokenValid?: boolean
+    }
+  } = {}
+): EnhancedTestMocks {
   const {
     auth = { authenticated: true },
     database = {},
     permissions = { level: 'admin' },
-    internalAuth = { tokenValid: true }
+    internalAuth = { tokenValid: true },
   } = options
 
   console.log('🚀 Setting up enhanced test mocks with bun compatibility')
@@ -128,8 +130,8 @@ export function setupEnhancedTestMocks(options: {
     },
     getCurrentUser: () => {
       // This would need to be implemented if we need to track current user
-      return auth.authenticated ? (auth.user || enhancedMockUser) : null
-    }
+      return auth.authenticated ? auth.user || enhancedMockUser : null
+    },
   }
 
   const databaseMock: EnhancedDatabaseResult = {
@@ -152,7 +154,7 @@ export function setupEnhancedTestMocks(options: {
     resetDatabase: () => {
       console.log('🔧 Enhanced database: Resetting to defaults')
       mockControls.setDatabaseResults([[]])
-    }
+    },
   }
 
   console.log('✅ Enhanced test mocks setup complete')
@@ -164,19 +166,19 @@ export function setupEnhancedTestMocks(options: {
       setPermissionLevel: (level: string) => {
         console.log('🔧 Enhanced permissions: Setting level to', level)
         mockControls.setPermissionLevel(level)
-      }
+      },
     },
     internalAuth: {
       setTokenValid: (valid: boolean) => {
         console.log('🔧 Enhanced internal auth: Setting token validity to', valid)
         mockControls.setInternalTokenValid(valid)
-      }
+      },
     },
     cleanup: () => {
       console.log('🧹 Enhanced mocks: Cleaning up')
       mockControls.reset()
       vi.clearAllMocks()
-    }
+    },
   }
 }
 
@@ -190,15 +192,15 @@ export function createEnhancedMockRequest(
   url = 'http://localhost:3000/api/test'
 ): NextRequest {
   console.log(`🔧 Creating enhanced ${method} request to ${url}`)
-  
+
   const requestInit: RequestInit = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',
-      ...headers
+      ...headers,
     }),
   }
-  
+
   if (body && method !== 'GET') {
     requestInit.body = JSON.stringify(body)
     console.log('🔧 Request body size:', JSON.stringify(body).length, 'characters')
@@ -212,18 +214,18 @@ export function createEnhancedMockRequest(
  */
 export function setupValidatedTestEnvironment(testName: string, options: any = {}) {
   console.log(`🧪 Setting up validated test environment for: ${testName}`)
-  
+
   const mocks = setupEnhancedTestMocks(options)
-  
+
   // Validate mock setup
   console.log('🔍 Validating mock setup...')
-  
+
   return {
     ...mocks,
     validate: () => {
       console.log('✅ Mock validation completed')
       return true
-    }
+    },
   }
 }
 
@@ -232,11 +234,11 @@ export function setupValidatedTestEnvironment(testName: string, options: any = {
  */
 export function quickApiTestSetup(authenticated = true, user?: MockUser) {
   console.log('⚡ Quick API test setup:', authenticated ? 'authenticated' : 'unauthenticated')
-  
+
   return setupEnhancedTestMocks({
     auth: { authenticated, user: user || enhancedMockUser },
     database: { select: { results: [[]] } },
-    permissions: { level: 'admin' }
+    permissions: { level: 'admin' },
   })
 }
 
@@ -267,7 +269,7 @@ export const testWorkflows = {
       const mocks = quickApiTestSetup(false)
       mocks.database.setSelectResults([[{ userId: 'user-123' }], []])
       return { mocks, expectedStatus: 200, headers: { 'x-api-key': 'test-key' } }
-    }
+    },
   },
 
   // CRUD workflow
@@ -290,7 +292,7 @@ export const testWorkflows = {
       const mocks = quickApiTestSetup(true)
       mocks.database.setSelectResults([[{ id }]])
       return { mocks, expectedStatus: 200 }
-    }
+    },
   },
 
   // Error scenarios
@@ -308,8 +310,8 @@ export const testWorkflows = {
       const mocks = quickApiTestSetup(true)
       mocks.permissions.setPermissionLevel('read')
       return { mocks, expectedStatus: 403 }
-    }
-  }
+    },
+  },
 }
 
 /**
@@ -318,9 +320,9 @@ export const testWorkflows = {
  */
 export function setupComprehensiveTestMocksCompat(options: any = {}) {
   console.log('🔄 Using compatibility wrapper for setupComprehensiveTestMocks')
-  
+
   const enhanced = setupEnhancedTestMocks(options)
-  
+
   // Return an object that matches the old API structure
   return {
     auth: {
@@ -338,14 +340,14 @@ export function setupComprehensiveTestMocksCompat(options: any = {}) {
         insert: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-        transaction: vi.fn()
+        transaction: vi.fn(),
       },
       // Enhanced methods
-      ...enhanced.database
+      ...enhanced.database,
     },
     storage: null, // Not implemented in this version
     authApi: null, // Not implemented in this version
     features: {}, // Not implemented in this version
-    cleanup: enhanced.cleanup
+    cleanup: enhanced.cleanup,
   }
 }

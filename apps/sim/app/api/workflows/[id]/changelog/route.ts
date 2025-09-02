@@ -371,9 +371,11 @@ async function buildVersionFilters(
     const versions = await (() => {
       if (query.limit && query.offset) {
         return baseVersionsQuery.limit(query.limit).offset(query.offset)
-      } else if (query.limit) {
+      }
+      if (query.limit) {
         return baseVersionsQuery.limit(query.limit)
-      } else if (query.offset) {
+      }
+      if (query.offset) {
         return baseVersionsQuery.offset(query.offset)
       }
       return baseVersionsQuery

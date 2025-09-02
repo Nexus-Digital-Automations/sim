@@ -1,15 +1,15 @@
 /**
  * Module-level mocks for bun/vitest compatibility
- * 
+ *
  * This file sets up vi.mock() calls that work properly with bun and vitest 3.x.
  * These mocks are applied at module load time and provide stable mock implementations.
- * 
+ *
  * Key principles:
  * - Use vi.mock() with factory functions instead of vi.doMock()
  * - Create mocks that can be controlled at runtime through exposed functions
  * - Provide comprehensive logging and debugging capabilities
  * - Support both sync and async mock operations
- * 
+ *
  * Import this file in test files to apply all necessary mocks.
  */
 
@@ -18,8 +18,8 @@ import { vi } from 'vitest'
 // Global mock state containers
 let mockAuthUser: any = null
 let mockDatabaseResults: any[] = [[]]
-let mockPermissionLevel: string = 'admin'
-let mockInternalTokenValid: boolean = true
+let mockPermissionLevel = 'admin'
+let mockInternalTokenValid = true
 
 // Export runtime controls for tests
 export const mockControls = {
@@ -32,25 +32,25 @@ export const mockControls = {
     mockAuthUser = null
     console.log('🔧 Mock auth set to unauthenticated')
   },
-  
+
   // Database controls
   setDatabaseResults: (results: any[]) => {
     mockDatabaseResults = results
     console.log('🔧 Mock database results set:', results.length, 'result sets')
   },
-  
+
   // Permission controls
   setPermissionLevel: (level: string) => {
     mockPermissionLevel = level
     console.log('🔧 Mock permission level set:', level)
   },
-  
+
   // Internal auth controls
   setInternalTokenValid: (valid: boolean) => {
     mockInternalTokenValid = valid
     console.log('🔧 Mock internal token validity set:', valid)
   },
-  
+
   // Reset all mocks to defaults
   reset: () => {
     mockAuthUser = { id: 'user-123', email: 'test@example.com' }
@@ -58,7 +58,7 @@ export const mockControls = {
     mockPermissionLevel = 'admin'
     mockInternalTokenValid = true
     console.log('🔧 All mocks reset to defaults')
-  }
+  },
 }
 
 // Initialize with defaults
@@ -72,7 +72,7 @@ vi.mock('@/lib/auth', () => {
       const result = mockAuthUser ? { user: mockAuthUser } : null
       console.log('🔍 getSession called, returning:', result?.user?.id || 'null')
       return Promise.resolve(result)
-    })
+    }),
   }
 })
 
@@ -81,9 +81,9 @@ vi.mock('@/lib/auth/internal', () => {
   console.log('📦 Mocking @/lib/auth/internal')
   return {
     verifyInternalToken: vi.fn().mockImplementation((token: string) => {
-      console.log('🔍 verifyInternalToken called with:', token?.substring(0, 10) + '...')
+      console.log('🔍 verifyInternalToken called with:', `${token?.substring(0, 10)}...`)
       return Promise.resolve(mockInternalTokenValid)
-    })
+    }),
   }
 })
 
@@ -91,10 +91,17 @@ vi.mock('@/lib/auth/internal', () => {
 vi.mock('@/lib/permissions/utils', () => {
   console.log('📦 Mocking @/lib/permissions/utils')
   return {
-    getUserEntityPermissions: vi.fn().mockImplementation((userId: string, entityType: string, entityId: string) => {
-      console.log('🔍 getUserEntityPermissions called:', { userId, entityType, entityId, returning: mockPermissionLevel })
-      return Promise.resolve(mockPermissionLevel)
-    })
+    getUserEntityPermissions: vi
+      .fn()
+      .mockImplementation((userId: string, entityType: string, entityId: string) => {
+        console.log('🔍 getUserEntityPermissions called:', {
+          userId,
+          entityType,
+          entityId,
+          returning: mockPermissionLevel,
+        })
+        return Promise.resolve(mockPermissionLevel)
+      }),
   }
 })
 
@@ -108,21 +115,21 @@ vi.mock('@/lib/logs/console/logger', () => {
     error: vi.fn(),
     fatal: vi.fn(),
   }
-  
+
   return {
     createLogger: vi.fn().mockImplementation((name: string) => {
       console.log('🔍 createLogger called for:', name)
       return mockLogger
-    })
+    }),
   }
 })
 
 // Mock @/db with comprehensive database operations
 vi.mock('@/db', () => {
   console.log('📦 Mocking @/db')
-  
+
   let callIndex = 0
-  
+
   const createSelectChain = () => {
     const resolveQuery = () => {
       const result = mockDatabaseResults[callIndex] || mockDatabaseResults[0] || []
@@ -162,14 +169,14 @@ vi.mock('@/db', () => {
         return resolveQuery()
       }),
       // Also add promise methods in case the chain is awaited without limit()
-      then: function(onFulfilled: any, onRejected?: any) {
+      then: (onFulfilled: any, onRejected?: any) => {
         console.log('🔍 Database chain then() called')
         return resolveQuery().then(onFulfilled, onRejected)
       },
-      catch: function(onRejected: any) {
+      catch: (onRejected: any) => {
         console.log('🔍 Database chain catch() called')
         return resolveQuery().catch(onRejected)
-      }
+      },
     }
 
     return chain
@@ -222,7 +229,7 @@ vi.mock('@/db', () => {
       return createUpdateChain()
     }),
     delete: vi.fn().mockImplementation(() => {
-      console.log('🔍 Database delete() called')  
+      console.log('🔍 Database delete() called')
       return createDeleteChain()
     }),
     transaction: vi.fn().mockImplementation(async (callback: any) => {
@@ -282,7 +289,7 @@ vi.mock('@/db/schema', () => {
       name: 'name',
       createdAt: 'createdAt',
       lastUsedAt: 'lastUsedAt',
-    }
+    },
   }
 })
 
@@ -335,7 +342,13 @@ vi.mock('drizzle-orm', () => {
       return { field, type: 'count' }
     }),
     sql: vi.fn((strings, ...values) => {
-      console.log('🔍 sql() called with', strings?.length, 'template parts and', values?.length, 'values')
+      console.log(
+        '🔍 sql() called with',
+        strings?.length,
+        'template parts and',
+        values?.length,
+        'values'
+      )
       return {
         type: 'sql',
         sql: strings,
@@ -348,14 +361,14 @@ vi.mock('drizzle-orm', () => {
 // Mock crypto for consistent UUID generation
 vi.mock('crypto', async (importOriginal) => {
   console.log('📦 Mocking crypto')
-  const actual = await importOriginal() as any
+  const actual = (await importOriginal()) as any
   return {
     ...actual,
     randomUUID: vi.fn().mockImplementation(() => {
-      const uuid = 'mock-uuid-' + Date.now()
+      const uuid = `mock-uuid-${Date.now()}`
       console.log('🔍 crypto.randomUUID() called, returning:', uuid)
       return uuid
-    })
+    }),
   }
 })
 
@@ -374,7 +387,7 @@ vi.mock('next/headers', () => {
         set: vi.fn(),
         delete: vi.fn(),
       }
-    })
+    }),
   }
 })
 
@@ -414,5 +427,5 @@ export const sampleWorkflowsList = [
 export const mockUser = {
   id: 'user-123',
   email: 'test@example.com',
-  name: 'Test User'
+  name: 'Test User',
 }

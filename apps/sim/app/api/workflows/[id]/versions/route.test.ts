@@ -1,17 +1,50 @@
 /**
- * Comprehensive Test Suite for Workflow Versions API
+ * Comprehensive Test Suite for Workflow Versions API - Bun/Vitest Compatible
  * Tests versioning functionality, history management, and comprehensive version operations
  * Covers authentication, authorization, filtering, sorting, and version creation
+ *
+ * This test suite uses the new module-level mocking infrastructure for compatibility
+ * with bun/vitest and provides comprehensive logging for debugging and maintenance.
+ *
+ * @vitest-environment node
  */
 
 import { NextRequest } from 'next/server'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createMockRequest,
   mockUser,
   setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
-import { GET, POST } from './route'
+
+// Module-level mocks - Required for bun/vitest compatibility
+const mockVersionManager = {
+  getVersions: vi.fn(),
+  createVersion: vi.fn(),
+}
+
+// Mock WorkflowVersionManager at module level
+vi.mock('@/lib/workflows/versioning', () => ({
+  WorkflowVersionManager: vi.fn().mockImplementation(() => mockVersionManager),
+  CreateVersionSchema: {
+    parse: vi.fn().mockImplementation((data) => data),
+  },
+}))
+
+// Mock workflow database helpers at module level
+vi.mock('@/lib/workflows/db-helpers', () => ({
+  loadWorkflowFromNormalizedTables: vi.fn(),
+}))
+
+// Mock permissions utils at module level
+vi.mock('@/lib/permissions/utils', () => ({
+  getUserEntityPermissions: vi.fn(),
+}))
+
+// Mock internal auth at module level
+vi.mock('@/lib/auth/internal', () => ({
+  verifyInternalToken: vi.fn(),
+}))
 
 // Mock workflow data
 const sampleWorkflowData = {
@@ -107,134 +140,210 @@ const sampleVersions = [
   },
 ]
 
-// Mock WorkflowVersionManager
-const mockVersionManager = {
-  getVersions: vi.fn(),
-  createVersion: vi.fn(),
-}
-
 describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
   let mocks: any
+  let GET: any
+  let POST: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clear all mocks and reset modules for fresh state
+    vi.clearAllMocks()
+    vi.resetModules()
+
+    // Setup comprehensive test infrastructure with proper database setup
     mocks = setupComprehensiveTestMocks({
       auth: { authenticated: true, user: mockUser },
       database: {
-        select: { results: [[sampleWorkflowData]] },
+        select: {
+          results: [
+            [sampleWorkflowData], // Workflow lookup for authenticated user
+          ],
+        },
       },
     })
 
-    // Mock WorkflowVersionManager
-    vi.doMock('@/lib/workflows/versioning', () => ({
-      WorkflowVersionManager: vi.fn().mockImplementation(() => mockVersionManager),
-      CreateVersionSchema: {
-        parse: vi.fn().mockImplementation((data) => data),
-      },
+    // Configure default database behavior for the standard workflow lookup
+    // This ensures consistent behavior across all tests where authentication should succeed
+    // The route uses .then((rows) => rows[0]) pattern so we need to mock this properly
+    mocks.database.mockDb.select.mockImplementation(() => ({
+      from: () => ({
+        where: () => ({
+          limit: () => Promise.resolve([sampleWorkflowData]),
+          then: (callback: any) => {
+            console.log('[MOCK] GET Database .then() called with workflow data')
+            return callback([sampleWorkflowData])
+          },
+        }),
+      }),
     }))
 
-    // Reset mock implementations
+    // Configure version manager mock behavior
     mockVersionManager.getVersions.mockResolvedValue({
       versions: sampleVersions,
       total: sampleVersions.length,
     })
+
+    // Configure permissions to allow read by default for workspace workflows
+    const { getUserEntityPermissions } = await import('@/lib/permissions/utils')
+    vi.mocked(getUserEntityPermissions).mockResolvedValue('read')
+
+    // Configure workflow state loader to return sample state by default
+    const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
+    vi.mocked(loadWorkflowFromNormalizedTables).mockResolvedValue(sampleWorkflowState)
+
+    // Import route handlers after mocks are set up
+    const routeModule = await import('./route')
+    GET = routeModule.GET
+    POST = routeModule.POST
+
+    console.log('[SETUP] Test infrastructure initialized with authenticated user')
+  })
+
+  afterEach(() => {
+    // Clean up after each test for isolation
+    vi.clearAllMocks()
   })
 
   describe('Authentication and Authorization', () => {
     it('should require authentication for version listing', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing authentication requirement for version listing')
+
       mocks.auth.setUnauthenticated()
 
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Response status: ${response.status}`)
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
     })
 
     it('should authenticate with API key', async () => {
-      mocks.auth.setUnauthenticated()
-      const apiKeyResults = [{ userId: 'user-123' }]
+      // Log test execution for debugging
+      console.log('[TEST] Testing API key authentication')
 
+      mocks.auth.setUnauthenticated()
+
+      // Configure database to return API key results then workflow data
+      // Need to handle both the API key lookup and workflow lookup
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
-        from: () => ({
+        from: (table: any) => ({
           where: () => ({
             limit: () => {
               selectCallCount++
-              if (selectCallCount === 1) return Promise.resolve(apiKeyResults)
+              const tableName = String(table)
+
+              // First call: API key lookup returns user
+              if (tableName.includes('apiKey') || tableName.includes('api_key')) {
+                console.log('[TEST] API key lookup - returning user')
+                return Promise.resolve([{ userId: 'user-123' }])
+              }
+
+              // Second call: workflow lookup returns workflow
+              console.log('[TEST] Workflow lookup - returning workflow')
               return Promise.resolve([sampleWorkflowData])
+            },
+            then: (callback: any) => {
+              selectCallCount++
+              const isApiKeyCall = selectCallCount === 1
+
+              if (isApiKeyCall) {
+                console.log('[TEST] API key .then() - returning user')
+                return callback([{ userId: 'user-123' }])
+              }
+              console.log('[TEST] Workflow .then() - returning workflow')
+              return callback([sampleWorkflowData])
             },
           }),
         }),
-        then: () => Promise.resolve(sampleWorkflowData),
       }))
 
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] API key auth response status: ${response.status}`)
       expect(response.status).toBe(200)
     })
 
     it('should support internal JWT token authentication', async () => {
-      vi.doMock('@/lib/auth/internal', () => ({
-        verifyInternalToken: vi.fn().mockResolvedValue(true),
-      }))
+      // Log test execution for debugging
+      console.log('[TEST] Testing internal JWT token authentication')
+
+      // Configure internal token verification to succeed
+      const { verifyInternalToken } = await import('@/lib/auth/internal')
+      vi.mocked(verifyInternalToken).mockResolvedValue(true)
 
       const request = createMockRequest('GET', undefined, {
         authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] JWT auth response status: ${response.status}`)
       expect(response.status).toBe(200)
     })
 
     it('should check workflow access permissions', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing workflow access permissions')
+
       const differentUserWorkflow = {
         ...sampleWorkflowData,
         userId: 'different-user-456',
         workspaceId: null,
       }
 
+      // Configure database to return different user's workflow
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
             limit: () => Promise.resolve([differentUserWorkflow]),
           }),
         }),
-        then: () => Promise.resolve(differentUserWorkflow),
       }))
 
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Access denied response status: ${response.status}`)
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
     })
 
     it('should allow workspace members to access versions', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing workspace member access')
+
       const workspaceWorkflow = {
         ...sampleWorkflowData,
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
 
+      // Configure database to return workspace workflow with .then() support
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
             limit: () => Promise.resolve([workspaceWorkflow]),
+            then: (callback: any) => {
+              console.log('[TEST] Workspace workflow .then() called')
+              return callback([workspaceWorkflow])
+            },
           }),
         }),
-        then: () => Promise.resolve(workspaceWorkflow),
       }))
 
-      vi.doMock('@/lib/permissions/utils', () => ({
-        getUserEntityPermissions: vi.fn().mockResolvedValue('read'),
-      }))
+      // Configure permissions to allow read access for workspace
+      const { getUserEntityPermissions } = await import('@/lib/permissions/utils')
+      vi.mocked(getUserEntityPermissions).mockResolvedValue('read')
 
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Workspace access response status: ${response.status}`)
       expect(response.status).toBe(200)
     })
   })
@@ -585,22 +694,69 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
 
 describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
   let mocks: any
+  let GET: any
+  let POST: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clear all mocks and reset modules for fresh state
+    vi.clearAllMocks()
+    vi.resetModules()
+
+    // Setup comprehensive test infrastructure with proper database setup
     mocks = setupComprehensiveTestMocks({
       auth: { authenticated: true, user: mockUser },
       database: {
-        select: { results: [[sampleWorkflowData]] },
+        select: {
+          results: [
+            [sampleWorkflowData], // Workflow lookup for authenticated user
+          ],
+        },
       },
     })
 
-    // Mock loadWorkflowFromNormalizedTables
-    vi.doMock('@/lib/workflows/db-helpers', () => ({
-      loadWorkflowFromNormalizedTables: vi.fn().mockResolvedValue(sampleWorkflowState),
+    // Configure default database behavior for the standard workflow lookup
+    // This ensures consistent behavior across all tests where authentication should succeed
+    // The route uses .then((rows) => rows[0]) pattern so we need to mock this properly
+    mocks.database.mockDb.select.mockImplementation(() => ({
+      from: () => ({
+        where: () => ({
+          limit: () => Promise.resolve([sampleWorkflowData]),
+          then: (callback: any) => {
+            console.log('[MOCK] POST Database .then() called with workflow data')
+            return callback([sampleWorkflowData])
+          },
+        }),
+      }),
     }))
 
-    // Reset mock implementations
+    // Configure permissions to allow write by default for POST operations
+    const { getUserEntityPermissions } = await import('@/lib/permissions/utils')
+    vi.mocked(getUserEntityPermissions).mockResolvedValue('write')
+
+    // Configure database helper to return sample workflow state
+    const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
+    vi.mocked(loadWorkflowFromNormalizedTables).mockResolvedValue(sampleWorkflowState)
+
+    // Configure version manager to return created version
     mockVersionManager.createVersion.mockResolvedValue(sampleVersions[0])
+
+    // Configure CreateVersionSchema to parse normally by default
+    const { CreateVersionSchema } = await import('@/lib/workflows/versioning')
+    vi.mocked(CreateVersionSchema.parse).mockImplementation((data) => data)
+
+    // Import route handlers after mocks are set up
+    const routeModule = await import('./route')
+    GET = routeModule.GET
+    POST = routeModule.POST
+
+    console.log(
+      '[SETUP] POST test infrastructure initialized with authenticated user and write permissions'
+    )
+  })
+
+  afterEach(() => {
+    // Clean up after each test for isolation
+    vi.clearAllMocks()
   })
 
   describe('Version Creation', () => {
@@ -643,6 +799,10 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
     })
 
     it('should create version with minimal required data', async () => {
+      // Configure version manager to return auto type version for this test
+      const autoVersion = { ...sampleVersions[0], versionType: 'auto' }
+      mockVersionManager.createVersion.mockResolvedValueOnce(autoVersion)
+
       const versionData = {
         versionType: 'auto',
       }
@@ -687,6 +847,10 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const versionTypes = ['auto', 'manual', 'checkpoint', 'branch']
 
       for (const versionType of versionTypes) {
+        // Configure version manager to return the correct type for each iteration
+        const typedVersion = { ...sampleVersions[0], versionType }
+        mockVersionManager.createVersion.mockResolvedValueOnce(typedVersion)
+
         const versionData = { versionType }
 
         const request = createMockRequest('POST', versionData)
@@ -701,84 +865,108 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
   describe('Authentication and Authorization', () => {
     it('should require authentication for version creation', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing authentication requirement for version creation')
+
       mocks.auth.setUnauthenticated()
 
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Unauthenticated POST response status: ${response.status}`)
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
     })
 
     it('should require write permissions for version creation', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing write permissions requirement')
+
       const readOnlyWorkflow = {
         ...sampleWorkflowData,
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
 
+      // Configure database to return read-only workflow
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
             limit: () => Promise.resolve([readOnlyWorkflow]),
           }),
         }),
-        then: () => Promise.resolve(readOnlyWorkflow),
       }))
 
-      vi.doMock('@/lib/permissions/utils', () => ({
-        getUserEntityPermissions: vi.fn().mockResolvedValue('read'), // Read-only access
-      }))
+      // Configure permissions to return read-only access
+      const { getUserEntityPermissions } = await import('@/lib/permissions/utils')
+      vi.mocked(getUserEntityPermissions).mockResolvedValue('read')
 
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Read-only access POST response status: ${response.status}`)
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
     })
 
     it('should allow users with write permissions', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing write permissions access')
+
       const workspaceWorkflow = {
         ...sampleWorkflowData,
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
 
+      // Configure database to return workspace workflow with .then() support
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
             limit: () => Promise.resolve([workspaceWorkflow]),
+            then: (callback: any) => {
+              console.log('[TEST] POST Workspace workflow .then() called')
+              return callback([workspaceWorkflow])
+            },
           }),
         }),
-        then: () => Promise.resolve(workspaceWorkflow),
       }))
 
-      vi.doMock('@/lib/permissions/utils', () => ({
-        getUserEntityPermissions: vi.fn().mockResolvedValue('write'), // Write access
-      }))
+      // Configure permissions to return write access
+      const { getUserEntityPermissions } = await import('@/lib/permissions/utils')
+      vi.mocked(getUserEntityPermissions).mockResolvedValue('write')
 
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Write access POST response status: ${response.status}`)
       expect(response.status).toBe(201)
     })
 
     it('should allow workflow owners to create versions', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing workflow owner version creation')
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Owner version creation response status: ${response.status}`)
       expect(response.status).toBe(201)
     })
   })
 
   describe('Workflow State Validation', () => {
     it('should return 404 when workflow state not found', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing workflow state not found scenario')
+
+      // Configure workflow state loader to return null
       const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
       vi.mocked(loadWorkflowFromNormalizedTables).mockResolvedValue(null)
 
@@ -786,6 +974,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] State not found response status: ${response.status}`)
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow state not found')
@@ -793,6 +982,10 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
     })
 
     it('should handle workflow state loading errors', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing workflow state loading errors')
+
+      // Configure workflow state loader to throw error
       const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
       vi.mocked(loadWorkflowFromNormalizedTables).mockRejectedValue(
         new Error('State loading failed')
@@ -802,6 +995,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] State loading error response status: ${response.status}`)
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow version')
@@ -811,16 +1005,19 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
   describe('Input Validation', () => {
     it('should validate version creation data', async () => {
-      const { CreateVersionSchema } = await import('@/lib/workflows/versioning')
-      vi.mocked(CreateVersionSchema.parse).mockImplementation(() => {
-        throw new Error('Validation failed')
-      })
+      // Log test execution for debugging
+      console.log('[TEST] Testing version creation data validation')
 
-      // Mock z.ZodError for proper error handling
+      // Configure CreateVersionSchema to throw validation error for this specific test
+      const { CreateVersionSchema } = await import('@/lib/workflows/versioning')
+
+      // Create a proper ZodError-like object
       const zodError = new Error('Validation failed')
       zodError.name = 'ZodError'
       ;(zodError as any).errors = [{ path: ['versionType'], message: 'Invalid version type' }]
-      vi.mocked(CreateVersionSchema.parse).mockImplementation(() => {
+
+      // Use mockImplementationOnce to only affect this test
+      vi.mocked(CreateVersionSchema.parse).mockImplementationOnce(() => {
         throw zodError
       })
 
@@ -828,14 +1025,21 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const request = createMockRequest('POST', invalidData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Validation error response status: ${response.status}`)
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
       expect(data.details).toBeDefined()
       expect(data.requestId).toBeDefined()
+
+      // Reset the mock to normal behavior for other tests
+      vi.mocked(CreateVersionSchema.parse).mockImplementation((data) => data)
     })
 
     it('should handle malformed JSON requests', async () => {
+      // Log test execution for debugging
+      console.log('[TEST] Testing malformed JSON request handling')
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/versions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -844,6 +1048,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 
+      console.log(`[TEST] Malformed JSON response status: ${response.status}`)
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow version')

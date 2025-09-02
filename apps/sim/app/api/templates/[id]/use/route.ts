@@ -54,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id } = await params
-  
+
   // Parse request body outside try block for error handling access
   let body: any = {}
   try {

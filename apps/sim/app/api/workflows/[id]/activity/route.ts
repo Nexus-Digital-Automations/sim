@@ -631,10 +631,7 @@ async function getActivityTimeline(
         versionNumber: workflowVersions.versionNumber,
       })
       .from(workflowVersionActivity)
-      .leftJoin(
-        workflowVersions,
-        eq(workflowVersionActivity.versionId, workflowVersions.id)
-      )
+      .leftJoin(workflowVersions, eq(workflowVersionActivity.versionId, workflowVersions.id))
 
     // Add user join conditionally to avoid type reassignment issues
     const activityQuery = query.includeUser

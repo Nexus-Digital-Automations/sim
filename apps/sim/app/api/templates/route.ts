@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
   // Parse query parameters outside try block for error handling access
   const { searchParams } = new URL(request.url)
   const queryParams = Object.fromEntries(searchParams.entries())
-  
+
   try {
     const params = QueryParamsSchema.parse(queryParams)
 
@@ -294,7 +294,7 @@ export async function GET(request: NextRequest) {
     const offset = (params.page - 1) * params.limit
 
     // Build the main query with comprehensive data
-    const baseQuery = userId 
+    const baseQuery = userId
       ? db
           .select({
             // Core template data
@@ -366,14 +366,16 @@ export async function GET(request: NextRequest) {
       .offset(offset)
 
     // Get total count for pagination (with the same conditions)
-    const countQuery = (userId && params.isStarred)
-      ? db.select({ count: sql<number>`count(*)` })
-          .from(templates)
-          .leftJoin(
-            templateStars,
-            and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
-          )
-      : db.select({ count: sql<number>`count(*)` }).from(templates)
+    const countQuery =
+      userId && params.isStarred
+        ? db
+            .select({ count: sql<number>`count(*)` })
+            .from(templates)
+            .leftJoin(
+              templateStars,
+              and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
+            )
+        : db.select({ count: sql<number>`count(*)` }).from(templates)
 
     const totalCount = await countQuery.where(finalWhereCondition)
     const total = totalCount[0]?.count || 0
@@ -465,7 +467,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
-  
+
   // Parse request body outside try block for error handling access
   let body: any = {}
   try {

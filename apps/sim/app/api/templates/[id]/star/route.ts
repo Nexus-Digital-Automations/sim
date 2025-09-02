@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id } = await params
-  
+
   // Parse query parameters outside try block for error handling access
   const { searchParams } = new URL(request.url)
   const queryParams = Object.fromEntries(searchParams.entries())

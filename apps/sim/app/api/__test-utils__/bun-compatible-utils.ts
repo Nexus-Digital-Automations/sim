@@ -1,9 +1,9 @@
 /**
  * Bun/Vitest 3.x Compatible Test Utilities
- * 
+ *
  * This module provides test utilities that work reliably with bun and vitest 3.x
  * without relying on vi.doMock() which has compatibility issues.
- * 
+ *
  * Key differences from standard utils.ts:
  * - Uses vi.mock() with factory functions instead of vi.doMock()
  * - Provides runtime mock manipulation through returned mock objects
@@ -12,7 +12,7 @@
  */
 
 import { NextRequest } from 'next/server'
-import { vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 export interface MockUser {
   id: string
@@ -47,7 +47,7 @@ export interface RuntimeMockControls {
 export const mockUser: MockUser = {
   id: 'user-123',
   email: 'test@example.com',
-  name: 'Test User'
+  name: 'Test User',
 }
 
 // Sample workflow test data
@@ -124,17 +124,17 @@ export function createMockRequest(
   headers: Record<string, string> = {}
 ): NextRequest {
   const url = 'http://localhost:3000/api/test'
-  
+
   const requestInit: RequestInit = {
     method,
     headers: new Headers(headers),
   }
-  
+
   if (body) {
     requestInit.body = JSON.stringify(body)
     requestInit.headers = new Headers({
       'Content-Type': 'application/json',
-      ...headers
+      ...headers,
     })
   }
 
@@ -193,7 +193,7 @@ function createDatabaseMock(): DatabaseMockResult {
       if (transactionCallback) {
         return await transactionCallback(callback)
       }
-      
+
       const tx = {
         select: vi.fn().mockImplementation(() => createSelectChain()),
         insert: vi.fn().mockImplementation(() => createInsertChain()),
@@ -237,7 +237,7 @@ function createDatabaseMock(): DatabaseMockResult {
     },
     setTransactionBehavior: (callback: (tx: any) => any) => {
       transactionCallback = callback
-    }
+    },
   }
 }
 
@@ -246,7 +246,7 @@ function createDatabaseMock(): DatabaseMockResult {
  */
 function createAuthMock(): MockAuthResult {
   let currentUser: MockUser | null = mockUser
-  
+
   const mockGetSession = vi.fn().mockImplementation(() => {
     return Promise.resolve(currentUser ? { user: currentUser } : null)
   })
@@ -261,23 +261,23 @@ function createAuthMock(): MockAuthResult {
       currentUser = null
       mockGetSession.mockResolvedValue(null)
     },
-    getCurrentUser: () => currentUser
+    getCurrentUser: () => currentUser,
   }
 }
 
 /**
  * Main setup function for bun/vitest compatible mocks
- * 
+ *
  * This replaces setupComprehensiveTestMocks with a version that works
  * reliably with bun and vitest 3.x without module mocking issues.
  */
 export function setupBunCompatibleMocks(): RuntimeMockControls {
   console.log('🧪 Setting up bun-compatible test mocks')
-  
+
   // Create mock instances with runtime controls
   const authMock = createAuthMock()
   const databaseMock = createDatabaseMock()
-  
+
   // Mock drizzle operators (these are safe to mock at module level)
   const mockDrizzleOperators = {
     and: vi.fn((...conditions) => ({ conditions, type: 'and' })),
@@ -325,7 +325,7 @@ export function setupBunCompatibleMocks(): RuntimeMockControls {
     apiKey: {
       id: 'id',
       userId: 'userId',
-    }
+    },
   }
 
   // Mock logger
@@ -351,13 +351,13 @@ export function setupBunCompatibleMocks(): RuntimeMockControls {
   const mockCrypto = {
     randomUUID: vi.fn().mockReturnValue('mock-uuid-1234-5678'),
   }
-  
+
   // Store original implementations for cleanup
   const originalCrypto = global.crypto
-  
+
   // Apply global mocks
   global.crypto = { ...originalCrypto, ...mockCrypto } as any
-  
+
   console.log('✅ Bun-compatible mocks setup complete')
 
   return {
@@ -367,16 +367,16 @@ export function setupBunCompatibleMocks(): RuntimeMockControls {
       console.log('🧹 Cleaning up bun-compatible mocks')
       // Restore original implementations
       global.crypto = originalCrypto
-      
+
       // Reset all mocks
       authMock.setAuthenticated(mockUser)
       databaseMock.resetDatabase()
-      
+
       // Clear all vi.fn() mock calls
       vi.clearAllMocks()
-      
+
       console.log('✅ Cleanup complete')
-    }
+    },
   }
 }
 
@@ -386,13 +386,13 @@ export function setupBunCompatibleMocks(): RuntimeMockControls {
  */
 export function setupBasicApiMocks() {
   const mocks = setupBunCompatibleMocks()
-  
+
   // Set up default successful authentication
   mocks.auth.setAuthenticated(mockUser)
-  
+
   // Set up default database responses
   mocks.database.setSelectResults([[]])
-  
+
   return mocks
 }
 
@@ -400,38 +400,40 @@ export function setupBasicApiMocks() {
  * Enhanced mock setup for comprehensive testing
  * Use this for tests that need detailed control over mocking behavior
  */
-export function setupEnhancedApiMocks(options: {
-  authenticated?: boolean
-  user?: MockUser
-  selectResults?: any[][]
-  insertResults?: any[]
-  updateResults?: any[]
-  deleteResults?: any[]
-} = {}) {
+export function setupEnhancedApiMocks(
+  options: {
+    authenticated?: boolean
+    user?: MockUser
+    selectResults?: any[][]
+    insertResults?: any[]
+    updateResults?: any[]
+    deleteResults?: any[]
+  } = {}
+) {
   const {
     authenticated = true,
     user = mockUser,
     selectResults = [[]],
     insertResults = [],
     updateResults = [],
-    deleteResults = []
+    deleteResults = [],
   } = options
-  
+
   const mocks = setupBunCompatibleMocks()
-  
+
   // Configure authentication
   if (authenticated) {
     mocks.auth.setAuthenticated(user)
   } else {
     mocks.auth.setUnauthenticated()
   }
-  
+
   // Configure database responses
   mocks.database.setSelectResults(selectResults)
   mocks.database.setInsertResults(insertResults)
   mocks.database.setUpdateResults(updateResults)
   mocks.database.setDeleteResults(deleteResults)
-  
+
   return mocks
 }
 
@@ -447,7 +449,7 @@ export function setupTestCleanup(mocks: RuntimeMockControls) {
     mocks.database.resetDatabase()
     vi.clearAllMocks()
   })
-  
+
   afterEach(() => {
     console.log('🧹 Cleaning up after test')
     mocks.cleanup()
