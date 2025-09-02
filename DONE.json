@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -764,9 +769,70 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756835576156_31vwtsqq2",
+      "title": "Create comprehensive unit tests for serializer and tools modules to achieve 100% code coverage",
+      "description": "TARGET MODULES:\n- apps/sim/serializer/ (workflow serialization, YAML conversion, state management)\n- apps/sim/tools/ (tool execution, parameter validation, function registry)\n\nTEST REQUIREMENTS:\n1. Serializer Module: Workflow serialization, data validation, error handling, performance testing, edge cases\n2. Tools Module: Tool execution, parameter validation, registry, error handling, security testing\n3. Production-ready test patterns with mocking and isolation\n4. Performance benchmarks and security testing\n5. 100% line coverage for critical workflow execution components\n\nSUCCESS CRITERIA:\n- 100% line coverage for both modules\n- All edge cases and error scenarios tested\n- Performance benchmarks implemented\n- Security validation included\n- Integration with existing test infrastructure",
+      "mode": "DEVELOPMENT",
+      "category": "missing-test",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T17:52:56.156Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756841026272_1_general_9faee6f0",
+      "started_at": "2025-09-02T19:24:06.641Z",
+      "claimed_by": "development_session_1756841026272_1_general_9faee6f0",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756835564162_1_testing_46b0d6b2",
+          "role": "primary",
+          "assignedAt": "2025-09-02T17:53:00.841Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-02T19:23:40.309Z",
+          "reason": "Task stale for 91 minutes"
+        },
+        {
+          "agentId": "development_session_1756841026272_1_general_9faee6f0",
+          "role": "primary",
+          "assignedAt": "2025-09-02T19:24:06.641Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T19:44:19.770Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T19:44:19.771Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "./TODO.json"
     }
   ],
-  "total_completed": 19,
-  "last_completion": "2025-09-02T18:56:20.169Z",
+  "total_completed": 20,
+  "last_completion": "2025-09-02T19:44:19.771Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }
