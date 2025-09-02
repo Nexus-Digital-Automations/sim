@@ -1,0 +1,67 @@
+{
+  "execution": {
+    "timestamp": "2025-09-02T02:56:14.023Z",
+    "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+    "hookVersion": "1.0.0",
+    "nodeVersion": "v22.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "pid": 61159,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+    "endTimestamp": "2025-09-02T02:56:14.026Z",
+    "durationMs": 3
+  },
+  "input": {
+    "sessionId": "e326921c-431a-4020-89ea-0330e8a11a3f",
+    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e326921c-431a-4020-89ea-0330e8a11a3f.jsonl",
+    "stopHookActive": false,
+    "rawInput": {
+      "session_id": "e326921c-431a-4020-89ea-0330e8a11a3f",
+      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e326921c-431a-4020-89ea-0330e8a11a3f.jsonl",
+      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+      "hook_event_name": "Stop",
+      "stop_hook_active": false
+    }
+  },
+  "projectState": {},
+  "decisions": [],
+  "flow": [
+    {
+      "timestamp": "2025-09-02T02:56:14.025Z",
+      "message": "Raw input data: \"{\"session_id\":\"e326921c-431a-4020-89ea-0330e8a11a3f\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e326921c-431a-4020-89ea-0330e8a11a3f.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.025Z",
+      "message": "Input data length: 321"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.025Z",
+      "message": "Received input from Claude Code"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.025Z",
+      "message": "Received Stop event from Claude Code"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.026Z",
+      "message": "Found 0 total agents in TODO.json"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.026Z",
+      "message": "Active agents found: 0, Stale agents removed: 0"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.026Z",
+      "message": "No active agents detected - need agent initialization"
+    },
+    {
+      "timestamp": "2025-09-02T02:56:14.026Z",
+      "message": "Exiting with code 2: No active agents - providing initialization guidance"
+    }
+  ],
+  "output": {
+    "exitCode": 2,
+    "exitReason": "No active agents - providing initialization guidance"
+  },
+  "errors": []
+}
