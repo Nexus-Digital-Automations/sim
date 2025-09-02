@@ -1,39 +1,35 @@
 /**
  * Workflow Presence Tracking API
- * 
+ *
  * This module provides real-time presence tracking for collaborative workflow editing.
  * It manages user presence, cursor positions, selections, and activity tracking.
- * 
+ *
  * Endpoints:
  * - GET /api/workflows/[id]/presence - Get current presence information
  * - POST /api/workflows/[id]/presence/cursor - Update cursor position
  * - POST /api/workflows/[id]/presence/selection - Update user selection
  * - DELETE /api/workflows/[id]/presence - Leave workflow (clean up presence)
- * 
+ *
  * Features:
  * - Real-time presence indicators
  * - Cursor position tracking
  * - Selection state management
  * - Activity-based session cleanup
  * - Comprehensive logging and error handling
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @since 2025-09-02
  */
 
-import { eq, and, desc, gt, gte } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { validateWorkflowPermissions } from '../collaborate/route'
 import { db } from '@/db'
-import { 
-  workflow, 
-  workflowCollaborationSessions,
-  user 
-} from '@/db/schema'
+import { user, workflowCollaborationSessions } from '@/db/schema'
+import { validateWorkflowPermissions } from '../collaborate/route'
 
 const logger = createLogger('WorkflowPresenceAPI')
 
@@ -44,32 +40,38 @@ const logger = createLogger('WorkflowPresenceAPI')
 const CursorUpdateSchema = z.object({
   x: z.number().min(0, 'X coordinate must be non-negative'),
   y: z.number().min(0, 'Y coordinate must be non-negative'),
-  viewport: z.object({
-    width: z.number().positive('Viewport width must be positive'),
-    height: z.number().positive('Viewport height must be positive'),
-    zoom: z.number().positive('Viewport zoom must be positive').optional(),
-  }).optional(),
+  viewport: z
+    .object({
+      width: z.number().positive('Viewport width must be positive'),
+      height: z.number().positive('Viewport height must be positive'),
+      zoom: z.number().positive('Viewport zoom must be positive').optional(),
+    })
+    .optional(),
 })
 
 const SelectionUpdateSchema = z.object({
   type: z.enum(['block', 'edge', 'none', 'multiple']),
   elementIds: z.array(z.string()).optional(),
   elementId: z.string().optional(), // For backwards compatibility
-  bounds: z.object({
-    x: z.number(),
-    y: z.number(),
-    width: z.number(),
-    height: z.number(),
-  }).optional(),
+  bounds: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      width: z.number(),
+      height: z.number(),
+    })
+    .optional(),
 })
 
 const PresenceJoinSchema = z.object({
   socketId: z.string().min(1, 'Socket ID is required'),
   userAgent: z.string().optional(),
-  viewport: z.object({
-    width: z.number().positive(),
-    height: z.number().positive(),
-  }).optional(),
+  viewport: z
+    .object({
+      width: z.number().positive(),
+      height: z.number().positive(),
+    })
+    .optional(),
 })
 
 // ========================
@@ -136,7 +138,7 @@ async function updateSessionActivity(
   logger.debug(`[${operationId}] Updating session activity`, {
     workflowId,
     userId,
-    socketId
+    socketId,
   })
 
   try {
@@ -166,7 +168,7 @@ async function updateSessionActivity(
  */
 async function getWorkflowPresence(
   workflowId: string,
-  activeThresholdMinutes: number = 30
+  activeThresholdMinutes = 30
 ): Promise<UserPresence[]> {
   const operationId = crypto.randomUUID().slice(0, 8)
   logger.debug(`[${operationId}] Fetching presence for workflow ${workflowId}`)
@@ -193,7 +195,7 @@ async function getWorkflowPresence(
       .orderBy(desc(workflowCollaborationSessions.lastActivity))
 
     // Transform to UserPresence format
-    const presence: UserPresence[] = sessions.map(session => ({
+    const presence: UserPresence[] = sessions.map((session) => ({
       userId: session.userId,
       userName: session.userName || 'Unknown User',
       userEmail: session.userEmail || '',
@@ -276,20 +278,17 @@ async function joinWorkflowSession(
 /**
  * GET /api/workflows/[id]/presence
  * Get current presence information for a workflow
- * 
+ *
  * Returns comprehensive presence data including:
  * - Active users with last activity timestamps
  * - User permission levels
  * - Activity status based on configurable threshold
- * 
+ *
  * @param request - Next.js request object
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with presence information
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -307,11 +306,7 @@ export async function GET(
     const userId = session.user.id
 
     // Validate workflow access permissions
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'view'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'view')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Access denied for user ${userId} to workflow ${workflowId}`)
@@ -320,14 +315,14 @@ export async function GET(
 
     // Get active threshold from query params (default 30 minutes)
     const url = new URL(request.url)
-    const activeThresholdMinutes = parseInt(url.searchParams.get('activeMinutes') || '30')
+    const activeThresholdMinutes = Number.parseInt(url.searchParams.get('activeMinutes') || '30')
 
     // Fetch presence information
     const users = await getWorkflowPresence(workflowId, activeThresholdMinutes)
 
     // Calculate statistics
     const totalUsers = users.length
-    const activeUsers = users.filter(u => u.isActive).length
+    const activeUsers = users.filter((u) => u.isActive).length
 
     const response: PresenceResponse = {
       users,
@@ -338,34 +333,30 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully fetched presence: ${totalUsers} total, ${activeUsers} active in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully fetched presence: ${totalUsers} total, ${activeUsers} active in ${elapsed}ms`
+    )
 
     return NextResponse.json(response, { status: 200 })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error fetching presence after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * POST /api/workflows/[id]/presence
  * Join a workflow collaboration session
- * 
+ *
  * Establishes or updates a user's presence in a workflow.
  * Creates a collaboration session record and initializes presence tracking.
- * 
+ *
  * @param request - Next.js request object with session data
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with success status
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -383,11 +374,7 @@ export async function POST(
     const userId = session.user.id
 
     // Validate workflow access permissions
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'view'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'view')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Access denied for user ${userId} to workflow ${workflowId}`)
@@ -399,33 +386,29 @@ export async function POST(
     const { socketId, userAgent, viewport } = PresenceJoinSchema.parse(body)
 
     // Get client IP address
-    const ipAddress = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') ||
-                     'unknown'
+    const ipAddress =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
 
     // Join the workflow session
-    await joinWorkflowSession(
-      workflowId,
-      userId,
-      socketId,
-      userAgent,
-      ipAddress
-    )
+    await joinWorkflowSession(workflowId, userId, socketId, userAgent, ipAddress)
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] User ${userId} joined workflow ${workflowId} in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      message: 'Successfully joined workflow session',
-      workflowId,
-      userId,
-      socketId,
-      joinedAt: new Date(),
-    }, { status: 200 })
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Successfully joined workflow session',
+        workflowId,
+        userId,
+        socketId,
+        joinedAt: new Date(),
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid request data:`, { errors: error.errors })
       return NextResponse.json(
@@ -435,20 +418,17 @@ export async function POST(
     }
 
     logger.error(`[${requestId}] Error joining workflow after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * DELETE /api/workflows/[id]/presence
  * Leave a workflow collaboration session
- * 
+ *
  * Removes user's presence from workflow and cleans up session data.
  * This is called when a user explicitly leaves or disconnects.
- * 
+ *
  * @param request - Next.js request object with socket ID
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with success status
@@ -476,7 +456,7 @@ export async function DELETE(
     // Get socket ID from query params or request body
     const url = new URL(request.url)
     let socketId = url.searchParams.get('socketId')
-    
+
     if (!socketId) {
       const body = await request.json().catch(() => ({}))
       socketId = body.socketId
@@ -484,10 +464,7 @@ export async function DELETE(
 
     if (!socketId) {
       logger.warn(`[${requestId}] Missing socket ID for session cleanup`)
-      return NextResponse.json(
-        { error: 'Socket ID is required' }, 
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Socket ID is required' }, { status: 400 })
     }
 
     // Remove collaboration session
@@ -503,31 +480,30 @@ export async function DELETE(
       .returning()
 
     if (deletedSessions.length === 0) {
-      logger.warn(`[${requestId}] No session found to delete for user ${userId}, socket ${socketId}`)
-      return NextResponse.json(
-        { error: 'Session not found' }, 
-        { status: 404 }
+      logger.warn(
+        `[${requestId}] No session found to delete for user ${userId}, socket ${socketId}`
       )
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] User ${userId} left workflow ${workflowId} session in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      message: 'Successfully left workflow session',
-      workflowId,
-      userId,
-      socketId,
-      leftAt: new Date(),
-    }, { status: 200 })
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Successfully left workflow session',
+        workflowId,
+        userId,
+        socketId,
+        leftAt: new Date(),
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error leaving workflow after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -538,10 +514,10 @@ export async function DELETE(
 /**
  * POST /api/workflows/[id]/presence/cursor
  * Update cursor position for real-time collaboration
- * 
+ *
  * Updates the user's cursor position for other collaborators to see.
  * This endpoint is designed for high-frequency updates.
- * 
+ *
  * Note: In production, cursor updates should typically be handled via WebSocket
  * for better performance. This REST endpoint is for initialization and fallback.
  */
@@ -551,7 +527,7 @@ export async function DELETE(
 /**
  * POST /api/workflows/[id]/presence/selection
  * Update user selection for real-time collaboration
- * 
+ *
  * Updates what elements the user currently has selected.
  * This helps other collaborators see what someone is working on.
  */
@@ -562,10 +538,10 @@ export async function DELETE(
 // EXPORTED UTILITIES
 // ========================
 
-export { 
-  getWorkflowPresence, 
-  updateSessionActivity, 
+export {
+  getWorkflowPresence,
+  updateSessionActivity,
   joinWorkflowSession,
   type UserPresence,
-  type PresenceResponse 
+  type PresenceResponse,
 }

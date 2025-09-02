@@ -1,16 +1,16 @@
 /**
  * Live Editing and Conflict Resolution API
- * 
+ *
  * This module provides real-time collaborative editing with operational transform
  * conflict resolution for workflow editing. It handles concurrent edits and maintains
  * consistency across multiple collaborative sessions.
- * 
+ *
  * Endpoints:
  * - POST /api/workflows/[id]/live-edit - Submit live edit operations
  * - GET /api/workflows/[id]/live-edit/changes - Get pending changes from other users
  * - POST /api/workflows/[id]/live-edit/apply - Apply pending changes
  * - DELETE /api/workflows/[id]/live-edit/operations/[operationId] - Cancel pending operation
- * 
+ *
  * Features:
  * - Operational Transform (OT) for conflict resolution
  * - Vector clock-based operation ordering
@@ -18,24 +18,20 @@
  * - Conflict detection and resolution
  * - Operation replay and state reconstruction
  * - Comprehensive audit trail
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @since 2025-09-02
  */
 
-import { eq, and, desc, gt, asc, inArray } from 'drizzle-orm'
+import { and, asc, eq, gt } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { validateWorkflowPermissions } from '../collaborate/route'
 import { db } from '@/db'
-import { 
-  workflowLiveOperations,
-  workflowElementLocks,
-  user 
-} from '@/db/schema'
+import { user, workflowLiveOperations } from '@/db/schema'
+import { validateWorkflowPermissions } from '../collaborate/route'
 
 const logger = createLogger('LiveEditAPI')
 
@@ -131,7 +127,10 @@ class OperationalTransform {
    * @param op2 - Second operation (remote)
    * @returns Transformed versions of both operations
    */
-  static transform(op1: LiveOperation, op2: LiveOperation): {
+  static transform(
+    op1: LiveOperation,
+    op2: LiveOperation
+  ): {
     op1Prime: LiveOperation
     op2Prime: LiveOperation
     conflictType?: string
@@ -143,28 +142,30 @@ class OperationalTransform {
     })
 
     // If operations target different elements, no transformation needed
-    if (!this.operationsConflict(op1, op2)) {
+    if (!OperationalTransform.operationsConflict(op1, op2)) {
       return { op1Prime: op1, op2Prime: op2 }
     }
 
     // Handle different operation type combinations
     switch (`${op1.operationType}:${op2.operationType}`) {
       case 'update:update':
-        return this.transformUpdateUpdate(op1, op2)
+        return OperationalTransform.transformUpdateUpdate(op1, op2)
       case 'insert:insert':
-        return this.transformInsertInsert(op1, op2)
+        return OperationalTransform.transformInsertInsert(op1, op2)
       case 'delete:delete':
-        return this.transformDeleteDelete(op1, op2)
+        return OperationalTransform.transformDeleteDelete(op1, op2)
       case 'update:delete':
       case 'delete:update':
-        return this.transformUpdateDelete(op1, op2)
+        return OperationalTransform.transformUpdateDelete(op1, op2)
       case 'move:move':
-        return this.transformMoveMove(op1, op2)
+        return OperationalTransform.transformMoveMove(op1, op2)
       case 'move:update':
       case 'update:move':
-        return this.transformMoveUpdate(op1, op2)
+        return OperationalTransform.transformMoveUpdate(op1, op2)
       default:
-        logger.warn(`[${operationId}] No specific transform for ${op1.operationType}:${op2.operationType}`)
+        logger.warn(
+          `[${operationId}] No specific transform for ${op1.operationType}:${op2.operationType}`
+        )
         return { op1Prime: op1, op2Prime: op2, conflictType: 'unknown' }
     }
   }
@@ -175,7 +176,7 @@ class OperationalTransform {
   private static operationsConflict(op1: LiveOperation, op2: LiveOperation): boolean {
     return (
       op1.operationTarget === op2.operationTarget &&
-      this.getElementId(op1) === this.getElementId(op2)
+      OperationalTransform.getElementId(op1) === OperationalTransform.getElementId(op2)
     )
   }
 
@@ -183,10 +184,12 @@ class OperationalTransform {
    * Extracts element ID from operation payload
    */
   private static getElementId(op: LiveOperation): string {
-    return op.operationPayload.id || 
-           op.operationPayload.elementId || 
-           op.operationPayload.blockId ||
-           'unknown'
+    return (
+      op.operationPayload.id ||
+      op.operationPayload.elementId ||
+      op.operationPayload.blockId ||
+      'unknown'
+    )
   }
 
   /**
@@ -194,7 +197,7 @@ class OperationalTransform {
    */
   private static transformUpdateUpdate(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming concurrent updates')
-    
+
     // Use last-writer-wins for most properties
     // But merge non-conflicting property changes
     const op1Payload = { ...op1.operationPayload }
@@ -202,18 +205,18 @@ class OperationalTransform {
 
     // Determine which operation wins based on timestamp
     const op1Wins = op1.timestampMs > op2.timestampMs
-    
+
     if (op1Wins) {
       // op1 wins, but preserve non-conflicting changes from op2
-      Object.keys(op2Payload).forEach(key => {
-        if (!op1Payload.hasOwnProperty(key)) {
+      Object.keys(op2Payload).forEach((key) => {
+        if (!Object.hasOwn(op1Payload, key)) {
           op1Payload[key] = op2Payload[key]
         }
       })
     } else {
       // op2 wins, but preserve non-conflicting changes from op1
-      Object.keys(op1Payload).forEach(key => {
-        if (!op2Payload.hasOwnProperty(key)) {
+      Object.keys(op1Payload).forEach((key) => {
+        if (!Object.hasOwn(op2Payload, key)) {
           op2Payload[key] = op1Payload[key]
         }
       })
@@ -222,7 +225,7 @@ class OperationalTransform {
     return {
       op1Prime: { ...op1, operationPayload: op1Payload },
       op2Prime: { ...op2, operationPayload: op2Payload },
-      conflictType: 'concurrent_update'
+      conflictType: 'concurrent_update',
     }
   }
 
@@ -231,7 +234,7 @@ class OperationalTransform {
    */
   private static transformInsertInsert(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming concurrent inserts')
-    
+
     // For position-based inserts, adjust positions
     if (op1.operationPayload.position && op2.operationPayload.position) {
       const pos1 = op1.operationPayload.position
@@ -244,17 +247,17 @@ class OperationalTransform {
             ...op1,
             operationPayload: {
               ...op1.operationPayload,
-              position: { x: pos1.x + 25, y: pos1.y + 25 }
-            }
+              position: { x: pos1.x + 25, y: pos1.y + 25 },
+            },
           },
           op2Prime: {
             ...op2,
             operationPayload: {
               ...op2.operationPayload,
-              position: { x: pos2.x - 25, y: pos2.y - 25 }
-            }
+              position: { x: pos2.x - 25, y: pos2.y - 25 },
+            },
           },
-          conflictType: 'position_conflict'
+          conflictType: 'position_conflict',
         }
       }
     }
@@ -267,23 +270,22 @@ class OperationalTransform {
    */
   private static transformDeleteDelete(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming concurrent deletes')
-    
+
     // If both operations delete the same element, only one should succeed
     // Convert the losing operation to a no-op
     const op1Wins = op1.timestampMs > op2.timestampMs
-    
+
     if (op1Wins) {
       return {
         op1Prime: op1,
         op2Prime: { ...op2, operationType: 'update' as const, operationPayload: {} }, // No-op
-        conflictType: 'concurrent_delete'
+        conflictType: 'concurrent_delete',
       }
-    } else {
-      return {
-        op1Prime: { ...op1, operationType: 'update' as const, operationPayload: {} }, // No-op
-        op2Prime: op2,
-        conflictType: 'concurrent_delete'
-      }
+    }
+    return {
+      op1Prime: { ...op1, operationType: 'update' as const, operationPayload: {} }, // No-op
+      op2Prime: op2,
+      conflictType: 'concurrent_delete',
     }
   }
 
@@ -292,15 +294,21 @@ class OperationalTransform {
    */
   private static transformUpdateDelete(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming update-delete conflict')
-    
+
     const deleteOp = op1.operationType === 'delete' ? op1 : op2
     const updateOp = op1.operationType === 'update' ? op1 : op2
-    
+
     // Delete wins over update
     return {
-      op1Prime: op1.operationType === 'delete' ? op1 : { ...op1, operationType: 'update' as const, operationPayload: {} },
-      op2Prime: op2.operationType === 'delete' ? op2 : { ...op2, operationType: 'update' as const, operationPayload: {} },
-      conflictType: 'update_delete_conflict'
+      op1Prime:
+        op1.operationType === 'delete'
+          ? op1
+          : { ...op1, operationType: 'update' as const, operationPayload: {} },
+      op2Prime:
+        op2.operationType === 'delete'
+          ? op2
+          : { ...op2, operationType: 'update' as const, operationPayload: {} },
+      conflictType: 'update_delete_conflict',
     }
   }
 
@@ -309,14 +317,14 @@ class OperationalTransform {
    */
   private static transformMoveMove(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming concurrent moves')
-    
+
     // Last move wins, but preserve the element
     const op1Wins = op1.timestampMs > op2.timestampMs
-    
+
     return {
       op1Prime: op1,
       op2Prime: op1Wins ? { ...op2, operationType: 'update' as const, operationPayload: {} } : op2,
-      conflictType: 'concurrent_move'
+      conflictType: 'concurrent_move',
     }
   }
 
@@ -325,7 +333,7 @@ class OperationalTransform {
    */
   private static transformMoveUpdate(op1: LiveOperation, op2: LiveOperation) {
     logger.debug('Transforming move-update conflict')
-    
+
     // Both operations can coexist - move doesn't interfere with property updates
     return { op1Prime: op1, op2Prime: op2 }
   }
@@ -346,14 +354,14 @@ class OperationalTransform {
 async function getPendingOperations(
   workflowId: string,
   sinceTimestamp?: number,
-  limit: number = 50,
-  includeApplied: boolean = false
+  limit = 50,
+  includeApplied = false
 ): Promise<LiveOperation[]> {
   const operationId = crypto.randomUUID().slice(0, 8)
   logger.debug(`[${operationId}] Fetching pending operations for workflow ${workflowId}`)
 
   try {
-    let whereConditions = [eq(workflowLiveOperations.workflowId, workflowId)]
+    const whereConditions = [eq(workflowLiveOperations.workflowId, workflowId)]
 
     if (!includeApplied) {
       whereConditions.push(eq(workflowLiveOperations.applied, false))
@@ -382,17 +390,22 @@ async function getPendingOperations(
       .orderBy(asc(workflowLiveOperations.timestampMs))
       .limit(limit)
 
-    const liveOperations: LiveOperation[] = operations.map(op => ({
+    const liveOperations: LiveOperation[] = operations.map((op) => ({
       id: op.id,
       workflowId,
       operationType: op.operationType as 'insert' | 'delete' | 'update' | 'move',
-      operationTarget: op.operationTarget as 'block' | 'edge' | 'property' | 'subblock' | 'variable',
+      operationTarget: op.operationTarget as
+        | 'block'
+        | 'edge'
+        | 'property'
+        | 'subblock'
+        | 'variable',
       operationPayload: op.operationPayload as Record<string, any>,
       authorId: op.authorId,
       authorName: op.authorName || 'Unknown User',
       timestampMs: op.timestampMs,
       vectorClock: op.vectorClock as Record<string, number>,
-      applied: op.applied,
+      applied: op.applied ?? false, // Convert null to false for boolean type compatibility
       createdAt: op.createdAt,
     }))
 
@@ -415,7 +428,7 @@ function detectConflicts(
   existingOperations: LiveOperation[]
 ): OperationConflict[] {
   const conflicts: OperationConflict[] = []
-  
+
   for (const existingOp of existingOperations) {
     // Skip if it's the same operation or from same author
     if (existingOp.id === newOperation.id || existingOp.authorId === newOperation.authorId) {
@@ -423,17 +436,17 @@ function detectConflicts(
     }
 
     // Check if operations target the same element
-    const newElementId = newOperation.operationPayload.id || 
-                        newOperation.operationPayload.elementId || 
-                        'unknown'
-    const existingElementId = existingOp.operationPayload.id || 
-                             existingOp.operationPayload.elementId || 
-                             'unknown'
+    const newElementId =
+      newOperation.operationPayload.id || newOperation.operationPayload.elementId || 'unknown'
+    const existingElementId =
+      existingOp.operationPayload.id || existingOp.operationPayload.elementId || 'unknown'
 
-    if (newOperation.operationTarget === existingOp.operationTarget && 
-        newElementId === existingElementId) {
-      
-      let conflictType: 'concurrent_edit' | 'dependency_violation' | 'lock_conflict' = 'concurrent_edit'
+    if (
+      newOperation.operationTarget === existingOp.operationTarget &&
+      newElementId === existingElementId
+    ) {
+      let conflictType: 'concurrent_edit' | 'dependency_violation' | 'lock_conflict' =
+        'concurrent_edit'
       let resolutionSuggestion: 'merge' | 'overwrite' | 'manual' = 'merge'
       let details = `Concurrent ${newOperation.operationType} operations on ${newOperation.operationTarget}:${newElementId}`
 
@@ -470,23 +483,22 @@ function detectConflicts(
 /**
  * POST /api/workflows/[id]/live-edit
  * Submit a live edit operation with conflict resolution
- * 
+ *
  * Processes real-time collaborative edits with operational transform.
  * Handles conflict detection and provides resolution strategies.
- * 
+ *
  * @param request - Next.js request object with operation data
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with operation status and conflicts
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
 
-  logger.info(`[${requestId}] POST /api/workflows/${workflowId}/live-edit - Submitting live operation`)
+  logger.info(
+    `[${requestId}] POST /api/workflows/${workflowId}/live-edit - Submitting live operation`
+  )
 
   try {
     // Authentication check
@@ -499,11 +511,7 @@ export async function POST(
     const userId = session.user.id
 
     // Validate workflow access permissions (need edit access)
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'edit'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'edit')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Insufficient permissions for user ${userId}`)
@@ -537,7 +545,12 @@ export async function POST(
       id: createdOperation.id,
       workflowId,
       operationType: createdOperation.operationType as 'insert' | 'delete' | 'update' | 'move',
-      operationTarget: createdOperation.operationTarget as 'block' | 'edge' | 'property' | 'subblock' | 'variable',
+      operationTarget: createdOperation.operationTarget as
+        | 'block'
+        | 'edge'
+        | 'property'
+        | 'subblock'
+        | 'variable',
       operationPayload: createdOperation.operationPayload as Record<string, any>,
       authorId: userId,
       authorName: session.user.name || 'Unknown User',
@@ -568,7 +581,7 @@ export async function POST(
         .update(workflowLiveOperations)
         .set({ applied: true })
         .where(eq(workflowLiveOperations.id, createdOperation.id))
-      
+
       applied = true
       logger.debug(`[${requestId}] Operation applied immediately (no conflicts)`)
     } else {
@@ -576,7 +589,7 @@ export async function POST(
       for (const conflict of conflicts) {
         const conflictingOp = conflict.conflictsWith[0]
         const transformed = OperationalTransform.transform(newOperation, conflictingOp)
-        
+
         transformedOperation = {
           originalOperation: newOperation,
           transformedPayload: transformed.op1Prime.operationPayload,
@@ -587,9 +600,9 @@ export async function POST(
         // Update the operation with transformed payload
         await db
           .update(workflowLiveOperations)
-          .set({ 
+          .set({
             operationPayload: transformed.op1Prime.operationPayload,
-            vectorClock: { ...operationData.vectorClock, transformed: Date.now() }
+            vectorClock: { ...operationData.vectorClock, transformed: Date.now() },
           })
           .where(eq(workflowLiveOperations.id, createdOperation.id))
       }
@@ -602,20 +615,23 @@ export async function POST(
       applied,
       conflicts,
       transformedOperation,
-      message: conflicts.length > 0 
-        ? `Operation submitted with ${conflicts.length} conflicts. Manual resolution may be required.`
-        : 'Operation applied successfully.',
+      message:
+        conflicts.length > 0
+          ? `Operation submitted with ${conflicts.length} conflicts. Manual resolution may be required.`
+          : 'Operation applied successfully.',
       timestamp,
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Live edit operation processed in ${elapsed}ms, applied: ${applied}, conflicts: ${conflicts.length}`)
+    logger.info(
+      `[${requestId}] Live edit operation processed in ${elapsed}ms, applied: ${applied}, conflicts: ${conflicts.length}`
+    )
 
     const statusCode = conflicts.length > 0 ? 202 : 200 // 202 Accepted for operations with conflicts
     return NextResponse.json(response, { status: statusCode })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid request data:`, { errors: error.errors })
       return NextResponse.json(
@@ -625,33 +641,29 @@ export async function POST(
     }
 
     logger.error(`[${requestId}] Error processing live edit after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * GET /api/workflows/[id]/live-edit/changes
  * Get pending changes from other users
- * 
+ *
  * Returns operations that need to be applied to bring local state up to date.
  * Used for conflict resolution and synchronization.
- * 
+ *
  * @param request - Next.js request object with query parameters
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with pending operations and conflicts
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
 
-  logger.info(`[${requestId}] GET /api/workflows/${workflowId}/live-edit/changes - Fetching changes`)
+  logger.info(
+    `[${requestId}] GET /api/workflows/${workflowId}/live-edit/changes - Fetching changes`
+  )
 
   try {
     // Authentication check
@@ -664,11 +676,7 @@ export async function GET(
     const userId = session.user.id
 
     // Validate workflow access permissions
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'view'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'view')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Access denied for user ${userId}`)
@@ -677,8 +685,8 @@ export async function GET(
 
     // Parse query parameters
     const url = new URL(request.url)
-    const since = parseInt(url.searchParams.get('since') || '0')
-    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const since = Number.parseInt(url.searchParams.get('since') || '0')
+    const limit = Number.parseInt(url.searchParams.get('limit') || '50')
     const includeApplied = url.searchParams.get('includeApplied') === 'true'
 
     // Get pending operations (exclude current user's operations)
@@ -710,28 +718,34 @@ export async function GET(
       .limit(limit)
 
     // Filter out current user's operations manually (since we don't have 'ne' imported)
-    const filteredOperations = operations.filter(op => op.authorId !== userId)
+    const filteredOperations = operations.filter((op) => op.authorId !== userId)
 
-    const liveOperations: LiveOperation[] = filteredOperations.map(op => ({
+    const liveOperations: LiveOperation[] = filteredOperations.map((op) => ({
       id: op.id,
       workflowId,
       operationType: op.operationType as 'insert' | 'delete' | 'update' | 'move',
-      operationTarget: op.operationTarget as 'block' | 'edge' | 'property' | 'subblock' | 'variable',
+      operationTarget: op.operationTarget as
+        | 'block'
+        | 'edge'
+        | 'property'
+        | 'subblock'
+        | 'variable',
       operationPayload: op.operationPayload as Record<string, any>,
       authorId: op.authorId,
       authorName: op.authorName || 'Unknown User',
       timestampMs: op.timestampMs,
       vectorClock: op.vectorClock as Record<string, number>,
-      applied: op.applied,
+      applied: op.applied ?? false, // Convert null to false for boolean type compatibility
       createdAt: op.createdAt,
     }))
 
     // Calculate statistics
     const totalOperations = liveOperations.length
-    const pendingOperations = liveOperations.filter(op => !op.applied).length
-    const lastSyncTimestamp = liveOperations.length > 0 
-      ? Math.max(...liveOperations.map(op => op.timestampMs))
-      : Date.now()
+    const pendingOperations = liveOperations.filter((op) => !op.applied).length
+    const lastSyncTimestamp =
+      liveOperations.length > 0
+        ? Math.max(...liveOperations.map((op) => op.timestampMs))
+        : Date.now()
 
     const response: LiveEditResponse = {
       operations: liveOperations,
@@ -743,16 +757,15 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Retrieved ${totalOperations} changes (${pendingOperations} pending) in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Retrieved ${totalOperations} changes (${pendingOperations} pending) in ${elapsed}ms`
+    )
 
     return NextResponse.json(response, { status: 200 })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error fetching changes after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -760,11 +773,11 @@ export async function GET(
 // EXPORTED UTILITIES
 // ========================
 
-export { 
+export {
   OperationalTransform,
   getPendingOperations,
   detectConflicts,
   type LiveOperation,
   type OperationConflict,
-  type TransformedOperation 
+  type TransformedOperation,
 }

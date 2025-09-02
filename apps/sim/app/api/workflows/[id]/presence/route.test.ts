@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, POST, DELETE } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { DELETE, GET, POST } from './route'
 
 // Mock presence data
 const sampleWorkflowData = {
@@ -60,7 +60,9 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
     mocks = setupComprehensiveTestMocks({
       auth: { authenticated: true, user: mockUser },
       database: {
-        select: { results: [[sampleWorkflowData], [sampleCollaborationSession, sampleInactiveSession]] },
+        select: {
+          results: [[sampleWorkflowData], [sampleCollaborationSession, sampleInactiveSession]],
+        },
       },
     })
 
@@ -79,10 +81,10 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
     it('should retrieve workflow presence information', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.users).toBeDefined()
       expect(Array.isArray(data.users)).toBe(true)
       expect(data.totalUsers).toBe(2)
@@ -94,10 +96,10 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
     it('should include comprehensive user presence data', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       const activeUser = data.users.find((u: any) => u.userId === 'user-123')
       expect(activeUser).toBeDefined()
       expect(activeUser.userName).toBe('Active User')
@@ -113,27 +115,29 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
     it('should correctly identify active vs inactive users', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       const activeUser = data.users.find((u: any) => u.userId === 'user-123')
       const inactiveUser = data.users.find((u: any) => u.userId === 'user-456')
-      
+
       expect(activeUser.isActive).toBe(true)
       expect(inactiveUser.isActive).toBe(false)
-      
+
       expect(data.totalUsers).toBe(2)
       expect(data.activeUsers).toBe(1)
     })
 
     it('should support custom activity threshold', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?activeMinutes=5')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?activeMinutes=5'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // With 5-minute threshold, both users might be considered inactive
       expect(data.activeUsers).toBeLessThanOrEqual(data.totalUsers)
     })
@@ -147,13 +151,13 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([]), // No sessions
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.users).toEqual([])
       expect(data.totalUsers).toBe(0)
       expect(data.activeUsers).toBe(0)
@@ -163,10 +167,10 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for presence access', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -180,10 +184,10 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
           userRole: null,
         }),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -197,10 +201,10 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
           userRole: 'collaborator-view',
         }),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -210,19 +214,21 @@ describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
     })
 
     it('should handle invalid query parameters gracefully', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?activeMinutes=invalid')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?activeMinutes=invalid'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       // Should not fail, should use default threshold
       expect(response.status).toBe(200)
     })
@@ -249,13 +255,13 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         userAgent: 'Mozilla/5.0 (Chrome Test)',
         viewport: { width: 1920, height: 1080 },
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.success).toBe(true)
       expect(data.message).toBe('Successfully joined workflow session')
       expect(data.workflowId).toBe('workflow-123')
@@ -268,10 +274,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
       const sessionData = {
         socketId: 'socket-minimal456',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -281,13 +287,13 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
       const sessionData = {
         socketId: 'socket-ip789',
       }
-      
+
       const request = createMockRequest('POST', sessionData, {
         'x-forwarded-for': '203.0.113.195, 70.41.3.18',
-        'x-real-ip': '203.0.113.195'
+        'x-real-ip': '203.0.113.195',
       })
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(mocks.database.mockDb.insert).toHaveBeenCalled()
     })
@@ -298,10 +304,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         userAgent: 'Mobile Safari Test',
         viewport: { width: 375, height: 667 },
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -314,15 +320,15 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         onConflictDoUpdate: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([sampleCollaborationSession]),
       }))
-      
+
       const sessionData = {
         socketId: 'socket-existing',
         userAgent: 'Updated Browser',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -330,14 +336,14 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for joining sessions', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const sessionData = {
         socketId: 'unauthorized-socket',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -351,14 +357,14 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
           userRole: null,
         }),
       }))
-      
+
       const sessionData = {
         socketId: 'denied-socket',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -372,14 +378,14 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
           userRole: 'collaborator-view',
         }),
       }))
-      
+
       const sessionData = {
         socketId: 'viewer-socket',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -390,10 +396,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         userAgent: 'Test Browser',
         // Missing socketId
       }
-      
+
       const request = createMockRequest('POST', invalidData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -404,10 +410,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
       const invalidData = {
         socketId: '', // Empty string
       }
-      
+
       const request = createMockRequest('POST', invalidData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -418,10 +424,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         socketId: 'test-socket',
         viewport: { width: -100, height: 0 }, // Invalid dimensions
       }
-      
+
       const request = createMockRequest('POST', invalidViewportData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -431,14 +437,14 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
       mocks.database.mockDb.insert.mockImplementation(() => {
         throw new Error('Database insertion failed')
       })
-      
+
       const sessionData = {
         socketId: 'error-socket',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -450,9 +456,9 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -465,10 +471,10 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         socketId: 'multi-session-socket',
         userAgent: 'Browser Tab 2',
       }
-      
+
       const request = createMockRequest('POST', multiSessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -480,12 +486,12 @@ describe('Workflow Presence API - POST /api/workflows/[id]/presence', () => {
         userAgent: 'Detailed Browser Info v1.0',
         viewport: { width: 2560, height: 1440 },
       }
-      
+
       const request = createMockRequest('POST', sessionData, {
         'x-forwarded-for': '192.168.1.50',
       })
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       // Verify session data was captured
       expect(mocks.database.mockDb.insert).toHaveBeenCalled()
@@ -507,12 +513,14 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
 
   describe('Session Leaving', () => {
     it('should leave workflow session successfully with query parameter', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=socket-to-leave')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=socket-to-leave'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.success).toBe(true)
       expect(data.message).toBe('Successfully left workflow session')
       expect(data.workflowId).toBe('workflow-123')
@@ -526,13 +534,13 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
       const leaveData = {
         socketId: 'socket-in-body',
       }
-      
+
       const request = createMockRequest('DELETE', leaveData)
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.success).toBe(true)
       expect(data.socketId).toBe('socket-in-body')
     })
@@ -541,24 +549,29 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
       const leaveData = {
         socketId: 'socket-in-body',
       }
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=socket-in-query', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(leaveData),
-      })
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=socket-in-query',
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(leaveData),
+        }
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.socketId).toBe('socket-in-query') // Query parameter wins
     })
 
     it('should clean up session data completely', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=cleanup-socket')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=cleanup-socket'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(mocks.database.mockDb.delete).toHaveBeenCalledTimes(1)
     })
@@ -567,10 +580,12 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for leaving sessions', async () => {
       mocks.auth.setUnauthenticated()
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=unauthorized-socket')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=unauthorized-socket'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -579,10 +594,12 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
     it('should only allow users to leave their own sessions', async () => {
       // Mock user authentication with specific user
       mocks.auth.setUser({ ...mockUser, id: 'specific-user-123' })
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=other-user-socket')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=other-user-socket'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       // The delete query should only match sessions for the authenticated user
       expect(response.status).toBe(404) // No matching session found
     })
@@ -592,7 +609,7 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
     it('should require socket ID for session cleanup', async () => {
       const request = createMockRequest('DELETE') // No socket ID
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Socket ID is required')
@@ -604,10 +621,12 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
         where: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([]), // No sessions deleted
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=nonexistent-socket')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=nonexistent-socket'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Session not found')
@@ -617,10 +636,12 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
       mocks.database.mockDb.delete.mockImplementation(() => {
         throw new Error('Database deletion failed')
       })
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=error-socket')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=error-socket'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -632,9 +653,9 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400) // Missing socket ID
       const data = await response.json()
       expect(data.error).toBe('Socket ID is required')
@@ -643,9 +664,11 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
 
   describe('Session Lifecycle Management', () => {
     it('should handle graceful disconnections', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=graceful-disconnect')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=graceful-disconnect'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.leftAt).toBeDefined()
@@ -656,10 +679,10 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
         socketId: 'force-disconnect-socket',
         reason: 'connection_lost',
       }
-      
+
       const request = createMockRequest('DELETE', forceLeaveData)
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -667,9 +690,11 @@ describe('Workflow Presence API - DELETE /api/workflows/[id]/presence', () => {
 
     it('should clean up stale sessions', async () => {
       // Mock successful cleanup of stale session
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/presence?socketId=stale-session')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/presence?socketId=stale-session'
+      )
       const response = await DELETE(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(mocks.database.mockDb.delete).toHaveBeenCalled()
     })
@@ -698,7 +723,7 @@ describe('Presence API Performance and Analytics', () => {
         userName: `User ${i}`,
         userEmail: `user${i}@example.com`,
       }))
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -707,15 +732,15 @@ describe('Presence API Performance and Analytics', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(manyActiveSessions),
       }))
-      
+
       const startTime = Date.now()
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
       const endTime = Date.now()
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.users.length).toBe(100)
       expect(data.totalUsers).toBe(100)
       // Should process quickly even with many users
@@ -727,11 +752,12 @@ describe('Presence API Performance and Analytics', () => {
         ...sampleCollaborationSession,
         userId: `user-${i}`,
         socketId: `socket-${i}`,
-        lastActivity: i % 2 === 0 
-          ? new Date() // Active
-          : new Date(Date.now() - 3600000), // Inactive (1 hour ago)
+        lastActivity:
+          i % 2 === 0
+            ? new Date() // Active
+            : new Date(Date.now() - 3600000), // Inactive (1 hour ago)
       }))
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -740,13 +766,13 @@ describe('Presence API Performance and Analytics', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(mixedSessions),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.totalUsers).toBe(50)
       expect(data.activeUsers).toBe(25) // Half should be active
     })
@@ -756,14 +782,14 @@ describe('Presence API Performance and Analytics', () => {
     it('should provide data suitable for real-time updates', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Should include timestamp for polling/comparison
       expect(data.lastUpdated).toBeDefined()
       expect(new Date(data.lastUpdated)).toBeInstanceOf(Date)
-      
+
       // Should include socket IDs for WebSocket correlation
       data.users.forEach((user: any) => {
         expect(user.socketId).toBeDefined()
@@ -774,10 +800,10 @@ describe('Presence API Performance and Analytics', () => {
     it('should support cursor and selection data structure', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Should have structure for cursor and selection data
       data.users.forEach((user: any) => {
         // These might be undefined in test but structure should be consistent
@@ -791,16 +817,16 @@ describe('Presence API Performance and Analytics', () => {
     it('should not expose sensitive user information', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       data.users.forEach((user: any) => {
         // Should not expose sensitive data
         expect(user).not.toHaveProperty('password')
         expect(user).not.toHaveProperty('apiKey')
         expect(user).not.toHaveProperty('internalId')
-        
+
         // Should include necessary presence data
         expect(user).toHaveProperty('userId')
         expect(user).toHaveProperty('userName')
@@ -814,10 +840,10 @@ describe('Presence API Performance and Analytics', () => {
         socketId: 'secure-socket',
         userAgent: '<script>alert("xss")</script>Mozilla/5.0',
       }
-      
+
       const request = createMockRequest('POST', sessionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       // User agent should be stored safely (handled by database layer)
     })
@@ -826,19 +852,19 @@ describe('Presence API Performance and Analytics', () => {
       const sessionData = {
         socketId: 'privacy-socket',
       }
-      
+
       const request = createMockRequest('POST', sessionData, {
         'x-forwarded-for': '10.0.0.1, 192.168.1.1',
         'x-real-ip': '10.0.0.1',
       })
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
-      
+
       // IP should be captured for security but not exposed in presence API
       const getRequest = createMockRequest('GET')
       const getResponse = await GET(getRequest, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       const presenceData = await getResponse.json()
       presenceData.users.forEach((user: any) => {
         expect(user).not.toHaveProperty('ipAddress')

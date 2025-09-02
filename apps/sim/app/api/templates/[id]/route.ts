@@ -1,4 +1,4 @@
-import { eq, sql, and, desc, avg, count } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
@@ -6,7 +6,44 @@ import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { hasAdminPermission } from '@/lib/permissions/utils'
 import { db } from '@/db'
-import { templates, workflow, templateStars, apiKey as apiKeyTable, user } from '@/db/schema'
+import { apiKey as apiKeyTable, templateStars, templates, workflow } from '@/db/schema'
+
+// Function to sanitize sensitive data from workflow state
+function sanitizeWorkflowState(state: any): any {
+  const sanitizedState = JSON.parse(JSON.stringify(state)) // Deep clone
+
+  if (sanitizedState.blocks) {
+    Object.values(sanitizedState.blocks).forEach((block: any) => {
+      if (block.subBlocks) {
+        Object.entries(block.subBlocks).forEach(([key, subBlock]: [string, any]) => {
+          // Clear OAuth credentials and API keys using regex patterns
+          if (
+            /credential|oauth|api[_-]?key|token|secret|auth|password|bearer/i.test(key) ||
+            /credential|oauth|api[_-]?key|token|secret|auth|password|bearer/i.test(
+              subBlock.type || ''
+            ) ||
+            /credential|oauth|api[_-]?key|token|secret|auth|password|bearer/i.test(
+              subBlock.value || ''
+            )
+          ) {
+            subBlock.value = ''
+          }
+        })
+      }
+
+      // Also clear from data field if present
+      if (block.data) {
+        Object.entries(block.data).forEach(([key, value]: [string, any]) => {
+          if (/credential|oauth|api[_-]?key|token|secret|auth|password|bearer/i.test(key)) {
+            block.data[key] = ''
+          }
+        })
+      }
+    })
+  }
+
+  return sanitizedState
+}
 
 const logger = createLogger('TemplateByIdAPI')
 
@@ -27,11 +64,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id } = await params
+  
+  // Parse query parameters outside try block for error handling access
+  const { searchParams } = new URL(request.url)
+  const queryParams = Object.fromEntries(searchParams.entries())
 
   try {
-    // Parse query parameters
-    const { searchParams } = new URL(request.url)
-    const queryParams = Object.fromEntries(searchParams.entries())
     const options = GetTemplateSchema.parse(queryParams)
 
     logger.info(`[${requestId}] Fetching comprehensive template: ${id}`, options)
@@ -94,16 +132,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         state: templates.state,
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
-        
+
         // User-specific data (when authenticated)
-        ...(userId ? {
-          isStarred: sql<boolean>`CASE WHEN ${templateStars.id} IS NOT NULL THEN true ELSE false END`,
-        } : {
-          isStarred: sql<boolean>`false`,
-        }),
+        ...(userId
+          ? {
+              isStarred: sql<boolean>`CASE WHEN ${templateStars.id} IS NOT NULL THEN true ELSE false END`,
+            }
+          : {
+              isStarred: sql<boolean>`false`,
+            }),
       })
       .from(templates)
-      
+
     // Add star join if user is authenticated
     if (userId) {
       templateQuery.leftJoin(
@@ -191,12 +231,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           description: templates.description,
         })
         .from(templates)
-        .where(
-          and(
-            sql`${templates.id} != ${id}`,
-            eq(templates.category, template.category)
-          )
-        )
+        .where(and(sql`${templates.id} != ${id}`, eq(templates.category, template.category)))
         .orderBy(desc(templates.stars), desc(templates.views))
         .limit(4)
 
@@ -238,7 +273,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully retrieved comprehensive template: ${id} in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully retrieved comprehensive template: ${id} in ${elapsed}ms`
+    )
 
     return NextResponse.json({
       data: {
@@ -276,10 +313,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     logger.error(`[${requestId}] Error fetching template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -291,11 +331,14 @@ const UpdateTemplateSchema = z.object({
   author: z.string().min(1).max(100).optional(),
   category: z.string().min(1).max(50).optional(),
   icon: z.string().min(1).max(50).optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
-  
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
+
   // Template state (if updating)
   state: z.any().optional(),
-  
+
   // Enhanced metadata
   tags: z.array(z.string()).optional(),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
@@ -303,11 +346,11 @@ const UpdateTemplateSchema = z.object({
   requirements: z.array(z.string()).optional(),
   useCases: z.array(z.string()).optional(),
   version: z.string().optional(),
-  
+
   // Visibility and sharing
   isPublic: z.boolean().optional(),
   allowComments: z.boolean().optional(),
-  
+
   // Update options
   sanitizeCredentials: z.boolean().optional().default(true),
   incrementVersion: z.boolean().optional().default(false), // Auto-increment version
@@ -365,7 +408,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!validationResult.success) {
       const elapsed = Date.now() - startTime
-      logger.warn(`[${requestId}] Invalid template data for update: ${id} after ${elapsed}ms`, validationResult.error)
+      logger.warn(
+        `[${requestId}] Invalid template data for update: ${id} after ${elapsed}ms`,
+        validationResult.error
+      )
       return NextResponse.json(
         { error: 'Invalid template data', details: validationResult.error.errors },
         { status: 400 }
@@ -373,7 +419,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const updateData = validationResult.data
-    
+
     logger.info(`[${requestId}] Updating template: ${id}`, {
       fieldsToUpdate: Object.keys(updateData),
       incrementVersion: updateData.incrementVersion,
@@ -430,12 +476,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Handle state updates with sanitization
     if (updateData.state) {
-      const processedState = updateData.sanitizeCredentials ? 
-        sanitizeWorkflowState(updateData.state) : 
-        updateData.state
+      const processedState = updateData.sanitizeCredentials
+        ? sanitizeWorkflowState(updateData.state)
+        : updateData.state
 
       // Merge with existing metadata if preserving it
-      const existingMetadata = currentTemplate.state?.metadata || {}
+      const existingMetadata = (currentTemplate.state as any)?.metadata || {}
       const newMetadata = {
         ...existingMetadata,
         template: {
@@ -447,7 +493,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           ...(updateData.useCases && { useCases: updateData.useCases }),
           ...(updateData.version && { version: updateData.version }),
           ...(updateData.isPublic !== undefined && { isPublic: updateData.isPublic }),
-          ...(updateData.allowComments !== undefined && { allowComments: updateData.allowComments }),
+          ...(updateData.allowComments !== undefined && {
+            allowComments: updateData.allowComments,
+          }),
           lastUpdated: now.toISOString(),
           updatedWith: 'api',
         },
@@ -465,11 +513,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const versionParts = currentVersion.split('.').map(Number)
       versionParts[2] = (versionParts[2] || 0) + 1 // Increment patch version
       const newVersion = versionParts.join('.')
-      
+
       if (updateFields.state) {
         updateFields.state.metadata.template.version = newVersion
       }
-      
+
       logger.info(`[${requestId}] Auto-incrementing version: ${currentVersion} -> ${newVersion}`)
     }
 
@@ -487,7 +535,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data: updatedTemplate[0],
       message: 'Template updated successfully',
       changes: {
-        fieldsUpdated: Object.keys(updateFields).filter(key => key !== 'updatedAt'),
+        fieldsUpdated: Object.keys(updateFields).filter((key) => key !== 'updatedAt'),
         versionIncremented: updateData.incrementVersion,
         sanitizedCredentials: updateData.sanitizeCredentials && !!updateData.state,
       },
@@ -499,10 +547,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error updating template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }
 

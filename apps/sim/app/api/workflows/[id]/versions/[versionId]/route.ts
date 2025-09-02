@@ -1,42 +1,41 @@
 /**
  * Specific Workflow Version API Endpoints
- * 
+ *
  * Comprehensive API for managing individual workflow versions with the following capabilities:
  * - GET /api/workflows/[id]/versions/[versionId] - Get specific version details
  * - PUT /api/workflows/[id]/versions/[versionId] - Update version metadata
  * - DELETE /api/workflows/[id]/versions/[versionId] - Delete a version
- * 
+ *
  * Additional nested endpoints:
  * - PUT /api/workflows/[id]/versions/[versionId]/restore - Restore workflow to this version
  * - GET /api/workflows/[id]/versions/[versionId]/compare?target=versionId - Compare versions
  * - POST /api/workflows/[id]/versions/[versionId]/tags - Add tags to version
  * - DELETE /api/workflows/[id]/versions/[versionId]/tags/[tagName] - Remove tag
- * 
+ *
  * This API provides production-ready version management with comprehensive
  * authentication, validation, error handling, and performance monitoring.
  */
 
+import crypto from 'crypto'
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
-import { 
-  WorkflowVersionManager, 
+import {
   RestoreVersionSchema,
   VersionComparisonSchema,
-  type WorkflowVersion 
+  WorkflowVersionManager,
 } from '@/lib/workflows/versioning'
 import { db } from '@/db'
-import { 
-  workflow as workflowTable, 
+import {
   apiKey as apiKeyTable,
+  workflow as workflowTable,
   workflowVersions,
-  workflowVersionTags
+  workflowVersionTags,
 } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
-import crypto from 'crypto'
 
 const logger = createLogger('SpecificVersionAPI')
 
@@ -50,16 +49,19 @@ const UpdateVersionSchema = z.object({
 // Version tag schema
 const AddTagSchema = z.object({
   tagName: z.string().min(1).max(30),
-  tagColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  tagColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
   tagDescription: z.string().max(200).optional(),
 })
 
 /**
  * GET /api/workflows/[id]/versions/[versionId]
- * 
+ *
  * Retrieve detailed information about a specific workflow version.
  * Includes version metadata, change summary, and optionally the full workflow state.
- * 
+ *
  * Query Parameters:
  * - includeState: Include full workflow state (default: false for performance)
  * - includeChanges: Include detailed change information (default: false)
@@ -96,22 +98,16 @@ export async function GET(
 
     // Get the specific version
     const version = await versionManager.getVersionById(versionId)
-    
+
     if (!version) {
       logger.warn(`[${requestId}] Version ${versionId} not found`)
-      return NextResponse.json(
-        { error: 'Version not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Version not found', requestId }, { status: 404 })
     }
 
     // Verify version belongs to the specified workflow
     if (version.workflowId !== workflowId) {
       logger.warn(`[${requestId}] Version ${versionId} does not belong to workflow ${workflowId}`)
-      return NextResponse.json(
-        { error: 'Version not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Version not found', requestId }, { status: 404 })
     }
 
     // Build enhanced version response
@@ -119,7 +115,7 @@ export async function GET(
 
     // Remove large state object unless explicitly requested
     if (!includeState) {
-      delete enhancedVersion.workflowState
+      enhancedVersion.workflowState = undefined
     }
 
     // Add additional data based on query parameters
@@ -136,7 +132,7 @@ export async function GET(
         .where(eq(workflowVersionTags.versionId, versionId))
         .orderBy(workflowVersionTags.tagOrder)
 
-      enhancedVersion.tags = tags.map(tag => ({
+      enhancedVersion.tags = tags.map((tag) => ({
         name: tag.tagName,
         color: tag.tagColor,
         description: tag.tagDescription,
@@ -187,7 +183,6 @@ export async function GET(
     logger.info(`[${requestId}] Retrieved version ${versionId} in ${elapsed}ms`)
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Failed to get version after ${elapsed}ms`, {
@@ -198,11 +193,11 @@ export async function GET(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to retrieve version', 
+      {
+        error: 'Failed to retrieve version',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -210,10 +205,10 @@ export async function GET(
 
 /**
  * PUT /api/workflows/[id]/versions/[versionId]
- * 
+ *
  * Update version metadata such as tags, description, and deployment status.
  * Does not modify the workflow state itself, only version metadata.
- * 
+ *
  * Special endpoint: /restore - Restore workflow to this version
  * Special endpoint: /compare?target=versionId - Compare with another version
  */
@@ -237,19 +232,26 @@ export async function PUT(
 
     if (isCompareEndpoint) {
       const targetVersionId = url.searchParams.get('target')!
-      return await handleVersionComparison(request, workflowId, versionId, targetVersionId, requestId, startTime)
+      return await handleVersionComparison(
+        request,
+        workflowId,
+        versionId,
+        targetVersionId,
+        requestId,
+        startTime
+      )
     }
 
     logger.info(`[${requestId}] Updating version ${versionId} metadata for workflow ${workflowId}`)
 
     // Authentication and authorization check with write permission
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       logger.warn(`[${requestId}] Write access denied for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -262,26 +264,23 @@ export async function PUT(
     // Verify version exists and belongs to workflow
     const versionManager = new WorkflowVersionManager()
     const existingVersion = await versionManager.getVersionById(versionId)
-    
+
     if (!existingVersion || existingVersion.workflowId !== workflowId) {
       logger.warn(`[${requestId}] Version ${versionId} not found for workflow ${workflowId}`)
-      return NextResponse.json(
-        { error: 'Version not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Version not found', requestId }, { status: 404 })
     }
 
     // Build update object
     const updateFields: any = { updatedAt: new Date() }
-    
+
     if (updateData.versionTag !== undefined) {
       updateFields.versionTag = updateData.versionTag
     }
-    
+
     if (updateData.versionDescription !== undefined) {
       updateFields.versionDescription = updateData.versionDescription
     }
-    
+
     if (updateData.isDeployed !== undefined) {
       updateFields.isDeployed = updateData.isDeployed
       if (updateData.isDeployed) {
@@ -301,15 +300,18 @@ export async function PUT(
     }
 
     // Log activity for the update
-    await db.insert(workflowVersionTags).values({
-      id: crypto.randomUUID(),
-      versionId,
-      tagName: 'updated',
-      tagColor: '#6B7280',
-      isSystemTag: true,
-      createdByUserId: userId,
-      createdAt: new Date(),
-    }).onConflictDoNothing() // In case tag already exists
+    await db
+      .insert(workflowVersionTags)
+      .values({
+        id: crypto.randomUUID(),
+        versionId,
+        tagName: 'updated',
+        tagColor: '#6B7280',
+        isSystemTag: true,
+        createdByUserId: userId,
+        createdAt: new Date(),
+      })
+      .onConflictDoNothing() // In case tag already exists
 
     const response = {
       data: {
@@ -338,21 +340,20 @@ export async function PUT(
     logger.info(`[${requestId}] Updated version ${versionId} metadata in ${elapsed}ms`)
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid update data`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid request data', 
+        {
+          error: 'Invalid request data',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -365,11 +366,11 @@ export async function PUT(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to update version', 
+      {
+        error: 'Failed to update version',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -377,7 +378,7 @@ export async function PUT(
 
 /**
  * DELETE /api/workflows/[id]/versions/[versionId]
- * 
+ *
  * Delete a specific version. Cannot delete the current version or deployed versions
  * unless force parameter is provided. Includes safety checks and cascading cleanup.
  */
@@ -398,12 +399,12 @@ export async function DELETE(
 
     // Authentication and authorization check with write permission
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       logger.warn(`[${requestId}] Write access denied for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -412,22 +413,19 @@ export async function DELETE(
     // Verify version exists and belongs to workflow
     const versionManager = new WorkflowVersionManager()
     const existingVersion = await versionManager.getVersionById(versionId)
-    
+
     if (!existingVersion || existingVersion.workflowId !== workflowId) {
       logger.warn(`[${requestId}] Version ${versionId} not found for workflow ${workflowId}`)
-      return NextResponse.json(
-        { error: 'Version not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Version not found', requestId }, { status: 404 })
     }
 
     // Safety checks - prevent deletion of critical versions
     const warnings: string[] = []
-    
+
     if (existingVersion.isCurrent && !force) {
       warnings.push('Cannot delete current version without force parameter')
     }
-    
+
     if (existingVersion.isDeployed && !force) {
       warnings.push('Cannot delete deployed version without force parameter')
     }
@@ -437,20 +435,22 @@ export async function DELETE(
       .select({ id: workflowVersions.id, versionNumber: workflowVersions.versionNumber })
       .from(workflowVersions)
       .where(eq(workflowVersions.parentVersionId, versionId))
-    
+
     if (dependentVersions.length > 0 && !force) {
-      warnings.push(`Cannot delete version with ${dependentVersions.length} dependent versions without force parameter`)
+      warnings.push(
+        `Cannot delete version with ${dependentVersions.length} dependent versions without force parameter`
+      )
     }
 
     if (warnings.length > 0) {
       logger.warn(`[${requestId}] Version deletion blocked`, { warnings })
       return NextResponse.json(
-        { 
-          error: 'Cannot delete version', 
+        {
+          error: 'Cannot delete version',
           warnings,
           canForce: true,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 409 }
       )
     }
@@ -458,18 +458,14 @@ export async function DELETE(
     // Perform deletion with cascade cleanup
     await db.transaction(async (tx) => {
       // Delete version tags
-      await tx
-        .delete(workflowVersionTags)
-        .where(eq(workflowVersionTags.versionId, versionId))
+      await tx.delete(workflowVersionTags).where(eq(workflowVersionTags.versionId, versionId))
 
       // Delete version changes (cascade handled by foreign key)
       // Delete version activity (cascade handled by foreign key)
       // Delete version conflicts (cascade handled by foreign key)
 
       // Finally delete the version itself
-      await tx
-        .delete(workflowVersions)
-        .where(eq(workflowVersions.id, versionId))
+      await tx.delete(workflowVersions).where(eq(workflowVersions.id, versionId))
     })
 
     const response = {
@@ -507,7 +503,6 @@ export async function DELETE(
     })
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Failed to delete version after ${elapsed}ms`, {
@@ -518,11 +513,11 @@ export async function DELETE(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to delete version', 
+      {
+        error: 'Failed to delete version',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -553,12 +548,12 @@ async function handleVersionRestore(
 
     // Authentication check
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -590,17 +585,16 @@ async function handleVersionRestore(
     logger.info(`[${requestId}] Version restore completed in ${elapsed}ms`)
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
-          error: 'Invalid restore options', 
+        {
+          error: 'Invalid restore options',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -612,11 +606,11 @@ async function handleVersionRestore(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to restore version', 
+      {
+        error: 'Failed to restore version',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -676,7 +670,6 @@ async function handleVersionComparison(
     logger.info(`[${requestId}] Version comparison completed in ${elapsed}ms`)
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Version comparison failed after ${elapsed}ms`, {
@@ -686,11 +679,11 @@ async function handleVersionComparison(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to compare versions', 
+      {
+        error: 'Failed to compare versions',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -768,7 +761,7 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         if (requiredPermission === 'read') {
           hasAccess = true
@@ -779,7 +772,6 @@ async function authenticateAndAuthorize(
     }
 
     return { userId: authenticatedUserId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,

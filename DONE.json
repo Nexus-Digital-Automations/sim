@@ -388,9 +388,255 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756800530587_k8sxv7a1i",
+      "title": "Fix critical parse errors in versioning.ts caused by escaped newlines",
+      "description": "Fix parse errors in apps/sim/lib/workflows/versioning.ts caused by escaped newline characters (\\n) in the code that are breaking compilation",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T08:08:50.587Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T08:12:29.517Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T08:12:29.517Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756784140311_gt8wpycj2",
+      "title": "Implement comprehensive workflow versioning and history API",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-02T03:35:40.315Z",
+      "auto_research_created": true,
+      "description": "No description provided",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T08:12:59.496Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T08:12:59.496Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756795501725_2l92y6ybp",
+      "title": "Implement comprehensive collaborative workflow editing APIs",
+      "description": "Create real-time collaboration API endpoints, live editing features, operational transform conflict resolution, Socket.IO integration, and database enhancements for collaborative workflow editing",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": 1,
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/socket-server/",
+        "apps/sim/app/api/workflows/",
+        "packages/database/"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-02T06:45:01.728Z",
+      "auto_research_created": true,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T08:13:23.734Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T08:13:23.734Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756783519850_owiemx4f0",
+      "title": "Implement comprehensive workflow template management API",
+      "description": "Create complete template API with endpoints for CRUD operations, template categories, filtering, pagination, ratings, and usage from templates",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": 1,
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-02T03:25:19.853Z",
+      "auto_research_created": true,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T08:14:10.815Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T08:14:10.815Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756781766328_review2",
+      "title": "Review Strike 2: Verify no lint errors exist in the codebase with enterprise-grade standards",
+      "description": "Perform a comprehensive code review with focus on: Verify no lint errors exist in the codebase with enterprise-grade standards\n\nCheck the entire codebase and ensure this criterion is met.\n\n## CRITICAL FAILURE RESPONSE PROTOCOL\n\nIF LINT ERRORS FOUND: Create specific tasks with appropriate categories to achieve zero lint errors:\n- Linting tool setup and configuration tasks (category: 'linter-error')\n- Code style correction tasks (category: 'linter-error')\n- Import organization tasks (category: 'linter-error')\n- Naming convention fixes tasks (category: 'linter-error')\n- Dead code removal tasks (category: 'refactor')\n\nCRITICAL: Use TaskManager API to add these tasks immediately when lint errors are detected. Follow production-ready standards, not quick fixes.\n\n## SUCCESS CRITERIA\n- Mark this review task as completed ONLY if the criterion is fully met\n- If criterion fails, you MUST create remediation tasks using TaskManager API before marking review as completed\n- All new tasks should be actionable, specific, and include proper dependencies/important_files parameters\n\n## TASK CREATION REQUIREMENT\nWhen creating remediation tasks, ensure each task includes:\n- Clear success criteria\n- Appropriate category (linter-error, build-error, missing-feature, bug, enhancement, etc.)\n- Specific file dependencies\n- Realistic time estimates\n- High priority for critical issues\n- Production-ready implementation requirements\n\nUse the task-creation.md guidelines for optimal task structure.",
+      "mode": "REVIEWER",
+      "category": "chore",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "requires_research": false,
+      "created_at": "2025-09-02T02:56:06.327Z",
+      "subtasks": [],
+      "is_review_task": true,
+      "strike_number": 2,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T08:14:38.847Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T08:14:38.847Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756800912043_zutza8j6d",
+      "title": "Fix documentation build errors in MDX files",
+      "description": "Fix syntax errors in documentation MDX files causing build failures: collaborative-editing.mdx has unexpected character U+005B before attribute value, typescript.mdx has import/exports parsing issues with acorn",
+      "mode": "DEVELOPMENT",
+      "category": "build-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/docs/content/docs/api/workflows/collaborative-editing.mdx",
+        "apps/docs/content/docs/sdks/typescript.mdx"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T08:15:12.043Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756805073582_1_general_4be237d3",
+      "started_at": "2025-09-02T09:24:49.672Z",
+      "claimed_by": "development_session_1756805073582_1_general_4be237d3",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756805073582_1_general_4be237d3",
+          "role": "primary",
+          "assignedAt": "2025-09-02T09:24:49.672Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T09:25:27.246Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T09:25:27.246Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756781766327_review1",
+      "title": "Review Strike 1: Ensure the project builds completely without errors with production-ready quality",
+      "description": "Perform a comprehensive code review with focus on: Ensure the project builds completely without errors with production-ready quality\n\nCheck the entire codebase and ensure this criterion is met.\n\n## CRITICAL FAILURE RESPONSE PROTOCOL\n\nIF BUILD FAILS: Create specific tasks with appropriate categories to fix build issues:\n- Missing dependencies installation tasks (category: 'build-error')\n- Build configuration setup tasks (category: 'build-error')\n- Compilation error resolution tasks (category: 'build-error')\n- Environment setup tasks (category: 'missing-feature')\n- Build script creation tasks (category: 'missing-feature')\n\nCRITICAL: Use TaskManager API to add these tasks immediately when build failures are detected. All solutions must be production-ready, not simplified workarounds.\n\n## SUCCESS CRITERIA\n- Mark this review task as completed ONLY if the criterion is fully met\n- If criterion fails, you MUST create remediation tasks using TaskManager API before marking review as completed\n- All new tasks should be actionable, specific, and include proper dependencies/important_files parameters\n\n## TASK CREATION REQUIREMENT\nWhen creating remediation tasks, ensure each task includes:\n- Clear success criteria\n- Appropriate category (linter-error, build-error, missing-feature, bug, enhancement, etc.)\n- Specific file dependencies\n- Realistic time estimates\n- High priority for critical issues\n- Production-ready implementation requirements\n\nUse the task-creation.md guidelines for optimal task structure.",
+      "mode": "REVIEWER",
+      "category": "chore",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "requires_research": false,
+      "created_at": "2025-09-02T02:56:06.326Z",
+      "subtasks": [],
+      "is_review_task": true,
+      "strike_number": 1,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-02T09:25:36.993Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-02T09:25:36.993Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 9,
-  "last_completion": "2025-09-02T06:48:39.507Z",
+  "total_completed": 16,
+  "last_completion": "2025-09-02T09:25:36.993Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

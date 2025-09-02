@@ -1,17 +1,17 @@
 /**
  * Collaborative Comments System API
- * 
+ *
  * This module provides comprehensive commenting functionality for collaborative
  * workflow editing. It supports threaded discussions, element-specific comments,
  * and real-time comment synchronization.
- * 
+ *
  * Endpoints:
  * - GET /api/workflows/[id]/comments - List comments for workflow/element
  * - POST /api/workflows/[id]/comments - Create new comment
  * - PUT /api/workflows/[id]/comments/[commentId] - Update comment
  * - DELETE /api/workflows/[id]/comments/[commentId] - Delete comment
  * - POST /api/workflows/[id]/comments/[commentId]/resolve - Resolve/unresolve comment
- * 
+ *
  * Features:
  * - Element-specific commenting (blocks, edges, variables)
  * - Threaded comment discussions (replies)
@@ -20,23 +20,20 @@
  * - Real-time comment synchronization
  * - Comprehensive audit trail
  * - Rich metadata support
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @since 2025-09-02
  */
 
-import { eq, and, desc, asc, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, isNull } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { validateWorkflowPermissions } from '../collaborate/route'
 import { db } from '@/db'
-import { 
-  workflowComments,
-  user 
-} from '@/db/schema'
+import { user, workflowComments } from '@/db/schema'
+import { validateWorkflowPermissions } from '../collaborate/route'
 
 const logger = createLogger('WorkflowCommentsAPI')
 
@@ -49,10 +46,12 @@ const CreateCommentSchema = z.object({
   elementId: z.string().optional(), // null for workflow-level comments
   content: z.string().min(1, 'Comment content is required').max(10000, 'Comment too long'),
   parentCommentId: z.string().optional(), // For threaded replies
-  position: z.object({
-    x: z.number(),
-    y: z.number(),
-  }).optional(), // For canvas positioning
+  position: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .optional(), // For canvas positioning
   metadata: z.record(z.any()).optional(),
 })
 
@@ -149,6 +148,7 @@ async function getWorkflowComments(
     elementId?: string
     resolved?: boolean
     authorId?: string
+    parentCommentId?: string
     limit?: number
     offset?: number
     sortBy?: string
@@ -160,7 +160,7 @@ async function getWorkflowComments(
   logger.debug(`[${operationId}] Fetching comments for workflow ${workflowId}`, { filters })
 
   try {
-    let whereConditions = [eq(workflowComments.workflowId, workflowId)]
+    const whereConditions = [eq(workflowComments.workflowId, workflowId)]
 
     // Apply filters
     if (filters.elementType) {
@@ -179,16 +179,23 @@ async function getWorkflowComments(
     if (filters.authorId) {
       whereConditions.push(eq(workflowComments.authorId, filters.authorId))
     }
+    if (filters.parentCommentId) {
+      whereConditions.push(eq(workflowComments.parentCommentId, filters.parentCommentId))
+    }
 
     // For threaded comments, only get root comments if not including replies
-    if (!filters.includeReplies) {
+    if (!filters.includeReplies && !filters.parentCommentId) {
       whereConditions.push(isNull(workflowComments.parentCommentId))
     }
 
     // Determine sort order
-    const sortColumn = filters.sortBy === 'updated_at' ? workflowComments.updatedAt :
-                      filters.sortBy === 'position' ? workflowComments.createdAt : // Position sorting is complex, use createdAt
-                      workflowComments.createdAt
+    const sortColumn =
+      filters.sortBy === 'updated_at'
+        ? workflowComments.updatedAt
+        : filters.sortBy === 'position'
+          ? workflowComments.createdAt
+          : // Position sorting is complex, use createdAt
+            workflowComments.createdAt
     const sortOrder = filters.sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn)
 
     // Execute query
@@ -217,7 +224,7 @@ async function getWorkflowComments(
       .offset(filters.offset || 0)
 
     // Transform to Comment format
-    const transformedComments: Comment[] = comments.map(comment => ({
+    const transformedComments: Comment[] = comments.map((comment) => ({
       id: comment.id,
       workflowId,
       elementType: comment.elementType as 'block' | 'edge' | 'workflow' | 'variable',
@@ -230,24 +237,27 @@ async function getWorkflowComments(
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       parentCommentId: comment.parentCommentId,
-      position: comment.positionX && comment.positionY ? {
-        x: parseFloat(comment.positionX),
-        y: parseFloat(comment.positionY),
-      } : undefined,
+      position:
+        comment.positionX && comment.positionY
+          ? {
+              x: Number.parseFloat(comment.positionX),
+              y: Number.parseFloat(comment.positionY),
+            }
+          : undefined,
       metadata: comment.metadata as Record<string, any>,
       replyCount: 0, // Will be calculated separately if needed
     }))
 
     // If including replies, fetch reply counts
     if (filters.includeReplies) {
-      const rootComments = transformedComments.filter(c => !c.parentCommentId)
-      
+      const rootComments = transformedComments.filter((c) => !c.parentCommentId)
+
       for (const rootComment of rootComments) {
         const replyCount = await db
           .select({ count: eq(workflowComments.parentCommentId, rootComment.id) })
           .from(workflowComments)
           .where(eq(workflowComments.parentCommentId, rootComment.id))
-        
+
         rootComment.replyCount = replyCount.length
       }
     }
@@ -270,20 +280,23 @@ function organizeCommentsIntoThreads(comments: Comment[]): CommentThread[] {
   const threads: CommentThread[] = []
 
   // Index comments by ID
-  comments.forEach(comment => {
+  comments.forEach((comment) => {
     commentMap.set(comment.id, comment)
   })
 
   // Organize into threads
-  comments.forEach(comment => {
+  comments.forEach((comment) => {
     if (!comment.parentCommentId) {
       // Root comment - create thread
-      const replies = comments.filter(c => c.parentCommentId === comment.id)
-      const participants = new Map<string, { userId: string; userName: string; commentCount: number }>()
-      
+      const replies = comments.filter((c) => c.parentCommentId === comment.id)
+      const participants = new Map<
+        string,
+        { userId: string; userName: string; commentCount: number }
+      >()
+
       // Count participants
       const allComments = [comment, ...replies]
-      allComments.forEach(c => {
+      allComments.forEach((c) => {
         const existing = participants.get(c.authorId)
         if (existing) {
           existing.commentCount++
@@ -308,7 +321,9 @@ function organizeCommentsIntoThreads(comments: Comment[]): CommentThread[] {
     }
   })
 
-  return threads.sort((a, b) => b.rootComment.createdAt.getTime() - a.rootComment.createdAt.getTime())
+  return threads.sort(
+    (a, b) => b.rootComment.createdAt.getTime() - a.rootComment.createdAt.getTime()
+  )
 }
 
 /**
@@ -334,12 +349,7 @@ async function getCommentStatistics(workflowId: string): Promise<{
     const [unresolvedResult] = await db
       .select({ count: workflowComments.id })
       .from(workflowComments)
-      .where(
-        and(
-          eq(workflowComments.workflowId, workflowId),
-          eq(workflowComments.resolved, false)
-        )
-      )
+      .where(and(eq(workflowComments.workflowId, workflowId), eq(workflowComments.resolved, false)))
 
     const totalComments = totalResult?.count || 0
     const unresolvedComments = unresolvedResult?.count || 0
@@ -355,7 +365,7 @@ async function getCommentStatistics(workflowId: string): Promise<{
       .where(eq(workflowComments.workflowId, workflowId))
 
     const elementCommentCounts: Record<string, number> = {}
-    elementCounts.forEach(item => {
+    elementCounts.forEach((item) => {
       const key = item.elementId ? `${item.elementType}:${item.elementId}` : item.elementType
       elementCommentCounts[key] = (elementCommentCounts[key] || 0) + 1
     })
@@ -378,21 +388,18 @@ async function getCommentStatistics(workflowId: string): Promise<{
 /**
  * GET /api/workflows/[id]/comments
  * List comments for a workflow or specific element
- * 
+ *
  * Returns comprehensive comment information including:
  * - Filtered and paginated comments
  * - Threaded discussion structure
  * - Comment statistics and counts
  * - Element-specific comment distributions
- * 
+ *
  * @param request - Next.js request object with query parameters
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with comment data
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -410,11 +417,7 @@ export async function GET(
     const userId = session.user.id
 
     // Validate workflow access permissions
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'view'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'view')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Access denied for user ${userId} to workflow ${workflowId}`)
@@ -426,11 +429,15 @@ export async function GET(
     const queryParams = {
       elementType: url.searchParams.get('elementType') || undefined,
       elementId: url.searchParams.get('elementId') || undefined,
-      resolved: url.searchParams.get('resolved') ? url.searchParams.get('resolved') === 'true' : undefined,
+      resolved: url.searchParams.get('resolved')
+        ? url.searchParams.get('resolved') === 'true'
+        : undefined,
       authorId: url.searchParams.get('authorId') || undefined,
-      limit: parseInt(url.searchParams.get('limit') || '50'),
-      offset: parseInt(url.searchParams.get('offset') || '0'),
-      sortBy: (url.searchParams.get('sortBy') as 'created_at' | 'updated_at' | 'position') || 'created_at',
+      limit: Number.parseInt(url.searchParams.get('limit') || '50'),
+      offset: Number.parseInt(url.searchParams.get('offset') || '0'),
+      sortBy:
+        (url.searchParams.get('sortBy') as 'created_at' | 'updated_at' | 'position') ||
+        'created_at',
       sortOrder: (url.searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
       includeReplies: url.searchParams.get('includeReplies') !== 'false',
     }
@@ -455,34 +462,30 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully listed ${comments.length} comments (${threads.length} threads) in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully listed ${comments.length} comments (${threads.length} threads) in ${elapsed}ms`
+    )
 
     return NextResponse.json(response, { status: 200 })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error listing comments after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * POST /api/workflows/[id]/comments
  * Create a new comment or reply
- * 
+ *
  * Creates a new comment on a workflow or specific element.
  * Supports threaded replies and position-based canvas comments.
- * 
+ *
  * @param request - Next.js request object with comment data
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with created comment
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -500,11 +503,7 @@ export async function POST(
     const userId = session.user.id
 
     // Validate workflow access permissions (need view access to comment)
-    const { hasPermission } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
-      'view'
-    )
+    const { hasPermission } = await validateWorkflowPermissions(workflowId, userId, 'view')
 
     if (!hasPermission) {
       logger.warn(`[${requestId}] Insufficient permissions for user ${userId}`)
@@ -515,7 +514,9 @@ export async function POST(
     const body = await request.json()
     const commentData = CreateCommentSchema.parse(body)
 
-    logger.debug(`[${requestId}] Creating comment on ${commentData.elementType}:${commentData.elementId}`)
+    logger.debug(
+      `[${requestId}] Creating comment on ${commentData.elementType}:${commentData.elementId}`
+    )
 
     // Validate parent comment if replying
     if (commentData.parentCommentId) {
@@ -528,14 +529,11 @@ export async function POST(
             eq(workflowComments.workflowId, workflowId)
           )
         )
-        .then(rows => rows[0])
+        .then((rows) => rows[0])
 
       if (!parentComment) {
         logger.warn(`[${requestId}] Parent comment ${commentData.parentCommentId} not found`)
-        return NextResponse.json(
-          { error: 'Parent comment not found' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Parent comment not found' }, { status: 404 })
       }
     }
 
@@ -569,10 +567,13 @@ export async function POST(
       createdAt: createdComment.createdAt,
       updatedAt: createdComment.updatedAt,
       parentCommentId: createdComment.parentCommentId,
-      position: createdComment.positionX && createdComment.positionY ? {
-        x: parseFloat(createdComment.positionX),
-        y: parseFloat(createdComment.positionY),
-      } : undefined,
+      position:
+        createdComment.positionX && createdComment.positionY
+          ? {
+              x: Number.parseFloat(createdComment.positionX),
+              y: Number.parseFloat(createdComment.positionY),
+            }
+          : undefined,
       metadata: createdComment.metadata as Record<string, any>,
       replyCount: 0,
     }
@@ -591,7 +592,7 @@ export async function POST(
     const response: CreateCommentResponse = {
       comment,
       thread,
-      message: commentData.parentCommentId 
+      message: commentData.parentCommentId
         ? 'Reply created successfully'
         : 'Comment created successfully',
     }
@@ -602,7 +603,7 @@ export async function POST(
     return NextResponse.json(response, { status: 201 })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid request data:`, { errors: error.errors })
       return NextResponse.json(
@@ -612,10 +613,7 @@ export async function POST(
     }
 
     logger.error(`[${requestId}] Error creating comment after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -628,11 +626,11 @@ export async function POST(
 // EXPORTED UTILITIES
 // ========================
 
-export { 
+export {
   getWorkflowComments,
   organizeCommentsIntoThreads,
   getCommentStatistics,
   type Comment,
   type CommentThread,
-  type CommentsResponse 
+  type CommentsResponse,
 }

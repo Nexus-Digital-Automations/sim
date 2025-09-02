@@ -1,13 +1,13 @@
 import crypto from 'crypto'
-import { eq, and, or, like, ilike, desc, asc, sql, inArray } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
-import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { db } from '@/db'
-import { workflow, workflowBlocks, workflowFolder, workspace, apiKey as apiKeyTable } from '@/db/schema'
+import { apiKey as apiKeyTable, workflow, workflowBlocks, workspace } from '@/db/schema'
 
 const logger = createLogger('WorkflowAPI')
 
@@ -28,18 +28,18 @@ const ListWorkflowsSchema = z.object({
   // Pagination
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(20),
-  
+
   // Filtering
   workspaceId: z.string().optional(),
   folderId: z.string().nullable().optional(),
   search: z.string().optional(), // Search in name and description
   tags: z.string().optional(), // Comma-separated tags
   status: z.enum(['deployed', 'draft', 'all']).optional().default('all'),
-  
+
   // Sorting
   sortBy: z.enum(['name', 'createdAt', 'updatedAt', 'runCount']).optional().default('updatedAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  
+
   // Advanced filters
   hasTemplates: z.coerce.boolean().optional(),
   isPublished: z.coerce.boolean().optional(),
@@ -121,12 +121,12 @@ export async function GET(req: NextRequest) {
         .from(workspace)
         .where(
           or(
-            eq(workspace.creatorId, userId),
+            eq(workspace.ownerId, userId)
             // Add workspace permissions check here if needed
           )
         )
-      
-      userWorkspaces = userWorkspacePermissions.map(w => w.workspaceId)
+
+      userWorkspaces = userWorkspacePermissions.map((w) => w.workspaceId)
     }
 
     // Build the query conditions
@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
 
     if (filters.folderId !== undefined) {
       conditions.push(
-        filters.folderId === null 
+        filters.folderId === null
           ? sql`${workflow.folderId} IS NULL`
           : eq(workflow.folderId, filters.folderId)
       )
@@ -166,7 +166,7 @@ export async function GET(req: NextRequest) {
 
     if (filters.status !== 'all') {
       conditions.push(
-        filters.status === 'deployed' 
+        filters.status === 'deployed'
           ? eq(workflow.isDeployed, true)
           : eq(workflow.isDeployed, false)
       )
@@ -185,10 +185,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Build sorting
-    const orderByField = filters.sortBy === 'name' ? workflow.name :
-                        filters.sortBy === 'createdAt' ? workflow.createdAt :
-                        filters.sortBy === 'runCount' ? workflow.runCount :
-                        workflow.updatedAt
+    const orderByField =
+      filters.sortBy === 'name'
+        ? workflow.name
+        : filters.sortBy === 'createdAt'
+          ? workflow.createdAt
+          : filters.sortBy === 'runCount'
+            ? workflow.runCount
+            : workflow.updatedAt
 
     const orderBy = filters.sortOrder === 'asc' ? asc(orderByField) : desc(orderByField)
 
@@ -222,12 +226,12 @@ export async function GET(req: NextRequest) {
         .orderBy(orderBy)
         .limit(filters.limit)
         .offset(offset),
-      
+
       db
         .select({ count: sql<number>`count(*)` })
         .from(workflow)
         .where(whereCondition)
-        .then(result => result[0]?.count || 0)
+        .then((result) => result[0]?.count || 0),
     ])
 
     // Calculate pagination metadata
@@ -238,27 +242,29 @@ export async function GET(req: NextRequest) {
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Successfully listed ${workflows.length} workflows in ${elapsed}ms`)
 
-    return NextResponse.json({
-      data: workflows,
-      pagination: {
-        page: filters.page,
-        limit: filters.limit,
-        total: totalCount,
-        totalPages,
-        hasNextPage,
-        hasPrevPage,
+    return NextResponse.json(
+      {
+        data: workflows,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total: totalCount,
+          totalPages,
+          hasNextPage,
+          hasPrevPage,
+        },
+        filters: {
+          ...filters,
+          // Remove default values for cleaner response
+          page: filters.page === 1 ? undefined : filters.page,
+          limit: filters.limit === 20 ? undefined : filters.limit,
+          sortBy: filters.sortBy === 'updatedAt' ? undefined : filters.sortBy,
+          sortOrder: filters.sortOrder === 'desc' ? undefined : filters.sortOrder,
+          status: filters.status === 'all' ? undefined : filters.status,
+        },
       },
-      filters: {
-        ...filters,
-        // Remove default values for cleaner response
-        page: filters.page === 1 ? undefined : filters.page,
-        limit: filters.limit === 20 ? undefined : filters.limit,
-        sortBy: filters.sortBy === 'updatedAt' ? undefined : filters.sortBy,
-        sortOrder: filters.sortOrder === 'desc' ? undefined : filters.sortOrder,
-        status: filters.status === 'all' ? undefined : filters.status,
-      }
-    }, { status: 200 })
-
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
@@ -571,8 +577,14 @@ export async function PATCH(req: NextRequest) {
 
     // Parse and validate request body
     const body = await req.json()
-    const { operation, workflowIds, targetFolderId, targetWorkspaceId, tags, preserveCollaborators } = 
-      BulkWorkflowSchema.parse(body)
+    const {
+      operation,
+      workflowIds,
+      targetFolderId,
+      targetWorkspaceId,
+      tags,
+      preserveCollaborators,
+    } = BulkWorkflowSchema.parse(body)
 
     logger.info(`[${requestId}] Bulk ${operation} operation for ${workflowIds.length} workflows`, {
       operation,
@@ -582,19 +594,13 @@ export async function PATCH(req: NextRequest) {
     })
 
     // Fetch all workflows to validate permissions
-    const workflows = await db
-      .select()
-      .from(workflow)
-      .where(inArray(workflow.id, workflowIds))
+    const workflows = await db.select().from(workflow).where(inArray(workflow.id, workflowIds))
 
     if (workflows.length !== workflowIds.length) {
-      const foundIds = workflows.map(w => w.id)
-      const missingIds = workflowIds.filter(id => !foundIds.includes(id))
+      const foundIds = workflows.map((w) => w.id)
+      const missingIds = workflowIds.filter((id) => !foundIds.includes(id))
       logger.warn(`[${requestId}] Some workflows not found:`, missingIds)
-      return NextResponse.json(
-        { error: 'Some workflows not found', missingIds },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Some workflows not found', missingIds }, { status: 404 })
     }
 
     // Check permissions for all workflows
@@ -614,7 +620,7 @@ export async function PATCH(req: NextRequest) {
             'workspace',
             workflowData.workspaceId
           )
-          
+
           // Different operations require different permission levels
           const requiredPermission = operation === 'delete' ? 'admin' : 'write'
           if (requiredPermission === 'admin') {
@@ -632,13 +638,13 @@ export async function PATCH(req: NextRequest) {
       })
     )
 
-    const deniedWorkflows = permissionChecks.filter(check => !check.hasPermission)
+    const deniedWorkflows = permissionChecks.filter((check) => !check.hasPermission)
     if (deniedWorkflows.length > 0) {
       logger.warn(`[${requestId}] User ${userId} denied permission for workflows:`, deniedWorkflows)
       return NextResponse.json(
-        { 
-          error: 'Access denied for some workflows', 
-          deniedWorkflows: deniedWorkflows.map(w => ({ id: w.workflowId, name: w.workflowName }))
+        {
+          error: 'Access denied for some workflows',
+          deniedWorkflows: deniedWorkflows.map((w) => ({ id: w.workflowId, name: w.workflowName })),
         },
         { status: 403 }
       )
@@ -648,7 +654,7 @@ export async function PATCH(req: NextRequest) {
 
     // Execute the bulk operation
     switch (operation) {
-      case 'delete':
+      case 'delete': {
         const deletedIds = []
         for (const workflowId of workflowIds) {
           try {
@@ -659,10 +665,11 @@ export async function PATCH(req: NextRequest) {
             logger.error(`[${requestId}] Failed to delete workflow ${workflowId}`, error)
           }
         }
-        results = deletedIds.map(id => ({ id, status: 'deleted' }))
+        results = deletedIds.map((id) => ({ id, status: 'deleted' }))
         break
+      }
 
-      case 'move':
+      case 'move': {
         if (targetFolderId === undefined && !targetWorkspaceId) {
           return NextResponse.json(
             { error: 'Target folder or workspace required for move operation' },
@@ -678,10 +685,7 @@ export async function PATCH(req: NextRequest) {
             if (targetWorkspaceId) updateData.workspaceId = targetWorkspaceId
             updateData.updatedAt = new Date()
 
-            await db
-              .update(workflow)
-              .set(updateData)
-              .where(eq(workflow.id, workflowId))
+            await db.update(workflow).set(updateData).where(eq(workflow.id, workflowId))
 
             movedIds.push(workflowId)
             logger.info(`[${requestId}] Moved workflow ${workflowId}`)
@@ -689,10 +693,11 @@ export async function PATCH(req: NextRequest) {
             logger.error(`[${requestId}] Failed to move workflow ${workflowId}`, error)
           }
         }
-        results = movedIds.map(id => ({ id, status: 'moved' }))
+        results = movedIds.map((id) => ({ id, status: 'moved' }))
         break
+      }
 
-      case 'copy':
+      case 'copy': {
         if (targetFolderId === undefined && !targetWorkspaceId) {
           return NextResponse.json(
             { error: 'Target folder or workspace required for copy operation' },
@@ -735,14 +740,15 @@ export async function PATCH(req: NextRequest) {
             logger.error(`[${requestId}] Failed to copy workflow ${workflowData.id}`, error)
           }
         }
-        results = copiedWorkflows.map(({ originalId, newId }) => ({ 
-          id: originalId, 
-          status: 'copied', 
-          newId 
+        results = copiedWorkflows.map(({ originalId, newId }) => ({
+          id: originalId,
+          status: 'copied',
+          newId,
         }))
         break
+      }
 
-      case 'deploy':
+      case 'deploy': {
         const deployedIds = []
         for (const workflowId of workflowIds) {
           try {
@@ -761,10 +767,11 @@ export async function PATCH(req: NextRequest) {
             logger.error(`[${requestId}] Failed to deploy workflow ${workflowId}`, error)
           }
         }
-        results = deployedIds.map(id => ({ id, status: 'deployed' }))
+        results = deployedIds.map((id) => ({ id, status: 'deployed' }))
         break
+      }
 
-      case 'undeploy':
+      case 'undeploy': {
         const undeployedIds = []
         for (const workflowId of workflowIds) {
           try {
@@ -783,10 +790,11 @@ export async function PATCH(req: NextRequest) {
             logger.error(`[${requestId}] Failed to undeploy workflow ${workflowId}`, error)
           }
         }
-        results = undeployedIds.map(id => ({ id, status: 'undeployed' }))
+        results = undeployedIds.map((id) => ({ id, status: 'undeployed' }))
         break
+      }
 
-      case 'tag':
+      case 'tag': {
         if (!tags || tags.length === 0) {
           return NextResponse.json(
             { error: 'Tags are required for tag operation' },
@@ -797,15 +805,13 @@ export async function PATCH(req: NextRequest) {
         // Note: This assumes tags are stored in workflow metadata or a separate table
         // Implementation depends on how tags are actually stored in the system
         const taggedIds = workflowIds // Placeholder implementation
-        results = taggedIds.map(id => ({ id, status: 'tagged', tags }))
+        results = taggedIds.map((id) => ({ id, status: 'tagged', tags }))
         logger.info(`[${requestId}] Tagged ${workflowIds.length} workflows with:`, tags)
         break
+      }
 
       default:
-        return NextResponse.json(
-          { error: `Unsupported operation: ${operation}` },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: `Unsupported operation: ${operation}` }, { status: 400 })
     }
 
     const elapsed = Date.now() - startTime
@@ -814,16 +820,18 @@ export async function PATCH(req: NextRequest) {
       { results }
     )
 
-    return NextResponse.json({
-      operation,
-      results,
-      summary: {
-        requested: workflowIds.length,
-        successful: results.length,
-        failed: workflowIds.length - results.length,
+    return NextResponse.json(
+      {
+        operation,
+        results,
+        summary: {
+          requested: workflowIds.length,
+          successful: results.length,
+          failed: workflowIds.length - results.length,
+        },
       },
-    }, { status: 200 })
-
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {

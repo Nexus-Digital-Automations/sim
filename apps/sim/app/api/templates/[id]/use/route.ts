@@ -6,7 +6,13 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, workflow, workflowBlocks, workflowEdges, apiKey as apiKeyTable } from '@/db/schema'
+import {
+  apiKey as apiKeyTable,
+  templates,
+  workflow,
+  workflowBlocks,
+  workflowEdges,
+} from '@/db/schema'
 
 const logger = createLogger('TemplateUseAPI')
 
@@ -17,24 +23,27 @@ export const revalidate = 0
 const UseTemplateSchema = z.object({
   // Required fields
   workspaceId: z.string().min(1, 'Workspace ID is required'),
-  
+
   // Optional customizations
   workflowName: z.string().optional(), // Custom name for the new workflow
   folderId: z.string().nullable().optional(), // Target folder for the workflow
-  
+
   // Template usage options
   preserveOriginalName: z.boolean().optional().default(false), // Keep original template name
   addCopySuffix: z.boolean().optional().default(true), // Add "(copy)" suffix
   customSuffix: z.string().optional(), // Custom suffix instead of "(copy)"
-  
+
   // Workflow customization
   customDescription: z.string().optional(), // Override template description
-  customColor: z.string().regex(/^#[0-9A-F]{6}$/i).optional(), // Override template color
-  
+  customColor: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(), // Override template color
+
   // Usage tracking
   trackUsage: z.boolean().optional().default(true), // Track this usage for analytics
   usageContext: z.string().optional(), // Context for usage (e.g., "tutorial", "production")
-  
+
   // Advanced options
   updateBlockIds: z.boolean().optional().default(true), // Generate new block IDs
   preserveMetadata: z.boolean().optional().default(false), // Preserve original metadata
@@ -45,6 +54,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id } = await params
+  
+  // Parse request body outside try block for error handling access
+  let body: any = {}
+  try {
+    body = await request.json()
+  } catch (parseError) {
+    logger.warn(`[${requestId}] Failed to parse request body for template use: ${id}`)
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
+  }
 
   try {
     // Authentication - support both session and API key
@@ -87,8 +105,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       userId = authenticatedUserId
     }
 
-    // Parse and validate request body
-    const body = await request.json()
+    // Validate request body
     const usageData = UseTemplateSchema.parse(body)
 
     logger.info(`[${requestId}] Using template with comprehensive options:`, {
@@ -182,16 +199,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         variables: {},
         collaborators: [],
         isPublished: false,
-        marketplaceData: usageData.preserveMetadata ? {
-          sourceTemplate: {
-            id: templateData.id,
-            name: templateData.name,
-            author: templateData.author,
-            category: templateData.category,
-            usedAt: now,
-            usageContext: usageData.usageContext,
-          },
-        } : null,
+        marketplaceData: usageData.preserveMetadata
+          ? {
+              sourceTemplate: {
+                id: templateData.id,
+                name: templateData.name,
+                author: templateData.author,
+                category: templateData.category,
+                usedAt: now,
+                usageContext: usageData.usageContext,
+              },
+            }
+          : null,
       }
 
       const newWorkflow = await tx
@@ -266,8 +285,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           updatedState.edges = updatedState.edges.map((edge: any) => ({
             ...edge,
             id: usageData.updateBlockIds ? uuidv4() : edge.id,
-            source: usageData.updateBlockIds ? (blockIdMap.get(edge.source) || edge.source) : edge.source,
-            target: usageData.updateBlockIds ? (blockIdMap.get(edge.target) || edge.target) : edge.target,
+            source: usageData.updateBlockIds
+              ? blockIdMap.get(edge.source) || edge.source
+              : edge.source,
+            target: usageData.updateBlockIds
+              ? blockIdMap.get(edge.target) || edge.target
+              : edge.target,
           }))
         }
 
@@ -296,7 +319,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
 
     const elapsed = Date.now() - startTime
-    
+
     logger.info(
       `[${requestId}] Successfully used template: ${id}, created workflow: ${newWorkflowId} in ${elapsed}ms`,
       {
@@ -368,10 +391,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     logger.error(`[${requestId}] Error using template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-      templateId: id,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+        templateId: id,
+      },
+      { status: 500 }
+    )
   }
 }

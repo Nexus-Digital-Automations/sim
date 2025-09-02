@@ -1,9 +1,9 @@
 /**
  * Workflow Version Comparison API Endpoints
- * 
+ *
  * Advanced version comparison API with comprehensive diff generation:
  * - POST /api/workflows/[id]/versions/[versionId]/compare - Compare two workflow versions
- * 
+ *
  * This API provides sophisticated version comparison capabilities including:
  * - Granular change detection for blocks, edges, loops, and parallels
  * - Conflict detection and resolution strategies
@@ -14,70 +14,75 @@
  * - Comprehensive logging and error handling
  */
 
+import crypto from 'crypto'
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
-import { 
-  WorkflowVersionManager,
+import {
   generateHtmlDiff,
-  generateUnifiedDiff,
   generateSideBySideDiff,
-  type VersionDiff
+  generateUnifiedDiff,
+  type VersionDiff,
+  WorkflowVersionManager,
 } from '@/lib/workflows/versioning'
 import { db } from '@/db'
-import { 
-  workflow as workflowTable, 
-  apiKey as apiKeyTable,
-} from '@/db/schema'
-import { eq } from 'drizzle-orm'
-import crypto from 'crypto'
+import { apiKey as apiKeyTable, workflow as workflowTable } from '@/db/schema'
 
 const logger = createLogger('WorkflowVersionComparisonAPI')
 
 // Version comparison request schema
 const VersionComparisonRequestSchema = z.object({
   targetVersionId: z.string().uuid(),
-  options: z.object({
-    // Diff options
-    includeMetadata: z.boolean().default(true),
-    diffFormat: z.enum(['detailed', 'summary', 'minimal']).default('detailed'),
-    
-    // Output format options
-    outputFormat: z.enum(['json', 'html', 'unified', 'side-by-side']).default('json'),
-    
-    // HTML-specific options
-    htmlOptions: z.object({
-      includeContext: z.boolean().default(true),
-      highlightBreaking: z.boolean().default(true),
-      theme: z.enum(['light', 'dark']).default('light'),
-    }).optional(),
-    
-    // Unified diff options
-    unifiedOptions: z.object({
-      contextLines: z.number().min(0).max(10).default(3),
-    }).optional(),
-    
-    // Side-by-side options
-    sideBySideOptions: z.object({
-      width: z.number().min(40).max(200).default(80),
-      tabSize: z.number().min(1).max(8).default(2),
-    }).optional(),
-    
-    // Performance options
-    enableConflictDetection: z.boolean().default(true),
-    optimizeForLargeWorkflows: z.boolean().default(false),
-  }).default({}),
+  options: z
+    .object({
+      // Diff options
+      includeMetadata: z.boolean().default(true),
+      diffFormat: z.enum(['detailed', 'summary', 'minimal']).default('detailed'),
+
+      // Output format options
+      outputFormat: z.enum(['json', 'html', 'unified', 'side-by-side']).default('json'),
+
+      // HTML-specific options
+      htmlOptions: z
+        .object({
+          includeContext: z.boolean().default(true),
+          highlightBreaking: z.boolean().default(true),
+          theme: z.enum(['light', 'dark']).default('light'),
+        })
+        .optional(),
+
+      // Unified diff options
+      unifiedOptions: z
+        .object({
+          contextLines: z.number().min(0).max(10).default(3),
+        })
+        .optional(),
+
+      // Side-by-side options
+      sideBySideOptions: z
+        .object({
+          width: z.number().min(40).max(200).default(80),
+          tabSize: z.number().min(1).max(8).default(2),
+        })
+        .optional(),
+
+      // Performance options
+      enableConflictDetection: z.boolean().default(true),
+      optimizeForLargeWorkflows: z.boolean().default(false),
+    })
+    .default({}),
 })
 
 /**
  * POST /api/workflows/[id]/versions/[versionId]/compare
- * 
+ *
  * Compare the specified version with another version and generate comprehensive diff.
  * Supports multiple output formats including visual HTML, unified diff, and side-by-side.
- * 
+ *
  * Request Body:
  * - targetVersionId: Version ID to compare against (required)
  * - options: Comparison and formatting options
@@ -125,7 +130,7 @@ export async function POST(
 
     // Initialize version manager and perform comparison
     const versionManager = new WorkflowVersionManager()
-    
+
     const diff = await versionManager.compareVersions(
       workflowId,
       sourceVersionId,
@@ -139,26 +144,17 @@ export async function POST(
     )
 
     // Generate output based on requested format
-    const formattedOutput = await generateComparisonOutput(
-      diff,
-      options,
-      requestId
-    )
+    const formattedOutput = await generateComparisonOutput(diff, options, requestId)
 
     // Build response based on output format
-    const response = buildComparisonResponse(
-      diff,
-      formattedOutput,
-      options,
-      {
-        requestId,
-        workflowId,
-        sourceVersionId,
-        targetVersionId,
-        processingTimeMs: Date.now() - startTime,
-        userId,
-      }
-    )
+    const response = buildComparisonResponse(diff, formattedOutput, options, {
+      requestId,
+      workflowId,
+      sourceVersionId,
+      targetVersionId,
+      processingTimeMs: Date.now() - startTime,
+      userId,
+    })
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Version comparison completed in ${elapsed}ms`, {
@@ -172,21 +168,20 @@ export async function POST(
     const headers = getResponseHeaders(options.outputFormat)
 
     return NextResponse.json(response, { status: 200, headers })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid comparison request`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid request data', 
+        {
+          error: 'Invalid request data',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -195,11 +190,11 @@ export async function POST(
     if (error.message.includes('not found')) {
       logger.warn(`[${requestId}] Version not found`, { error: error.message })
       return NextResponse.json(
-        { 
-          error: 'Version not found', 
+        {
+          error: 'Version not found',
           requestId,
-          details: error.message
-        }, 
+          details: error.message,
+        },
         { status: 404 }
       )
     }
@@ -207,11 +202,11 @@ export async function POST(
     if (error.message.includes('same version')) {
       logger.warn(`[${requestId}] Attempt to compare version with itself`)
       return NextResponse.json(
-        { 
-          error: 'Cannot compare version with itself', 
+        {
+          error: 'Cannot compare version with itself',
           requestId,
-          suggestion: 'Provide two different version IDs for comparison'
-        }, 
+          suggestion: 'Provide two different version IDs for comparison',
+        },
         { status: 400 }
       )
     }
@@ -224,11 +219,11 @@ export async function POST(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to compare versions', 
+      {
+        error: 'Failed to compare versions',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -243,29 +238,32 @@ async function generateComparisonOutput(
   requestId: string
 ) {
   const outputStartTime = Date.now()
-  
+
   try {
     switch (options.outputFormat) {
-      case 'html':
+      case 'html': {
         const htmlOutput = generateHtmlDiff(diff, options.htmlOptions)
         logger.debug(`[${requestId}] Generated HTML diff in ${Date.now() - outputStartTime}ms`, {
           htmlLength: htmlOutput.length,
         })
         return htmlOutput
+      }
 
-      case 'unified':
+      case 'unified': {
         const unifiedOutput = generateUnifiedDiff(diff, options.unifiedOptions)
         logger.debug(`[${requestId}] Generated unified diff in ${Date.now() - outputStartTime}ms`, {
           unifiedLength: unifiedOutput.length,
         })
         return unifiedOutput
+      }
 
-      case 'side-by-side':
+      case 'side-by-side': {
         const sideBySideOutput = generateSideBySideDiff(diff, options.sideBySideOptions)
-        logger.debug(`[${requestId}] Generated side-by-side diff in ${Date.now() - outputStartTime}ms`)
+        logger.debug(
+          `[${requestId}] Generated side-by-side diff in ${Date.now() - outputStartTime}ms`
+        )
         return sideBySideOutput
-
-      case 'json':
+      }
       default:
         // JSON format returns the raw diff object
         return diff
@@ -287,12 +285,12 @@ function buildComparisonResponse(
   formattedOutput: any,
   options: z.infer<typeof VersionComparisonRequestSchema>['options'],
   metadata: {
-    requestId: string;
-    workflowId: string;
-    sourceVersionId: string;
-    targetVersionId: string;
-    processingTimeMs: number;
-    userId?: string;
+    requestId: string
+    workflowId: string
+    sourceVersionId: string
+    targetVersionId: string
+    processingTimeMs: number
+    userId?: string
   }
 ) {
   const baseResponse = {
@@ -314,8 +312,7 @@ function buildComparisonResponse(
       changesByType: {
         blockChanges: diff.summary.blockChanges,
         edgeChanges: diff.summary.edgeChanges,
-        loopChanges: diff.summary.loopChanges || 0,
-        parallelChanges: diff.summary.parallelChanges || 0,
+        metadataChanges: diff.summary.metadataChanges,
       },
     },
   }
@@ -347,8 +344,6 @@ function buildComparisonResponse(
           contentType: 'text/plain',
         },
       }
-
-    case 'json':
     default:
       return {
         ...baseResponse,
@@ -374,7 +369,6 @@ function getResponseHeaders(outputFormat: string): Record<string, string> {
     case 'side-by-side':
       headers['X-Content-Format'] = 'text'
       break
-    case 'json':
     default:
       headers['X-Content-Format'] = 'json'
       break
@@ -454,14 +448,13 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         hasAccess = true // Read access is sufficient for version comparison
       }
     }
 
     return { userId: authenticatedUserId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,

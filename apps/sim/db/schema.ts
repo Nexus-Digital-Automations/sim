@@ -1165,46 +1165,46 @@ export const copilotFeedback = pgTable(
 )
 
 // Workflow Versioning System Tables - Comprehensive version management with semantic versioning
-export const workflowVersions = pgTable(
+export const workflowVersions: any = pgTable(
   'workflow_versions',
   {
     id: text('id').primaryKey(),
     workflowId: text('workflow_id')
       .notNull()
       .references(() => workflow.id, { onDelete: 'cascade' }),
-    
+
     // Semantic versioning fields
     versionNumber: text('version_number').notNull(), // e.g., "1.2.3"
     versionMajor: integer('version_major').notNull().default(0),
-    versionMinor: integer('version_minor').notNull().default(0), 
+    versionMinor: integer('version_minor').notNull().default(0),
     versionPatch: integer('version_patch').notNull().default(1),
-    
+
     // Version metadata
     versionType: text('version_type').notNull().default('auto'), // 'auto', 'manual', 'checkpoint', 'branch'
     versionTag: text('version_tag'), // optional tag like 'stable', 'beta', 'production'
     versionDescription: text('version_description'),
     changeSummary: jsonb('change_summary').default('{}'),
-    
+
     // Workflow state storage
     workflowState: jsonb('workflow_state').notNull(),
     stateHash: text('state_hash').notNull(),
     stateSize: integer('state_size').notNull(),
     compressionType: text('compression_type').default('none'), // 'none', 'gzip', 'delta'
-    
+
     // Version relationships
     parentVersionId: text('parent_version_id').references(() => workflowVersions.id),
     branchName: text('branch_name').default('main'),
-    
+
     // Audit fields
     createdByUserId: text('created_by_user_id').references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
-    
+
     // Status flags
     isCurrent: boolean('is_current').default(false),
     isDeployed: boolean('is_deployed').default(false),
     deployedAt: timestamp('deployed_at'),
-    
+
     // Performance metadata
     creationDurationMs: integer('creation_duration_ms'),
     serializationTimeMs: integer('serialization_time_ms'),
@@ -1212,19 +1212,22 @@ export const workflowVersions = pgTable(
   (table) => ({
     workflowIdIdx: index('workflow_versions_workflow_id_idx').on(table.workflowId),
     versionNumberIdx: index('workflow_versions_version_number_idx').on(
-      table.workflowId, 
-      table.versionMajor.desc(), 
-      table.versionMinor.desc(), 
+      table.workflowId,
+      table.versionMajor.desc(),
+      table.versionMinor.desc(),
       table.versionPatch.desc()
     ),
-    createdAtIdx: index('workflow_versions_created_at_idx').on(table.workflowId, table.createdAt.desc()),
+    createdAtIdx: index('workflow_versions_created_at_idx').on(
+      table.workflowId,
+      table.createdAt.desc()
+    ),
     currentIdx: index('workflow_versions_current_idx').on(table.workflowId, table.isCurrent),
     deployedIdx: index('workflow_versions_deployed_idx').on(table.workflowId, table.isDeployed),
     branchIdx: index('workflow_versions_branch_idx').on(table.workflowId, table.branchName),
     typeIdx: index('workflow_versions_type_idx').on(table.workflowId, table.versionType),
     hashIdx: index('workflow_versions_hash_idx').on(table.stateHash),
     uniqueVersionConstraint: uniqueIndex('workflow_versions_unique_version_idx').on(
-      table.workflowId, 
+      table.workflowId,
       table.versionNumber
     ),
     uniqueCurrentConstraint: uniqueIndex('workflow_versions_unique_current_idx').on(
@@ -1240,31 +1243,35 @@ export const workflowVersionChanges = pgTable(
     versionId: text('version_id')
       .notNull()
       .references(() => workflowVersions.id, { onDelete: 'cascade' }),
-    
+
     // Change classification
     changeType: text('change_type').notNull(), // 'block_added', 'block_removed', 'block_modified', etc.
-    
+
     // Entity identification
     entityType: text('entity_type').notNull(), // 'block', 'edge', 'loop', 'parallel', 'metadata', 'variable'
     entityId: text('entity_id').notNull(),
     entityName: text('entity_name'), // Human-readable entity name for UI display
-    
+
     // Change data
     oldData: jsonb('old_data'),
     newData: jsonb('new_data'),
     changeDescription: text('change_description'),
-    
+
     // Change impact assessment
     impactLevel: text('impact_level'), // 'low', 'medium', 'high', 'critical'
     breakingChange: boolean('breaking_change').default(false),
-    
+
     // Timestamps
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
     versionIdIdx: index('version_changes_version_id_idx').on(table.versionId),
     typeIdx: index('version_changes_type_idx').on(table.versionId, table.changeType),
-    entityIdx: index('version_changes_entity_idx').on(table.versionId, table.entityType, table.entityId),
+    entityIdx: index('version_changes_entity_idx').on(
+      table.versionId,
+      table.entityType,
+      table.entityId
+    ),
     impactIdx: index('version_changes_impact_idx').on(table.versionId, table.impactLevel),
     breakingIdx: index('version_changes_breaking_idx').on(table.versionId, table.breakingChange),
   })
@@ -1278,28 +1285,34 @@ export const workflowVersionActivity = pgTable(
       .notNull()
       .references(() => workflow.id, { onDelete: 'cascade' }),
     versionId: text('version_id').references(() => workflowVersions.id, { onDelete: 'cascade' }),
-    
+
     // Activity details
     activityType: text('activity_type').notNull(), // 'version_created', 'version_restored', etc.
     activityDescription: text('activity_description').notNull(),
     activityDetails: jsonb('activity_details').default('{}'),
-    
+
     // User context
     userId: text('user_id').references(() => user.id),
     userAgent: text('user_agent'),
     ipAddress: text('ip_address'),
-    
+
     // Related entities
     relatedVersionId: text('related_version_id').references(() => workflowVersions.id),
     relatedEntityType: text('related_entity_type'),
     relatedEntityId: text('related_entity_id'),
-    
+
     // Timestamps
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
-    workflowIdIdx: index('version_activity_workflow_id_idx').on(table.workflowId, table.createdAt.desc()),
-    versionIdIdx: index('version_activity_version_id_idx').on(table.versionId, table.createdAt.desc()),
+    workflowIdIdx: index('version_activity_workflow_id_idx').on(
+      table.workflowId,
+      table.createdAt.desc()
+    ),
+    versionIdIdx: index('version_activity_version_id_idx').on(
+      table.versionId,
+      table.createdAt.desc()
+    ),
     userIdIdx: index('version_activity_user_id_idx').on(table.userId, table.createdAt.desc()),
     typeIdx: index('version_activity_type_idx').on(table.workflowId, table.activityType),
   })
@@ -1318,21 +1331,21 @@ export const workflowVersionConflicts = pgTable(
     targetVersionId: text('target_version_id')
       .notNull()
       .references(() => workflowVersions.id),
-    
+
     // Conflict details
     conflictType: text('conflict_type').notNull(), // 'block_conflict', 'edge_conflict', etc.
     entityPath: text('entity_path').notNull(), // JSON path to conflicting entity
     conflictDescription: text('conflict_description'),
-    
+
     // Resolution data
     resolutionStrategy: text('resolution_strategy'), // 'use_source', 'use_target', 'merge_auto', etc.
     resolutionData: jsonb('resolution_data'),
     resolvedByUserId: text('resolved_by_user_id').references(() => user.id),
     resolvedAt: timestamp('resolved_at'),
-    
+
     // Status
     status: text('status').default('unresolved'), // 'unresolved', 'resolved', 'deferred'
-    
+
     // Timestamps
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -1352,16 +1365,16 @@ export const workflowVersionTags = pgTable(
     versionId: text('version_id')
       .notNull()
       .references(() => workflowVersions.id, { onDelete: 'cascade' }),
-    
+
     // Tag details
     tagName: text('tag_name').notNull(),
     tagColor: text('tag_color').default('#6B7280'),
     tagDescription: text('tag_description'),
-    
+
     // Tag metadata
     isSystemTag: boolean('is_system_tag').default(false),
     tagOrder: integer('tag_order').default(0),
-    
+
     // Audit
     createdByUserId: text('created_by_user_id').references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -1385,28 +1398,28 @@ export const workflowVersionStats = pgTable(
       .notNull()
       .references(() => workflow.id, { onDelete: 'cascade' }),
     versionId: text('version_id').references(() => workflowVersions.id, { onDelete: 'cascade' }),
-    
+
     // Version statistics
     totalVersions: integer('total_versions').default(0),
     totalStorageBytes: integer('total_storage_bytes').default(0),
     avgVersionSizeBytes: integer('avg_version_size_bytes').default(0),
-    
+
     // Change statistics
     totalChanges: integer('total_changes').default(0),
     breakingChanges: integer('breaking_changes').default(0),
     blocksAdded: integer('blocks_added').default(0),
     blocksRemoved: integer('blocks_removed').default(0),
     blocksModified: integer('blocks_modified').default(0),
-    
+
     // Usage statistics
     restoreCount: integer('restore_count').default(0),
     comparisonCount: integer('comparison_count').default(0),
     downloadCount: integer('download_count').default(0),
-    
+
     // Performance metrics
     avgCreationTimeMs: integer('avg_creation_time_ms').default(0),
     avgRestoreTimeMs: integer('avg_restore_time_ms').default(0),
-    
+
     // Time windows
     statsPeriod: text('stats_period').default('all_time'), // 'all_time', 'last_30_days', 'last_7_days'
     calculatedAt: timestamp('calculated_at').notNull().defaultNow(),
@@ -1477,7 +1490,10 @@ export const workflowElementLocks = pgTable(
     workflowIdIdx: index('element_locks_workflow_id_idx').on(table.workflowId),
     userIdIdx: index('element_locks_user_id_idx').on(table.lockedByUserId),
     expiresAtIdx: index('element_locks_expires_at_idx').on(table.expiresAt),
-    elementTypeIdIdx: index('element_locks_element_type_id_idx').on(table.elementType, table.elementId),
+    elementTypeIdIdx: index('element_locks_element_type_id_idx').on(
+      table.elementType,
+      table.elementId
+    ),
     uniqueElementLockConstraint: uniqueIndex('element_locks_unique_idx').on(
       table.workflowId,
       table.elementType,
@@ -1486,7 +1502,7 @@ export const workflowElementLocks = pgTable(
   })
 )
 
-export const workflowComments = pgTable(
+export const workflowComments: any = pgTable(
   'workflow_comments',
   {
     id: uuid('id').primaryKey().defaultRandom(),

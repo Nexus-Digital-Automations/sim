@@ -5,42 +5,42 @@
  */
 
 import crypto from 'crypto'
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
-import { Serializer } from '@/serializer'
 import { getBlock } from '@/blocks'
-import { getTool } from '@/tools/utils'
-import { apiKey as apiKeyTable } from '@/db/schema'
 import { db } from '@/db'
-import { eq } from 'drizzle-orm'
+import { apiKey as apiKeyTable } from '@/db/schema'
+import { getTool } from '@/tools/utils'
 
 const logger = createLogger('WorkflowValidationAPI')
 
 const ValidateWorkflowSchema = z.object({
   // Input format
   format: z.enum(['yaml', 'json']).default('json'),
-  
+
   // Workflow definition
   workflow: z.union([
     z.string(), // YAML string
-    z.object({   // JSON workflow object
+    z.object({
+      // JSON workflow object
       version: z.string().optional(),
       blocks: z.array(z.any()).optional(),
       connections: z.array(z.any()).optional(),
       loops: z.record(z.any()).optional(),
       parallels: z.record(z.any()).optional(),
-    })
+    }),
   ]),
-  
+
   // Validation options
   validateRequired: z.boolean().default(true),
   validateConnections: z.boolean().default(true),
   validateBlockConfig: z.boolean().default(true),
   validateToolConfig: z.boolean().default(true),
-  
+
   // Context for validation
   workspaceId: z.string().optional(),
   variables: z.record(z.any()).optional().default({}),
@@ -132,15 +132,22 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate request body
     const body = await req.json()
-    const { format, workflow: workflowInput, validateRequired, validateConnections, 
-            validateBlockConfig, validateToolConfig, workspaceId, variables } = 
-      ValidateWorkflowSchema.parse(body)
+    const {
+      format,
+      workflow: workflowInput,
+      validateRequired,
+      validateConnections,
+      validateBlockConfig,
+      validateToolConfig,
+      workspaceId,
+      variables,
+    } = ValidateWorkflowSchema.parse(body)
 
     logger.info(`[${requestId}] Validating ${format} workflow`, {
       format,
       userId: isInternalCall ? 'internal' : userId,
       workspaceId,
-      options: { validateRequired, validateConnections, validateBlockConfig, validateToolConfig }
+      options: { validateRequired, validateConnections, validateBlockConfig, validateToolConfig },
     })
 
     const parseEndTime = Date.now()
@@ -164,7 +171,7 @@ export async function POST(req: NextRequest) {
       performance: {
         validationTimeMs: 0,
         parseTimeMs,
-      }
+      },
     }
 
     let parsedWorkflow: any = null
@@ -177,7 +184,8 @@ export async function POST(req: NextRequest) {
         result.errors.push({
           type: 'error',
           code: 'YAML_PARSING_NOT_IMPLEMENTED',
-          message: 'YAML parsing is not yet implemented in this endpoint. Use the /api/yaml/parse endpoint instead.',
+          message:
+            'YAML parsing is not yet implemented in this endpoint. Use the /api/yaml/parse endpoint instead.',
         })
         result.isValid = false
       } else {
@@ -201,7 +209,7 @@ export async function POST(req: NextRequest) {
       if (parsedWorkflow && result.isValid) {
         // Validate workflow structure
         await validateWorkflowStructure(parsedWorkflow, result, requestId)
-        
+
         // Validate blocks if requested
         if (validateBlockConfig) {
           await validateBlocks(parsedWorkflow.blocks || [], result, requestId)
@@ -216,7 +224,7 @@ export async function POST(req: NextRequest) {
         if (parsedWorkflow.loops) {
           validateSubflows(parsedWorkflow.loops, 'loop', result)
         }
-        
+
         if (parsedWorkflow.parallels) {
           validateSubflows(parsedWorkflow.parallels, 'parallel', result)
         }
@@ -236,14 +244,19 @@ export async function POST(req: NextRequest) {
         result.summary.totalConnections = (parsedWorkflow.connections || []).length
         result.summary.totalLoops = Object.keys(parsedWorkflow.loops || {}).length
         result.summary.totalParallels = Object.keys(parsedWorkflow.parallels || {}).length
-        result.summary.missingRequiredFields = result.errors.filter(e => e.code.includes('REQUIRED')).length
-        result.summary.invalidConnections = result.errors.filter(e => e.code.includes('CONNECTION')).length
-        result.summary.deprecatedFeatures = result.warnings.filter(w => w.code.includes('DEPRECATED')).length
+        result.summary.missingRequiredFields = result.errors.filter((e) =>
+          e.code.includes('REQUIRED')
+        ).length
+        result.summary.invalidConnections = result.errors.filter((e) =>
+          e.code.includes('CONNECTION')
+        ).length
+        result.summary.deprecatedFeatures = result.warnings.filter((w) =>
+          w.code.includes('DEPRECATED')
+        ).length
 
         // Determine if workflow is valid
         result.isValid = result.errors.length === 0
       }
-
     } catch (validationError: any) {
       logger.error(`[${requestId}] Validation error:`, validationError)
       result.errors.push({
@@ -264,11 +277,13 @@ export async function POST(req: NextRequest) {
       totalBlocks: result.summary.totalBlocks,
     })
 
-    return NextResponse.json({
-      requestId,
-      result,
-    }, { status: 200 })
-
+    return NextResponse.json(
+      {
+        requestId,
+        result,
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
@@ -290,8 +305,8 @@ export async function POST(req: NextRequest) {
  * Validate the basic structure of the workflow
  */
 async function validateWorkflowStructure(
-  workflow: any, 
-  result: ValidationResult, 
+  workflow: any,
+  result: ValidationResult,
   requestId: string
 ): Promise<void> {
   logger.debug(`[${requestId}] Validating workflow structure`)
@@ -323,10 +338,10 @@ async function validateWorkflowStructure(
   }
 
   // Check for starter block
-  const starterBlocks = workflow.blocks.filter((block: any) => 
-    block.metadata?.id === 'starter' || block.config?.tool === 'starter'
+  const starterBlocks = workflow.blocks.filter(
+    (block: any) => block.metadata?.id === 'starter' || block.config?.tool === 'starter'
   )
-  
+
   if (starterBlocks.length === 0) {
     result.warnings.push({
       type: 'warning',
@@ -346,24 +361,24 @@ async function validateWorkflowStructure(
  * Validate individual blocks in the workflow
  */
 async function validateBlocks(
-  blocks: any[], 
-  result: ValidationResult, 
+  blocks: any[],
+  result: ValidationResult,
   requestId: string
 ): Promise<void> {
   logger.debug(`[${requestId}] Validating ${blocks.length} blocks`)
 
   const blockIds = new Set<string>()
-  
+
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
-    
+
     // Check for required block properties
     if (!block.id) {
       result.errors.push({
         type: 'error',
         code: 'MISSING_BLOCK_ID',
         message: `Block at index ${i} is missing required 'id' property.`,
-        location: { line: i + 1 }
+        location: { line: i + 1 },
       })
       continue
     }
@@ -374,7 +389,7 @@ async function validateBlocks(
         type: 'error',
         code: 'DUPLICATE_BLOCK_ID',
         message: `Duplicate block ID found: ${block.id}`,
-        location: { blockId: block.id, blockName: block.metadata?.name }
+        location: { blockId: block.id, blockName: block.metadata?.name },
       })
     }
     blockIds.add(block.id)
@@ -385,7 +400,7 @@ async function validateBlocks(
         type: 'warning',
         code: 'MISSING_BLOCK_METADATA',
         message: `Block ${block.id} is missing metadata.`,
-        location: { blockId: block.id }
+        location: { blockId: block.id },
       })
     } else {
       // Check if block type is supported
@@ -398,7 +413,7 @@ async function validateBlocks(
               type: 'error',
               code: 'UNSUPPORTED_BLOCK_TYPE',
               message: `Unsupported block type: ${blockType}`,
-              location: { blockId: block.id, blockName: block.metadata.name }
+              location: { blockId: block.id, blockName: block.metadata.name },
             })
           }
         } catch (error) {
@@ -406,19 +421,23 @@ async function validateBlocks(
             type: 'error',
             code: 'BLOCK_CONFIG_ERROR',
             message: `Error loading block configuration for type: ${blockType}`,
-            location: { blockId: block.id, blockName: block.metadata.name }
+            location: { blockId: block.id, blockName: block.metadata.name },
           })
         }
       }
     }
 
     // Validate block position
-    if (!block.position || typeof block.position.x !== 'number' || typeof block.position.y !== 'number') {
+    if (
+      !block.position ||
+      typeof block.position.x !== 'number' ||
+      typeof block.position.y !== 'number'
+    ) {
       result.warnings.push({
         type: 'warning',
         code: 'INVALID_BLOCK_POSITION',
         message: `Block ${block.id} has invalid or missing position information.`,
-        location: { blockId: block.id, blockName: block.metadata?.name }
+        location: { blockId: block.id, blockName: block.metadata?.name },
       })
     }
   }
@@ -427,20 +446,16 @@ async function validateBlocks(
 /**
  * Validate connections between blocks
  */
-function validateConnections_(
-  connections: any[], 
-  blocks: any[], 
-  result: ValidationResult
-): void {
-  const blockIds = new Set(blocks.map(b => b.id))
-  
+function validateConnections_(connections: any[], blocks: any[], result: ValidationResult): void {
+  const blockIds = new Set(blocks.map((b) => b.id))
+
   for (const connection of connections) {
     if (!connection.source || !connection.target) {
       result.errors.push({
         type: 'error',
         code: 'INVALID_CONNECTION',
         message: 'Connection must have both source and target.',
-        context: { connection }
+        context: { connection },
       })
       continue
     }
@@ -451,7 +466,7 @@ function validateConnections_(
         type: 'error',
         code: 'CONNECTION_SOURCE_NOT_FOUND',
         message: `Connection source block not found: ${connection.source}`,
-        context: { connection }
+        context: { connection },
       })
     }
 
@@ -460,7 +475,7 @@ function validateConnections_(
         type: 'error',
         code: 'CONNECTION_TARGET_NOT_FOUND',
         message: `Connection target block not found: ${connection.target}`,
-        context: { connection }
+        context: { connection },
       })
     }
 
@@ -470,7 +485,7 @@ function validateConnections_(
         type: 'warning',
         code: 'SELF_CONNECTION',
         message: `Block ${connection.source} connects to itself. This may cause unexpected behavior.`,
-        location: { blockId: connection.source }
+        location: { blockId: connection.source },
       })
     }
   }
@@ -480,8 +495,8 @@ function validateConnections_(
  * Validate subflow configurations (loops and parallels)
  */
 function validateSubflows(
-  subflows: Record<string, any>, 
-  type: 'loop' | 'parallel', 
+  subflows: Record<string, any>,
+  type: 'loop' | 'parallel',
   result: ValidationResult
 ): void {
   for (const [id, subflow] of Object.entries(subflows)) {
@@ -490,7 +505,7 @@ function validateSubflows(
         type: 'error',
         code: `MISSING_${type.toUpperCase()}_CONFIG`,
         message: `${type} ${id} is missing required config.`,
-        location: { blockId: id }
+        location: { blockId: id },
       })
     }
 
@@ -501,7 +516,7 @@ function validateSubflows(
           type: 'warning',
           code: 'LOOP_WITHOUT_EXIT_CONDITION',
           message: `Loop ${id} has no exit condition or maximum iterations. This may cause infinite loops.`,
-          location: { blockId: id }
+          location: { blockId: id },
         })
       }
     }
@@ -512,7 +527,7 @@ function validateSubflows(
           type: 'error',
           code: 'PARALLEL_WITHOUT_BRANCHES',
           message: `Parallel ${id} must have branches configuration.`,
-          location: { blockId: id }
+          location: { blockId: id },
         })
       }
     }
@@ -523,8 +538,8 @@ function validateSubflows(
  * Validate required fields in blocks
  */
 async function validateRequiredFields(
-  blocks: any[], 
-  result: ValidationResult, 
+  blocks: any[],
+  result: ValidationResult,
   requestId: string
 ): Promise<void> {
   logger.debug(`[${requestId}] Validating required fields`)
@@ -538,16 +553,19 @@ async function validateRequiredFields(
 
       // Check each subblock for required fields
       for (const [fieldKey, fieldConfig] of Object.entries(blockConfig.subBlocks)) {
-        if (fieldConfig.required && (!block.config?.params?.[fieldKey] || block.config.params[fieldKey] === '')) {
+        if (
+          fieldConfig.required &&
+          (!block.config?.params?.[fieldKey] || block.config.params[fieldKey] === '')
+        ) {
           result.errors.push({
             type: 'error',
             code: 'MISSING_REQUIRED_FIELD',
             message: `Required field '${fieldKey}' is missing in block ${block.id}`,
-            location: { 
-              blockId: block.id, 
+            location: {
+              blockId: block.id,
               blockName: block.metadata.name,
-              field: fieldKey 
-            }
+              field: fieldKey,
+            },
           })
         }
       }
@@ -561,8 +579,8 @@ async function validateRequiredFields(
  * Validate tool configurations in blocks
  */
 async function validateToolConfigurations(
-  blocks: any[], 
-  result: ValidationResult, 
+  blocks: any[],
+  result: ValidationResult,
   requestId: string
 ): Promise<void> {
   logger.debug(`[${requestId}] Validating tool configurations`)
@@ -578,26 +596,26 @@ async function validateToolConfigurations(
           type: 'error',
           code: 'UNSUPPORTED_TOOL',
           message: `Unsupported tool: ${toolId} in block ${block.id}`,
-          location: { blockId: block.id, blockName: block.metadata?.name }
+          location: { blockId: block.id, blockName: block.metadata?.name },
         })
         continue
       }
 
       // Validate tool-specific parameters
-      if (toolConfig.parameters) {
-        for (const [paramKey, paramConfig] of Object.entries(toolConfig.parameters)) {
+      if (toolConfig.params) {
+        for (const [paramKey, paramConfig] of Object.entries(toolConfig.params)) {
           const paramValue = block.config?.params?.[paramKey]
-          
+
           if (paramConfig.required && (!paramValue || paramValue === '')) {
             result.errors.push({
               type: 'error',
               code: 'MISSING_REQUIRED_TOOL_PARAM',
               message: `Required tool parameter '${paramKey}' is missing in block ${block.id}`,
-              location: { 
-                blockId: block.id, 
+              location: {
+                blockId: block.id,
                 blockName: block.metadata?.name,
-                field: paramKey 
-              }
+                field: paramKey,
+              },
             })
           }
         }
@@ -607,7 +625,7 @@ async function validateToolConfigurations(
         type: 'error',
         code: 'TOOL_CONFIG_ERROR',
         message: `Error validating tool configuration for ${toolId} in block ${block.id}`,
-        location: { blockId: block.id, blockName: block.metadata?.name }
+        location: { blockId: block.id, blockName: block.metadata?.name },
       })
     }
   }

@@ -1,10 +1,10 @@
 /**
  * Workflow Changelog API Endpoints
- * 
+ *
  * Human-readable changelog generation for workflow versions with the following capabilities:
  * - GET /api/workflows/[id]/changelog - Generate human-readable changelog
  * - GET /api/workflows/[id]/changelog/export - Export changelog in various formats
- * 
+ *
  * This API provides production-ready changelog generation with:
  * - Semantic versioning integration
  * - Human-friendly change descriptions
@@ -15,24 +15,23 @@
  * - Integration with version tags and milestones
  */
 
+import crypto from 'crypto'
+import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
-import { WorkflowVersionManager } from '@/lib/workflows/versioning'
 import { db } from '@/db'
-import { 
-  workflow as workflowTable, 
+import {
   apiKey as apiKeyTable,
-  workflowVersions,
+  user,
+  workflow as workflowTable,
   workflowVersionChanges,
+  workflowVersions,
   workflowVersionTags,
-  user
 } from '@/db/schema'
-import { eq, desc, and, gte, lte, sql, inArray, isNotNull } from 'drizzle-orm'
-import crypto from 'crypto'
 
 const logger = createLogger('WorkflowChangelogAPI')
 
@@ -42,29 +41,53 @@ const ChangelogQuerySchema = z.object({
   fromVersion: z.string().optional(),
   toVersion: z.string().optional(),
   sinceVersion: z.string().optional(),
-  
+
   // Time range filtering
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   period: z.enum(['7d', '30d', '90d', '1y', 'all']).default('all').optional(),
-  
+
   // Content filtering
-  includeBreaking: z.string().transform(val => val !== 'false').optional(), // Default true
-  includeMinor: z.string().transform(val => val !== 'false').optional(), // Default true
-  includePatch: z.string().transform(val => val !== 'false').optional(), // Default true
-  onlyTagged: z.string().transform(val => val === 'true').optional(),
-  onlyDeployed: z.string().transform(val => val === 'true').optional(),
-  
+  includeBreaking: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  includeMinor: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  includePatch: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  onlyTagged: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  onlyDeployed: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+
   // Grouping and organization
   groupBy: z.enum(['version', 'date', 'type', 'impact']).default('version').optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
-  
+
   // Output format and style
   format: z.enum(['structured', 'markdown', 'html', 'plain']).default('structured').optional(),
-  includeDetails: z.string().transform(val => val === 'true').optional(),
-  includeMetadata: z.string().transform(val => val !== 'false').optional(), // Default true
-  includeAuthors: z.string().transform(val => val !== 'false').optional(), // Default true
-  
+  includeDetails: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  includeMetadata: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  includeAuthors: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+
   // Pagination (for large changelogs)
   limit: z.string().regex(/^\d+$/).transform(Number).default('100').optional(),
   offset: z.string().regex(/^\d+$/).transform(Number).default('0').optional(),
@@ -72,10 +95,10 @@ const ChangelogQuerySchema = z.object({
 
 /**
  * GET /api/workflows/[id]/changelog
- * 
+ *
  * Generate comprehensive, human-readable changelog for workflow versions.
  * Supports multiple filtering options and output formats for different use cases.
- * 
+ *
  * Query Parameters:
  * - fromVersion/toVersion: Version range (e.g., "1.0.0" to "2.1.0")
  * - sinceVersion: Changes since specific version (alternative to fromVersion)
@@ -83,7 +106,7 @@ const ChangelogQuerySchema = z.object({
  * - period: Predefined time periods (7d, 30d, 90d, 1y, all)
  * - includeBreaking/includeMinor/includePatch: Include version types
  * - onlyTagged: Only include tagged versions
- * - onlyDeployed: Only include deployed versions  
+ * - onlyDeployed: Only include deployed versions
  * - groupBy: Group changes by version, date, type, or impact
  * - sortOrder: Chronological order (asc/desc)
  * - format: Output format (structured, markdown, html, plain)
@@ -92,10 +115,7 @@ const ChangelogQuerySchema = z.object({
  * - includeAuthors: Include author information
  * - limit/offset: Pagination for large changelogs
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -122,28 +142,17 @@ export async function GET(
     const workflowInfo = await getWorkflowInfo(workflowId)
     if (!workflowInfo) {
       logger.warn(`[${requestId}] Workflow ${workflowId} not found`)
-      return NextResponse.json(
-        { error: 'Workflow not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Workflow not found', requestId }, { status: 404 })
     }
 
     // Build version filters based on query parameters
     const versionFilters = await buildVersionFilters(workflowId, validatedQuery)
 
     // Get versions with changes and metadata
-    const changelogData = await getChangelogData(
-      workflowId,
-      versionFilters,
-      validatedQuery
-    )
+    const changelogData = await getChangelogData(workflowId, versionFilters, validatedQuery)
 
     // Generate human-readable changelog
-    const changelog = await generateChangelog(
-      changelogData,
-      workflowInfo,
-      validatedQuery
-    )
+    const changelog = await generateChangelog(changelogData, workflowInfo, validatedQuery)
 
     // Handle export format if requested
     if (isExport) {
@@ -193,24 +202,25 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Generated changelog with ${changelog.entries.length} entries in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Generated changelog with ${changelog.entries.length} entries in ${elapsed}ms`
+    )
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid query parameters', 
+        {
+          error: 'Invalid query parameters',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -222,11 +232,11 @@ export async function GET(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to generate changelog', 
+      {
+        error: 'Failed to generate changelog',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -266,9 +276,9 @@ async function buildVersionFilters(
   workflowId: string,
   query: z.infer<typeof ChangelogQuerySchema>
 ): Promise<{
-  versionIds: string[];
-  timeRange: { from?: Date; to?: Date };
-  versionRange: { from?: string; to?: string };
+  versionIds: string[]
+  timeRange: { from?: Date; to?: Date }
+  versionRange: { from?: string; to?: string }
 }> {
   try {
     // Build base where conditions
@@ -284,7 +294,12 @@ async function buildVersionFilters(
         .groupBy(workflowVersionTags.versionId)
 
       if (taggedVersions.length > 0) {
-        whereConditions.push(inArray(workflowVersions.id, taggedVersions.map(t => t.versionId)))
+        whereConditions.push(
+          inArray(
+            workflowVersions.id,
+            taggedVersions.map((t) => t.versionId)
+          )
+        )
       } else {
         // No tagged versions found
         return { versionIds: [], timeRange: {}, versionRange: {} }
@@ -313,7 +328,7 @@ async function buildVersionFilters(
     if (!timeFrom && !timeTo && query.period && query.period !== 'all') {
       const now = new Date()
       timeTo = now
-      
+
       switch (query.period) {
         case '7d':
           timeFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -328,14 +343,14 @@ async function buildVersionFilters(
           timeFrom = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
           break
       }
-      
+
       if (timeFrom) {
         whereConditions.push(gte(workflowVersions.createdAt, timeFrom))
       }
     }
 
     // Get all matching versions
-    let versionsQuery = db
+    const baseVersionsQuery = db
       .select({
         id: workflowVersions.id,
         versionNumber: workflowVersions.versionNumber,
@@ -352,48 +367,51 @@ async function buildVersionFilters(
         desc(workflowVersions.versionPatch)
       )
 
-    if (query.limit) {
-      versionsQuery = versionsQuery.limit(query.limit)
-    }
-
-    if (query.offset) {
-      versionsQuery = versionsQuery.offset(query.offset)
-    }
-
-    const versions = await versionsQuery
+    // Apply pagination and execute query
+    const versions = await (() => {
+      if (query.limit && query.offset) {
+        return baseVersionsQuery.limit(query.limit).offset(query.offset)
+      } else if (query.limit) {
+        return baseVersionsQuery.limit(query.limit)
+      } else if (query.offset) {
+        return baseVersionsQuery.offset(query.offset)
+      }
+      return baseVersionsQuery
+    })()
 
     // Filter by specific version ranges if provided
     let filteredVersions = versions
 
     if (query.fromVersion || query.toVersion || query.sinceVersion) {
-      filteredVersions = filteredVersions.filter(version => {
+      filteredVersions = filteredVersions.filter((version) => {
         const versionNum = version.versionNumber
-        
+
         if (query.sinceVersion) {
           return compareVersionNumbers(versionNum, query.sinceVersion) > 0
         }
-        
+
         let includeVersion = true
-        
+
         if (query.fromVersion) {
-          includeVersion = includeVersion && compareVersionNumbers(versionNum, query.fromVersion) >= 0
+          includeVersion =
+            includeVersion && compareVersionNumbers(versionNum, query.fromVersion) >= 0
         }
-        
+
         if (query.toVersion) {
           includeVersion = includeVersion && compareVersionNumbers(versionNum, query.toVersion) <= 0
         }
-        
+
         return includeVersion
       })
     }
 
     // Filter by version types (major.minor.patch)
     if (!query.includeBreaking || !query.includeMinor || !query.includePatch) {
-      filteredVersions = filteredVersions.filter(version => {
+      filteredVersions = filteredVersions.filter((version) => {
         const isBreaking = version.versionMinor === 0 && version.versionPatch === 0
         const isMinor = version.versionPatch === 0 && !isBreaking
         const isPatch = !isBreaking && !isMinor
-        
+
         return (
           (query.includeBreaking && isBreaking) ||
           (query.includeMinor && isMinor) ||
@@ -403,11 +421,10 @@ async function buildVersionFilters(
     }
 
     return {
-      versionIds: filteredVersions.map(v => v.id),
+      versionIds: filteredVersions.map((v) => v.id),
       timeRange: { from: timeFrom, to: timeTo },
       versionRange: { from: query.fromVersion, to: query.toVersion },
     }
-
   } catch (error: any) {
     logger.error('Failed to build version filters', {
       error: error.message,
@@ -448,21 +465,31 @@ async function getChangelogData(
         deployedAt: workflowVersions.deployedAt,
         createdByUserId: workflowVersions.createdByUserId,
         // User info if requested
-        ...(query.includeAuthors ? {
-          authorName: user.name,
-          authorEmail: user.email,
-        } : {}),
+        ...(query.includeAuthors
+          ? {
+              authorName: user.name,
+              authorEmail: user.email,
+            }
+          : {}),
       })
       .from(workflowVersions)
       .leftJoin(
-        user, 
+        user,
         query.includeAuthors ? eq(workflowVersions.createdByUserId, user.id) : sql`false`
       )
       .where(inArray(workflowVersions.id, filters.versionIds))
       .orderBy(
-        query.sortOrder === 'asc' 
-          ? [workflowVersions.versionMajor, workflowVersions.versionMinor, workflowVersions.versionPatch]
-          : [desc(workflowVersions.versionMajor), desc(workflowVersions.versionMinor), desc(workflowVersions.versionPatch)]
+        ...(query.sortOrder === 'asc'
+          ? [
+              workflowVersions.versionMajor,
+              workflowVersions.versionMinor,
+              workflowVersions.versionPatch,
+            ]
+          : [
+              desc(workflowVersions.versionMajor),
+              desc(workflowVersions.versionMinor),
+              desc(workflowVersions.versionPatch),
+            ])
       )
 
     // Get changes if detailed information is requested
@@ -504,7 +531,6 @@ async function getChangelogData(
       changes,
       tags,
     }
-
   } catch (error: any) {
     logger.error('Failed to get changelog data', {
       error: error.message,
@@ -547,7 +573,7 @@ async function generateChangelog(
   const entries = versions.map((version: any) => {
     const versionChanges = changesByVersion[version.id] || []
     const versionTags = tagsByVersion[version.id] || []
-    
+
     return generateChangelogEntry(version, versionChanges, versionTags, query)
   })
 
@@ -598,10 +624,10 @@ function generateChangelogEntry(
 ) {
   // Categorize changes
   const categorizedChanges = categorizeChanges(changes)
-  
+
   // Generate human-readable descriptions
   const changeDescriptions = generateChangeDescriptions(categorizedChanges)
-  
+
   // Build entry based on format
   const entry: any = {
     version: {
@@ -611,23 +637,27 @@ function generateChangelogEntry(
       description: version.versionDescription,
     },
     date: version.createdAt,
-    author: query.includeAuthors ? {
-      name: version.authorName,
-      email: version.authorEmail,
-    } : undefined,
+    author: query.includeAuthors
+      ? {
+          name: version.authorName,
+          email: version.authorEmail,
+        }
+      : undefined,
     deployment: {
       isDeployed: version.isDeployed,
       deployedAt: version.deployedAt,
     },
-    tags: tags.filter(tag => !tag.isSystemTag).map(tag => ({
-      name: tag.tagName,
-      color: tag.tagColor,
-      description: tag.tagDescription,
-    })),
+    tags: tags
+      .filter((tag) => !tag.isSystemTag)
+      .map((tag) => ({
+        name: tag.tagName,
+        color: tag.tagColor,
+        description: tag.tagDescription,
+      })),
     changes: changeDescriptions,
     statistics: {
       totalChanges: changes.length,
-      breakingChanges: changes.filter(c => c.breakingChange).length,
+      breakingChanges: changes.filter((c) => c.breakingChange).length,
       impactLevel: calculateOverallImpactLevel(changes),
     },
   }
@@ -650,19 +680,23 @@ function generateChangelogEntry(
  */
 function categorizeChanges(changes: any[]) {
   const categories = {
-    breaking: changes.filter(c => c.breakingChange),
-    features: changes.filter(c => c.changeType.includes('added') && !c.breakingChange),
-    improvements: changes.filter(c => c.changeType.includes('modified') && !c.breakingChange),
-    fixes: changes.filter(c => c.changeType.includes('fixed') || c.changeType.includes('corrected')),
-    deprecated: changes.filter(c => c.changeType.includes('deprecated')),
-    removed: changes.filter(c => c.changeType.includes('removed') && !c.breakingChange),
-    internal: changes.filter(c => c.entityType === 'metadata' || c.changeType.includes('internal')),
-    other: [],
+    breaking: changes.filter((c) => c.breakingChange),
+    features: changes.filter((c) => c.changeType.includes('added') && !c.breakingChange),
+    improvements: changes.filter((c) => c.changeType.includes('modified') && !c.breakingChange),
+    fixes: changes.filter(
+      (c) => c.changeType.includes('fixed') || c.changeType.includes('corrected')
+    ),
+    deprecated: changes.filter((c) => c.changeType.includes('deprecated')),
+    removed: changes.filter((c) => c.changeType.includes('removed') && !c.breakingChange),
+    internal: changes.filter(
+      (c) => c.entityType === 'metadata' || c.changeType.includes('internal')
+    ),
+    other: [] as any[],
   }
 
   // Put remaining changes in 'other' category
-  const categorized = Object.values(categories).flat()
-  categories.other = changes.filter(c => !categorized.includes(c))
+  const categorized: any[] = Object.values(categories).flat()
+  categories.other = changes.filter((c) => !categorized.includes(c))
 
   return categories
 }
@@ -673,11 +707,13 @@ function categorizeChanges(changes: any[]) {
 function generateChangeDescriptions(categorizedChanges: any) {
   const descriptions: any = {}
 
-  Object.entries(categorizedChanges).forEach(([category, changes]: [string, any[]]) => {
-    if (changes.length === 0) return
+  Object.entries(categorizedChanges).forEach(([category, changes]) => {
+    const changeList = changes as any[]
+    if (changeList.length === 0) return
 
-    descriptions[category] = changes.map(change => ({
-      description: change.changeDescription || humanizeChangeType(change.changeType, change.entityName),
+    descriptions[category] = changeList.map((change) => ({
+      description:
+        change.changeDescription || humanizeChangeType(change.changeType, change.entityName),
       entityType: change.entityType,
       entityName: change.entityName,
       impactLevel: change.impactLevel,
@@ -692,29 +728,29 @@ function generateChangeDescriptions(categorizedChanges: any) {
  */
 function humanizeChangeType(changeType: string, entityName?: string): string {
   const entity = entityName || 'component'
-  
+
   const changeTypeMap: Record<string, string> = {
-    'block_added': `Added new ${entity} block`,
-    'block_removed': `Removed ${entity} block`,
-    'block_modified': `Updated ${entity} block configuration`,
-    'block_moved': `Repositioned ${entity} block`,
-    'edge_added': `Added new connection`,
-    'edge_removed': `Removed connection`,
-    'edge_modified': `Updated connection configuration`,
-    'loop_added': `Added new loop container`,
-    'loop_removed': `Removed loop container`,
-    'loop_modified': `Updated loop configuration`,
-    'parallel_added': `Added new parallel container`,
-    'parallel_removed': `Removed parallel container`,
-    'parallel_modified': `Updated parallel configuration`,
-    'metadata_modified': `Updated workflow metadata`,
-    'variable_added': `Added new variable`,
-    'variable_removed': `Removed variable`,
-    'variable_modified': `Updated variable configuration`,
-    'permission_changed': `Changed access permissions`,
-    'deployment_changed': `Updated deployment configuration`,
+    block_added: `Added new ${entity} block`,
+    block_removed: `Removed ${entity} block`,
+    block_modified: `Updated ${entity} block configuration`,
+    block_moved: `Repositioned ${entity} block`,
+    edge_added: `Added new connection`,
+    edge_removed: `Removed connection`,
+    edge_modified: `Updated connection configuration`,
+    loop_added: `Added new loop container`,
+    loop_removed: `Removed loop container`,
+    loop_modified: `Updated loop configuration`,
+    parallel_added: `Added new parallel container`,
+    parallel_removed: `Removed parallel container`,
+    parallel_modified: `Updated parallel configuration`,
+    metadata_modified: `Updated workflow metadata`,
+    variable_added: `Added new variable`,
+    variable_removed: `Removed variable`,
+    variable_modified: `Updated variable configuration`,
+    permission_changed: `Changed access permissions`,
+    deployment_changed: `Updated deployment configuration`,
   }
-  
+
   return changeTypeMap[changeType] || `Modified ${entity}`
 }
 
@@ -722,18 +758,18 @@ function humanizeChangeType(changeType: string, entityName?: string): string {
  * Calculate overall impact level for a set of changes
  */
 function calculateOverallImpactLevel(changes: any[]): string {
-  if (changes.some(c => c.breakingChange || c.impactLevel === 'critical')) {
+  if (changes.some((c) => c.breakingChange || c.impactLevel === 'critical')) {
     return 'critical'
   }
-  
-  if (changes.some(c => c.impactLevel === 'high')) {
+
+  if (changes.some((c) => c.impactLevel === 'high')) {
     return 'high'
   }
-  
-  if (changes.some(c => c.impactLevel === 'medium')) {
+
+  if (changes.some((c) => c.impactLevel === 'medium')) {
     return 'medium'
   }
-  
+
   return 'low'
 }
 
@@ -758,8 +794,8 @@ function groupChangelogEntries(entries: any[], groupBy: string) {
  */
 function groupEntriesByDate(entries: any[]) {
   const groups: Record<string, any> = {}
-  
-  entries.forEach(entry => {
+
+  entries.forEach((entry) => {
     const date = new Date(entry.date).toISOString().split('T')[0]
     if (!groups[date]) {
       groups[date] = {
@@ -770,7 +806,7 @@ function groupEntriesByDate(entries: any[]) {
     }
     groups[date].entries.push(entry)
   })
-  
+
   return Object.values(groups).sort((a, b) => b.groupKey.localeCompare(a.groupKey))
 }
 
@@ -779,8 +815,8 @@ function groupEntriesByDate(entries: any[]) {
  */
 function groupEntriesByType(entries: any[]) {
   const groups: Record<string, any> = {}
-  
-  entries.forEach(entry => {
+
+  entries.forEach((entry) => {
     const type = entry.version.type
     if (!groups[type]) {
       groups[type] = {
@@ -791,7 +827,7 @@ function groupEntriesByType(entries: any[]) {
     }
     groups[type].entries.push(entry)
   })
-  
+
   return Object.values(groups)
 }
 
@@ -800,8 +836,8 @@ function groupEntriesByType(entries: any[]) {
  */
 function groupEntriesByImpact(entries: any[]) {
   const groups: Record<string, any> = {}
-  
-  entries.forEach(entry => {
+
+  entries.forEach((entry) => {
     const impact = entry.statistics.impactLevel
     if (!groups[impact]) {
       groups[impact] = {
@@ -812,10 +848,10 @@ function groupEntriesByImpact(entries: any[]) {
     }
     groups[impact].entries.push(entry)
   })
-  
+
   // Order by impact level
   const order = ['critical', 'high', 'medium', 'low']
-  return order.map(level => groups[level]).filter(Boolean)
+  return order.map((level) => groups[level]).filter(Boolean)
 }
 
 /**
@@ -823,34 +859,35 @@ function groupEntriesByImpact(entries: any[]) {
  */
 function formatAsMarkdown(entry: any): string {
   const { version, date, author, changes, tags } = entry
-  
+
   let markdown = `## [${version.number}] - ${new Date(date).toISOString().split('T')[0]}\n\n`
-  
+
   if (version.description) {
     markdown += `${version.description}\n\n`
   }
-  
+
   if (tags.length > 0) {
     markdown += `**Tags:** ${tags.map((t: any) => t.name).join(', ')}\n\n`
   }
-  
+
   if (author?.name) {
     markdown += `**Author:** ${author.name}\n\n`
   }
-  
+
   // Add changes by category
-  Object.entries(changes).forEach(([category, categoryChanges]: [string, any[]]) => {
-    if (categoryChanges.length === 0) return
-    
+  Object.entries(changes).forEach(([category, categoryChanges]) => {
+    const changeList = categoryChanges as any[]
+    if (changeList.length === 0) return
+
     markdown += `### ${category.charAt(0).toUpperCase() + category.slice(1)}\n\n`
-    
-    categoryChanges.forEach(change => {
+
+    changeList.forEach((change) => {
       markdown += `- ${change.description}\n`
     })
-    
+
     markdown += '\n'
   })
-  
+
   return markdown
 }
 
@@ -860,36 +897,37 @@ function formatAsMarkdown(entry: any): string {
 function formatAsHtml(entry: any): string {
   // Basic HTML formatting - could be enhanced with CSS
   const { version, date, author, changes, tags } = entry
-  
+
   let html = `<div class="changelog-entry">\n`
   html += `  <h2>[${version.number}] - ${new Date(date).toISOString().split('T')[0]}</h2>\n`
-  
+
   if (version.description) {
     html += `  <p class="description">${version.description}</p>\n`
   }
-  
+
   if (tags.length > 0) {
     html += `  <p class="tags"><strong>Tags:</strong> ${tags.map((t: any) => `<span class="tag">${t.name}</span>`).join(', ')}</p>\n`
   }
-  
+
   if (author?.name) {
     html += `  <p class="author"><strong>Author:</strong> ${author.name}</p>\n`
   }
-  
+
   // Add changes by category
-  Object.entries(changes).forEach(([category, categoryChanges]: [string, any[]]) => {
-    if (categoryChanges.length === 0) return
-    
+  Object.entries(changes).forEach(([category, categoryChanges]) => {
+    const changeList = categoryChanges as any[]
+    if (changeList.length === 0) return
+
     html += `  <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>\n`
     html += `  <ul class="changes ${category}">\n`
-    
-    categoryChanges.forEach(change => {
+
+    changeList.forEach((change) => {
       html += `    <li class="change-item impact-${change.impactLevel}">${change.description}</li>\n`
     })
-    
+
     html += `  </ul>\n`
   })
-  
+
   html += `</div>\n`
   return html
 }
@@ -899,36 +937,37 @@ function formatAsHtml(entry: any): string {
  */
 function formatAsPlainText(entry: any): string {
   const { version, date, author, changes, tags } = entry
-  
+
   let text = `[${version.number}] - ${new Date(date).toISOString().split('T')[0]}\n`
-  
+
   if (version.description) {
     text += `${version.description}\n`
   }
-  
+
   if (tags.length > 0) {
     text += `Tags: ${tags.map((t: any) => t.name).join(', ')}\n`
   }
-  
+
   if (author?.name) {
     text += `Author: ${author.name}\n`
   }
-  
+
   text += '\n'
-  
+
   // Add changes by category
-  Object.entries(changes).forEach(([category, categoryChanges]: [string, any[]]) => {
-    if (categoryChanges.length === 0) return
-    
+  Object.entries(changes).forEach(([category, categoryChanges]) => {
+    const changeList = categoryChanges as any[]
+    if (changeList.length === 0) return
+
     text += `${category.toUpperCase()}:\n`
-    
-    categoryChanges.forEach(change => {
+
+    changeList.forEach((change) => {
       text += `  * ${change.description}\n`
     })
-    
+
     text += '\n'
   })
-  
+
   return text
 }
 
@@ -942,7 +981,7 @@ function handleExport(
   requestId: string
 ) {
   const { format } = query
-  
+
   switch (format) {
     case 'markdown':
       return new NextResponse(exportAsMarkdown(changelog), {
@@ -951,7 +990,7 @@ function handleExport(
           'Content-Disposition': `attachment; filename="${workflowInfo.name}-changelog.md"`,
         },
       })
-    
+
     case 'html':
       return new NextResponse(exportAsHtml(changelog), {
         headers: {
@@ -959,7 +998,7 @@ function handleExport(
           'Content-Disposition': `attachment; filename="${workflowInfo.name}-changelog.html"`,
         },
       })
-    
+
     case 'plain':
       return new NextResponse(exportAsPlainText(changelog), {
         headers: {
@@ -967,7 +1006,7 @@ function handleExport(
           'Content-Disposition': `attachment; filename="${workflowInfo.name}-changelog.txt"`,
         },
       })
-    
+
     default:
       return NextResponse.json(changelog, {
         headers: {
@@ -982,14 +1021,14 @@ function handleExport(
  */
 function exportAsMarkdown(changelog: any): string {
   let markdown = `# ${changelog.title}\n\n`
-  
+
   if (changelog.description) {
     markdown += `${changelog.description}\n\n`
   }
-  
+
   markdown += `*Generated on ${changelog.metadata.generatedAt}*\n\n`
   markdown += `---\n\n`
-  
+
   changelog.entries.forEach((entry: any) => {
     if (typeof entry === 'string') {
       markdown += entry
@@ -998,7 +1037,7 @@ function exportAsMarkdown(changelog: any): string {
     }
     markdown += '\n'
   })
-  
+
   return markdown
 }
 
@@ -1023,14 +1062,14 @@ function exportAsHtml(changelog: any): string {
   html += `    .impact-low { color: #28a745; }\n`
   html += `  </style>\n</head>\n<body>\n`
   html += `  <h1>${changelog.title}</h1>\n`
-  
+
   if (changelog.description) {
     html += `  <p>${changelog.description}</p>\n`
   }
-  
+
   html += `  <p><em>Generated on ${changelog.metadata.generatedAt}</em></p>\n`
   html += `  <hr>\n`
-  
+
   changelog.entries.forEach((entry: any) => {
     if (typeof entry === 'string') {
       html += entry
@@ -1038,7 +1077,7 @@ function exportAsHtml(changelog: any): string {
       html += formatAsHtml(entry)
     }
   })
-  
+
   html += `</body>\n</html>`
   return html
 }
@@ -1048,15 +1087,15 @@ function exportAsHtml(changelog: any): string {
  */
 function exportAsPlainText(changelog: any): string {
   let text = `${changelog.title}\n`
-  text += '='.repeat(changelog.title.length) + '\n\n'
-  
+  text += `${'='.repeat(changelog.title.length)}\n\n`
+
   if (changelog.description) {
     text += `${changelog.description}\n\n`
   }
-  
+
   text += `Generated on ${changelog.metadata.generatedAt}\n\n`
-  text += '-'.repeat(50) + '\n\n'
-  
+  text += `${'-'.repeat(50)}\n\n`
+
   changelog.entries.forEach((entry: any) => {
     if (typeof entry === 'string') {
       text += entry
@@ -1065,7 +1104,7 @@ function exportAsPlainText(changelog: any): string {
     }
     text += '\n'
   })
-  
+
   return text
 }
 
@@ -1075,16 +1114,16 @@ function exportAsPlainText(changelog: any): string {
 function compareVersionNumbers(version1: string, version2: string): number {
   const v1Parts = version1.split('.').map(Number)
   const v2Parts = version2.split('.').map(Number)
-  
+
   for (let i = 0; i < 3; i++) {
     const v1Part = v1Parts[i] || 0
     const v2Part = v2Parts[i] || 0
-    
+
     if (v1Part !== v2Part) {
       return v1Part - v2Part
     }
   }
-  
+
   return 0
 }
 
@@ -1159,14 +1198,13 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         hasAccess = true
       }
     }
 
     return { userId: authenticatedUserId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,

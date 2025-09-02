@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, POST } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { GET, POST } from './route'
 
 // Mock template data for testing
 const sampleTemplateData = {
@@ -36,9 +36,9 @@ const sampleTemplateData = {
         subBlocks: {
           apiKey: { id: 'apiKey', type: 'short-input', value: 'secret-key' },
           oauth: { id: 'oauth', type: 'oauth', value: 'oauth-token' },
-          publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' }
-        }
-      }
+          publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' },
+        },
+      },
     },
     edges: [],
     metadata: {
@@ -47,9 +47,9 @@ const sampleTemplateData = {
         difficulty: 'intermediate',
         version: '1.0.0',
         isPublic: true,
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
 const sampleTemplatesList = [
@@ -62,7 +62,7 @@ const sampleTemplatesList = [
     views: 75,
     stars: 12,
     author: 'Another Author',
-  }
+  },
 ]
 
 const sampleWorkflowData = {
@@ -99,10 +99,10 @@ describe('Template API - GET /api/templates', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for template listing', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -118,10 +118,10 @@ describe('Template API - GET /api/templates', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -129,12 +129,12 @@ describe('Template API - GET /api/templates', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
-      const request = createMockRequest('GET', undefined, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('GET', undefined, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -143,7 +143,7 @@ describe('Template API - GET /api/templates', () => {
     it('should list templates with default parameters', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data).toEqual(sampleTemplatesList)
@@ -158,7 +158,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?category=AI%20%26%20Automation'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.category).toBe('AI & Automation')
@@ -169,29 +169,25 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?search=workflow%20automation'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.search).toBe('workflow automation')
     })
 
     it('should filter templates by workflow ID', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?workflowId=workflow-456'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?workflowId=workflow-456')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.workflowId).toBe('workflow-456')
     })
 
     it('should filter templates by author user ID', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?userId=user-123'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?userId=user-123')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.userId).toBe('user-123')
@@ -200,11 +196,9 @@ describe('Template API - GET /api/templates', () => {
 
   describe('Advanced Filtering', () => {
     it('should filter by star rating range', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?minStars=10&maxStars=50'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?minStars=10&maxStars=50')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.minStars).toBe(10)
@@ -212,11 +206,9 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should filter by minimum view count', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?minViews=100'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?minViews=100')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.minViews).toBe(100)
@@ -227,7 +219,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?createdAfter=2024-01-01T00:00:00.000Z&createdBefore=2024-12-31T23:59:59.999Z'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.createdAfter).toBe('2024-01-01T00:00:00.000Z')
@@ -239,7 +231,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?updatedAfter=2024-01-01T00:00:00.000Z&updatedBefore=2024-12-31T23:59:59.999Z'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.updatedAfter).toBe('2024-01-01T00:00:00.000Z')
@@ -247,11 +239,9 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should filter by starred templates', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?isStarred=true'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?isStarred=true')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.isStarred).toBe(true)
@@ -262,7 +252,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?tags=ai,automation,workflow'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.tags).toBe('ai,automation,workflow')
@@ -275,7 +265,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?sortBy=name&sortOrder=asc'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.sortBy).toBe('name')
@@ -283,14 +273,20 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should sort templates by views, stars, and creation date', async () => {
-      const sortOptions = ['views', 'stars', 'createdAt', 'updatedAt', 'author', 'category', 'relevance']
-      
+      const sortOptions = [
+        'views',
+        'stars',
+        'createdAt',
+        'updatedAt',
+        'author',
+        'category',
+        'relevance',
+      ]
+
       for (const sortBy of sortOptions) {
-        const request = new NextRequest(
-          `http://localhost:3000/api/templates?sortBy=${sortBy}`
-        )
+        const request = new NextRequest(`http://localhost:3000/api/templates?sortBy=${sortBy}`)
         const response = await GET(request)
-        
+
         expect(response.status).toBe(200)
         const data = await response.json()
         expect(data.filters.sortBy).toBe(sortBy)
@@ -298,11 +294,9 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should handle pagination correctly', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?page=2&limit=5'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?page=2&limit=5')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.pagination.page).toBe(2)
@@ -311,11 +305,9 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should validate pagination limits', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?limit=150'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?limit=150')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -326,9 +318,9 @@ describe('Template API - GET /api/templates', () => {
     it('should include statistics when requested', async () => {
       // Mock category stats query
       const mockCategoryStats = [
-        { category: 'AI & Automation', count: 10, avgStars: 4.5, totalViews: 1000 }
+        { category: 'AI & Automation', count: 10, avgStars: 4.5, totalViews: 1000 },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
@@ -337,12 +329,10 @@ describe('Template API - GET /api/templates', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(mockCategoryStats),
       }))
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?includeStats=true'
-      )
+
+      const request = new NextRequest('http://localhost:3000/api/templates?includeStats=true')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.includeStats).toBe(true)
@@ -351,11 +341,9 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should include template state when requested', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/templates?includeState=true'
-      )
+      const request = new NextRequest('http://localhost:3000/api/templates?includeState=true')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.includeState).toBe(true)
@@ -364,10 +352,10 @@ describe('Template API - GET /api/templates', () => {
     it('should clean filter defaults in response', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Default values should be removed from response
       expect(data.filters.page).toBeUndefined()
       expect(data.filters.limit).toBeUndefined()
@@ -382,7 +370,7 @@ describe('Template API - GET /api/templates', () => {
         'http://localhost:3000/api/templates?sortBy=invalidField&page=abc'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -393,10 +381,10 @@ describe('Template API - GET /api/templates', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -408,7 +396,7 @@ describe('Template API - GET /api/templates', () => {
     it('should include user star status when authenticated', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.meta.isAuthenticated).toBe(true)
@@ -416,10 +404,10 @@ describe('Template API - GET /api/templates', () => {
 
     it('should handle unauthenticated users for public templates', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(401) // This API requires authentication
     })
   })
@@ -455,12 +443,12 @@ describe('Template API - POST /api/templates', () => {
               type: 'starter',
               subBlocks: {
                 apiKey: { id: 'apiKey', type: 'short-input', value: 'secret-key' },
-                publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' }
-              }
-            }
+                publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' },
+              },
+            },
           },
           edges: [],
-          metadata: {}
+          metadata: {},
         },
         tags: ['ai', 'automation'],
         difficulty: 'intermediate',
@@ -471,10 +459,10 @@ describe('Template API - POST /api/templates', () => {
         isPublic: true,
         allowComments: true,
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.id).toBeDefined()
@@ -499,12 +487,12 @@ describe('Template API - POST /api/templates', () => {
         state: {
           blocks: {},
           edges: [],
-        }
+        },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.name).toBe('Minimal Template')
@@ -531,23 +519,23 @@ describe('Template API - POST /api/templates', () => {
                 apiKey: { id: 'apiKey', type: 'password', value: 'super-secret-key' },
                 oauthToken: { id: 'oauthToken', type: 'oauth', value: 'oauth-secret' },
                 credential: { id: 'credential', type: 'credential', value: 'credential-data' },
-                publicValue: { id: 'publicValue', type: 'text', value: 'public-data' }
+                publicValue: { id: 'publicValue', type: 'text', value: 'public-data' },
               },
               data: {
                 password: 'password-value',
                 token: 'token-value',
-                publicData: 'safe-data'
-              }
-            }
+                publicData: 'safe-data',
+              },
+            },
           },
           edges: [],
         },
         sanitizeCredentials: true, // Explicitly enable
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       // Template should be created successfully with credentials sanitized
     })
@@ -566,18 +554,18 @@ describe('Template API - POST /api/templates', () => {
             'dev-block': {
               id: 'dev-block',
               subBlocks: {
-                apiKey: { value: 'preserved-secret' }
-              }
-            }
+                apiKey: { value: 'preserved-secret' },
+              },
+            },
           },
           edges: [],
         },
         sanitizeCredentials: false, // Disable sanitization
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       // Credentials should be preserved
     })
@@ -586,7 +574,7 @@ describe('Template API - POST /api/templates', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for template creation', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'Unauthorized Template',
@@ -595,12 +583,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Test',
         icon: 'test',
         color: '#FF0000',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -616,7 +604,7 @@ describe('Template API - POST /api/templates', () => {
           }),
         }),
       }))
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'API Key Template',
@@ -625,12 +613,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'API',
         icon: 'api',
         color: '#0066FF',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData, { 'x-api-key': 'test-api-key' })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
     })
 
@@ -638,7 +626,7 @@ describe('Template API - POST /api/templates', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'Internal Template',
@@ -647,14 +635,14 @@ describe('Template API - POST /api/templates', () => {
         category: 'System',
         icon: 'system',
         color: '#666666',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
-      const request = createMockRequest('POST', templateData, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('POST', templateData, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
     })
   })
@@ -669,7 +657,7 @@ describe('Template API - POST /api/templates', () => {
           }),
         }),
       }))
-      
+
       const templateData = {
         workflowId: 'nonexistent-workflow',
         name: 'Template for Missing Workflow',
@@ -678,12 +666,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Test',
         icon: 'error',
         color: '#FF0000',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow not found')
@@ -695,7 +683,7 @@ describe('Template API - POST /api/templates', () => {
         ...sampleWorkflowData,
         userId: 'different-user-456',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -703,7 +691,7 @@ describe('Template API - POST /api/templates', () => {
           }),
         }),
       }))
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'Unauthorized Template',
@@ -712,12 +700,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Test',
         icon: 'error',
         color: '#FF0000',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied to workflow')
@@ -728,7 +716,7 @@ describe('Template API - POST /api/templates', () => {
     it('should prevent duplicate template names by same user', async () => {
       // Mock duplicate template found
       const duplicateTemplate = [{ id: 'existing-template-123' }]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
@@ -741,7 +729,7 @@ describe('Template API - POST /api/templates', () => {
           return Promise.resolve(duplicateTemplate)
         }),
       }))
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'Sample AI Workflow Template', // Same name as existing template
@@ -750,12 +738,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Test',
         icon: 'error',
         color: '#FF0000',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(409)
       const data = await response.json()
       expect(data.error).toBe('Template name already exists')
@@ -769,10 +757,10 @@ describe('Template API - POST /api/templates', () => {
         // Missing required fields
         name: 'Incomplete Template',
       }
-      
+
       const request = createMockRequest('POST', incompleteData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid template data')
@@ -788,12 +776,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'x'.repeat(60), // Too long
         icon: 'x'.repeat(60), // Too long
         color: 'invalid-color',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', invalidData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid template data')
@@ -809,12 +797,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Test',
         icon: 'test',
         color: 'not-a-hex-color',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', invalidColorData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid template data')
@@ -830,12 +818,12 @@ describe('Template API - POST /api/templates', () => {
         icon: 'test',
         color: '#FF0000',
         state: { blocks: {}, edges: [] },
-        difficulty: 'expert' // Invalid difficulty level
+        difficulty: 'expert', // Invalid difficulty level
       }
-      
+
       const request = createMockRequest('POST', invalidDifficultyData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid template data')
@@ -855,7 +843,7 @@ describe('Template API - POST /api/templates', () => {
         state: {
           blocks: { 'block-1': { id: 'block-1', type: 'test' } },
           edges: [],
-          metadata: { custom: 'data' }
+          metadata: { custom: 'data' },
         },
         tags: ['metadata', 'advanced', 'comprehensive'],
         difficulty: 'advanced',
@@ -866,10 +854,10 @@ describe('Template API - POST /api/templates', () => {
         isPublic: false,
         allowComments: false,
       }
-      
+
       const request = createMockRequest('POST', richTemplateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.metadata.tags).toEqual(['metadata', 'advanced', 'comprehensive'])
@@ -891,13 +879,13 @@ describe('Template API - POST /api/templates', () => {
         category: 'Basic',
         icon: 'basic',
         color: '#666666',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
         // No optional metadata provided
       }
-      
+
       const request = createMockRequest('POST', minimalTemplateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.metadata.tags).toEqual([])
@@ -913,7 +901,7 @@ describe('Template API - POST /api/templates', () => {
       mocks.database.mockDb.insert.mockImplementation(() => {
         throw new Error('Database insertion failed')
       })
-      
+
       const templateData = {
         workflowId: 'workflow-456',
         name: 'Database Error Template',
@@ -922,12 +910,12 @@ describe('Template API - POST /api/templates', () => {
         category: 'Error',
         icon: 'error',
         color: '#FF0000',
-        state: { blocks: {}, edges: [] }
+        state: { blocks: {}, edges: [] },
       }
-      
+
       const request = createMockRequest('POST', templateData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -940,9 +928,9 @@ describe('Template API - POST /api/templates', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -953,7 +941,7 @@ describe('Template API - POST /api/templates', () => {
     it('should sanitize sensitive data in workflow state', async () => {
       // The sanitizeWorkflowState function should remove sensitive credentials
       // This is tested implicitly through the template creation process
-      
+
       const templateWithSecrets = {
         workflowId: 'workflow-456',
         name: 'Secure Template',
@@ -970,18 +958,18 @@ describe('Template API - POST /api/templates', () => {
                 apiKey: { value: 'secret-key-to-sanitize' },
                 oauthCredential: { value: 'oauth-token-to-sanitize' },
                 password: { value: 'password-to-sanitize' },
-                publicValue: { value: 'safe-public-value' }
-              }
-            }
+                publicValue: { value: 'safe-public-value' },
+              },
+            },
           },
-          edges: []
+          edges: [],
         },
-        sanitizeCredentials: true
+        sanitizeCredentials: true,
       }
-      
+
       const request = createMockRequest('POST', templateWithSecrets)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       // Sensitive data should be sanitized in the template state
     })

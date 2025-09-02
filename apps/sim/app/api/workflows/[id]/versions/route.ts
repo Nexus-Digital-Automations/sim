@@ -1,13 +1,13 @@
 /**
  * Workflow Versions API Endpoints
- * 
+ *
  * Comprehensive API for managing workflow versions with the following capabilities:
  * - GET /api/workflows/[id]/versions - List all versions with filtering and pagination
  * - POST /api/workflows/[id]/versions - Create a new version/snapshot of the workflow
- * 
+ *
  * This API provides enterprise-grade workflow versioning with semantic versioning,
  * change tracking, and performance optimizations for large workflows.
- * 
+ *
  * Features:
  * - Automatic and manual version creation
  * - Semantic versioning (major.minor.patch)
@@ -18,21 +18,21 @@
  * - Production-ready error handling and logging
  */
 
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
-import { getUserEntityPermissions, hasAdminPermission } from '@/lib/permissions/utils'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { loadWorkflowFromNormalizedTables } from '@/lib/workflows/db-helpers'
-import { 
-  WorkflowVersionManager, 
+import {
   CreateVersionSchema,
-  type WorkflowVersion 
+  type WorkflowVersion,
+  WorkflowVersionManager,
 } from '@/lib/workflows/versioning'
 import { db } from '@/db'
-import { workflow as workflowTable, apiKey as apiKeyTable } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { apiKey as apiKeyTable, workflow as workflowTable } from '@/db/schema'
 
 const logger = createLogger('WorkflowVersionsAPI')
 
@@ -42,30 +42,45 @@ const ListVersionsQuerySchema = z.object({
   limit: z.string().regex(/^\d+$/).transform(Number).default('50').optional(),
   offset: z.string().regex(/^\d+$/).transform(Number).default('0').optional(),
   page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  
+
   // Filtering options
   branch: z.string().optional(),
   type: z.enum(['auto', 'manual', 'checkpoint', 'branch']).optional(),
   tag: z.string().optional(),
-  deployed: z.string().transform(val => val === 'true').optional(),
-  current: z.string().transform(val => val === 'true').optional(),
-  
+  deployed: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  current: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+
   // Sorting options
   sort: z.enum(['version', 'created', 'size']).default('version').optional(),
   order: z.enum(['asc', 'desc']).default('desc').optional(),
-  
+
   // Data inclusion options
-  includeState: z.string().transform(val => val === 'true').optional(),
-  includeChanges: z.string().transform(val => val === 'true').optional(),
-  includeTags: z.string().transform(val => val === 'true').optional(),
+  includeState: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  includeChanges: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  includeTags: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
 })
 
 /**
  * GET /api/workflows/[id]/versions
- * 
+ *
  * List all versions for a workflow with advanced filtering, sorting, and pagination.
  * Supports various query parameters for filtering and customizing the response.
- * 
+ *
  * Query Parameters:
  * - limit: Number of versions per page (default: 50, max: 100)
  * - offset: Number of versions to skip (default: 0)
@@ -81,10 +96,7 @@ const ListVersionsQuerySchema = z.object({
  * - includeChanges: Include change summary in response
  * - includeTags: Include version tags in response
  */
-export async function GET(
-  request: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -102,7 +114,7 @@ export async function GET(
     if (validatedQuery.page && validatedQuery.page > 0) {
       offset = (validatedQuery.page - 1) * limit
     }
-    
+
     // Enforce reasonable limits
     limit = Math.min(limit, 100)
 
@@ -130,29 +142,30 @@ export async function GET(
 
     // Additional filtering for specific cases
     let filteredVersions = versions
-    
+
     if (validatedQuery.current) {
-      filteredVersions = versions.filter(v => v.isCurrent)
+      filteredVersions = versions.filter((v) => v.isCurrent)
     }
-    
+
     if (validatedQuery.deployed !== undefined) {
-      filteredVersions = versions.filter(v => v.isDeployed === validatedQuery.deployed)
+      filteredVersions = versions.filter((v) => v.isDeployed === validatedQuery.deployed)
     }
 
     // Apply sorting if different from default
-    if (validatedQuery.sort !== 'version') {
-      filteredVersions = await applySorting(filteredVersions, validatedQuery.sort, validatedQuery.order)
+    if (validatedQuery.sort && validatedQuery.sort !== 'version') {
+      filteredVersions = await applySorting(
+        filteredVersions,
+        validatedQuery.sort,
+        validatedQuery.order || 'desc'
+      )
     }
 
     // Enhance versions with additional data if requested
-    const enhancedVersions = await enhanceVersionsWithOptionalData(
-      filteredVersions,
-      {
-        includeState: validatedQuery.includeState || false,
-        includeChanges: validatedQuery.includeChanges || false,
-        includeTags: validatedQuery.includeTags || false,
-      }
-    )
+    const enhancedVersions = await enhanceVersionsWithOptionalData(filteredVersions, {
+      includeState: validatedQuery.includeState || false,
+      includeChanges: validatedQuery.includeChanges || false,
+      includeTags: validatedQuery.includeTags || false,
+    })
 
     // Calculate pagination metadata
     const totalPages = Math.ceil(total / limit)
@@ -200,10 +213,9 @@ export async function GET(
     })
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters`, {
@@ -211,11 +223,11 @@ export async function GET(
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid query parameters', 
+        {
+          error: 'Invalid query parameters',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -227,11 +239,11 @@ export async function GET(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to list workflow versions', 
+      {
+        error: 'Failed to list workflow versions',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -239,11 +251,11 @@ export async function GET(
 
 /**
  * POST /api/workflows/[id]/versions
- * 
+ *
  * Create a new version/snapshot of the current workflow state.
  * Supports both automatic and manual version creation with comprehensive
  * change tracking and performance monitoring.
- * 
+ *
  * Request Body:
  * - versionType: 'auto' | 'manual' | 'checkpoint' | 'branch'
  * - versionTag?: string (e.g., 'stable', 'beta', 'production')
@@ -252,10 +264,7 @@ export async function GET(
  * - branchName?: string (default: 'main')
  * - parentVersionId?: string (for branching)
  */
-export async function POST(
-  request: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -265,12 +274,12 @@ export async function POST(
 
     // Authentication and authorization check with write permissions
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       logger.warn(`[${requestId}] Write access denied for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -284,13 +293,10 @@ export async function POST(
 
     // Get current workflow state from normalized tables
     const currentState = await loadWorkflowFromNormalizedTables(workflowId)
-    
+
     if (!currentState) {
       logger.error(`[${requestId}] No workflow state found for ${workflowId}`)
-      return NextResponse.json(
-        { error: 'Workflow state not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Workflow state not found', requestId }, { status: 404 })
     }
 
     // Extract request context for auditing
@@ -301,7 +307,7 @@ export async function POST(
 
     // Initialize version manager and create version
     const versionManager = new WorkflowVersionManager()
-    
+
     const newVersion = await versionManager.createVersion(
       workflowId,
       {
@@ -343,17 +349,19 @@ export async function POST(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Version ${newVersion.versionNumber} created successfully in ${elapsed}ms`, {
-      versionId: newVersion.id,
-      stateSize: newVersion.stateSize,
-      versionType: newVersion.versionType,
-    })
+    logger.info(
+      `[${requestId}] Version ${newVersion.versionNumber} created successfully in ${elapsed}ms`,
+      {
+        versionId: newVersion.id,
+        stateSize: newVersion.stateSize,
+        versionType: newVersion.versionType,
+      }
+    )
 
     return NextResponse.json(response, { status: 201 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid version creation data`, {
@@ -361,11 +369,11 @@ export async function POST(
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid request data', 
+        {
+          error: 'Invalid request data',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -374,11 +382,11 @@ export async function POST(
     if (error.message.includes('No changes detected')) {
       logger.info(`[${requestId}] No changes detected, skipping version creation`)
       return NextResponse.json(
-        { 
-          error: 'No changes detected', 
+        {
+          error: 'No changes detected',
           message: 'Cannot create version with no changes from current state',
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 409 }
       )
     }
@@ -390,11 +398,11 @@ export async function POST(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to create workflow version', 
+      {
+        error: 'Failed to create workflow version',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -478,7 +486,7 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         if (requiredPermission === 'read') {
           hasAccess = true
@@ -489,7 +497,6 @@ async function authenticateAndAuthorize(
     }
 
     return { userId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,
@@ -503,9 +510,9 @@ async function authenticateAndAuthorize(
  * Apply custom sorting to versions
  */
 async function applySorting(
-  versions: WorkflowVersion[], 
-  sort: string, 
-  order: string = 'desc'
+  versions: WorkflowVersion[],
+  sort: string,
+  order = 'desc'
 ): Promise<WorkflowVersion[]> {
   const sorted = [...versions]
 
@@ -516,15 +523,13 @@ async function applySorting(
         return order === 'asc' ? diff : -diff
       })
       break
-    
+
     case 'size':
       sorted.sort((a, b) => {
         const diff = a.stateSize - b.stateSize
         return order === 'asc' ? diff : -diff
       })
       break
-    
-    case 'version':
     default:
       // Already sorted by version number in the database query
       if (order === 'asc') {
@@ -552,24 +557,24 @@ async function enhanceVersionsWithOptionalData(
   // - Remove workflowState if includeState is false
   // - Fetch and include change details if includeChanges is true
   // - Fetch and include tags if includeTags is true
-  
-  return versions.map(version => {
+
+  return versions.map((version) => {
     const enhanced = { ...version }
-    
+
     // Remove large state object unless explicitly requested
     if (!options.includeState) {
-      delete enhanced.workflowState
+      delete (enhanced as any).workflowState
     }
-    
+
     // Add placeholder for future enhancements
     if (options.includeChanges) {
-      enhanced.changes = [] // Would fetch actual changes
+      (enhanced as any).changes = [] // Would fetch actual changes
     }
-    
+
     if (options.includeTags) {
-      enhanced.tags = [] // Would fetch actual tags
+      (enhanced as any).tags = [] // Would fetch actual tags
     }
-    
+
     return enhanced
   })
 }

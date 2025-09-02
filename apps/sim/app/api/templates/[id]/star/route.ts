@@ -1,4 +1,4 @@
-import { and, eq, sql, desc, count } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
@@ -6,7 +6,7 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateStars, templates, apiKey as apiKeyTable, user } from '@/db/schema'
+import { apiKey as apiKeyTable, templateStars, templates, user } from '@/db/schema'
 
 const logger = createLogger('TemplateStarAPI')
 
@@ -30,11 +30,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id } = await params
+  
+  // Parse query parameters outside try block for error handling access
+  const { searchParams } = new URL(request.url)
+  const queryParams = Object.fromEntries(searchParams.entries())
 
   try {
-    // Parse query parameters
-    const { searchParams } = new URL(request.url)
-    const queryParams = Object.fromEntries(searchParams.entries())
     const options = StarOptionsSchema.parse(queryParams)
 
     // Authentication - support both session and API key
@@ -87,12 +88,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Check if the user has starred this template (if authenticated)
     let isStarred = false
     let userStarDate = null
-    
+
     if (userId) {
       const starRecord = await db
-        .select({ 
+        .select({
           id: templateStars.id,
-          starredAt: templateStars.starredAt 
+          starredAt: templateStars.starredAt,
         })
         .from(templateStars)
         .where(and(eq(templateStars.templateId, id), eq(templateStars.userId, userId)))
@@ -116,15 +117,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         .from(templateStars)
         .where(eq(templateStars.templateId, id))
 
-      starStats = statsQuery[0] ? {
-        totalStars: statsQuery[0].totalStars || 0,
-        starredThisWeek: statsQuery[0].starredThisWeek || 0,
-        starredThisMonth: statsQuery[0].starredThisMonth || 0,
-        oldestStar: statsQuery[0].oldestStar,
-        newestStar: statsQuery[0].newestStar,
-        averageStarsPerDay: statsQuery[0].totalStars > 0 && statsQuery[0].oldestStar ? 
-          Math.round((statsQuery[0].totalStars / Math.max(1, Math.ceil((Date.now() - new Date(statsQuery[0].oldestStar).getTime()) / (1000 * 60 * 60 * 24)))) * 100) / 100 : 0,
-      } : null
+      starStats = statsQuery[0]
+        ? {
+            totalStars: statsQuery[0].totalStars || 0,
+            starredThisWeek: statsQuery[0].starredThisWeek || 0,
+            starredThisMonth: statsQuery[0].starredThisMonth || 0,
+            oldestStar: statsQuery[0].oldestStar,
+            newestStar: statsQuery[0].newestStar,
+            averageStarsPerDay:
+              statsQuery[0].totalStars > 0 && statsQuery[0].oldestStar
+                ? Math.round(
+                    (statsQuery[0].totalStars /
+                      Math.max(
+                        1,
+                        Math.ceil(
+                          (Date.now() - new Date(statsQuery[0].oldestStar).getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )
+                      )) *
+                      100
+                  ) / 100
+                : 0,
+          }
+        : null
     }
 
     // Get recent users who starred this template if requested
@@ -143,7 +158,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         .orderBy(desc(templateStars.starredAt))
         .limit(10)
 
-      recentStars = recentStarsQuery.map(star => ({
+      recentStars = recentStarsQuery.map((star) => ({
         userId: star.userId,
         name: star.userName,
         image: star.userImage,
@@ -152,10 +167,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Star status checked: ${isStarred} for template: ${id} in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Star status checked: ${isStarred} for template: ${id} in ${elapsed}ms`
+    )
 
-    return NextResponse.json({ 
-      data: { 
+    return NextResponse.json({
+      data: {
         isStarred,
         userStarDate,
       },
@@ -174,21 +191,30 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
-      logger.warn(`[${requestId}] Invalid star check options for template ${id} after ${elapsed}ms`, {
-        errors: error.errors,
-        queryParams,
-      })
+      logger.warn(
+        `[${requestId}] Invalid star check options for template ${id} after ${elapsed}ms`,
+        {
+          errors: error.errors,
+          queryParams,
+        }
+      )
       return NextResponse.json(
         { error: 'Invalid query parameters', details: error.errors },
         { status: 400 }
       )
     }
 
-    logger.error(`[${requestId}] Error checking star status for template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    logger.error(
+      `[${requestId}] Error checking star status for template: ${id} after ${elapsed}ms`,
+      error
+    )
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -242,6 +268,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       userId = body.userId || 'system'
     }
 
+    // Final check to ensure userId is set
+    if (!userId) {
+      logger.warn(`[${requestId}] No user ID available for star operation`)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     logger.info(`[${requestId}] Adding comprehensive star for template: ${id}, user: ${userId}`)
 
     // Verify the template exists
@@ -260,7 +292,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const existingStar = await db
       .select({ id: templateStars.id })
       .from(templateStars)
-      .where(and(eq(templateStars.templateId, id), eq(templateStars.userId, session.user.id)))
+      .where(and(eq(templateStars.templateId, id), eq(templateStars.userId, userId)))
       .limit(1)
 
     if (existingStar.length > 0) {
@@ -274,7 +306,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       // Add the star record with enhanced metadata
       const starId = uuidv4()
       const now = new Date()
-      
+
       await tx.insert(templateStars).values({
         id: starId,
         userId: userId!,
@@ -308,40 +340,49 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       newStarCount,
       starId: starResult.starId,
     })
-    
-    return NextResponse.json({ 
-      message: 'Template starred successfully',
-      template: {
-        id,
-        name: starResult.templateName,
-        newStarCount,
+
+    return NextResponse.json(
+      {
+        message: 'Template starred successfully',
+        template: {
+          id,
+          name: starResult.templateName,
+          newStarCount,
+        },
+        star: {
+          id: starResult.starId,
+          starredAt: new Date(),
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      star: {
-        id: starResult.starId,
-        starredAt: new Date(),
-      },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     // Handle unique constraint violations gracefully
     if (error.code === '23505' || error.message?.includes('duplicate key')) {
       logger.info(`[${requestId}] Duplicate star attempt for template: ${id} after ${elapsed}ms`)
-      return NextResponse.json({ 
-        message: 'Template already starred',
-        requestId,
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          message: 'Template already starred',
+          requestId,
+        },
+        { status: 200 }
+      )
     }
 
     logger.error(`[${requestId}] Error starring template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -402,9 +443,9 @@ export async function DELETE(
 
     // Check if the star exists and get metadata
     const existingStar = await db
-      .select({ 
+      .select({
         id: templateStars.id,
-        starredAt: templateStars.starredAt 
+        starredAt: templateStars.starredAt,
       })
       .from(templateStars)
       .where(and(eq(templateStars.templateId, id), eq(templateStars.userId, userId!)))
@@ -412,10 +453,13 @@ export async function DELETE(
 
     if (existingStar.length === 0) {
       logger.info(`[${requestId}] No star found to remove for template: ${id}`)
-      return NextResponse.json({ 
-        message: 'Template not starred',
-        requestId,
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          message: 'Template not starred',
+          requestId,
+        },
+        { status: 200 }
+      )
     }
 
     const starMetadata = existingStar[0]
@@ -453,29 +497,35 @@ export async function DELETE(
       newStarCount,
       originalStarDate: unstarResult.originalStarDate,
     })
-    
-    return NextResponse.json({ 
-      message: 'Template unstarred successfully',
-      template: {
-        id,
-        name: unstarResult.templateName,
-        newStarCount,
+
+    return NextResponse.json(
+      {
+        message: 'Template unstarred successfully',
+        template: {
+          id,
+          name: unstarResult.templateName,
+          newStarCount,
+        },
+        removedStar: {
+          originalStarDate: unstarResult.originalStarDate,
+          starDuration: Date.now() - new Date(unstarResult.originalStarDate).getTime(),
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      removedStar: {
-        originalStarDate: unstarResult.originalStarDate,
-        starDuration: Date.now() - new Date(unstarResult.originalStarDate).getTime(),
-      },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 200 })
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error unstarring template: ${id} after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }

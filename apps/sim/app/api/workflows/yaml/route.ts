@@ -10,10 +10,16 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
-import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { db } from '@/db'
-import { workflow, workflowBlocks, workflowEdges, workflowSubflows, apiKey as apiKeyTable } from '@/db/schema'
+import {
+  apiKey as apiKeyTable,
+  workflow,
+  workflowBlocks,
+  workflowEdges,
+  workflowSubflows,
+} from '@/db/schema'
 
 const logger = createLogger('WorkflowYAMLAPI')
 
@@ -94,9 +100,17 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate request body
     const body = await req.json()
-    const { yaml, name, description, color, workspaceId, folderId, 
-            preserveIds, overwriteExisting, validateOnly } = 
-      ImportYAMLSchema.parse(body)
+    const {
+      yaml,
+      name,
+      description,
+      color,
+      workspaceId,
+      folderId,
+      preserveIds,
+      overwriteExisting,
+      validateOnly,
+    } = ImportYAMLSchema.parse(body)
 
     logger.info(`[${requestId}] Creating workflow from YAML`, {
       name,
@@ -109,23 +123,29 @@ export async function POST(req: NextRequest) {
     })
 
     // Call sim-agent service to parse and validate YAML
-    const simAgentResponse = await callSimAgent({
-      action: 'parse_yaml',
-      yaml,
-      options: {
-        validate: true,
-        preserveIds,
-        generateLayout: true,
-      }
-    }, requestId)
+    const simAgentResponse = await callSimAgent(
+      {
+        action: 'parse_yaml',
+        yaml,
+        options: {
+          validate: true,
+          preserveIds,
+          generateLayout: true,
+        },
+      },
+      requestId
+    )
 
     if (!simAgentResponse.success) {
       logger.error(`[${requestId}] YAML parsing failed:`, simAgentResponse.error)
-      return NextResponse.json({
-        error: 'YAML parsing failed',
-        details: simAgentResponse.error,
-        validationErrors: simAgentResponse.validationErrors || [],
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'YAML parsing failed',
+          details: simAgentResponse.error,
+          validationErrors: simAgentResponse.validationErrors || [],
+        },
+        { status: 400 }
+      )
     }
 
     const parsedWorkflow = simAgentResponse.workflow
@@ -134,25 +154,30 @@ export async function POST(req: NextRequest) {
     if (validateOnly) {
       const elapsed = Date.now() - startTime
       logger.info(`[${requestId}] YAML validation completed in ${elapsed}ms`)
-      
-      return NextResponse.json({
-        valid: true,
-        workflow: parsedWorkflow,
-        summary: {
-          blocks: parsedWorkflow.blocks?.length || 0,
-          connections: parsedWorkflow.connections?.length || 0,
-          loops: Object.keys(parsedWorkflow.loops || {}).length,
-          parallels: Object.keys(parsedWorkflow.parallels || {}).length,
+
+      return NextResponse.json(
+        {
+          valid: true,
+          workflow: parsedWorkflow,
+          summary: {
+            blocks: parsedWorkflow.blocks?.length || 0,
+            connections: parsedWorkflow.connections?.length || 0,
+            loops: Object.keys(parsedWorkflow.loops || {}).length,
+            parallels: Object.keys(parsedWorkflow.parallels || {}).length,
+          },
+          validationTime: elapsed,
         },
-        validationTime: elapsed,
-      }, { status: 200 })
+        { status: 200 }
+      )
     }
 
     // Check workspace permissions if specified
     if (workspaceId && userId) {
       const userPermission = await getUserEntityPermissions(userId, 'workspace', workspaceId)
       if (userPermission !== 'write' && userPermission !== 'admin') {
-        logger.warn(`[${requestId}] User ${userId} lacks write permission for workspace ${workspaceId}`)
+        logger.warn(
+          `[${requestId}] User ${userId} lacks write permission for workspace ${workspaceId}`
+        )
         return NextResponse.json({ error: 'Insufficient workspace permissions' }, { status: 403 })
       }
     }
@@ -171,12 +196,16 @@ export async function POST(req: NextRequest) {
           .limit(1)
 
         if (existingWorkflow.length > 0 && !overwriteExisting) {
-          throw new Error(`Workflow with ID ${parsedWorkflow.id} already exists. Use overwriteExisting option to replace it.`)
+          throw new Error(
+            `Workflow with ID ${parsedWorkflow.id} already exists. Use overwriteExisting option to replace it.`
+          )
         }
 
         if (existingWorkflow.length > 0 && overwriteExisting) {
           // Delete existing workflow and related data
-          await tx.delete(workflowSubflows).where(eq(workflowSubflows.workflowId, parsedWorkflow.id))
+          await tx
+            .delete(workflowSubflows)
+            .where(eq(workflowSubflows.workflowId, parsedWorkflow.id))
           await tx.delete(workflowEdges).where(eq(workflowEdges.workflowId, parsedWorkflow.id))
           await tx.delete(workflowBlocks).where(eq(workflowBlocks.workflowId, parsedWorkflow.id))
           await tx.delete(workflow).where(eq(workflow.id, parsedWorkflow.id))
@@ -184,24 +213,27 @@ export async function POST(req: NextRequest) {
       }
 
       // Create main workflow record
-      const [createdWorkflow] = await tx.insert(workflow).values({
-        id: workflowId,
-        userId: userId!,
-        workspaceId: workspaceId || null,
-        folderId: folderId || null,
-        name,
-        description,
-        color,
-        lastSynced: now,
-        createdAt: now,
-        updatedAt: now,
-        isDeployed: false,
-        collaborators: [],
-        runCount: 0,
-        variables: parsedWorkflow.variables || {},
-        isPublished: false,
-        marketplaceData: null,
-      }).returning()
+      const [createdWorkflow] = await tx
+        .insert(workflow)
+        .values({
+          id: workflowId,
+          userId: userId!,
+          workspaceId: workspaceId || null,
+          folderId: folderId || null,
+          name,
+          description,
+          color,
+          lastSynced: now,
+          createdAt: now,
+          updatedAt: now,
+          isDeployed: false,
+          collaborators: [],
+          runCount: 0,
+          variables: parsedWorkflow.variables || {},
+          isPublished: false,
+          marketplaceData: null,
+        })
+        .returning()
 
       // Insert blocks
       if (parsedWorkflow.blocks && parsedWorkflow.blocks.length > 0) {
@@ -247,28 +279,32 @@ export async function POST(req: NextRequest) {
 
       // Insert loops
       if (parsedWorkflow.loops && Object.keys(parsedWorkflow.loops).length > 0) {
-        const loopInserts = Object.entries(parsedWorkflow.loops).map(([id, loopConfig]: [string, any]) => ({
-          id,
-          workflowId,
-          type: 'loop' as const,
-          config: loopConfig,
-          createdAt: now,
-          updatedAt: now,
-        }))
+        const loopInserts = Object.entries(parsedWorkflow.loops).map(
+          ([id, loopConfig]: [string, any]) => ({
+            id,
+            workflowId,
+            type: 'loop' as const,
+            config: loopConfig,
+            createdAt: now,
+            updatedAt: now,
+          })
+        )
 
         await tx.insert(workflowSubflows).values(loopInserts)
       }
 
       // Insert parallels
       if (parsedWorkflow.parallels && Object.keys(parsedWorkflow.parallels).length > 0) {
-        const parallelInserts = Object.entries(parsedWorkflow.parallels).map(([id, parallelConfig]: [string, any]) => ({
-          id,
-          workflowId,
-          type: 'parallel' as const,
-          config: parallelConfig,
-          createdAt: now,
-          updatedAt: now,
-        }))
+        const parallelInserts = Object.entries(parsedWorkflow.parallels).map(
+          ([id, parallelConfig]: [string, any]) => ({
+            id,
+            workflowId,
+            type: 'parallel' as const,
+            config: parallelConfig,
+            createdAt: now,
+            updatedAt: now,
+          })
+        )
 
         await tx.insert(workflowSubflows).values(parallelInserts)
       }
@@ -284,24 +320,26 @@ export async function POST(req: NextRequest) {
       connections: parsedWorkflow.connections?.length || 0,
     })
 
-    return NextResponse.json({
-      id: newWorkflow.id,
-      name: newWorkflow.name,
-      description: newWorkflow.description,
-      color: newWorkflow.color,
-      workspaceId: newWorkflow.workspaceId,
-      folderId: newWorkflow.folderId,
-      createdAt: newWorkflow.createdAt,
-      updatedAt: newWorkflow.updatedAt,
-      summary: {
-        blocks: parsedWorkflow.blocks?.length || 0,
-        connections: parsedWorkflow.connections?.length || 0,
-        loops: Object.keys(parsedWorkflow.loops || {}).length,
-        parallels: Object.keys(parsedWorkflow.parallels || {}).length,
+    return NextResponse.json(
+      {
+        id: newWorkflow.id,
+        name: newWorkflow.name,
+        description: newWorkflow.description,
+        color: newWorkflow.color,
+        workspaceId: newWorkflow.workspaceId,
+        folderId: newWorkflow.folderId,
+        createdAt: newWorkflow.createdAt,
+        updatedAt: newWorkflow.updatedAt,
+        summary: {
+          blocks: parsedWorkflow.blocks?.length || 0,
+          connections: parsedWorkflow.connections?.length || 0,
+          loops: Object.keys(parsedWorkflow.loops || {}).length,
+          parallels: Object.keys(parsedWorkflow.parallels || {}).length,
+        },
+        importTime: elapsed,
       },
-      importTime: elapsed,
-    }, { status: 201 })
-
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
@@ -315,10 +353,13 @@ export async function POST(req: NextRequest) {
     }
 
     logger.error(`[${requestId}] Error creating workflow from YAML after ${elapsed}ms`, error)
-    return NextResponse.json({
-      error: error.message || 'Failed to create workflow from YAML',
-      details: error.details || null,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: error.message || 'Failed to create workflow from YAML',
+        details: error.details || null,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -352,7 +393,7 @@ export async function PUT(req: NextRequest) {
 
     // Parse request body
     const body = await req.json()
-    const { yaml, preserveMetadata, createCheckpoint, validateBeforeUpdate } = 
+    const { yaml, preserveMetadata, createCheckpoint, validateBeforeUpdate } =
       UpdateYAMLSchema.parse(body)
 
     logger.info(`[${requestId}] Updating workflow ${workflowId} from YAML`, {
@@ -382,7 +423,11 @@ export async function PUT(req: NextRequest) {
     if (workflowData.userId === userId) {
       canUpdate = true
     } else if (workflowData.workspaceId) {
-      const userPermission = await getUserEntityPermissions(userId, 'workspace', workflowData.workspaceId)
+      const userPermission = await getUserEntityPermissions(
+        userId,
+        'workspace',
+        workflowData.workspaceId
+      )
       canUpdate = userPermission === 'write' || userPermission === 'admin'
     }
 
@@ -392,23 +437,32 @@ export async function PUT(req: NextRequest) {
     }
 
     // Parse and validate YAML
-    const simAgentResponse = await callSimAgent({
-      action: 'parse_yaml',
-      yaml,
-      options: {
-        validate: validateBeforeUpdate,
-        preserveIds: true,
-        generateLayout: false,
-      }
-    }, requestId)
+    const simAgentResponse = await callSimAgent(
+      {
+        action: 'parse_yaml',
+        yaml,
+        options: {
+          validate: validateBeforeUpdate,
+          preserveIds: true,
+          generateLayout: false,
+        },
+      },
+      requestId
+    )
 
     if (!simAgentResponse.success) {
-      logger.error(`[${requestId}] YAML parsing failed for workflow ${workflowId}:`, simAgentResponse.error)
-      return NextResponse.json({
-        error: 'YAML parsing failed',
-        details: simAgentResponse.error,
-        validationErrors: simAgentResponse.validationErrors || [],
-      }, { status: 400 })
+      logger.error(
+        `[${requestId}] YAML parsing failed for workflow ${workflowId}:`,
+        simAgentResponse.error
+      )
+      return NextResponse.json(
+        {
+          error: 'YAML parsing failed',
+          details: simAgentResponse.error,
+          validationErrors: simAgentResponse.validationErrors || [],
+        },
+        { status: 400 }
+      )
     }
 
     const parsedWorkflow = simAgentResponse.workflow
@@ -437,7 +491,8 @@ export async function PUT(req: NextRequest) {
 
       if (!preserveMetadata) {
         if (parsedWorkflow.name) updateData.name = parsedWorkflow.name
-        if (parsedWorkflow.description !== undefined) updateData.description = parsedWorkflow.description
+        if (parsedWorkflow.description !== undefined)
+          updateData.description = parsedWorkflow.description
         if (parsedWorkflow.color) updateData.color = parsedWorkflow.color
       }
 
@@ -487,51 +542,60 @@ export async function PUT(req: NextRequest) {
 
       // Insert new loops
       if (parsedWorkflow.loops && Object.keys(parsedWorkflow.loops).length > 0) {
-        const loopInserts = Object.entries(parsedWorkflow.loops).map(([id, loopConfig]: [string, any]) => ({
-          id,
-          workflowId,
-          type: 'loop' as const,
-          config: loopConfig,
-          createdAt: now,
-          updatedAt: now,
-        }))
+        const loopInserts = Object.entries(parsedWorkflow.loops).map(
+          ([id, loopConfig]: [string, any]) => ({
+            id,
+            workflowId,
+            type: 'loop' as const,
+            config: loopConfig,
+            createdAt: now,
+            updatedAt: now,
+          })
+        )
 
         await tx.insert(workflowSubflows).values(loopInserts)
       }
 
       // Insert new parallels
       if (parsedWorkflow.parallels && Object.keys(parsedWorkflow.parallels).length > 0) {
-        const parallelInserts = Object.entries(parsedWorkflow.parallels).map(([id, parallelConfig]: [string, any]) => ({
-          id,
-          workflowId,
-          type: 'parallel' as const,
-          config: parallelConfig,
-          createdAt: now,
-          updatedAt: now,
-        }))
+        const parallelInserts = Object.entries(parsedWorkflow.parallels).map(
+          ([id, parallelConfig]: [string, any]) => ({
+            id,
+            workflowId,
+            type: 'parallel' as const,
+            config: parallelConfig,
+            createdAt: now,
+            updatedAt: now,
+          })
+        )
 
         await tx.insert(workflowSubflows).values(parallelInserts)
       }
     })
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully updated workflow ${workflowId} from YAML in ${elapsed}ms`, {
-      blocks: parsedWorkflow.blocks?.length || 0,
-      connections: parsedWorkflow.connections?.length || 0,
-    })
-
-    return NextResponse.json({
-      id: workflowId,
-      updated: true,
-      summary: {
+    logger.info(
+      `[${requestId}] Successfully updated workflow ${workflowId} from YAML in ${elapsed}ms`,
+      {
         blocks: parsedWorkflow.blocks?.length || 0,
         connections: parsedWorkflow.connections?.length || 0,
-        loops: Object.keys(parsedWorkflow.loops || {}).length,
-        parallels: Object.keys(parsedWorkflow.parallels || {}).length,
-      },
-      updateTime: elapsed,
-    }, { status: 200 })
+      }
+    )
 
+    return NextResponse.json(
+      {
+        id: workflowId,
+        updated: true,
+        summary: {
+          blocks: parsedWorkflow.blocks?.length || 0,
+          connections: parsedWorkflow.connections?.length || 0,
+          loops: Object.keys(parsedWorkflow.loops || {}).length,
+          parallels: Object.keys(parsedWorkflow.parallels || {}).length,
+        },
+        updateTime: elapsed,
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
@@ -545,10 +609,13 @@ export async function PUT(req: NextRequest) {
     }
 
     logger.error(`[${requestId}] Error updating workflow from YAML after ${elapsed}ms`, error)
-    return NextResponse.json({
-      error: error.message || 'Failed to update workflow from YAML',
-      details: error.details || null,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: error.message || 'Failed to update workflow from YAML',
+        details: error.details || null,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -560,7 +627,7 @@ async function callSimAgent(payload: any, requestId: string): Promise<any> {
     // This would normally call the actual sim-agent service
     // For now, we'll return a mock response
     logger.debug(`[${requestId}] Calling sim-agent service with action: ${payload.action}`)
-    
+
     // Mock response structure
     return {
       success: true,

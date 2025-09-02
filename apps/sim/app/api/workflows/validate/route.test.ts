@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { POST } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { POST } from './route'
 
 // Mock workflow definitions for testing
 const validJsonWorkflow = {
@@ -23,8 +23,8 @@ const validJsonWorkflow = {
       position: { x: 100, y: 100 },
       config: {
         params: {
-          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' }
-        }
+          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' },
+        },
       },
       outputs: { response: { type: { input: 'any' } } },
     },
@@ -34,13 +34,17 @@ const validJsonWorkflow = {
       position: { x: 400, y: 100 },
       config: {
         params: {
-          systemPrompt: { id: 'systemPrompt', type: 'long-input', value: 'You are a helpful assistant' },
-          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' }
+          systemPrompt: {
+            id: 'systemPrompt',
+            type: 'long-input',
+            value: 'You are a helpful assistant',
+          },
+          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' },
         },
-        tool: 'openai'
+        tool: 'openai',
       },
       outputs: { response: { content: 'string', model: 'string', tokens: 'any' } },
-    }
+    },
   ],
   connections: [
     {
@@ -48,7 +52,7 @@ const validJsonWorkflow = {
       target: 'agent-block',
       sourceHandle: 'source',
       targetHandle: 'target',
-    }
+    },
   ],
   loops: {},
   parallels: {},
@@ -60,7 +64,7 @@ const invalidJsonWorkflow = {
     {
       source: 'nonexistent-block',
       target: 'another-nonexistent-block',
-    }
+    },
   ],
 }
 
@@ -76,7 +80,7 @@ const workflowWithDuplicateIds = {
       id: 'duplicate-id', // Duplicate ID
       metadata: { id: 'agent', name: 'Agent' },
       position: { x: 400, y: 100 },
-    }
+    },
   ],
 }
 
@@ -90,10 +94,10 @@ const workflowWithMissingRequiredFields = {
       config: {
         params: {
           // Missing required systemPrompt field
-          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' }
-        }
-      }
-    }
+          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' },
+        },
+      },
+    },
   ],
 }
 
@@ -115,13 +119,13 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
           starter: {
             subBlocks: {
               startWorkflow: { required: true },
-            }
+            },
           },
           agent: {
             subBlocks: {
               systemPrompt: { required: true },
               model: { required: true },
-            }
+            },
           },
         }
         return blockConfigs[blockType as keyof typeof blockConfigs]
@@ -136,7 +140,7 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             parameters: {
               apiKey: { required: true },
               model: { required: true },
-            }
+            },
           },
         }
         return toolConfigs[toolId as keyof typeof toolConfigs]
@@ -147,15 +151,15 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for validation', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const validationRequest = {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -171,15 +175,15 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
           }),
         }),
       }))
-      
+
       const validationRequest = {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest, { 'x-api-key': 'test-api-key' })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true)
@@ -189,17 +193,17 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
+
       const validationRequest = {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
-      const request = createMockRequest('POST', validationRequest, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('POST', validationRequest, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -214,10 +218,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         validateBlockConfig: true,
         validateToolConfig: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true)
@@ -233,10 +237,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: JSON.stringify(validJsonWorkflow),
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true)
@@ -247,10 +251,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: '{ invalid json string',
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
@@ -265,10 +269,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         // format defaults to 'json'
         // validation options default to true
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true)
@@ -281,17 +285,19 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: { version: '1.0' }, // No blocks array
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_BLOCKS',
-        message: 'Workflow must contain a blocks array.',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_BLOCKS',
+          message: 'Workflow must contain a blocks array.',
+        })
+      )
     })
 
     it('should warn about empty workflows', async () => {
@@ -299,37 +305,41 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: { version: '1.0', blocks: [] },
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true) // Empty workflow is valid but has warnings
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'EMPTY_WORKFLOW',
-        message: 'Workflow contains no blocks.',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'EMPTY_WORKFLOW',
+          message: 'Workflow contains no blocks.',
+        })
+      )
     })
 
     it('should warn about missing version', async () => {
       const workflowWithoutVersion = {
         blocks: [validJsonWorkflow.blocks[0]], // At least one block to avoid empty workflow warning
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithoutVersion,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'MISSING_VERSION',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'MISSING_VERSION',
+        })
+      )
     })
 
     it('should warn about missing starter blocks', async () => {
@@ -340,23 +350,25 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             id: 'agent-block',
             metadata: { id: 'agent', name: 'Agent' },
             position: { x: 100, y: 100 },
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithoutStarter,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'NO_STARTER_BLOCK',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'NO_STARTER_BLOCK',
+        })
+      )
     })
 
     it('should detect multiple starter blocks', async () => {
@@ -372,24 +384,26 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             id: 'starter-2',
             metadata: { id: 'starter', name: 'Start 2' },
             position: { x: 200, y: 100 },
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithMultipleStarters,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MULTIPLE_STARTER_BLOCKS',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MULTIPLE_STARTER_BLOCKS',
+        })
+      )
     })
   })
 
@@ -402,24 +416,26 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             // Missing id field
             metadata: { id: 'starter', name: 'Start' },
             position: { x: 100, y: 100 },
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithMissingId,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_BLOCK_ID',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_BLOCK_ID',
+        })
+      )
     })
 
     it('should detect duplicate block IDs', async () => {
@@ -427,17 +443,19 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: workflowWithDuplicateIds,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'DUPLICATE_BLOCK_ID',
-        message: 'Duplicate block ID found: duplicate-id',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'DUPLICATE_BLOCK_ID',
+          message: 'Duplicate block ID found: duplicate-id',
+        })
+      )
     })
 
     it('should warn about missing block metadata', async () => {
@@ -448,23 +466,25 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             id: 'block-without-metadata',
             // Missing metadata field
             position: { x: 100, y: 100 },
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithMissingMetadata,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'MISSING_BLOCK_METADATA',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'MISSING_BLOCK_METADATA',
+        })
+      )
     })
 
     it('should detect unsupported block types', async () => {
@@ -475,9 +495,9 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         }
         return { subBlocks: {} }
       })
-      
+
       vi.doMock('@/blocks', () => ({ getBlock: mockGetBlock }))
-      
+
       const workflowWithUnsupportedType = {
         version: '1.0',
         blocks: [
@@ -485,24 +505,26 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             id: 'unsupported-block',
             metadata: { id: 'unsupported-type', name: 'Unsupported Block' },
             position: { x: 100, y: 100 },
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithUnsupportedType,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'UNSUPPORTED_BLOCK_TYPE',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'UNSUPPORTED_BLOCK_TYPE',
+        })
+      )
     })
 
     it('should warn about invalid block positions', async () => {
@@ -513,23 +535,25 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             id: 'block-with-invalid-position',
             metadata: { id: 'starter', name: 'Start' },
             position: { x: 'invalid', y: 100 }, // Invalid x coordinate
-          }
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithInvalidPosition,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'INVALID_BLOCK_POSITION',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'INVALID_BLOCK_POSITION',
+        })
+      )
     })
 
     it('should handle block configuration errors gracefully', async () => {
@@ -537,23 +561,25 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
       const mockGetBlock = vi.fn(() => {
         throw new Error('Block config loading failed')
       })
-      
+
       vi.doMock('@/blocks', () => ({ getBlock: mockGetBlock }))
-      
+
       const validationRequest = {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'BLOCK_CONFIG_ERROR',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'BLOCK_CONFIG_ERROR',
+        })
+      )
     })
   })
 
@@ -563,74 +589,88 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: invalidJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'CONNECTION_SOURCE_NOT_FOUND',
-      }))
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'CONNECTION_TARGET_NOT_FOUND',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'CONNECTION_SOURCE_NOT_FOUND',
+        })
+      )
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'CONNECTION_TARGET_NOT_FOUND',
+        })
+      )
     })
 
     it('should detect connections with missing source or target', async () => {
       const workflowWithIncompleteConnection = {
         version: '1.0',
         blocks: [
-          { id: 'block-1', metadata: { id: 'starter', name: 'Start' }, position: { x: 100, y: 100 } }
+          {
+            id: 'block-1',
+            metadata: { id: 'starter', name: 'Start' },
+            position: { x: 100, y: 100 },
+          },
         ],
         connections: [
           { source: 'block-1' }, // Missing target
           { target: 'block-1' }, // Missing source
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithIncompleteConnection,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
       expect(data.result.errors).toHaveLength(2)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'INVALID_CONNECTION',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'INVALID_CONNECTION',
+        })
+      )
     })
 
     it('should warn about self-connections', async () => {
       const workflowWithSelfConnection = {
         version: '1.0',
         blocks: [
-          { id: 'self-connected-block', metadata: { id: 'starter', name: 'Self Connected' }, position: { x: 100, y: 100 } }
+          {
+            id: 'self-connected-block',
+            metadata: { id: 'starter', name: 'Self Connected' },
+            position: { x: 100, y: 100 },
+          },
         ],
-        connections: [
-          { source: 'self-connected-block', target: 'self-connected-block' }
-        ],
+        connections: [{ source: 'self-connected-block', target: 'self-connected-block' }],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithSelfConnection,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'SELF_CONNECTION',
-      }))
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'SELF_CONNECTION',
+        })
+      )
     })
 
     it('should skip connection validation when disabled', async () => {
@@ -639,14 +679,14 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         workflow: invalidJsonWorkflow,
         validateConnections: false,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       // Should not have connection-related errors since validation is disabled
-      const connectionErrors = data.result.errors.filter((error: any) => 
+      const connectionErrors = data.result.errors.filter((error: any) =>
         error.code.includes('CONNECTION')
       )
       expect(connectionErrors).toHaveLength(0)
@@ -660,17 +700,19 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         workflow: workflowWithMissingRequiredFields,
         validateRequired: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_REQUIRED_FIELD',
-        message: expect.stringContaining('systemPrompt'),
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_REQUIRED_FIELD',
+          message: expect.stringContaining('systemPrompt'),
+        })
+      )
     })
 
     it('should skip required field validation when disabled', async () => {
@@ -679,14 +721,14 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         workflow: workflowWithMissingRequiredFields,
         validateRequired: false,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       // Should not have required field errors since validation is disabled
-      const requiredFieldErrors = data.result.errors.filter((error: any) => 
+      const requiredFieldErrors = data.result.errors.filter((error: any) =>
         error.code.includes('REQUIRED')
       )
       expect(requiredFieldErrors).toHaveLength(0)
@@ -702,9 +744,9 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         }
         return { parameters: {} }
       })
-      
+
       vi.doMock('@/tools/utils', () => ({ getTool: mockGetTool }))
-      
+
       const workflowWithUnsupportedTool = {
         version: '1.0',
         blocks: [
@@ -715,26 +757,28 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             config: {
               tool: 'unsupported-tool',
               params: {},
-            }
-          }
+            },
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithUnsupportedTool,
         validateToolConfig: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'UNSUPPORTED_TOOL',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'UNSUPPORTED_TOOL',
+        })
+      )
     })
 
     it('should detect missing required tool parameters', async () => {
@@ -751,27 +795,29 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
                 model: 'gpt-4o',
                 // Missing required apiKey parameter
               },
-            }
-          }
+            },
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithMissingToolParams,
         validateToolConfig: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_REQUIRED_TOOL_PARAM',
-        message: expect.stringContaining('apiKey'),
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_REQUIRED_TOOL_PARAM',
+          message: expect.stringContaining('apiKey'),
+        })
+      )
     })
 
     it('should handle tool configuration errors gracefully', async () => {
@@ -779,9 +825,9 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
       const mockGetTool = vi.fn(() => {
         throw new Error('Tool config loading failed')
       })
-      
+
       vi.doMock('@/tools/utils', () => ({ getTool: mockGetTool }))
-      
+
       const workflowWithToolConfigError = {
         version: '1.0',
         blocks: [
@@ -792,26 +838,28 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
             config: {
               tool: 'problematic-tool',
               params: {},
-            }
-          }
+            },
+          },
         ],
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithToolConfigError,
         validateToolConfig: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'TOOL_CONFIG_ERROR',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'TOOL_CONFIG_ERROR',
+        })
+      )
     })
   })
 
@@ -820,81 +868,89 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
       const workflowWithLoops = {
         version: '1.0',
         blocks: [
-          { id: 'start', metadata: { id: 'starter', name: 'Start' }, position: { x: 100, y: 100 } }
+          { id: 'start', metadata: { id: 'starter', name: 'Start' }, position: { x: 100, y: 100 } },
         ],
         loops: {
           'loop-without-config': {}, // Missing config
           'loop-without-exit': {
-            config: {} // No exit condition or max iterations
+            config: {}, // No exit condition or max iterations
           },
           'valid-loop': {
             config: {
               maxIterations: 10,
-            }
-          }
+            },
+          },
         },
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithLoops,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_LOOP_CONFIG',
-      }))
-      expect(data.result.warnings).toContain(expect.objectContaining({
-        code: 'LOOP_WITHOUT_EXIT_CONDITION',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_LOOP_CONFIG',
+        })
+      )
+      expect(data.result.warnings).toContain(
+        expect.objectContaining({
+          code: 'LOOP_WITHOUT_EXIT_CONDITION',
+        })
+      )
     })
 
     it('should validate parallel configurations', async () => {
       const workflowWithParallels = {
         version: '1.0',
         blocks: [
-          { id: 'start', metadata: { id: 'starter', name: 'Start' }, position: { x: 100, y: 100 } }
+          { id: 'start', metadata: { id: 'starter', name: 'Start' }, position: { x: 100, y: 100 } },
         ],
         parallels: {
           'parallel-without-config': {}, // Missing config
           'parallel-without-branches': {
-            config: {} // No branches
+            config: {}, // No branches
           },
           'parallel-with-invalid-branches': {
             config: {
-              branches: 'not-an-array' // Should be array
-            }
+              branches: 'not-an-array', // Should be array
+            },
           },
           'valid-parallel': {
             config: {
               branches: ['branch-1', 'branch-2', 'branch-3'],
-            }
-          }
+            },
+          },
         },
       }
-      
+
       const validationRequest = {
         format: 'json',
         workflow: workflowWithParallels,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'MISSING_PARALLEL_CONFIG',
-      }))
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'PARALLEL_WITHOUT_BRANCHES',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'MISSING_PARALLEL_CONFIG',
+        })
+      )
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'PARALLEL_WITHOUT_BRANCHES',
+        })
+      )
     })
   })
 
@@ -904,16 +960,18 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'yaml',
         workflow: 'name: "Test Workflow"\nblocks: []',
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'YAML_PARSING_NOT_IMPLEMENTED',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'YAML_PARSING_NOT_IMPLEMENTED',
+        })
+      )
     })
   })
 
@@ -923,10 +981,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.summary).toEqual({
@@ -945,10 +1003,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.performance.validationTimeMs).toBeDefined()
@@ -962,10 +1020,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'json',
         workflow: validJsonWorkflow,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.requestId).toBeDefined()
@@ -979,10 +1037,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         workspaceId: 'workspace-123',
         variables: { API_KEY: 'test-key' },
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true)
@@ -995,10 +1053,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         format: 'invalid-format',
         // Missing workflow field
       }
-      
+
       const request = createMockRequest('POST', invalidRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -1011,9 +1069,9 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -1026,22 +1084,24 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
           throw new Error('Unexpected validation error')
         }),
       }))
-      
+
       const validationRequest = {
         format: 'json',
         workflow: validJsonWorkflow,
         validateBlockConfig: true,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(false)
-      expect(data.result.errors).toContain(expect.objectContaining({
-        code: 'VALIDATION_FAILED',
-      }))
+      expect(data.result.errors).toContain(
+        expect.objectContaining({
+          code: 'VALIDATION_FAILED',
+        })
+      )
     })
   })
 
@@ -1052,10 +1112,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         workflow: workflowWithDuplicateIds,
         validateBlockConfig: false,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       // Should still fail due to duplicate IDs (this is structural validation)
@@ -1071,10 +1131,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
         validateBlockConfig: false,
         validateToolConfig: false,
       }
-      
+
       const request = createMockRequest('POST', validationRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.result.isValid).toBe(true) // Should be valid with minimal validation

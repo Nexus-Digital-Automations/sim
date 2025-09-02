@@ -6,12 +6,8 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockUser, setupComprehensiveTestMocks } from '@/app/api/__test-utils__/utils'
 import { GET, POST } from './route'
-import { 
-  setupComprehensiveTestMocks,
-  createMockRequest,
-  mockUser,
-} from '@/app/api/__test-utils__/utils'
 
 // Mock workflow data for testing
 const sampleWorkflowData = {
@@ -48,8 +44,8 @@ const mockNormalizedData = {
       position: { x: 100, y: 100 },
       config: {
         params: {
-          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' }
-        }
+          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' },
+        },
       },
     },
     {
@@ -59,11 +55,15 @@ const mockNormalizedData = {
       position: { x: 400, y: 100 },
       config: {
         params: {
-          systemPrompt: { id: 'systemPrompt', type: 'long-input', value: 'You are a helpful assistant' },
-          apiKey: { id: 'apiKey', type: 'short-input', value: 'secret-api-key' }
-        }
+          systemPrompt: {
+            id: 'systemPrompt',
+            type: 'long-input',
+            value: 'You are a helpful assistant',
+          },
+          apiKey: { id: 'apiKey', type: 'short-input', value: 'secret-api-key' },
+        },
       },
-    }
+    },
   ],
   edges: [
     {
@@ -72,7 +72,7 @@ const mockNormalizedData = {
       target: 'agent-block',
       sourceHandle: 'source',
       targetHandle: 'target',
-    }
+    },
   ],
   loops: {},
   parallels: {},
@@ -113,10 +113,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for export', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -132,13 +132,12 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
           }),
         }),
       }))
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/workflow-123/export',
-        { headers: { 'x-api-key': 'test-api-key' } }
-      )
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export', {
+        headers: { 'x-api-key': 'test-api-key' },
+      })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('text/yaml')
     })
@@ -147,13 +146,12 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/workflow-123/export',
-        { headers: { 'authorization': 'Bearer internal-jwt-token' } }
-      )
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export', {
+        headers: { authorization: 'Bearer internal-jwt-token' },
+      })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -164,7 +162,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         userId: 'different-user-456',
         workspaceId: null,
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -172,10 +170,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
           }),
         }),
       }))
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -185,10 +183,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('read'),
       }))
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -202,10 +200,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
           }),
         }),
       }))
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/nonexistent/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'nonexistent' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow not found')
@@ -216,10 +214,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
       vi.doMock('@/lib/workflows/db-helpers', () => ({
         loadWorkflowFromNormalizedTables: mockLoadWorkflow,
       }))
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow data not found')
@@ -230,7 +228,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=invalid&indent=20'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid export options')
@@ -240,14 +238,16 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
 
   describe('YAML Export Format', () => {
     it('should export workflow as YAML with default options', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export?format=yaml')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/export?format=yaml'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('text/yaml')
       expect(response.headers.get('Content-Disposition')).toContain('Test_Export_Workflow.yaml')
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
-      
+
       const content = await response.text()
       expect(content).toContain('# Sim Workflow Export')
       expect(content).toContain('# Generated on:')
@@ -259,7 +259,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=yaml&yamlStyle=compact&indent=4&includeComments=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       expect(content).toContain('Format: YAML (compact)')
@@ -272,7 +272,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=yaml&includeMetadata=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       expect(content).toContain('metadata')
@@ -285,7 +285,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=yaml&includeMetadata=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       // Should not include metadata when includeMetadata=false
@@ -299,11 +299,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&jsonPretty=true&jsonIndent=2'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('application/json')
       expect(response.headers.get('Content-Disposition')).toContain('Test_Export_Workflow.json')
-      
+
       const content = await response.text()
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe('1.0')
@@ -316,14 +316,14 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&jsonPretty=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       // Compact JSON should not have extra whitespace
       expect(content.includes('  ')).toBe(false)
       expect(content.includes('\n')).toBe(false)
-      
+
       // Should still be valid JSON
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe('1.0')
@@ -334,10 +334,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&jsonPretty=true&jsonIndent=4'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       // Should use 4-space indentation
       expect(content).toContain('    "version"')
     })
@@ -345,13 +345,15 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
 
   describe('ZIP Export Format', () => {
     it('should export workflow as ZIP archive', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export?format=zip')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/export?format=zip'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('application/zip')
       expect(response.headers.get('Content-Disposition')).toContain('Test_Export_Workflow.zip')
-      
+
       const content = await response.text()
       // Should be base64 encoded (as per mock implementation)
       expect(content.length > 0).toBe(true)
@@ -364,15 +366,15 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&maskSecrets=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       // Secrets should be masked
       expect(content).toContain('[REDACTED]')
       expect(content).not.toContain('secret-api-key-123')
       expect(content).not.toContain('super-secret-password')
-      
+
       // Public values should remain
       expect(content).toContain('https://example.com')
     })
@@ -382,10 +384,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&maskSecrets=false&maskCredentials=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       // Secrets should be included when masking is disabled
       expect(content).not.toContain('[REDACTED]')
       expect(content).toContain('secret-api-key-123')
@@ -397,10 +399,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&maskSecrets=false&maskCredentials=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       // Some sensitive fields should still be masked
       expect(content).toContain('[REDACTED]')
     })
@@ -419,25 +421,25 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
                   password: 'nested-secret',
                   apiKey: 'another-secret',
                   publicConfig: 'safe-value',
-                }
-              }
-            }
-          }
-        ]
+                },
+              },
+            },
+          },
+        ],
       }
-      
+
       vi.doMock('@/lib/workflows/db-helpers', () => ({
         loadWorkflowFromNormalizedTables: vi.fn().mockResolvedValue(nestedSecretsData),
       }))
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&maskSecrets=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
-      
+
       expect(content).toContain('[REDACTED]')
       expect(content).not.toContain('nested-secret')
       expect(content).not.toContain('another-secret')
@@ -451,11 +453,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeVariables=true&maskSecrets=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.variables).toBeDefined()
       expect(parsed.variables.API_KEY).toBe('secret-api-key-123')
       expect(parsed.variables.PUBLIC_URL).toBe('https://example.com')
@@ -466,11 +468,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeVariables=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.variables).toBeUndefined()
     })
 
@@ -479,11 +481,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeExecutionHistory=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.metadata.executionHistory).toBeDefined()
       expect(Array.isArray(parsed.metadata.executionHistory)).toBe(true)
     })
@@ -493,11 +495,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&generateDocumentation=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.documentation).toBeDefined()
       expect(parsed.documentation.overview).toBeDefined()
       expect(parsed.documentation.architecture).toBeDefined()
@@ -509,11 +511,11 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeComments=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.comments).toBeDefined()
       expect(parsed.comments.header).toContain('Test Export Workflow')
       expect(parsed.comments.blocks).toBe(2)
@@ -528,7 +530,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&optimizeForImport=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       // Implementation should optimize structure for reimport
     })
@@ -538,7 +540,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeBlockComments=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       // Should include detailed block-level comments
     })
@@ -548,7 +550,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeConnectionLabels=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       // Should include connection metadata and labels
     })
@@ -558,7 +560,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
     it('should set appropriate cache headers', async () => {
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Pragma')).toBe('no-cache')
@@ -570,7 +572,7 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         ...sampleWorkflowData,
         name: 'Test/Workflow<>With|Special*Chars?"Name',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -578,10 +580,12 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
           }),
         }),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export?format=yaml')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/export?format=yaml'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const disposition = response.headers.get('Content-Disposition')
       expect(disposition).toContain('Test_Workflow___With_Special_Chars__Name.yaml')
@@ -596,10 +600,10 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
           }),
         })),
       }))
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/export')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toContain('Serialization failed')
@@ -613,53 +617,57 @@ describe('Workflow Export API - GET /api/workflows/[id]/export', () => {
         blocks: [mockNormalizedData.blocks[0]], // Single block
         edges: [], // No connections
       }
-      
+
       vi.doMock('@/lib/workflows/db-helpers', () => ({
         loadWorkflowFromNormalizedTables: vi.fn().mockResolvedValue(simpleWorkflow),
       }))
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeComments=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.comments.complexity).toBe('Simple')
     })
 
     it('should calculate complex workflow complexity', async () => {
       const complexWorkflow = {
         ...mockNormalizedData,
-        blocks: Array(20).fill(null).map((_, i) => ({
-          id: `block-${i}`,
-          type: 'agent',
-          name: `Block ${i}`,
-        })),
-        edges: Array(20).fill(null).map((_, i) => ({
-          id: `edge-${i}`,
-          source: `block-${i}`,
-          target: `block-${(i + 1) % 20}`,
-        })),
+        blocks: Array(20)
+          .fill(null)
+          .map((_, i) => ({
+            id: `block-${i}`,
+            type: 'agent',
+            name: `Block ${i}`,
+          })),
+        edges: Array(20)
+          .fill(null)
+          .map((_, i) => ({
+            id: `edge-${i}`,
+            source: `block-${i}`,
+            target: `block-${(i + 1) % 20}`,
+          })),
         loops: { loop1: {}, loop2: {} },
         parallels: { parallel1: {}, parallel2: {} },
       }
-      
+
       vi.doMock('@/lib/workflows/db-helpers', () => ({
         loadWorkflowFromNormalizedTables: vi.fn().mockResolvedValue(complexWorkflow),
       }))
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/workflows/workflow-123/export?format=json&includeComments=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const content = await response.text()
       const parsed = JSON.parse(content)
-      
+
       expect(parsed.comments.complexity).toBe('Very Complex')
     })
   })
@@ -685,18 +693,15 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
         archiveName: 'my-workflows',
         includeSharedResources: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bulkExportRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bulkExportRequest),
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(501)
       const data = await response.json()
       expect(data.error).toBe('Bulk export not yet implemented')
@@ -705,23 +710,20 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
 
     it('should require authentication for bulk export', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const bulkExportRequest = {
         workflowIds: ['workflow-123'],
         format: 'zip',
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bulkExportRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bulkExportRequest),
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -732,33 +734,27 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
         // Missing required workflowIds
         format: 'zip',
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(invalidBulkRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invalidBulkRequest),
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(500) // Error in parsing due to missing workflowIds
     })
 
     it('should handle malformed JSON in bulk export requests', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: 'invalid-json-content',
-        }
-      )
-      
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: 'invalid-json-content',
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -769,7 +765,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
     it('should plan for multiple workflow export', async () => {
       // This test documents the expected behavior for bulk export
       // when it's fully implemented
-      
+
       const bulkExportRequest = {
         workflowIds: ['workflow-123', 'workflow-456', 'workflow-789'],
         format: 'zip',
@@ -781,21 +777,18 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
           generateDocumentation: true,
         },
       }
-      
+
       // For now, this will return 501 Not Implemented
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bulkExportRequest),
-        }
-      )
-      
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bulkExportRequest),
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(501)
-      
+
       // When implemented, this should:
       // 1. Validate permissions for all workflows
       // 2. Load all workflow data
@@ -811,20 +804,17 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
         format: 'zip',
         includeSharedResources: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/bulk/export',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bulkExportRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/bulk/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bulkExportRequest),
+      })
+
       const response = await POST(request, { params: Promise.resolve({ id: 'bulk' }) })
-      
+
       expect(response.status).toBe(501)
-      
+
       // When implemented, shared resources should include:
       // - Common variables used across workflows
       // - Shared templates and blocks

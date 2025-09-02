@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, POST } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { GET, POST } from './route'
 
 // Mock live operation data
 const sampleLiveOperation = {
@@ -92,13 +92,13 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           properties: { name: 'New Block Name', color: '#FF0000' },
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operationId).toBeDefined()
       expect(data.applied).toBe(true)
       expect(data.conflicts).toEqual([])
@@ -117,10 +117,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           properties: { model: 'gpt-4o' },
         },
       }
-      
+
       const request = createMockRequest('POST', insertData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
@@ -134,10 +134,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           id: 'block-to-delete',
         },
       }
-      
+
       const request = createMockRequest('POST', deleteData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
@@ -153,10 +153,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           toPosition: { x: 150, y: 175 },
         },
       }
-      
+
       const request = createMockRequest('POST', moveData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
@@ -173,10 +173,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           type: 'standard',
         },
       }
-      
+
       const request = createMockRequest('POST', edgeData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
@@ -192,10 +192,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationPayload: { value: 'client timestamp test' },
         timestamp: clientTimestamp,
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.timestamp).toBe(clientTimestamp)
@@ -208,14 +208,14 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationTarget: 'property',
         operationPayload: { value: 'server timestamp test' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       const afterTimestamp = Date.now()
-      
+
       expect(data.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
       expect(data.timestamp).toBeLessThanOrEqual(afterTimestamp)
     })
@@ -227,10 +227,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationPayload: { id: 'block-vc', properties: { name: 'Vector Clock Test' } },
         vectorClock: { 'user-123': 3, 'user-456': 1 },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
@@ -248,7 +248,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([conflictingOperation]),
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
@@ -257,13 +257,13 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           properties: { name: 'My Update' },
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(202) // Accepted with conflicts
       const data = await response.json()
-      
+
       expect(data.applied).toBe(false)
       expect(data.conflicts.length).toBeGreaterThan(0)
       expect(data.transformedOperation).toBeDefined()
@@ -280,7 +280,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([conflictingOperation]),
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
@@ -290,13 +290,13 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         },
         timestamp: Date.now(), // Later timestamp
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(202)
       const data = await response.json()
-      
+
       expect(data.transformedOperation).toBeDefined()
       expect(data.transformedOperation.transformationType).toBe('conflict')
       expect(data.transformedOperation.appliedTransforms.length).toBeGreaterThan(0)
@@ -311,7 +311,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           position: { x: 100, y: 100 },
         },
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -320,7 +320,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([conflictingInsert]),
       }))
-      
+
       const operationData = {
         operationType: 'insert',
         operationTarget: 'block',
@@ -329,10 +329,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           position: { x: 110, y: 110 }, // Close position
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(202)
       const data = await response.json()
       expect(data.conflicts.length).toBeGreaterThan(0)
@@ -344,7 +344,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationType: 'delete',
         operationPayload: { id: 'block-456' },
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -353,7 +353,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([deleteConflict]),
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
@@ -362,13 +362,13 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           properties: { name: 'Update Deleted Block' },
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(202)
       const data = await response.json()
-      
+
       const conflict = data.conflicts[0]
       expect(conflict.conflictType).toBe('dependency_violation')
       expect(conflict.resolutionSuggestion).toBe('manual')
@@ -383,7 +383,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           toPosition: { x: 200, y: 200 },
         },
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -392,7 +392,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([moveConflict]),
       }))
-      
+
       const operationData = {
         operationType: 'move',
         operationTarget: 'block',
@@ -401,10 +401,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           toPosition: { x: 150, y: 150 },
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(202)
       const data = await response.json()
       expect(data.conflicts[0].conflictType).toBe('concurrent_move')
@@ -415,7 +415,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         ...conflictingOperation,
         authorId: mockUser.id, // Same author
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -424,7 +424,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([sameAuthorOp]),
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
@@ -433,13 +433,13 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           properties: { name: 'Same Author Update' },
         },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.applied).toBe(true)
       expect(data.conflicts).toEqual([])
     })
@@ -448,16 +448,16 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for live edit operations', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
         operationPayload: { id: 'unauthorized-edit' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -471,16 +471,16 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           userRole: 'collaborator-view',
         }),
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
         operationPayload: { id: 'restricted-edit' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Insufficient permissions')
@@ -494,10 +494,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationTarget: 'invalid-target',
         operationPayload: null,
       }
-      
+
       const request = createMockRequest('POST', invalidOperation)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -506,34 +506,34 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
     it('should validate operation types', async () => {
       const validTypes = ['insert', 'delete', 'update', 'move']
-      
+
       for (const type of validTypes) {
         const operationData = {
           operationType: type,
           operationTarget: 'block',
           operationPayload: { id: `test-${type}` },
         }
-        
+
         const request = createMockRequest('POST', operationData)
         const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-        
+
         expect(response.status).toBe(200)
       }
     })
 
     it('should validate operation targets', async () => {
       const validTargets = ['block', 'edge', 'property', 'subblock', 'variable']
-      
+
       for (const target of validTargets) {
         const operationData = {
           operationType: 'update',
           operationTarget: target,
           operationPayload: { id: `test-${target}` },
         }
-        
+
         const request = createMockRequest('POST', operationData)
         const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-        
+
         expect(response.status).toBe(200)
       }
     })
@@ -542,30 +542,33 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       mocks.database.mockDb.insert.mockImplementation(() => {
         throw new Error('Database insertion failed')
       })
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
         operationPayload: { id: 'db-error-test' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
     })
 
     it('should handle malformed JSON requests', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/live-edit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'invalid-json-content',
-      })
-      
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/live-edit',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: 'invalid-json-content',
+        }
+      )
+
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -579,10 +582,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         operationTarget: 'block',
         operationPayload: { id: 'perf-test' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.timestamp).toBeDefined()
@@ -596,7 +599,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         id: `old-op-${i}`,
         timestampMs: Date.now() - 3600000, // 1 hour ago
       }))
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -604,16 +607,16 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
         orderBy: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnValue(Promise.resolve(oldOperations.slice(0, 20))), // Limited results
       }))
-      
+
       const operationData = {
         operationType: 'update',
         operationTarget: 'block',
         operationPayload: { id: 'block-456' },
       }
-      
+
       const request = createMockRequest('POST', operationData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200) // Should still work efficiently
     })
   })
@@ -656,9 +659,9 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           authorId: 'other-user-456',
           authorName: 'Another User',
           applied: true,
-        }
+        },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -667,13 +670,13 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(otherUserOperations),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operations).toBeDefined()
       expect(data.operations.length).toBe(2)
       expect(data.totalOperations).toBe(2)
@@ -695,9 +698,9 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           id: 'op-other-user',
           authorId: 'other-user-789',
           authorName: 'Other User',
-        }
+        },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -706,13 +709,13 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(mixedOperations),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operations.length).toBe(1) // Only other user's operation
       expect(data.operations[0].authorId).toBe('other-user-789')
     })
@@ -731,9 +734,9 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           id: 'op-new',
           timestampMs: baseTimestamp,
           authorId: 'other-user-2',
-        }
+        },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -742,13 +745,15 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(timedOperations),
       }))
-      
-      const request = new NextRequest(`http://localhost:3000/api/workflows/workflow-123/live-edit/changes?since=${baseTimestamp - 5000}`)
+
+      const request = new NextRequest(
+        `http://localhost:3000/api/workflows/workflow-123/live-edit/changes?since=${baseTimestamp - 5000}`
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Should only include operations newer than the 'since' timestamp
       expect(data.operations.length).toBe(1)
       expect(data.operations[0].id).toBe('op-new')
@@ -760,23 +765,25 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         id: `op-${i}`,
         authorId: `user-${i}`,
       }))
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         orderBy: vi.fn().mockReturnThis(),
         limit: vi.fn().mockImplementation((limitNum) => ({
-          then: vi.fn().mockResolvedValue(manyOperations.slice(0, limitNum))
+          then: vi.fn().mockResolvedValue(manyOperations.slice(0, limitNum)),
         })),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/live-edit/changes?limit=10')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/live-edit/changes?limit=10'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operations.length).toBe(10)
     })
 
@@ -793,9 +800,9 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           id: 'op-pending',
           applied: false,
           authorId: 'other-user-2',
-        }
+        },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -804,13 +811,15 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(mixedStatusOps),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/live-edit/changes?includeApplied=true')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/live-edit/changes?includeApplied=true'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operations.length).toBe(2)
       expect(data.totalOperations).toBe(2)
       expect(data.pendingOperations).toBe(1)
@@ -820,10 +829,10 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for retrieving changes', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -837,10 +846,10 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           userRole: null,
         }),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -854,10 +863,10 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           userRole: 'collaborator-view',
         }),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -866,17 +875,17 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
     it('should return proper response structure', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data).toHaveProperty('operations')
       expect(data).toHaveProperty('conflicts')
       expect(data).toHaveProperty('totalOperations')
       expect(data).toHaveProperty('pendingOperations')
       expect(data).toHaveProperty('lastSyncTimestamp')
       expect(data).toHaveProperty('workflowId')
-      
+
       expect(Array.isArray(data.operations)).toBe(true)
       expect(Array.isArray(data.conflicts)).toBe(true)
       expect(typeof data.totalOperations).toBe('number')
@@ -901,9 +910,9 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
           ...sampleLiveOperation,
           timestampMs: 1500,
           authorId: 'user-3',
-        }
+        },
       ]
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -912,13 +921,13 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(timestampedOps),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.lastSyncTimestamp).toBe(2000) // Should be the latest timestamp
     })
 
@@ -931,13 +940,13 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
         limit: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue([]),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.operations).toEqual([])
       expect(data.totalOperations).toBe(0)
       expect(data.pendingOperations).toBe(0)
@@ -950,19 +959,21 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database query failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
     })
 
     it('should handle invalid query parameters gracefully', async () => {
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/live-edit/changes?limit=invalid&since=not-a-number')
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/live-edit/changes?limit=invalid&since=not-a-number'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       // Should not fail, should use defaults
       expect(response.status).toBe(200)
     })

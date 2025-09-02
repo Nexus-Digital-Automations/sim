@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { POST, PUT } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { POST, PUT } from './route'
 
 // Sample YAML workflow content for testing
 const sampleYamlWorkflow = `
@@ -98,8 +98,8 @@ const mockParsedWorkflow = {
       position: { x: 100, y: 100 },
       config: {
         params: {
-          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' }
-        }
+          startWorkflow: { id: 'startWorkflow', type: 'dropdown', value: 'manual' },
+        },
       },
       outputs: { response: { type: { input: 'any' } } },
       enabled: true,
@@ -110,13 +110,17 @@ const mockParsedWorkflow = {
       position: { x: 400, y: 100 },
       config: {
         params: {
-          systemPrompt: { id: 'systemPrompt', type: 'long-input', value: 'You are a helpful assistant' },
-          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' }
-        }
+          systemPrompt: {
+            id: 'systemPrompt',
+            type: 'long-input',
+            value: 'You are a helpful assistant',
+          },
+          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' },
+        },
       },
       outputs: { response: { content: 'string', model: 'string', tokens: 'any' } },
       enabled: true,
-    }
+    },
   ],
   connections: [
     {
@@ -124,7 +128,7 @@ const mockParsedWorkflow = {
       target: 'agent-block',
       sourceHandle: 'source',
       targetHandle: 'target',
-    }
+    },
   ],
   variables: { OPENAI_API_KEY: '{{OPENAI_API_KEY}}' },
   loops: {},
@@ -187,10 +191,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         color: '#FF6B35',
         workspaceId: 'workspace-123',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.name).toBe('Test YAML Workflow')
@@ -210,10 +214,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         name: 'Validation Test',
         validateOnly: true,
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.valid).toBe(true)
@@ -221,7 +225,7 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
       expect(data.summary.blocks).toBe(2)
       expect(data.summary.connections).toBe(1)
       expect(data.validationTime).toBeDefined()
-      
+
       // Ensure workflow was not created (transaction not called for validation-only)
       // expect(mocks.database.mockDb.transaction).not.toHaveBeenCalled()
     })
@@ -232,10 +236,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         name: 'Preserve IDs Test',
         preserveIds: true,
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.id).toBe(mockParsedWorkflow.id)
@@ -262,17 +266,17 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         }
         return await callback(tx)
       })
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Overwrite Test',
         preserveIds: true,
         overwriteExisting: true,
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
     })
 
@@ -290,17 +294,17 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         }
         await callback(tx) // This should throw
       })
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Conflict Test',
         preserveIds: true,
         overwriteExisting: false,
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
     })
   })
@@ -308,15 +312,15 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for YAML import', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Unauthorized Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -332,15 +336,15 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
           }),
         }),
       }))
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'API Key Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest, { 'x-api-key': 'test-api-key' })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
     })
 
@@ -348,17 +352,17 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Internal Token Test',
       }
-      
-      const request = createMockRequest('POST', yamlRequest, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('POST', yamlRequest, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
     })
 
@@ -366,16 +370,16 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('read'), // Insufficient permission
       }))
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Permission Test',
         workspaceId: 'workspace-123',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Insufficient workspace permissions')
@@ -388,10 +392,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         name: 'Missing YAML Test',
         // yaml field is missing
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -403,10 +407,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         // name field is missing
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -417,10 +421,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         yaml: '',
         name: 'Empty YAML Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
     })
 
@@ -429,10 +433,10 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         name: 'Defaults Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.description).toBe('')
@@ -450,25 +454,25 @@ describe('Workflow YAML API - POST /api/workflows/yaml', () => {
         error: 'Invalid YAML syntax: unexpected token',
         validationErrors: [
           { line: 5, message: 'Invalid block type' },
-          { line: 10, message: 'Missing required field: name' }
+          { line: 10, message: 'Missing required field: name' },
         ],
       })
-      
+
       // We need to mock the actual function being used
       vi.doMock('./route', async () => ({
         POST,
         PUT,
         callSimAgent: mockCallSimAgent,
       }))
-      
+
       const yamlRequest = {
         yaml: 'invalid: yaml: content:',
         name: 'Invalid YAML Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('YAML parsing failed')
@@ -505,15 +509,15 @@ parallels:
     blockId: "parallel-block"
     branches: ["branch-1", "branch-2", "branch-3"]
 `
-      
+
       const yamlRequest = {
         yaml: complexYaml,
         name: 'Complex Workflow Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.summary.loops).toBe(0) // Based on mockParsedWorkflow
@@ -525,10 +529,10 @@ parallels:
         yaml: sampleYamlWorkflow,
         name: 'Variables Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       // Variables should be stored in the workflow
       expect(mocks.database.mockDb.transaction).toHaveBeenCalled()
@@ -540,15 +544,15 @@ parallels:
       mocks.database.mockDb.transaction.mockImplementation(() => {
         throw new Error('Database transaction failed')
       })
-      
+
       const yamlRequest = {
         yaml: sampleYamlWorkflow,
         name: 'Transaction Error Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toContain('Database transaction failed')
@@ -559,10 +563,10 @@ parallels:
         yaml: sampleYamlWorkflow,
         name: 'Database Insert Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       expect(mocks.database.mockDb.transaction).toHaveBeenCalled()
     })
@@ -574,10 +578,10 @@ parallels:
         yaml: sampleYamlWorkflow,
         name: 'Performance Test',
       }
-      
+
       const request = createMockRequest('POST', yamlRequest)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.importTime).toBeDefined()
@@ -590,9 +594,9 @@ parallels:
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
     })
   })
@@ -647,18 +651,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         createCheckpoint: false,
         validateBeforeUpdate: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.id).toBe('workflow-123')
@@ -671,10 +672,10 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
+
       const request = createMockRequest('PUT', yamlUpdateRequest)
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Workflow ID is required in query parameters')
@@ -685,18 +686,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         preserveMetadata: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       expect(mocks.database.mockDb.transaction).toHaveBeenCalled()
     })
@@ -706,18 +704,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         preserveMetadata: false,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -725,22 +720,19 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for YAML updates', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -753,7 +745,7 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         userId: 'different-user-456',
         workspaceId: null,
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -761,22 +753,19 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
           }),
         }),
       }))
-      
+
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -786,22 +775,19 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('write'),
       }))
-      
+
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -815,11 +801,11 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
           }),
         }),
       }))
-      
+
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/workflows/yaml?id=nonexistent-workflow',
         {
@@ -828,9 +814,9 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
           body: JSON.stringify(yamlUpdateRequest),
         }
       )
-      
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow not found')
@@ -843,23 +829,20 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         error: 'YAML validation failed',
         validationErrors: [{ line: 1, message: 'Invalid syntax' }],
       })
-      
+
       const yamlUpdateRequest = {
         yaml: 'invalid: yaml content',
         validateBeforeUpdate: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('YAML parsing failed')
@@ -872,18 +855,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         // yaml field is missing
         preserveMetadata: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -894,18 +874,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         // Other fields should use defaults
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -915,18 +892,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       expect(mocks.database.mockDb.transaction).toHaveBeenCalled()
     })
@@ -935,22 +909,19 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       mocks.database.mockDb.transaction.mockImplementation(() => {
         throw new Error('Transaction failed during update')
       })
-      
+
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(500)
     })
   })
@@ -961,18 +932,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         createCheckpoint: true,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       // TODO: Add specific checkpoint validation when implemented
     })
@@ -982,18 +950,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
         yaml: sampleYamlWorkflow,
         createCheckpoint: false,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -1003,18 +968,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.updateTime).toBeDefined()
@@ -1025,18 +987,15 @@ describe('Workflow YAML API - PUT /api/workflows/yaml', () => {
       const yamlUpdateRequest = {
         yaml: sampleYamlWorkflow,
       }
-      
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows/yaml?id=workflow-123',
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(yamlUpdateRequest),
-        }
-      )
-      
+
+      const request = new NextRequest('http://localhost:3000/api/workflows/yaml?id=workflow-123', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(yamlUpdateRequest),
+      })
+
       const response = await PUT(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.summary.blocks).toBeDefined()

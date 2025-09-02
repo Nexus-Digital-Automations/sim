@@ -1,39 +1,34 @@
 /**
  * Collaborative Workflow Management API
- * 
+ *
  * This module provides comprehensive real-time collaboration APIs for workflow editing.
  * It includes collaborator management, permission control, and access tracking.
- * 
+ *
  * Endpoints:
  * - GET /api/workflows/[id]/collaborate - List active collaborators
  * - POST /api/workflows/[id]/collaborate - Add collaborator
  * - DELETE /api/workflows/[id]/collaborate - Remove collaborator
- * 
+ *
  * Features:
  * - Real-time collaborator management
  * - Permission-based access control (view, edit, admin)
  * - Active session tracking
  * - Comprehensive logging for audit trails
  * - Production-ready error handling and validation
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @since 2025-09-02
  */
 
-import { eq, and, desc } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { getUserEntityPermissions, hasAdminPermission } from '@/lib/permissions/utils'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { db } from '@/db'
-import { 
-  workflow, 
-  workflowCollaborators, 
-  workflowCollaborationSessions,
-  user 
-} from '@/db/schema'
+import { user, workflow, workflowCollaborationSessions, workflowCollaborators } from '@/db/schema'
 
 const logger = createLogger('CollaborativeWorkflowAPI')
 
@@ -94,15 +89,15 @@ interface CollaboratorResponse {
  * @returns Promise<{hasPermission: boolean, userRole: string | null}>
  */
 async function validateWorkflowPermissions(
-  workflowId: string, 
+  workflowId: string,
   userId: string,
   requiredLevel: 'view' | 'edit' | 'admin' = 'view'
-): Promise<{hasPermission: boolean, userRole: string | null}> {
+): Promise<{ hasPermission: boolean; userRole: string | null }> {
   const operationId = crypto.randomUUID().slice(0, 8)
   logger.debug(`[${operationId}] Validating workflow permissions`, {
     workflowId,
     userId,
-    requiredLevel
+    requiredLevel,
   })
 
   try {
@@ -135,12 +130,16 @@ async function validateWorkflowPermissions(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (workspacePermission) {
-        const permissionLevel = workspacePermission === 'admin' ? 'admin' : 
-                              workspacePermission === 'write' ? 'edit' : 'view'
-        
-        const hasRequiredLevel = 
+        const permissionLevel =
+          workspacePermission === 'admin'
+            ? 'admin'
+            : workspacePermission === 'write'
+              ? 'edit'
+              : 'view'
+
+        const hasRequiredLevel =
           permissionLevel === 'admin' ||
           (permissionLevel === 'edit' && ['edit', 'view'].includes(requiredLevel)) ||
           (permissionLevel === 'view' && requiredLevel === 'view')
@@ -148,9 +147,9 @@ async function validateWorkflowPermissions(
         logger.debug(`[${operationId}] Workspace permission check`, {
           workspacePermission,
           permissionLevel,
-          hasRequiredLevel
+          hasRequiredLevel,
         })
-        
+
         if (hasRequiredLevel) {
           return { hasPermission: true, userRole: `workspace-${permissionLevel}` }
         }
@@ -179,16 +178,18 @@ async function validateWorkflowPermissions(
 
       logger.debug(`[${operationId}] Collaborator permission check`, {
         collaboratorPermission: collaboratorData.permissionLevel,
-        hasRequiredLevel
+        hasRequiredLevel,
       })
 
-      return { 
-        hasPermission: hasRequiredLevel, 
-        userRole: `collaborator-${collaboratorData.permissionLevel}` 
+      return {
+        hasPermission: hasRequiredLevel,
+        userRole: `collaborator-${collaboratorData.permissionLevel}`,
       }
     }
 
-    logger.debug(`[${operationId}] No permissions found for user ${userId} on workflow ${workflowId}`)
+    logger.debug(
+      `[${operationId}] No permissions found for user ${userId} on workflow ${workflowId}`
+    )
     return { hasPermission: false, userRole: null }
   } catch (error) {
     logger.error(`[${operationId}] Error validating workflow permissions:`, error)
@@ -216,14 +217,14 @@ async function getWorkflowCollaborators(workflowId: string): Promise<Collaborato
         addedAt: workflowCollaborators.addedAt,
         addedByUserId: workflowCollaborators.addedByUserId,
         lastAccess: workflowCollaborators.lastAccess,
-        
+
         // User info
         userName: user.name,
         userEmail: user.email,
-        
+
         // Added by user info (for audit trail)
         addedByUserName: user.name, // We'll need a separate query for this
-        
+
         // Active session info
         sessionSocketId: workflowCollaborationSessions.socketId,
         sessionJoinedAt: workflowCollaborationSessions.joinedAt,
@@ -242,7 +243,7 @@ async function getWorkflowCollaborators(workflowId: string): Promise<Collaborato
       .orderBy(desc(workflowCollaborators.addedAt))
 
     // Fetch added-by user names in a separate query for clarity
-    const addedByUserIds = [...new Set(collaborators.map(c => c.addedByUserId))]
+    const addedByUserIds = [...new Set(collaborators.map((c) => c.addedByUserId))]
     const addedByUsers = await db
       .select({
         id: user.id,
@@ -251,10 +252,10 @@ async function getWorkflowCollaborators(workflowId: string): Promise<Collaborato
       .from(user)
       .where(eq(user.id, addedByUserIds[0])) // Simplified for now
 
-    const addedByUserMap = new Map(addedByUsers.map(u => [u.id, u.name]))
+    const addedByUserMap = new Map(addedByUsers.map((u) => [u.id, u.name]))
 
     // Transform data into proper format
-    const collaboratorInfo: CollaboratorInfo[] = collaborators.map(collab => ({
+    const collaboratorInfo: CollaboratorInfo[] = collaborators.map((collab) => ({
       id: collab.id,
       userId: collab.userId,
       userName: collab.userName || 'Unknown User',
@@ -285,20 +286,17 @@ async function getWorkflowCollaborators(workflowId: string): Promise<Collaborato
 /**
  * GET /api/workflows/[id]/collaborate
  * List active collaborators for a workflow
- * 
+ *
  * Returns comprehensive collaborator information including:
  * - User details and permission levels
  * - Active session status and last activity
  * - Audit trail (who added whom and when)
- * 
+ *
  * @param request - Next.js request object
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with collaborator list and metadata
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -317,8 +315,8 @@ export async function GET(
 
     // Validate workflow access permissions
     const { hasPermission, userRole } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
+      workflowId,
+      userId,
       'view'
     )
 
@@ -351,7 +349,7 @@ export async function GET(
 
     // Calculate statistics
     const totalCount = collaborators.length
-    const activeCount = collaborators.filter(c => c.isActive).length
+    const activeCount = collaborators.filter((c) => c.isActive).length
 
     const response: CollaboratorResponse = {
       collaborators,
@@ -366,34 +364,30 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully listed ${totalCount} collaborators (${activeCount} active) in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully listed ${totalCount} collaborators (${activeCount} active) in ${elapsed}ms`
+    )
 
     return NextResponse.json(response, { status: 200 })
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error listing collaborators after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * POST /api/workflows/[id]/collaborate
  * Add a collaborator to a workflow
- * 
+ *
  * Adds a user as a collaborator with specified permission level.
  * Validates permissions and prevents duplicate collaborations.
- * 
+ *
  * @param request - Next.js request object with collaborator data
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with success status and collaborator info
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -412,8 +406,8 @@ export async function POST(
 
     // Validate workflow access permissions (need admin or edit access to add collaborators)
     const { hasPermission, userRole } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
+      workflowId,
+      userId,
       'edit'
     )
 
@@ -462,10 +456,10 @@ export async function POST(
     if (existingCollaborator) {
       logger.warn(`[${requestId}] User ${targetUserId} is already a collaborator`)
       return NextResponse.json(
-        { 
+        {
           error: 'User is already a collaborator',
           currentPermission: existingCollaborator.permissionLevel,
-        }, 
+        },
         { status: 409 }
       )
     }
@@ -482,23 +476,28 @@ export async function POST(
       .returning()
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully added collaborator ${targetUserId} with permission ${permissionLevel} in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully added collaborator ${targetUserId} with permission ${permissionLevel} in ${elapsed}ms`
+    )
 
-    return NextResponse.json({
-      success: true,
-      collaborator: {
-        id: newCollaborator.id,
-        userId: targetUserId,
-        userName: targetUser.name,
-        userEmail: targetUser.email,
-        permissionLevel: newCollaborator.permissionLevel,
-        addedAt: newCollaborator.addedAt,
-        addedByUserId: userId,
+    return NextResponse.json(
+      {
+        success: true,
+        collaborator: {
+          id: newCollaborator.id,
+          userId: targetUserId,
+          userName: targetUser.name,
+          userEmail: targetUser.email,
+          permissionLevel: newCollaborator.permissionLevel,
+          addedAt: newCollaborator.addedAt,
+          addedByUserId: userId,
+        },
       },
-    }, { status: 201 })
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid request data:`, { errors: error.errors })
       return NextResponse.json(
@@ -508,20 +507,17 @@ export async function POST(
     }
 
     logger.error(`[${requestId}] Error adding collaborator after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * DELETE /api/workflows/[id]/collaborate
  * Remove a collaborator from a workflow
- * 
+ *
  * Removes a user's collaboration access to a workflow.
  * Only admins or workflow owners can remove collaborators.
- * 
+ *
  * @param request - Next.js request object with user ID to remove
  * @param params - Route parameters containing workflow ID
  * @returns JSON response with success status
@@ -534,7 +530,9 @@ export async function DELETE(
   const startTime = Date.now()
   const { id: workflowId } = await params
 
-  logger.info(`[${requestId}] DELETE /api/workflows/${workflowId}/collaborate - Removing collaborator`)
+  logger.info(
+    `[${requestId}] DELETE /api/workflows/${workflowId}/collaborate - Removing collaborator`
+  )
 
   try {
     // Authentication check
@@ -548,13 +546,15 @@ export async function DELETE(
 
     // Validate workflow access permissions (need admin access to remove collaborators)
     const { hasPermission, userRole } = await validateWorkflowPermissions(
-      workflowId, 
-      userId, 
+      workflowId,
+      userId,
       'admin'
     )
 
     if (!hasPermission && !userRole?.includes('owner')) {
-      logger.warn(`[${requestId}] Insufficient permissions for user ${userId} to remove collaborators`)
+      logger.warn(
+        `[${requestId}] Insufficient permissions for user ${userId} to remove collaborators`
+      )
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
@@ -602,14 +602,17 @@ export async function DELETE(
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Successfully removed collaborator ${targetUserId} in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      message: 'Collaborator removed successfully',
-      removedUserId: targetUserId,
-    }, { status: 200 })
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Collaborator removed successfully',
+        removedUserId: targetUserId,
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid request data:`, { errors: error.errors })
       return NextResponse.json(
@@ -619,10 +622,7 @@ export async function DELETE(
     }
 
     logger.error(`[${requestId}] Error removing collaborator after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 

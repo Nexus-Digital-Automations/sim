@@ -10,39 +10,39 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
-import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { loadWorkflowFromNormalizedTables } from '@/lib/workflows/db-helpers'
-import { Serializer } from '@/serializer'
 import { db } from '@/db'
-import { workflow, apiKey as apiKeyTable } from '@/db/schema'
+import { apiKey as apiKeyTable, workflow } from '@/db/schema'
+import { Serializer } from '@/serializer'
 
 const logger = createLogger('WorkflowExportAPI')
 
 const ExportOptionsSchema = z.object({
   // Output format
   format: z.enum(['yaml', 'json', 'zip']).default('yaml'),
-  
+
   // Content options
   includeMetadata: z.coerce.boolean().default(true),
   includeComments: z.coerce.boolean().default(true),
   includeSecrets: z.coerce.boolean().default(false),
   includeExecutionHistory: z.coerce.boolean().default(false),
   includeVariables: z.coerce.boolean().default(true),
-  
+
   // YAML formatting options
   yamlStyle: z.enum(['standard', 'compact', 'verbose']).default('standard'),
   indent: z.coerce.number().min(2).max(8).default(2),
-  
+
   // JSON formatting options
   jsonPretty: z.coerce.boolean().default(true),
   jsonIndent: z.coerce.number().min(0).max(8).default(2),
-  
+
   // Security options
   maskSecrets: z.coerce.boolean().default(true),
   maskCredentials: z.coerce.boolean().default(true),
   redactPersonalInfo: z.coerce.boolean().default(false),
-  
+
   // Advanced options
   includeBlockComments: z.coerce.boolean().default(true),
   includeConnectionLabels: z.coerce.boolean().default(false),
@@ -61,10 +61,7 @@ const BulkExportSchema = z.object({
 /**
  * GET /api/workflows/[id]/export - Export single workflow
  */
-export async function GET(
-  req: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -140,7 +137,11 @@ export async function GET(
       if (workflowRecord.userId === userId) {
         hasAccess = true
       } else if (workflowRecord.workspaceId && userId) {
-        const userPermission = await getUserEntityPermissions(userId, 'workspace', workflowRecord.workspaceId)
+        const userPermission = await getUserEntityPermissions(
+          userId,
+          'workspace',
+          workflowRecord.workspaceId
+        )
         hasAccess = userPermission !== null
       }
 
@@ -152,7 +153,7 @@ export async function GET(
 
     // Load workflow structure from normalized tables
     const normalizedData = await loadWorkflowFromNormalizedTables(workflowId)
-    
+
     if (!normalizedData) {
       logger.error(`[${requestId}] No normalized data found for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Workflow data not found' }, { status: 404 })
@@ -169,12 +170,7 @@ export async function GET(
     )
 
     // Build export data
-    const exportData = buildExportData(
-      workflowRecord, 
-      serializedWorkflow, 
-      normalizedData, 
-      options
-    )
+    const exportData = buildExportData(workflowRecord, serializedWorkflow, normalizedData, options)
 
     // Apply security filtering
     const filteredData = applySecurityFiltering(exportData, options)
@@ -197,13 +193,14 @@ export async function GET(
         filename = `${workflowRecord.name.replace(/[^a-zA-Z0-9-_]/g, '_')}.json`
         break
 
-      case 'zip':
+      case 'zip': {
         // For ZIP format, create an archive with multiple files
         const zipContent = await createZipExport(workflowRecord, filteredData, options)
         outputContent = zipContent
         contentType = 'application/zip'
         filename = `${workflowRecord.name.replace(/[^a-zA-Z0-9-_]/g, '_')}.zip`
         break
+      }
 
       default:
         throw new Error(`Unsupported export format: ${options.format}`)
@@ -220,21 +217,23 @@ export async function GET(
       'Content-Type': contentType,
       'Content-Disposition': `attachment; filename="${filename}"`,
       'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
+      Pragma: 'no-cache',
+      Expires: '0',
     })
 
     return new Response(outputContent, {
       status: 200,
       headers,
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
-      logger.warn(`[${requestId}] Invalid export options for workflow ${workflowId} after ${elapsed}ms`, {
-        errors: error.errors,
-      })
+      logger.warn(
+        `[${requestId}] Invalid export options for workflow ${workflowId} after ${elapsed}ms`,
+        {
+          errors: error.errors,
+        }
+      )
       return NextResponse.json(
         { error: 'Invalid export options', details: error.errors },
         { status: 400 }
@@ -242,19 +241,19 @@ export async function GET(
     }
 
     logger.error(`[${requestId}] Error exporting workflow ${workflowId} after ${elapsed}ms`, error)
-    return NextResponse.json({
-      error: error.message || 'Failed to export workflow',
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: error.message || 'Failed to export workflow',
+      },
+      { status: 500 }
+    )
   }
 }
 
 /**
  * POST /api/workflows/[id]/export - Bulk export multiple workflows
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
@@ -270,7 +269,7 @@ export async function POST(
 
     // Parse request body
     const body = await req.json()
-    const { workflowIds, format, archiveName, includeSharedResources, options } = 
+    const { workflowIds, format, archiveName, includeSharedResources, options } =
       BulkExportSchema.parse(body)
 
     const exportOptions = options || ExportOptionsSchema.parse({})
@@ -282,10 +281,7 @@ export async function POST(
     })
 
     // Fetch all workflows and check permissions
-    const workflows = await db
-      .select()
-      .from(workflow)
-      .where(eq(workflow.id, workflowIds[0])) // This should use `inArray` but simplified for now
+    const workflows = await db.select().from(workflow).where(eq(workflow.id, workflowIds[0])) // This should use `inArray` but simplified for now
 
     // For bulk export, we would need to:
     // 1. Validate permissions for all workflows
@@ -294,11 +290,13 @@ export async function POST(
     // 4. Include shared resources if requested
 
     // This is a simplified implementation - full implementation would be more complex
-    return NextResponse.json({
-      error: 'Bulk export not yet implemented',
-      details: 'This endpoint is under development'
-    }, { status: 501 })
-
+    return NextResponse.json(
+      {
+        error: 'Bulk export not yet implemented',
+        details: 'This endpoint is under development',
+      },
+      { status: 501 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Error in bulk workflow export after ${elapsed}ms`, error)
@@ -319,7 +317,7 @@ function buildExportData(
     version: '1.0',
     workflow: {
       ...serializedWorkflow,
-    }
+    },
   }
 
   // Add metadata if requested
@@ -365,10 +363,7 @@ function buildExportData(
 /**
  * Apply security filtering to export data
  */
-function applySecurityFiltering(
-  data: any,
-  options: z.infer<typeof ExportOptionsSchema>
-): any {
+function applySecurityFiltering(data: any, options: z.infer<typeof ExportOptionsSchema>): any {
   if (!options.maskSecrets && !options.maskCredentials && !options.redactPersonalInfo) {
     return data
   }
@@ -378,36 +373,43 @@ function applySecurityFiltering(
 
   // Apply filtering logic
   const sensitiveFields = [
-    'password', 'token', 'secret', 'key', 'credential',
-    'apiKey', 'accessToken', 'refreshToken', 'privateKey'
+    'password',
+    'token',
+    'secret',
+    'key',
+    'credential',
+    'apiKey',
+    'accessToken',
+    'refreshToken',
+    'privateKey',
   ]
 
-  function filterObject(obj: any, path: string = ''): any {
+  function filterObject(obj: any, path = ''): any {
     if (Array.isArray(obj)) {
       return obj.map((item, index) => filterObject(item, `${path}[${index}]`))
     }
-    
+
     if (obj && typeof obj === 'object') {
       const filtered: any = {}
-      
+
       for (const [key, value] of Object.entries(obj)) {
         const currentPath = path ? `${path}.${key}` : key
-        
+
         // Check if field should be masked
-        const shouldMask = sensitiveFields.some(field => 
+        const shouldMask = sensitiveFields.some((field) =>
           key.toLowerCase().includes(field.toLowerCase())
         )
-        
+
         if (shouldMask && (options.maskSecrets || options.maskCredentials)) {
           filtered[key] = '[REDACTED]'
         } else {
           filtered[key] = filterObject(value, currentPath)
         }
       }
-      
+
       return filtered
     }
-    
+
     return obj
   }
 
@@ -426,12 +428,12 @@ async function formatAsYAML(
   let yaml = '# Sim Workflow Export\n'
   yaml += `# Generated on: ${new Date().toISOString()}\n`
   yaml += `# Format: YAML (${options.yamlStyle})\n\n`
-  
+
   if (options.includeComments) {
     yaml += '# This workflow was exported from Sim\n'
     yaml += '# Visit https://sim.dev for more information\n\n'
   }
-  
+
   // Convert to YAML-like format (simplified)
   yaml += JSON.stringify(data, null, options.indent)
     .replace(/"/g, '')
@@ -440,17 +442,14 @@ async function formatAsYAML(
     .replace(/\}/g, '')
     .replace(/\[/g, '- ')
     .replace(/\]/g, '')
-  
+
   return yaml
 }
 
 /**
  * Format data as JSON
  */
-function formatAsJSON(
-  data: any,
-  options: z.infer<typeof ExportOptionsSchema>
-): string {
+function formatAsJSON(data: any, options: z.infer<typeof ExportOptionsSchema>): string {
   if (options.jsonPretty) {
     return JSON.stringify(data, null, options.jsonIndent)
   }
@@ -515,9 +514,9 @@ function calculateWorkflowComplexity(serializedWorkflow: any): string {
   const connections = serializedWorkflow.connections?.length || 0
   const loops = Object.keys(serializedWorkflow.loops || {}).length
   const parallels = Object.keys(serializedWorkflow.parallels || {}).length
-  
-  const complexity = blocks + connections + (loops * 2) + (parallels * 2)
-  
+
+  const complexity = blocks + connections + loops * 2 + parallels * 2
+
   if (complexity < 5) return 'Simple'
   if (complexity < 15) return 'Moderate'
   if (complexity < 30) return 'Complex'

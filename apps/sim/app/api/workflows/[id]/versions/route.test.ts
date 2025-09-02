@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, POST } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { GET, POST } from './route'
 
 // Mock workflow data
 const sampleWorkflowData = {
@@ -27,18 +27,16 @@ const sampleWorkflowState = {
       id: 'block-1',
       type: 'starter',
       position: { x: 100, y: 100 },
-      config: { params: {} }
+      config: { params: {} },
     },
     {
       id: 'block-2',
       type: 'agent',
       position: { x: 400, y: 100 },
-      config: { params: { model: 'gpt-4o' } }
-    }
+      config: { params: { model: 'gpt-4o' } },
+    },
   ],
-  edges: [
-    { id: 'edge-1', source: 'block-1', target: 'block-2' }
-  ],
+  edges: [{ id: 'edge-1', source: 'block-1', target: 'block-2' }],
   loops: {},
   parallels: {},
 }
@@ -60,7 +58,7 @@ const sampleVersions = [
     changeSummary: {
       'blocks.added': 1,
       'blocks.modified': 2,
-      'edges.added': 1
+      'edges.added': 1,
     },
     workflowState: sampleWorkflowState,
     serializationTimeMs: 45,
@@ -79,11 +77,11 @@ const sampleVersions = [
     isCurrent: false,
     isDeployed: false,
     changeSummary: {
-      'blocks.modified': 1
+      'blocks.modified': 1,
     },
     workflowState: {
       ...sampleWorkflowState,
-      blocks: [sampleWorkflowState.blocks[0]] // Fewer blocks
+      blocks: [sampleWorkflowState.blocks[0]], // Fewer blocks
     },
     serializationTimeMs: 32,
     creationDurationMs: 98,
@@ -101,12 +99,12 @@ const sampleVersions = [
     isCurrent: false,
     isDeployed: false,
     changeSummary: {
-      'blocks.added': 1
+      'blocks.added': 1,
     },
     workflowState: sampleWorkflowState,
     serializationTimeMs: 28,
     creationDurationMs: 85,
-  }
+  },
 ]
 
 // Mock WorkflowVersionManager
@@ -144,10 +142,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for version listing', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -156,7 +154,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
     it('should authenticate with API key', async () => {
       mocks.auth.setUnauthenticated()
       const apiKeyResults = [{ userId: 'user-123' }]
-      
+
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
@@ -170,10 +168,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         }),
         then: () => Promise.resolve(sampleWorkflowData),
       }))
-      
+
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -181,12 +179,12 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
-      const request = createMockRequest('GET', undefined, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('GET', undefined, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -196,7 +194,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         userId: 'different-user-456',
         workspaceId: null,
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -205,10 +203,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         }),
         then: () => Promise.resolve(differentUserWorkflow),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -220,7 +218,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -233,10 +231,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('read'),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -245,10 +243,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
     it('should list workflow versions with default parameters', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       expect(data.data.versions).toHaveLength(3)
       expect(data.data.versions[0].versionNumber).toBe('1.2.3')
       expect(data.data.versions[0].isCurrent).toBe(true)
@@ -265,10 +263,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         versions: [],
         total: 0,
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.versions).toHaveLength(0)
@@ -282,11 +280,11 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?type=manual'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.filters.type).toBe('manual')
-      
+
       expect(mockVersionManager.getVersions).toHaveBeenCalledWith(
         'workflow-123',
         expect.objectContaining({
@@ -300,11 +298,11 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?branch=development'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.filters.branch).toBe('development')
-      
+
       expect(mockVersionManager.getVersions).toHaveBeenCalledWith(
         'workflow-123',
         expect.objectContaining({
@@ -318,7 +316,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?deployed=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.filters.deployed).toBe(true)
@@ -329,7 +327,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?current=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.filters.current).toBe(true)
@@ -342,7 +340,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?tag=stable'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.filters.tag).toBe('stable')
@@ -355,7 +353,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?sort=created&order=asc'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.sorting.sort).toBe('created')
@@ -367,7 +365,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?sort=size&order=desc'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.sorting.sort).toBe('size')
@@ -379,7 +377,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?sort=version'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.sorting.sort).toBe('version')
@@ -392,13 +390,13 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?limit=2&offset=1'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.pagination.limit).toBe(2)
       expect(data.data.pagination.currentPage).toBe(2) // offset 1 with limit 2 = page 2
       expect(data.data.pagination.hasPreviousPage).toBe(true)
-      
+
       expect(mockVersionManager.getVersions).toHaveBeenCalledWith(
         'workflow-123',
         expect.objectContaining({
@@ -413,12 +411,12 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?page=3&limit=5'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.pagination.currentPage).toBe(3)
       expect(data.data.pagination.limit).toBe(5)
-      
+
       expect(mockVersionManager.getVersions).toHaveBeenCalledWith(
         'workflow-123',
         expect.objectContaining({
@@ -433,11 +431,11 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?limit=200'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.pagination.limit).toBe(100) // Maximum enforced
-      
+
       expect(mockVersionManager.getVersions).toHaveBeenCalledWith(
         'workflow-123',
         expect.objectContaining({
@@ -451,12 +449,12 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         versions: sampleVersions,
         total: 25,
       })
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/workflows/workflow-123/versions?limit=10&page=2'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.pagination.total).toBe(25)
@@ -473,10 +471,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?includeState=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // State should be included
       expect(data.data.versions[0].workflowState).toBeDefined()
       expect(data.data.versions[0].workflowState.blocks).toBeDefined()
@@ -487,10 +485,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?includeState=false'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // State should be excluded
       expect(data.data.versions[0].workflowState).toBeUndefined()
     })
@@ -500,10 +498,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?includeChanges=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Changes should be included (placeholder implementation)
       expect(data.data.versions[0].changes).toBeDefined()
     })
@@ -513,10 +511,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?includeTags=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Tags should be included (placeholder implementation)
       expect(data.data.versions[0].tags).toBeDefined()
     })
@@ -528,7 +526,7 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
         'http://localhost:3000/api/workflows/workflow-123/versions?limit=abc&page=xyz&sort=invalid'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -538,10 +536,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
 
     it('should handle version manager errors gracefully', async () => {
       mockVersionManager.getVersions.mockRejectedValue(new Error('Version manager failed'))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to list workflow versions')
@@ -552,10 +550,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -566,10 +564,10 @@ describe('Workflow Versions API - GET /api/workflows/[id]/versions', () => {
     it('should include comprehensive metadata in response', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Check response structure
       expect(data.data).toBeDefined()
       expect(data.data.versions).toBeDefined()
@@ -614,13 +612,13 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         versionTag: 'stable',
         branchName: 'main',
       }
-      
+
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
-      
+
       expect(data.data.version).toBeDefined()
       expect(data.data.version.versionNumber).toBe('1.2.3')
       expect(data.data.version.versionType).toBe('manual')
@@ -633,7 +631,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       expect(data.meta.workflowId).toBe('workflow-123')
       expect(data.meta.createdBy).toBe('user-123')
       expect(data.meta.processingTimeMs).toBeDefined()
-      
+
       expect(mockVersionManager.createVersion).toHaveBeenCalledWith(
         'workflow-123',
         sampleWorkflowState,
@@ -648,10 +646,10 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const versionData = {
         versionType: 'auto',
       }
-      
+
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.data.version.versionType).toBe('auto')
@@ -659,7 +657,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
     it('should extract request context for auditing', async () => {
       const versionData = { versionType: 'manual' }
-      
+
       const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/versions', {
         method: 'POST',
         headers: {
@@ -670,11 +668,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         },
         body: JSON.stringify(versionData),
       })
-      
+
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
-      
+
       expect(mockVersionManager.createVersion).toHaveBeenCalledWith(
         'workflow-123',
         sampleWorkflowState,
@@ -687,13 +685,13 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
     it('should create different version types', async () => {
       const versionTypes = ['auto', 'manual', 'checkpoint', 'branch']
-      
+
       for (const versionType of versionTypes) {
         const versionData = { versionType }
-        
+
         const request = createMockRequest('POST', versionData)
         const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-        
+
         expect(response.status).toBe(201)
         const data = await response.json()
         expect(data.data.version.versionType).toBe(versionType)
@@ -704,11 +702,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for version creation', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -720,7 +718,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -733,11 +731,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('read'), // Read-only access
       }))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -749,7 +747,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         userId: 'different-user-456',
         workspaceId: 'workspace-123',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -762,11 +760,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       vi.doMock('@/lib/permissions/utils', () => ({
         getUserEntityPermissions: vi.fn().mockResolvedValue('write'), // Write access
       }))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
     })
 
@@ -774,7 +772,7 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
     })
   })
@@ -783,11 +781,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
     it('should return 404 when workflow state not found', async () => {
       const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
       vi.mocked(loadWorkflowFromNormalizedTables).mockResolvedValue(null)
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Workflow state not found')
@@ -796,12 +794,14 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
 
     it('should handle workflow state loading errors', async () => {
       const { loadWorkflowFromNormalizedTables } = await import('@/lib/workflows/db-helpers')
-      vi.mocked(loadWorkflowFromNormalizedTables).mockRejectedValue(new Error('State loading failed'))
-      
+      vi.mocked(loadWorkflowFromNormalizedTables).mockRejectedValue(
+        new Error('State loading failed')
+      )
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow version')
@@ -815,21 +815,19 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       vi.mocked(CreateVersionSchema.parse).mockImplementation(() => {
         throw new Error('Validation failed')
       })
-      
+
       // Mock z.ZodError for proper error handling
       const zodError = new Error('Validation failed')
       zodError.name = 'ZodError'
-      ;(zodError as any).errors = [
-        { path: ['versionType'], message: 'Invalid version type' }
-      ]
+      ;(zodError as any).errors = [{ path: ['versionType'], message: 'Invalid version type' }]
       vi.mocked(CreateVersionSchema.parse).mockImplementation(() => {
         throw zodError
       })
-      
+
       const invalidData = { versionType: 'invalid-type' }
       const request = createMockRequest('POST', invalidData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -843,9 +841,9 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow version')
@@ -856,11 +854,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
   describe('Version Creation Business Logic', () => {
     it('should handle "no changes detected" scenario', async () => {
       mockVersionManager.createVersion.mockRejectedValue(new Error('No changes detected'))
-      
+
       const versionData = { versionType: 'auto' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(409)
       const data = await response.json()
       expect(data.error).toBe('No changes detected')
@@ -875,9 +873,9 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         versionTag: 'release-candidate',
         branchName: 'release/v2.0',
       }
-      
+
       mockVersionManager.createVersion.mockResolvedValue(versionWithMetadata)
-      
+
       const versionData = {
         versionType: 'manual',
         description: 'Comprehensive version',
@@ -885,10 +883,10 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         branchName: 'release/v2.0',
         incrementType: 'major',
       }
-      
+
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.data.version.description).toBe('Comprehensive version')
@@ -903,13 +901,13 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
         creationDurationMs: 340,
         stateSize: 4096,
       }
-      
+
       mockVersionManager.createVersion.mockResolvedValue(performantVersion)
-      
+
       const versionData = { versionType: 'checkpoint' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.data.summary.creationTime).toBe(340)
@@ -921,11 +919,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
   describe('Error Handling and Edge Cases', () => {
     it('should handle version manager creation errors', async () => {
       mockVersionManager.createVersion.mockRejectedValue(new Error('Version creation failed'))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow version')
@@ -935,11 +933,11 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
     it('should handle total version count retrieval errors gracefully', async () => {
       // Mock getTotalVersionCount to fail but not break the response
       mockVersionManager.getVersions.mockRejectedValue(new Error('Count query failed'))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(201)
       const data = await response.json()
       expect(data.data.workflow.totalVersions).toBe(0) // Fallback value
@@ -948,34 +946,34 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
     it('should include error details in development mode', async () => {
       const originalNodeEnv = process.env.NODE_ENV
       process.env.NODE_ENV = 'development'
-      
+
       mockVersionManager.createVersion.mockRejectedValue(new Error('Detailed error message'))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.details).toBe('Detailed error message')
-      
+
       process.env.NODE_ENV = originalNodeEnv
     })
 
     it('should hide error details in production mode', async () => {
       const originalNodeEnv = process.env.NODE_ENV
       process.env.NODE_ENV = 'production'
-      
+
       mockVersionManager.createVersion.mockRejectedValue(new Error('Sensitive error details'))
-      
+
       const versionData = { versionType: 'manual' }
       const request = createMockRequest('POST', versionData)
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.details).toBeUndefined()
-      
+
       process.env.NODE_ENV = originalNodeEnv
     })
   })
@@ -985,32 +983,35 @@ describe('Workflow Versions API - POST /api/workflows/[id]/versions', () => {
       const testCases = [
         {
           headers: { 'X-Forwarded-For': '203.0.113.1, 198.51.100.1' },
-          expectedIp: '203.0.113.1'
+          expectedIp: '203.0.113.1',
         },
         {
           headers: { 'X-Real-IP': '203.0.113.2' },
-          expectedIp: '203.0.113.2'
+          expectedIp: '203.0.113.2',
         },
         {
           headers: {},
-          expectedIp: undefined
-        }
+          expectedIp: undefined,
+        },
       ]
-      
+
       for (const testCase of testCases) {
         const versionData = { versionType: 'manual' }
-        
-        const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/versions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...testCase.headers,
-          },
-          body: JSON.stringify(versionData),
-        })
-        
+
+        const request = new NextRequest(
+          'http://localhost:3000/api/workflows/workflow-123/versions',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...testCase.headers,
+            },
+            body: JSON.stringify(versionData),
+          }
+        )
+
         const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
-        
+
         expect(response.status).toBe(201)
         expect(mockVersionManager.createVersion).toHaveBeenCalledWith(
           'workflow-123',

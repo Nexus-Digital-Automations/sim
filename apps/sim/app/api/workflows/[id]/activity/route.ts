@@ -1,10 +1,10 @@
 /**
  * Workflow Activity Timeline API Endpoints
- * 
+ *
  * Real-time activity tracking and timeline visualization for workflow operations with:
  * - GET /api/workflows/[id]/activity - Get activity timeline with real-time updates
  * - POST /api/workflows/[id]/activity - Log custom activity events
- * 
+ *
  * This API provides comprehensive activity monitoring including:
  * - Real-time activity streams with WebSocket support
  * - User action tracking and attribution
@@ -16,6 +16,8 @@
  * - Export functionality for compliance
  */
 
+import crypto from 'crypto'
+import { and, desc, eq, gte, inArray, like, lte, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
@@ -23,15 +25,13 @@ import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { db } from '@/db'
-import { 
-  workflow as workflowTable, 
+import {
   apiKey as apiKeyTable,
+  user,
+  workflow as workflowTable,
   workflowVersionActivity,
   workflowVersions,
-  user
 } from '@/db/schema'
-import { eq, desc, and, gte, lte, sql, like, or, inArray } from 'drizzle-orm'
-import crypto from 'crypto'
 
 const logger = createLogger('WorkflowActivityAPI')
 
@@ -42,32 +42,44 @@ const ActivityQuerySchema = z.object({
   offset: z.string().regex(/^\d+$/).transform(Number).default('0').optional(),
   page: z.string().regex(/^\d+$/).transform(Number).optional(),
   cursor: z.string().optional(), // For cursor-based pagination
-  
+
   // Time filtering
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   period: z.enum(['1h', '6h', '24h', '7d', '30d', 'all']).default('24h').optional(),
-  
+
   // Activity filtering
   activityType: z.string().optional(),
   activityTypes: z.string().optional(), // Comma-separated list
   userId: z.string().uuid().optional(),
   versionId: z.string().uuid().optional(),
-  
+
   // Content filtering
   search: z.string().min(1).optional(),
   impactLevel: z.enum(['low', 'medium', 'high', 'critical']).optional(),
-  
+
   // Real-time options
-  realtime: z.string().transform(val => val === 'true').optional(),
+  realtime: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
   since: z.string().datetime().optional(), // For incremental updates
-  
+
   // Output format
-  includeDetails: z.string().transform(val => val === 'true').optional(),
-  includeUser: z.string().transform(val => val !== 'false').optional(), // Default true
-  includeContext: z.string().transform(val => val === 'true').optional(),
+  includeDetails: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
+  includeUser: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  includeContext: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
   format: z.enum(['timeline', 'grouped', 'summary']).default('timeline').optional(),
-  
+
   // Grouping options
   groupBy: z.enum(['hour', 'day', 'user', 'type', 'version']).optional(),
   groupInterval: z.string().regex(/^\d+$/).transform(Number).optional(),
@@ -86,10 +98,10 @@ const CreateActivitySchema = z.object({
 
 /**
  * GET /api/workflows/[id]/activity
- * 
+ *
  * Retrieve comprehensive activity timeline for a workflow with real-time capabilities.
  * Supports various filtering options, grouping, and export formats for audit and monitoring.
- * 
+ *
  * Query Parameters:
  * - limit: Number of activities per page (default: 50, max: 200)
  * - offset: Number of activities to skip (default: 0)
@@ -111,10 +123,7 @@ const CreateActivitySchema = z.object({
  * - format: Response format (timeline, grouped, summary)
  * - groupBy: Group activities by criteria
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -132,7 +141,7 @@ export async function GET(
     if (validatedQuery.page && validatedQuery.page > 0) {
       offset = (validatedQuery.page - 1) * limit
     }
-    
+
     // Enforce reasonable limits for performance
     limit = Math.min(limit, 200)
 
@@ -156,17 +165,10 @@ export async function GET(
     )
 
     // Process and format activities based on requested format
-    const formattedActivities = await formatActivities(
-      activityData.activities,
-      validatedQuery
-    )
+    const formattedActivities = await formatActivities(activityData.activities, validatedQuery)
 
     // Calculate activity statistics and metrics
-    const stats = await calculateActivityStatistics(
-      workflowId,
-      filters,
-      validatedQuery
-    )
+    const stats = await calculateActivityStatistics(workflowId, filters, validatedQuery)
 
     // Build comprehensive response
     const response = {
@@ -187,7 +189,7 @@ export async function GET(
           enabled: validatedQuery.realtime || false,
           lastUpdate: new Date().toISOString(),
           updateInterval: validatedQuery.realtime ? 5000 : null, // 5 seconds
-          websocketEndpoint: validatedQuery.realtime 
+          websocketEndpoint: validatedQuery.realtime
             ? `/api/workflows/${workflowId}/activity/stream`
             : null,
         },
@@ -219,28 +221,30 @@ export async function GET(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Retrieved ${formattedActivities.length} activities in ${elapsed}ms`, {
-      total: activityData.total,
-      format: validatedQuery.format,
-      realtime: validatedQuery.realtime,
-    })
+    logger.info(
+      `[${requestId}] Retrieved ${formattedActivities.length} activities in ${elapsed}ms`,
+      {
+        total: activityData.total,
+        format: validatedQuery.format,
+        realtime: validatedQuery.realtime,
+      }
+    )
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid query parameters', 
+        {
+          error: 'Invalid query parameters',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -252,11 +256,11 @@ export async function GET(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to retrieve activity timeline', 
+      {
+        error: 'Failed to retrieve activity timeline',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -264,10 +268,10 @@ export async function GET(
 
 /**
  * POST /api/workflows/[id]/activity
- * 
+ *
  * Log custom activity events for the workflow. Useful for tracking user actions,
  * system events, and custom integrations that need to be part of the audit trail.
- * 
+ *
  * Request Body:
  * - activityType: Type of activity (required, max 50 chars)
  * - activityDescription: Human-readable description (required, max 500 chars)
@@ -277,10 +281,7 @@ export async function GET(
  * - relatedEntityId: ID of related entity (optional)
  * - impactLevel: Impact level (low, medium, high, critical, default: low)
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -290,12 +291,12 @@ export async function POST(
 
     // Authentication and authorization check with write permission
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       logger.warn(`[${requestId}] Write access denied for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -316,18 +317,17 @@ export async function POST(
       const versionExists = await db
         .select({ id: workflowVersions.id })
         .from(workflowVersions)
-        .where(and(
-          eq(workflowVersions.id, activityData.versionId),
-          eq(workflowVersions.workflowId, workflowId)
-        ))
+        .where(
+          and(
+            eq(workflowVersions.id, activityData.versionId),
+            eq(workflowVersions.workflowId, workflowId)
+          )
+        )
         .limit(1)
 
       if (versionExists.length === 0) {
         logger.warn(`[${requestId}] Invalid version ID ${activityData.versionId}`)
-        return NextResponse.json(
-          { error: 'Invalid version ID', requestId }, 
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Invalid version ID', requestId }, { status: 400 })
       }
     }
 
@@ -394,11 +394,13 @@ export async function POST(
           activityDescription: createdActivity.activityDescription,
           activityDetails: createdActivity.activityDetails,
           createdAt: createdActivity.createdAt,
-          user: createdActivity.userName ? {
-            id: createdActivity.userId,
-            name: createdActivity.userName,
-            email: createdActivity.userEmail,
-          } : null,
+          user: createdActivity.userName
+            ? {
+                id: createdActivity.userId,
+                name: createdActivity.userName,
+                email: createdActivity.userEmail,
+              }
+            : null,
           context: {
             userAgent: createdActivity.userAgent,
             ipAddress: createdActivity.ipAddress,
@@ -426,21 +428,20 @@ export async function POST(
     // await emitActivityEvent(workflowId, createdActivity)
 
     return NextResponse.json(response, { status: 201 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid activity data`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid request data', 
+        {
+          error: 'Invalid request data',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -452,11 +453,11 @@ export async function POST(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to create activity', 
+      {
+        error: 'Failed to create activity',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -469,10 +470,10 @@ function buildActivityFilters(
   query: z.infer<typeof ActivityQuerySchema>,
   workflowId: string
 ): {
-  timeRange: { from?: Date; to?: Date };
-  activityTypes: string[];
-  searchTerms: string[];
-  optimized: boolean;
+  timeRange: { from?: Date; to?: Date }
+  activityTypes: string[]
+  searchTerms: string[]
+  optimized: boolean
 } {
   const now = new Date()
   let from: Date | undefined
@@ -483,7 +484,7 @@ function buildActivityFilters(
   if (query.from) {
     from = new Date(query.from)
   }
-  
+
   if (query.to) {
     to = new Date(query.to)
   }
@@ -491,7 +492,7 @@ function buildActivityFilters(
   // Handle predefined periods if no explicit dates
   if (!from && !to && query.period && query.period !== 'all') {
     to = now
-    
+
     switch (query.period) {
       case '1h':
         from = new Date(now.getTime() - 60 * 60 * 1000)
@@ -519,13 +520,19 @@ function buildActivityFilters(
   if (query.activityType) {
     activityTypes = [query.activityType]
   } else if (query.activityTypes) {
-    activityTypes = query.activityTypes.split(',').map(t => t.trim()).filter(Boolean)
+    activityTypes = query.activityTypes
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
   }
 
   // Handle search terms
   let searchTerms: string[] = []
   if (query.search) {
-    searchTerms = query.search.split(' ').map(term => term.trim()).filter(Boolean)
+    searchTerms = query.search
+      .split(' ')
+      .map((term) => term.trim())
+      .filter(Boolean)
   }
 
   return {
@@ -554,7 +561,7 @@ async function getActivityTimeline(
     if (filters.timeRange.from) {
       whereConditions.push(gte(workflowVersionActivity.createdAt, filters.timeRange.from))
     }
-    
+
     if (filters.timeRange.to) {
       whereConditions.push(lte(workflowVersionActivity.createdAt, filters.timeRange.to))
     }
@@ -576,13 +583,16 @@ async function getActivityTimeline(
 
     // Add search filters
     if (filters.searchTerms.length > 0) {
-      const searchConditions = filters.searchTerms.map(term =>
+      const searchConditions = filters.searchTerms.map((term: string) =>
         or(
           like(workflowVersionActivity.activityDescription, `%${term}%`),
           like(workflowVersionActivity.activityType, `%${term}%`)
         )
       )
-      whereConditions.push(and(...searchConditions))
+      const combinedSearch = and(...searchConditions)
+      if (combinedSearch) {
+        whereConditions.push(combinedSearch)
+      }
     }
 
     // Add impact level filter (stored in activityDetails)
@@ -593,7 +603,7 @@ async function getActivityTimeline(
     }
 
     // Build the main query
-    let activityQuery = db
+    const baseQuery = db
       .select({
         // Activity fields
         id: workflowVersionActivity.id,
@@ -610,24 +620,26 @@ async function getActivityTimeline(
         relatedEntityId: workflowVersionActivity.relatedEntityId,
         createdAt: workflowVersionActivity.createdAt,
         // User fields (if requested)
-        ...(query.includeUser ? {
-          userName: user.name,
-          userEmail: user.email,
-          userImage: user.image,
-        } : {}),
+        ...(query.includeUser
+          ? {
+              userName: user.name,
+              userEmail: user.email,
+              userImage: user.image,
+            }
+          : {}),
         // Version info
         versionNumber: workflowVersions.versionNumber,
       })
       .from(workflowVersionActivity)
+      .leftJoin(
+        workflowVersions,
+        eq(workflowVersionActivity.versionId, workflowVersions.id)
+      )
 
-    // Add joins
-    if (query.includeUser) {
-      activityQuery = activityQuery
-        .leftJoin(user, eq(workflowVersionActivity.userId, user.id))
-    }
-
-    activityQuery = activityQuery
-      .leftJoin(workflowVersions, eq(workflowVersionActivity.versionId, workflowVersions.id))
+    // Add user join conditionally to avoid type reassignment issues
+    const activityQuery = query.includeUser
+      ? baseQuery.leftJoin(user, eq(workflowVersionActivity.userId, user.id))
+      : baseQuery
 
     // Handle cursor-based pagination if cursor is provided
     if (query.cursor) {
@@ -664,7 +676,6 @@ async function getActivityTimeline(
       total: Number(count),
       nextCursor,
     }
-
   } catch (error: any) {
     logger.error('Failed to get activity timeline', {
       error: error.message,
@@ -678,18 +689,13 @@ async function getActivityTimeline(
 /**
  * Format activities based on requested format
  */
-async function formatActivities(
-  activities: any[],
-  query: z.infer<typeof ActivityQuerySchema>
-) {
+async function formatActivities(activities: any[], query: z.infer<typeof ActivityQuerySchema>) {
   switch (query.format) {
     case 'grouped':
       return groupActivities(activities, query.groupBy, query.groupInterval)
-    
+
     case 'summary':
       return summarizeActivities(activities)
-    
-    case 'timeline':
     default:
       return formatTimelineActivities(activities, query)
   }
@@ -698,34 +704,38 @@ async function formatActivities(
 /**
  * Format activities for timeline view
  */
-function formatTimelineActivities(
-  activities: any[],
-  query: z.infer<typeof ActivityQuerySchema>
-) {
-  return activities.map(activity => ({
+function formatTimelineActivities(activities: any[], query: z.infer<typeof ActivityQuerySchema>) {
+  return activities.map((activity) => ({
     id: activity.id,
     type: 'activity',
     timestamp: activity.createdAt,
     activityType: activity.activityType,
     description: activity.activityDescription,
     details: activity.activityDetails || undefined,
-    user: query.includeUser && activity.userName ? {
-      id: activity.userId,
-      name: activity.userName,
-      email: activity.userEmail,
-      image: activity.userImage,
-    } : null,
-    version: activity.versionNumber ? {
-      id: activity.versionId,
-      number: activity.versionNumber,
-    } : null,
-    context: query.includeContext ? {
-      userAgent: activity.userAgent,
-      ipAddress: activity.ipAddress,
-      relatedVersionId: activity.relatedVersionId,
-      relatedEntityType: activity.relatedEntityType,
-      relatedEntityId: activity.relatedEntityId,
-    } : undefined,
+    user:
+      query.includeUser && activity.userName
+        ? {
+            id: activity.userId,
+            name: activity.userName,
+            email: activity.userEmail,
+            image: activity.userImage,
+          }
+        : null,
+    version: activity.versionNumber
+      ? {
+          id: activity.versionId,
+          number: activity.versionNumber,
+        }
+      : null,
+    context: query.includeContext
+      ? {
+          userAgent: activity.userAgent,
+          ipAddress: activity.ipAddress,
+          relatedVersionId: activity.relatedVersionId,
+          relatedEntityType: activity.relatedEntityType,
+          relatedEntityId: activity.relatedEntityId,
+        }
+      : undefined,
     metadata: {
       impactLevel: activity.activityDetails?.impactLevel || 'low',
       source: activity.activityDetails?.source || 'system',
@@ -737,43 +747,40 @@ function formatTimelineActivities(
 /**
  * Group activities by specified criteria
  */
-function groupActivities(
-  activities: any[],
-  groupBy?: string,
-  groupInterval?: number
-) {
+function groupActivities(activities: any[], groupBy?: string, groupInterval?: number) {
   if (!groupBy) {
     return activities
   }
 
   const groups: Record<string, any> = {}
 
-  activities.forEach(activity => {
+  activities.forEach((activity) => {
     let groupKey: string
 
     switch (groupBy) {
-      case 'hour':
+      case 'hour': {
         const hour = new Date(activity.createdAt)
         hour.setMinutes(0, 0, 0)
         groupKey = hour.toISOString()
         break
-        
+      }
+
       case 'day':
         groupKey = new Date(activity.createdAt).toISOString().split('T')[0]
         break
-        
+
       case 'user':
         groupKey = activity.userId || 'system'
         break
-        
+
       case 'type':
         groupKey = activity.activityType
         break
-        
+
       case 'version':
         groupKey = activity.versionNumber || 'no-version'
         break
-        
+
       default:
         groupKey = 'all'
     }
@@ -793,7 +800,7 @@ function groupActivities(
 
     groups[groupKey].activities.push(activity)
     groups[groupKey].count++
-    
+
     // Update time range
     if (new Date(activity.createdAt) < new Date(groups[groupKey].timeRange.from)) {
       groups[groupKey].timeRange.from = activity.createdAt
@@ -828,7 +835,7 @@ function summarizeActivities(activities: any[]) {
     impactDistribution: {},
   }
 
-  activities.forEach(activity => {
+  activities.forEach((activity) => {
     // Count activity types
     const type = activity.activityType
     if (!summary.activityTypes[type]) {
@@ -864,7 +871,10 @@ function summarizeActivities(activities: any[]) {
     }
 
     // Update time range
-    if (!summary.timeRange.from || new Date(activity.createdAt) < new Date(summary.timeRange.from)) {
+    if (
+      !summary.timeRange.from ||
+      new Date(activity.createdAt) < new Date(summary.timeRange.from)
+    ) {
       summary.timeRange.from = activity.createdAt
     }
     if (!summary.timeRange.to || new Date(activity.createdAt) > new Date(summary.timeRange.to)) {
@@ -892,12 +902,12 @@ async function calculateActivityStatistics(
 ) {
   try {
     const whereConditions = [eq(workflowVersionActivity.workflowId, workflowId)]
-    
+
     // Apply same filters as main query for consistent stats
     if (filters.timeRange.from) {
       whereConditions.push(gte(workflowVersionActivity.createdAt, filters.timeRange.from))
     }
-    
+
     if (filters.timeRange.to) {
       whereConditions.push(lte(workflowVersionActivity.createdAt, filters.timeRange.to))
     }
@@ -926,13 +936,12 @@ async function calculateActivityStatistics(
         hasVersionFilter: !!query.versionId,
       },
     }
-
   } catch (error: any) {
     logger.error('Failed to calculate activity statistics', {
       error: error.message,
       workflowId,
     })
-    
+
     return {
       totalActivities: 0,
       uniqueUsers: 0,
@@ -1015,7 +1024,7 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         if (requiredPermission === 'read') {
           hasAccess = true
@@ -1026,7 +1035,6 @@ async function authenticateAndAuthorize(
     }
 
     return { userId: authenticatedUserId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,

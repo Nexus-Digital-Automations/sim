@@ -6,12 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, PUT, DELETE } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { DELETE, GET, PUT } from './route'
 
 // Mock template data for testing
 const sampleTemplateData = {
@@ -35,20 +35,18 @@ const sampleTemplateData = {
         type: 'starter',
         subBlocks: {
           apiKey: { id: 'apiKey', type: 'password', value: 'secret-key' },
-          publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' }
-        }
+          publicConfig: { id: 'publicConfig', type: 'text', value: 'public-value' },
+        },
       },
       'ai-block': {
         id: 'ai-block',
         type: 'ai-agent',
         subBlocks: {
-          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' }
-        }
-      }
+          model: { id: 'model', type: 'dropdown', value: 'gpt-4o' },
+        },
+      },
     },
-    edges: [
-      { id: 'edge-1', source: 'start-block', target: 'ai-block' }
-    ],
+    edges: [{ id: 'edge-1', source: 'start-block', target: 'ai-block' }],
     metadata: {
       template: {
         tags: ['ai', 'automation', 'gpt'],
@@ -59,9 +57,9 @@ const sampleTemplateData = {
         useCases: ['Content generation', 'Data analysis'],
         isPublic: true,
         allowComments: true,
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
 const mockRelatedTemplates = [
@@ -75,7 +73,7 @@ const mockRelatedTemplates = [
     color: '#3972F6',
     icon: 'ai',
     createdAt: new Date('2024-01-10T00:00:00.000Z'),
-  }
+  },
 ]
 
 const mockSimilarTemplates = [
@@ -88,7 +86,7 @@ const mockSimilarTemplates = [
     color: '#9966FF',
     icon: 'automation',
     description: 'Similar automation template',
-  }
+  },
 ]
 
 const mockCategoryStats = {
@@ -130,7 +128,7 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
     it('should retrieve template with basic data', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.id).toBe('template-123')
@@ -149,19 +147,21 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
         where: vi.fn().mockReturnThis(),
         limit: vi.fn().mockReturnValue(Promise.resolve([])), // No template found
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'nonexistent' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Template not found')
     })
 
     it('should handle view tracking parameter', async () => {
-      const request = new NextRequest('http://localhost:3000/api/templates/template-123?trackView=false')
+      const request = new NextRequest(
+        'http://localhost:3000/api/templates/template-123?trackView=false'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.views).toBe(250) // Not incremented
@@ -171,7 +171,7 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
     it('should include user star status when authenticated', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.isStarred).toBeDefined()
@@ -195,10 +195,12 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           return Promise.resolve([])
         }),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/templates/template-123?includeRelated=true')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/templates/template-123?includeRelated=true'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.relatedTemplates).toBeDefined()
@@ -221,10 +223,12 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           return Promise.resolve([])
         }),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/templates/template-123?includeSimilar=true')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/templates/template-123?includeSimilar=true'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.similarTemplates).toBeDefined()
@@ -247,10 +251,12 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           return Promise.resolve([])
         }),
       }))
-      
-      const request = new NextRequest('http://localhost:3000/api/templates/template-123?includeStats=true')
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/templates/template-123?includeStats=true'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.categoryStats).toBeDefined()
@@ -278,12 +284,12 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           return Promise.resolve([])
         }),
       }))
-      
+
       const request = new NextRequest(
         'http://localhost:3000/api/templates/template-123?includeStats=true&includeRelated=true&includeSimilar=true&trackView=true'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.relatedTemplates).toBeDefined()
@@ -297,10 +303,10 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for template access', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -309,7 +315,7 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
     it('should authenticate with API key', async () => {
       mocks.auth.setUnauthenticated()
       const apiKeyResults = [{ userId: 'user-123' }]
-      
+
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
@@ -322,10 +328,10 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -333,12 +339,12 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
-      const request = createMockRequest('GET', undefined, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('GET', undefined, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -347,7 +353,7 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
     it('should increment view count by default', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.views).toBe(251) // Original 250 + 1
@@ -361,19 +367,21 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
           throw new Error('View update failed')
         }),
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200) // Should not fail the request
       const data = await response.json()
       expect(data.data.views).toBe(250) // Original count maintained
     })
 
     it('should skip view tracking when disabled', async () => {
-      const request = new NextRequest('http://localhost:3000/api/templates/template-123?trackView=false')
+      const request = new NextRequest(
+        'http://localhost:3000/api/templates/template-123?trackView=false'
+      )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data.views).toBe(250) // Not incremented
@@ -387,7 +395,7 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
         'http://localhost:3000/api/templates/template-123?includeStats=invalid&trackView=notBoolean'
       )
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -398,10 +406,10 @@ describe('Individual Template API - GET /api/templates/[id]', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -438,10 +446,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         icon: 'updated-icon',
         color: '#00FF00',
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data).toBeDefined()
@@ -462,19 +470,19 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
               type: 'new-type',
               subBlocks: {
                 apiKey: { value: 'new-secret-key' },
-                publicValue: { value: 'new-public-value' }
-              }
-            }
+                publicValue: { value: 'new-public-value' },
+              },
+            },
           },
           edges: [{ id: 'new-edge', source: 'a', target: 'b' }],
-          metadata: { updated: true }
+          metadata: { updated: true },
         },
         sanitizeCredentials: true,
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.changes.sanitizedCredentials).toBe(true)
@@ -492,10 +500,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         isPublic: false,
         allowComments: false,
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.message).toBe('Template updated successfully')
@@ -506,10 +514,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         name: 'Version Increment Test',
         incrementVersion: true,
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.changes.versionIncremented).toBe(true)
@@ -521,10 +529,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         tags: ['new', 'tags'],
         // Other metadata should be preserved
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.changes.fieldsUpdated).toContain('name')
@@ -534,12 +542,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for template updates', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const updateData = { name: 'Unauthorized Update' }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -548,7 +556,7 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
     it('should authenticate with API key', async () => {
       mocks.auth.setUnauthenticated()
       const apiKeyResults = [{ userId: 'user-123' }]
-      
+
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
@@ -561,12 +569,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = { name: 'API Key Update' }
-      
+
       const request = createMockRequest('PUT', updateData, { 'x-api-key': 'test-api-key' })
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -576,7 +584,7 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         userId: 'different-user-456',
         workflowId: null, // No workspace fallback
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -584,12 +592,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = { name: 'Unauthorized Update' }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -601,11 +609,11 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         userId: 'different-user-456',
         workflowId: 'workflow-with-workspace',
       }
-      
+
       const workflowWithWorkspace = {
         workspaceId: 'workspace-789',
       }
-      
+
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
@@ -619,12 +627,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = { name: 'Admin Update' }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -638,12 +646,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = { name: 'Update Non-existent' }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'nonexistent' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Template not found')
@@ -655,10 +663,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         color: 'invalid-color',
         difficulty: 'invalid-difficulty',
       }
-      
+
       const request = createMockRequest('PUT', invalidUpdateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid template data')
@@ -670,10 +678,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         name: 'Only Name Update',
         // Other fields should remain unchanged
       }
-      
+
       const request = createMockRequest('PUT', partialUpdateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.changes.fieldsUpdated).toEqual(['name'])
@@ -689,11 +697,11 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           metadata: {
             template: {
               version: '1.2.3',
-            }
-          }
-        }
+            },
+          },
+        },
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -701,15 +709,15 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = {
         name: 'Version Test',
         incrementVersion: true,
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.changes.versionIncremented).toBe(true)
@@ -720,10 +728,10 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         ...sampleTemplateData,
         state: {
           ...sampleTemplateData.state,
-          metadata: {} // No version info
-        }
+          metadata: {}, // No version info
+        },
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -731,15 +739,15 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const updateData = {
         name: 'No Version Test',
         incrementVersion: true,
       }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -749,12 +757,12 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
       mocks.database.mockDb.update.mockImplementation(() => {
         throw new Error('Database update failed')
       })
-      
+
       const updateData = { name: 'Failed Update' }
-      
+
       const request = createMockRequest('PUT', updateData)
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -767,9 +775,9 @@ describe('Individual Template API - PUT /api/templates/[id]', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await PUT(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -798,7 +806,7 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
     it('should delete template successfully', async () => {
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -812,10 +820,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'nonexistent' }) })
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Template not found')
@@ -825,10 +833,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication for template deletion', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -840,7 +848,7 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
         userId: 'different-user-456',
         workflowId: null, // No workspace fallback
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -848,10 +856,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
@@ -863,11 +871,11 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
         userId: 'different-user-456',
         workflowId: 'workflow-with-workspace',
       }
-      
+
       const workflowWithWorkspace = {
         workspaceId: 'workspace-789',
       }
-      
+
       let selectCallCount = 0
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
@@ -881,10 +889,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.success).toBe(true)
@@ -896,10 +904,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
       mocks.database.mockDb.delete.mockImplementation(() => {
         throw new Error('Database deletion failed')
       })
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
@@ -908,13 +916,13 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
     it('should handle permission check errors gracefully', async () => {
       const { hasAdminPermission } = await import('@/lib/permissions/utils')
       vi.mocked(hasAdminPermission).mockRejectedValue(new Error('Permission check failed'))
-      
+
       const differentUserTemplate = {
         ...sampleTemplateData,
         userId: 'different-user-456',
         workflowId: 'workflow-with-workspace',
       }
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: () => ({
           where: () => ({
@@ -922,10 +930,10 @@ describe('Individual Template API - DELETE /api/templates/[id]', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('DELETE')
       const response = await DELETE(request, { params: Promise.resolve({ id: 'template-123' }) })
-      
+
       expect(response.status).toBe(500)
     })
   })

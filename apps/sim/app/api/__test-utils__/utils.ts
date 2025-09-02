@@ -13,6 +13,7 @@ export interface MockAuthResult {
   mockUnauthenticated: () => void
   setAuthenticated: (user?: MockUser) => void
   setUnauthenticated: () => void
+  setUser: (user?: MockUser) => void // Alias for setAuthenticated for backward compatibility
 }
 
 export interface DatabaseSelectResult {
@@ -537,6 +538,7 @@ export function mockAuth(user: MockUser = mockUser): MockAuthResult {
     mockUnauthenticated: setUnauthenticated,
     setAuthenticated,
     setUnauthenticated,
+    setUser: setAuthenticated, // Alias for setAuthenticated for backward compatibility
   }
 }
 

@@ -1,9 +1,5 @@
 {
   "title": "SDKs & Client Libraries",
-  "description": "Official SDKs and client libraries for seamless API integration", 
-  "pages": [
-    "javascript",
-    "python",
-    "typescript"
-  ]
+  "description": "Official SDKs and client libraries for seamless API integration",
+  "pages": ["javascript", "python", "typescript"]
 }

@@ -6,23 +6,19 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
-
+import * as TemplatesAPI from '../../templates/route'
+import * as CollaborateAPI from '../[id]/collaborate/route'
+import * as WorkflowExportAPI from '../[id]/export/route'
+import * as WorkflowByIdAPI from '../[id]/route'
 // Import API route handlers
 import * as WorkflowsAPI from '../route'
-import * as WorkflowByIdAPI from '../[id]/route'
-import * as WorkflowYamlAPI from '../yaml/route'
 import * as WorkflowValidateAPI from '../validate/route'
-import * as WorkflowExportAPI from '../[id]/export/route'
-import * as TemplatesAPI from '../../templates/route'
-import * as TemplateByIdAPI from '../../templates/[id]/route'
-import * as CollaborateAPI from '../[id]/collaborate/route'
-import * as LiveEditAPI from '../[id]/live-edit/route'
-import * as PresenceAPI from '../[id]/presence/route'
+import * as WorkflowYamlAPI from '../yaml/route'
 
 // Performance testing utilities
 const measureResponseTime = async (apiCall: () => Promise<Response>): Promise<number> => {
@@ -98,18 +94,18 @@ describe('Performance Testing Suite', () => {
         const request = createMockRequest('GET')
         return await WorkflowsAPI.GET(request)
       })
-      
+
       expect(responseTime).toBeLessThan(1000) // Should respond within 1 second
     })
 
     it('should handle individual workflow retrieval efficiently', async () => {
       const responseTime = await measureResponseTime(async () => {
         const request = createMockRequest('GET')
-        return await WorkflowByIdAPI.GET(request, { 
-          params: Promise.resolve({ id: 'perf-test-workflow' }) 
+        return await WorkflowByIdAPI.GET(request, {
+          params: Promise.resolve({ id: 'perf-test-workflow' }),
         })
       })
-      
+
       expect(responseTime).toBeLessThan(500) // Should respond within 500ms
     })
 
@@ -128,12 +124,12 @@ describe('Performance Testing Suite', () => {
         `,
         validateOnly: false,
       }
-      
+
       const responseTime = await measureResponseTime(async () => {
         const request = createMockRequest('POST', yamlData)
         return await WorkflowYamlAPI.POST(request)
       })
-      
+
       expect(responseTime).toBeLessThan(2000) // YAML processing can be slower
     })
 
@@ -141,34 +137,34 @@ describe('Performance Testing Suite', () => {
       const validationData = {
         workflow: {
           blocks: {
-            'start': { id: 'start', type: 'starter' },
-            'end': { id: 'end', type: 'response' },
+            start: { id: 'start', type: 'starter' },
+            end: { id: 'end', type: 'response' },
           },
           edges: [{ source: 'start', target: 'end' }],
         },
       }
-      
+
       const responseTime = await measureResponseTime(async () => {
         const request = createMockRequest('POST', validationData)
         return await WorkflowValidateAPI.POST(request)
       })
-      
+
       expect(responseTime).toBeLessThan(300) // Validation should be fast
     })
 
     it('should handle concurrent requests efficiently', async () => {
       const concurrentRequests = 10
-      const requestPromises = Array.from({ length: concurrentRequests }, () => 
+      const requestPromises = Array.from({ length: concurrentRequests }, () =>
         measureResponseTime(async () => {
           const request = createMockRequest('GET')
           return await WorkflowsAPI.GET(request)
         })
       )
-      
+
       const responseTimes = await Promise.all(requestPromises)
       const averageResponseTime = responseTimes.reduce((a, b) => a + b) / responseTimes.length
       const maxResponseTime = Math.max(...responseTimes)
-      
+
       expect(averageResponseTime).toBeLessThan(1000) // Average should be good
       expect(maxResponseTime).toBeLessThan(2000) // Even slowest should be reasonable
     })
@@ -177,58 +173,54 @@ describe('Performance Testing Suite', () => {
   describe('Memory and Resource Usage', () => {
     it('should handle large payload requests without memory issues', async () => {
       const largeWorkflow = generateLargePayload(100) // 100KB payload
-      
+
       const request = createMockRequest('POST', largeWorkflow)
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Should either accept or reject gracefully, not crash
       expect([200, 201, 400, 413]).toContain(response.status)
     })
 
     it('should limit request size to prevent DoS', async () => {
       const massivePayload = generateLargePayload(10000) // 10MB payload
-      
+
       const request = createMockRequest('POST', massivePayload)
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Should reject oversized requests
       expect([400, 413, 500]).toContain(response.status)
     })
 
     it('should handle deep nested objects safely', async () => {
       // Create deeply nested object
-      let deepObject: any = {}
+      const deepObject: any = {}
       let current = deepObject
-      
+
       for (let i = 0; i < 1000; i++) {
         current.nested = {}
         current = current.nested
       }
-      
+
       const workflowData = {
         name: 'Deep Nesting Test',
         state: { blocks: deepObject },
       }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Should handle without stack overflow
       expect([200, 201, 400, 500]).toContain(response.status)
     })
 
     it('should manage database connection pools efficiently', async () => {
       // Simulate many concurrent database operations
-      const requests = Array.from({ length: 50 }, () => 
-        createMockRequest('GET')
-      )
-      
-      const responses = await Promise.all(
-        requests.map(request => WorkflowsAPI.GET(request))
-      )
-      
+      const requests = Array.from({ length: 50 }, () => createMockRequest('GET'))
+
+      const responses = await Promise.all(requests.map((request) => WorkflowsAPI.GET(request)))
+
       // All requests should complete without connection pool exhaustion
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect([200, 401, 403, 500]).toContain(response.status) // Various valid responses
       })
     })
@@ -238,10 +230,10 @@ describe('Performance Testing Suite', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await WorkflowsAPI.GET(request)
-      
+
       expect(response.status).toBe(500)
       // Resources should be cleaned up (hard to test directly)
     })
@@ -257,7 +249,7 @@ describe('Performance Testing Suite', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }))
-      
+
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
         leftJoin: vi.fn().mockReturnThis(),
@@ -267,10 +259,10 @@ describe('Performance Testing Suite', () => {
         offset: vi.fn().mockReturnThis(),
         then: vi.fn().mockResolvedValue(manyWorkflows.slice(0, 50)), // Paginated
       }))
-      
+
       const request = createMockRequest('GET')
       const response = await WorkflowsAPI.GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.workflows.length).toBeLessThanOrEqual(50) // Proper pagination
@@ -279,10 +271,10 @@ describe('Performance Testing Suite', () => {
     it('should paginate large result sets appropriately', async () => {
       const request = new NextRequest('http://localhost:3000/api/workflows?page=100&limit=50')
       const response = await WorkflowsAPI.GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Should handle large page numbers gracefully
       expect(data.pagination).toBeDefined()
       expect(data.pagination.page).toBe(100)
@@ -290,7 +282,8 @@ describe('Performance Testing Suite', () => {
     })
 
     it('should handle complex filtering without performance degradation', async () => {
-      const complexFilterRequest = new NextRequest(`
+      const complexFilterRequest = new NextRequest(
+        `
         http://localhost:3000/api/workflows
         ?search=complex workflow automation
         &tags=ai,automation,integration
@@ -301,12 +294,13 @@ describe('Performance Testing Suite', () => {
         &sortBy=relevance
         &sortOrder=desc
         &limit=25
-      `.replace(/\s+/g, ''))
-      
+      `.replace(/\s+/g, '')
+      )
+
       const responseTime = await measureResponseTime(async () => {
         return await WorkflowsAPI.GET(complexFilterRequest)
       })
-      
+
       expect(responseTime).toBeLessThan(1500) // Complex queries still reasonable
     })
   })
@@ -315,24 +309,20 @@ describe('Performance Testing Suite', () => {
     it('should handle burst traffic patterns', async () => {
       // Simulate traffic burst
       const burstSize = 20
-      const burstRequests = Array.from({ length: burstSize }, () => 
-        createMockRequest('GET')
-      )
-      
+      const burstRequests = Array.from({ length: burstSize }, () => createMockRequest('GET'))
+
       const startTime = performance.now()
-      const responses = await Promise.all(
-        burstRequests.map(request => WorkflowsAPI.GET(request))
-      )
+      const responses = await Promise.all(burstRequests.map((request) => WorkflowsAPI.GET(request)))
       const endTime = performance.now()
-      
+
       const totalTime = endTime - startTime
       const averageRequestTime = totalTime / burstSize
-      
+
       // Should handle burst without excessive delay
       expect(averageRequestTime).toBeLessThan(1000)
-      
+
       // All requests should complete successfully or fail gracefully
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect([200, 401, 429, 500]).toContain(response.status)
       })
     })
@@ -341,29 +331,25 @@ describe('Performance Testing Suite', () => {
       const sustainedRequests = 100
       const batchSize = 10
       const batches = sustainedRequests / batchSize
-      
+
       const batchTimes: number[] = []
-      
+
       for (let i = 0; i < batches; i++) {
         const batchStartTime = performance.now()
-        
-        const batch = Array.from({ length: batchSize }, () => 
-          createMockRequest('GET')
-        )
-        
-        await Promise.all(
-          batch.map(request => WorkflowsAPI.GET(request))
-        )
-        
+
+        const batch = Array.from({ length: batchSize }, () => createMockRequest('GET'))
+
+        await Promise.all(batch.map((request) => WorkflowsAPI.GET(request)))
+
         const batchEndTime = performance.now()
         batchTimes.push(batchEndTime - batchStartTime)
       }
-      
+
       // Performance should not degrade significantly over time
       const firstBatchTime = batchTimes[0]
       const lastBatchTime = batchTimes[batchTimes.length - 1]
       const performanceDegradation = lastBatchTime / firstBatchTime
-      
+
       expect(performanceDegradation).toBeLessThan(3) // Less than 3x degradation
     })
   })
@@ -387,19 +373,19 @@ describe('Security Testing Suite', () => {
   describe('SQL Injection Protection', () => {
     it('should prevent SQL injection in workflow names', async () => {
       const sqlPayloads = generateSQLInjectionPayloads()
-      
+
       for (const payload of sqlPayloads) {
         const workflowData = {
           name: payload,
           description: 'SQL injection test',
         }
-        
+
         const request = createMockRequest('POST', workflowData)
         const response = await WorkflowsAPI.POST(request)
-        
+
         // Should either sanitize or reject, not cause database error
         expect([200, 201, 400]).toContain(response.status)
-        
+
         if (response.status === 201) {
           const data = await response.json()
           // Name should be sanitized, not contain dangerous SQL
@@ -411,13 +397,13 @@ describe('Security Testing Suite', () => {
 
     it('should protect search queries from SQL injection', async () => {
       const sqlPayloads = generateSQLInjectionPayloads()
-      
+
       for (const payload of sqlPayloads) {
         const request = new NextRequest(
           `http://localhost:3000/api/workflows?search=${encodeURIComponent(payload)}`
         )
         const response = await WorkflowsAPI.GET(request)
-        
+
         // Should handle malicious search safely
         expect([200, 400]).toContain(response.status)
       }
@@ -425,13 +411,13 @@ describe('Security Testing Suite', () => {
 
     it('should sanitize template filter parameters', async () => {
       const sqlPayloads = generateSQLInjectionPayloads()
-      
+
       for (const payload of sqlPayloads) {
         const request = new NextRequest(
           `http://localhost:3000/api/templates?category=${encodeURIComponent(payload)}&author=${encodeURIComponent(payload)}`
         )
         const response = await TemplatesAPI.GET(request)
-        
+
         expect([200, 400]).toContain(response.status)
       }
     })
@@ -440,19 +426,19 @@ describe('Security Testing Suite', () => {
   describe('Cross-Site Scripting (XSS) Protection', () => {
     it('should sanitize XSS attempts in workflow descriptions', async () => {
       const xssPayloads = generateXSSPayloads()
-      
+
       for (const payload of xssPayloads) {
         const workflowData = {
           name: 'XSS Test Workflow',
           description: payload,
         }
-        
+
         const request = createMockRequest('POST', workflowData)
         const response = await WorkflowsAPI.POST(request)
-        
+
         if (response.status === 201) {
           const data = await response.json()
-          
+
           // XSS payload should be sanitized
           expect(data.description).not.toContain('<script>')
           expect(data.description).not.toContain('javascript:')
@@ -463,15 +449,15 @@ describe('Security Testing Suite', () => {
 
     it('should escape user input in error messages', async () => {
       const xssPayload = '<script>alert("xss")</script>'
-      
+
       const request = createMockRequest('GET', undefined, {
         'x-api-key': xssPayload,
       })
       const response = await WorkflowsAPI.GET(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
-      
+
       // Error message should not contain unescaped XSS
       const responseText = JSON.stringify(data)
       expect(responseText).not.toContain('<script>')
@@ -480,7 +466,7 @@ describe('Security Testing Suite', () => {
 
     it('should sanitize template state data', async () => {
       const xssPayloads = generateXSSPayloads()
-      
+
       for (const payload of xssPayloads) {
         const templateData = {
           workflowId: 'workflow-123',
@@ -501,13 +487,13 @@ describe('Security Testing Suite', () => {
             edges: [],
           },
         }
-        
+
         const request = createMockRequest('POST', templateData)
         const response = await TemplatesAPI.POST(request)
-        
+
         if (response.status === 201) {
           const data = await response.json()
-          
+
           // All user-provided content should be sanitized
           expect(data.author).not.toContain('<script>')
           expect(JSON.stringify(data.state)).not.toContain('<script>')
@@ -519,18 +505,18 @@ describe('Security Testing Suite', () => {
   describe('Command Injection Protection', () => {
     it('should prevent command injection in file operations', async () => {
       const commandPayloads = generateCommandInjectionPayloads()
-      
+
       for (const payload of commandPayloads) {
         const exportRequest = new NextRequest(
           `http://localhost:3000/api/workflows/test-workflow/export?format=yaml&filename=${encodeURIComponent(payload)}`
         )
-        const response = await WorkflowExportAPI.GET(exportRequest, { 
-          params: Promise.resolve({ id: 'test-workflow' }) 
+        const response = await WorkflowExportAPI.GET(exportRequest, {
+          params: Promise.resolve({ id: 'test-workflow' }),
         })
-        
+
         // Should reject or sanitize dangerous filenames
         expect([200, 400, 401, 403]).toContain(response.status)
-        
+
         if (response.status === 200) {
           const contentDisposition = response.headers.get('content-disposition')
           if (contentDisposition) {
@@ -544,16 +530,16 @@ describe('Security Testing Suite', () => {
 
     it('should sanitize user input in system operations', async () => {
       const commandPayloads = generateCommandInjectionPayloads()
-      
+
       for (const payload of commandPayloads) {
         const yamlData = {
           yaml: `name: ${payload}\nblocks: []`,
           validateOnly: true,
         }
-        
+
         const request = createMockRequest('POST', yamlData)
         const response = await WorkflowYamlAPI.POST(request)
-        
+
         // Should handle without executing commands
         expect([200, 400, 401]).toContain(response.status)
       }
@@ -563,15 +549,15 @@ describe('Security Testing Suite', () => {
   describe('Path Traversal Protection', () => {
     it('should prevent path traversal in file exports', async () => {
       const pathPayloads = generatePathTraversalPayloads()
-      
+
       for (const payload of pathPayloads) {
         const exportRequest = new NextRequest(
           `http://localhost:3000/api/workflows/${encodeURIComponent(payload)}/export`
         )
-        const response = await WorkflowExportAPI.GET(exportRequest, { 
-          params: Promise.resolve({ id: payload }) 
+        const response = await WorkflowExportAPI.GET(exportRequest, {
+          params: Promise.resolve({ id: payload }),
         })
-        
+
         // Should not access files outside allowed directories
         expect([400, 401, 403, 404]).toContain(response.status)
       }
@@ -579,13 +565,13 @@ describe('Security Testing Suite', () => {
 
     it('should validate workflow IDs against path traversal', async () => {
       const pathPayloads = generatePathTraversalPayloads()
-      
+
       for (const payload of pathPayloads) {
         const request = createMockRequest('GET')
-        const response = await WorkflowByIdAPI.GET(request, { 
-          params: Promise.resolve({ id: payload }) 
+        const response = await WorkflowByIdAPI.GET(request, {
+          params: Promise.resolve({ id: payload }),
         })
-        
+
         // Should reject malicious IDs
         expect([400, 401, 403, 404]).toContain(response.status)
       }
@@ -596,12 +582,12 @@ describe('Security Testing Suite', () => {
     it('should prevent session fixation attacks', async () => {
       // Mock multiple session attempts with different IDs
       const sessionIds = ['session1', 'session2', 'session3']
-      
+
       for (const sessionId of sessionIds) {
         const request = createMockRequest('GET', undefined, {
-          'cookie': `session=${sessionId}`,
+          cookie: `session=${sessionId}`,
         })
-        
+
         // Each request should be handled independently
         const response = await WorkflowsAPI.GET(request)
         expect([200, 401]).toContain(response.status)
@@ -612,33 +598,33 @@ describe('Security Testing Suite', () => {
       // Test authentication timing for valid vs invalid credentials
       const validKey = 'valid-api-key'
       const invalidKey = 'invalid-api-key'
-      
+
       // Mock valid key lookup
       mocks.database.mockDb.select.mockImplementation((query: any) => {
         const isValidKeyQuery = JSON.stringify(query).includes(validKey)
         return {
           from: vi.fn().mockReturnThis(),
           where: vi.fn().mockReturnThis(),
-          limit: vi.fn().mockReturnValue(
-            Promise.resolve(isValidKeyQuery ? [{ userId: 'user-123' }] : [])
-          ),
+          limit: vi
+            .fn()
+            .mockReturnValue(Promise.resolve(isValidKeyQuery ? [{ userId: 'user-123' }] : [])),
         }
       })
-      
+
       const validRequest = createMockRequest('GET', undefined, { 'x-api-key': validKey })
       const invalidRequest = createMockRequest('GET', undefined, { 'x-api-key': invalidKey })
-      
+
       const validStartTime = performance.now()
       await WorkflowsAPI.GET(validRequest)
       const validEndTime = performance.now()
-      
+
       const invalidStartTime = performance.now()
       await WorkflowsAPI.GET(invalidRequest)
       const invalidEndTime = performance.now()
-      
+
       const validTime = validEndTime - validStartTime
       const invalidTime = invalidEndTime - invalidStartTime
-      
+
       // Timing difference should not be significant
       const timingRatio = Math.abs(validTime - invalidTime) / Math.max(validTime, invalidTime)
       expect(timingRatio).toBeLessThan(2) // Less than 2x difference
@@ -650,9 +636,9 @@ describe('Security Testing Suite', () => {
         name: 'Replay Test',
         timestamp: Date.now() - 600000, // 10 minutes ago
       })
-      
+
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Old requests should be rejected (if timestamp validation is implemented)
       // expect(response.status).toBe(400)
     })
@@ -665,10 +651,10 @@ describe('Security Testing Suite', () => {
         description: [], // Should be string
         tags: 'not-an-array', // Should be array
       }
-      
+
       const request = createMockRequest('POST', invalidTypeData)
       const response = await WorkflowsAPI.POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toContain('Invalid')
@@ -679,10 +665,10 @@ describe('Security Testing Suite', () => {
         name: 'x'.repeat(1000), // Too long
         description: 'x'.repeat(10000), // Too long
       }
-      
+
       const request = createMockRequest('POST', oversizedData)
       const response = await WorkflowsAPI.POST(request)
-      
+
       expect(response.status).toBe(400)
     })
 
@@ -694,19 +680,19 @@ describe('Security Testing Suite', () => {
         'user name@example.com',
         'user@example',
       ]
-      
+
       for (const email of invalidEmails) {
         const collaboratorData = {
           userEmail: email,
           permissionLevel: 'view',
         }
-        
+
         // This would be tested if email validation exists in the API
         const request = createMockRequest('POST', collaboratorData)
-        const response = await CollaborateAPI.POST(request, { 
-          params: Promise.resolve({ id: 'workflow-123' }) 
+        const response = await CollaborateAPI.POST(request, {
+          params: Promise.resolve({ id: 'workflow-123' }),
         })
-        
+
         // Should validate email format
         expect([400, 401, 403]).toContain(response.status)
       }
@@ -719,16 +705,16 @@ describe('Security Testing Suite', () => {
         'file:///etc/passwd',
         'ftp://internal-server/sensitive-data',
       ]
-      
+
       for (const url of maliciousUrls) {
         const webhookData = {
           name: 'SSRF Test Workflow',
           webhookUrl: url,
         }
-        
+
         const request = createMockRequest('POST', webhookData)
         const response = await WorkflowsAPI.POST(request)
-        
+
         // Should reject internal/malicious URLs
         if (response.status === 201) {
           const data = await response.json()
@@ -742,18 +728,14 @@ describe('Security Testing Suite', () => {
 
   describe('Rate Limiting and DoS Protection', () => {
     it('should handle rapid successive requests', async () => {
-      const rapidRequests = Array.from({ length: 100 }, () => 
-        createMockRequest('GET')
-      )
-      
-      const responses = await Promise.all(
-        rapidRequests.map(request => WorkflowsAPI.GET(request))
-      )
-      
+      const rapidRequests = Array.from({ length: 100 }, () => createMockRequest('GET'))
+
+      const responses = await Promise.all(rapidRequests.map((request) => WorkflowsAPI.GET(request)))
+
       // Some requests might be rate limited in production
-      const successfulRequests = responses.filter(r => r.status === 200)
-      const rateLimitedRequests = responses.filter(r => r.status === 429)
-      
+      const successfulRequests = responses.filter((r) => r.status === 200)
+      const rateLimitedRequests = responses.filter((r) => r.status === 429)
+
       expect(successfulRequests.length + rateLimitedRequests.length).toBe(100)
     })
 
@@ -765,10 +747,10 @@ describe('Security Testing Suite', () => {
           'bomb.zip': 'UEsDBBQAAAAIAA==', // Base64 encoded ZIP bomb pattern
         },
       }
-      
+
       const request = createMockRequest('POST', maliciousZipData)
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Should detect and reject dangerous archives
       expect([400, 413]).toContain(response.status)
     })
@@ -779,10 +761,10 @@ describe('Security Testing Suite', () => {
         name: 'Memory Bomb Test',
         data: Array(1000000).fill('x'.repeat(1000)), // Very large array
       }
-      
+
       const request = createMockRequest('POST', memoryBombData)
       const response = await WorkflowsAPI.POST(request)
-      
+
       // Should reject or handle without crashing
       expect([400, 413, 500]).toContain(response.status)
     })
@@ -794,13 +776,13 @@ describe('Security Testing Suite', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Internal database error with sensitive info')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await WorkflowsAPI.GET(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
-      
+
       // Should not expose sensitive error details
       expect(data.error).not.toContain('database error')
       expect(data).not.toHaveProperty('stack')
@@ -812,9 +794,9 @@ describe('Security Testing Suite', () => {
       const maliciousRequest = createMockRequest('POST', {
         name: "'; DROP TABLE workflows; --",
       })
-      
+
       await WorkflowsAPI.POST(maliciousRequest)
-      
+
       // Security events should be logged (hard to test directly)
       // expect(securityLogger.log).toHaveBeenCalledWith(expect.objectContaining({
       //   event: 'potential_sql_injection',
@@ -827,18 +809,14 @@ describe('Security Testing Suite', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Concurrent error test')
       })
-      
+
       // Multiple concurrent requests with errors
-      const errorRequests = Array.from({ length: 20 }, () => 
-        createMockRequest('GET')
-      )
-      
-      const responses = await Promise.all(
-        errorRequests.map(request => WorkflowsAPI.GET(request))
-      )
-      
+      const errorRequests = Array.from({ length: 20 }, () => createMockRequest('GET'))
+
+      const responses = await Promise.all(errorRequests.map((request) => WorkflowsAPI.GET(request)))
+
       // All should return consistent error responses
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(500)
       })
     })
@@ -850,17 +828,15 @@ describe('Security Testing Suite', () => {
         name: 'Malformed Workflow',
         blocks: {
           // Circular reference
-          'block1': { id: 'block1', next: 'block2' },
-          'block2': { id: 'block2', next: 'block1' },
+          block1: { id: 'block1', next: 'block2' },
+          block2: { id: 'block2', next: 'block1' },
         },
-        edges: [
-          { source: 'block1', target: 'nonexistent' },
-        ],
+        edges: [{ source: 'block1', target: 'nonexistent' }],
       }
-      
+
       const request = createMockRequest('POST', { workflow: malformedWorkflow })
       const response = await WorkflowValidateAPI.POST(request)
-      
+
       // Should detect and report structural issues
       if (response.status === 200) {
         const data = await response.json()
@@ -880,10 +856,10 @@ describe('Security Testing Suite', () => {
           },
         },
       }
-      
+
       const request = createMockRequest('POST', { workflow: maliciousWorkflow })
       const response = await WorkflowValidateAPI.POST(request)
-      
+
       // Should detect dangerous code patterns
       if (response.status === 200) {
         const data = await response.json()
@@ -912,10 +888,10 @@ describe('Security Testing Suite', () => {
           edges: [],
         },
       }
-      
+
       const request = createMockRequest('POST', maliciousTemplate)
       const response = await TemplatesAPI.POST(request)
-      
+
       // Should sanitize or reject malicious content
       if (response.status === 201) {
         const data = await response.json()

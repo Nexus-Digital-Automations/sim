@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or, sql, asc, inArray, count, avg } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
@@ -6,7 +6,7 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateStars, templates, workflow, apiKey as apiKeyTable, user } from '@/db/schema'
+import { apiKey as apiKeyTable, templateStars, templates, workflow } from '@/db/schema'
 
 const logger = createLogger('TemplatesAPI')
 
@@ -62,12 +62,15 @@ const CreateTemplateSchema = z.object({
     .string()
     .min(1, 'Author is required')
     .max(100, 'Author must be less than 100 characters'),
-  category: z.string().min(1, 'Category is required').max(50, 'Category must be less than 50 characters'),
-  
+  category: z
+    .string()
+    .min(1, 'Category is required')
+    .max(50, 'Category must be less than 50 characters'),
+
   // Visual and branding
   icon: z.string().min(1, 'Icon is required').max(50, 'Icon name must be less than 50 characters'),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex color (e.g., #3972F6)'),
-  
+
   // Template state
   state: z.object({
     blocks: z.record(z.any()),
@@ -76,7 +79,7 @@ const CreateTemplateSchema = z.object({
     parallels: z.record(z.any()).optional(),
     metadata: z.record(z.any()).optional(),
   }),
-  
+
   // Optional enhanced metadata
   tags: z.array(z.string()).optional().default([]), // Template tags for improved discoverability
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional().default('intermediate'),
@@ -84,11 +87,11 @@ const CreateTemplateSchema = z.object({
   requirements: z.array(z.string()).optional().default([]), // Prerequisites or requirements
   useCases: z.array(z.string()).optional().default([]), // Common use cases
   version: z.string().optional().default('1.0.0'), // Template version
-  
+
   // Visibility and sharing
   isPublic: z.boolean().optional().default(true), // Whether template is publicly visible
   allowComments: z.boolean().optional().default(true), // Whether to allow reviews/comments
-  
+
   // Creation options
   sanitizeCredentials: z.boolean().optional().default(true), // Whether to sanitize credentials (default: true)
   preserveMetadata: z.boolean().optional().default(false), // Whether to preserve workflow metadata
@@ -99,12 +102,12 @@ const QueryParamsSchema = z.object({
   // Pagination
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(20),
-  
+
   // Basic filters
   category: z.string().optional(),
   search: z.string().optional(), // Search in name, description, and author
   workflowId: z.string().optional(),
-  
+
   // Advanced filters
   userId: z.string().optional(), // Filter by template author
   minStars: z.coerce.number().min(0).optional(), // Minimum star rating
@@ -112,26 +115,29 @@ const QueryParamsSchema = z.object({
   minViews: z.coerce.number().min(0).optional(), // Minimum view count
   isStarred: z.coerce.boolean().optional(), // Show only starred templates
   tags: z.string().optional(), // Comma-separated tags (stored in template metadata)
-  
+
   // Date filters
   createdAfter: z.string().datetime().optional(),
   createdBefore: z.string().datetime().optional(),
   updatedAfter: z.string().datetime().optional(),
   updatedBefore: z.string().datetime().optional(),
-  
+
   // Sorting options
-  sortBy: z.enum([
-    'name',
-    'createdAt', 
-    'updatedAt',
-    'views',
-    'stars',
-    'author',
-    'category',
-    'relevance' // For search queries
-  ]).optional().default('views'),
+  sortBy: z
+    .enum([
+      'name',
+      'createdAt',
+      'updatedAt',
+      'views',
+      'stars',
+      'author',
+      'category',
+      'relevance', // For search queries
+    ])
+    .optional()
+    .default('views'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  
+
   // Response options
   includeStats: z.coerce.boolean().optional().default(false), // Include usage statistics
   includeState: z.coerce.boolean().optional().default(false), // Include workflow state
@@ -143,10 +149,11 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
+  // Parse query parameters outside try block for error handling access
+  const { searchParams } = new URL(request.url)
+  const queryParams = Object.fromEntries(searchParams.entries())
+  
   try {
-    // Parse query parameters
-    const { searchParams } = new URL(request.url)
-    const queryParams = Object.fromEntries(searchParams.entries())
     const params = QueryParamsSchema.parse(queryParams)
 
     logger.info(`[${requestId}] Fetching templates with comprehensive filters:`, params)
@@ -259,15 +266,24 @@ export async function GET(request: NextRequest) {
     // Build comprehensive sorting
     const getSortField = (sortBy: string) => {
       switch (sortBy) {
-        case 'name': return templates.name
-        case 'createdAt': return templates.createdAt
-        case 'updatedAt': return templates.updatedAt
-        case 'views': return templates.views
-        case 'stars': return templates.stars
-        case 'author': return templates.author
-        case 'category': return templates.category
-        case 'relevance': return params.search ? templates.views : templates.createdAt // Fallback for relevance
-        default: return templates.views
+        case 'name':
+          return templates.name
+        case 'createdAt':
+          return templates.createdAt
+        case 'updatedAt':
+          return templates.updatedAt
+        case 'views':
+          return templates.views
+        case 'stars':
+          return templates.stars
+        case 'author':
+          return templates.author
+        case 'category':
+          return templates.category
+        case 'relevance':
+          return params.search ? templates.views : templates.createdAt // Fallback for relevance
+        default:
+          return templates.views
       }
     }
 
@@ -278,50 +294,69 @@ export async function GET(request: NextRequest) {
     const offset = (params.page - 1) * params.limit
 
     // Build the main query with comprehensive data
-    let baseQuery = db
-      .select({
-        // Core template data
-        id: templates.id,
-        workflowId: templates.workflowId,
-        userId: templates.userId,
-        name: templates.name,
-        description: templates.description,
-        author: templates.author,
-        views: templates.views,
-        stars: templates.stars,
-        color: templates.color,
-        icon: templates.icon,
-        category: templates.category,
-        createdAt: templates.createdAt,
-        updatedAt: templates.updatedAt,
-        
-        // Conditional fields based on query parameters
-        ...(params.includeState ? { state: templates.state } : {}),
-        
-        // User-specific data (when authenticated)
-        ...(userId ? {
-          isStarred: sql<boolean>`CASE WHEN ${templateStars.id} IS NOT NULL THEN true ELSE false END`,
-        } : {
-          isStarred: sql<boolean>`false`,
-        }),
-      })
-      .from(templates)
-      
-    // Join with user's star data if authenticated
-    if (userId) {
-      baseQuery = baseQuery.leftJoin(
-        templateStars,
-        and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
-      )
-    }
+    const baseQuery = userId 
+      ? db
+          .select({
+            // Core template data
+            id: templates.id,
+            workflowId: templates.workflowId,
+            userId: templates.userId,
+            name: templates.name,
+            description: templates.description,
+            author: templates.author,
+            views: templates.views,
+            stars: templates.stars,
+            color: templates.color,
+            icon: templates.icon,
+            category: templates.category,
+            createdAt: templates.createdAt,
+            updatedAt: templates.updatedAt,
+
+            // Conditional fields based on query parameters
+            ...(params.includeState ? { state: templates.state } : {}),
+
+            // User-specific data (when authenticated)
+            isStarred: sql<boolean>`CASE WHEN ${templateStars.id} IS NOT NULL THEN true ELSE false END`,
+          })
+          .from(templates)
+          .leftJoin(
+            templateStars,
+            and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
+          )
+      : db
+          .select({
+            // Core template data
+            id: templates.id,
+            workflowId: templates.workflowId,
+            userId: templates.userId,
+            name: templates.name,
+            description: templates.description,
+            author: templates.author,
+            views: templates.views,
+            stars: templates.stars,
+            color: templates.color,
+            icon: templates.icon,
+            category: templates.category,
+            createdAt: templates.createdAt,
+            updatedAt: templates.updatedAt,
+
+            // Conditional fields based on query parameters
+            ...(params.includeState ? { state: templates.state } : {}),
+
+            // User-specific data (when not authenticated)
+            isStarred: sql<boolean>`false`,
+          })
+          .from(templates)
 
     // Apply starred filter after join setup
-    const starredCondition = params.isStarred && userId ? 
-      sql`${templateStars.id} IS NOT NULL` : undefined
+    const starredCondition =
+      params.isStarred && userId ? sql`${templateStars.id} IS NOT NULL` : undefined
 
-    const finalWhereCondition = starredCondition ?
-      (whereCondition ? and(whereCondition, starredCondition) : starredCondition) :
-      whereCondition
+    const finalWhereCondition = starredCondition
+      ? whereCondition
+        ? and(whereCondition, starredCondition)
+        : starredCondition
+      : whereCondition
 
     // Execute the main query
     const results = await baseQuery
@@ -331,17 +366,14 @@ export async function GET(request: NextRequest) {
       .offset(offset)
 
     // Get total count for pagination (with the same conditions)
-    let countQuery = db
-      .select({ count: sql<number>`count(*)` })
-      .from(templates)
-      
-    if (userId && params.isStarred) {
-      countQuery = countQuery
-        .leftJoin(
-          templateStars,
-          and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
-        )
-    }
+    const countQuery = (userId && params.isStarred)
+      ? db.select({ count: sql<number>`count(*)` })
+          .from(templates)
+          .leftJoin(
+            templateStars,
+            and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
+          )
+      : db.select({ count: sql<number>`count(*)` }).from(templates)
 
     const totalCount = await countQuery.where(finalWhereCondition)
     const total = totalCount[0]?.count || 0
@@ -362,7 +394,7 @@ export async function GET(request: NextRequest) {
         .orderBy(sql`count(*) DESC`)
         .limit(10)
 
-      categoryStats = categoryStatsQuery.map(stat => ({
+      categoryStats = categoryStatsQuery.map((stat) => ({
         category: stat.category,
         templateCount: stat.count,
         averageStars: Math.round((stat.avgStars || 0) * 10) / 10,
@@ -419,10 +451,13 @@ export async function GET(request: NextRequest) {
     }
 
     logger.error(`[${requestId}] Error fetching templates after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -430,11 +465,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
+  
+  // Parse request body outside try block for error handling access
+  let body: any = {}
+  try {
+    body = await request.json()
+  } catch (parseError) {
+    logger.warn(`[${requestId}] Failed to parse request body for template creation`)
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
+  }
 
   try {
     // Authentication - support both session and API key
     let userId: string | null = null
-    
+
     // Check for internal JWT token for server-side calls
     const authHeader = request.headers.get('authorization')
     let isInternalCall = false
@@ -472,7 +516,6 @@ export async function POST(request: NextRequest) {
       userId = authenticatedUserId
     }
 
-    const body = await request.json()
     const data = CreateTemplateSchema.parse(body)
 
     logger.info(`[${requestId}] Creating comprehensive template:`, {
@@ -487,11 +530,11 @@ export async function POST(request: NextRequest) {
     // Verify the workflow exists and user has access (for non-internal calls)
     if (!isInternalCall && userId) {
       const workflowAccess = await db
-        .select({ 
+        .select({
           id: workflow.id,
           userId: workflow.userId,
           name: workflow.name,
-          workspaceId: workflow.workspaceId
+          workspaceId: workflow.workspaceId,
         })
         .from(workflow)
         .where(eq(workflow.id, data.workflowId))
@@ -503,7 +546,7 @@ export async function POST(request: NextRequest) {
       }
 
       const workflowData = workflowAccess[0]
-      
+
       // Check if user has access to the workflow
       if (workflowData.userId !== userId) {
         // TODO: Add workspace permission check if needed
@@ -517,18 +560,18 @@ export async function POST(request: NextRequest) {
       const duplicateCheck = await db
         .select({ id: templates.id })
         .from(templates)
-        .where(and(
-          eq(templates.userId, userId),
-          eq(templates.name, data.name)
-        ))
+        .where(and(eq(templates.userId, userId), eq(templates.name, data.name)))
         .limit(1)
 
       if (duplicateCheck.length > 0) {
         logger.warn(`[${requestId}] Duplicate template name '${data.name}' for user ${userId}`)
-        return NextResponse.json({ 
-          error: 'Template name already exists',
-          suggestion: `${data.name} (Copy)` 
-        }, { status: 409 })
+        return NextResponse.json(
+          {
+            error: 'Template name already exists',
+            suggestion: `${data.name} (Copy)`,
+          },
+          { status: 409 }
+        )
       }
     }
 
@@ -537,9 +580,7 @@ export async function POST(request: NextRequest) {
     const now = new Date()
 
     // Sanitize the workflow state to remove sensitive credentials (unless explicitly disabled)
-    const templateState = data.sanitizeCredentials ? 
-      sanitizeWorkflowState(data.state) : 
-      data.state
+    const templateState = data.sanitizeCredentials ? sanitizeWorkflowState(data.state) : data.state
 
     // Build enhanced template metadata
     const templateMetadata = {
@@ -582,7 +623,9 @@ export async function POST(request: NextRequest) {
     const [createdTemplate] = await db.insert(templates).values(newTemplate).returning()
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Successfully created comprehensive template: ${templateId} in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Successfully created comprehensive template: ${templateId} in ${elapsed}ms`
+    )
 
     return NextResponse.json(
       {
@@ -599,13 +642,13 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     if (error instanceof z.ZodError) {
-      logger.warn(`[${requestId}] Invalid template data after ${elapsed}ms`, { 
+      logger.warn(`[${requestId}] Invalid template data after ${elapsed}ms`, {
         errors: error.errors,
         receivedData: Object.keys(body || {}),
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid template data', 
+        {
+          error: 'Invalid template data',
           details: error.errors,
           requestId,
         },
@@ -614,9 +657,12 @@ export async function POST(request: NextRequest) {
     }
 
     logger.error(`[${requestId}] Error creating template after ${elapsed}ms`, error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      requestId,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        requestId,
+      },
+      { status: 500 }
+    )
   }
 }

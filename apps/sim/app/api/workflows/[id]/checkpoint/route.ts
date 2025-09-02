@@ -1,10 +1,10 @@
 /**
  * Workflow Checkpoint API Endpoints
- * 
+ *
  * Advanced checkpoint management for workflow development and collaboration with:
  * - POST /api/workflows/[id]/checkpoint - Create manual checkpoint/snapshot
  * - GET /api/workflows/[id]/checkpoint - List recent checkpoints with metadata
- * 
+ *
  * This API provides professional-grade checkpoint functionality including:
  * - Manual checkpoint creation for important milestones
  * - Automatic checkpoint triggers based on significant changes
@@ -16,6 +16,8 @@
  * - Integration with CI/CD pipelines
  */
 
+import crypto from 'crypto'
+import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
@@ -23,19 +25,14 @@ import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { loadWorkflowFromNormalizedTables } from '@/lib/workflows/db-helpers'
-import { 
-  WorkflowVersionManager, 
-  CreateVersionSchema,
-} from '@/lib/workflows/versioning'
+import { WorkflowVersionManager } from '@/lib/workflows/versioning'
 import { db } from '@/db'
-import { 
-  workflow as workflowTable, 
+import {
   apiKey as apiKeyTable,
+  workflow as workflowTable,
   workflowVersions,
-  workflowVersionTags
+  workflowVersionTags,
 } from '@/db/schema'
-import { eq, desc, and, gte } from 'drizzle-orm'
-import crypto from 'crypto'
 
 const logger = createLogger('WorkflowCheckpointAPI')
 
@@ -55,16 +52,22 @@ const ListCheckpointsSchema = z.object({
   offset: z.string().regex(/^\d+$/).transform(Number).default('0').optional(),
   category: z.enum(['milestone', 'backup', 'experiment', 'release', 'debug']).optional(),
   since: z.string().datetime().optional(),
-  includeAutomatic: z.string().transform(val => val !== 'false').optional(), // Default true
-  includeTags: z.string().transform(val => val !== 'false').optional(), // Default true
+  includeAutomatic: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
+  includeTags: z
+    .string()
+    .transform((val) => val !== 'false')
+    .optional(), // Default true
 })
 
 /**
  * POST /api/workflows/[id]/checkpoint
- * 
+ *
  * Create a manual checkpoint/snapshot of the current workflow state.
  * Checkpoints are special versions designed for quick restore points and milestones.
- * 
+ *
  * Request Body:
  * - name: Checkpoint name (required, max 100 chars)
  * - description: Optional description (max 500 chars)
@@ -73,10 +76,7 @@ const ListCheckpointsSchema = z.object({
  * - metadata: Additional metadata object
  * - autoTag: Automatically add system tags based on changes (default: true)
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -86,12 +86,12 @@ export async function POST(
 
     // Authentication and authorization check with write permission
     const { userId, hasAccess } = await authenticateAndAuthorize(
-      request, 
-      workflowId, 
-      requestId, 
+      request,
+      workflowId,
+      requestId,
       'write'
     )
-    
+
     if (!hasAccess) {
       logger.warn(`[${requestId}] Write access denied for workflow ${workflowId}`)
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -105,13 +105,10 @@ export async function POST(
 
     // Get current workflow state from normalized tables
     const currentState = await loadWorkflowFromNormalizedTables(workflowId)
-    
+
     if (!currentState) {
       logger.error(`[${requestId}] No workflow state found for ${workflowId}`)
-      return NextResponse.json(
-        { error: 'Workflow state not found', requestId }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Workflow state not found', requestId }, { status: 404 })
     }
 
     // Extract request context for auditing
@@ -131,7 +128,7 @@ export async function POST(
 
     // Initialize version manager and create checkpoint version
     const versionManager = new WorkflowVersionManager()
-    
+
     const checkpointVersion = await versionManager.createVersion(
       workflowId,
       {
@@ -148,11 +145,11 @@ export async function POST(
 
     // Add checkpoint-specific tags
     const tagsToAdd = [...checkpointData.tags]
-    
+
     // Add automatic tags based on category and analysis if enabled
     if (checkpointData.autoTag) {
       tagsToAdd.push('checkpoint', checkpointData.category)
-      
+
       // Add contextual tags based on change analysis
       const changeSummary = checkpointVersion.changeSummary || {}
       if (changeSummary.breakingChanges > 0) {
@@ -165,17 +162,22 @@ export async function POST(
 
     // Create checkpoint tags (avoid duplicates)
     const uniqueTags = [...new Set(tagsToAdd)]
-    const tagPromises = uniqueTags.map(tagName => 
-      db.insert(workflowVersionTags).values({
-        id: crypto.randomUUID(),
-        versionId: checkpointVersion.id,
-        tagName,
-        tagColor: getTagColorForCategory(checkpointData.category, tagName),
-        tagDescription: getTagDescription(tagName, checkpointData.category),
-        isSystemTag: checkpointData.autoTag && ['checkpoint', checkpointData.category].includes(tagName),
-        createdByUserId: userId,
-        createdAt: new Date(),
-      }).onConflictDoNothing() // Ignore conflicts if tag already exists
+    const tagPromises = uniqueTags.map(
+      (tagName) =>
+        db
+          .insert(workflowVersionTags)
+          .values({
+            id: crypto.randomUUID(),
+            versionId: checkpointVersion.id,
+            tagName,
+            tagColor: getTagColorForCategory(checkpointData.category, tagName),
+            tagDescription: getTagDescription(tagName, checkpointData.category),
+            isSystemTag:
+              checkpointData.autoTag && ['checkpoint', checkpointData.category].includes(tagName),
+            createdByUserId: userId,
+            createdAt: new Date(),
+          })
+          .onConflictDoNothing() // Ignore conflicts if tag already exists
     )
 
     await Promise.all(tagPromises)
@@ -230,7 +232,7 @@ export async function POST(
             hash: checkpointVersion.stateHash,
             size: checkpointVersion.stateSize,
           },
-          tags: checkpointTags.map(tag => ({
+          tags: checkpointTags.map((tag) => ({
             name: tag.tagName,
             color: tag.tagColor,
             description: tag.tagDescription,
@@ -260,29 +262,31 @@ export async function POST(
     }
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Checkpoint '${checkpointData.name}' created successfully in ${elapsed}ms`, {
-      checkpointId: checkpointVersion.id,
-      category: checkpointData.category,
-      tagCount: uniqueTags.length,
-      stateSize: checkpointVersion.stateSize,
-    })
+    logger.info(
+      `[${requestId}] Checkpoint '${checkpointData.name}' created successfully in ${elapsed}ms`,
+      {
+        checkpointId: checkpointVersion.id,
+        category: checkpointData.category,
+        tagCount: uniqueTags.length,
+        stateSize: checkpointVersion.stateSize,
+      }
+    )
 
     return NextResponse.json(response, { status: 201 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid checkpoint data`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid request data', 
+        {
+          error: 'Invalid request data',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -291,12 +295,12 @@ export async function POST(
     if (error.message.includes('No changes detected')) {
       logger.info(`[${requestId}] No changes detected for checkpoint creation`)
       return NextResponse.json(
-        { 
-          error: 'No changes to checkpoint', 
+        {
+          error: 'No changes to checkpoint',
           message: 'Cannot create checkpoint with no changes from current state',
           suggestion: 'Make changes to the workflow before creating a checkpoint',
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 409 }
       )
     }
@@ -308,11 +312,11 @@ export async function POST(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to create checkpoint', 
+      {
+        error: 'Failed to create checkpoint',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -320,10 +324,10 @@ export async function POST(
 
 /**
  * GET /api/workflows/[id]/checkpoint
- * 
+ *
  * List recent checkpoints for the workflow with metadata and filtering options.
  * Provides quick access to restore points and milestone tracking.
- * 
+ *
  * Query Parameters:
  * - limit: Number of checkpoints to return (default: 20, max: 100)
  * - offset: Number of checkpoints to skip (default: 0)
@@ -332,10 +336,7 @@ export async function POST(
  * - includeAutomatic: Include automatic checkpoints (default: true)
  * - includeTags: Include checkpoint tags (default: true)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
   const { id: workflowId } = await params
@@ -395,9 +396,9 @@ export async function GET(
       .offset(offset)
 
     // Get tags for all checkpoints if requested
-    let checkpointTags: Record<string, any[]> = {}
+    const checkpointTags: Record<string, any[]> = {}
     if (validatedQuery.includeTags && checkpointVersions.length > 0) {
-      const versionIds = checkpointVersions.map(v => v.id)
+      const versionIds = checkpointVersions.map((v) => v.id)
       const tags = await db
         .select({
           versionId: workflowVersionTags.versionId,
@@ -408,11 +409,16 @@ export async function GET(
           tagOrder: workflowVersionTags.tagOrder,
         })
         .from(workflowVersionTags)
-        .where(eq(workflowVersionTags.versionId, checkpointVersions.map(v => v.id)))
+        .where(
+          inArray(
+            workflowVersionTags.versionId,
+            checkpointVersions.map((v) => v.id)
+          )
+        )
         .orderBy(workflowVersionTags.tagOrder)
 
       // Group tags by version ID
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         if (!checkpointTags[tag.versionId]) {
           checkpointTags[tag.versionId] = []
         }
@@ -428,29 +434,30 @@ export async function GET(
 
     // Process and enhance checkpoint data
     const checkpoints = checkpointVersions
-      .filter(version => {
+      .filter((version) => {
         // Apply category filter based on tags or version tag
         if (validatedQuery.category) {
           const versionTags = checkpointTags[version.id] || []
-          const hasCategory = versionTags.some(tag => tag.name === validatedQuery.category) ||
-                             version.versionTag === validatedQuery.category
+          const hasCategory =
+            versionTags.some((tag) => tag.name === validatedQuery.category) ||
+            version.versionTag === validatedQuery.category
           if (!hasCategory) return false
         }
-        
+
         // Apply automatic checkpoint filter
         if (!validatedQuery.includeAutomatic) {
           const versionTags = checkpointTags[version.id] || []
-          const isAutomatic = versionTags.some(tag => tag.name === 'automatic' || tag.isSystem)
+          const isAutomatic = versionTags.some((tag) => tag.name === 'automatic' || tag.isSystem)
           if (isAutomatic) return false
         }
-        
+
         return true
       })
-      .map(version => {
+      .map((version) => {
         // Extract checkpoint name from description
         const checkpointName = extractCheckpointName(version.versionDescription)
         const checkpointCategory = extractCheckpointCategory(version, checkpointTags[version.id])
-        
+
         return {
           id: version.id,
           name: checkpointName,
@@ -467,7 +474,7 @@ export async function GET(
             isDeployed: version.isDeployed,
             deployedAt: version.deployedAt,
           },
-          tags: validatedQuery.includeTags ? (checkpointTags[version.id] || []) : undefined,
+          tags: validatedQuery.includeTags ? checkpointTags[version.id] || [] : undefined,
           metadata: {
             changeCount: Object.keys(version.changeSummary || {}).length,
             createdByUserId: version.createdByUserId,
@@ -542,21 +549,20 @@ export async function GET(
     })
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters`, {
         errors: error.errors,
         elapsed,
       })
       return NextResponse.json(
-        { 
-          error: 'Invalid query parameters', 
+        {
+          error: 'Invalid query parameters',
           details: error.errors,
-          requestId 
-        }, 
+          requestId,
+        },
         { status: 400 }
       )
     }
@@ -568,11 +574,11 @@ export async function GET(
     })
 
     return NextResponse.json(
-      { 
-        error: 'Failed to list checkpoints', 
+      {
+        error: 'Failed to list checkpoints',
         requestId,
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      }, 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -584,19 +590,19 @@ export async function GET(
 function getTagColorForCategory(category: string, tagName: string): string {
   // Category-based colors
   const categoryColors: Record<string, string> = {
-    'milestone': '#10B981', // green
-    'backup': '#6B7280',    // gray
-    'experiment': '#8B5CF6', // purple
-    'release': '#059669',   // dark green
-    'debug': '#EF4444',     // red
+    milestone: '#10B981', // green
+    backup: '#6B7280', // gray
+    experiment: '#8B5CF6', // purple
+    release: '#059669', // dark green
+    debug: '#EF4444', // red
   }
 
   // Special tag colors
   const specialColors: Record<string, string> = {
-    'checkpoint': '#3B82F6', // blue
-    'breaking': '#DC2626',   // red
+    checkpoint: '#3B82F6', // blue
+    breaking: '#DC2626', // red
     'major-changes': '#F59E0B', // amber
-    'automatic': '#9CA3AF',  // gray
+    automatic: '#9CA3AF', // gray
   }
 
   return specialColors[tagName] || categoryColors[category] || '#6B7280'
@@ -607,15 +613,15 @@ function getTagColorForCategory(category: string, tagName: string): string {
  */
 function getTagDescription(tagName: string, category: string): string | undefined {
   const descriptions: Record<string, string> = {
-    'checkpoint': 'Manual checkpoint created by user',
-    'milestone': 'Important milestone in development',
-    'backup': 'Safety backup before major changes',
-    'experiment': 'Experimental feature checkpoint',
-    'release': 'Release candidate or version',
-    'debug': 'Debug session checkpoint',
-    'breaking': 'Contains breaking changes',
+    checkpoint: 'Manual checkpoint created by user',
+    milestone: 'Important milestone in development',
+    backup: 'Safety backup before major changes',
+    experiment: 'Experimental feature checkpoint',
+    release: 'Release candidate or version',
+    debug: 'Debug session checkpoint',
+    breaking: 'Contains breaking changes',
     'major-changes': 'Contains significant changes',
-    'automatic': 'Automatically created checkpoint',
+    automatic: 'Automatically created checkpoint',
   }
 
   return descriptions[tagName] || descriptions[category]
@@ -626,17 +632,15 @@ function getTagDescription(tagName: string, category: string): string | undefine
  */
 function extractCheckpointName(description?: string): string {
   if (!description) return 'Unnamed Checkpoint'
-  
+
   // Look for pattern "Checkpoint: Name - Description" or "Checkpoint: Name"
   const match = description.match(/^Checkpoint: (.+?)(?:\s-\s.*)?$/)
   if (match) {
     return match[1].trim()
   }
-  
+
   // Fallback to description or default
-  return description.length > 50 
-    ? description.substring(0, 47) + '...'
-    : description
+  return description.length > 50 ? `${description.substring(0, 47)}...` : description
 }
 
 /**
@@ -644,19 +648,22 @@ function extractCheckpointName(description?: string): string {
  */
 function extractCheckpointCategory(version: any, tags: any[] = []): string {
   // Check tags first
-  const categoryTag = tags.find(tag => 
+  const categoryTag = tags.find((tag) =>
     ['milestone', 'backup', 'experiment', 'release', 'debug'].includes(tag.name)
   )
-  
+
   if (categoryTag) {
     return categoryTag.name
   }
-  
+
   // Check version tag
-  if (version.versionTag && ['milestone', 'backup', 'experiment', 'release', 'debug'].includes(version.versionTag)) {
+  if (
+    version.versionTag &&
+    ['milestone', 'backup', 'experiment', 'release', 'debug'].includes(version.versionTag)
+  ) {
     return version.versionTag
   }
-  
+
   // Default category
   return 'milestone'
 }
@@ -669,10 +676,12 @@ async function getCheckpointCount(workflowId: string): Promise<number> {
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)` })
       .from(workflowVersions)
-      .where(and(
-        eq(workflowVersions.workflowId, workflowId),
-        eq(workflowVersions.versionType, 'checkpoint')
-      ))
+      .where(
+        and(
+          eq(workflowVersions.workflowId, workflowId),
+          eq(workflowVersions.versionType, 'checkpoint')
+        )
+      )
 
     return Number(count)
   } catch (error: any) {
@@ -694,10 +703,12 @@ async function getCheckpointCategoriesStats(workflowId: string): Promise<Record<
       })
       .from(workflowVersionTags)
       .innerJoin(workflowVersions, eq(workflowVersionTags.versionId, workflowVersions.id))
-      .where(and(
-        eq(workflowVersions.workflowId, workflowId),
-        eq(workflowVersions.versionType, 'checkpoint')
-      ))
+      .where(
+        and(
+          eq(workflowVersions.workflowId, workflowId),
+          eq(workflowVersions.versionType, 'checkpoint')
+        )
+      )
       .groupBy(workflowVersionTags.tagName)
 
     // Filter for category tags
@@ -709,8 +720,8 @@ async function getCheckpointCategoriesStats(workflowId: string): Promise<Record<
       debug: 0,
     }
 
-    tagStats.forEach(stat => {
-      if (categories.hasOwnProperty(stat.tagName)) {
+    tagStats.forEach((stat) => {
+      if (Object.hasOwn(categories, stat.tagName)) {
         categories[stat.tagName] = Number(stat.count)
       }
     })
@@ -728,19 +739,25 @@ async function getCheckpointCategoriesStats(workflowId: string): Promise<Record<
 async function getRecentCheckpointCount(workflowId: string, hoursAgo: number): Promise<number> {
   try {
     const sinceDate = new Date(Date.now() - hoursAgo * 60 * 60 * 1000)
-    
+
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)` })
       .from(workflowVersions)
-      .where(and(
-        eq(workflowVersions.workflowId, workflowId),
-        eq(workflowVersions.versionType, 'checkpoint'),
-        gte(workflowVersions.createdAt, sinceDate)
-      ))
+      .where(
+        and(
+          eq(workflowVersions.workflowId, workflowId),
+          eq(workflowVersions.versionType, 'checkpoint'),
+          gte(workflowVersions.createdAt, sinceDate)
+        )
+      )
 
     return Number(count)
   } catch (error: any) {
-    logger.error('Failed to get recent checkpoint count', { workflowId, hoursAgo, error: error.message })
+    logger.error('Failed to get recent checkpoint count', {
+      workflowId,
+      hoursAgo,
+      error: error.message,
+    })
     return 0
   }
 }
@@ -817,7 +834,7 @@ async function authenticateAndAuthorize(
         'workspace',
         workflowData.workspaceId
       )
-      
+
       if (userPermission !== null) {
         if (requiredPermission === 'read') {
           hasAccess = true
@@ -828,7 +845,6 @@ async function authenticateAndAuthorize(
     }
 
     return { userId: authenticatedUserId, hasAccess }
-
   } catch (error: any) {
     logger.error(`[${requestId}] Authentication error`, {
       error: error.message,

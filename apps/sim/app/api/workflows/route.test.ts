@@ -6,14 +6,12 @@
 
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GET, POST, PATCH } from './route'
-import { 
-  setupComprehensiveTestMocks,
+import {
   createMockRequest,
   mockUser,
-  mockOrganization,
-  mockAdminMember,
+  setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
+import { GET, PATCH, POST } from './route'
 
 // Sample workflow test data following the established patterns
 const sampleWorkflowData = {
@@ -66,10 +64,10 @@ describe('Workflow API - GET /api/workflows', () => {
     it('should return 401 when user is not authenticated', async () => {
       // Setup unauthenticated user
       mocks.auth.setUnauthenticated()
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -86,10 +84,10 @@ describe('Workflow API - GET /api/workflows', () => {
           }),
         }),
       }))
-      
+
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
     })
 
@@ -98,12 +96,12 @@ describe('Workflow API - GET /api/workflows', () => {
       vi.doMock('@/lib/auth/internal', () => ({
         verifyInternalToken: vi.fn().mockResolvedValue(true),
       }))
-      
-      const request = createMockRequest('GET', undefined, { 
-        'authorization': 'Bearer internal-jwt-token' 
+
+      const request = createMockRequest('GET', undefined, {
+        authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -112,7 +110,7 @@ describe('Workflow API - GET /api/workflows', () => {
     it('should list workflows with default parameters', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data).toEqual(sampleWorkflowsList)
@@ -124,62 +122,52 @@ describe('Workflow API - GET /api/workflows', () => {
         'http://localhost:3000/api/workflows?workspaceId=workspace-456'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.workspaceId).toBe('workspace-456')
     })
 
     it('should filter workflows by folder ID', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?folderId=folder-123'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?folderId=folder-123')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.folderId).toBe('folder-123')
     })
 
     it('should handle null folder ID filter', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?folderId=null'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?folderId=null')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.folderId).toBeNull()
     })
 
     it('should search workflows by name and description', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?search=test%20workflow'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?search=test%20workflow')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.search).toBe('test workflow')
     })
 
     it('should filter by deployment status', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?status=deployed'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?status=deployed')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.status).toBe('deployed')
     })
 
     it('should filter by published status', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?isPublished=true'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?isPublished=true')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.isPublished).toBe(true)
@@ -190,7 +178,7 @@ describe('Workflow API - GET /api/workflows', () => {
         'http://localhost:3000/api/workflows?createdAfter=2024-01-01T00:00:00.000Z&createdBefore=2024-12-31T23:59:59.999Z'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.createdAfter).toBe('2024-01-01T00:00:00.000Z')
@@ -204,7 +192,7 @@ describe('Workflow API - GET /api/workflows', () => {
         'http://localhost:3000/api/workflows?sortBy=name&sortOrder=asc'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.sortBy).toBe('name')
@@ -216,7 +204,7 @@ describe('Workflow API - GET /api/workflows', () => {
         'http://localhost:3000/api/workflows?sortBy=createdAt&sortOrder=desc'
       )
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.sortBy).toBe('createdAt')
@@ -224,22 +212,18 @@ describe('Workflow API - GET /api/workflows', () => {
     })
 
     it('should sort workflows by run count', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?sortBy=runCount'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?sortBy=runCount')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.filters.sortBy).toBe('runCount')
     })
 
     it('should handle pagination correctly', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?page=2&limit=10'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?page=2&limit=10')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.pagination.page).toBe(2)
@@ -250,11 +234,9 @@ describe('Workflow API - GET /api/workflows', () => {
     })
 
     it('should validate pagination limits', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?limit=150'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?limit=150')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -267,21 +249,19 @@ describe('Workflow API - GET /api/workflows', () => {
       mocks.database.mockDb.select.mockImplementation(() => {
         throw new Error('Database connection failed')
       })
-      
+
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
     })
 
     it('should validate query parameters', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?page=invalid&limit=abc'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?page=invalid&limit=abc')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
@@ -289,22 +269,18 @@ describe('Workflow API - GET /api/workflows', () => {
     })
 
     it('should validate sort parameters', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?sortBy=invalidField'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?sortBy=invalidField')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid query parameters')
     })
 
     it('should validate status parameters', async () => {
-      const request = new NextRequest(
-        'http://localhost:3000/api/workflows?status=invalidStatus'
-      )
+      const request = new NextRequest('http://localhost:3000/api/workflows?status=invalidStatus')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(400)
     })
   })
@@ -313,10 +289,10 @@ describe('Workflow API - GET /api/workflows', () => {
     it('should include performance timing in response', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Verify response structure
       expect(data).toHaveProperty('data')
       expect(data).toHaveProperty('pagination')
@@ -327,10 +303,10 @@ describe('Workflow API - GET /api/workflows', () => {
     it('should clean filters in response by removing defaults', async () => {
       const request = createMockRequest('GET')
       const response = await GET(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Default values should be removed from response
       expect(data.filters.page).toBeUndefined()
       expect(data.filters.limit).toBeUndefined()
@@ -373,10 +349,10 @@ describe('Workflow API - POST /api/workflows', () => {
         workspaceId: 'workspace-123',
         folderId: 'folder-456',
       }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.name).toBe(workflowData.name)
@@ -391,10 +367,10 @@ describe('Workflow API - POST /api/workflows', () => {
 
     it('should create workflow with minimal required data', async () => {
       const workflowData = { name: 'Minimal Workflow' }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.name).toBe(workflowData.name)
@@ -409,10 +385,10 @@ describe('Workflow API - POST /api/workflows', () => {
         name: 'Test Workflow',
         folderId: null,
       }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.folderId).toBeNull()
@@ -422,11 +398,11 @@ describe('Workflow API - POST /api/workflows', () => {
   describe('Authentication and Authorization', () => {
     it('should require authentication', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const workflowData = { name: 'Test Workflow' }
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -436,10 +412,10 @@ describe('Workflow API - POST /api/workflows', () => {
   describe('Input Validation', () => {
     it('should validate required name field', async () => {
       const workflowData = { description: 'Missing name field' }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -448,10 +424,10 @@ describe('Workflow API - POST /api/workflows', () => {
 
     it('should validate empty name field', async () => {
       const workflowData = { name: '' }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -462,10 +438,10 @@ describe('Workflow API - POST /api/workflows', () => {
         name: 'Colorful Workflow',
         color: '#FF6B35',
       }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.color).toBe('#FF6B35')
@@ -477,9 +453,9 @@ describe('Workflow API - POST /api/workflows', () => {
         headers: { 'Content-Type': 'application/json' },
         body: 'invalid-json-content',
       })
-      
+
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
     })
   })
@@ -487,12 +463,12 @@ describe('Workflow API - POST /api/workflows', () => {
   describe('Workflow State Initialization', () => {
     it('should create initial state with starter block', async () => {
       const workflowData = { name: 'Test Workflow' }
-      
+
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(200)
-      
+
       // Verify transaction was called with proper block creation
       expect(mocks.database.mockDb.transaction).toHaveBeenCalled()
     })
@@ -503,11 +479,11 @@ describe('Workflow API - POST /api/workflows', () => {
       mocks.database.mockDb.transaction.mockImplementation(() => {
         throw new Error('Database insertion failed')
       })
-      
+
       const workflowData = { name: 'Test Workflow' }
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Failed to create workflow')
@@ -522,11 +498,11 @@ describe('Workflow API - POST /api/workflows', () => {
         }
         await callback(tx)
       })
-      
+
       const workflowData = { name: 'Test Workflow' }
       const request = createMockRequest('POST', workflowData)
       const response = await POST(request)
-      
+
       expect(response.status).toBe(500)
     })
   })
@@ -558,10 +534,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'delete',
         workflowIds: ['workflow-123', 'workflow-124'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('delete')
@@ -574,15 +550,15 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
     it('should require admin permissions for delete operation', async () => {
       const getUserEntityPermissions = await import('@/lib/permissions/utils')
       vi.mocked(getUserEntityPermissions.getUserEntityPermissions).mockResolvedValue('read')
-      
+
       const bulkRequest = {
         operation: 'delete',
         workflowIds: ['workflow-123'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toContain('Access denied')
@@ -596,10 +572,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         workflowIds: ['workflow-123', 'workflow-124'],
         targetFolderId: 'folder-new-123',
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('move')
@@ -612,10 +588,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         workflowIds: ['workflow-123'],
         targetWorkspaceId: 'workspace-new-456',
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('move')
@@ -626,10 +602,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'move',
         workflowIds: ['workflow-123'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toContain('Target folder or workspace required')
@@ -644,10 +620,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         targetFolderId: 'folder-new-123',
         preserveCollaborators: false,
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('copy')
@@ -662,10 +638,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         targetFolderId: 'folder-new-123',
         preserveCollaborators: true,
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
@@ -676,10 +652,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'deploy',
         workflowIds: ['workflow-123', 'workflow-124'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('deploy')
@@ -694,10 +670,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'undeploy',
         workflowIds: ['workflow-123', 'workflow-124'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('undeploy')
@@ -715,10 +691,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         workflowIds: ['workflow-123', 'workflow-124'],
         tags: ['automation', 'production'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.operation).toBe('tag')
@@ -735,10 +711,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         workflowIds: ['workflow-123'],
         tags: [],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toContain('Tags are required')
@@ -748,15 +724,15 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
   describe('Error Handling and Validation', () => {
     it('should require authentication', async () => {
       mocks.auth.setUnauthenticated()
-      
+
       const bulkRequest = {
         operation: 'delete',
         workflowIds: ['workflow-123'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
@@ -767,10 +743,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'invalid-operation',
         workflowIds: [],
       }
-      
+
       const request = createMockRequest('PATCH', invalidRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
@@ -783,15 +759,15 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
           where: () => Promise.resolve([sampleWorkflowData]), // Only return one workflow
         }),
       }))
-      
+
       const bulkRequest = {
         operation: 'delete',
         workflowIds: ['workflow-123', 'workflow-nonexistent'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(404)
       const data = await response.json()
       expect(data.error).toBe('Some workflows not found')
@@ -803,7 +779,7 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
         operation: 'unsupported',
         workflowIds: ['workflow-123'],
       }
-      
+
       // Bypass schema validation by mocking the schema parse
       vi.doMock('zod', () => ({
         z: {
@@ -812,10 +788,10 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
           }),
         },
       }))
-      
+
       const request = createMockRequest('PATCH', unsupportedRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(400)
     })
 
@@ -829,15 +805,15 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
           return Promise.resolve()
         }),
       }))
-      
+
       const bulkRequest = {
         operation: 'delete',
         workflowIds: ['workflow-123', 'workflow-fail'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.summary.successful).toBe(1)
@@ -849,21 +825,19 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
     it('should check permissions for all workflows', async () => {
       const getUserEntityPermissions = await import('@/lib/permissions/utils')
       const mockPermissions = vi.mocked(getUserEntityPermissions.getUserEntityPermissions)
-      
+
       // First workflow: user has permission
       // Second workflow: user lacks permission
-      mockPermissions
-        .mockResolvedValueOnce('admin')
-        .mockResolvedValueOnce('read')
-      
+      mockPermissions.mockResolvedValueOnce('admin').mockResolvedValueOnce('read')
+
       const bulkRequest = {
         operation: 'delete',
         workflowIds: ['workflow-123', 'workflow-124'],
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toContain('Access denied')
@@ -873,16 +847,16 @@ describe('Workflow API - PATCH /api/workflows (Bulk Operations)', () => {
     it('should handle workspace permission checks', async () => {
       const getUserEntityPermissions = await import('@/lib/permissions/utils')
       vi.mocked(getUserEntityPermissions.getUserEntityPermissions).mockResolvedValue('write')
-      
+
       const bulkRequest = {
         operation: 'move',
         workflowIds: ['workflow-123'],
         targetFolderId: 'folder-new-123',
       }
-      
+
       const request = createMockRequest('PATCH', bulkRequest)
       const response = await PATCH(request)
-      
+
       expect(response.status).toBe(200)
     })
   })
