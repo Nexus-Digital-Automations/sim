@@ -1,0 +1,27 @@
+{
+  "title": "API Reference",
+  "description": "Complete API reference for Sim workflow automation platform",
+  "pages": [
+    "---Getting Started---",
+    "overview",
+    "authentication",
+    "rate-limits",
+    "---Workflows---", 
+    "./workflows/index",
+    "./workflows/crud-operations",
+    "./workflows/advanced-filtering",
+    "./workflows/bulk-operations",
+    "./workflows/yaml-import-export",
+    "./workflows/validation",
+    "./workflows/export-formats",
+    "./workflows/collaborative-editing",
+    "./workflows/versioning",
+    "---Error Handling---",
+    "error-codes",
+    "troubleshooting",
+    "---SDKs & Libraries---",
+    "./sdks/javascript",
+    "./sdks/python",
+    "./sdks/curl"
+  ]
+}

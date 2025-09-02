@@ -1,0 +1,185 @@
+---
+title: API Overview
+description: Complete API reference for the Sim workflow automation platform
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Sim Workflow API Reference
+
+The Sim API provides comprehensive programmatic access to create, manage, and execute workflows. Our RESTful API supports multiple authentication methods, advanced filtering, real-time collaboration, and extensive export capabilities.
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.sim.dev/api
+```
+
+For local development:
+```
+http://localhost:3000/api
+```
+
+## API Overview
+
+### Core Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/workflows` | Workflow CRUD operations, listing with advanced filtering |
+| `/workflows/{id}` | Individual workflow management |
+| `/workflows/{id}/export` | Export workflows in multiple formats |
+| `/workflows/{id}/collaborate` | Real-time collaborative editing |
+| `/workflows/{id}/versions` | Version control and history |
+| `/workflows/yaml` | YAML import/export functionality |
+| `/workflows/validate` | Workflow validation without saving |
+| `/workflows/templates` | Template management |
+
+### Key Features
+
+- **Multiple Authentication Methods**: Session, API keys, and JWT tokens
+- **Advanced Filtering & Pagination**: Search, sort, and filter workflows
+- **Bulk Operations**: Manage multiple workflows simultaneously
+- **Real-time Collaboration**: Multi-user editing with conflict resolution
+- **Version Control**: Complete workflow history and rollback capabilities
+- **Export Formats**: YAML, JSON, ZIP archives with security filtering
+- **Comprehensive Validation**: Syntax, semantic, and configuration validation
+- **Template System**: Create and manage reusable workflow templates
+
+## Quick Start
+
+### 1. Authentication
+
+<Tabs items={['API Key', 'Session Auth', 'JWT Token']}>
+<Tab value="API Key">
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+<Tab value="Session Auth">
+```javascript
+// Browser/web application
+fetch('/api/workflows', {
+  credentials: 'include' // Include session cookies
+})
+```
+</Tab>
+<Tab value="JWT Token">
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+</Tabs>
+
+### 2. List Workflows
+
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  "https://api.sim.dev/api/workflows?page=1&limit=20&search=data%20processing"
+```
+
+### 3. Create Workflow
+
+```bash
+curl -X POST \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Data Processing Pipeline",
+    "description": "Automated data processing and analysis",
+    "color": "#3972F6",
+    "workspaceId": "ws_123"
+  }' \
+  https://api.sim.dev/api/workflows
+```
+
+### 4. Import from YAML
+
+```bash
+curl -X POST \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Imported Workflow",
+    "yaml": "version: 1.0\nblocks:\n  - id: start\n    type: starter"
+  }' \
+  https://api.sim.dev/api/workflows/yaml
+```
+
+## Response Format
+
+All API responses follow a consistent format:
+
+### Success Response
+```json
+{
+  "data": {
+    // Response data
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+### Error Response
+```json
+{
+  "error": "Error message",
+  "details": {
+    // Additional error details
+  },
+  "requestId": "req_abc123"
+}
+```
+
+## Rate Limits
+
+<Callout type="info">
+Current rate limits are generous for most use cases. Contact support if you need higher limits.
+</Callout>
+
+| Authentication Type | Requests per minute | Requests per hour |
+|---------------------|--------------------|--------------------|
+| API Key | 1000 | 10,000 |
+| Session Auth | 500 | 5,000 |
+| JWT Token | 1000 | 10,000 |
+
+## Error Handling
+
+The API uses conventional HTTP status codes:
+
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request (invalid parameters)
+- `401` - Unauthorized (authentication required)
+- `403` - Forbidden (insufficient permissions)
+- `404` - Not Found
+- `409` - Conflict (resource already exists)
+- `429` - Rate Limit Exceeded
+- `500` - Internal Server Error
+
+## OpenAPI Specification
+
+Download our complete OpenAPI 3.0 specification:
+
+- [Download OpenAPI Spec (JSON)](/api/openapi.json)
+- [Download OpenAPI Spec (YAML)](/api/openapi.yaml)
+- [Interactive API Explorer](/api/docs)
+
+## Next Steps
+
+- [Authentication Guide](/docs/api/authentication) - Set up API access
+- [Workflow Operations](/docs/api/workflows) - Complete workflow API reference  
+- [Error Handling](/docs/api/error-codes) - Comprehensive error reference
+- [SDKs & Libraries](/docs/api/sdks/javascript) - Client libraries and examples

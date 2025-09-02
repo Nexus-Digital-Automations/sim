@@ -1,0 +1,683 @@
+---
+title: Advanced Filtering
+description: Search, sort, and filter workflows with powerful query capabilities
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Advanced Filtering
+
+The Sim API provides powerful filtering, searching, and sorting capabilities for workflow lists. You can combine multiple filters to find exactly the workflows you need, whether you're building dashboards, automation tools, or administrative interfaces.
+
+## Overview
+
+The workflow list endpoint (`GET /api/workflows`) supports:
+
+- **Text Search** - Search across workflow names and descriptions
+- **Status Filtering** - Filter by deployment status
+- **Workspace & Folder Filtering** - Scope to specific locations
+- **Date Range Filtering** - Filter by creation or modification dates
+- **Collaboration Filtering** - Find workflows by collaborator
+- **Sorting** - Order results by various criteria
+- **Pagination** - Handle large result sets efficiently
+
+## Basic Filtering
+
+### Endpoint
+
+```http
+GET /api/workflows
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number for pagination |
+| `limit` | integer | `20` | Results per page (max 100) |
+| `search` | string | - | Search in workflow names and descriptions |
+| `workspaceId` | string | - | Filter by workspace ID |
+| `folderId` | string\|null | - | Filter by folder ID (null for root) |
+| `status` | enum | `all` | `deployed`, `draft`, or `all` |
+| `sortBy` | enum | `updatedAt` | `name`, `createdAt`, `updatedAt`, `runCount` |
+| `sortOrder` | enum | `desc` | `asc` or `desc` |
+
+### Examples
+
+<Tabs items={['Basic Search', 'Status Filter', 'Workspace Filter', 'Date Sorting']}>
+<Tab value="Basic Search">
+```javascript
+// Search for workflows containing "email" 
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  search: 'email',
+  limit: 10
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log(`Found ${workflows.length} email workflows`);
+```
+</Tab>
+<Tab value="Status Filter">
+```javascript
+// Get only deployed workflows
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  status: 'deployed',
+  sortBy: 'runCount',
+  sortOrder: 'desc'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log('Most active deployed workflows:', workflows.slice(0, 5));
+```
+</Tab>
+<Tab value="Workspace Filter">
+```javascript
+// Get workflows from specific workspace and folder
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  workspaceId: 'ws_marketing',
+  folderId: 'folder_campaigns',
+  sortBy: 'updatedAt'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log('Marketing campaign workflows:', workflows.length);
+```
+</Tab>
+<Tab value="Date Sorting">
+```javascript
+// Get recently created workflows
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
+  limit: 20
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log('Recently created:', workflows.map(w => ({
+  name: w.name,
+  created: w.createdAt
+})));
+```
+</Tab>
+</Tabs>
+
+## Advanced Parameters
+
+### Extended Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tags` | string | Comma-separated tag names |
+| `hasTemplates` | boolean | Filter workflows that have published templates |
+| `isPublished` | boolean | Filter by publish status |
+| `collaboratorId` | string | Find workflows where user is a collaborator |
+| `createdAfter` | string | ISO 8601 date - workflows created after this date |
+| `createdBefore` | string | ISO 8601 date - workflows created before this date |
+| `updatedAfter` | string | ISO 8601 date - workflows updated after this date |
+| `updatedBefore` | string | ISO 8601 date - workflows updated before this date |
+| `minRunCount` | integer | Minimum number of executions |
+| `maxRunCount` | integer | Maximum number of executions |
+
+### Advanced Examples
+
+<Tabs items={['Date Range', 'Template Filter', 'Collaboration', 'Activity Filter']}>
+<Tab value="Date Range">
+```javascript
+// Get workflows created in the last week
+const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  createdAfter: oneWeekAgo,
+  sortBy: 'createdAt',
+  sortOrder: 'desc'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows, pagination } = await response.json();
+console.log(`${workflows.length} workflows created in the last week`);
+```
+</Tab>
+<Tab value="Template Filter">
+```javascript
+// Find workflows that have been published as templates
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  hasTemplates: 'true',
+  isPublished: 'true',
+  sortBy: 'runCount',
+  sortOrder: 'desc'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log('Popular template workflows:', workflows.map(w => ({
+  name: w.name,
+  runs: w.runCount
+})));
+```
+</Tab>
+<Tab value="Collaboration">
+```javascript
+// Find workflows where a specific user is a collaborator
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  collaboratorId: 'user_456',
+  sortBy: 'updatedAt',
+  sortOrder: 'desc'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log(`User is collaborating on ${workflows.length} workflows`);
+```
+</Tab>
+<Tab value="Activity Filter">
+```javascript
+// Find highly active workflows (more than 50 runs)
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  minRunCount: '50',
+  status: 'deployed',
+  sortBy: 'lastRunAt',
+  sortOrder: 'desc'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+const { data: workflows } = await response.json();
+console.log('Highly active workflows:', workflows.map(w => ({
+  name: w.name,
+  runs: w.runCount,
+  lastRun: w.lastRunAt
+})));
+```
+</Tab>
+</Tabs>
+
+## Complex Filtering Examples
+
+### Dashboard Queries
+
+<Tabs items={['Analytics Dashboard', 'Team Dashboard', 'Admin Dashboard']}>
+<Tab value="Analytics Dashboard">
+```javascript
+class WorkflowAnalytics {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = '/api/workflows';
+  }
+
+  async getDashboardData() {
+    // Get all workflows for overview
+    const allWorkflows = await this.fetch({
+      limit: 100,
+      sortBy: 'updatedAt'
+    });
+
+    // Get deployed workflows
+    const deployedWorkflows = await this.fetch({
+      status: 'deployed',
+      limit: 50
+    });
+
+    // Get recently active workflows
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const recentlyActive = await this.fetch({
+      updatedAfter: oneWeekAgo,
+      status: 'deployed',
+      sortBy: 'runCount',
+      sortOrder: 'desc'
+    });
+
+    // Get template workflows
+    const templates = await this.fetch({
+      hasTemplates: 'true',
+      sortBy: 'runCount',
+      sortOrder: 'desc'
+    });
+
+    return {
+      total: allWorkflows.pagination.total,
+      deployed: deployedWorkflows.pagination.total,
+      recentlyActive: recentlyActive.data,
+      topTemplates: templates.data.slice(0, 10)
+    };
+  }
+
+  async fetch(params) {
+    const response = await fetch(this.baseUrl + '?' + new URLSearchParams(params), {
+      headers: { 'x-api-key': this.apiKey }
+    });
+    return response.json();
+  }
+}
+
+// Usage
+const analytics = new WorkflowAnalytics('YOUR_API_KEY');
+const dashboardData = await analytics.getDashboardData();
+console.log('Dashboard metrics:', dashboardData);
+```
+</Tab>
+<Tab value="Team Dashboard">
+```javascript
+// Team collaboration dashboard
+async function getTeamWorkflows(workspaceId) {
+  const queries = await Promise.all([
+    // Active team workflows
+    fetch('/api/workflows?' + new URLSearchParams({
+      workspaceId,
+      status: 'deployed',
+      sortBy: 'updatedAt',
+      sortOrder: 'desc',
+      limit: 20
+    })),
+    
+    // Workflows with collaborators
+    fetch('/api/workflows?' + new URLSearchParams({
+      workspaceId,
+      sortBy: 'updatedAt',
+      limit: 50
+    })),
+    
+    // Recently created workflows
+    fetch('/api/workflows?' + new URLSearchParams({
+      workspaceId,
+      createdAfter: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    }))
+  ]);
+
+  const [activeResponse, allResponse, recentResponse] = await Promise.all(
+    queries.map(r => r.json())
+  );
+
+  // Filter workflows with multiple collaborators
+  const collaborative = allResponse.data.filter(w => w.collaborators.length > 0);
+
+  return {
+    active: activeResponse.data,
+    collaborative: collaborative,
+    recent: recentResponse.data,
+    totalWorkflows: allResponse.pagination.total
+  };
+}
+```
+</Tab>
+<Tab value="Admin Dashboard">
+```javascript
+// Administrator oversight dashboard
+async function getAdminDashboard() {
+  const now = new Date();
+  const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+  
+  const queries = await Promise.all([
+    // All workflows overview
+    fetch('/api/workflows?' + new URLSearchParams({
+      limit: 1 // Just get count
+    })),
+    
+    // High-activity workflows (potential issues)
+    fetch('/api/workflows?' + new URLSearchParams({
+      minRunCount: '100',
+      sortBy: 'runCount',
+      sortOrder: 'desc',
+      limit: 20
+    })),
+    
+    // Inactive deployed workflows
+    fetch('/api/workflows?' + new URLSearchParams({
+      status: 'deployed',
+      updatedBefore: oneMonthAgo,
+      sortBy: 'updatedAt',
+      limit: 50
+    })),
+    
+    // Published templates
+    fetch('/api/workflows?' + new URLSearchParams({
+      isPublished: 'true',
+      hasTemplates: 'true',
+      sortBy: 'runCount',
+      sortOrder: 'desc'
+    }))
+  ]);
+
+  const [overview, highActivity, inactive, published] = await Promise.all(
+    queries.map(r => r.json())
+  );
+
+  return {
+    totalWorkflows: overview.pagination.total,
+    highActivityWorkflows: highActivity.data,
+    potentiallyInactive: inactive.data,
+    publishedTemplates: published.data,
+    metrics: {
+      averageRuns: highActivity.data.reduce((sum, w) => sum + w.runCount, 0) / highActivity.data.length,
+      inactiveCount: inactive.data.length
+    }
+  };
+}
+```
+</Tab>
+</Tabs>
+
+## Search Functionality
+
+### Text Search Behavior
+
+The `search` parameter performs case-insensitive partial matching across:
+
+- Workflow names
+- Workflow descriptions
+- Associated tags (when available)
+
+<Tabs items={['Simple Search', 'Multi-word Search', 'Search + Filter']}>
+<Tab value="Simple Search">
+```javascript
+// Search for workflows containing "email"
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  search: 'email'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Matches: "Email Campaign", "Send Email", "Newsletter Email", etc.
+```
+</Tab>
+<Tab value="Multi-word Search">
+```javascript
+// Multi-word search (searches for workflows containing both words)
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  search: 'customer onboarding'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Matches workflows with both "customer" AND "onboarding" in name/description
+```
+</Tab>
+<Tab value="Search + Filter">
+```javascript
+// Combine search with other filters
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  search: 'data processing',
+  status: 'deployed',
+  workspaceId: 'ws_analytics',
+  minRunCount: '10'
+}), {
+  headers: { 'x-api-key': 'YOUR_API_KEY' }
+});
+
+// Find deployed data processing workflows in analytics workspace with activity
+```
+</Tab>
+</Tabs>
+
+## Pagination Handling
+
+### Response Structure
+
+```json
+{
+  "data": [
+    // Array of workflow objects
+  ],
+  "pagination": {
+    "page": 2,
+    "limit": 20,
+    "total": 157,
+    "totalPages": 8,
+    "hasNextPage": true,
+    "hasPrevPage": true
+  },
+  "filters": {
+    "search": "email campaign",
+    "status": "deployed",
+    "sortBy": "updatedAt",
+    "sortOrder": "desc"
+  }
+}
+```
+
+### Pagination Helper
+
+```javascript
+class WorkflowPaginator {
+  constructor(apiKey, baseFilters = {}) {
+    this.apiKey = apiKey;
+    this.baseFilters = baseFilters;
+    this.currentPage = 1;
+    this.limit = 20;
+  }
+
+  async getPage(page = 1, additionalFilters = {}) {
+    const params = {
+      ...this.baseFilters,
+      ...additionalFilters,
+      page: page.toString(),
+      limit: this.limit.toString()
+    };
+
+    const response = await fetch('/api/workflows?' + new URLSearchParams(params), {
+      headers: { 'x-api-key': this.apiKey }
+    });
+
+    const result = await response.json();
+    this.currentPage = page;
+    return result;
+  }
+
+  async getAllPages(additionalFilters = {}) {
+    const firstPage = await this.getPage(1, additionalFilters);
+    const allWorkflows = [...firstPage.data];
+    
+    // Fetch remaining pages
+    for (let page = 2; page <= firstPage.pagination.totalPages; page++) {
+      const pageResult = await this.getPage(page, additionalFilters);
+      allWorkflows.push(...pageResult.data);
+    }
+    
+    return {
+      data: allWorkflows,
+      total: firstPage.pagination.total
+    };
+  }
+
+  async *iteratePages(additionalFilters = {}) {
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const result = await this.getPage(page, additionalFilters);
+      yield result;
+      
+      hasMore = result.pagination.hasNextPage;
+      page++;
+    }
+  }
+}
+
+// Usage examples
+const paginator = new WorkflowPaginator('YOUR_API_KEY', { 
+  status: 'deployed' 
+});
+
+// Get specific page
+const page2 = await paginator.getPage(2, { search: 'email' });
+
+// Get all workflows (careful with large datasets)
+const allDeployed = await paginator.getAllPages();
+
+// Iterate through pages efficiently
+for await (const page of paginator.iteratePages({ workspaceId: 'ws_123' })) {
+  console.log(`Processing ${page.data.length} workflows from page ${page.pagination.page}`);
+  // Process workflows in batches
+}
+```
+
+## Performance Considerations
+
+<Callout type="info">
+**Optimization Tips**
+- Use specific filters to reduce result sets
+- Implement client-side caching for frequently accessed data  
+- Use appropriate page limits (20-50 is usually optimal)
+- Consider using `limit=1` when you only need counts
+</Callout>
+
+### Efficient Queries
+
+<Tabs items={['Count Only', 'Minimal Data', 'Batch Processing']}>
+<Tab value="Count Only">
+```javascript
+// Get count without loading full data
+async function getWorkflowCount(filters = {}) {
+  const response = await fetch('/api/workflows?' + new URLSearchParams({
+    ...filters,
+    limit: '1' // Minimal data transfer
+  }), {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+
+  const result = await response.json();
+  return result.pagination.total;
+}
+
+// Usage
+const deployedCount = await getWorkflowCount({ status: 'deployed' });
+const totalCount = await getWorkflowCount();
+console.log(`${deployedCount} deployed out of ${totalCount} total workflows`);
+```
+</Tab>
+<Tab value="Minimal Data">
+```javascript
+// Load minimal data for lists/dropdowns
+async function getWorkflowOptions(workspaceId) {
+  const response = await fetch('/api/workflows?' + new URLSearchParams({
+    workspaceId,
+    sortBy: 'name',
+    sortOrder: 'asc',
+    limit: '100'
+  }), {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+
+  const result = await response.json();
+  
+  // Extract only needed fields
+  return result.data.map(workflow => ({
+    id: workflow.id,
+    name: workflow.name,
+    isDeployed: workflow.isDeployed
+  }));
+}
+```
+</Tab>
+<Tab value="Batch Processing">
+```javascript
+// Process large numbers of workflows efficiently
+async function processAllWorkflows(processor, batchSize = 50) {
+  const paginator = new WorkflowPaginator('YOUR_API_KEY');
+  paginator.limit = batchSize;
+  
+  for await (const page of paginator.iteratePages()) {
+    console.log(`Processing batch of ${page.data.length} workflows...`);
+    
+    // Process workflows in parallel (but limit concurrency)
+    const batchPromises = page.data.map(workflow => processor(workflow));
+    await Promise.all(batchPromises);
+    
+    console.log(`Completed batch ${page.pagination.page}/${page.pagination.totalPages}`);
+    
+    // Add small delay to avoid overwhelming the API
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+
+// Usage
+await processAllWorkflows(async (workflow) => {
+  if (workflow.runCount === 0 && workflow.isDeployed) {
+    console.log(`Potentially unused workflow: ${workflow.name}`);
+  }
+});
+```
+</Tab>
+</Tabs>
+
+## Common Filter Patterns
+
+### Workspace Management
+
+```javascript
+// Get workspace overview
+async function getWorkspaceOverview(workspaceId) {
+  const [total, deployed, drafts, recent] = await Promise.all([
+    fetch(`/api/workflows?workspaceId=${workspaceId}&limit=1`),
+    fetch(`/api/workflows?workspaceId=${workspaceId}&status=deployed&limit=1`),
+    fetch(`/api/workflows?workspaceId=${workspaceId}&status=draft&limit=1`),
+    fetch(`/api/workflows?workspaceId=${workspaceId}&createdAfter=${new Date(Date.now() - 7*24*60*60*1000).toISOString()}&limit=10`)
+  ].map(p => p.then(r => r.json())));
+
+  return {
+    totalWorkflows: total.pagination.total,
+    deployedWorkflows: deployed.pagination.total,
+    draftWorkflows: drafts.pagination.total,
+    recentWorkflows: recent.data
+  };
+}
+```
+
+### Content Management
+
+```javascript
+// Find workflows needing attention
+async function findWorkflowsNeedingAttention() {
+  const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  
+  const [neverRun, oldDeployed, highActivity] = await Promise.all([
+    // Deployed but never executed
+    fetch('/api/workflows?' + new URLSearchParams({
+      status: 'deployed',
+      maxRunCount: '0',
+      limit: '20'
+    })),
+    
+    // Deployed but not updated in a month
+    fetch('/api/workflows?' + new URLSearchParams({
+      status: 'deployed',
+      updatedBefore: oneMonthAgo,
+      limit: '20'
+    })),
+    
+    // Very high activity (might need optimization)
+    fetch('/api/workflows?' + new URLSearchParams({
+      minRunCount: '1000',
+      sortBy: 'runCount',
+      sortOrder: 'desc',
+      limit: '10'
+    }))
+  ].map(p => p.then(r => r.json())));
+
+  return {
+    neverExecuted: neverRun.data,
+    potentiallyOutdated: oldDeployed.data,
+    highActivity: highActivity.data
+  };
+}
+```
+
+## Next Steps
+
+- [Bulk Operations](/docs/api/workflows/bulk-operations) - Manage multiple workflows at once
+- [YAML Import/Export](/docs/api/workflows/yaml-import-export) - Work with YAML workflow definitions
+- [Export Formats](/docs/api/workflows/export-formats) - Export workflows in multiple formats
+- [Error Codes](/docs/api/error-codes) - Handle API errors effectively

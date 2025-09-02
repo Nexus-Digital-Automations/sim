@@ -1,0 +1,651 @@
+---
+title: Export Formats
+description: Export workflows in multiple formats including YAML, JSON, and ZIP archives
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Export Formats
+
+The Sim API supports exporting workflows in multiple formats to meet different use cases. Whether you need YAML for version control, JSON for programmatic access, or ZIP archives for complete backups, we provide flexible export options.
+
+## Supported Export Formats
+
+| Format | Extension | Use Case | Security Filtering |
+|--------|-----------|----------|-------------------|
+| `yaml` | `.yaml` | Version control, CI/CD | ✅ Credentials removed |
+| `json` | `.json` | Programmatic processing | ✅ Credentials removed |
+| `zip` | `.zip` | Complete backup with assets | ✅ Credentials removed |
+
+<Callout type="info">
+**Security First**: All exports automatically remove sensitive credentials and connection details for security. Use the original workflow for execution.
+</Callout>
+
+## Single Workflow Export
+
+### Export Individual Workflow
+
+Export a single workflow in your preferred format:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+// Export single workflow as YAML
+async function exportWorkflow(workflowId, format = 'yaml') {
+  const response = await fetch(`/api/workflows/${workflowId}/export`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Accept': getAcceptHeader(format)
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Export failed: ${response.status}`);
+  }
+
+  return await response.blob();
+}
+
+function getAcceptHeader(format) {
+  const headers = {
+    yaml: 'application/x-yaml',
+    json: 'application/json',
+    zip: 'application/zip'
+  };
+  return headers[format] || 'application/x-yaml';
+}
+
+// Usage examples
+try {
+  // Export as YAML
+  const yamlBlob = await exportWorkflow('wf_abc123', 'yaml');
+  
+  // Export as JSON
+  const jsonBlob = await exportWorkflow('wf_abc123', 'json');
+  
+  // Export as ZIP
+  const zipBlob = await exportWorkflow('wf_abc123', 'zip');
+  
+  console.log('Workflows exported successfully');
+} catch (error) {
+  console.error('Export failed:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+import io
+
+def export_workflow(workflow_id, format='yaml', api_key=None):
+    """Export a single workflow in specified format."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Accept': get_accept_header(format)
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/export"
+    
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    
+    return response.content
+
+def get_accept_header(format):
+    """Get appropriate Accept header for format."""
+    headers = {
+        'yaml': 'application/x-yaml',
+        'json': 'application/json', 
+        'zip': 'application/zip'
+    }
+    return headers.get(format, 'application/x-yaml')
+
+def save_export(content, filename):
+    """Save exported content to file."""
+    with open(filename, 'wb') as f:
+        f.write(content)
+
+# Usage examples
+try:
+    # Export as YAML
+    yaml_content = export_workflow('wf_abc123', 'yaml', 'your-api-key')
+    save_export(yaml_content, 'workflow.yaml')
+    
+    # Export as JSON
+    json_content = export_workflow('wf_abc123', 'json', 'your-api-key')
+    save_export(json_content, 'workflow.json')
+    
+    # Export as ZIP
+    zip_content = export_workflow('wf_abc123', 'zip', 'your-api-key')
+    save_export(zip_content, 'workflow.zip')
+    
+    print("Workflows exported successfully")
+    
+except requests.exceptions.RequestException as e:
+    print(f"Export failed: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+#!/bin/bash
+
+# Export workflow as YAML (default)
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Accept: application/x-yaml" \
+  -o "workflow.yaml" \
+  "https://api.sim.dev/api/workflows/wf_abc123/export"
+
+# Export workflow as JSON
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Accept: application/json" \
+  -o "workflow.json" \
+  "https://api.sim.dev/api/workflows/wf_abc123/export"
+
+# Export workflow as ZIP
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Accept: application/zip" \
+  -o "workflow.zip" \
+  "https://api.sim.dev/api/workflows/wf_abc123/export"
+
+echo "Export completed"
+```
+</Tab>
+</Tabs>
+
+### Response Examples
+
+#### YAML Export Response
+
+```yaml
+# Exported workflow: Data Processing Pipeline
+# Generated: 2024-01-15T10:30:00Z
+# Warning: Credentials removed for security
+
+name: Data Processing Pipeline
+description: Processes data from multiple sources
+version: "1.0"
+
+blocks:
+  - id: data_source
+    type: api_call
+    name: Fetch Data
+    config:
+      url: "https://api.example.com/data"
+      method: GET
+      # Connection credentials removed for security
+    outputs:
+      - name: raw_data
+        type: json
+
+  - id: processor  
+    type: transform
+    name: Process Data
+    inputs:
+      - source: data_source.raw_data
+    config:
+      transformation: |
+        return data.map(item => ({
+          id: item.id,
+          processed_at: new Date().toISOString()
+        }))
+    outputs:
+      - name: processed_data
+        type: json
+
+connections:
+  - from: data_source.raw_data
+    to: processor.input
+```
+
+#### JSON Export Response
+
+```json
+{
+  "metadata": {
+    "exported_at": "2024-01-15T10:30:00Z",
+    "format": "json",
+    "version": "1.0",
+    "security_notice": "Credentials removed for security"
+  },
+  "workflow": {
+    "id": "wf_abc123",
+    "name": "Data Processing Pipeline", 
+    "description": "Processes data from multiple sources",
+    "version": "1.0",
+    "created_at": "2024-01-10T14:20:00Z",
+    "updated_at": "2024-01-15T09:45:00Z",
+    "blocks": [
+      {
+        "id": "data_source",
+        "type": "api_call",
+        "name": "Fetch Data",
+        "position": { "x": 100, "y": 100 },
+        "config": {
+          "url": "https://api.example.com/data",
+          "method": "GET"
+        },
+        "outputs": [
+          {
+            "name": "raw_data",
+            "type": "json"
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "from": "data_source.raw_data",
+        "to": "processor.input"
+      }
+    ]
+  }
+}
+```
+
+## Bulk Export
+
+### Export Multiple Workflows
+
+Export multiple workflows at once as a ZIP archive:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+// Bulk export workflows
+async function bulkExportWorkflows(workflowIds, format = 'zip') {
+  const response = await fetch('/api/workflows/export', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json',
+      'Accept': format === 'zip' ? 'application/zip' : 'application/json'
+    },
+    body: JSON.stringify({
+      workflow_ids: workflowIds,
+      format: format,
+      include_metadata: true,
+      security_filter: true
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Bulk export failed: ${response.status}`);
+  }
+
+  return await response.blob();
+}
+
+// Export all workflows in workspace
+async function exportAllWorkflows(workspaceId) {
+  const response = await fetch('/api/workflows/export', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json',
+      'Accept': 'application/zip'
+    },
+    body: JSON.stringify({
+      workspace_id: workspaceId,
+      format: 'zip',
+      include_metadata: true,
+      include_version_history: false
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Workspace export failed: ${response.status}`);
+  }
+
+  return await response.blob();
+}
+
+// Usage
+try {
+  // Export specific workflows
+  const specificExport = await bulkExportWorkflows([
+    'wf_abc123',
+    'wf_def456', 
+    'wf_ghi789'
+  ]);
+  
+  // Export all workspace workflows
+  const workspaceExport = await exportAllWorkflows('ws_abc123');
+  
+  console.log('Bulk exports completed');
+} catch (error) {
+  console.error('Bulk export failed:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+import json
+
+def bulk_export_workflows(workflow_ids, format='zip', api_key=None):
+    """Export multiple workflows as ZIP archive."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json',
+        'Accept': 'application/zip' if format == 'zip' else 'application/json'
+    }
+    
+    payload = {
+        'workflow_ids': workflow_ids,
+        'format': format,
+        'include_metadata': True,
+        'security_filter': True
+    }
+    
+    response = requests.post(
+        'https://api.sim.dev/api/workflows/export',
+        headers=headers,
+        json=payload
+    )
+    response.raise_for_status()
+    
+    return response.content
+
+def export_workspace_workflows(workspace_id, api_key=None):
+    """Export all workflows from a workspace."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json',
+        'Accept': 'application/zip'
+    }
+    
+    payload = {
+        'workspace_id': workspace_id,
+        'format': 'zip',
+        'include_metadata': True,
+        'include_version_history': False
+    }
+    
+    response = requests.post(
+        'https://api.sim.dev/api/workflows/export',
+        headers=headers,
+        json=payload
+    )
+    response.raise_for_status()
+    
+    return response.content
+
+# Usage examples
+try:
+    # Export specific workflows
+    bulk_content = bulk_export_workflows(
+        ['wf_abc123', 'wf_def456', 'wf_ghi789'],
+        'zip',
+        'your-api-key'
+    )
+    
+    with open('bulk_workflows.zip', 'wb') as f:
+        f.write(bulk_content)
+    
+    # Export entire workspace
+    workspace_content = export_workspace_workflows('ws_abc123', 'your-api-key')
+    
+    with open('workspace_export.zip', 'wb') as f:
+        f.write(workspace_content)
+    
+    print("Bulk exports completed successfully")
+    
+except requests.exceptions.RequestException as e:
+    print(f"Bulk export failed: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+#!/bin/bash
+
+# Bulk export specific workflows
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/zip" \
+  -o "bulk_workflows.zip" \
+  -d '{
+    "workflow_ids": ["wf_abc123", "wf_def456", "wf_ghi789"],
+    "format": "zip",
+    "include_metadata": true,
+    "security_filter": true
+  }' \
+  "https://api.sim.dev/api/workflows/export"
+
+# Export all workspace workflows  
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/zip" \
+  -o "workspace_export.zip" \
+  -d '{
+    "workspace_id": "ws_abc123",
+    "format": "zip", 
+    "include_metadata": true,
+    "include_version_history": false
+  }' \
+  "https://api.sim.dev/api/workflows/export"
+
+echo "Bulk export completed"
+```
+</Tab>
+</Tabs>
+
+## Export Options
+
+### Request Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `format` | string | `yaml` | Export format: `yaml`, `json`, or `zip` |
+| `include_metadata` | boolean | `true` | Include creation/modification timestamps |
+| `include_version_history` | boolean | `false` | Include version history (ZIP only) |
+| `security_filter` | boolean | `true` | Remove credentials and sensitive data |
+| `compress` | boolean | `true` | Enable compression for ZIP format |
+
+### Security Filtering
+
+<Callout type="warning">
+**Important**: Security filtering is enabled by default and cannot be disabled via API. This ensures credentials and sensitive connection details are never exposed in exports.
+</Callout>
+
+**Filtered Data**:
+- API keys and authentication tokens
+- Database passwords and connection strings  
+- OAuth client secrets
+- Private certificates and keys
+- Internal service endpoints
+
+**Preserved Data**:
+- Workflow structure and logic
+- Block configurations (non-sensitive)
+- Connection relationships
+- Metadata and timestamps
+- Block positions and UI layout
+
+## ZIP Archive Structure
+
+When exporting as ZIP, the archive contains:
+
+```
+workflow_export.zip
+├── metadata.json          # Export information
+├── workflows/
+│   ├── workflow_1.yaml    # Individual workflow files
+│   ├── workflow_2.yaml
+│   └── workflow_3.yaml
+├── assets/                # Referenced assets (if any)
+│   ├── images/
+│   └── documents/
+└── manifest.json          # Archive contents listing
+```
+
+### Metadata Structure
+
+```json
+{
+  "export_info": {
+    "exported_at": "2024-01-15T10:30:00Z",
+    "exported_by": "user_abc123",
+    "export_format": "zip",
+    "workflow_count": 3,
+    "security_filtered": true
+  },
+  "workflows": [
+    {
+      "id": "wf_abc123",
+      "name": "Data Processing Pipeline",
+      "filename": "workflows/data_processing_pipeline.yaml",
+      "size_bytes": 2048,
+      "version": "1.2"
+    }
+  ]
+}
+```
+
+## Advanced Export Features
+
+### Scheduled Exports
+
+Set up automated exports for backups:
+
+```javascript
+// Schedule daily exports
+async function scheduleWorkspaceBackup(workspaceId) {
+  const response = await fetch('/api/workflows/export/schedule', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      workspace_id: workspaceId,
+      schedule: 'daily',
+      format: 'zip',
+      delivery_method: 'webhook',
+      webhook_url: 'https://your-app.com/backup-webhook'
+    })
+  });
+
+  return await response.json();
+}
+```
+
+### Webhook Notifications
+
+Receive notifications when exports complete:
+
+```javascript
+// Export completion webhook payload
+{
+  "event": "export.completed",
+  "export_id": "exp_abc123", 
+  "workspace_id": "ws_abc123",
+  "workflow_count": 15,
+  "format": "zip",
+  "download_url": "https://api.sim.dev/exports/exp_abc123/download",
+  "expires_at": "2024-01-22T10:30:00Z"
+}
+```
+
+## Error Handling
+
+### Common Export Errors
+
+```javascript
+async function handleExportErrors(workflowId) {
+  try {
+    const export = await exportWorkflow(workflowId);
+    return export;
+  } catch (error) {
+    switch (error.status) {
+      case 404:
+        console.error('Workflow not found or no access');
+        break;
+      case 413:
+        console.error('Export size too large - try bulk export');
+        break;
+      case 429:
+        console.error('Rate limited - wait before retrying');
+        break;
+      case 503:
+        console.error('Export service temporarily unavailable');
+        break;
+      default:
+        console.error('Export failed:', error.message);
+    }
+    throw error;
+  }
+}
+```
+
+## Best Practices
+
+### 1. Export Organization
+
+```javascript
+// Organize exports with naming conventions
+function generateExportFilename(workflow, format) {
+  const timestamp = new Date().toISOString().split('T')[0];
+  const safeName = workflow.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  return `${timestamp}_${safeName}.${format}`;
+}
+
+// Example: "2024-01-15_data_processing_pipeline.yaml"
+```
+
+### 2. Batch Processing
+
+```javascript
+// Process large exports in batches
+async function exportWorkspaceBatched(workspaceId, batchSize = 10) {
+  const workflows = await getWorkspaceWorkflows(workspaceId);
+  const batches = chunkArray(workflows, batchSize);
+  
+  const exports = [];
+  for (const batch of batches) {
+    const batchExports = await Promise.all(
+      batch.map(wf => exportWorkflow(wf.id, 'yaml'))
+    );
+    exports.push(...batchExports);
+    
+    // Rate limiting pause
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  
+  return exports;
+}
+```
+
+### 3. Integrity Verification
+
+```javascript
+// Verify export integrity
+async function verifyExport(originalWorkflow, exportedContent) {
+  const parsed = yaml.parse(exportedContent);
+  
+  // Check essential structure
+  const checks = [
+    parsed.name === originalWorkflow.name,
+    parsed.blocks?.length === originalWorkflow.blocks?.length,
+    parsed.connections?.length === originalWorkflow.connections?.length
+  ];
+  
+  return checks.every(check => check === true);
+}
+```
+
+## Next Steps
+
+- [Validation API](/docs/api/workflows/validation) - Validate exported workflows before import
+- [YAML Import/Export](/docs/api/workflows/yaml-import-export) - Import exported workflows
+- [Troubleshooting](/docs/api/troubleshooting) - Resolve export issues
+- [SDKs](/docs/api/sdks/javascript) - Use client libraries with built-in export features

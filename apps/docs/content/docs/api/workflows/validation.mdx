@@ -1,0 +1,1367 @@
+---
+title: Workflow Validation
+description: Comprehensive validation of workflow definitions with detailed error reporting and best practices
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Workflow Validation
+
+The Sim API provides comprehensive validation capabilities to ensure workflow definitions are correct, complete, and ready for execution. Validation can be performed without creating or modifying workflows, making it perfect for development workflows, CI/CD pipelines, and quality assurance.
+
+## Overview
+
+The validation API checks for:
+
+- **YAML/JSON Syntax** - Proper format and structure
+- **Schema Compliance** - Correct workflow schema adherence
+- **Block Configuration** - Valid block types and parameters
+- **Connection Validity** - Proper source/target references and handles
+- **Required Fields** - Missing mandatory parameters
+- **Tool Configuration** - Valid tool-specific settings
+- **Variable Dependencies** - Proper variable usage and types
+- **Workflow Logic** - Structural integrity and flow validation
+
+## Validation Endpoint
+
+### Endpoint
+
+```http
+POST /api/workflows/validate
+```
+
+### Request Body
+
+```json
+{
+  "format": "yaml | json",
+  "workflow": "string | object",
+  "validateRequired": "boolean (default: true)",
+  "validateConnections": "boolean (default: true)",
+  "validateBlockConfig": "boolean (default: true)",
+  "validateToolConfig": "boolean (default: true)",
+  "workspaceId": "string (optional)",
+  "variables": "object (optional)"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `format` | string | `json` | Input format: `yaml` or `json` |
+| `workflow` | string\|object | - | **Required.** Workflow definition |
+| `validateRequired` | boolean | `true` | Check for missing required fields |
+| `validateConnections` | boolean | `true` | Validate block connections |
+| `validateBlockConfig` | boolean | `true` | Check block configurations |
+| `validateToolConfig` | boolean | `true` | Validate tool-specific parameters |
+| `workspaceId` | string | - | Workspace context for validation |
+| `variables` | object | `{}` | Variable values for validation context |
+
+## Basic Validation
+
+### Simple JSON Validation
+
+<Tabs items={['JavaScript', 'cURL', 'Python']}>
+<Tab value="JavaScript">
+```javascript
+// Validate a JSON workflow definition
+const workflowDefinition = {
+  version: "1.0",
+  blocks: [
+    {
+      id: "start",
+      metadata: {
+        id: "starter",
+        name: "Start"
+      },
+      position: { x: 100, y: 100 },
+      config: {
+        params: {
+          startWorkflow: "manual"
+        }
+      }
+    },
+    {
+      id: "send_email",
+      metadata: {
+        id: "gmail", 
+        name: "Send Email"
+      },
+      position: { x: 300, y: 100 },
+      config: {
+        params: {
+          to: "user@example.com",
+          subject: "Hello",
+          body: "Hello world!"
+        }
+      }
+    }
+  ],
+  connections: [
+    {
+      source: "start",
+      target: "send_email",
+      sourceHandle: "response",
+      targetHandle: "input"
+    }
+  ]
+};
+
+const response = await fetch('/api/workflows/validate', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    format: 'json',
+    workflow: workflowDefinition,
+    validateRequired: true,
+    validateConnections: true,
+    validateBlockConfig: true,
+    validateToolConfig: true
+  })
+});
+
+const validation = await response.json();
+
+if (validation.result.isValid) {
+  console.log('✅ Workflow is valid!');
+  console.log('Summary:', validation.result.summary);
+} else {
+  console.log('❌ Validation failed');
+  validation.result.errors.forEach(error => {
+    console.error(`Error: ${error.message}`);
+    if (error.location) {
+      console.error(`  Location: ${error.location.blockName || error.location.blockId}`);
+    }
+  });
+}
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "json",
+    "workflow": {
+      "version": "1.0",
+      "blocks": [
+        {
+          "id": "start",
+          "metadata": {
+            "id": "starter",
+            "name": "Start"
+          },
+          "position": { "x": 100, "y": 100 }
+        }
+      ],
+      "connections": []
+    },
+    "validateRequired": true,
+    "validateConnections": true
+  }' \
+  https://api.sim.dev/api/workflows/validate
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+workflow_def = {
+    "version": "1.0",
+    "blocks": [
+        {
+            "id": "start",
+            "metadata": {
+                "id": "starter",
+                "name": "Start"
+            },
+            "position": {"x": 100, "y": 100}
+        }
+    ],
+    "connections": []
+}
+
+response = requests.post(
+    'https://api.sim.dev/api/workflows/validate',
+    headers={
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'format': 'json',
+        'workflow': workflow_def,
+        'validateRequired': True,
+        'validateConnections': True
+    }
+)
+
+validation = response.json()
+
+if validation['result']['isValid']:
+    print("✅ Workflow is valid!")
+    print(f"Blocks: {validation['result']['summary']['totalBlocks']}")
+else:
+    print("❌ Validation failed")
+    for error in validation['result']['errors']:
+        print(f"Error: {error['message']}")
+```
+</Tab>
+</Tabs>
+
+### YAML Validation
+
+```javascript
+// Validate YAML workflow definition
+const yamlWorkflow = `
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Start Process"
+    position: { x: 100, y: 100 }
+    config:
+      params:
+        startWorkflow: "webhook"
+        webhookPath: "/process-data"
+  
+  - id: validate_input
+    metadata:
+      id: function
+      name: "Validate Input"
+    position: { x: 300, y: 100 }
+    config:
+      params:
+        code: |
+          const data = inputs.webhook;
+          if (!data.email) {
+            throw new Error('Email is required');
+          }
+          return { validated: true, email: data.email };
+
+  - id: send_confirmation
+    metadata:
+      id: gmail
+      name: "Send Confirmation"
+    position: { x: 500, y: 100 }
+    config:
+      params:
+        to: "{{validate_input.email}}"
+        subject: "Confirmation"
+        body: "Your request has been processed"
+
+connections:
+  - source: start
+    target: validate_input
+  - source: validate_input  
+    target: send_confirmation
+
+variables:
+  processing_mode:
+    type: string
+    default: "auto"
+`;
+
+const response = await fetch('/api/workflows/validate', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    format: 'yaml',
+    workflow: yamlWorkflow,
+    validateRequired: true,
+    validateConnections: true,
+    validateBlockConfig: true,
+    validateToolConfig: true
+  })
+});
+
+const validation = await response.json();
+console.log('Validation result:', validation.result);
+```
+
+## Validation Response
+
+### Response Structure
+
+```json
+{
+  "requestId": "req_abc123",
+  "result": {
+    "isValid": true,
+    "errors": [],
+    "warnings": [],
+    "info": [],
+    "summary": {
+      "totalBlocks": 3,
+      "totalConnections": 2,
+      "totalLoops": 0,
+      "totalParallels": 0,
+      "missingRequiredFields": 0,
+      "invalidConnections": 0,
+      "deprecatedFeatures": 0
+    },
+    "performance": {
+      "validationTimeMs": 245,
+      "parseTimeMs": 67
+    }
+  }
+}
+```
+
+### Validation Messages
+
+#### Error Types
+
+| Code | Type | Description |
+|------|------|-------------|
+| `YAML_PARSE_ERROR` | error | Invalid YAML syntax |
+| `JSON_PARSE_ERROR` | error | Invalid JSON syntax |
+| `MISSING_BLOCKS` | error | Workflow has no blocks |
+| `DUPLICATE_BLOCK_ID` | error | Multiple blocks with same ID |
+| `UNSUPPORTED_BLOCK_TYPE` | error | Block type not recognized |
+| `MISSING_REQUIRED_FIELD` | error | Required parameter missing |
+| `CONNECTION_SOURCE_NOT_FOUND` | error | Connection source block doesn't exist |
+| `CONNECTION_TARGET_NOT_FOUND` | error | Connection target block doesn't exist |
+| `UNSUPPORTED_TOOL` | error | Tool not available |
+
+#### Warning Types
+
+| Code | Type | Description |
+|------|------|-------------|
+| `MISSING_VERSION` | warning | No version specified |
+| `EMPTY_WORKFLOW` | warning | No blocks in workflow |
+| `NO_STARTER_BLOCK` | warning | No starter block found |
+| `SELF_CONNECTION` | warning | Block connects to itself |
+| `LOOP_WITHOUT_EXIT_CONDITION` | warning | Infinite loop possible |
+| `DEPRECATED_FEATURE` | warning | Using deprecated functionality |
+
+## Advanced Validation
+
+### Comprehensive Validation Class
+
+```javascript
+class WorkflowValidator {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.validationEndpoint = '/api/workflows/validate';
+  }
+
+  async validateWorkflow(workflow, options = {}) {
+    const defaultOptions = {
+      format: 'json',
+      validateRequired: true,
+      validateConnections: true,
+      validateBlockConfig: true,
+      validateToolConfig: true,
+      workspaceId: null,
+      variables: {}
+    };
+
+    const validationOptions = { ...defaultOptions, ...options };
+    
+    try {
+      const response = await fetch(this.validationEndpoint, {
+        method: 'POST',
+        headers: {
+          'x-api-key': this.apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...validationOptions,
+          workflow
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Validation request failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return this.processValidationResult(result);
+
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{
+          type: 'error',
+          code: 'VALIDATION_FAILED',
+          message: `Validation failed: ${error.message}`
+        }],
+        warnings: [],
+        info: []
+      };
+    }
+  }
+
+  processValidationResult(result) {
+    const validation = result.result;
+
+    // Add severity levels to errors
+    validation.errors = validation.errors.map(error => ({
+      ...error,
+      severity: this.getErrorSeverity(error.code)
+    }));
+
+    // Sort errors by severity
+    validation.errors.sort((a, b) => {
+      const severityOrder = { 'critical': 0, 'error': 1, 'warning': 2 };
+      return severityOrder[a.severity] - severityOrder[b.severity];
+    });
+
+    return validation;
+  }
+
+  getErrorSeverity(code) {
+    const criticalErrors = [
+      'YAML_PARSE_ERROR', 
+      'JSON_PARSE_ERROR', 
+      'MISSING_BLOCKS'
+    ];
+
+    const errors = [
+      'DUPLICATE_BLOCK_ID',
+      'UNSUPPORTED_BLOCK_TYPE', 
+      'CONNECTION_SOURCE_NOT_FOUND',
+      'CONNECTION_TARGET_NOT_FOUND',
+      'MISSING_REQUIRED_FIELD',
+      'UNSUPPORTED_TOOL'
+    ];
+
+    if (criticalErrors.includes(code)) return 'critical';
+    if (errors.includes(code)) return 'error';
+    return 'warning';
+  }
+
+  async validateWithDetailedReport(workflow, options = {}) {
+    const validation = await this.validateWorkflow(workflow, options);
+    
+    console.log('\n═══ WORKFLOW VALIDATION REPORT ═══');
+    console.log(`Status: ${validation.isValid ? '✅ VALID' : '❌ INVALID'}`);
+    
+    if (validation.summary) {
+      console.log('\n📊 Summary:');
+      console.log(`  Blocks: ${validation.summary.totalBlocks}`);
+      console.log(`  Connections: ${validation.summary.totalConnections}`);
+      console.log(`  Loops: ${validation.summary.totalLoops}`);
+      console.log(`  Parallels: ${validation.summary.totalParallels}`);
+      
+      if (validation.summary.missingRequiredFields > 0) {
+        console.log(`  ⚠️  Missing Required Fields: ${validation.summary.missingRequiredFields}`);
+      }
+      
+      if (validation.summary.invalidConnections > 0) {
+        console.log(`  ⚠️  Invalid Connections: ${validation.summary.invalidConnections}`);
+      }
+    }
+
+    // Group issues by severity
+    const critical = validation.errors.filter(e => e.severity === 'critical');
+    const errors = validation.errors.filter(e => e.severity === 'error');
+    const warnings = [...validation.warnings, ...validation.errors.filter(e => e.severity === 'warning')];
+
+    if (critical.length > 0) {
+      console.log('\n🚨 CRITICAL ISSUES:');
+      critical.forEach(issue => this.logIssue(issue));
+    }
+
+    if (errors.length > 0) {
+      console.log('\n❌ ERRORS:');
+      errors.forEach(issue => this.logIssue(issue));
+    }
+
+    if (warnings.length > 0) {
+      console.log('\n⚠️  WARNINGS:');
+      warnings.forEach(issue => this.logIssue(issue));
+    }
+
+    if (validation.info && validation.info.length > 0) {
+      console.log('\n💡 INFO:');
+      validation.info.forEach(issue => this.logIssue(issue));
+    }
+
+    if (validation.performance) {
+      console.log(`\n⚡ Performance: ${validation.performance.validationTimeMs}ms`);
+    }
+
+    console.log('═════════════════════════════════\n');
+    
+    return validation;
+  }
+
+  logIssue(issue) {
+    let location = '';
+    if (issue.location) {
+      const parts = [];
+      if (issue.location.blockName) parts.push(`Block: ${issue.location.blockName}`);
+      if (issue.location.field) parts.push(`Field: ${issue.location.field}`);
+      if (issue.location.line) parts.push(`Line: ${issue.location.line}`);
+      location = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    }
+    
+    console.log(`  • ${issue.message}${location}`);
+  }
+
+  // Validation with fix suggestions
+  async validateWithSuggestions(workflow, options = {}) {
+    const validation = await this.validateWorkflow(workflow, options);
+    
+    // Add fix suggestions for common issues
+    validation.errors = validation.errors.map(error => ({
+      ...error,
+      suggestion: this.getSuggestion(error)
+    }));
+
+    validation.warnings = validation.warnings.map(warning => ({
+      ...warning,
+      suggestion: this.getSuggestion(warning)
+    }));
+
+    return validation;
+  }
+
+  getSuggestion(issue) {
+    const suggestions = {
+      'MISSING_BLOCKS': 'Add at least one block to your workflow. Start with a starter block.',
+      'DUPLICATE_BLOCK_ID': 'Ensure all block IDs are unique. Consider adding a prefix or suffix.',
+      'UNSUPPORTED_BLOCK_TYPE': 'Check the block type name for typos. Refer to the block documentation.',
+      'CONNECTION_SOURCE_NOT_FOUND': 'Verify the source block ID exists and is spelled correctly.',
+      'CONNECTION_TARGET_NOT_FOUND': 'Verify the target block ID exists and is spelled correctly.',
+      'MISSING_REQUIRED_FIELD': 'Add the required parameter to the block configuration.',
+      'NO_STARTER_BLOCK': 'Add a starter block to define how the workflow begins.',
+      'SELF_CONNECTION': 'Remove the connection or use a loop block for iterative behavior.',
+      'YAML_PARSE_ERROR': 'Check YAML syntax, indentation, and special characters.',
+      'JSON_PARSE_ERROR': 'Validate JSON syntax, brackets, commas, and quotes.'
+    };
+
+    return suggestions[issue.code] || 'Review the documentation for this issue type.';
+  }
+}
+
+// Usage examples
+const validator = new WorkflowValidator('YOUR_API_KEY');
+
+// Basic validation
+const result = await validator.validateWorkflow(workflowDefinition);
+console.log('Valid:', result.isValid);
+
+// Detailed validation report
+await validator.validateWithDetailedReport(workflowDefinition);
+
+// Validation with suggestions
+const suggestions = await validator.validateWithSuggestions(workflowDefinition);
+suggestions.errors.forEach(error => {
+  console.log(`Error: ${error.message}`);
+  console.log(`Suggestion: ${error.suggestion}`);
+});
+```
+
+## Batch Validation
+
+### Validate Multiple Workflows
+
+```javascript
+class BatchWorkflowValidator {
+  constructor(apiKey) {
+    this.validator = new WorkflowValidator(apiKey);
+  }
+
+  async validateBatch(workflows, options = {}) {
+    const results = [];
+    
+    console.log(`Validating ${workflows.length} workflows...`);
+    
+    for (let i = 0; i < workflows.length; i++) {
+      const workflow = workflows[i];
+      
+      try {
+        console.log(`Validating workflow ${i + 1}/${workflows.length}: ${workflow.name}`);
+        
+        const validation = await this.validator.validateWorkflow(
+          workflow.definition, 
+          options
+        );
+        
+        results.push({
+          name: workflow.name,
+          file: workflow.file,
+          isValid: validation.isValid,
+          errors: validation.errors,
+          warnings: validation.warnings,
+          summary: validation.summary
+        });
+        
+      } catch (error) {
+        results.push({
+          name: workflow.name,
+          file: workflow.file,
+          isValid: false,
+          errors: [{
+            type: 'error',
+            code: 'VALIDATION_EXCEPTION',
+            message: error.message
+          }],
+          warnings: [],
+          summary: null
+        });
+      }
+    }
+    
+    return this.generateBatchReport(results);
+  }
+
+  generateBatchReport(results) {
+    const summary = {
+      total: results.length,
+      valid: results.filter(r => r.isValid).length,
+      invalid: results.filter(r => !r.isValid).length,
+      totalErrors: results.reduce((sum, r) => sum + r.errors.length, 0),
+      totalWarnings: results.reduce((sum, r) => sum + r.warnings.length, 0)
+    };
+
+    console.log('\n═══ BATCH VALIDATION REPORT ═══');
+    console.log(`Total Workflows: ${summary.total}`);
+    console.log(`Valid: ${summary.valid} ✅`);
+    console.log(`Invalid: ${summary.invalid} ❌`);
+    console.log(`Total Errors: ${summary.totalErrors}`);
+    console.log(`Total Warnings: ${summary.totalWarnings}`);
+    
+    if (summary.invalid > 0) {
+      console.log('\n❌ Invalid Workflows:');
+      results
+        .filter(r => !r.isValid)
+        .forEach(result => {
+          console.log(`\n  ${result.name} (${result.file || 'no file'})`);
+          result.errors.forEach(error => {
+            console.log(`    • ${error.message}`);
+          });
+        });
+    }
+
+    if (summary.totalWarnings > 0) {
+      console.log('\n⚠️  Workflows with Warnings:');
+      results
+        .filter(r => r.warnings.length > 0)
+        .forEach(result => {
+          console.log(`\n  ${result.name} (${result.warnings.length} warnings)`);
+          result.warnings.forEach(warning => {
+            console.log(`    • ${warning.message}`);
+          });
+        });
+    }
+
+    console.log('════════════════════════════════\n');
+
+    return {
+      summary,
+      results,
+      allValid: summary.invalid === 0
+    };
+  }
+
+  async validateDirectory(directoryPath) {
+    const fs = require('fs').promises;
+    const path = require('path');
+    const yaml = require('yaml');
+
+    const workflows = [];
+    
+    // Read all YAML files in directory
+    const files = await fs.readdir(directoryPath);
+    
+    for (const file of files) {
+      if (file.endsWith('.yaml') || file.endsWith('.yml')) {
+        const filePath = path.join(directoryPath, file);
+        const content = await fs.readFile(filePath, 'utf8');
+        
+        try {
+          const definition = yaml.parse(content);
+          workflows.push({
+            name: path.basename(file, path.extname(file)),
+            file: filePath,
+            definition
+          });
+        } catch (error) {
+          workflows.push({
+            name: path.basename(file, path.extname(file)),
+            file: filePath,
+            definition: content, // Pass as string for validation
+            parseError: error.message
+          });
+        }
+      }
+    }
+
+    return this.validateBatch(workflows, { format: 'yaml' });
+  }
+}
+
+// Usage
+const batchValidator = new BatchWorkflowValidator('YOUR_API_KEY');
+
+// Validate all YAML files in a directory
+const report = await batchValidator.validateDirectory('./workflows');
+
+if (report.allValid) {
+  console.log('All workflows are valid! Ready for deployment.');
+} else {
+  console.log(`${report.summary.invalid} workflows need fixes before deployment.`);
+  process.exit(1); // Exit with error for CI/CD
+}
+```
+
+## CI/CD Integration
+
+### GitHub Actions Integration
+
+```yaml
+# .github/workflows/validate-workflows.yml
+name: Validate Workflows
+
+on:
+  pull_request:
+    paths: ['workflows/**/*.yaml', 'workflows/**/*.yml']
+  push:
+    branches: [main]
+    paths: ['workflows/**/*.yaml', 'workflows/**/*.yml']
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: |
+        npm init -y
+        npm install yaml
+    
+    - name: Validate workflows
+      env:
+        SIM_API_KEY: ${{ secrets.SIM_API_KEY }}
+      run: |
+        cat > validate.js << 'EOF'
+        const fs = require('fs').promises;
+        const yaml = require('yaml');
+        
+        async function validateWorkflows() {
+          const files = await fs.readdir('workflows');
+          const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+          
+          let hasErrors = false;
+          
+          for (const file of yamlFiles) {
+            console.log(`Validating ${file}...`);
+            
+            const content = await fs.readFile(`workflows/${file}`, 'utf8');
+            
+            try {
+              const response = await fetch('https://api.sim.dev/api/workflows/validate', {
+                method: 'POST',
+                headers: {
+                  'x-api-key': process.env.SIM_API_KEY,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  format: 'yaml',
+                  workflow: content,
+                  validateRequired: true,
+                  validateConnections: true,
+                  validateBlockConfig: true
+                })
+              });
+              
+              const result = await response.json();
+              
+              if (result.result.isValid) {
+                console.log(`✅ ${file} is valid`);
+              } else {
+                console.log(`❌ ${file} has errors:`);
+                result.result.errors.forEach(error => {
+                  console.log(`  - ${error.message}`);
+                });
+                hasErrors = true;
+              }
+              
+              if (result.result.warnings.length > 0) {
+                console.log(`⚠️  ${file} has warnings:`);
+                result.result.warnings.forEach(warning => {
+                  console.log(`  - ${warning.message}`);
+                });
+              }
+              
+            } catch (error) {
+              console.log(`❌ Failed to validate ${file}: ${error.message}`);
+              hasErrors = true;
+            }
+          }
+          
+          if (hasErrors) {
+            process.exit(1);
+          } else {
+            console.log('All workflows are valid!');
+          }
+        }
+        
+        validateWorkflows().catch(error => {
+          console.error('Validation failed:', error);
+          process.exit(1);
+        });
+        EOF
+        
+        node validate.js
+    
+    - name: Comment PR
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ Workflow validation failed. Please check the logs and fix the errors before merging.'
+          })
+```
+
+### Pre-commit Hook
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+echo "Validating workflow files..."
+
+# Find changed YAML files
+changed_files=$(git diff --cached --name-only | grep -E '\.(ya?ml)$' | grep '^workflows/')
+
+if [ -z "$changed_files" ]; then
+  echo "No workflow files changed"
+  exit 0
+fi
+
+# Validate each changed file
+validation_failed=0
+
+for file in $changed_files; do
+  if [ -f "$file" ]; then
+    echo "Validating $file..."
+    
+    # Read file content and validate
+    yaml_content=$(cat "$file")
+    
+    response=$(curl -s -X POST \
+      -H "x-api-key: $SIM_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d "{
+        \"format\": \"yaml\",
+        \"workflow\": $(echo "$yaml_content" | jq -R -s '.'),
+        \"validateRequired\": true,
+        \"validateConnections\": true,
+        \"validateBlockConfig\": true
+      }" \
+      https://api.sim.dev/api/workflows/validate)
+    
+    # Check validation result
+    valid=$(echo "$response" | jq -r '.result.isValid // false')
+    
+    if [ "$valid" = "true" ]; then
+      echo "✅ $file is valid"
+      
+      # Check for warnings
+      warnings=$(echo "$response" | jq -r '.result.warnings // [] | length')
+      if [ "$warnings" -gt 0 ]; then
+        echo "⚠️  $file has $warnings warning(s):"
+        echo "$response" | jq -r '.result.warnings[]?.message'
+      fi
+    else
+      echo "❌ $file validation failed:"
+      echo "$response" | jq -r '.result.errors[]?.message // .error'
+      validation_failed=1
+    fi
+  fi
+done
+
+if [ $validation_failed -eq 1 ]; then
+  echo ""
+  echo "❌ Workflow validation failed. Please fix the errors before committing."
+  echo "Run 'git diff --cached' to see your changes."
+  exit 1
+fi
+
+echo "✅ All workflow files are valid!"
+exit 0
+```
+
+## Error Prevention Best Practices
+
+### Common Validation Issues
+
+<Callout type="info">
+**Prevention is Better Than Cure**
+Use these patterns to avoid common validation errors before they happen.
+</Callout>
+
+<Tabs items={['Required Fields', 'Connection Issues', 'Configuration Errors']}>
+<Tab value="Required Fields">
+```javascript
+// Template for ensuring required fields are present
+class WorkflowBuilder {
+  constructor() {
+    this.workflow = {
+      version: "1.0",
+      blocks: [],
+      connections: [],
+      variables: {}
+    };
+  }
+
+  addBlock(blockConfig) {
+    // Validate required fields before adding
+    const required = {
+      id: 'string',
+      metadata: 'object'
+    };
+
+    for (const [field, type] of Object.entries(required)) {
+      if (!blockConfig[field]) {
+        throw new Error(`Block is missing required field: ${field}`);
+      }
+      
+      if (typeof blockConfig[field] !== type) {
+        throw new Error(`Block field ${field} must be of type ${type}`);
+      }
+    }
+
+    // Validate metadata
+    if (!blockConfig.metadata.id) {
+      throw new Error('Block metadata must include id (block type)');
+    }
+
+    if (!blockConfig.metadata.name) {
+      throw new Error('Block metadata must include name');
+    }
+
+    // Add default position if not provided
+    if (!blockConfig.position) {
+      blockConfig.position = { x: 100, y: 100 };
+    }
+
+    // Ensure block ID is unique
+    if (this.workflow.blocks.some(b => b.id === blockConfig.id)) {
+      throw new Error(`Block ID ${blockConfig.id} already exists`);
+    }
+
+    this.workflow.blocks.push(blockConfig);
+    return this;
+  }
+
+  addConnection(sourceId, targetId, options = {}) {
+    // Validate source and target blocks exist
+    if (!this.workflow.blocks.some(b => b.id === sourceId)) {
+      throw new Error(`Source block ${sourceId} does not exist`);
+    }
+
+    if (!this.workflow.blocks.some(b => b.id === targetId)) {
+      throw new Error(`Target block ${targetId} does not exist`);
+    }
+
+    // Prevent self-connections
+    if (sourceId === targetId) {
+      throw new Error('Blocks cannot connect to themselves');
+    }
+
+    const connection = {
+      source: sourceId,
+      target: targetId,
+      sourceHandle: options.sourceHandle || 'output',
+      targetHandle: options.targetHandle || 'input',
+      ...options
+    };
+
+    this.workflow.connections.push(connection);
+    return this;
+  }
+
+  build() {
+    // Final validation
+    if (this.workflow.blocks.length === 0) {
+      throw new Error('Workflow must have at least one block');
+    }
+
+    // Ensure there's a starter block
+    const hasStarter = this.workflow.blocks.some(b => 
+      b.metadata.id === 'starter'
+    );
+
+    if (!hasStarter) {
+      console.warn('Warning: Workflow does not have a starter block');
+    }
+
+    return this.workflow;
+  }
+}
+
+// Usage
+const builder = new WorkflowBuilder();
+
+try {
+  const workflow = builder
+    .addBlock({
+      id: 'start',
+      metadata: {
+        id: 'starter',
+        name: 'Start'
+      },
+      config: {
+        params: {
+          startWorkflow: 'manual'
+        }
+      }
+    })
+    .addBlock({
+      id: 'process',
+      metadata: {
+        id: 'function',
+        name: 'Process Data'
+      },
+      config: {
+        params: {
+          code: 'return { processed: true };'
+        }
+      }
+    })
+    .addConnection('start', 'process')
+    .build();
+    
+  console.log('Workflow built successfully!');
+} catch (error) {
+  console.error('Workflow build failed:', error.message);
+}
+```
+</Tab>
+<Tab value="Connection Issues">
+```javascript
+// Connection validator and fixer
+class ConnectionValidator {
+  static validateConnections(workflow) {
+    const issues = [];
+    const blockIds = new Set(workflow.blocks.map(b => b.id));
+
+    for (let i = 0; i < workflow.connections.length; i++) {
+      const connection = workflow.connections[i];
+      const connectionRef = `Connection ${i + 1} (${connection.source} → ${connection.target})`;
+
+      // Check source exists
+      if (!blockIds.has(connection.source)) {
+        issues.push({
+          type: 'error',
+          message: `${connectionRef}: Source block '${connection.source}' does not exist`,
+          fix: 'Remove this connection or create the missing block'
+        });
+      }
+
+      // Check target exists
+      if (!blockIds.has(connection.target)) {
+        issues.push({
+          type: 'error',
+          message: `${connectionRef}: Target block '${connection.target}' does not exist`,
+          fix: 'Remove this connection or create the missing block'
+        });
+      }
+
+      // Check for self-connection
+      if (connection.source === connection.target) {
+        issues.push({
+          type: 'warning',
+          message: `${connectionRef}: Block connects to itself`,
+          fix: 'Use a loop block for iterative behavior'
+        });
+      }
+
+      // Check for duplicate connections
+      const duplicates = workflow.connections.filter((c, idx) => 
+        idx !== i && 
+        c.source === connection.source && 
+        c.target === connection.target
+      );
+
+      if (duplicates.length > 0) {
+        issues.push({
+          type: 'warning',
+          message: `${connectionRef}: Duplicate connection found`,
+          fix: 'Remove duplicate connections'
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  static autoFixConnections(workflow) {
+    const blockIds = new Set(workflow.blocks.map(b => b.id));
+    
+    // Remove invalid connections
+    workflow.connections = workflow.connections.filter(connection => {
+      if (!blockIds.has(connection.source) || !blockIds.has(connection.target)) {
+        console.log(`Removed invalid connection: ${connection.source} → ${connection.target}`);
+        return false;
+      }
+      
+      if (connection.source === connection.target) {
+        console.log(`Removed self-connection: ${connection.source}`);
+        return false;
+      }
+      
+      return true;
+    });
+
+    // Remove duplicate connections
+    const seen = new Set();
+    workflow.connections = workflow.connections.filter(connection => {
+      const key = `${connection.source}->${connection.target}`;
+      if (seen.has(key)) {
+        console.log(`Removed duplicate connection: ${connection.source} → ${connection.target}`);
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+
+    return workflow;
+  }
+}
+
+// Usage
+const connectionIssues = ConnectionValidator.validateConnections(workflow);
+if (connectionIssues.length > 0) {
+  console.log('Connection issues found:');
+  connectionIssues.forEach(issue => {
+    console.log(`${issue.type.toUpperCase()}: ${issue.message}`);
+    console.log(`Fix: ${issue.fix}`);
+  });
+  
+  // Auto-fix if desired
+  const fixedWorkflow = ConnectionValidator.autoFixConnections(workflow);
+  console.log('Applied automatic fixes');
+}
+```
+</Tab>
+<Tab value="Configuration Errors">
+```javascript
+// Block configuration validator
+class BlockConfigValidator {
+  constructor() {
+    // Define required parameters for each block type
+    this.blockRequirements = {
+      'starter': {
+        required: ['startWorkflow'],
+        optional: ['webhookPath', 'webhookSecret', 'scheduleType']
+      },
+      'api': {
+        required: ['url', 'method'],
+        optional: ['headers', 'body', 'timeout']
+      },
+      'gmail': {
+        required: ['to', 'subject'],
+        optional: ['body', 'cc', 'bcc', 'attachments']
+      },
+      'function': {
+        required: ['code'],
+        optional: ['timeout', 'memory']
+      },
+      'condition': {
+        required: ['condition'],
+        optional: ['elseCondition']
+      }
+    };
+  }
+
+  validateBlock(block) {
+    const issues = [];
+    const blockType = block.metadata?.id;
+    
+    if (!blockType) {
+      issues.push({
+        type: 'error',
+        message: `Block ${block.id}: Missing block type (metadata.id)`,
+        fix: 'Add metadata.id field with valid block type'
+      });
+      return issues;
+    }
+
+    const requirements = this.blockRequirements[blockType];
+    if (!requirements) {
+      issues.push({
+        type: 'warning',
+        message: `Block ${block.id}: Unknown block type '${blockType}'`,
+        fix: 'Check block type spelling or update validator'
+      });
+      return issues;
+    }
+
+    const params = block.config?.params || {};
+    
+    // Check required parameters
+    requirements.required.forEach(param => {
+      if (params[param] === undefined || params[param] === '') {
+        issues.push({
+          type: 'error',
+          message: `Block ${block.id}: Missing required parameter '${param}'`,
+          fix: `Add '${param}' to block configuration`
+        });
+      }
+    });
+
+    // Check for unknown parameters (helpful for catching typos)
+    const allKnownParams = [...requirements.required, ...requirements.optional];
+    Object.keys(params).forEach(param => {
+      if (!allKnownParams.includes(param)) {
+        issues.push({
+          type: 'warning',
+          message: `Block ${block.id}: Unknown parameter '${param}'`,
+          fix: 'Check parameter spelling or remove if not needed'
+        });
+      }
+    });
+
+    // Type-specific validations
+    this.validateBlockSpecific(block, issues);
+
+    return issues;
+  }
+
+  validateBlockSpecific(block, issues) {
+    const blockType = block.metadata.id;
+    const params = block.config?.params || {};
+
+    switch (blockType) {
+      case 'api':
+        if (params.url && !this.isValidUrl(params.url)) {
+          issues.push({
+            type: 'error',
+            message: `Block ${block.id}: Invalid URL format`,
+            fix: 'Use valid URL format (http:// or https://)'
+          });
+        }
+        
+        if (params.method && !['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(params.method.toUpperCase())) {
+          issues.push({
+            type: 'error',
+            message: `Block ${block.id}: Invalid HTTP method '${params.method}'`,
+            fix: 'Use valid HTTP method (GET, POST, PUT, DELETE, PATCH)'
+          });
+        }
+        break;
+
+      case 'gmail':
+        if (params.to && !this.isValidEmail(params.to)) {
+          // Check if it's a variable reference
+          if (!this.isVariableReference(params.to)) {
+            issues.push({
+              type: 'error',
+              message: `Block ${block.id}: Invalid email format in 'to' field`,
+              fix: 'Use valid email format or variable reference'
+            });
+          }
+        }
+        break;
+
+      case 'function':
+        if (params.code && params.code.trim().length === 0) {
+          issues.push({
+            type: 'error',
+            message: `Block ${block.id}: Function code cannot be empty`,
+            fix: 'Add JavaScript code to execute'
+          });
+        }
+        break;
+
+      case 'starter':
+        if (params.startWorkflow === 'schedule' && !params.scheduleType) {
+          issues.push({
+            type: 'error',
+            message: `Block ${block.id}: Schedule type required for scheduled workflows`,
+            fix: 'Add scheduleType parameter (daily, weekly, etc.)'
+          });
+        }
+        break;
+    }
+  }
+
+  isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  isVariableReference(value) {
+    return /\{\{.+\}\}/.test(value);
+  }
+
+  validateAllBlocks(workflow) {
+    const allIssues = [];
+    
+    workflow.blocks.forEach(block => {
+      const blockIssues = this.validateBlock(block);
+      allIssues.push(...blockIssues);
+    });
+
+    return allIssues;
+  }
+}
+
+// Usage
+const configValidator = new BlockConfigValidator();
+const configIssues = configValidator.validateAllBlocks(workflow);
+
+if (configIssues.length > 0) {
+  console.log('Configuration issues found:');
+  
+  // Group by block
+  const issuesByBlock = configIssues.reduce((acc, issue) => {
+    const blockId = issue.message.split(':')[0];
+    acc[blockId] = acc[blockId] || [];
+    acc[blockId].push(issue);
+    return acc;
+  }, {});
+
+  Object.entries(issuesByBlock).forEach(([blockId, issues]) => {
+    console.log(`\n${blockId}:`);
+    issues.forEach(issue => {
+      console.log(`  ${issue.type.toUpperCase()}: ${issue.message.split(': ')[1]}`);
+      console.log(`    Fix: ${issue.fix}`);
+    });
+  });
+}
+```
+</Tab>
+</Tabs>
+
+## Next Steps
+
+- [Export Formats](/docs/api/workflows/export-formats) - Export validated workflows
+- [Collaborative Editing](/docs/api/workflows/collaborative-editing) - Real-time workflow editing
+- [Versioning](/docs/api/workflows/versioning) - Version control for workflows
+- [Error Codes](/docs/api/error-codes) - Complete API error reference

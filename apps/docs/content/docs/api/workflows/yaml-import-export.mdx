@@ -1,0 +1,1641 @@
+---
+title: YAML Import/Export
+description: Create and update workflows using YAML format for version control and programmatic management
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# YAML Import/Export
+
+The Sim API supports importing and exporting workflows in YAML format, enabling version control, programmatic workflow management, and easy sharing of workflow definitions. YAML format provides a human-readable, text-based representation of your workflows.
+
+## Overview
+
+YAML workflow operations include:
+
+- **Import from YAML** - Create new workflows from YAML definitions
+- **Update from YAML** - Update existing workflows with YAML
+- **Validation Only** - Validate YAML without creating workflows
+- **Layout Generation** - Automatically position blocks when importing
+- **ID Preservation** - Maintain workflow and block IDs across imports
+
+## Import Workflow from YAML
+
+Create a new workflow from a YAML definition.
+
+### Endpoint
+
+```http
+POST /api/workflows/yaml
+```
+
+### Request Body
+
+```json
+{
+  "name": "string (required)",
+  "description": "string (optional)",
+  "color": "string (optional)",
+  "workspaceId": "string (optional)",
+  "folderId": "string | null (optional)",
+  "yaml": "string (required)",
+  "preserveIds": "boolean (default: false)",
+  "overwriteExisting": "boolean (default: false)",
+  "validateOnly": "boolean (default: false)"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | string | - | **Required.** Name for the new workflow |
+| `description` | string | `""` | Optional description |
+| `color` | string | `"#3972F6"` | Hex color code |
+| `workspaceId` | string | - | Target workspace ID |
+| `folderId` | string\|null | - | Target folder ID |
+| `yaml` | string | - | **Required.** YAML workflow definition |
+| `preserveIds` | boolean | `false` | Keep original workflow/block IDs |
+| `overwriteExisting` | boolean | `false` | Overwrite existing workflow if ID matches |
+| `validateOnly` | boolean | `false` | Only validate, don't create workflow |
+
+### YAML Structure
+
+A typical workflow YAML structure:
+
+```yaml
+version: "1.0"
+metadata:
+  name: "Email Processing Workflow"
+  description: "Process incoming emails and extract data"
+  color: "#10B981"
+
+variables:
+  customer_email:
+    type: string
+    description: "Customer email address"
+  processed_count:
+    type: number
+    description: "Number of emails processed"
+    default: 0
+
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Start"
+    position: { x: 100, y: 100 }
+    config:
+      params:
+        startWorkflow: "webhook"
+        webhookPath: "/process-email"
+    outputs:
+      response:
+        type: { input: "any" }
+    
+  - id: read_email
+    metadata:
+      id: gmail
+      name: "Read Email"
+    position: { x: 350, y: 100 }
+    config:
+      params:
+        messageId: "{{webhook.messageId}}"
+        markAsRead: true
+    outputs:
+      subject:
+        type: { input: "string" }
+      body:
+        type: { input: "string" }
+      sender:
+        type: { input: "string" }
+        
+  - id: extract_data
+    metadata:
+      id: function
+      name: "Extract Customer Data"
+    position: { x: 600, y: 100 }
+    config:
+      params:
+        code: |
+          // Extract customer information from email
+          const emailBody = inputs.body;
+          const customerMatch = emailBody.match(/customer:\s*(\S+@\S+)/i);
+          const customer_email = customerMatch ? customerMatch[1] : null;
+          
+          return { customer_email };
+    outputs:
+      customer_email:
+        type: { input: "string" }
+
+  - id: send_response
+    metadata:
+      id: gmail
+      name: "Send Response"
+    position: { x: 850, y: 100 }
+    config:
+      params:
+        to: "{{extract_data.customer_email}}"
+        subject: "Re: {{read_email.subject}}"
+        body: "Thank you for your email. We'll process your request shortly."
+
+connections:
+  - source: start
+    target: read_email
+    sourceHandle: response
+    targetHandle: input
+    
+  - source: read_email
+    target: extract_data
+    sourceHandle: body
+    targetHandle: input
+    
+  - source: extract_data
+    target: send_response
+    sourceHandle: customer_email
+    targetHandle: input
+
+loops: {}
+parallels: {}
+```
+
+### Examples
+
+<Tabs items={['Basic Import', 'Validation Only', 'Advanced Import', 'Overwrite Existing']}>
+<Tab value="Basic Import">
+```javascript
+const yamlWorkflow = `
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: Start
+    position: { x: 100, y: 100 }
+  - id: send_welcome
+    metadata:
+      id: gmail
+      name: Send Welcome Email
+    position: { x: 300, y: 100 }
+    config:
+      params:
+        to: "{{customer_email}}"
+        subject: "Welcome!"
+        body: "Thank you for joining us."
+connections:
+  - source: start
+    target: send_welcome
+variables:
+  customer_email:
+    type: string
+`;
+
+const response = await fetch('/api/workflows/yaml', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Welcome Email Workflow',
+    description: 'Send welcome emails to new customers',
+    color: '#10B981',
+    yaml: yamlWorkflow
+  })
+});
+
+const result = await response.json();
+console.log('Created workflow:', result.id);
+console.log('Import summary:', result.summary);
+```
+</Tab>
+<Tab value="Validation Only">
+```javascript
+// Validate YAML without creating workflow
+const response = await fetch('/api/workflows/yaml', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Test Workflow',
+    yaml: yamlContent,
+    validateOnly: true
+  })
+});
+
+const result = await response.json();
+
+if (result.valid) {
+  console.log('YAML is valid!');
+  console.log('Summary:', result.summary);
+  console.log('Parsed workflow has:', {
+    blocks: result.workflow.blocks?.length || 0,
+    connections: result.workflow.connections?.length || 0,
+    variables: Object.keys(result.workflow.variables || {}).length
+  });
+} else {
+  console.error('YAML validation failed:', result.validationErrors);
+}
+```
+</Tab>
+<Tab value="Advanced Import">
+```javascript
+// Import with advanced options
+const response = await fetch('/api/workflows/yaml', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Customer Support Automation',
+    description: 'Handle customer support tickets automatically',
+    color: '#8B5CF6',
+    workspaceId: 'ws_customer_service',
+    folderId: 'folder_automation',
+    yaml: complexYamlWorkflow,
+    preserveIds: true, // Keep original block IDs
+    overwriteExisting: false
+  })
+});
+
+const result = await response.json();
+console.log('Advanced import results:', {
+  workflowId: result.id,
+  blocksCreated: result.summary.blocks,
+  connectionsCreated: result.summary.connections,
+  importTime: result.importTime
+});
+```
+</Tab>
+<Tab value="Overwrite Existing">
+```javascript
+// Import and overwrite existing workflow
+const response = await fetch('/api/workflows/yaml', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Updated Workflow',
+    yaml: updatedYamlContent,
+    preserveIds: true,
+    overwriteExisting: true // This will replace existing workflow with same ID
+  })
+});
+
+if (response.ok) {
+  const result = await response.json();
+  console.log('Successfully updated workflow:', result.id);
+} else {
+  const error = await response.json();
+  console.error('Import failed:', error.details);
+}
+```
+</Tab>
+</Tabs>
+
+### Response
+
+#### Successful Import
+```json
+{
+  "id": "wf_abc123",
+  "name": "Welcome Email Workflow",
+  "description": "Send welcome emails to new customers",
+  "color": "#10B981",
+  "workspaceId": "ws_abc123",
+  "folderId": null,
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T10:00:00Z",
+  "summary": {
+    "blocks": 2,
+    "connections": 1,
+    "loops": 0,
+    "parallels": 0
+  },
+  "importTime": 1250
+}
+```
+
+#### Validation Only Response
+```json
+{
+  "valid": true,
+  "workflow": {
+    "blocks": [
+      // Parsed block objects
+    ],
+    "connections": [
+      // Parsed connection objects
+    ],
+    "variables": {}
+  },
+  "summary": {
+    "blocks": 2,
+    "connections": 1,
+    "loops": 0,
+    "parallels": 0
+  },
+  "validationTime": 450
+}
+```
+
+## Update Workflow from YAML
+
+Update an existing workflow with a new YAML definition.
+
+### Endpoint
+
+```http
+PUT /api/workflows/yaml?id={workflowId}
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | **Required.** The workflow ID to update |
+
+### Request Body
+
+```json
+{
+  "yaml": "string (required)",
+  "preserveMetadata": "boolean (default: true)",
+  "createCheckpoint": "boolean (default: true)",
+  "validateBeforeUpdate": "boolean (default: true)"
+}
+```
+
+### Examples
+
+<Tabs items={['Update Workflow', 'Replace Structure', 'Safe Update']}>
+<Tab value="Update Workflow">
+```javascript
+// Update existing workflow with new YAML
+const updatedYaml = `
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: Start
+    position: { x: 100, y: 100 }
+  - id: process_data
+    metadata:
+      id: function
+      name: Process Customer Data
+    position: { x: 300, y: 100 }
+    config:
+      params:
+        code: |
+          // Enhanced processing logic
+          const data = inputs.customerData;
+          const processed = {
+            ...data,
+            processed_at: new Date().toISOString(),
+            score: calculateScore(data)
+          };
+          return processed;
+  - id: send_notification
+    metadata:
+      id: slack
+      name: Send Notification
+    position: { x: 500, y: 100 }
+    config:
+      params:
+        channel: "#customer-updates"
+        text: "New customer processed: {{process_data.name}}"
+connections:
+  - source: start
+    target: process_data
+  - source: process_data
+    target: send_notification
+`;
+
+const response = await fetch('/api/workflows/yaml?id=wf_abc123', {
+  method: 'PUT',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    yaml: updatedYaml,
+    preserveMetadata: true,
+    createCheckpoint: true,
+    validateBeforeUpdate: true
+  })
+});
+
+const result = await response.json();
+console.log('Update summary:', result.summary);
+```
+</Tab>
+<Tab value="Replace Structure">
+```javascript
+// Completely replace workflow structure
+const newStructure = `
+version: "1.0"
+# Completely new workflow structure
+blocks:
+  - id: webhook_trigger
+    metadata:
+      id: starter
+      name: Webhook Trigger
+    position: { x: 50, y: 100 }
+    config:
+      params:
+        startWorkflow: webhook
+        webhookPath: "/new-endpoint"
+  
+  - id: parallel_processor
+    metadata:
+      id: parallel
+      name: Process Multiple Items
+    position: { x: 250, y: 100 }
+    
+  - id: final_response
+    metadata:
+      id: response
+      name: Send Response
+    position: { x: 450, y: 100 }
+
+connections:
+  - source: webhook_trigger
+    target: parallel_processor
+  - source: parallel_processor
+    target: final_response
+
+parallels:
+  parallel_processor:
+    config:
+      branches:
+        - name: "Email Processing"
+          blocks: ["email_block"]
+        - name: "Data Processing" 
+          blocks: ["data_block"]
+`;
+
+const response = await fetch('/api/workflows/yaml?id=wf_abc123', {
+  method: 'PUT',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    yaml: newStructure,
+    preserveMetadata: false, // Allow workflow name/description to be updated from YAML
+    createCheckpoint: true,
+    validateBeforeUpdate: true
+  })
+});
+```
+</Tab>
+<Tab value="Safe Update">
+```javascript
+// Safe update with validation and error handling
+async function safeUpdateWorkflow(workflowId, yamlContent) {
+  try {
+    // First, validate the YAML
+    const validationResponse = await fetch('/api/workflows/yaml', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'temp',
+        yaml: yamlContent,
+        validateOnly: true
+      })
+    });
+
+    const validation = await validationResponse.json();
+    
+    if (!validation.valid) {
+      console.error('YAML validation failed:', validation.validationErrors);
+      return { success: false, errors: validation.validationErrors };
+    }
+
+    console.log('YAML validation passed');
+
+    // Now perform the update
+    const updateResponse = await fetch(`/api/workflows/yaml?id=${workflowId}`, {
+      method: 'PUT',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        yaml: yamlContent,
+        preserveMetadata: true,
+        createCheckpoint: true,
+        validateBeforeUpdate: true
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const error = await updateResponse.json();
+      console.error('Update failed:', error);
+      return { success: false, error: error.message };
+    }
+
+    const result = await updateResponse.json();
+    console.log('Workflow updated successfully:', result.summary);
+    
+    return { success: true, result };
+
+  } catch (error) {
+    console.error('Update failed with exception:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Usage
+const updateResult = await safeUpdateWorkflow('wf_abc123', newYamlContent);
+if (!updateResult.success) {
+  console.error('Failed to update workflow:', updateResult.error || updateResult.errors);
+}
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "id": "wf_abc123",
+  "updated": true,
+  "summary": {
+    "blocks": 3,
+    "connections": 2,
+    "loops": 0,
+    "parallels": 1
+  },
+  "updateTime": 890
+}
+```
+
+## YAML Validation
+
+Validate YAML workflow definitions without creating or updating workflows.
+
+<Callout type="info">
+Use validation to test YAML definitions before importing or updating workflows. This helps catch errors early and ensures smooth imports.
+</Callout>
+
+### Validation Process
+
+The validation process checks for:
+
+- **YAML Syntax** - Valid YAML format
+- **Schema Compliance** - Correct workflow structure
+- **Block Configuration** - Valid block types and parameters
+- **Connection Validity** - Proper source/target references
+- **Variable Dependencies** - Variable references and types
+- **Tool Configuration** - Valid tool parameters and settings
+
+### Advanced Validation Example
+
+```javascript
+class WorkflowYAMLValidator {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+  }
+
+  async validateYAML(yamlContent, options = {}) {
+    const {
+      checkBlockConfig = true,
+      checkConnections = true,
+      checkVariables = true,
+      checkToolConfig = true
+    } = options;
+
+    try {
+      const response = await fetch('/api/workflows/validate', {
+        method: 'POST',
+        headers: {
+          'x-api-key': this.apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          format: 'yaml',
+          workflow: yamlContent,
+          validateBlockConfig: checkBlockConfig,
+          validateConnections: checkConnections,
+          validateToolConfig: checkToolConfig
+        })
+      });
+
+      const result = await response.json();
+      
+      return {
+        isValid: result.result.isValid,
+        errors: result.result.errors,
+        warnings: result.result.warnings,
+        summary: result.result.summary,
+        performance: result.result.performance
+      };
+
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ 
+          type: 'error', 
+          code: 'VALIDATION_FAILED', 
+          message: error.message 
+        }],
+        warnings: [],
+        summary: null,
+        performance: null
+      };
+    }
+  }
+
+  async validateWithDetailedReport(yamlContent) {
+    const validation = await this.validateYAML(yamlContent);
+    
+    console.log('\n=== YAML Validation Report ===');
+    console.log(`Status: ${validation.isValid ? '✅ Valid' : '❌ Invalid'}`);
+    
+    if (validation.summary) {
+      console.log(`\nSummary:`);
+      console.log(`- Blocks: ${validation.summary.totalBlocks}`);
+      console.log(`- Connections: ${validation.summary.totalConnections}`);
+      console.log(`- Loops: ${validation.summary.totalLoops}`);
+      console.log(`- Parallels: ${validation.summary.totalParallels}`);
+    }
+
+    if (validation.errors.length > 0) {
+      console.log(`\n❌ Errors (${validation.errors.length}):`);
+      validation.errors.forEach(error => {
+        const location = error.location 
+          ? ` (${error.location.blockName || error.location.blockId})`
+          : '';
+        console.log(`  - ${error.message}${location}`);
+      });
+    }
+
+    if (validation.warnings.length > 0) {
+      console.log(`\n⚠️  Warnings (${validation.warnings.length}):`);
+      validation.warnings.forEach(warning => {
+        const location = warning.location 
+          ? ` (${warning.location.blockName || warning.location.blockId})`
+          : '';
+        console.log(`  - ${warning.message}${location}`);
+      });
+    }
+
+    if (validation.performance) {
+      console.log(`\nPerformance: ${validation.performance.validationTimeMs}ms`);
+    }
+
+    console.log('===============================\n');
+    
+    return validation;
+  }
+}
+
+// Usage
+const validator = new WorkflowYAMLValidator('YOUR_API_KEY');
+const validation = await validator.validateWithDetailedReport(yamlContent);
+
+if (validation.isValid) {
+  console.log('YAML is ready for import!');
+} else {
+  console.log('Please fix the errors before importing.');
+}
+```
+
+## YAML Best Practices
+
+### Structure Organization
+
+<Tabs items={['Basic Structure', 'Complex Workflow', 'Reusable Components']}>
+<Tab value="Basic Structure">
+```yaml
+version: "1.0"
+
+# Workflow metadata (optional but recommended)
+metadata:
+  name: "Data Processing Pipeline"
+  description: "Process and analyze incoming data"
+  version: "1.2.0"
+  author: "Data Team"
+  tags: ["data", "processing", "automation"]
+
+# Global variables available to all blocks
+variables:
+  api_endpoint:
+    type: string
+    description: "API endpoint for data submission"
+    default: "https://api.example.com/data"
+  batch_size:
+    type: number
+    description: "Number of records to process in each batch"
+    default: 100
+
+# Workflow blocks
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Data Ingestion Trigger"
+    position: { x: 100, y: 100 }
+    config:
+      params:
+        startWorkflow: "schedule"
+        scheduleType: "daily"
+        dailyTime: "09:00"
+
+  - id: fetch_data
+    metadata:
+      id: api
+      name: "Fetch Raw Data"
+    position: { x: 300, y: 100 }
+    config:
+      params:
+        method: "GET"
+        url: "{{variables.api_endpoint}}/raw"
+        headers:
+          Authorization: "Bearer {{secrets.api_token}}"
+
+# Block connections
+connections:
+  - source: start
+    target: fetch_data
+    sourceHandle: response
+    targetHandle: input
+
+# Advanced structures (empty for basic example)
+loops: {}
+parallels: {}
+```
+</Tab>
+<Tab value="Complex Workflow">
+```yaml
+version: "1.0"
+
+metadata:
+  name: "Customer Onboarding Pipeline"
+  description: "Complete customer onboarding with parallel processing"
+
+variables:
+  customer_data:
+    type: object
+    description: "Customer information"
+  welcome_email_template:
+    type: string
+    default: "welcome_template_v2"
+
+blocks:
+  # Entry point
+  - id: webhook_start
+    metadata:
+      id: starter
+      name: "New Customer Webhook"
+    position: { x: 100, y: 200 }
+    config:
+      params:
+        startWorkflow: "webhook"
+        webhookPath: "/new-customer"
+
+  # Data validation
+  - id: validate_customer
+    metadata:
+      id: function
+      name: "Validate Customer Data"
+    position: { x: 300, y: 200 }
+    config:
+      params:
+        code: |
+          const data = inputs.webhook;
+          const required = ['email', 'name', 'company'];
+          const missing = required.filter(field => !data[field]);
+          
+          if (missing.length > 0) {
+            throw new Error(`Missing fields: ${missing.join(', ')}`);
+          }
+          
+          return {
+            customer_data: data,
+            valid: true
+          };
+
+  # Parallel processing gateway
+  - id: parallel_onboarding
+    metadata:
+      id: parallel
+      name: "Parallel Onboarding Tasks"
+    position: { x: 500, y: 200 }
+
+  # Email branch
+  - id: send_welcome_email
+    metadata:
+      id: gmail
+      name: "Send Welcome Email"
+    position: { x: 400, y: 100 }
+    config:
+      params:
+        to: "{{validate_customer.customer_data.email}}"
+        subject: "Welcome to our platform!"
+        templateId: "{{variables.welcome_email_template}}"
+
+  # Account setup branch  
+  - id: create_account
+    metadata:
+      id: api
+      name: "Create User Account"
+    position: { x: 400, y: 300 }
+    config:
+      params:
+        method: "POST"
+        url: "{{secrets.api_base_url}}/users"
+        body: |
+          {
+            "email": "{{validate_customer.customer_data.email}}",
+            "name": "{{validate_customer.customer_data.name}}",
+            "company": "{{validate_customer.customer_data.company}}"
+          }
+
+  # Completion
+  - id: onboarding_complete
+    metadata:
+      id: slack
+      name: "Notify Team"
+    position: { x: 700, y: 200 }
+    config:
+      params:
+        channel: "#customer-success"
+        text: "New customer onboarded: {{validate_customer.customer_data.name}}"
+
+connections:
+  - source: webhook_start
+    target: validate_customer
+  - source: validate_customer
+    target: parallel_onboarding
+  - source: parallel_onboarding
+    target: onboarding_complete
+
+# Define parallel execution
+parallels:
+  parallel_onboarding:
+    config:
+      branches:
+        - name: "Email Processing"
+          blocks: ["send_welcome_email"]
+        - name: "Account Creation"
+          blocks: ["create_account"]
+      waitForAll: true  # Wait for both branches to complete
+
+loops: {}
+```
+</Tab>
+<Tab value="Reusable Components">
+```yaml
+version: "1.0"
+
+# Define reusable templates and configurations
+templates:
+  error_handler: &error_handler
+    metadata:
+      id: function
+      name: "Error Handler"
+    config:
+      params:
+        code: |
+          console.error('Error occurred:', inputs.error);
+          // Send error notification
+          return {
+            error_logged: true,
+            timestamp: new Date().toISOString()
+          };
+
+  api_call_template: &api_template
+    metadata:
+      id: api
+    config:
+      params:
+        headers:
+          Authorization: "Bearer {{secrets.api_token}}"
+          Content-Type: "application/json"
+
+variables:
+  retry_count:
+    type: number
+    default: 3
+  timeout_ms:
+    type: number
+    default: 30000
+
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Start Process"
+    position: { x: 100, y: 100 }
+
+  # Use template with overrides
+  - id: fetch_users
+    <<: *api_template
+    metadata:
+      id: api
+      name: "Fetch Users"
+    position: { x: 300, y: 100 }
+    config:
+      params:
+        <<: *api_template.config.params
+        method: "GET"
+        url: "{{secrets.api_base_url}}/users"
+        timeout: "{{variables.timeout_ms}}"
+
+  - id: process_users
+    metadata:
+      id: function
+      name: "Process User Data"
+    position: { x: 500, y: 100 }
+    config:
+      params:
+        code: |
+          const users = inputs.fetch_users;
+          const processed = users.map(user => ({
+            ...user,
+            processed_at: new Date().toISOString(),
+            status: 'active'
+          }));
+          
+          return { processed_users: processed };
+
+  # Error handling with template
+  - id: handle_errors
+    <<: *error_handler
+    position: { x: 500, y: 300 }
+
+connections:
+  - source: start
+    target: fetch_users
+  - source: fetch_users
+    target: process_users
+  # Error connection
+  - source: fetch_users
+    target: handle_errors
+    condition: "error"
+
+loops: {}
+parallels: {}
+```
+</Tab>
+</Tabs>
+
+### Variable Management
+
+```yaml
+# Comprehensive variable definitions
+variables:
+  # Basic types
+  api_endpoint:
+    type: string
+    description: "Main API endpoint"
+    required: true
+  
+  batch_size:
+    type: number
+    description: "Processing batch size"
+    default: 50
+    min: 1
+    max: 1000
+  
+  enabled_features:
+    type: array
+    description: "List of enabled features"
+    default: ["email", "sms", "webhook"]
+    items:
+      type: string
+  
+  # Complex objects
+  email_config:
+    type: object
+    description: "Email configuration settings"
+    properties:
+      smtp_host:
+        type: string
+        required: true
+      smtp_port:
+        type: number
+        default: 587
+      use_tls:
+        type: boolean
+        default: true
+      templates:
+        type: object
+        properties:
+          welcome:
+            type: string
+            default: "welcome_template"
+          notification:
+            type: string
+            default: "notification_template"
+  
+  # Environment-specific
+  debug_mode:
+    type: boolean
+    description: "Enable debug logging"
+    default: false
+    env_var: "WORKFLOW_DEBUG"  # Can be overridden by environment variable
+```
+
+### Error Handling Patterns
+
+```yaml
+# Error handling patterns in YAML workflows
+blocks:
+  - id: risky_operation
+    metadata:
+      id: api
+      name: "External API Call"
+    config:
+      params:
+        method: "POST"
+        url: "{{variables.external_api}}"
+        timeout: 30000
+        retries: 3
+        retryDelay: 1000
+    error_handling:
+      on_error: "continue_to_error_handler"
+      log_errors: true
+
+  - id: error_handler
+    metadata:
+      id: function
+      name: "Handle API Errors"
+    config:
+      params:
+        code: |
+          const error = inputs.error;
+          console.error('API call failed:', error.message);
+          
+          // Determine if error is retryable
+          const retryable = error.status >= 500 || error.code === 'TIMEOUT';
+          
+          return {
+            should_retry: retryable,
+            error_message: error.message,
+            handled_at: new Date().toISOString()
+          };
+
+  - id: fallback_action
+    metadata:
+      id: slack
+      name: "Notify on Failure"
+    config:
+      params:
+        channel: "#alerts"
+        text: "Workflow failed: {{error_handler.error_message}}"
+
+connections:
+  - source: risky_operation
+    target: success_handler
+    condition: "success"  # Only on success
+    
+  - source: risky_operation
+    target: error_handler
+    condition: "error"    # Only on error
+    
+  - source: error_handler
+    target: fallback_action
+    condition: "{{error_handler.should_retry === false}}"
+```
+
+## Version Control Integration
+
+### Git Workflow Integration
+
+<Tabs items={['Git Hooks', 'CI/CD Pipeline', 'Branch Management']}>
+<Tab value="Git Hooks">
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+# Validate YAML workflows before commit
+
+echo "Validating workflow YAML files..."
+
+# Find all YAML files in workflows directory
+yaml_files=$(find workflows/ -name "*.yaml" -o -name "*.yml" 2>/dev/null)
+
+if [ -z "$yaml_files" ]; then
+  echo "No YAML workflow files found"
+  exit 0
+fi
+
+validation_failed=0
+
+for file in $yaml_files; do
+  echo "Validating: $file"
+  
+  # Read YAML content
+  yaml_content=$(cat "$file")
+  
+  # Validate using API
+  response=$(curl -s -X POST \
+    -H "x-api-key: $SIM_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"name\": \"validation-test\",
+      \"yaml\": $(echo "$yaml_content" | jq -R -s '.'),
+      \"validateOnly\": true
+    }" \
+    https://api.sim.dev/api/workflows/yaml)
+  
+  # Check if validation passed
+  valid=$(echo "$response" | jq -r '.valid // false')
+  
+  if [ "$valid" != "true" ]; then
+    echo "❌ Validation failed for $file"
+    echo "$response" | jq -r '.validationErrors[]?.message // .error'
+    validation_failed=1
+  else
+    echo "✅ $file is valid"
+  fi
+done
+
+if [ $validation_failed -eq 1 ]; then
+  echo "One or more YAML files failed validation. Commit aborted."
+  exit 1
+fi
+
+echo "All workflow YAML files are valid!"
+exit 0
+```
+</Tab>
+<Tab value="CI/CD Pipeline">
+```yaml
+# .github/workflows/deploy-workflows.yml
+name: Deploy Workflows
+
+on:
+  push:
+    branches: [main]
+    paths: ['workflows/**/*.yaml', 'workflows/**/*.yml']
+
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Validate YAML workflows
+      run: |
+        for file in workflows/*.yaml workflows/*.yml; do
+          if [ -f "$file" ]; then
+            echo "Validating $file..."
+            
+            yaml_content=$(cat "$file")
+            
+            response=$(curl -s -X POST \
+              -H "x-api-key: ${{ secrets.SIM_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"name\": \"ci-validation\",
+                \"yaml\": $(echo "$yaml_content" | jq -R -s '.'),
+                \"validateOnly\": true
+              }" \
+              https://api.sim.dev/api/workflows/yaml)
+            
+            valid=$(echo "$response" | jq -r '.valid // false')
+            
+            if [ "$valid" != "true" ]; then
+              echo "❌ Validation failed for $file"
+              echo "$response" | jq -r '.validationErrors[]?.message // .error'
+              exit 1
+            fi
+            
+            echo "✅ $file validated successfully"
+          fi
+        done
+
+    - name: Deploy to staging
+      if: github.ref == 'refs/heads/main'
+      run: |
+        for file in workflows/*.yaml workflows/*.yml; do
+          if [ -f "$file" ]; then
+            workflow_name=$(basename "$file" .yaml)
+            workflow_name=$(basename "$workflow_name" .yml)
+            
+            echo "Deploying $workflow_name from $file..."
+            
+            yaml_content=$(cat "$file")
+            
+            curl -X POST \
+              -H "x-api-key: ${{ secrets.SIM_API_KEY_STAGING }}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"name\": \"$workflow_name\",
+                \"description\": \"Deployed from CI/CD\",
+                \"workspaceId\": \"${{ secrets.STAGING_WORKSPACE_ID }}\",
+                \"yaml\": $(echo "$yaml_content" | jq -R -s '.'),
+                \"overwriteExisting\": true
+              }" \
+              https://api.sim.dev/api/workflows/yaml
+          fi
+        done
+```
+</Tab>
+<Tab value="Branch Management">
+```javascript
+// workflow-manager.js - Manage workflows across branches
+class WorkflowBranchManager {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+  }
+
+  async deployFromBranch(branch, environment) {
+    console.log(`Deploying workflows from ${branch} to ${environment}`);
+    
+    // Get workflows from git
+    const yamlFiles = await this.getYAMLFilesFromGit(branch);
+    
+    const results = [];
+    
+    for (const file of yamlFiles) {
+      try {
+        const result = await this.deployWorkflowFile(file, environment);
+        results.push({ file: file.path, success: true, result });
+        console.log(`✅ Deployed ${file.path}`);
+      } catch (error) {
+        results.push({ file: file.path, success: false, error: error.message });
+        console.error(`❌ Failed to deploy ${file.path}:`, error.message);
+      }
+    }
+    
+    return results;
+  }
+
+  async deployWorkflowFile(file, environment) {
+    const workspaceId = this.getWorkspaceForEnvironment(environment);
+    
+    const response = await fetch('/api/workflows/yaml', {
+      method: 'POST',
+      headers: {
+        'x-api-key': this.apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: file.name,
+        description: `Deployed from ${file.branch} branch`,
+        workspaceId,
+        yaml: file.content,
+        overwriteExisting: true
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Deployment failed');
+    }
+
+    return await response.json();
+  }
+
+  async getYAMLFilesFromGit(branch) {
+    // Implementation would integrate with git to read YAML files
+    // This is a simplified example
+    const { execSync } = require('child_process');
+    
+    const files = execSync(`git ls-tree -r ${branch} --name-only | grep -E '\\.(ya?ml)$'`, { encoding: 'utf8' })
+      .trim()
+      .split('\n')
+      .filter(Boolean);
+    
+    return files.map(filePath => ({
+      path: filePath,
+      name: path.basename(filePath, path.extname(filePath)),
+      content: execSync(`git show ${branch}:${filePath}`, { encoding: 'utf8' }),
+      branch
+    }));
+  }
+
+  getWorkspaceForEnvironment(environment) {
+    const workspaces = {
+      development: process.env.DEV_WORKSPACE_ID,
+      staging: process.env.STAGING_WORKSPACE_ID,
+      production: process.env.PROD_WORKSPACE_ID
+    };
+    
+    return workspaces[environment] || workspaces.development;
+  }
+}
+
+// Usage
+const manager = new WorkflowBranchManager(process.env.SIM_API_KEY);
+
+// Deploy from main branch to production
+const results = await manager.deployFromBranch('main', 'production');
+console.log('Deployment results:', results);
+```
+</Tab>
+</Tabs>
+
+## Common Error Scenarios
+
+### YAML Validation Errors
+
+<Tabs items={['Syntax Errors', 'Structure Errors', 'Configuration Errors']}>
+<Tab value="Syntax Errors">
+```yaml
+# Common YAML syntax errors and fixes
+
+# ❌ Incorrect: Inconsistent indentation
+blocks:
+  - id: start
+    metadata:
+      id: starter
+     name: "Start"  # Wrong indentation
+    position: { x: 100, y: 100 }
+
+# ✅ Correct: Consistent indentation
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Start"  # Correct indentation
+    position: { x: 100, y: 100 }
+
+# ❌ Incorrect: Missing quotes for special characters
+blocks:
+  - id: start
+    config:
+      params:
+        message: Hello: World  # Colon needs quotes
+
+# ✅ Correct: Quoted strings with special characters
+blocks:
+  - id: start
+    config:
+      params:
+        message: "Hello: World"
+
+# ❌ Incorrect: Invalid array syntax
+connections:
+  - source: start,target: end  # Wrong syntax
+
+# ✅ Correct: Proper array syntax
+connections:
+  - source: start
+    target: end
+```
+</Tab>
+<Tab value="Structure Errors">
+```yaml
+# Common structure errors
+
+# ❌ Incorrect: Missing required fields
+blocks:
+  - metadata:  # Missing 'id' field
+      id: starter
+      name: "Start"
+
+# ✅ Correct: All required fields
+blocks:
+  - id: start  # Required ID field
+    metadata:
+      id: starter
+      name: "Start"
+
+# ❌ Incorrect: Invalid connection references
+connections:
+  - source: nonexistent_block  # Block doesn't exist
+    target: start
+
+# ✅ Correct: Valid block references
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: "Start"
+  - id: process
+    metadata:
+      id: function
+      name: "Process"
+
+connections:
+  - source: start  # Block exists
+    target: process  # Block exists
+
+# ❌ Incorrect: Duplicate block IDs
+blocks:
+  - id: processor
+    metadata:
+      id: function
+      name: "Process 1"
+  - id: processor  # Duplicate ID
+    metadata:
+      id: api
+      name: "Process 2"
+
+# ✅ Correct: Unique block IDs
+blocks:
+  - id: processor_1
+    metadata:
+      id: function
+      name: "Process 1"
+  - id: processor_2
+    metadata:
+      id: api
+      name: "Process 2"
+```
+</Tab>
+<Tab value="Configuration Errors">
+```yaml
+# Common configuration errors
+
+# ❌ Incorrect: Invalid block type
+blocks:
+  - id: start
+    metadata:
+      id: invalid_block_type  # This block type doesn't exist
+      name: "Start"
+
+# ✅ Correct: Valid block type
+blocks:
+  - id: start
+    metadata:
+      id: starter  # Valid block type
+      name: "Start"
+
+# ❌ Incorrect: Missing required parameters
+blocks:
+  - id: api_call
+    metadata:
+      id: api
+      name: "API Call"
+    config:
+      params:
+        # Missing required 'url' parameter
+        method: "GET"
+
+# ✅ Correct: All required parameters
+blocks:
+  - id: api_call
+    metadata:
+      id: api
+      name: "API Call"
+    config:
+      params:
+        url: "https://api.example.com/data"  # Required parameter
+        method: "GET"
+
+# ❌ Incorrect: Invalid parameter values
+blocks:
+  - id: scheduled_start
+    metadata:
+      id: starter
+      name: "Scheduled Start"
+    config:
+      params:
+        startWorkflow: "schedule"
+        scheduleType: "invalid_type"  # Invalid schedule type
+
+# ✅ Correct: Valid parameter values
+blocks:
+  - id: scheduled_start
+    metadata:
+      id: starter
+      name: "Scheduled Start"
+    config:
+      params:
+        startWorkflow: "schedule"
+        scheduleType: "daily"  # Valid schedule type
+        dailyTime: "09:00"
+```
+</Tab>
+</Tabs>
+
+### Error Handling Example
+
+```javascript
+async function handleYAMLImportErrors(yamlContent, workflowName) {
+  try {
+    // First validate
+    const validationResponse = await fetch('/api/workflows/validate', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        format: 'yaml',
+        workflow: yamlContent,
+        validateRequired: true,
+        validateConnections: true,
+        validateBlockConfig: true
+      })
+    });
+
+    const validation = await validationResponse.json();
+    
+    if (!validation.result.isValid) {
+      console.error('YAML Validation Failed:');
+      
+      // Group errors by type
+      const errorsByType = validation.result.errors.reduce((acc, error) => {
+        acc[error.code] = acc[error.code] || [];
+        acc[error.code].push(error);
+        return acc;
+      }, {});
+
+      // Handle different error types
+      if (errorsByType.YAML_PARSE_ERROR) {
+        console.error('YAML Syntax Errors:');
+        errorsByType.YAML_PARSE_ERROR.forEach(error => {
+          console.error(`  - ${error.message}`);
+        });
+        return { success: false, type: 'syntax', errors: errorsByType.YAML_PARSE_ERROR };
+      }
+
+      if (errorsByType.MISSING_REQUIRED_FIELD) {
+        console.error('Missing Required Fields:');
+        errorsByType.MISSING_REQUIRED_FIELD.forEach(error => {
+          const location = error.location ? ` in block ${error.location.blockName}` : '';
+          console.error(`  - ${error.message}${location}`);
+        });
+        return { success: false, type: 'required_fields', errors: errorsByType.MISSING_REQUIRED_FIELD };
+      }
+
+      if (errorsByType.CONNECTION_SOURCE_NOT_FOUND || errorsByType.CONNECTION_TARGET_NOT_FOUND) {
+        console.error('Invalid Connections:');
+        [...(errorsByType.CONNECTION_SOURCE_NOT_FOUND || []), ...(errorsByType.CONNECTION_TARGET_NOT_FOUND || [])]
+          .forEach(error => {
+            console.error(`  - ${error.message}`);
+          });
+        return { success: false, type: 'connections', errors: validation.result.errors };
+      }
+
+      // General validation failure
+      return { success: false, type: 'validation', errors: validation.result.errors };
+    }
+
+    // Validation passed, attempt import
+    const importResponse = await fetch('/api/workflows/yaml', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: workflowName,
+        yaml: yamlContent
+      })
+    });
+
+    if (!importResponse.ok) {
+      const error = await importResponse.json();
+      console.error('Import Failed:', error);
+      return { success: false, type: 'import', error };
+    }
+
+    const result = await importResponse.json();
+    return { success: true, workflow: result };
+
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return { success: false, type: 'exception', error: error.message };
+  }
+}
+
+// Usage with error handling
+const result = await handleYAMLImportErrors(yamlContent, 'My Workflow');
+
+if (!result.success) {
+  switch (result.type) {
+    case 'syntax':
+      console.log('Please fix YAML syntax errors and try again');
+      break;
+    case 'required_fields':
+      console.log('Please add missing required fields');
+      break;
+    case 'connections':
+      console.log('Please fix connection references');
+      break;
+    case 'import':
+      console.log('Import failed:', result.error.message);
+      break;
+    default:
+      console.log('An unexpected error occurred');
+  }
+} else {
+  console.log('Workflow imported successfully:', result.workflow.id);
+}
+```
+
+## Next Steps
+
+- [Validation](/docs/api/workflows/validation) - Comprehensive workflow validation
+- [Export Formats](/docs/api/workflows/export-formats) - Export workflows in multiple formats  
+- [Versioning](/docs/api/workflows/versioning) - Version control and history management
+- [Error Codes](/docs/api/error-codes) - Complete error reference

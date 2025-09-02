@@ -1,0 +1,15 @@
+{
+  "title": "Workflows API", 
+  "description": "Complete reference for workflow management APIs",
+  "pages": [
+    "index",
+    "crud-operations",
+    "advanced-filtering", 
+    "bulk-operations",
+    "yaml-import-export",
+    "validation",
+    "export-formats",
+    "collaborative-editing",
+    "versioning"
+  ]
+}

@@ -1,0 +1,665 @@
+---
+title: CRUD Operations
+description: Complete reference for basic workflow creation, reading, updating, and deletion
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Workflow CRUD Operations
+
+This guide covers the fundamental Create, Read, Update, and Delete operations for workflows. These endpoints provide the core functionality for managing workflows in your Sim account.
+
+## Create Workflow
+
+Create a new workflow with basic metadata and an initial starter block.
+
+### Endpoint
+
+```http
+POST /api/workflows
+```
+
+### Request Body
+
+```json
+{
+  "name": "string (required)",
+  "description": "string (optional)",
+  "color": "string (optional, default: '#3972F6')",
+  "workspaceId": "string (optional)",
+  "folderId": "string | null (optional)",
+  "templateId": "string (optional)",
+  "cloneFromId": "string (optional)",
+  "yaml": "string (optional)",
+  "tags": ["string"] // (optional, default: [])
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | string | **Required.** The workflow name (1-100 characters) |
+| `description` | string | Optional description (max 500 characters) |
+| `color` | string | Hex color code for workflow display (default: `#3972F6`) |
+| `workspaceId` | string | ID of workspace to create workflow in |
+| `folderId` | string\|null | ID of folder to organize workflow in |
+| `templateId` | string | Create workflow from existing template |
+| `cloneFromId` | string | Clone workflow from existing workflow |
+| `yaml` | string | Create workflow from YAML definition |
+| `tags` | string[] | Tags for workflow organization |
+
+### Examples
+
+<Tabs items={['Basic Creation', 'With Template', 'Clone Workflow', 'From YAML']}>
+<Tab value="Basic Creation">
+```javascript
+// Create a basic workflow
+const response = await fetch('/api/workflows', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Customer Onboarding',
+    description: 'Automated customer welcome and setup process',
+    color: '#10B981',
+    workspaceId: 'ws_abc123',
+    folderId: 'folder_onboarding',
+    tags: ['customer', 'automation', 'onboarding']
+  })
+});
+
+const workflow = await response.json();
+console.log('Created workflow:', workflow.id);
+```
+</Tab>
+<Tab value="With Template">
+```javascript
+// Create workflow from template
+const response = await fetch('/api/workflows', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Email Campaign Automation',
+    description: 'Marketing email campaign based on template',
+    templateId: 'tpl_email_marketing',
+    workspaceId: 'ws_marketing'
+  })
+});
+```
+</Tab>
+<Tab value="Clone Workflow">
+```javascript
+// Clone existing workflow
+const response = await fetch('/api/workflows', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Data Processing - Copy',
+    cloneFromId: 'wf_original_123',
+    workspaceId: 'ws_development'
+  })
+});
+```
+</Tab>
+<Tab value="From YAML">
+```javascript
+const yamlDefinition = `
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: Start
+    position: { x: 100, y: 100 }
+  - id: send_email
+    metadata:
+      id: gmail
+      name: Send Welcome Email
+    position: { x: 300, y: 100 }
+connections:
+  - source: start
+    target: send_email
+`;
+
+const response = await fetch('/api/workflows', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Welcome Email Workflow',
+    yaml: yamlDefinition
+  })
+});
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "id": "wf_abc123",
+  "name": "Customer Onboarding",
+  "description": "Automated customer welcome and setup process",
+  "color": "#10B981",
+  "workspaceId": "ws_abc123",
+  "folderId": "folder_onboarding",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T10:00:00Z"
+}
+```
+
+## Read Workflow
+
+Retrieve a single workflow by ID, including its complete definition and metadata.
+
+### Endpoint
+
+```http
+GET /api/workflows/{id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | **Required.** The workflow ID |
+
+### Examples
+
+<Tabs items={['JavaScript', 'cURL', 'Python']}>
+<Tab value="JavaScript">
+```javascript
+// Get workflow by ID
+const response = await fetch('/api/workflows/wf_abc123', {
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+const { data: workflow } = await response.json();
+console.log('Workflow name:', workflow.name);
+console.log('Block count:', Object.keys(workflow.state.blocks).length);
+console.log('Is deployed:', workflow.isDeployed);
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  https://api.sim.dev/api/workflows/wf_abc123
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+response = requests.get(
+    'https://api.sim.dev/api/workflows/wf_abc123',
+    headers={'x-api-key': 'YOUR_API_KEY'}
+)
+
+workflow = response.json()['data']
+print(f"Workflow: {workflow['name']}")
+print(f"Blocks: {len(workflow['state']['blocks'])}")
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wf_abc123",
+    "name": "Customer Onboarding",
+    "description": "Automated customer welcome and setup process",
+    "color": "#10B981",
+    "userId": "user_123",
+    "workspaceId": "ws_abc123",
+    "folderId": "folder_onboarding",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-16T14:30:00Z",
+    "isDeployed": true,
+    "deployedAt": "2024-01-16T12:00:00Z",
+    "runCount": 23,
+    "lastRunAt": "2024-01-16T14:25:00Z",
+    "isPublished": false,
+    "collaborators": [
+      {
+        "userId": "user_456",
+        "permissionLevel": "edit",
+        "addedAt": "2024-01-15T15:00:00Z"
+      }
+    ],
+    "state": {
+      "blocks": {
+        "start_1": {
+          "id": "start_1",
+          "type": "starter",
+          "name": "Start",
+          "position": { "x": 100, "y": 100 },
+          "enabled": true,
+          "config": {
+            "params": {
+              "startWorkflow": "manual"
+            }
+          },
+          "outputs": {
+            "response": {
+              "type": { "input": "any" }
+            }
+          }
+        },
+        "email_1": {
+          "id": "email_1",
+          "type": "gmail",
+          "name": "Send Welcome Email",
+          "position": { "x": 350, "y": 100 },
+          "enabled": true,
+          "config": {
+            "params": {
+              "to": "{{customer_email}}",
+              "subject": "Welcome to our platform!",
+              "body": "Thank you for joining us."
+            }
+          }
+        }
+      },
+      "edges": [
+        {
+          "id": "edge_1",
+          "source": "start_1",
+          "target": "email_1",
+          "sourceHandle": "response",
+          "targetHandle": "input"
+        }
+      ],
+      "loops": {},
+      "parallels": {},
+      "variables": {
+        "customer_email": {
+          "type": "string",
+          "description": "Customer email address"
+        }
+      }
+    }
+  }
+}
+```
+
+## Update Workflow
+
+Update workflow metadata such as name, description, color, and folder location.
+
+<Callout type="info">
+**Note**: This endpoint only updates workflow metadata. To update the workflow structure (blocks, connections, etc.), use the collaborative editing endpoints or YAML import.
+</Callout>
+
+### Endpoint
+
+```http
+PUT /api/workflows/{id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | **Required.** The workflow ID |
+
+### Request Body
+
+```json
+{
+  "name": "string (optional)",
+  "description": "string (optional)",
+  "color": "string (optional)",
+  "folderId": "string | null (optional)"
+}
+```
+
+### Examples
+
+<Tabs items={['Update Name', 'Move to Folder', 'Complete Update']}>
+<Tab value="Update Name">
+```javascript
+// Update workflow name and description
+const response = await fetch('/api/workflows/wf_abc123', {
+  method: 'PUT',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Enhanced Customer Onboarding',
+    description: 'Improved customer welcome process with personalization'
+  })
+});
+
+const { workflow } = await response.json();
+console.log('Updated workflow:', workflow.name);
+```
+</Tab>
+<Tab value="Move to Folder">
+```javascript
+// Move workflow to different folder
+const response = await fetch('/api/workflows/wf_abc123', {
+  method: 'PUT',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    folderId: 'folder_active_campaigns'
+  })
+});
+```
+</Tab>
+<Tab value="Complete Update">
+```javascript
+// Update multiple properties
+const response = await fetch('/api/workflows/wf_abc123', {
+  method: 'PUT',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Premium Customer Onboarding',
+    description: 'VIP customer welcome with premium features',
+    color: '#8B5CF6',
+    folderId: 'folder_premium'
+  })
+});
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "workflow": {
+    "id": "wf_abc123",
+    "name": "Enhanced Customer Onboarding",
+    "description": "Improved customer welcome process with personalization",
+    "color": "#10B981",
+    "userId": "user_123",
+    "workspaceId": "ws_abc123",
+    "folderId": "folder_onboarding",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-16T15:45:00Z",
+    "isDeployed": true,
+    "deployedAt": "2024-01-16T12:00:00Z",
+    "runCount": 23,
+    "lastRunAt": "2024-01-16T14:25:00Z",
+    "isPublished": false
+  }
+}
+```
+
+## Delete Workflow
+
+Delete a workflow permanently. This action cannot be undone.
+
+<Callout type="warn">
+**Warning**: Deleting a workflow is permanent and cannot be undone. Consider creating a backup export before deletion.
+</Callout>
+
+### Endpoint
+
+```http
+DELETE /api/workflows/{id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | **Required.** The workflow ID |
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `check-templates` | boolean | Return template information before deletion |
+| `deleteTemplates` | string | `delete` or `keep` - what to do with published templates |
+
+### Examples
+
+<Tabs items={['Simple Delete', 'Check Templates', 'Handle Templates']}>
+<Tab value="Simple Delete">
+```javascript
+// Simple workflow deletion
+const response = await fetch('/api/workflows/wf_abc123', {
+  method: 'DELETE',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+if (response.ok) {
+  console.log('Workflow deleted successfully');
+} else {
+  const error = await response.json();
+  console.error('Delete failed:', error.message);
+}
+```
+</Tab>
+<Tab value="Check Templates">
+```javascript
+// Check if workflow has published templates before deletion
+const response = await fetch('/api/workflows/wf_abc123?check-templates=true', {
+  method: 'DELETE',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+const info = await response.json();
+if (info.hasPublishedTemplates) {
+  console.log(`This workflow has ${info.count} published templates:`);
+  info.publishedTemplates.forEach(template => {
+    console.log(`- ${template.name} (${template.views} views, ${template.stars} stars)`);
+  });
+  
+  // User needs to decide what to do with templates
+  const shouldDeleteTemplates = confirm('Delete templates as well?');
+  // Proceed with actual deletion (see next example)
+}
+```
+</Tab>
+<Tab value="Handle Templates">
+```javascript
+// Delete workflow and handle templates
+const deleteTemplates = 'delete'; // or 'keep'
+
+const response = await fetch(`/api/workflows/wf_abc123?deleteTemplates=${deleteTemplates}`, {
+  method: 'DELETE',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+if (response.ok) {
+  if (deleteTemplates === 'delete') {
+    console.log('Workflow and all templates deleted');
+  } else {
+    console.log('Workflow deleted, templates preserved as orphaned');
+  }
+}
+```
+</Tab>
+</Tabs>
+
+### Response
+
+#### Successful Deletion
+```json
+{
+  "success": true
+}
+```
+
+#### Template Check Response
+```json
+{
+  "hasPublishedTemplates": true,
+  "count": 2,
+  "publishedTemplates": [
+    {
+      "id": "tpl_123",
+      "name": "Customer Onboarding Template",
+      "views": 145,
+      "stars": 23
+    },
+    {
+      "id": "tpl_456", 
+      "name": "Welcome Email Template",
+      "views": 89,
+      "stars": 12
+    }
+  ]
+}
+```
+
+## Error Handling
+
+### Common Errors
+
+<Tabs items={['400 Bad Request', '403 Forbidden', '404 Not Found', '409 Conflict']}>
+<Tab value="400 Bad Request">
+```json
+// Invalid request data
+{
+  "error": "Invalid request data",
+  "details": [
+    {
+      "field": "name",
+      "message": "Name must be between 1 and 100 characters"
+    },
+    {
+      "field": "color", 
+      "message": "Color must be a valid hex code"
+    }
+  ],
+  "requestId": "req_abc123"
+}
+```
+</Tab>
+<Tab value="403 Forbidden">
+```json
+// Insufficient permissions
+{
+  "error": "Access denied",
+  "message": "You don't have permission to modify this workflow",
+  "requestId": "req_abc123"
+}
+```
+</Tab>
+<Tab value="404 Not Found">
+```json
+// Workflow not found
+{
+  "error": "Workflow not found",
+  "message": "No workflow found with ID wf_invalid",
+  "requestId": "req_abc123"
+}
+```
+</Tab>
+<Tab value="409 Conflict">
+```json
+// Name conflicts
+{
+  "error": "Workflow name already exists",
+  "message": "A workflow with this name already exists in the workspace",
+  "requestId": "req_abc123"
+}
+```
+</Tab>
+</Tabs>
+
+### Error Handling Example
+
+```javascript
+async function createWorkflow(workflowData) {
+  try {
+    const response = await fetch('/api/workflows', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(workflowData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      
+      switch (response.status) {
+        case 400:
+          console.error('Invalid data:', error.details);
+          // Handle validation errors
+          break;
+        case 403:
+          console.error('Access denied:', error.message);
+          // Handle permission errors
+          break;
+        case 409:
+          console.error('Conflict:', error.message);
+          // Handle naming conflicts
+          break;
+        default:
+          console.error('Unexpected error:', error);
+      }
+      
+      throw new Error(error.message);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Request failed:', error);
+    throw error;
+  }
+}
+```
+
+## Permissions
+
+Different operations require different permission levels:
+
+| Operation | Required Permission | Notes |
+|-----------|-------------------|-------|
+| **Create** | Workspace write access | Can create in owned workspaces or with write permission |
+| **Read** | Workflow access | Owner, collaborator, or workspace member |
+| **Update** | Workflow write access | Owner, editor collaborator, or workspace admin |
+| **Delete** | Workflow admin access | Owner or workspace admin only |
+
+### Permission Hierarchy
+
+1. **Workflow Owner** - Full access to all operations
+2. **Workspace Admin** - Full access within workspace workflows
+3. **Workspace Editor** - Can create, read, update (not delete)
+4. **Collaborator (admin)** - Can manage workflow and collaborators
+5. **Collaborator (edit)** - Can read and update workflow
+6. **Collaborator (view)** - Can only read workflow
+7. **Workspace Member** - Basic access based on workspace role
+
+## Next Steps
+
+- [Advanced Filtering](/docs/api/workflows/advanced-filtering) - Search and filter workflows
+- [Bulk Operations](/docs/api/workflows/bulk-operations) - Manage multiple workflows at once
+- [YAML Import/Export](/docs/api/workflows/yaml-import-export) - Work with YAML format
+- [Collaborative Editing](/docs/api/workflows/collaborative-editing) - Real-time collaboration

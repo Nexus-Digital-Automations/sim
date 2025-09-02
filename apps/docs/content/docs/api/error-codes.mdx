@@ -1,0 +1,1140 @@
+---
+title: Error Codes
+description: Complete reference for API error codes, troubleshooting, and resolution strategies
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# API Error Codes
+
+The Sim API uses conventional HTTP status codes and provides detailed error information to help you troubleshoot issues quickly. This reference covers all error codes, their meanings, and resolution strategies.
+
+## HTTP Status Codes
+
+### Success Codes (2xx)
+
+| Code | Name | Description |
+|------|------|-------------|
+| `200` | OK | Request succeeded |
+| `201` | Created | Resource created successfully |
+| `202` | Accepted | Request accepted for processing |
+
+### Client Error Codes (4xx)
+
+| Code | Name | Description |
+|------|------|-------------|
+| `400` | Bad Request | Invalid request data or parameters |
+| `401` | Unauthorized | Authentication required or invalid |
+| `403` | Forbidden | Insufficient permissions |
+| `404` | Not Found | Resource not found |
+| `409` | Conflict | Resource conflict (duplicate, etc.) |
+| `422` | Unprocessable Entity | Valid syntax but semantic errors |
+| `429` | Too Many Requests | Rate limit exceeded |
+
+### Server Error Codes (5xx)
+
+| Code | Name | Description |
+|------|------|-------------|
+| `500` | Internal Server Error | Unexpected server error |
+| `502` | Bad Gateway | Upstream service error |
+| `503` | Service Unavailable | Service temporarily unavailable |
+| `504` | Gateway Timeout | Upstream service timeout |
+
+## Error Response Format
+
+All error responses follow a consistent structure:
+
+```json
+{
+  "error": "Error title",
+  "message": "Detailed error description",
+  "requestId": "req_abc123",
+  "details": {
+    // Additional error-specific information
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Authentication Errors (401)
+
+### Invalid API Key
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid API key provided",
+  "requestId": "req_abc123",
+  "details": {
+    "type": "invalid_api_key"
+  }
+}
+```
+
+**Resolution**: Verify your API key is correct and hasn't been revoked.
+
+### Expired Session
+
+```json
+{
+  "error": "Unauthorized", 
+  "message": "Session has expired",
+  "requestId": "req_abc123",
+  "details": {
+    "type": "expired_session"
+  }
+}
+```
+
+**Resolution**: Re-authenticate to get a new session.
+
+### Missing Authentication
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Authentication required",
+  "requestId": "req_abc123",
+  "details": {
+    "type": "missing_authentication"
+  }
+}
+```
+
+**Resolution**: Include `x-api-key` header or ensure session cookies are sent.
+
+## Permission Errors (403)
+
+### Insufficient Permissions
+
+```json
+{
+  "error": "Forbidden",
+  "message": "Insufficient permissions for this operation",
+  "requestId": "req_abc123", 
+  "details": {
+    "required_permission": "workflows:write",
+    "user_permission": "workflows:read"
+  }
+}
+```
+
+**Resolution**: Contact your workspace admin to upgrade your permissions.
+
+### Access Denied
+
+```json
+{
+  "error": "Access denied",
+  "message": "You don't have permission to access this workflow",
+  "requestId": "req_abc123",
+  "details": {
+    "workflow_id": "wf_abc123",
+    "owner_id": "user_456"
+  }
+}
+```
+
+**Resolution**: Request access from the workflow owner or join the workspace.
+
+## Validation Errors (400)
+
+### Invalid Request Data
+
+<Tabs items={['Missing Fields', 'Invalid Types', 'Validation Failed']}>
+<Tab value="Missing Fields">
+```json
+{
+  "error": "Invalid request data",
+  "message": "Missing required fields",
+  "requestId": "req_abc123",
+  "details": [
+    {
+      "field": "name",
+      "message": "Name is required",
+      "code": "required"
+    },
+    {
+      "field": "workspaceId", 
+      "message": "Workspace ID must be provided",
+      "code": "required"
+    }
+  ]
+}
+```
+
+**Resolution**: Add the missing required fields to your request.
+</Tab>
+<Tab value="Invalid Types">
+```json
+{
+  "error": "Invalid request data", 
+  "message": "Invalid field types",
+  "requestId": "req_abc123",
+  "details": [
+    {
+      "field": "limit",
+      "message": "Expected number but received string",
+      "received": "twenty",
+      "expected": "number"
+    },
+    {
+      "field": "color",
+      "message": "Must be a valid hex color code",
+      "received": "blue",
+      "expected": "#RRGGBB format"
+    }
+  ]
+}
+```
+
+**Resolution**: Ensure all fields use the correct data types as specified in the API documentation.
+</Tab>
+<Tab value="Validation Failed">
+```json
+{
+  "error": "Validation failed",
+  "message": "YAML workflow validation failed", 
+  "requestId": "req_abc123",
+  "details": {
+    "validationErrors": [
+      {
+        "type": "error",
+        "code": "MISSING_REQUIRED_FIELD",
+        "message": "Required field 'url' is missing in block api_call",
+        "location": {
+          "blockId": "api_call",
+          "blockName": "API Call",
+          "field": "url"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Resolution**: Fix the validation errors in your workflow definition.
+</Tab>
+</Tabs>
+
+### Invalid Query Parameters
+
+```json
+{
+  "error": "Invalid query parameters",
+  "message": "Invalid pagination parameters",
+  "requestId": "req_abc123",
+  "details": [
+    {
+      "parameter": "limit",
+      "message": "Limit must be between 1 and 100",
+      "received": 150
+    },
+    {
+      "parameter": "sortBy", 
+      "message": "Invalid sort field",
+      "received": "invalid_field",
+      "allowed": ["name", "createdAt", "updatedAt", "runCount"]
+    }
+  ]
+}
+```
+
+**Resolution**: Use valid parameter values as documented in the API reference.
+
+## Resource Errors (404)
+
+### Workflow Not Found
+
+```json
+{
+  "error": "Workflow not found",
+  "message": "No workflow found with ID wf_abc123",
+  "requestId": "req_abc123",
+  "details": {
+    "workflow_id": "wf_abc123"
+  }
+}
+```
+
+**Resolution**: Verify the workflow ID is correct and you have access to it.
+
+### Workspace Not Found
+
+```json
+{
+  "error": "Workspace not found", 
+  "message": "No workspace found with ID ws_xyz789",
+  "requestId": "req_abc123",
+  "details": {
+    "workspace_id": "ws_xyz789"
+  }
+}
+```
+
+**Resolution**: Check the workspace ID or verify workspace membership.
+
+## Conflict Errors (409)
+
+### Duplicate Resource
+
+```json
+{
+  "error": "Workflow name already exists",
+  "message": "A workflow with this name already exists in the workspace",
+  "requestId": "req_abc123",
+  "details": {
+    "existing_workflow_id": "wf_def456",
+    "workspace_id": "ws_abc123",
+    "name": "Data Processing Pipeline"
+  }
+}
+```
+
+**Resolution**: Use a different name or update the existing workflow.
+
+### Concurrent Modification
+
+```json
+{
+  "error": "Concurrent modification",
+  "message": "Workflow was modified by another user",
+  "requestId": "req_abc123",
+  "details": {
+    "workflow_id": "wf_abc123",
+    "last_modified_by": "user_456",
+    "last_modified_at": "2024-01-15T10:25:00Z"
+  }
+}
+```
+
+**Resolution**: Refresh the workflow data and retry your changes.
+
+## Rate Limit Errors (429)
+
+### Rate Limit Exceeded
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "API rate limit exceeded. Try again in 60 seconds.",
+  "requestId": "req_abc123",
+  "details": {
+    "limit": 1000,
+    "window": 3600,
+    "retry_after": 60
+  }
+}
+```
+
+**Resolution**: Wait for the specified time before retrying, or implement exponential backoff.
+
+### Quota Exceeded
+
+```json
+{
+  "error": "Quota exceeded",
+  "message": "Monthly API quota exceeded",
+  "requestId": "req_abc123",
+  "details": {
+    "quota_limit": 10000,
+    "quota_used": 10000,
+    "quota_resets_at": "2024-02-01T00:00:00Z"
+  }
+}
+```
+
+**Resolution**: Upgrade your plan or wait for quota reset.
+
+## Server Errors (5xx)
+
+### Internal Server Error
+
+```json
+{
+  "error": "Internal server error",
+  "message": "An unexpected error occurred",
+  "requestId": "req_abc123",
+  "details": {
+    "error_id": "err_server_abc123"
+  }
+}
+```
+
+**Resolution**: Retry the request. Contact support if the issue persists.
+
+### Service Unavailable
+
+```json
+{
+  "error": "Service unavailable",
+  "message": "Workflow execution service is temporarily unavailable", 
+  "requestId": "req_abc123",
+  "details": {
+    "service": "workflow_executor",
+    "estimated_recovery": "2024-01-15T11:00:00Z"
+  }
+}
+```
+
+**Resolution**: Wait and retry. Check status page for service updates.
+
+## Workflow-Specific Errors
+
+### YAML Import Errors
+
+<Tabs items={['Syntax Error', 'Structure Error', 'Block Error']}>
+<Tab value="Syntax Error">
+```json
+{
+  "error": "YAML parsing failed",
+  "message": "Invalid YAML syntax",
+  "requestId": "req_abc123",
+  "details": {
+    "yaml_error": "mapping values are not allowed here",
+    "line": 15,
+    "column": 8,
+    "context": "config:\n  params:\n    url: invalid: syntax"
+  }
+}
+```
+
+**Resolution**: Fix YAML syntax errors. Check indentation and special characters.
+</Tab>
+<Tab value="Structure Error">
+```json
+{
+  "error": "Invalid workflow structure",
+  "message": "Workflow structure validation failed",
+  "requestId": "req_abc123",
+  "details": {
+    "validation_errors": [
+      {
+        "type": "error",
+        "code": "MISSING_BLOCKS",
+        "message": "Workflow must contain at least one block"
+      },
+      {
+        "type": "error", 
+        "code": "DUPLICATE_BLOCK_ID",
+        "message": "Duplicate block ID found: processor",
+        "location": {
+          "blockId": "processor"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Resolution**: Fix structural issues in the workflow definition.
+</Tab>
+<Tab value="Block Error">
+```json
+{
+  "error": "Invalid block configuration",
+  "message": "Block configuration validation failed",
+  "requestId": "req_abc123", 
+  "details": {
+    "validation_errors": [
+      {
+        "type": "error",
+        "code": "UNSUPPORTED_BLOCK_TYPE", 
+        "message": "Unsupported block type: invalid_block",
+        "location": {
+          "blockId": "my_block",
+          "blockName": "My Block"
+        }
+      },
+      {
+        "type": "error",
+        "code": "MISSING_REQUIRED_FIELD",
+        "message": "Required field 'url' is missing in block api_call",
+        "location": {
+          "blockId": "api_call",
+          "field": "url"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Resolution**: Fix block configuration errors. Check block types and required fields.
+</Tab>
+</Tabs>
+
+### Execution Errors
+
+```json
+{
+  "error": "Workflow execution failed",
+  "message": "Block execution failed during workflow run",
+  "requestId": "req_abc123",
+  "details": {
+    "execution_id": "exec_abc123",
+    "failed_block": "api_call",
+    "block_error": "Connection timeout",
+    "execution_logs": [
+      {
+        "timestamp": "2024-01-15T10:30:15Z",
+        "level": "info", 
+        "block": "start",
+        "message": "Workflow started"
+      },
+      {
+        "timestamp": "2024-01-15T10:30:16Z",
+        "level": "error",
+        "block": "api_call",
+        "message": "Request timeout after 30s"
+      }
+    ]
+  }
+}
+```
+
+**Resolution**: Check block configuration and external service availability.
+
+## Error Handling Patterns
+
+### Basic Error Handling
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function handleApiRequest(url, options) {
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      
+      switch (response.status) {
+        case 400:
+          console.error('Bad Request:', error.message);
+          if (error.details) {
+            error.details.forEach(detail => {
+              console.error(`- ${detail.field}: ${detail.message}`);
+            });
+          }
+          break;
+          
+        case 401:
+          console.error('Authentication failed:', error.message);
+          // Redirect to login or refresh token
+          break;
+          
+        case 403:
+          console.error('Permission denied:', error.message);
+          // Show permission error to user
+          break;
+          
+        case 404:
+          console.error('Resource not found:', error.message);
+          break;
+          
+        case 409:
+          console.error('Conflict:', error.message);
+          // Handle conflicts (name exists, concurrent modification, etc.)
+          break;
+          
+        case 429:
+          console.error('Rate limited:', error.message);
+          const retryAfter = error.details?.retry_after || 60;
+          console.log(`Retrying in ${retryAfter} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          return handleApiRequest(url, options); // Retry
+          
+        case 500:
+        default:
+          console.error('Server error:', error.message);
+          console.error('Request ID:', error.requestId);
+          // Contact support with requestId
+          break;
+      }
+      
+      throw new Error(`API Error (${response.status}): ${error.message}`);
+    }
+    
+    return await response.json();
+    
+  } catch (error) {
+    if (error instanceof TypeError) {
+      // Network error
+      console.error('Network error:', error.message);
+      throw new Error('Network connection failed');
+    }
+    
+    throw error;
+  }
+}
+
+// Usage
+try {
+  const result = await handleApiRequest('/api/workflows', {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(workflowData)
+  });
+  
+  console.log('Success:', result);
+} catch (error) {
+  console.error('Operation failed:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+import time
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+class SimAPIError(Exception):
+    def __init__(self, status_code, message, details=None, request_id=None):
+        self.status_code = status_code
+        self.message = message
+        self.details = details
+        self.request_id = request_id
+        super().__init__(f"API Error ({status_code}): {message}")
+
+class SimAPIClient:
+    def __init__(self, api_key, base_url="https://api.sim.dev"):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.session = requests.Session()
+        
+        # Configure retries for server errors
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[500, 502, 503, 504],
+            backoff_factor=1
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        
+    def _handle_error(self, response):
+        try:
+            error_data = response.json()
+        except ValueError:
+            error_data = {"message": "Unknown error"}
+            
+        message = error_data.get("message", "Unknown error")
+        details = error_data.get("details")
+        request_id = error_data.get("requestId")
+        
+        if response.status_code == 400:
+            print(f"Bad Request: {message}")
+            if details and isinstance(details, list):
+                for detail in details:
+                    print(f"  - {detail.get('field', 'unknown')}: {detail.get('message', 'unknown')}")
+                    
+        elif response.status_code == 401:
+            print(f"Authentication failed: {message}")
+            
+        elif response.status_code == 403:
+            print(f"Permission denied: {message}")
+            
+        elif response.status_code == 404:
+            print(f"Resource not found: {message}")
+            
+        elif response.status_code == 409:
+            print(f"Conflict: {message}")
+            
+        elif response.status_code == 429:
+            print(f"Rate limited: {message}")
+            retry_after = details.get("retry_after", 60) if details else 60
+            print(f"Waiting {retry_after} seconds before retry...")
+            time.sleep(retry_after)
+            return True  # Indicate retry should happen
+            
+        elif response.status_code >= 500:
+            print(f"Server error: {message}")
+            if request_id:
+                print(f"Request ID: {request_id}")
+                
+        raise SimAPIError(response.status_code, message, details, request_id)
+        
+    def request(self, method, endpoint, **kwargs):
+        url = f"{self.base_url}{endpoint}"
+        
+        headers = kwargs.get("headers", {})
+        headers.update({
+            "x-api-key": self.api_key,
+            "Content-Type": "application/json"
+        })
+        kwargs["headers"] = headers
+        
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = self.session.request(method, url, **kwargs)
+                
+                if response.ok:
+                    return response.json()
+                    
+                # Handle rate limiting with retry
+                if response.status_code == 429 and attempt < max_retries - 1:
+                    if self._handle_error(response):  # Returns True for rate limit
+                        continue
+                        
+                self._handle_error(response)
+                
+            except requests.exceptions.RequestException as e:
+                print(f"Network error: {e}")
+                if attempt == max_retries - 1:
+                    raise SimAPIError(0, f"Network error: {e}")
+                time.sleep(2 ** attempt)  # Exponential backoff
+                
+        raise SimAPIError(0, "Max retries exceeded")
+
+# Usage
+client = SimAPIClient("YOUR_API_KEY")
+
+try:
+    result = client.request("POST", "/api/workflows", json={
+        "name": "Test Workflow",
+        "description": "A test workflow"
+    })
+    print("Success:", result)
+except SimAPIError as e:
+    print(f"API Error: {e}")
+    if e.request_id:
+        print(f"Contact support with Request ID: {e.request_id}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+#!/bin/bash
+
+# Function to handle API requests with error handling
+api_request() {
+    local method="$1"
+    local endpoint="$2"
+    local data="$3"
+    local max_retries=3
+    local retry_count=0
+    
+    while [ $retry_count -lt $max_retries ]; do
+        # Make the API request
+        if [ -n "$data" ]; then
+            response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+                -X "$method" \
+                -H "x-api-key: $SIM_API_KEY" \
+                -H "Content-Type: application/json" \
+                -d "$data" \
+                "https://api.sim.dev$endpoint")
+        else
+            response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+                -X "$method" \
+                -H "x-api-key: $SIM_API_KEY" \
+                "https://api.sim.dev$endpoint")
+        fi
+        
+        # Extract HTTP status code
+        http_code=$(echo "$response" | sed -n 's/.*HTTPSTATUS:\([0-9]*\)$/\1/p')
+        response_body=$(echo "$response" | sed 's/HTTPSTATUS:[0-9]*$//')
+        
+        case $http_code in
+            200|201)
+                echo "$response_body"
+                return 0
+                ;;
+            400)
+                echo "Error 400: Bad Request"
+                echo "$response_body" | jq -r '.message'
+                return 1
+                ;;
+            401)
+                echo "Error 401: Unauthorized"
+                echo "Check your API key"
+                return 1
+                ;;
+            403)
+                echo "Error 403: Forbidden"
+                echo "Insufficient permissions"
+                return 1
+                ;;
+            404)
+                echo "Error 404: Not Found"
+                echo "Resource not found"
+                return 1
+                ;;
+            409)
+                echo "Error 409: Conflict"
+                echo "$response_body" | jq -r '.message'
+                return 1
+                ;;
+            429)
+                echo "Error 429: Rate Limited"
+                retry_after=$(echo "$response_body" | jq -r '.details.retry_after // 60')
+                echo "Waiting $retry_after seconds before retry..."
+                sleep "$retry_after"
+                ((retry_count++))
+                continue
+                ;;
+            5*)
+                echo "Error $http_code: Server Error"
+                request_id=$(echo "$response_body" | jq -r '.requestId // "unknown"')
+                echo "Request ID: $request_id"
+                
+                if [ $retry_count -lt $((max_retries - 1)) ]; then
+                    echo "Retrying in 5 seconds..."
+                    sleep 5
+                    ((retry_count++))
+                    continue
+                else
+                    return 1
+                fi
+                ;;
+            *)
+                echo "Unexpected error: HTTP $http_code"
+                echo "$response_body"
+                return 1
+                ;;
+        esac
+    done
+    
+    echo "Max retries exceeded"
+    return 1
+}
+
+# Usage examples
+echo "Creating workflow..."
+workflow_data='{
+    "name": "Test Workflow",
+    "description": "A test workflow"
+}'
+
+if result=$(api_request "POST" "/api/workflows" "$workflow_data"); then
+    workflow_id=$(echo "$result" | jq -r '.id')
+    echo "Successfully created workflow: $workflow_id"
+else
+    echo "Failed to create workflow"
+    exit 1
+fi
+```
+</Tab>
+</Tabs>
+
+### Advanced Error Recovery
+
+```javascript
+class APIErrorHandler {
+  constructor(options = {}) {
+    this.maxRetries = options.maxRetries || 3;
+    this.baseDelay = options.baseDelay || 1000;
+    this.maxDelay = options.maxDelay || 30000;
+    this.retryableStatusCodes = options.retryableStatusCodes || [429, 500, 502, 503, 504];
+  }
+
+  async withRetry(fn, context = {}) {
+    let lastError;
+    
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        
+        // Check if error is retryable
+        if (!this.isRetryable(error, attempt)) {
+          throw error;
+        }
+        
+        const delay = this.calculateDelay(attempt, error);
+        console.log(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms...`);
+        
+        await this.sleep(delay);
+      }
+    }
+    
+    throw new Error(`Max retries (${this.maxRetries}) exceeded. Last error: ${lastError.message}`);
+  }
+
+  isRetryable(error, attempt) {
+    // Don't retry on last attempt
+    if (attempt >= this.maxRetries - 1) return false;
+    
+    // Retry server errors and rate limits
+    if (error.status && this.retryableStatusCodes.includes(error.status)) {
+      return true;
+    }
+    
+    // Retry network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  calculateDelay(attempt, error) {
+    // Use server-provided retry-after for rate limits
+    if (error.status === 429 && error.retryAfter) {
+      return Math.min(error.retryAfter * 1000, this.maxDelay);
+    }
+    
+    // Exponential backoff with jitter
+    const exponentialDelay = this.baseDelay * Math.pow(2, attempt);
+    const jitter = Math.random() * 0.1 * exponentialDelay;
+    
+    return Math.min(exponentialDelay + jitter, this.maxDelay);
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Transform API errors into user-friendly messages
+  getUserFriendlyMessage(error) {
+    const messages = {
+      400: "Please check your request data and try again.",
+      401: "Please log in again to continue.",
+      403: "You don't have permission for this action. Contact your administrator.",
+      404: "The requested item could not be found.",
+      409: "This action conflicts with existing data. Please refresh and try again.",
+      429: "You're making requests too quickly. Please wait a moment.",
+      500: "Something went wrong on our end. Please try again.",
+      502: "Service is temporarily unavailable. Please try again.",
+      503: "Service is under maintenance. Please try again later.",
+      504: "Request timed out. Please try again."
+    };
+
+    return messages[error.status] || "An unexpected error occurred. Please try again.";
+  }
+
+  // Handle specific workflow errors
+  handleWorkflowError(error) {
+    if (error.details?.validationErrors) {
+      const issues = error.details.validationErrors
+        .map(e => `${e.location?.blockName || 'Unknown block'}: ${e.message}`)
+        .join('\n');
+      
+      return `Workflow validation failed:\n${issues}`;
+    }
+
+    if (error.details?.type === 'concurrent_modification') {
+      return "Someone else modified this workflow. Please refresh and try again.";
+    }
+
+    return this.getUserFriendlyMessage(error);
+  }
+}
+
+// Usage
+const errorHandler = new APIErrorHandler({
+  maxRetries: 3,
+  baseDelay: 1000,
+  maxDelay: 10000
+});
+
+async function createWorkflow(workflowData) {
+  return await errorHandler.withRetry(async () => {
+    const response = await fetch('/api/workflows', {
+      method: 'POST',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(workflowData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      const apiError = new Error(error.message);
+      apiError.status = response.status;
+      apiError.details = error.details;
+      apiError.retryAfter = error.details?.retry_after;
+      throw apiError;
+    }
+
+    return await response.json();
+  });
+}
+
+// Create workflow with automatic error handling
+try {
+  const result = await createWorkflow({
+    name: "My Workflow",
+    description: "Test workflow"
+  });
+  console.log('Workflow created:', result.id);
+} catch (error) {
+  const userMessage = errorHandler.handleWorkflowError(error);
+  console.error('User-friendly message:', userMessage);
+  console.error('Technical error:', error.message);
+}
+```
+
+## Troubleshooting Guide
+
+### Common Issues and Solutions
+
+<Callout type="info">
+**Quick Debugging**
+Always check the `requestId` in error responses. Include this when contacting support for faster resolution.
+</Callout>
+
+#### Issue: "Invalid API Key"
+
+**Symptoms**: 401 Unauthorized with "Invalid API key provided"
+
+**Solutions**:
+1. Verify API key is correctly copied (no extra spaces)
+2. Check if API key has been revoked in your dashboard
+3. Ensure you're using the correct environment (test vs live keys)
+4. Verify API key permissions match your request needs
+
+#### Issue: "Rate Limit Exceeded"
+
+**Symptoms**: 429 Too Many Requests
+
+**Solutions**:
+1. Implement exponential backoff in your retry logic
+2. Reduce request frequency or batch operations
+3. Check if you're making redundant requests
+4. Consider upgrading your plan for higher limits
+
+#### Issue: "YAML Parsing Failed"
+
+**Symptoms**: 400 Bad Request with YAML syntax errors
+
+**Solutions**:
+1. Validate YAML syntax using online validators
+2. Check indentation (use spaces, not tabs)
+3. Quote strings containing special characters
+4. Ensure proper list and object syntax
+
+#### Issue: "Workflow Validation Failed"
+
+**Symptoms**: 422 Unprocessable Entity with validation errors
+
+**Solutions**:
+1. Use the validation endpoint before creating workflows
+2. Check all required fields are provided
+3. Verify block types are correct and supported
+4. Ensure all connection references are valid
+
+#### Issue: "Concurrent Modification"
+
+**Symptoms**: 409 Conflict during workflow updates
+
+**Solutions**:
+1. Implement optimistic locking in your application
+2. Refresh workflow data before making changes
+3. Handle conflicts by merging changes or asking user to choose
+4. Use collaborative editing features for real-time updates
+
+### Debug Mode
+
+Enable debug logging to get more detailed error information:
+
+```javascript
+// Enable debug mode
+const DEBUG_MODE = true;
+
+function debugLog(message, data = null) {
+  if (DEBUG_MODE) {
+    console.log(`[DEBUG] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  }
+}
+
+async function apiCall(endpoint, options) {
+  debugLog(`Making API call to ${endpoint}`, options);
+  
+  try {
+    const response = await fetch(endpoint, options);
+    
+    debugLog(`Response status: ${response.status}`);
+    debugLog(`Response headers:`, Object.fromEntries(response.headers.entries()));
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      debugLog('Error response:', errorData);
+      throw new Error(errorData.message || 'API call failed');
+    }
+    
+    const data = await response.json();
+    debugLog('Success response:', data);
+    
+    return data;
+  } catch (error) {
+    debugLog('API call exception:', error);
+    throw error;
+  }
+}
+```
+
+### Error Monitoring
+
+Implement error monitoring to track and analyze API errors:
+
+```javascript
+class ErrorMonitor {
+  constructor() {
+    this.errors = [];
+    this.errorCounts = {};
+  }
+
+  logError(error, context = {}) {
+    const errorLog = {
+      timestamp: new Date().toISOString(),
+      status: error.status,
+      message: error.message,
+      requestId: error.requestId,
+      endpoint: context.endpoint,
+      method: context.method,
+      userId: context.userId
+    };
+
+    this.errors.push(errorLog);
+    
+    // Count error types
+    const errorKey = `${error.status}_${error.message}`;
+    this.errorCounts[errorKey] = (this.errorCounts[errorKey] || 0) + 1;
+
+    // Send to monitoring service
+    this.sendToMonitoring(errorLog);
+  }
+
+  sendToMonitoring(errorLog) {
+    // Send to your monitoring service (DataDog, New Relic, etc.)
+    console.error('API Error:', errorLog);
+  }
+
+  getErrorSummary() {
+    return {
+      totalErrors: this.errors.length,
+      errorTypes: this.errorCounts,
+      recentErrors: this.errors.slice(-10)
+    };
+  }
+}
+
+const errorMonitor = new ErrorMonitor();
+
+// Use in your API calls
+try {
+  const result = await apiCall('/api/workflows', options);
+} catch (error) {
+  errorMonitor.logError(error, {
+    endpoint: '/api/workflows',
+    method: 'POST',
+    userId: currentUserId
+  });
+  throw error;
+}
+```
+
+## Next Steps
+
+- [Rate Limits](/docs/api/rate-limits) - Understand and manage API usage limits
+- [Authentication](/docs/api/authentication) - Set up proper API authentication
+- [Troubleshooting](/docs/api/troubleshooting) - Advanced troubleshooting techniques
+- [SDKs](/docs/api/sdks/javascript) - Use our client libraries with built-in error handling

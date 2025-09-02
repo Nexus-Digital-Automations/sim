@@ -1,7 +1,111 @@
 ---
-title: TypeScript/JavaScript SDK
-description: The official TypeScript/JavaScript SDK for Sim
+title: TypeScript SDK
+description: Official TypeScript SDK for the Sim API with advanced type safety, generics, and comprehensive workflow management
 ---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# TypeScript SDK
+
+The official Sim TypeScript SDK provides the most comprehensive, type-safe interface to the Sim API. Built specifically for TypeScript projects with advanced generics, strict type checking, and enhanced developer experience.
+
+## Installation
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+<Tab value="npm">
+```bash
+npm install @sim/typescript-sdk
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @sim/typescript-sdk
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @sim/typescript-sdk
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add @sim/typescript-sdk
+```
+</Tab>
+</Tabs>
+
+## Quick Start
+
+### Initialize the Client
+
+```typescript
+import { SimClient } from '@sim/typescript-sdk';
+import type { ClientConfig, Workflow } from '@sim/typescript-sdk/types';
+
+// Initialize with full type safety
+const config: ClientConfig = {
+  apiKey: 'your-api-key',
+  baseUrl: 'https://api.sim.dev',
+  timeout: 30000,
+  retries: 3
+};
+
+const sim = new SimClient(config);
+
+// Or with environment variable
+const sim = new SimClient(); // Uses SIM_API_KEY env var
+```
+
+### Basic Operations with Type Safety
+
+```typescript
+import type { 
+  CreateWorkflowRequest, 
+  UpdateWorkflowRequest,
+  WorkflowListResponse,
+  WorkflowBlock
+} from '@sim/typescript-sdk/types';
+
+// Create workflow with full type checking
+const createRequest: CreateWorkflowRequest = {
+  name: 'Data Processing Pipeline',
+  description: 'Processes incoming data',
+  workspaceId: 'ws_abc123',
+  tags: ['data', 'processing'],
+  blocks: [
+    {
+      id: 'api_fetch',
+      type: 'api_call',
+      name: 'Fetch Data',
+      config: {
+        url: 'https://api.example.com/data',
+        method: 'GET'
+      },
+      position: { x: 100, y: 100 }
+    }
+  ]
+};
+
+const workflow: Workflow = await sim.workflows.create(createRequest);
+
+// Type-safe workflow retrieval
+const retrieved: Workflow = await sim.workflows.get(workflow.id);
+
+// Type-safe listing with filters
+const response: WorkflowListResponse = await sim.workflows.list({
+  workspaceId: 'ws_abc123',
+  status: 'active', // TypeScript ensures this is a valid status
+  limit: 20
+});
+```
+
+## Next Steps
+
+- [JavaScript SDK](/docs/sdks/javascript) - Official JavaScript client library
+- [Python SDK](/docs/sdks/python) - Official Python client library  
+- [API Reference](/docs/api/overview) - Complete API documentation
+- [Type Definitions](https://github.com/sim-dev/typescript-sdk/blob/main/src/types.ts) - Complete type definitions
 
 import { Callout } from 'fumadocs-ui/components/callout'
 import { Card, Cards } from 'fumadocs-ui/components/card'

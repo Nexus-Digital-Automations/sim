@@ -1,0 +1,748 @@
+---
+title: JavaScript SDK
+description: Official JavaScript SDK for the Sim API with TypeScript support, automatic retries, and comprehensive workflow management
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# JavaScript SDK
+
+The official Sim JavaScript SDK provides a comprehensive, type-safe interface to the Sim API. Built with modern JavaScript and full TypeScript support, it includes automatic retries, error handling, and real-time collaboration features.
+
+## Installation
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+<Tab value="npm">
+```bash
+npm install @sim/sdk
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @sim/sdk
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @sim/sdk
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun add @sim/sdk
+```
+</Tab>
+</Tabs>
+
+## Quick Start
+
+### Initialize the Client
+
+```javascript
+import { SimClient } from '@sim/sdk';
+
+// Initialize with API key
+const sim = new SimClient({
+  apiKey: 'your-api-key',
+  baseUrl: 'https://api.sim.dev', // Optional, defaults to production
+  timeout: 30000, // Optional, defaults to 30 seconds
+  retries: 3 // Optional, defaults to 3 retries
+});
+
+// Or use environment variable SIM_API_KEY
+const sim = new SimClient();
+```
+
+### Basic Workflow Operations
+
+```javascript
+// Create a new workflow
+const workflow = await sim.workflows.create({
+  name: 'Data Processing Pipeline',
+  description: 'Processes incoming data',
+  workspaceId: 'ws_abc123'
+});
+
+console.log('Created workflow:', workflow.id);
+
+// Get workflow by ID
+const retrieved = await sim.workflows.get(workflow.id);
+
+// Update workflow
+const updated = await sim.workflows.update(workflow.id, {
+  description: 'Enhanced data processing pipeline'
+});
+
+// List workflows with filtering
+const workflows = await sim.workflows.list({
+  workspaceId: 'ws_abc123',
+  status: 'active',
+  limit: 20
+});
+
+// Delete workflow
+await sim.workflows.delete(workflow.id);
+```
+
+## Configuration
+
+### Client Options
+
+```typescript
+interface SimClientOptions {
+  apiKey?: string;           // API key (or set SIM_API_KEY env var)
+  baseUrl?: string;          // Base URL for API (default: https://api.sim.dev)
+  timeout?: number;          // Request timeout in milliseconds (default: 30000)
+  retries?: number;          // Number of retry attempts (default: 3)
+  retryDelay?: number;       // Base delay between retries in ms (default: 1000)
+  maxRetryDelay?: number;    // Maximum retry delay in ms (default: 10000)
+  userAgent?: string;        // Custom user agent string
+  debug?: boolean;           // Enable debug logging (default: false)
+}
+```
+
+### Advanced Configuration
+
+```javascript
+const sim = new SimClient({
+  apiKey: 'your-api-key',
+  timeout: 60000,
+  retries: 5,
+  retryDelay: 2000,
+  debug: process.env.NODE_ENV === 'development',
+  
+  // Custom retry logic
+  shouldRetry: (error, attempt) => {
+    if (attempt >= 5) return false;
+    return [429, 500, 502, 503, 504].includes(error.status);
+  },
+  
+  // Custom retry delay calculation
+  getRetryDelay: (attempt, error) => {
+    if (error.status === 429) {
+      // Use server-provided retry-after header
+      return error.retryAfter * 1000;
+    }
+    // Exponential backoff with jitter
+    return Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 30000);
+  }
+});
+```
+
+## Workflow Management
+
+### CRUD Operations
+
+<Tabs items={['Create', 'Read', 'Update', 'Delete']}>
+<Tab value="Create">
+```javascript
+// Create workflow with full configuration
+const workflow = await sim.workflows.create({
+  name: 'API Data Processor',
+  description: 'Fetches and processes API data',
+  workspaceId: 'ws_abc123',
+  tags: ['data', 'api', 'processing'],
+  color: '#4F46E5',
+  blocks: [
+    {
+      id: 'api_fetch',
+      type: 'api_call',
+      name: 'Fetch Data',
+      config: {
+        url: 'https://api.example.com/data',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      },
+      position: { x: 100, y: 100 }
+    },
+    {
+      id: 'processor',
+      type: 'transform',
+      name: 'Process Data',
+      config: {
+        transformation: 'return data.map(item => ({ id: item.id, processed: true }))'
+      },
+      position: { x: 300, y: 100 }
+    }
+  ],
+  connections: [
+    {
+      from: 'api_fetch.output',
+      to: 'processor.input'
+    }
+  ]
+});
+```
+</Tab>
+<Tab value="Read">
+```javascript
+// Get single workflow
+const workflow = await sim.workflows.get('wf_abc123');
+
+// Get workflow with specific fields
+const partial = await sim.workflows.get('wf_abc123', {
+  fields: ['name', 'description', 'blocks', 'updatedAt']
+});
+
+// List workflows with advanced filtering
+const workflows = await sim.workflows.list({
+  workspaceId: 'ws_abc123',
+  status: ['active', 'draft'],
+  tags: ['data-processing'],
+  author: 'user_abc123',
+  createdAfter: '2024-01-01T00:00:00Z',
+  sortBy: 'updatedAt',
+  sortOrder: 'desc',
+  limit: 50,
+  offset: 0
+});
+
+// Search workflows by name/description
+const searchResults = await sim.workflows.search({
+  query: 'data processing',
+  workspaceId: 'ws_abc123',
+  limit: 10
+});
+```
+</Tab>
+<Tab value="Update">
+```javascript
+// Update workflow properties
+const updated = await sim.workflows.update('wf_abc123', {
+  name: 'Enhanced Data Processor',
+  description: 'Now with error handling',
+  tags: ['data', 'api', 'processing', 'enhanced']
+});
+
+// Patch specific fields
+const patched = await sim.workflows.patch('wf_abc123', {
+  color: '#059669',
+  'metadata.lastModifiedBy': 'user_def456'
+});
+
+// Update workflow blocks
+const withNewBlocks = await sim.workflows.updateBlocks('wf_abc123', {
+  blocks: [
+    {
+      id: 'error_handler',
+      type: 'error_handling',
+      name: 'Handle Errors',
+      config: {
+        retryCount: 3,
+        notifyOnError: true
+      },
+      position: { x: 500, y: 100 }
+    }
+  ],
+  connections: [
+    {
+      from: 'processor.error',
+      to: 'error_handler.input'
+    }
+  ]
+});
+```
+</Tab>
+<Tab value="Delete">
+```javascript
+// Delete single workflow
+await sim.workflows.delete('wf_abc123');
+
+// Delete with confirmation
+await sim.workflows.delete('wf_abc123', {
+  confirm: true,
+  reason: 'No longer needed'
+});
+
+// Bulk delete workflows
+await sim.workflows.bulkDelete(['wf_abc123', 'wf_def456'], {
+  force: false, // Set to true to skip confirmations
+  backup: true  // Create backup before deletion
+});
+
+// Soft delete (mark as deleted but keep data)
+await sim.workflows.softDelete('wf_abc123', {
+  reason: 'Temporary removal for testing'
+});
+
+// Restore soft-deleted workflow
+await sim.workflows.restore('wf_abc123');
+```
+</Tab>
+</Tabs>
+
+### Bulk Operations
+
+```javascript
+// Bulk operations with progress tracking
+const bulkOperation = await sim.workflows.bulkOperation({
+  operation: 'move',
+  workflowIds: ['wf_001', 'wf_002', 'wf_003'],
+  targetWorkspaceId: 'ws_new123',
+  options: {
+    preserveConnections: true,
+    updateReferences: true
+  }
+});
+
+// Monitor bulk operation progress
+const status = await sim.workflows.getBulkOperationStatus(bulkOperation.id);
+console.log(`Progress: ${status.completed}/${status.total}`);
+
+// Bulk update tags
+await sim.workflows.bulkUpdateTags(['wf_001', 'wf_002'], {
+  addTags: ['production', 'v2'],
+  removeTags: ['beta']
+});
+
+// Bulk deploy workflows
+const deployResult = await sim.workflows.bulkDeploy(['wf_001', 'wf_002'], {
+  environment: 'production',
+  waitForCompletion: true
+});
+```
+
+## YAML Import/Export
+
+### Import Workflows
+
+```javascript
+// Import from YAML string
+const yamlContent = `
+name: Sample Workflow
+description: A simple workflow
+blocks:
+  - id: start
+    type: trigger
+    name: Start
+`;
+
+const imported = await sim.workflows.importYaml(yamlContent, {
+  workspaceId: 'ws_abc123',
+  validateOnly: false,
+  overwriteExisting: false
+});
+
+// Import from file
+import { readFile } from 'fs/promises';
+
+const yamlFile = await readFile('./workflow.yaml', 'utf8');
+const workflow = await sim.workflows.importYaml(yamlFile, {
+  workspaceId: 'ws_abc123'
+});
+
+// Validate YAML before import
+const validation = await sim.workflows.validateYaml(yamlContent);
+if (!validation.isValid) {
+  console.error('Validation errors:', validation.errors);
+} else {
+  const imported = await sim.workflows.importYaml(yamlContent);
+}
+```
+
+### Export Workflows
+
+```javascript
+// Export single workflow as YAML
+const yamlContent = await sim.workflows.exportYaml('wf_abc123');
+console.log(yamlContent);
+
+// Export as JSON
+const jsonContent = await sim.workflows.exportJson('wf_abc123');
+
+// Export multiple workflows as ZIP
+const zipBuffer = await sim.workflows.exportZip(['wf_001', 'wf_002'], {
+  format: 'yaml',
+  includeMetadata: true
+});
+
+// Save ZIP to file
+import { writeFile } from 'fs/promises';
+await writeFile('./workflows.zip', zipBuffer);
+
+// Export entire workspace
+const workspaceZip = await sim.workflows.exportWorkspace('ws_abc123', {
+  format: 'yaml',
+  includeVersionHistory: false
+});
+```
+
+## Error Handling
+
+### Comprehensive Error Handling
+
+```javascript
+import { SimError, ValidationError, NetworkError, RateLimitError } from '@sim/sdk';
+
+try {
+  const workflow = await sim.workflows.create(workflowData);
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error('Validation failed:', error.validationErrors);
+    error.validationErrors.forEach(err => {
+      console.error(`- ${err.field}: ${err.message}`);
+    });
+  } else if (error instanceof RateLimitError) {
+    console.error('Rate limited. Retry after:', error.retryAfter);
+    // Wait and retry
+    setTimeout(() => {
+      // Retry the operation
+    }, error.retryAfter * 1000);
+  } else if (error instanceof NetworkError) {
+    console.error('Network error:', error.message);
+    // Handle network issues
+  } else if (error instanceof SimError) {
+    console.error('API error:', error.message);
+    console.error('Request ID:', error.requestId);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+### Custom Error Handling
+
+```javascript
+// Global error handler
+sim.onError((error, context) => {
+  console.error('SDK Error:', {
+    error: error.message,
+    context: context,
+    requestId: error.requestId,
+    timestamp: new Date().toISOString()
+  });
+
+  // Send to monitoring service
+  if (error instanceof SimError && error.status >= 500) {
+    monitoring.captureException(error, { 
+      extra: { context, requestId: error.requestId }
+    });
+  }
+});
+
+// Retry configuration
+sim.configure({
+  retryCondition: (error, attempt) => {
+    // Custom retry logic
+    if (error instanceof RateLimitError) return attempt < 5;
+    if (error instanceof NetworkError) return attempt < 3;
+    return false;
+  }
+});
+```
+
+## Collaboration Features
+
+### Real-time Collaboration
+
+```javascript
+// Join collaboration session
+const collaboration = await sim.workflows.collaborate('wf_abc123');
+
+// Listen for events
+collaboration.on('userJoined', (user) => {
+  console.log(`${user.displayName} joined`);
+});
+
+collaboration.on('contentChanged', (change) => {
+  console.log('Content updated:', change);
+});
+
+collaboration.on('cursorMoved', (cursor) => {
+  console.log(`${cursor.user.displayName} is editing ${cursor.blockId}`);
+});
+
+// Send updates
+collaboration.updateContent('block_123', 'config.url', 'https://api.example.com');
+collaboration.updateCursor('block_123', 'config.url', { line: 1, column: 10 });
+
+// Add collaborators
+await collaboration.addCollaborator({
+  email: 'user@company.com',
+  permission: 'editor'
+});
+
+// Manage permissions
+await collaboration.updatePermission('user_123', 'owner');
+
+// Leave session
+collaboration.disconnect();
+```
+
+### Comments and Discussions
+
+```javascript
+// Add comment to workflow element
+const comment = await sim.workflows.addComment('wf_abc123', {
+  blockId: 'processor',
+  position: { x: 100, y: 50 },
+  content: 'Should we add validation here?',
+  mentions: ['user_def456']
+});
+
+// Reply to comment
+await sim.workflows.replyToComment(comment.id, {
+  content: 'Yes, good idea! I\'ll add input validation.',
+  mentions: ['user_abc123']
+});
+
+// Get comments for workflow
+const comments = await sim.workflows.getComments('wf_abc123');
+
+// Resolve comment thread
+await sim.workflows.resolveComment(comment.id);
+```
+
+## Version Management
+
+### Version Control
+
+```javascript
+// Get version history
+const versions = await sim.workflows.getVersions('wf_abc123', {
+  limit: 20,
+  includeDrafts: false
+});
+
+// Create tagged version
+const tag = await sim.workflows.createTag('wf_abc123', {
+  tag: 'v1.2.0',
+  message: 'Production release',
+  releaseNotes: 'Added error handling and performance improvements'
+});
+
+// Restore previous version
+const restored = await sim.workflows.restoreVersion('wf_abc123', 'v_abc123_015', {
+  createBackup: true,
+  message: 'Rollback due to issues'
+});
+
+// Compare versions
+const diff = await sim.workflows.compareVersions('wf_abc123', {
+  fromVersion: 'v1.1.0',
+  toVersion: 'v1.2.0',
+  includeContentDiff: true
+});
+
+console.log('Changes:', diff.summary);
+```
+
+## Advanced Features
+
+### Streaming and Pagination
+
+```javascript
+// Stream large result sets
+const stream = sim.workflows.streamList({
+  workspaceId: 'ws_abc123',
+  batchSize: 100
+});
+
+for await (const batch of stream) {
+  console.log(`Processing ${batch.length} workflows`);
+  batch.forEach(workflow => {
+    // Process each workflow
+  });
+}
+
+// Auto-paginate through all results
+const allWorkflows = [];
+for await (const workflow of sim.workflows.iterateAll({ workspaceId: 'ws_abc123' })) {
+  allWorkflows.push(workflow);
+}
+```
+
+### Webhooks
+
+```javascript
+// Register webhook
+const webhook = await sim.webhooks.create({
+  url: 'https://your-app.com/webhooks/sim',
+  events: ['workflow.created', 'workflow.executed', 'workflow.failed'],
+  secret: 'your-webhook-secret',
+  active: true
+});
+
+// Validate webhook signatures
+import { validateWebhookSignature } from '@sim/sdk';
+
+app.post('/webhooks/sim', (req, res) => {
+  const signature = req.headers['x-sim-signature'];
+  const payload = req.body;
+  
+  if (!validateWebhookSignature(payload, signature, 'your-webhook-secret')) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process webhook
+  console.log('Webhook received:', payload);
+  res.status(200).send('OK');
+});
+```
+
+### Caching
+
+```javascript
+// Enable caching for better performance
+const sim = new SimClient({
+  apiKey: 'your-api-key',
+  cache: {
+    enabled: true,
+    ttl: 300, // 5 minutes
+    maxSize: 100, // Max 100 cached items
+    keyGenerator: (method, url, params) => `${method}:${url}:${JSON.stringify(params)}`
+  }
+});
+
+// Manual cache control
+await sim.cache.clear(); // Clear all cache
+await sim.cache.delete('workflows:list'); // Clear specific cache
+const cached = await sim.cache.get('workflows:wf_abc123'); // Get cached item
+```
+
+## TypeScript Support
+
+### Type Definitions
+
+```typescript
+import { SimClient, Workflow, WorkflowBlock, CreateWorkflowRequest } from '@sim/sdk';
+
+interface CustomBlock extends WorkflowBlock {
+  type: 'custom_transform';
+  config: {
+    transformation: string;
+    timeout: number;
+  };
+}
+
+interface CustomWorkflow extends Workflow {
+  blocks: CustomBlock[];
+  metadata: {
+    environment: 'development' | 'staging' | 'production';
+    version: string;
+  };
+}
+
+// Type-safe workflow creation
+const createCustomWorkflow = async (data: CreateWorkflowRequest<CustomWorkflow>) => {
+  const sim = new SimClient();
+  return await sim.workflows.create(data);
+};
+```
+
+### Generic Types
+
+```typescript
+// Generic workflow type with custom metadata
+interface WorkflowWithMetadata<T = Record<string, any>> extends Workflow {
+  metadata: T;
+}
+
+interface ProductionMetadata {
+  environment: 'production';
+  deployedBy: string;
+  deployedAt: string;
+  version: string;
+}
+
+// Type-safe workflow operations
+const deployToProduction = async (workflowId: string) => {
+  const workflow = await sim.workflows.get<WorkflowWithMetadata<ProductionMetadata>>(workflowId);
+  
+  if (workflow.metadata.environment !== 'production') {
+    throw new Error('Workflow not configured for production');
+  }
+  
+  return await sim.workflows.deploy(workflowId, {
+    environment: 'production'
+  });
+};
+```
+
+## Best Practices
+
+### Connection Management
+
+```javascript
+// Use connection pooling for better performance
+const sim = new SimClient({
+  apiKey: 'your-api-key',
+  http: {
+    keepAlive: true,
+    maxSockets: 10,
+    maxFreeSockets: 5
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  await sim.disconnect();
+  process.exit(0);
+});
+```
+
+### Error Recovery
+
+```javascript
+// Implement circuit breaker pattern
+class CircuitBreaker {
+  constructor(threshold = 5, timeout = 60000) {
+    this.threshold = threshold;
+    this.timeout = timeout;
+    this.failures = 0;
+    this.lastFailTime = 0;
+    this.state = 'closed'; // closed, open, half-open
+  }
+
+  async execute(fn) {
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailTime > this.timeout) {
+        this.state = 'half-open';
+      } else {
+        throw new Error('Circuit breaker is open');
+      }
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  onSuccess() {
+    this.failures = 0;
+    this.state = 'closed';
+  }
+
+  onFailure() {
+    this.failures++;
+    this.lastFailTime = Date.now();
+    if (this.failures >= this.threshold) {
+      this.state = 'open';
+    }
+  }
+}
+
+// Use circuit breaker with SDK
+const circuitBreaker = new CircuitBreaker();
+
+const safeApiCall = async () => {
+  return await circuitBreaker.execute(async () => {
+    return await sim.workflows.list();
+  });
+};
+```
+
+## Next Steps
+
+- [Python SDK](/docs/sdks/python) - Official Python client library
+- [TypeScript SDK](/docs/sdks/typescript) - Enhanced TypeScript support
+- [API Reference](/docs/api/overview) - Complete API documentation
+- [Examples](https://github.com/sim-dev/examples) - Sample implementations and use cases

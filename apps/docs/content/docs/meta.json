@@ -17,6 +17,11 @@
     "---Advanced---",
     "./variables/index",
     "yaml",
+    "---API Reference---",
+    "./api/overview",
+    "./api/authentication",
+    "./api/rate-limits",
+    "./api/workflows/index",
     "---SDKs---",
     "./sdks/python",
     "./sdks/typescript"

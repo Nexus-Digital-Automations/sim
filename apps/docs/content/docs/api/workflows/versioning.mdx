@@ -1,0 +1,948 @@
+---
+title: Versioning & History
+description: Track workflow changes, manage versions, and restore previous states with comprehensive version history
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Versioning & History
+
+The Sim API provides comprehensive version control for workflows, allowing you to track changes, create named versions, and restore previous states. Whether you need to rollback problematic changes or maintain stable releases, the versioning system has you covered.
+
+## Version Management
+
+### Automatic Versioning
+
+Every workflow change automatically creates a new version:
+
+- **Auto-save** - Changes saved every 30 seconds while editing
+- **Manual save** - Explicit save creates new version
+- **Deploy** - Deployment always creates tagged version
+- **Import** - YAML/JSON imports create new version
+
+### Version Types
+
+| Type | Description | Retention | Auto-Created |
+|------|-------------|-----------|--------------|
+| **Draft** | Work-in-progress versions | 30 days | ✅ |
+| **Saved** | Manually saved versions | 1 year | ❌ |
+| **Tagged** | Named release versions | Permanent | ❌ |
+| **Deploy** | Deployed versions | Permanent | ✅ |
+
+## Get Version History
+
+Retrieve the complete version history for a workflow:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function getVersionHistory(workflowId, options = {}) {
+  const params = new URLSearchParams({
+    limit: options.limit || 20,
+    offset: options.offset || 0,
+    include_drafts: options.includeDrafts || false,
+    author: options.author || '',
+    from_date: options.fromDate || '',
+    to_date: options.toDate || ''
+  });
+
+  const response = await fetch(`/api/workflows/${workflowId}/versions?${params}`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': 'your-api-key'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get version history: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - get recent versions
+try {
+  const history = await getVersionHistory('wf_abc123', {
+    limit: 10,
+    includeDrafts: false
+  });
+  
+  console.log('Version history:', history);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+from urllib.parse import urlencode
+
+def get_version_history(workflow_id, api_key, **options):
+    """Get version history for a workflow."""
+    
+    params = {
+        'limit': options.get('limit', 20),
+        'offset': options.get('offset', 0),
+        'include_drafts': options.get('include_drafts', False),
+        'author': options.get('author', ''),
+        'from_date': options.get('from_date', ''),
+        'to_date': options.get('to_date', '')
+    }
+    
+    # Remove empty parameters
+    params = {k: v for k, v in params.items() if v}
+    
+    headers = {'x-api-key': api_key}
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions"
+    
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    history = get_version_history('wf_abc123', 'your-api-key', 
+                                 limit=10, include_drafts=False)
+    print("Version history:", history)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+# Get recent versions excluding drafts
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions?limit=10&include_drafts=false"
+
+# Get versions by specific author
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions?author=user_abc123"
+
+# Get versions within date range
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions?from_date=2024-01-01T00:00:00Z&to_date=2024-01-15T23:59:59Z"
+```
+</Tab>
+</Tabs>
+
+### Response Example
+
+```json
+{
+  "versions": [
+    {
+      "version_id": "v_abc123_001",
+      "version_number": 15,
+      "type": "tagged",
+      "tag": "v1.2.0",
+      "message": "Production release with bug fixes",
+      "author": {
+        "user_id": "user_abc123",
+        "username": "john_doe",
+        "display_name": "John Doe"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "workflow_snapshot": {
+        "name": "Data Processing Pipeline",
+        "description": "Enhanced with error handling",
+        "block_count": 8,
+        "connection_count": 12
+      },
+      "changes": [
+        {
+          "type": "block_added",
+          "description": "Added error handling block",
+          "block_id": "error_handler"
+        },
+        {
+          "type": "connection_modified", 
+          "description": "Updated connection routing",
+          "from_block": "processor",
+          "to_block": "output"
+        }
+      ],
+      "size_bytes": 4096,
+      "is_current": true,
+      "is_deployed": true,
+      "deployment_info": {
+        "deployed_at": "2024-01-15T10:35:00Z",
+        "environment": "production"
+      }
+    },
+    {
+      "version_id": "v_abc123_002",
+      "version_number": 14,
+      "type": "saved",
+      "tag": null,
+      "message": "Added input validation",
+      "author": {
+        "user_id": "user_def456",
+        "username": "jane_smith",
+        "display_name": "Jane Smith"
+      },
+      "created_at": "2024-01-14T16:20:00Z",
+      "workflow_snapshot": {
+        "name": "Data Processing Pipeline",
+        "description": "Enhanced with input validation",
+        "block_count": 7,
+        "connection_count": 10
+      },
+      "changes": [
+        {
+          "type": "block_modified",
+          "description": "Added validation rules",
+          "block_id": "input_validator"
+        }
+      ],
+      "size_bytes": 3584,
+      "is_current": false,
+      "is_deployed": false
+    }
+  ],
+  "pagination": {
+    "total_count": 25,
+    "current_page": 1,
+    "pages": 3,
+    "has_next": true
+  }
+}
+```
+
+## Get Specific Version
+
+Retrieve a specific version of a workflow:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function getVersion(workflowId, versionId) {
+  const response = await fetch(`/api/workflows/${workflowId}/versions/${versionId}`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': 'your-api-key'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get version: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - get specific version
+try {
+  const version = await getVersion('wf_abc123', 'v_abc123_014');
+  console.log('Version details:', version);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def get_version(workflow_id, version_id, api_key):
+    """Get specific version of a workflow."""
+    
+    headers = {'x-api-key': api_key}
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions/{version_id}"
+    
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    version = get_version('wf_abc123', 'v_abc123_014', 'your-api-key')
+    print("Version details:", version)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions/v_abc123_014"
+```
+</Tab>
+</Tabs>
+
+## Create Tagged Version
+
+Create a named version tag for important releases:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function createTag(workflowId, tagData) {
+  const response = await fetch(`/api/workflows/${workflowId}/versions/tags`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(tagData)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create tag: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - create release tag
+try {
+  const tag = await createTag('wf_abc123', {
+    tag: 'v1.3.0',
+    message: 'Major release with new features',
+    version_id: 'v_abc123_015', // Optional - tags current version if not specified
+    release_notes: `
+    ## What's New
+    - Added async processing
+    - Improved error handling
+    - Performance optimizations
+    
+    ## Bug Fixes
+    - Fixed memory leak in data processor
+    - Resolved connection timeout issues
+    `
+  });
+  
+  console.log('Tag created:', tag);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def create_tag(workflow_id, tag_data, api_key):
+    """Create a version tag."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions/tags"
+    response = requests.post(url, headers=headers, json=tag_data)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    tag = create_tag('wf_abc123', {
+        'tag': 'v1.3.0',
+        'message': 'Major release with new features',
+        'version_id': 'v_abc123_015',
+        'release_notes': '''
+        ## What's New
+        - Added async processing
+        - Improved error handling
+        - Performance optimizations
+        
+        ## Bug Fixes
+        - Fixed memory leak in data processor
+        - Resolved connection timeout issues
+        '''
+    }, 'your-api-key')
+    
+    print("Tag created:", tag)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tag": "v1.3.0",
+    "message": "Major release with new features",
+    "version_id": "v_abc123_015",
+    "release_notes": "## What'\''s New\n- Added async processing\n- Improved error handling\n\n## Bug Fixes\n- Fixed memory leak"
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions/tags"
+```
+</Tab>
+</Tabs>
+
+## Restore Previous Version
+
+Restore a workflow to a previous version:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function restoreVersion(workflowId, versionId, options = {}) {
+  const response = await fetch(`/api/workflows/${workflowId}/versions/${versionId}/restore`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      create_backup: options.createBackup !== false, // Default true
+      restore_message: options.message || `Restored to version ${versionId}`,
+      preserve_connections: options.preserveConnections || true
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to restore version: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - restore with backup
+try {
+  const result = await restoreVersion('wf_abc123', 'v_abc123_012', {
+    message: 'Rollback due to production issue',
+    createBackup: true,
+    preserveConnections: true
+  });
+  
+  console.log('Workflow restored:', result);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def restore_version(workflow_id, version_id, api_key, **options):
+    """Restore workflow to a previous version."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'create_backup': options.get('create_backup', True),
+        'restore_message': options.get('message', f'Restored to version {version_id}'),
+        'preserve_connections': options.get('preserve_connections', True)
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions/{version_id}/restore"
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    result = restore_version('wf_abc123', 'v_abc123_012', 'your-api-key',
+                           message='Rollback due to production issue',
+                           create_backup=True)
+    print("Workflow restored:", result)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "create_backup": true,
+    "restore_message": "Rollback due to production issue",
+    "preserve_connections": true
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions/v_abc123_012/restore"
+```
+</Tab>
+</Tabs>
+
+### Restore Response
+
+```json
+{
+  "restored_version": {
+    "version_id": "v_abc123_012",
+    "tag": "v1.1.0",
+    "restored_at": "2024-01-15T11:00:00Z"
+  },
+  "backup_version": {
+    "version_id": "v_abc123_016",
+    "message": "Automatic backup before restore",
+    "created_at": "2024-01-15T11:00:00Z"
+  },
+  "changes_applied": [
+    {
+      "type": "block_removed",
+      "description": "Removed error_handler block",
+      "block_id": "error_handler"
+    },
+    {
+      "type": "connection_restored",
+      "description": "Restored original connection path",
+      "from_block": "processor",
+      "to_block": "output"
+    }
+  ],
+  "warnings": [
+    "Some connections could not be preserved due to missing blocks"
+  ]
+}
+```
+
+## Compare Versions
+
+Compare differences between two versions:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function compareVersions(workflowId, fromVersion, toVersion) {
+  const response = await fetch(`/api/workflows/${workflowId}/versions/compare`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from_version: fromVersion,
+      to_version: toVersion,
+      include_content_diff: true
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to compare versions: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - compare versions
+try {
+  const diff = await compareVersions('wf_abc123', 'v_abc123_012', 'v_abc123_015');
+  console.log('Version comparison:', diff);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def compare_versions(workflow_id, from_version, to_version, api_key):
+    """Compare two versions of a workflow."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'from_version': from_version,
+        'to_version': to_version,
+        'include_content_diff': True
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions/compare"
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    diff = compare_versions('wf_abc123', 'v_abc123_012', 'v_abc123_015', 'your-api-key')
+    print("Version comparison:", diff)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_version": "v_abc123_012",
+    "to_version": "v_abc123_015",
+    "include_content_diff": true
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions/compare"
+```
+</Tab>
+</Tabs>
+
+### Comparison Response
+
+```json
+{
+  "comparison": {
+    "from_version": {
+      "version_id": "v_abc123_012",
+      "tag": "v1.1.0",
+      "created_at": "2024-01-12T14:30:00Z"
+    },
+    "to_version": {
+      "version_id": "v_abc123_015",
+      "tag": "v1.2.0",
+      "created_at": "2024-01-15T10:30:00Z"
+    },
+    "summary": {
+      "blocks_added": 2,
+      "blocks_removed": 0,
+      "blocks_modified": 3,
+      "connections_added": 4,
+      "connections_removed": 1,
+      "connections_modified": 2
+    },
+    "changes": [
+      {
+        "type": "block_added",
+        "block_id": "error_handler",
+        "block_name": "Error Handler",
+        "details": {
+          "block_type": "error_handling",
+          "position": { "x": 400, "y": 200 }
+        }
+      },
+      {
+        "type": "block_modified",
+        "block_id": "processor",
+        "block_name": "Data Processor",
+        "changes": [
+          {
+            "field": "config.timeout",
+            "from": 30,
+            "to": 60,
+            "description": "Increased timeout from 30s to 60s"
+          },
+          {
+            "field": "config.retries",
+            "from": 3,
+            "to": 5,
+            "description": "Increased retry count"
+          }
+        ]
+      },
+      {
+        "type": "connection_added",
+        "from_block": "processor",
+        "to_block": "error_handler",
+        "details": {
+          "connection_type": "error_output",
+          "condition": "on_error"
+        }
+      }
+    ],
+    "content_diff": {
+      "blocks": {
+        "processor": {
+          "config": {
+            "- timeout: 30": "removed",
+            "+ timeout: 60": "added",
+            "- retries: 3": "removed", 
+            "+ retries: 5": "added"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Version Cleanup
+
+### Delete Old Versions
+
+Clean up old draft versions to save storage:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function cleanupVersions(workflowId, options = {}) {
+  const response = await fetch(`/api/workflows/${workflowId}/versions/cleanup`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      keep_recent_drafts: options.keepRecentDrafts || 10,
+      keep_tagged_versions: options.keepTaggedVersions !== false,
+      keep_deployed_versions: options.keepDeployedVersions !== false,
+      older_than_days: options.olderThanDays || 30,
+      dry_run: options.dryRun || false
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to cleanup versions: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - cleanup old drafts
+try {
+  const result = await cleanupVersions('wf_abc123', {
+    keepRecentDrafts: 10,
+    olderThanDays: 30,
+    dryRun: true // Preview what would be deleted
+  });
+  
+  console.log('Cleanup preview:', result);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def cleanup_versions(workflow_id, api_key, **options):
+    """Clean up old workflow versions."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'keep_recent_drafts': options.get('keep_recent_drafts', 10),
+        'keep_tagged_versions': options.get('keep_tagged_versions', True),
+        'keep_deployed_versions': options.get('keep_deployed_versions', True),
+        'older_than_days': options.get('older_than_days', 30),
+        'dry_run': options.get('dry_run', False)
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/versions/cleanup"
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    result = cleanup_versions('wf_abc123', 'your-api-key',
+                             keep_recent_drafts=10,
+                             older_than_days=30,
+                             dry_run=True)
+    print("Cleanup preview:", result)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "keep_recent_drafts": 10,
+    "keep_tagged_versions": true,
+    "keep_deployed_versions": true,
+    "older_than_days": 30,
+    "dry_run": true
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/versions/cleanup"
+```
+</Tab>
+</Tabs>
+
+## Best Practices
+
+### 1. Version Tagging Strategy
+
+<Callout type="info">
+**Semantic Versioning**: Use semantic versioning (MAJOR.MINOR.PATCH) for consistent version management.
+</Callout>
+
+```javascript
+// Implement semantic versioning
+class VersionManager {
+  constructor() {
+    this.versionRegex = /^v(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/;
+  }
+
+  parseVersion(tag) {
+    const match = tag.match(this.versionRegex);
+    if (!match) return null;
+    
+    return {
+      major: parseInt(match[1]),
+      minor: parseInt(match[2]),
+      patch: parseInt(match[3]),
+      prerelease: match[4] || null
+    };
+  }
+
+  getNextVersion(currentTag, type) {
+    const current = this.parseVersion(currentTag);
+    if (!current) throw new Error('Invalid version format');
+
+    switch (type) {
+      case 'major':
+        return `v${current.major + 1}.0.0`;
+      case 'minor':
+        return `v${current.major}.${current.minor + 1}.0`;
+      case 'patch':
+        return `v${current.major}.${current.minor}.${current.patch + 1}`;
+      default:
+        throw new Error('Invalid version type');
+    }
+  }
+
+  async createRelease(workflowId, type, message) {
+    const history = await getVersionHistory(workflowId, { limit: 1 });
+    const currentTag = history.versions[0]?.tag || 'v0.0.0';
+    
+    const newTag = this.getNextVersion(currentTag, type);
+    
+    return await createTag(workflowId, {
+      tag: newTag,
+      message: message
+    });
+  }
+}
+
+// Usage
+const versionManager = new VersionManager();
+
+// Create patch release
+await versionManager.createRelease('wf_abc123', 'patch', 'Bug fixes');
+```
+
+### 2. Automated Backup Strategy
+
+```javascript
+// Set up automated backup before critical changes
+class BackupStrategy {
+  constructor() {
+    this.criticalOperations = ['deploy', 'restore', 'bulk_update'];
+  }
+
+  async beforeOperation(workflowId, operation) {
+    if (this.criticalOperations.includes(operation)) {
+      await this.createAutoBackup(workflowId, operation);
+    }
+  }
+
+  async createAutoBackup(workflowId, reason) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    
+    return await createTag(workflowId, {
+      tag: `auto-backup-${timestamp}`,
+      message: `Automatic backup before ${reason}`,
+      type: 'backup'
+    });
+  }
+
+  // Schedule regular backups
+  scheduleRegularBackups(workflowId, interval = 'daily') {
+    const schedules = {
+      daily: 24 * 60 * 60 * 1000,
+      weekly: 7 * 24 * 60 * 60 * 1000,
+      monthly: 30 * 24 * 60 * 60 * 1000
+    };
+
+    const intervalMs = schedules[interval];
+    if (!intervalMs) throw new Error('Invalid interval');
+
+    setInterval(async () => {
+      try {
+        await this.createAutoBackup(workflowId, `scheduled_${interval}`);
+        console.log(`${interval} backup created for workflow ${workflowId}`);
+      } catch (error) {
+        console.error('Backup failed:', error);
+      }
+    }, intervalMs);
+  }
+}
+```
+
+### 3. Version Diff Visualization
+
+```javascript
+// Visualize differences between versions
+class DiffVisualizer {
+  generateDiffHtml(comparison) {
+    let html = '<div class="version-diff">';
+    
+    // Summary
+    html += this.generateSummary(comparison.summary);
+    
+    // Changes
+    for (const change of comparison.changes) {
+      html += this.generateChangeHtml(change);
+    }
+    
+    html += '</div>';
+    return html;
+  }
+
+  generateSummary(summary) {
+    return `
+      <div class="diff-summary">
+        <h3>Changes Summary</h3>
+        <ul>
+          <li>Blocks: +${summary.blocks_added} -${summary.blocks_removed} ~${summary.blocks_modified}</li>
+          <li>Connections: +${summary.connections_added} -${summary.connections_removed} ~${summary.connections_modified}</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  generateChangeHtml(change) {
+    const icons = {
+      block_added: '➕',
+      block_removed: '➖',
+      block_modified: '✏️',
+      connection_added: '🔗',
+      connection_removed: '💔',
+      connection_modified: '🔄'
+    };
+
+    return `
+      <div class="diff-change ${change.type}">
+        <span class="change-icon">${icons[change.type] || '❓'}</span>
+        <div class="change-details">
+          <strong>${change.type.replace('_', ' ').toUpperCase()}</strong>
+          <p>${this.formatChangeDescription(change)}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  formatChangeDescription(change) {
+    switch (change.type) {
+      case 'block_added':
+        return `Added block "${change.block_name}" (${change.block_id})`;
+      case 'block_removed':
+        return `Removed block "${change.block_name}" (${change.block_id})`;
+      case 'block_modified':
+        const fieldChanges = change.changes.map(c => 
+          `${c.field}: ${c.from} → ${c.to}`
+        ).join(', ');
+        return `Modified block "${change.block_name}": ${fieldChanges}`;
+      default:
+        return change.description || 'No description available';
+    }
+  }
+}
+```
+
+## Next Steps
+
+- [Collaborative Editing](/docs/api/workflows/collaborative-editing) - Work with others on versioned workflows
+- [Export Formats](/docs/api/workflows/export-formats) - Export specific versions
+- [Deployment API](/docs/api/workflows/deployment) - Deploy tagged versions
+- [SDKs](/docs/api/sdks/javascript) - Client libraries with version management

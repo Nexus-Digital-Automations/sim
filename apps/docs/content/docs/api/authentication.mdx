@@ -1,0 +1,308 @@
+---
+title: Authentication
+description: Guide to authenticating with the Sim API using different methods
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Authentication
+
+The Sim API supports multiple authentication methods to suit different use cases:
+
+- **API Keys** - Recommended for server-to-server and programmatic access
+- **Session Authentication** - For web applications and browser-based access
+- **JWT Tokens** - For internal service-to-service communication
+
+## API Key Authentication
+
+API keys provide the most straightforward way to authenticate with the Sim API. They're ideal for server-side applications, scripts, and integrations.
+
+### Creating an API Key
+
+1. Log in to your Sim dashboard
+2. Navigate to Settings → API Keys
+3. Click "Create New API Key"
+4. Name your key and set appropriate permissions
+5. Copy the generated key (you won't see it again!)
+
+### Using API Keys
+
+Include your API key in the `x-api-key` header:
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+<Tab value="cURL">
+```bash
+curl -H "x-api-key: sk_live_1234567890abcdef" \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+<Tab value="JavaScript">
+```javascript
+const response = await fetch('https://api.sim.dev/api/workflows', {
+  headers: {
+    'x-api-key': 'sk_live_1234567890abcdef',
+    'Content-Type': 'application/json'
+  }
+});
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+headers = {
+    'x-api-key': 'sk_live_1234567890abcdef',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.sim.dev/api/workflows', headers=headers)
+```
+</Tab>
+</Tabs>
+
+### API Key Types
+
+| Type | Prefix | Use Case | Permissions |
+|------|--------|----------|-------------|
+| Live | `sk_live_` | Production environments | Full access to your account |
+| Test | `sk_test_` | Development and testing | Limited to test resources |
+| Read-only | `sk_ro_` | Analytics and monitoring | Read-only access |
+| Limited | `sk_limit_` | Third-party integrations | Specific endpoint access |
+
+<Callout type="warn">
+**Keep API Keys Secure**
+- Never commit API keys to version control
+- Rotate keys regularly
+- Use environment variables for storage
+- Monitor key usage in your dashboard
+</Callout>
+
+## Session Authentication
+
+Session authentication is automatically handled for web applications when users are logged in through the Sim dashboard.
+
+### Browser Usage
+
+When users are logged into Sim, their session cookies automatically authenticate API requests:
+
+```javascript
+// No additional headers needed - session cookies are included automatically
+const response = await fetch('/api/workflows', {
+  credentials: 'include' // Ensure cookies are sent
+});
+```
+
+### Session Validation
+
+Check if a session is valid:
+
+```javascript
+const response = await fetch('/api/auth/session');
+if (response.ok) {
+  const session = await response.json();
+  console.log('User:', session.user);
+} else {
+  // User is not authenticated
+  window.location.href = '/login';
+}
+```
+
+## JWT Token Authentication
+
+JWT tokens are used for internal service-to-service communication and advanced integrations.
+
+### Getting JWT Tokens
+
+JWT tokens are typically obtained through OAuth flows or service account authentication:
+
+```bash
+curl -X POST https://api.sim.dev/api/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "your_client_id",
+    "client_secret": "your_client_secret"
+  }'
+```
+
+### Using JWT Tokens
+
+Include the JWT token in the `Authorization` header with `Bearer` prefix:
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+<Tab value="cURL">
+```bash
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+<Tab value="JavaScript">
+```javascript
+const response = await fetch('https://api.sim.dev/api/workflows', {
+  headers: {
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    'Content-Type': 'application/json'
+  }
+});
+```
+</Tab>
+<Tab value="Python">
+```python
+headers = {
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.sim.dev/api/workflows', headers=headers)
+```
+</Tab>
+</Tabs>
+
+## Authentication Priority
+
+When multiple authentication methods are provided, the API uses this priority order:
+
+1. **JWT Token** (Authorization: Bearer header)
+2. **API Key** (x-api-key header)  
+3. **Session** (cookies)
+
+## Permissions and Scopes
+
+Different authentication methods provide different levels of access:
+
+### API Key Scopes
+
+When creating API keys, you can restrict access to specific scopes:
+
+- `workflows:read` - List and view workflows
+- `workflows:write` - Create and update workflows
+- `workflows:delete` - Delete workflows
+- `workflows:execute` - Execute workflows
+- `collaborate:read` - View collaborators
+- `collaborate:write` - Manage collaborators
+- `templates:read` - View templates
+- `templates:write` - Manage templates
+
+### Workspace Permissions
+
+Access to workflows is also governed by workspace permissions:
+
+- **Owner** - Full access to all workflows in the workspace
+- **Admin** - Can manage workflows and collaborators
+- **Editor** - Can create and edit workflows
+- **Viewer** - Read-only access to workflows
+
+## Error Responses
+
+### 401 Unauthorized
+
+Missing or invalid authentication:
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Authentication required",
+  "requestId": "req_abc123"
+}
+```
+
+### 403 Forbidden
+
+Valid authentication but insufficient permissions:
+
+```json
+{
+  "error": "Forbidden", 
+  "message": "Insufficient permissions for this operation",
+  "requestId": "req_abc123",
+  "required_permission": "workflows:write"
+}
+```
+
+### 429 Rate Limited
+
+Too many requests:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Try again in 60 seconds.",
+  "requestId": "req_abc123",
+  "retry_after": 60
+}
+```
+
+## Best Practices
+
+### Security
+
+- **Use HTTPS**: Always use HTTPS in production
+- **Environment Variables**: Store credentials in environment variables
+- **Key Rotation**: Rotate API keys regularly
+- **Minimal Permissions**: Use the least privileged access model
+
+### Development
+
+```bash
+# Good: Use environment variables
+export SIM_API_KEY="sk_test_your_test_key"
+curl -H "x-api-key: $SIM_API_KEY" https://api.sim.dev/api/workflows
+
+# Bad: Hardcode keys
+curl -H "x-api-key: sk_live_actual_key" https://api.sim.dev/api/workflows
+```
+
+### Monitoring
+
+- Monitor API key usage in your dashboard
+- Set up alerts for unusual activity
+- Track rate limit usage
+- Log authentication failures
+
+## Testing Authentication
+
+Test your authentication setup:
+
+<Tabs items={['Test API Key', 'Test Session', 'Test JWT']}>
+<Tab value="Test API Key">
+```bash
+# Test API key authentication
+curl -H "x-api-key: YOUR_API_KEY" \
+  https://api.sim.dev/api/workflows?limit=1
+
+# Expected: 200 OK with workflow list
+# Error: 401 if key is invalid
+```
+</Tab>
+<Tab value="Test Session">
+```javascript
+// Test session authentication
+const response = await fetch('/api/workflows?limit=1', {
+  credentials: 'include'
+});
+
+if (response.ok) {
+  console.log('Session is valid');
+} else {
+  console.log('Session is invalid or expired');
+}
+```
+</Tab>
+<Tab value="Test JWT">
+```bash
+# Test JWT token authentication  
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  https://api.sim.dev/api/workflows?limit=1
+
+# Expected: 200 OK with workflow list
+# Error: 401 if token is invalid or expired
+```
+</Tab>
+</Tabs>
+
+## Next Steps
+
+- [Workflow Operations](/docs/api/workflows) - Start using the workflow API
+- [Rate Limits](/docs/api/rate-limits) - Understand usage limits
+- [Error Codes](/docs/api/error-codes) - Complete error reference

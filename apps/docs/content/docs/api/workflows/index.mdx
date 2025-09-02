@@ -1,0 +1,463 @@
+---
+title: Workflows API
+description: Comprehensive API reference for managing workflows in Sim
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Workflows API
+
+The Workflows API is the core of the Sim platform, providing comprehensive functionality for creating, managing, and executing automated workflows. This API supports everything from basic CRUD operations to advanced features like real-time collaboration, version control, and multi-format export.
+
+## Overview
+
+The Workflows API provides endpoints for:
+
+- **Basic Operations**: Create, read, update, delete workflows
+- **Advanced Filtering**: Search, sort, and filter workflows with complex queries
+- **Bulk Operations**: Manage multiple workflows simultaneously
+- **YAML Import/Export**: Work with workflows in YAML format
+- **Validation**: Validate workflow definitions without saving
+- **Export Formats**: Export workflows in JSON, YAML, and ZIP formats
+- **Collaboration**: Real-time multi-user editing with conflict resolution
+- **Version Control**: Complete history and rollback capabilities
+
+## Base Endpoints
+
+All workflow endpoints are under `/api/workflows`:
+
+```
+GET    /api/workflows                    # List workflows with advanced filtering
+POST   /api/workflows                    # Create new workflow
+PATCH  /api/workflows                    # Bulk operations on multiple workflows
+
+GET    /api/workflows/{id}               # Get single workflow
+PUT    /api/workflows/{id}               # Update workflow metadata
+DELETE /api/workflows/{id}               # Delete workflow
+
+POST   /api/workflows/yaml               # Create workflow from YAML
+PUT    /api/workflows/yaml?id={id}       # Update workflow from YAML
+POST   /api/workflows/validate           # Validate workflow without saving
+
+GET    /api/workflows/{id}/export        # Export workflow in multiple formats
+POST   /api/workflows/{id}/export        # Bulk export multiple workflows
+
+GET    /api/workflows/{id}/collaborate   # List collaborators
+POST   /api/workflows/{id}/collaborate   # Add collaborator
+DELETE /api/workflows/{id}/collaborate   # Remove collaborator
+
+GET    /api/workflows/{id}/versions      # List workflow versions
+POST   /api/workflows/{id}/versions      # Create new version
+GET    /api/workflows/{id}/versions/{v}  # Get specific version
+```
+
+## Quick Examples
+
+### List Workflows with Filtering
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+<Tab value="cURL">
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  "https://api.sim.dev/api/workflows?search=data&status=deployed&sortBy=updatedAt&limit=20"
+```
+</Tab>
+<Tab value="JavaScript">
+```javascript
+const response = await fetch('/api/workflows?' + new URLSearchParams({
+  search: 'data processing',
+  status: 'deployed',
+  sortBy: 'updatedAt',
+  sortOrder: 'desc',
+  limit: '20'
+}), {
+  headers: {
+    'x-api-key': 'YOUR_API_KEY'
+  }
+});
+
+const { data, pagination } = await response.json();
+console.log(`Found ${data.length} workflows out of ${pagination.total} total`);
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+params = {
+    'search': 'data processing',
+    'status': 'deployed', 
+    'sortBy': 'updatedAt',
+    'sortOrder': 'desc',
+    'limit': 20
+}
+
+response = requests.get(
+    'https://api.sim.dev/api/workflows',
+    headers={'x-api-key': 'YOUR_API_KEY'},
+    params=params
+)
+
+data = response.json()
+print(f"Found {len(data['data'])} workflows")
+```
+</Tab>
+</Tabs>
+
+### Create Workflow
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Data Processing Pipeline",
+    "description": "Automated data ingestion and transformation",
+    "color": "#3972F6",
+    "workspaceId": "ws_abc123",
+    "folderId": "folder_xyz789"
+  }' \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+<Tab value="JavaScript">
+```javascript
+const workflow = await fetch('/api/workflows', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Data Processing Pipeline',
+    description: 'Automated data ingestion and transformation',
+    color: '#3972F6',
+    workspaceId: 'ws_abc123',
+    folderId: 'folder_xyz789'
+  })
+});
+
+const newWorkflow = await workflow.json();
+console.log('Created workflow:', newWorkflow.id);
+```
+</Tab>
+<Tab value="Python">
+```python
+workflow_data = {
+    'name': 'Data Processing Pipeline',
+    'description': 'Automated data ingestion and transformation',
+    'color': '#3972F6',
+    'workspaceId': 'ws_abc123',
+    'folderId': 'folder_xyz789'
+}
+
+response = requests.post(
+    'https://api.sim.dev/api/workflows',
+    headers={
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json=workflow_data
+)
+
+workflow = response.json()
+print(f"Created workflow: {workflow['id']}")
+```
+</Tab>
+</Tabs>
+
+### Import from YAML
+
+<Tabs items={['cURL', 'JavaScript', 'Python']}>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Email Processing Workflow",
+    "description": "Process incoming emails and extract data",
+    "yaml": "version: \"1.0\"\nblocks:\n  - id: start\n    metadata:\n      id: starter\n      name: Start\n    position: { x: 100, y: 100 }\n  - id: process_email\n    metadata:\n      id: gmail\n      name: Read Email\n    position: { x: 300, y: 100 }\nconnections:\n  - source: start\n    target: process_email"
+  }' \
+  https://api.sim.dev/api/workflows/yaml
+```
+</Tab>
+<Tab value="JavaScript">
+```javascript
+const yamlWorkflow = `
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: Start
+    position: { x: 100, y: 100 }
+  - id: process_email
+    metadata:
+      id: gmail
+      name: Read Email
+    position: { x: 300, y: 100 }
+connections:
+  - source: start
+    target: process_email
+`;
+
+const response = await fetch('/api/workflows/yaml', {
+  method: 'POST',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Email Processing Workflow',
+    description: 'Process incoming emails and extract data',
+    yaml: yamlWorkflow
+  })
+});
+
+const result = await response.json();
+console.log('Imported workflow:', result.id);
+```
+</Tab>
+<Tab value="Python">
+```python
+yaml_content = """
+version: "1.0"
+blocks:
+  - id: start
+    metadata:
+      id: starter
+      name: Start
+    position: { x: 100, y: 100 }
+  - id: process_email
+    metadata:
+      id: gmail
+      name: Read Email
+    position: { x: 300, y: 100 }
+connections:
+  - source: start
+    target: process_email
+"""
+
+response = requests.post(
+    'https://api.sim.dev/api/workflows/yaml',
+    headers={
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'name': 'Email Processing Workflow',
+        'description': 'Process incoming emails and extract data',
+        'yaml': yaml_content
+    }
+)
+
+result = response.json()
+print(f"Imported workflow: {result['id']}")
+```
+</Tab>
+</Tabs>
+
+### Bulk Operations
+
+<Tabs items={['Delete Multiple', 'Move to Folder', 'Deploy Multiple']}>
+<Tab value="Delete Multiple">
+```javascript
+// Delete multiple workflows at once
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'delete',
+    workflowIds: ['wf_123', 'wf_456', 'wf_789']
+  })
+});
+
+const result = await response.json();
+console.log(`Deleted ${result.results.length} workflows`);
+```
+</Tab>
+<Tab value="Move to Folder">
+```javascript
+// Move workflows to a different folder
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'move',
+    workflowIds: ['wf_123', 'wf_456'],
+    targetFolderId: 'folder_new'
+  })
+});
+```
+</Tab>
+<Tab value="Deploy Multiple">
+```javascript
+// Deploy multiple workflows
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'deploy',
+    workflowIds: ['wf_123', 'wf_456', 'wf_789']
+  })
+});
+
+const result = await response.json();
+console.log('Deployment results:', result.results);
+```
+</Tab>
+</Tabs>
+
+## Common Workflow Object
+
+All workflow operations return workflow objects with this structure:
+
+```json
+{
+  "id": "wf_abc123",
+  "name": "Data Processing Pipeline",
+  "description": "Automated data ingestion and transformation",
+  "color": "#3972F6",
+  "userId": "user_123",
+  "workspaceId": "ws_abc123", 
+  "folderId": "folder_xyz789",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-16T14:30:00Z",
+  "isDeployed": true,
+  "deployedAt": "2024-01-16T12:00:00Z",
+  "runCount": 47,
+  "lastRunAt": "2024-01-16T14:25:00Z",
+  "isPublished": false,
+  "collaborators": [
+    {
+      "userId": "user_456",
+      "permissionLevel": "edit",
+      "addedAt": "2024-01-15T15:00:00Z"
+    }
+  ],
+  "state": {
+    "blocks": {
+      "start_1": {
+        "id": "start_1",
+        "type": "starter",
+        "name": "Start",
+        "position": { "x": 100, "y": 100 },
+        "config": { /* block configuration */ },
+        "enabled": true
+      }
+    },
+    "edges": [
+      {
+        "id": "edge_1",
+        "source": "start_1", 
+        "target": "process_1",
+        "sourceHandle": "output",
+        "targetHandle": "input"
+      }
+    ],
+    "loops": {},
+    "parallels": {},
+    "variables": {}
+  }
+}
+```
+
+## Error Handling
+
+The Workflows API uses standard HTTP status codes and provides detailed error information:
+
+### Common Error Responses
+
+```json
+// 400 Bad Request - Invalid parameters
+{
+  "error": "Invalid request data",
+  "details": [
+    {
+      "field": "name",
+      "message": "Name is required"
+    }
+  ],
+  "requestId": "req_abc123"
+}
+
+// 404 Not Found - Workflow doesn't exist
+{
+  "error": "Workflow not found",
+  "message": "No workflow found with ID wf_123",
+  "requestId": "req_abc123"
+}
+
+// 403 Forbidden - Insufficient permissions
+{
+  "error": "Access denied",
+  "message": "You don't have permission to modify this workflow",
+  "requestId": "req_abc123"
+}
+
+// 409 Conflict - Resource conflict
+{
+  "error": "Workflow name already exists",
+  "message": "A workflow with this name already exists in the workspace",
+  "requestId": "req_abc123"
+}
+```
+
+## Pagination
+
+List endpoints support pagination with consistent parameters:
+
+```json
+{
+  "data": [
+    // Array of workflow objects
+  ],
+  "pagination": {
+    "page": 2,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8,
+    "hasNextPage": true,
+    "hasPrevPage": true
+  },
+  "filters": {
+    "search": "data processing",
+    "status": "deployed",
+    "sortBy": "updatedAt",
+    "sortOrder": "desc"
+  }
+}
+```
+
+<Callout type="info">
+**Pagination Limits**
+- Maximum `limit` is 100 workflows per request
+- Default `limit` is 20 workflows
+- Use `page` parameter to navigate through results
+</Callout>
+
+## Next Steps
+
+Dive deeper into specific workflow API functionality:
+
+- [CRUD Operations](/docs/api/workflows/crud-operations) - Basic workflow management
+- [Advanced Filtering](/docs/api/workflows/advanced-filtering) - Search and filter workflows
+- [Bulk Operations](/docs/api/workflows/bulk-operations) - Manage multiple workflows
+- [YAML Import/Export](/docs/api/workflows/yaml-import-export) - Work with YAML format
+- [Validation](/docs/api/workflows/validation) - Validate workflow definitions
+- [Export Formats](/docs/api/workflows/export-formats) - Export workflows in multiple formats
+- [Collaborative Editing](/docs/api/workflows/collaborative-editing) - Real-time collaboration
+- [Versioning](/docs/api/workflows/versioning) - Version control and history

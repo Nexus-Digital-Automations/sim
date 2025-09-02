@@ -1,0 +1,834 @@
+---
+title: Collaborative Editing
+description: Real-time collaborative editing features for workflows including user management, permissions, and conflict resolution
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Collaborative Editing
+
+The Sim API provides powerful collaborative editing features that allow multiple users to work on workflows simultaneously. With real-time synchronization, granular permissions, and conflict resolution, teams can build complex workflows together efficiently.
+
+## Overview
+
+Collaborative editing in Sim includes:
+
+- **Real-time Updates** - See changes as they happen
+- **User Presence** - Know who's currently editing
+- **Granular Permissions** - Control who can view, edit, or manage workflows
+- **Conflict Resolution** - Automatic handling of simultaneous edits
+- **Version History** - Track all changes with author attribution
+- **Live Comments** - Discuss changes in context
+
+## Collaboration Permissions
+
+| Permission Level | View | Edit | Comment | Share | Delete |
+|------------------|------|------|---------|--------|--------|
+| **Viewer** | ✅ | ❌ | ✅ | ❌ | ❌ |
+| **Editor** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Admin** | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+## Collaborator Management
+
+### List Collaborators
+
+Get all users with access to a workflow:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function getCollaborators(workflowId) {
+  const response = await fetch(`/api/workflows/${workflowId}/collaborate`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': 'your-api-key'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get collaborators: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage
+try {
+  const collaborators = await getCollaborators('wf_abc123');
+  console.log('Collaborators:', collaborators);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+def get_collaborators(workflow_id, api_key):
+    """Get all collaborators for a workflow."""
+    
+    headers = {'x-api-key': api_key}
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/collaborate"
+    
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    collaborators = get_collaborators('wf_abc123', 'your-api-key')
+    print("Collaborators:", collaborators)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X GET \
+  -H "x-api-key: $SIM_API_KEY" \
+  "https://api.sim.dev/api/workflows/wf_abc123/collaborate"
+```
+</Tab>
+</Tabs>
+
+### Response Example
+
+```json
+{
+  "collaborators": [
+    {
+      "user_id": "user_abc123",
+      "username": "john_doe",
+      "email": "john@company.com",
+      "display_name": "John Doe",
+      "avatar_url": "https://avatars.example.com/john_doe.jpg",
+      "permission": "owner",
+      "added_at": "2024-01-10T14:20:00Z",
+      "last_active": "2024-01-15T10:30:00Z",
+      "currently_editing": true,
+      "cursor_position": {
+        "block_id": "processor",
+        "field": "config.transformation"
+      }
+    },
+    {
+      "user_id": "user_def456",
+      "username": "jane_smith", 
+      "email": "jane@company.com",
+      "display_name": "Jane Smith",
+      "avatar_url": "https://avatars.example.com/jane_smith.jpg",
+      "permission": "editor",
+      "added_at": "2024-01-12T09:15:00Z",
+      "last_active": "2024-01-15T09:45:00Z",
+      "currently_editing": false,
+      "cursor_position": null
+    }
+  ],
+  "total_count": 2,
+  "active_editors": 1
+}
+```
+
+### Add Collaborators
+
+Invite users to collaborate on a workflow:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function addCollaborators(workflowId, collaborators) {
+  const response = await fetch(`/api/workflows/${workflowId}/collaborate`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      collaborators: collaborators,
+      notify: true,
+      message: "You've been invited to collaborate on this workflow!"
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to add collaborators: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - add multiple collaborators
+try {
+  const newCollaborators = [
+    {
+      email: "alice@company.com",
+      permission: "editor"
+    },
+    {
+      user_id: "user_ghi789", 
+      permission: "viewer"
+    }
+  ];
+
+  const result = await addCollaborators('wf_abc123', newCollaborators);
+  console.log('Added collaborators:', result);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def add_collaborators(workflow_id, collaborators, api_key):
+    """Add collaborators to a workflow."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'collaborators': collaborators,
+        'notify': True,
+        'message': "You've been invited to collaborate on this workflow!"
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/collaborate"
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    new_collaborators = [
+        {
+            'email': 'alice@company.com',
+            'permission': 'editor'
+        },
+        {
+            'user_id': 'user_ghi789',
+            'permission': 'viewer'
+        }
+    ]
+    
+    result = add_collaborators('wf_abc123', new_collaborators, 'your-api-key')
+    print("Added collaborators:", result)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collaborators": [
+      {
+        "email": "alice@company.com",
+        "permission": "editor"
+      },
+      {
+        "user_id": "user_ghi789",
+        "permission": "viewer" 
+      }
+    ],
+    "notify": true,
+    "message": "You'\''ve been invited to collaborate on this workflow!"
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/collaborate"
+```
+</Tab>
+</Tabs>
+
+### Update Collaborator Permissions
+
+Change a collaborator's permission level:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function updateCollaboratorPermission(workflowId, userId, newPermission) {
+  const response = await fetch(`/api/workflows/${workflowId}/collaborate`, {
+    method: 'PATCH',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      permission: newPermission
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update permission: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage - promote viewer to editor
+try {
+  const result = await updateCollaboratorPermission(
+    'wf_abc123',
+    'user_def456', 
+    'editor'
+  );
+  console.log('Permission updated:', result);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def update_collaborator_permission(workflow_id, user_id, new_permission, api_key):
+    """Update a collaborator's permission level."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'user_id': user_id,
+        'permission': new_permission
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/collaborate"
+    response = requests.patch(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    result = update_collaborator_permission(
+        'wf_abc123',
+        'user_def456',
+        'editor',
+        'your-api-key'
+    )
+    print("Permission updated:", result)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X PATCH \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user_def456",
+    "permission": "editor"
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/collaborate"
+```
+</Tab>
+</Tabs>
+
+### Remove Collaborators
+
+Remove a user's access to a workflow:
+
+<Tabs items=['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function removeCollaborator(workflowId, userId) {
+  const response = await fetch(`/api/workflows/${workflowId}/collaborate`, {
+    method: 'DELETE',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      user_id: userId
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to remove collaborator: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Usage
+try {
+  const result = await removeCollaborator('wf_abc123', 'user_ghi789');
+  console.log('Collaborator removed:', result);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def remove_collaborator(workflow_id, user_id, api_key):
+    """Remove a collaborator from a workflow."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {'user_id': user_id}
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/collaborate"
+    response = requests.delete(url, headers=headers, json=payload)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    result = remove_collaborator('wf_abc123', 'user_ghi789', 'your-api-key')
+    print("Collaborator removed:", result)
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X DELETE \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user_ghi789"
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/collaborate"
+```
+</Tab>
+</Tabs>
+
+## Real-time Features
+
+### WebSocket Connection
+
+Connect to real-time collaboration events:
+
+```javascript
+class WorkflowCollaboration {
+  constructor(workflowId, apiKey) {
+    this.workflowId = workflowId;
+    this.apiKey = apiKey;
+    this.ws = null;
+    this.handlers = {};
+  }
+
+  connect() {
+    const wsUrl = `wss://api.sim.dev/ws/workflows/${this.workflowId}/collaborate`;
+    
+    this.ws = new WebSocket(wsUrl, [], {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      }
+    });
+
+    this.ws.onopen = () => {
+      console.log('Connected to collaboration session');
+      this.send('join', { user_id: 'current_user' });
+    };
+
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      this.handleMessage(data);
+    };
+
+    this.ws.onclose = () => {
+      console.log('Collaboration session closed');
+      setTimeout(() => this.connect(), 5000); // Reconnect
+    };
+  }
+
+  handleMessage(data) {
+    const handler = this.handlers[data.type];
+    if (handler) {
+      handler(data);
+    }
+  }
+
+  // Register event handlers
+  on(event, handler) {
+    this.handlers[event] = handler;
+  }
+
+  // Send messages to collaboration session
+  send(type, payload) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type,
+        workflow_id: this.workflowId,
+        timestamp: new Date().toISOString(),
+        ...payload
+      }));
+    }
+  }
+
+  // Broadcast cursor position
+  updateCursor(blockId, field, position) {
+    this.send('cursor_update', {
+      block_id: blockId,
+      field: field,
+      position: position
+    });
+  }
+
+  // Broadcast content changes
+  updateContent(blockId, field, content) {
+    this.send('content_update', {
+      block_id: blockId,
+      field: field,
+      content: content,
+      change_id: this.generateChangeId()
+    });
+  }
+
+  generateChangeId() {
+    return `change_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+// Usage
+const collab = new WorkflowCollaboration('wf_abc123', 'your-api-key');
+
+// Handle real-time events
+collab.on('user_joined', (data) => {
+  console.log(`${data.user.display_name} joined the session`);
+});
+
+collab.on('user_left', (data) => {
+  console.log(`${data.user.display_name} left the session`);
+});
+
+collab.on('cursor_update', (data) => {
+  console.log(`${data.user.display_name} is editing ${data.block_id}.${data.field}`);
+});
+
+collab.on('content_update', (data) => {
+  console.log(`Content updated by ${data.user.display_name}:`, data.content);
+});
+
+collab.connect();
+```
+
+### Collaboration Events
+
+| Event Type | Description | Payload |
+|------------|-------------|---------|
+| `user_joined` | User joined collaboration session | `{user, timestamp}` |
+| `user_left` | User left collaboration session | `{user, timestamp}` |
+| `cursor_update` | Cursor position changed | `{user, block_id, field, position}` |
+| `content_update` | Content was modified | `{user, block_id, field, content, change_id}` |
+| `selection_update` | Text selection changed | `{user, block_id, field, selection}` |
+| `comment_added` | Comment was added | `{user, comment, block_id, position}` |
+| `workflow_saved` | Workflow was saved | `{user, version, timestamp}` |
+
+## Conflict Resolution
+
+### Operational Transform
+
+Sim uses Operational Transform (OT) to handle simultaneous edits:
+
+```javascript
+class ConflictResolver {
+  constructor() {
+    this.pendingOperations = [];
+    this.appliedOperations = [];
+  }
+
+  // Apply local operation and send to server
+  applyLocalOperation(operation) {
+    // Apply to local state
+    this.applyOperation(operation);
+    
+    // Transform against pending operations
+    const transformedOp = this.transformAgainstPending(operation);
+    
+    // Send to server
+    this.sendToServer(transformedOp);
+    
+    // Track as pending
+    this.pendingOperations.push(transformedOp);
+  }
+
+  // Handle remote operation from server
+  handleRemoteOperation(operation) {
+    // Transform against local pending operations
+    let transformedOp = operation;
+    
+    for (const pendingOp of this.pendingOperations) {
+      transformedOp = this.transformOperations(transformedOp, pendingOp);
+    }
+    
+    // Apply transformed operation
+    this.applyOperation(transformedOp);
+    
+    // Update pending operations
+    this.updatePendingOperations(operation);
+  }
+
+  // Transform two operations for concurrent execution
+  transformOperations(op1, op2) {
+    // Implementation of operational transform logic
+    // This handles cases like:
+    // - Insertions at same position
+    // - Deletions of same content
+    // - Overlapping edits
+    
+    if (op1.type === 'insert' && op2.type === 'insert') {
+      if (op1.position <= op2.position) {
+        return {
+          ...op2,
+          position: op2.position + op1.content.length
+        };
+      }
+    }
+    
+    if (op1.type === 'delete' && op2.type === 'insert') {
+      if (op1.position <= op2.position) {
+        return {
+          ...op2,
+          position: op2.position - op1.length
+        };
+      }
+    }
+    
+    // Additional transform cases...
+    return op2;
+  }
+
+  applyOperation(operation) {
+    // Apply operation to local workflow state
+    switch (operation.type) {
+      case 'insert':
+        this.insertText(operation.block_id, operation.field, 
+                       operation.position, operation.content);
+        break;
+      case 'delete':
+        this.deleteText(operation.block_id, operation.field,
+                       operation.position, operation.length);
+        break;
+      case 'replace':
+        this.replaceText(operation.block_id, operation.field,
+                        operation.position, operation.length, operation.content);
+        break;
+    }
+  }
+}
+```
+
+### Conflict Resolution Strategies
+
+<Callout type="info">
+**Automatic Resolution**: Most conflicts are resolved automatically using operational transform. Manual resolution is only needed for complex structural changes.
+</Callout>
+
+1. **Text Edits** - Automatically merged using operational transform
+2. **Block Configuration** - Last-write-wins with user notification
+3. **Structure Changes** - Manual resolution required
+4. **Concurrent Saves** - Automatic merge with conflict markers
+
+## Comments and Discussions
+
+### Add Comments
+
+Add contextual comments to workflow elements:
+
+<Tabs items={['JavaScript', 'Python', 'cURL']}>
+<Tab value="JavaScript">
+```javascript
+async function addComment(workflowId, comment) {
+  const response = await fetch(`/api/workflows/${workflowId}/comments`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': 'your-api-key',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(comment)
+  });
+
+  return await response.json();
+}
+
+// Usage - add comment to specific block
+try {
+  const comment = await addComment('wf_abc123', {
+    block_id: 'processor',
+    position: { x: 100, y: 50 },
+    content: 'Should we add error handling here?',
+    mentions: ['user_def456']
+  });
+  
+  console.log('Comment added:', comment.id);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</Tab>
+<Tab value="Python">
+```python
+def add_comment(workflow_id, comment_data, api_key):
+    """Add a comment to a workflow."""
+    
+    headers = {
+        'x-api-key': api_key,
+        'Content-Type': 'application/json'
+    }
+    
+    url = f"https://api.sim.dev/api/workflows/{workflow_id}/comments"
+    response = requests.post(url, headers=headers, json=comment_data)
+    response.raise_for_status()
+    
+    return response.json()
+
+# Usage
+try:
+    comment = add_comment('wf_abc123', {
+        'block_id': 'processor',
+        'position': {'x': 100, 'y': 50},
+        'content': 'Should we add error handling here?',
+        'mentions': ['user_def456']
+    }, 'your-api-key')
+    
+    print(f"Comment added: {comment['id']}")
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X POST \
+  -H "x-api-key: $SIM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "block_id": "processor",
+    "position": {"x": 100, "y": 50},
+    "content": "Should we add error handling here?",
+    "mentions": ["user_def456"]
+  }' \
+  "https://api.sim.dev/api/workflows/wf_abc123/comments"
+```
+</Tab>
+</Tabs>
+
+## Best Practices
+
+### 1. Permission Management
+
+```javascript
+// Implement role-based permissions
+const PERMISSIONS = {
+  viewer: ['read', 'comment'],
+  editor: ['read', 'comment', 'edit'],
+  owner: ['read', 'comment', 'edit', 'share', 'delete'],
+  admin: ['read', 'comment', 'edit', 'share', 'delete', 'manage']
+};
+
+function hasPermission(userRole, action) {
+  return PERMISSIONS[userRole]?.includes(action) || false;
+}
+
+// Check before allowing actions
+if (hasPermission(user.role, 'edit')) {
+  await updateWorkflow(workflowId, changes);
+} else {
+  throw new Error('Insufficient permissions');
+}
+```
+
+### 2. Conflict Prevention
+
+```javascript
+// Implement optimistic locking
+class OptimisticLocking {
+  constructor() {
+    this.lockTimeout = 30000; // 30 seconds
+    this.activeLocks = new Map();
+  }
+
+  async acquireLock(blockId, userId) {
+    const existingLock = this.activeLocks.get(blockId);
+    
+    if (existingLock && existingLock.userId !== userId) {
+      const timeLeft = existingLock.expiresAt - Date.now();
+      if (timeLeft > 0) {
+        throw new Error(`Block locked by ${existingLock.username} for ${Math.round(timeLeft/1000)}s`);
+      }
+    }
+
+    // Acquire lock
+    this.activeLocks.set(blockId, {
+      userId,
+      username: await this.getUserName(userId),
+      expiresAt: Date.now() + this.lockTimeout
+    });
+
+    // Auto-release lock
+    setTimeout(() => {
+      this.releaseLock(blockId, userId);
+    }, this.lockTimeout);
+  }
+
+  releaseLock(blockId, userId) {
+    const lock = this.activeLocks.get(blockId);
+    if (lock && lock.userId === userId) {
+      this.activeLocks.delete(blockId);
+    }
+  }
+}
+```
+
+### 3. User Presence
+
+```javascript
+// Track active users and their status
+class PresenceManager {
+  constructor(workflowId) {
+    this.workflowId = workflowId;
+    this.activeUsers = new Map();
+  }
+
+  updatePresence(userId, status) {
+    this.activeUsers.set(userId, {
+      ...status,
+      lastSeen: Date.now()
+    });
+
+    // Broadcast to other users
+    this.broadcastPresence(userId, status);
+  }
+
+  getActiveUsers() {
+    const now = Date.now();
+    const activeThreshold = 60000; // 1 minute
+    
+    return Array.from(this.activeUsers.entries())
+      .filter(([_, presence]) => now - presence.lastSeen < activeThreshold)
+      .map(([userId, presence]) => ({ userId, ...presence }));
+  }
+
+  broadcastPresence(userId, status) {
+    // Send via WebSocket to all collaborators
+    this.broadcast('presence_update', {
+      user_id: userId,
+      status: status,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+```
+
+## Next Steps
+
+- [Versioning](/docs/api/workflows/versioning) - Track workflow version history
+- [Error Codes](/docs/api/error-codes) - Handle collaboration errors
+- [WebSocket API](/docs/api/websockets) - Real-time communication details
+- [SDKs](/docs/api/sdks/javascript) - Client libraries with collaboration features

@@ -1,0 +1,1046 @@
+---
+title: Bulk Operations
+description: Efficiently manage multiple workflows with bulk operations for delete, move, copy, deploy, and tag actions
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs'
+import { Callout } from 'fumadocs-ui/components/callout'
+
+# Bulk Operations
+
+The Sim API provides powerful bulk operations that allow you to manage multiple workflows simultaneously. This is essential for administrative tasks, data migration, batch processing, and organizational workflows.
+
+## Overview
+
+Bulk operations support the following actions:
+- **Delete** - Remove multiple workflows at once
+- **Move** - Relocate workflows to different folders or workspaces
+- **Copy** - Duplicate workflows with customization options
+- **Deploy** - Deploy multiple workflows simultaneously
+- **Undeploy** - Undeploy multiple workflows
+- **Tag** - Apply tags to multiple workflows for organization
+
+## Endpoint
+
+```http
+PATCH /api/workflows
+```
+
+## Request Format
+
+### Request Body Schema
+
+```json
+{
+  "operation": "delete" | "move" | "copy" | "deploy" | "undeploy" | "tag",
+  "workflowIds": ["string"],
+  "targetFolderId": "string | null", // For move/copy operations
+  "targetWorkspaceId": "string",     // For move/copy operations
+  "tags": ["string"],                // For tag operations
+  "preserveCollaborators": boolean   // For copy operations (default: true)
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `operation` | string | ✅ | The bulk operation to perform |
+| `workflowIds` | string[] | ✅ | Array of workflow IDs (1-100 workflows) |
+| `targetFolderId` | string\|null | ⚠️ | Required for move/copy operations |
+| `targetWorkspaceId` | string | ⚠️ | Required for move/copy operations |
+| `tags` | string[] | ⚠️ | Required for tag operations |
+| `preserveCollaborators` | boolean | ❌ | For copy operations (default: true) |
+
+<Callout type="info">
+**Limits**: You can perform bulk operations on up to 100 workflows per request. For larger operations, split into multiple requests.
+</Callout>
+
+## Bulk Delete
+
+Remove multiple workflows permanently.
+
+<Callout type="warn">
+**Warning**: Bulk delete operations are irreversible. Ensure you have backups or exports if needed.
+</Callout>
+
+### Example
+
+<Tabs items={['JavaScript', 'cURL', 'Python']}>
+<Tab value="JavaScript">
+```javascript
+// Delete multiple workflows
+const workflowsToDelete = ['wf_123', 'wf_456', 'wf_789'];
+
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'delete',
+    workflowIds: workflowsToDelete
+  })
+});
+
+const result = await response.json();
+console.log('Deletion results:', result);
+
+// Process results
+result.results.forEach(item => {
+  if (item.status === 'deleted') {
+    console.log(`✅ Deleted workflow ${item.id}`);
+  } else {
+    console.error(`❌ Failed to delete workflow ${item.id}`);
+  }
+});
+```
+</Tab>
+<Tab value="cURL">
+```bash
+curl -X PATCH \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "delete",
+    "workflowIds": ["wf_123", "wf_456", "wf_789"]
+  }' \
+  https://api.sim.dev/api/workflows
+```
+</Tab>
+<Tab value="Python">
+```python
+import requests
+
+workflow_ids = ['wf_123', 'wf_456', 'wf_789']
+
+response = requests.patch(
+    'https://api.sim.dev/api/workflows',
+    headers={
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'operation': 'delete',
+        'workflowIds': workflow_ids
+    }
+)
+
+result = response.json()
+print(f"Deleted {len([r for r in result['results'] if r['status'] == 'deleted'])} workflows")
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "operation": "delete",
+  "results": [
+    { "id": "wf_123", "status": "deleted" },
+    { "id": "wf_456", "status": "deleted" },
+    { "id": "wf_789", "status": "deleted" }
+  ],
+  "summary": {
+    "requested": 3,
+    "successful": 3,
+    "failed": 0
+  }
+}
+```
+
+## Bulk Move
+
+Move multiple workflows to a different folder or workspace.
+
+### Examples
+
+<Tabs items={['Move to Folder', 'Move to Workspace', 'Move to Root']}>
+<Tab value="Move to Folder">
+```javascript
+// Move workflows to a different folder within the same workspace
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'move',
+    workflowIds: ['wf_123', 'wf_456'],
+    targetFolderId: 'folder_archive'
+  })
+});
+
+const result = await response.json();
+console.log(`Moved ${result.summary.successful} workflows to archive folder`);
+```
+</Tab>
+<Tab value="Move to Workspace">
+```javascript
+// Move workflows to a different workspace
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'move',
+    workflowIds: ['wf_123', 'wf_456'],
+    targetWorkspaceId: 'ws_production',
+    targetFolderId: 'folder_active'
+  })
+});
+
+const result = await response.json();
+console.log('Move to production workspace:', result.summary);
+```
+</Tab>
+<Tab value="Move to Root">
+```javascript
+// Move workflows to workspace root (no folder)
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'move',
+    workflowIds: ['wf_123', 'wf_456'],
+    targetFolderId: null // null means root level
+  })
+});
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "operation": "move",
+  "results": [
+    { "id": "wf_123", "status": "moved" },
+    { "id": "wf_456", "status": "moved" }
+  ],
+  "summary": {
+    "requested": 2,
+    "successful": 2,
+    "failed": 0
+  }
+}
+```
+
+## Bulk Copy
+
+Create copies of multiple workflows with optional customization.
+
+### Examples
+
+<Tabs items={['Simple Copy', 'Cross-Workspace Copy', 'Copy Without Collaborators']}>
+<Tab value="Simple Copy">
+```javascript
+// Copy workflows to a different folder
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'copy',
+    workflowIds: ['wf_123', 'wf_456'],
+    targetFolderId: 'folder_backups',
+    preserveCollaborators: true
+  })
+});
+
+const result = await response.json();
+console.log('Copy results:', result.results.map(r => ({
+  original: r.id,
+  copy: r.newId,
+  status: r.status
+})));
+```
+</Tab>
+<Tab value="Cross-Workspace Copy">
+```javascript
+// Copy workflows to different workspace
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'copy',
+    workflowIds: ['wf_template_1', 'wf_template_2'],
+    targetWorkspaceId: 'ws_client_project',
+    targetFolderId: 'folder_templates',
+    preserveCollaborators: false // Don't copy collaborators to client workspace
+  })
+});
+
+const result = await response.json();
+console.log(`Copied ${result.summary.successful} templates to client workspace`);
+```
+</Tab>
+<Tab value="Copy Without Collaborators">
+```javascript
+// Copy workflows but don't preserve collaborators
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'copy',
+    workflowIds: ['wf_123'],
+    targetFolderId: 'folder_personal',
+    preserveCollaborators: false // Create personal copy without collaborators
+  })
+});
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "operation": "copy",
+  "results": [
+    { 
+      "id": "wf_123", 
+      "status": "copied", 
+      "newId": "wf_abc789" 
+    },
+    { 
+      "id": "wf_456", 
+      "status": "copied", 
+      "newId": "wf_def012" 
+    }
+  ],
+  "summary": {
+    "requested": 2,
+    "successful": 2,
+    "failed": 0
+  }
+}
+```
+
+## Bulk Deploy/Undeploy
+
+Deploy or undeploy multiple workflows simultaneously.
+
+### Examples
+
+<Tabs items={['Bulk Deploy', 'Bulk Undeploy', 'Conditional Deploy']}>
+<Tab value="Bulk Deploy">
+```javascript
+// Deploy multiple workflows
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'deploy',
+    workflowIds: ['wf_123', 'wf_456', 'wf_789']
+  })
+});
+
+const result = await response.json();
+console.log('Deployment summary:', result.summary);
+
+// Check individual results
+result.results.forEach(item => {
+  if (item.status === 'deployed') {
+    console.log(`✅ Successfully deployed ${item.id}`);
+  } else {
+    console.error(`❌ Failed to deploy ${item.id}`);
+  }
+});
+```
+</Tab>
+<Tab value="Bulk Undeploy">
+```javascript
+// Undeploy multiple workflows (useful for maintenance)
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'undeploy',
+    workflowIds: ['wf_123', 'wf_456', 'wf_789']
+  })
+});
+
+const result = await response.json();
+console.log(`Undeployed ${result.summary.successful} workflows for maintenance`);
+```
+</Tab>
+<Tab value="Conditional Deploy">
+```javascript
+// Get workflows and deploy only those that meet criteria
+async function deployValidWorkflows(workspaceId) {
+  // First, get workflows that need deployment
+  const listResponse = await fetch('/api/workflows?' + new URLSearchParams({
+    workspaceId,
+    status: 'draft',
+    limit: '50'
+  }), {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+
+  const { data: workflows } = await listResponse.json();
+  
+  // Filter workflows that are ready for deployment (have more than just starter block)
+  const readyToDeploy = workflows
+    .filter(w => Object.keys(w.state?.blocks || {}).length > 1)
+    .map(w => w.id);
+
+  if (readyToDeploy.length === 0) {
+    console.log('No workflows ready for deployment');
+    return;
+  }
+
+  // Deploy the ready workflows
+  const deployResponse = await fetch('/api/workflows', {
+    method: 'PATCH',
+    headers: {
+      'x-api-key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      operation: 'deploy',
+      workflowIds: readyToDeploy
+    })
+  });
+
+  const result = await deployResponse.json();
+  console.log(`Deployed ${result.summary.successful} out of ${readyToDeploy.length} ready workflows`);
+}
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "operation": "deploy",
+  "results": [
+    { "id": "wf_123", "status": "deployed" },
+    { "id": "wf_456", "status": "deployed" },
+    { "id": "wf_789", "status": "deployed" }
+  ],
+  "summary": {
+    "requested": 3,
+    "successful": 3,
+    "failed": 0
+  }
+}
+```
+
+## Bulk Tagging
+
+Apply tags to multiple workflows for better organization.
+
+### Examples
+
+<Tabs items={['Add Tags', 'Replace Tags', 'Organize by Tags']}>
+<Tab value="Add Tags">
+```javascript
+// Add tags to multiple workflows
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'tag',
+    workflowIds: ['wf_123', 'wf_456', 'wf_789'],
+    tags: ['production', 'customer-facing', 'high-priority']
+  })
+});
+
+const result = await response.json();
+console.log('Tagging results:', result.results.map(r => ({
+  id: r.id,
+  status: r.status,
+  tags: r.tags
+})));
+```
+</Tab>
+<Tab value="Replace Tags">
+```javascript
+// Replace existing tags with new ones
+const response = await fetch('/api/workflows', {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'tag',
+    workflowIds: ['wf_123', 'wf_456'],
+    tags: ['archived', 'legacy'], // This replaces existing tags
+  })
+});
+```
+</Tab>
+<Tab value="Organize by Tags">
+```javascript
+// Organize workflows by applying relevant tags
+async function organizeWorkflowsByType() {
+  // Get all workflows
+  const response = await fetch('/api/workflows?limit=100', {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+  
+  const { data: workflows } = await response.json();
+  
+  // Categorize workflows
+  const emailWorkflows = workflows
+    .filter(w => w.name.toLowerCase().includes('email') || 
+                 w.description.toLowerCase().includes('email'))
+    .map(w => w.id);
+  
+  const dataWorkflows = workflows
+    .filter(w => w.name.toLowerCase().includes('data') || 
+                 w.description.toLowerCase().includes('process'))
+    .map(w => w.id);
+
+  // Apply tags in bulk
+  const operations = [
+    {
+      operation: 'tag',
+      workflowIds: emailWorkflows,
+      tags: ['email', 'communication', 'automated']
+    },
+    {
+      operation: 'tag', 
+      workflowIds: dataWorkflows,
+      tags: ['data-processing', 'analytics', 'automated']
+    }
+  ];
+
+  for (const op of operations) {
+    if (op.workflowIds.length > 0) {
+      const result = await fetch('/api/workflows', {
+        method: 'PATCH',
+        headers: {
+          'x-api-key': 'YOUR_API_KEY',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(op)
+      });
+      
+      const data = await result.json();
+      console.log(`Tagged ${data.summary.successful} workflows with ${op.tags.join(', ')}`);
+    }
+  }
+}
+```
+</Tab>
+</Tabs>
+
+### Response
+
+```json
+{
+  "operation": "tag",
+  "results": [
+    { 
+      "id": "wf_123", 
+      "status": "tagged", 
+      "tags": ["production", "customer-facing", "high-priority"] 
+    },
+    { 
+      "id": "wf_456", 
+      "status": "tagged", 
+      "tags": ["production", "customer-facing", "high-priority"] 
+    }
+  ],
+  "summary": {
+    "requested": 2,
+    "successful": 2,
+    "failed": 0
+  }
+}
+```
+
+## Error Handling
+
+### Partial Success Scenarios
+
+Bulk operations can have partial success - some workflows succeed while others fail:
+
+```json
+{
+  "operation": "delete",
+  "results": [
+    { "id": "wf_123", "status": "deleted" },
+    { "id": "wf_456", "status": "error", "error": "Access denied" },
+    { "id": "wf_789", "status": "deleted" }
+  ],
+  "summary": {
+    "requested": 3,
+    "successful": 2,
+    "failed": 1
+  }
+}
+```
+
+### Permission Errors
+
+When you lack permission for some workflows:
+
+```json
+{
+  "error": "Access denied for some workflows",
+  "deniedWorkflows": [
+    { "id": "wf_456", "name": "Protected Workflow" }
+  ],
+  "requestId": "req_abc123"
+}
+```
+
+### Error Handling Example
+
+```javascript
+async function safeBulkOperation(operation, workflowIds, options = {}) {
+  try {
+    const response = await fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation,
+        workflowIds,
+        ...options
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      
+      if (response.status === 403 && error.deniedWorkflows) {
+        console.warn('Access denied for some workflows:', error.deniedWorkflows);
+        
+        // Retry with only accessible workflows
+        const accessibleIds = workflowIds.filter(id => 
+          !error.deniedWorkflows.some(denied => denied.id === id)
+        );
+        
+        if (accessibleIds.length > 0) {
+          console.log(`Retrying with ${accessibleIds.length} accessible workflows`);
+          return safeBulkOperation(operation, accessibleIds, options);
+        }
+      }
+      
+      throw new Error(error.message || 'Bulk operation failed');
+    }
+
+    const result = await response.json();
+    
+    // Log results
+    console.log(`Bulk ${operation} summary:`, result.summary);
+    
+    if (result.summary.failed > 0) {
+      const failures = result.results.filter(r => r.status === 'error');
+      console.warn('Some operations failed:', failures);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error(`Bulk ${operation} error:`, error);
+    throw error;
+  }
+}
+
+// Usage
+try {
+  const result = await safeBulkOperation('delete', ['wf_123', 'wf_456']);
+  console.log(`Successfully deleted ${result.summary.successful} workflows`);
+} catch (error) {
+  console.error('Bulk delete failed:', error);
+}
+```
+
+## Advanced Bulk Operations
+
+### Batch Processing Large Sets
+
+For operations on more than 100 workflows, split into batches:
+
+```javascript
+class BulkOperationManager {
+  constructor(apiKey, batchSize = 100) {
+    this.apiKey = apiKey;
+    this.batchSize = batchSize;
+  }
+
+  async executeBulkOperation(operation, workflowIds, options = {}) {
+    const batches = this.createBatches(workflowIds);
+    const results = [];
+    
+    console.log(`Processing ${workflowIds.length} workflows in ${batches.length} batches`);
+    
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      console.log(`Processing batch ${i + 1}/${batches.length} (${batch.length} workflows)`);
+      
+      try {
+        const batchResult = await this.performBulkOperation(operation, batch, options);
+        results.push(batchResult);
+        
+        // Small delay between batches to avoid rate limits
+        if (i < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (error) {
+        console.error(`Batch ${i + 1} failed:`, error);
+        results.push({ error: error.message, batch });
+      }
+    }
+    
+    return this.aggregateResults(results, operation);
+  }
+
+  createBatches(workflowIds) {
+    const batches = [];
+    for (let i = 0; i < workflowIds.length; i += this.batchSize) {
+      batches.push(workflowIds.slice(i, i + this.batchSize));
+    }
+    return batches;
+  }
+
+  async performBulkOperation(operation, workflowIds, options) {
+    const response = await fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': this.apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation,
+        workflowIds,
+        ...options
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || `Bulk ${operation} failed`);
+    }
+
+    return await response.json();
+  }
+
+  aggregateResults(batchResults, operation) {
+    const aggregated = {
+      operation,
+      results: [],
+      summary: {
+        requested: 0,
+        successful: 0,
+        failed: 0
+      }
+    };
+
+    batchResults.forEach(batch => {
+      if (batch.error) {
+        // Handle batch errors
+        console.error('Batch error:', batch.error);
+        return;
+      }
+
+      aggregated.results.push(...batch.results);
+      aggregated.summary.requested += batch.summary.requested;
+      aggregated.summary.successful += batch.summary.successful;
+      aggregated.summary.failed += batch.summary.failed;
+    });
+
+    return aggregated;
+  }
+}
+
+// Usage
+const bulkManager = new BulkOperationManager('YOUR_API_KEY');
+
+// Process 500 workflows in batches of 100
+const result = await bulkManager.executeBulkOperation('deploy', largWorkflowIdList);
+console.log(`Processed ${result.summary.successful} out of ${result.summary.requested} workflows`);
+```
+
+### Workflow Migration
+
+Complete example for migrating workflows between environments:
+
+```javascript
+async function migrateWorkflows(sourceWorkspaceId, targetWorkspaceId, options = {}) {
+  const {
+    folderMapping = {},
+    preserveDeploymentStatus = false,
+    tagPrefix = 'migrated',
+    dryRun = false
+  } = options;
+
+  console.log(`${dryRun ? 'Dry run: ' : ''}Migrating workflows from ${sourceWorkspaceId} to ${targetWorkspaceId}`);
+
+  // 1. Get all workflows from source workspace
+  const sourceResponse = await fetch('/api/workflows?' + new URLSearchParams({
+    workspaceId: sourceWorkspaceId,
+    limit: '100'
+  }), {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+
+  const { data: sourceWorkflows } = await sourceResponse.json();
+  console.log(`Found ${sourceWorkflows.length} workflows to migrate`);
+
+  if (dryRun) {
+    console.log('Workflows to migrate:', sourceWorkflows.map(w => w.name));
+    return;
+  }
+
+  // 2. Copy workflows to target workspace
+  const workflowIds = sourceWorkflows.map(w => w.id);
+  const copyResult = await fetch('/api/workflows', {
+    method: 'PATCH',
+    headers: {
+      'x-api-key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      operation: 'copy',
+      workflowIds,
+      targetWorkspaceId,
+      targetFolderId: folderMapping.default || null,
+      preserveCollaborators: false // Don't copy collaborators in migration
+    })
+  });
+
+  const copyResults = await copyResult.json();
+  const newWorkflowIds = copyResults.results
+    .filter(r => r.status === 'copied')
+    .map(r => r.newId);
+
+  console.log(`Successfully copied ${newWorkflowIds.length} workflows`);
+
+  // 3. Add migration tags
+  if (newWorkflowIds.length > 0) {
+    await fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation: 'tag',
+        workflowIds: newWorkflowIds,
+        tags: [tagPrefix, `source-${sourceWorkspaceId}`, new Date().toISOString().split('T')[0]]
+      })
+    });
+  }
+
+  // 4. Deploy if preserving deployment status
+  if (preserveDeploymentStatus) {
+    const deployedSourceIds = sourceWorkflows
+      .filter(w => w.isDeployed)
+      .map(w => w.id);
+    
+    if (deployedSourceIds.length > 0) {
+      // Find corresponding copied workflow IDs
+      const deployIds = copyResults.results
+        .filter(r => r.status === 'copied' && deployedSourceIds.includes(r.id))
+        .map(r => r.newId);
+
+      if (deployIds.length > 0) {
+        await fetch('/api/workflows', {
+          method: 'PATCH',
+          headers: {
+            'x-api-key': 'YOUR_API_KEY',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            operation: 'deploy',
+            workflowIds: deployIds
+          })
+        });
+
+        console.log(`Deployed ${deployIds.length} workflows to maintain status`);
+      }
+    }
+  }
+
+  return {
+    sourceWorkflows: sourceWorkflows.length,
+    copiedWorkflows: newWorkflowIds.length,
+    failedCopies: copyResults.summary.failed,
+    newWorkflowIds
+  };
+}
+
+// Usage
+const migrationResult = await migrateWorkflows('ws_dev', 'ws_staging', {
+  preserveDeploymentStatus: true,
+  tagPrefix: 'staging-migration',
+  dryRun: false
+});
+
+console.log('Migration completed:', migrationResult);
+```
+
+## Best Practices
+
+<Callout type="info">
+**Performance Tips**
+- Limit bulk operations to 100 workflows per request
+- Add delays between large batch operations to avoid rate limits
+- Use specific error handling for partial failures
+- Always verify results before proceeding with additional operations
+</Callout>
+
+### Bulk Operation Guidelines
+
+1. **Verify Permissions** - Ensure you have appropriate permissions for all target workflows
+2. **Backup Important Data** - Export workflows before destructive operations
+3. **Test with Small Batches** - Start with a few workflows to verify behavior
+4. **Monitor Results** - Check the summary and individual results for each operation
+5. **Handle Partial Failures** - Plan for scenarios where some workflows fail
+6. **Use Dry Run Options** - When available, test operations without making changes
+
+### Common Patterns
+
+```javascript
+// Pattern 1: Safe bulk delete with confirmation
+async function safeBulkDelete(workflowIds) {
+  console.log(`Preparing to delete ${workflowIds.length} workflows`);
+  
+  // Get workflow names for confirmation
+  const workflows = await Promise.all(
+    workflowIds.map(id => 
+      fetch(`/api/workflows/${id}`, {
+        headers: { 'x-api-key': 'YOUR_API_KEY' }
+      }).then(r => r.json()).then(data => data.data)
+    )
+  );
+  
+  console.log('Workflows to delete:');
+  workflows.forEach(w => console.log(`- ${w.name} (${w.runCount} runs)`));
+  
+  const confirmed = confirm(`Delete ${workflows.length} workflows? This cannot be undone.`);
+  if (!confirmed) return;
+  
+  const result = await fetch('/api/workflows', {
+    method: 'PATCH',
+    headers: {
+      'x-api-key': 'YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      operation: 'delete',
+      workflowIds
+    })
+  });
+  
+  return result.json();
+}
+
+// Pattern 2: Conditional bulk operations
+async function archiveInactiveWorkflows(days = 30) {
+  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  
+  // Find inactive workflows
+  const response = await fetch('/api/workflows?' + new URLSearchParams({
+    updatedBefore: cutoffDate,
+    status: 'deployed',
+    maxRunCount: '0',
+    limit: '100'
+  }), {
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  });
+  
+  const { data: inactiveWorkflows } = await response.json();
+  
+  if (inactiveWorkflows.length === 0) {
+    console.log('No inactive workflows found');
+    return;
+  }
+  
+  console.log(`Found ${inactiveWorkflows.length} inactive workflows`);
+  
+  // Move to archive folder and undeploy
+  const workflowIds = inactiveWorkflows.map(w => w.id);
+  
+  const [moveResult, undeployResult, tagResult] = await Promise.all([
+    // Move to archive folder
+    fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation: 'move',
+        workflowIds,
+        targetFolderId: 'folder_archive'
+      })
+    }).then(r => r.json()),
+    
+    // Undeploy
+    fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation: 'undeploy',
+        workflowIds
+      })
+    }).then(r => r.json()),
+    
+    // Add archived tag
+    fetch('/api/workflows', {
+      method: 'PATCH',
+      headers: {
+        'x-api-key': 'YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        operation: 'tag',
+        workflowIds,
+        tags: ['archived', `archived-${new Date().toISOString().split('T')[0]}`]
+      })
+    }).then(r => r.json())
+  ]);
+  
+  console.log('Archive results:', {
+    moved: moveResult.summary.successful,
+    undeployed: undeployResult.summary.successful,
+    tagged: tagResult.summary.successful
+  });
+}
+```
+
+## Next Steps
+
+- [YAML Import/Export](/docs/api/workflows/yaml-import-export) - Work with YAML workflow definitions
+- [Validation](/docs/api/workflows/validation) - Validate workflows before operations
+- [Export Formats](/docs/api/workflows/export-formats) - Export workflows in multiple formats
+- [Error Codes](/docs/api/error-codes) - Complete error handling reference
