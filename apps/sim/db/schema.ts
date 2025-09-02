@@ -1421,3 +1421,157 @@ export const workflowVersionStats = pgTable(
     ),
   })
 )
+
+// ========================
+// COLLABORATIVE EDITING TABLES
+// ========================
+
+export const workflowCollaborationSessions = pgTable(
+  'workflow_collaboration_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    socketId: text('socket_id').notNull(),
+    joinedAt: timestamp('joined_at').notNull().defaultNow(),
+    lastActivity: timestamp('last_activity').notNull().defaultNow(),
+    permissions: text('permissions').notNull().default('edit'), // 'view', 'edit', 'admin'
+    userAgent: text('user_agent'),
+    ipAddress: text('ip_address'),
+  },
+  (table) => ({
+    workflowIdIdx: index('collaboration_sessions_workflow_id_idx').on(table.workflowId),
+    userIdIdx: index('collaboration_sessions_user_id_idx').on(table.userId),
+    socketIdIdx: index('collaboration_sessions_socket_id_idx').on(table.socketId),
+    lastActivityIdx: index('collaboration_sessions_last_activity_idx').on(table.lastActivity),
+    uniqueUserWorkflowSocketConstraint: uniqueIndex('collaboration_sessions_unique_idx').on(
+      table.workflowId,
+      table.userId,
+      table.socketId
+    ),
+  })
+)
+
+export const workflowElementLocks = pgTable(
+  'workflow_element_locks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    elementType: text('element_type').notNull(), // 'block', 'edge', 'subblock', 'variable'
+    elementId: text('element_id').notNull(),
+    lockedByUserId: text('locked_by_user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    lockedAt: timestamp('locked_at').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+    lockReason: text('lock_reason').default('editing'), // 'editing', 'reviewing', 'custom'
+    metadata: jsonb('metadata').default('{}'),
+  },
+  (table) => ({
+    workflowIdIdx: index('element_locks_workflow_id_idx').on(table.workflowId),
+    userIdIdx: index('element_locks_user_id_idx').on(table.lockedByUserId),
+    expiresAtIdx: index('element_locks_expires_at_idx').on(table.expiresAt),
+    elementTypeIdIdx: index('element_locks_element_type_id_idx').on(table.elementType, table.elementId),
+    uniqueElementLockConstraint: uniqueIndex('element_locks_unique_idx').on(
+      table.workflowId,
+      table.elementType,
+      table.elementId
+    ),
+  })
+)
+
+export const workflowComments = pgTable(
+  'workflow_comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    elementType: text('element_type').notNull(), // 'block', 'edge', 'workflow', 'variable'
+    elementId: text('element_id'), // NULL for workflow-level comments
+    authorId: text('author_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    content: text('content').notNull(),
+    resolved: boolean('resolved').default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    parentCommentId: uuid('parent_comment_id').references(() => workflowComments.id, {
+      onDelete: 'cascade',
+    }),
+    positionX: decimal('position_x', { precision: 10, scale: 2 }),
+    positionY: decimal('position_y', { precision: 10, scale: 2 }),
+    metadata: jsonb('metadata').default('{}'),
+  },
+  (table) => ({
+    workflowIdIdx: index('workflow_comments_workflow_id_idx').on(table.workflowId),
+    elementIdx: index('workflow_comments_element_idx').on(
+      table.workflowId,
+      table.elementType,
+      table.elementId
+    ),
+    authorIdIdx: index('workflow_comments_author_id_idx').on(table.authorId),
+    parentIdIdx: index('workflow_comments_parent_id_idx').on(table.parentCommentId),
+    createdAtIdx: index('workflow_comments_created_at_idx').on(table.createdAt),
+  })
+)
+
+export const workflowLiveOperations = pgTable(
+  'workflow_live_operations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    operationType: text('operation_type').notNull(), // 'insert', 'delete', 'update', 'move'
+    operationTarget: text('operation_target').notNull(), // 'block', 'edge', 'property', 'subblock'
+    operationPayload: jsonb('operation_payload').notNull(),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    timestampMs: integer('timestamp_ms').notNull(), // Microsecond precision timestamp
+    vectorClock: jsonb('vector_clock').default('{}'),
+    applied: boolean('applied').default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    workflowIdIdx: index('live_operations_workflow_id_idx').on(table.workflowId),
+    timestampIdx: index('live_operations_timestamp_idx').on(table.workflowId, table.timestampMs),
+    authorIdIdx: index('live_operations_author_id_idx').on(table.authorId),
+    appliedIdx: index('live_operations_applied_idx').on(table.applied),
+  })
+)
+
+export const workflowCollaborators = pgTable(
+  'workflow_collaborators',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    permissionLevel: text('permission_level').notNull().default('edit'), // 'view', 'edit', 'admin'
+    addedByUserId: text('added_by_user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    addedAt: timestamp('added_at').notNull().defaultNow(),
+    lastAccess: timestamp('last_access'),
+  },
+  (table) => ({
+    workflowIdIdx: index('workflow_collaborators_workflow_id_idx').on(table.workflowId),
+    userIdIdx: index('workflow_collaborators_user_id_idx').on(table.userId),
+    addedByIdx: index('workflow_collaborators_added_by_idx').on(table.addedByUserId),
+    uniqueCollaboratorConstraint: uniqueIndex('workflow_collaborators_unique_idx').on(
+      table.workflowId,
+      table.userId
+    ),
+  })
+)
