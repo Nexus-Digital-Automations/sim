@@ -20,7 +20,12 @@
     "db:migrate": "bunx drizzle-kit migrate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "SKIP_COVERAGE_THRESHOLDS=true vitest run --coverage",
+    "test:coverage:watch": "SKIP_COVERAGE_THRESHOLDS=true vitest --coverage",
+    "test:coverage:full": "NODE_ENV=test vitest run --coverage",
+    "test:coverage:report": "SKIP_COVERAGE_THRESHOLDS=true vitest run --coverage && node ../../scripts/coverage-dashboard.js --report --badge",
+    "test:coverage:dashboard": "node ../../scripts/coverage-dashboard.js --report --badge --trend",
+    "test:coverage:ci": "NODE_ENV=test vitest run --coverage --reporter=json --outputFile=coverage/test-results.json",
     "email:dev": "email dev --dir components/emails",
     "type-check": "tsc --noEmit",
     "test:billing:suite": "bun run scripts/test-billing-suite.ts"

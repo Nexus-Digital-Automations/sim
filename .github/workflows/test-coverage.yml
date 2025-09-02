@@ -1,0 +1,453 @@
+name: Test Coverage and Quality Gates
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/sim/**'
+      - 'packages/**'
+      - '.github/workflows/test-coverage.yml'
+      - 'package.json'
+      - 'bun.lock'
+      - 'turbo.json'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/sim/**'
+      - 'packages/**'
+      - '.github/workflows/test-coverage.yml'
+      - 'package.json'
+      - 'bun.lock'
+      - 'turbo.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Testing environment variables
+  CI: true
+  NODE_ENV: test
+  # Coverage enforcement
+  COVERAGE_THRESHOLD: 80
+  CRITICAL_COVERAGE_THRESHOLD: 95
+  # Performance monitoring
+  TEST_TIMEOUT: 60000
+
+jobs:
+  # Job 1: Code Quality and Linting
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.13"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+            apps/sim/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type checking
+        run: bun run type-check
+
+      - name: Code formatting check
+        run: bun run format:check
+
+      - name: Linting check
+        run: bun run lint:check
+
+  # Job 2: Unit and Integration Tests with Coverage
+  test-coverage:
+    name: Test Coverage Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [quality-gates]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.13"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+            apps/sim/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup test environment
+        run: |
+          # Create necessary test directories
+          mkdir -p apps/sim/coverage
+          mkdir -p apps/sim/__tests__/reports
+          
+          # Set test environment variables
+          echo "NODE_ENV=test" >> $GITHUB_ENV
+          echo "CI=true" >> $GITHUB_ENV
+
+      - name: Run unit tests with coverage
+        id: test-coverage
+        run: |
+          cd apps/sim
+          echo "🧪 Running comprehensive test suite with coverage analysis..."
+          
+          # Run tests with coverage and capture exit code
+          bun run test:coverage --reporter=verbose --reporter=json --outputFile=coverage/test-results.json || echo "TESTS_FAILED=true" >> $GITHUB_ENV
+          
+          # Generate coverage summary
+          echo "📊 Coverage Analysis Summary:" >> coverage/coverage-summary.md
+          echo "- Timestamp: $(date)" >> coverage/coverage-summary.md
+          echo "- Commit: ${{ github.sha }}" >> coverage/coverage-summary.md
+          echo "- Branch: ${{ github.ref_name }}" >> coverage/coverage-summary.md
+          echo "" >> coverage/coverage-summary.md
+
+      - name: Parse coverage results
+        id: coverage-analysis
+        run: |
+          cd apps/sim
+          
+          # Extract coverage percentages from reports
+          if [ -f "coverage/coverage-final.json" ]; then
+            echo "📈 Coverage data found, analyzing results..."
+            
+            # Use Node.js to parse JSON and extract coverage metrics
+            node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+              
+              let totalLines = 0, coveredLines = 0;
+              let totalFunctions = 0, coveredFunctions = 0;
+              let totalStatements = 0, coveredStatements = 0;
+              let totalBranches = 0, coveredBranches = 0;
+              
+              Object.values(coverage).forEach(file => {
+                totalLines += Object.keys(file.l || {}).length;
+                coveredLines += Object.values(file.l || {}).filter(x => x > 0).length;
+                totalFunctions += Object.keys(file.f || {}).length;
+                coveredFunctions += Object.values(file.f || {}).filter(x => x > 0).length;
+                totalStatements += Object.keys(file.s || {}).length;
+                coveredStatements += Object.values(file.s || {}).filter(x => x > 0).length;
+                totalBranches += Object.keys(file.b || {}).length * 2; // Each branch has 2 paths
+                const branchData = Object.values(file.b || {});
+                coveredBranches += branchData.reduce((acc, branch) => acc + branch.filter(x => x > 0).length, 0);
+              });
+              
+              const linesCoverage = totalLines ? (coveredLines / totalLines * 100).toFixed(2) : '0.00';
+              const functionsCoverage = totalFunctions ? (coveredFunctions / totalFunctions * 100).toFixed(2) : '0.00';
+              const statementsCoverage = totalStatements ? (coveredStatements / totalStatements * 100).toFixed(2) : '0.00';
+              const branchesCoverage = totalBranches ? (coveredBranches / totalBranches * 100).toFixed(2) : '0.00';
+              
+              console.log(\`LINES_COVERAGE=\${linesCoverage}\`);
+              console.log(\`FUNCTIONS_COVERAGE=\${functionsCoverage}\`);
+              console.log(\`STATEMENTS_COVERAGE=\${statementsCoverage}\`);
+              console.log(\`BRANCHES_COVERAGE=\${branchesCoverage}\`);
+              
+              // Overall coverage (average of all metrics)
+              const overallCoverage = ((parseFloat(linesCoverage) + parseFloat(functionsCoverage) + parseFloat(statementsCoverage) + parseFloat(branchesCoverage)) / 4).toFixed(2);
+              console.log(\`OVERALL_COVERAGE=\${overallCoverage}\`);
+              
+              // Create detailed summary
+              const summary = \`
+            ## 📊 Coverage Analysis Results
+            
+            | Metric | Coverage | Status |
+            |--------|----------|---------|
+            | Lines | \${linesCoverage}% | \${parseFloat(linesCoverage) >= 80 ? '✅ Pass' : '❌ Fail'} |
+            | Functions | \${functionsCoverage}% | \${parseFloat(functionsCoverage) >= 80 ? '✅ Pass' : '❌ Fail'} |
+            | Statements | \${statementsCoverage}% | \${parseFloat(statementsCoverage) >= 80 ? '✅ Pass' : '❌ Fail'} |
+            | Branches | \${branchesCoverage}% | \${parseFloat(branchesCoverage) >= 80 ? '✅ Pass' : '❌ Fail'} |
+            | **Overall** | **\${overallCoverage}%** | **\${parseFloat(overallCoverage) >= 80 ? '✅ Pass' : '❌ Fail'}** |
+            
+            ### Coverage Details
+            - Total Files Analyzed: \${Object.keys(coverage).length}
+            - Lines: \${coveredLines}/\${totalLines} covered
+            - Functions: \${coveredFunctions}/\${totalFunctions} covered  
+            - Statements: \${coveredStatements}/\${totalStatements} covered
+            - Branches: \${coveredBranches}/\${totalBranches} covered
+            
+            ### Quality Gates
+            - 🎯 Target Coverage: 80%+
+            - 🏆 Critical Components: 95%+ (UI components, Auth modules)
+            - 📈 Trend: \${parseFloat(overallCoverage) >= 80 ? 'Meeting Standards' : 'Needs Improvement'}
+            \`;
+              
+              fs.writeFileSync('coverage/coverage-summary.md', summary);
+            " >> $GITHUB_ENV
+            
+          else
+            echo "⚠️ Coverage data not found"
+            echo "OVERALL_COVERAGE=0" >> $GITHUB_ENV
+            echo "LINES_COVERAGE=0" >> $GITHUB_ENV
+            echo "FUNCTIONS_COVERAGE=0" >> $GITHUB_ENV
+            echo "STATEMENTS_COVERAGE=0" >> $GITHUB_ENV
+            echo "BRANCHES_COVERAGE=0" >> $GITHUB_ENV
+          fi
+
+      - name: Coverage quality gate enforcement
+        run: |
+          echo "🚦 Enforcing coverage quality gates..."
+          
+          # Check if tests failed
+          if [ "$TESTS_FAILED" = "true" ]; then
+            echo "❌ Tests failed - blocking deployment"
+            exit 1
+          fi
+          
+          # Check coverage thresholds
+          OVERALL_COVERAGE=${OVERALL_COVERAGE:-0}
+          
+          if (( $(echo "$OVERALL_COVERAGE < 80" | bc -l) )); then
+            echo "❌ Coverage ($OVERALL_COVERAGE%) below minimum threshold (80%)"
+            echo "🛑 DEPLOYMENT BLOCKED: Insufficient test coverage"
+            echo "📋 Required Actions:"
+            echo "  - Add tests to increase coverage above 80%"
+            echo "  - Focus on critical paths and edge cases"
+            echo "  - Review coverage report in artifacts"
+            exit 1
+          fi
+          
+          echo "✅ Coverage quality gates passed ($OVERALL_COVERAGE%)"
+          echo "🎉 DEPLOYMENT APPROVED: Coverage meets requirements"
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports-${{ github.run_number }}
+          path: |
+            apps/sim/coverage/
+            apps/sim/__tests__/reports/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            apps/sim/coverage/test-results.json
+            apps/sim/coverage/coverage-summary.md
+          retention-days: 30
+
+      - name: Comment coverage results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const coveragePath = 'apps/sim/coverage/coverage-summary.md';
+              if (fs.existsSync(coveragePath)) {
+                const coverageReport = fs.readFileSync(coveragePath, 'utf8');
+                
+                const comment = `
+            ## 📊 Test Coverage Report
+            
+            ${coverageReport}
+            
+            ### 🔍 Quality Gate Status
+            - **Overall Status**: ${process.env.OVERALL_COVERAGE >= 80 ? '✅ PASSED' : '❌ FAILED'}
+            - **Coverage**: ${process.env.OVERALL_COVERAGE || '0'}%
+            - **Threshold**: 80%
+            
+            ${process.env.OVERALL_COVERAGE >= 80 ? 
+              '🎉 **Coverage requirements met!** This PR can be merged.' :
+              '⚠️ **Coverage below threshold.** Please add more tests before merging.'
+            }
+            
+            📁 Full coverage report available in [CI artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+                
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            } catch (error) {
+              console.error('Failed to post coverage comment:', error);
+            }
+
+  # Job 3: Performance Testing
+  performance-tests:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [quality-gates]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.13"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+            apps/sim/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run performance tests
+        run: |
+          cd apps/sim
+          echo "⚡ Running performance tests..."
+          
+          # Test execution speed
+          START_TIME=$(date +%s%N)
+          bun run test --reporter=json --outputFile=__tests__/reports/performance-results.json
+          END_TIME=$(date +%s%N)
+          
+          EXECUTION_TIME=$(( ($END_TIME - $START_TIME) / 1000000 )) # Convert to milliseconds
+          echo "Test execution time: ${EXECUTION_TIME}ms"
+          
+          # Performance thresholds
+          if [ $EXECUTION_TIME -gt 120000 ]; then # 2 minutes
+            echo "⚠️ Test execution slower than expected (${EXECUTION_TIME}ms > 120000ms)"
+          else
+            echo "✅ Test performance within acceptable range (${EXECUTION_TIME}ms)"
+          fi
+          
+          echo "EXECUTION_TIME=${EXECUTION_TIME}" >> $GITHUB_ENV
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-reports-${{ github.run_number }}
+          path: apps/sim/__tests__/reports/
+          retention-days: 7
+
+  # Job 4: Security Scanning
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality-gates]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.13"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+            apps/sim/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run security audit
+        run: |
+          echo "🔒 Running security audit..."
+          
+          # Check for security vulnerabilities in dependencies
+          bun audit --audit-level moderate || echo "SECURITY_ISSUES=true" >> $GITHUB_ENV
+          
+          echo "🔍 Security scan completed"
+
+      - name: Security quality gate
+        run: |
+          if [ "$SECURITY_ISSUES" = "true" ]; then
+            echo "⚠️ Security vulnerabilities detected"
+            echo "📋 Please review and update vulnerable dependencies"
+            # Note: Not blocking deployment for moderate issues in CI/CD setup
+            # Adjust this based on your security requirements
+          else
+            echo "✅ No security issues detected"
+          fi
+
+  # Job 5: Final Quality Gate
+  deployment-gate:
+    name: Deployment Quality Gate
+    runs-on: ubuntu-latest
+    needs: [quality-gates, test-coverage, performance-tests, security-scan]
+    if: always()
+    
+    steps:
+      - name: Check all quality gates
+        run: |
+          echo "🏁 Final deployment quality gate check..."
+          
+          # Check if any required jobs failed
+          if [[ "${{ needs.quality-gates.result }}" != "success" ]]; then
+            echo "❌ Quality gates failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.test-coverage.result }}" != "success" ]]; then
+            echo "❌ Test coverage requirements not met"
+            exit 1
+          fi
+          
+          echo "✅ All quality gates passed"
+          echo "🚀 READY FOR DEPLOYMENT"
+
+      - name: Deployment approval summary
+        run: |
+          echo "## 🎯 Deployment Approval Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Quality | ${{ needs.quality-gates.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Coverage | ${{ needs.test-coverage.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${{ needs.performance-tests.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security-scan.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Overall Status**: ${{ (needs.quality-gates.result == 'success' && needs.test-coverage.result == 'success') && '🎉 APPROVED FOR DEPLOYMENT' || '🛑 DEPLOYMENT BLOCKED' }}" >> $GITHUB_STEP_SUMMARY

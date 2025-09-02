@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2025-09-02T20:11:31.270Z",
+    "overall": 0.08,
+    "lines": 0,
+    "functions": 0.08,
+    "statements": 0.1,
+    "branches": 0.15,
+    "filesAnalyzed": 1313
+  },
+  {
+    "timestamp": "2025-09-02T20:15:20.723Z",
+    "overall": 0.08,
+    "lines": 0,
+    "functions": 0.08,
+    "statements": 0.1,
+    "branches": 0.15,
+    "filesAnalyzed": 1313
+  }
+]
