@@ -30,6 +30,9 @@ export const ToolIds = z.enum([
   'set_global_workflow_variables',
   // New
   'oauth_request_access',
+  // Nexus Copilot Knowledge Tools
+  'search_knowledge',
+  'manage_knowledge',
 ])
 export type ToolId = z.infer<typeof ToolIds>
 
@@ -70,6 +73,35 @@ export const ToolArgSchemas = {
   }),
   // New
   oauth_request_access: z.object({}),
+  // Nexus Copilot Knowledge Tools
+  search_knowledge: z.object({
+    query: z.string().min(1),
+    workspaceId: z.string(),
+    knowledgeBaseIds: z.array(z.string()).optional(),
+    searchType: z.enum(['vector', 'fulltext', 'hybrid']).default('hybrid'),
+    topK: z.number().min(1).max(50).default(10),
+    minSimilarity: z.number().min(0).max(1).default(0.7),
+    tagFilters: z.record(z.string()).optional(),
+  }),
+  manage_knowledge: z.object({
+    action: z.enum([
+      'create',
+      'update',
+      'delete',
+      'list',
+      'addDocument',
+      'listDocuments',
+      'getDetails',
+    ]),
+    workspaceId: z.string(),
+    knowledgeBaseId: z.string().optional(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    documentUrl: z.string().optional(),
+    documentContent: z.string().optional(),
+    filename: z.string().optional(),
+    tags: z.record(z.string()).optional(),
+  }),
 
   build_workflow: z.object({
     yamlContent: z.string(),
@@ -234,6 +266,9 @@ export const ToolSSESchemas = {
   reason: toolCallSSEFor('reason', ToolArgSchemas.reason),
   // New
   oauth_request_access: toolCallSSEFor('oauth_request_access', ToolArgSchemas.oauth_request_access),
+  // Nexus Copilot Knowledge Tools
+  search_knowledge: toolCallSSEFor('search_knowledge', ToolArgSchemas.search_knowledge),
+  manage_knowledge: toolCallSSEFor('manage_knowledge', ToolArgSchemas.manage_knowledge),
 } as const
 export type ToolSSESchemaMap = typeof ToolSSESchemas
 
@@ -284,6 +319,41 @@ export const ToolResultSchemas = {
   oauth_request_access: z.object({
     granted: z.boolean().optional(),
     message: z.string().optional(),
+  }),
+  // Nexus Copilot Knowledge Tools
+  search_knowledge: z.object({
+    status: z.string(),
+    results: z.array(
+      z.object({
+        id: z.string(),
+        content: z.string(),
+        metadata: z.record(z.any()),
+        documentName: z.string().optional(),
+        chunkIndex: z.number().optional(),
+        similarity: z.number().optional(),
+        relevanceScore: z.number().optional(),
+        searchType: z.string().optional(),
+        knowledgeBaseId: z.string().optional(),
+      })
+    ),
+    query: z.string(),
+    searchType: z.string(),
+    totalResults: z.number(),
+    knowledgeBaseIds: z.array(z.string()).optional(),
+    operationId: z.string(),
+    cost: z.any().optional(),
+    metadata: z.record(z.any()).optional(),
+  }),
+  manage_knowledge: z.object({
+    status: z.string(),
+    action: z.string(),
+    message: z.string().optional(),
+    knowledgeBase: z.any().optional(),
+    knowledgeBases: z.array(z.any()).optional(),
+    documents: z.array(z.any()).optional(),
+    count: z.number().optional(),
+    operationId: z.string(),
+    metadata: z.record(z.any()).optional(),
   }),
 
   build_workflow: BuildOrEditWorkflowResult,

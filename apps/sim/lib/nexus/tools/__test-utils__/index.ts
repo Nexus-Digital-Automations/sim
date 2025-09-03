@@ -279,8 +279,8 @@ export function createMockDatabase() {
  * Performance testing utilities
  */
 export class PerformanceTestHelper {
-  private startTime: number = 0
-  private endTime: number = 0
+  private startTime = 0
+  private endTime = 0
 
   start() {
     this.startTime = performance.now()

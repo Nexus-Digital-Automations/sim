@@ -825,9 +825,9 @@ function analyzUsagePattern(executionMetrics: any): string {
   )
   if (total === 0) return 'no-usage'
 
-  const manualRatio = (executionMetrics.manualExecutions / total) * 100
+  const manualRatio = ((Number(executionMetrics.manualExecutions) || 0) / total) * 100
   const automatedRatio =
-    ((executionMetrics.webhookTriggers + executionMetrics.scheduledExecutions) / total) * 100
+    (((Number(executionMetrics.webhookTriggers) || 0) + (Number(executionMetrics.scheduledExecutions) || 0)) / total) * 100
 
   if (automatedRatio > 60) return 'automation-heavy'
   if (manualRatio > 60) return 'manual-heavy'
