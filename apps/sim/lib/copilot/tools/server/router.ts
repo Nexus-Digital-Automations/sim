@@ -5,6 +5,8 @@ import { searchDocumentationServerTool } from '@/lib/copilot/tools/server/docs/s
 import { listGDriveFilesServerTool } from '@/lib/copilot/tools/server/gdrive/list-files'
 import { readGDriveFileServerTool } from '@/lib/copilot/tools/server/gdrive/read-file'
 import { makeApiRequestServerTool } from '@/lib/copilot/tools/server/other/make-api-request'
+import { manageFilesServerTool } from '@/lib/copilot/tools/server/files'
+import { manageEnvironmentServerTool } from '@/lib/copilot/tools/server/environment'
 import { searchOnlineServerTool } from '@/lib/copilot/tools/server/other/search-online'
 import { getEnvironmentVariablesServerTool } from '@/lib/copilot/tools/server/user/get-environment-variables'
 import { getOAuthCredentialsServerTool } from '@/lib/copilot/tools/server/user/get-oauth-credentials'
@@ -12,6 +14,8 @@ import { setEnvironmentVariablesServerTool } from '@/lib/copilot/tools/server/us
 import { buildWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/build-workflow'
 import { editWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/edit-workflow'
 import { getWorkflowConsoleServerTool } from '@/lib/copilot/tools/server/workflow/get-workflow-console'
+import { billingOperationsServerTool } from '@/lib/copilot/tools/server/billing/billing-operations'
+import { usageAnalyticsServerTool } from '@/lib/copilot/tools/server/billing/usage-analytics'
 import {
   BuildWorkflowInput,
   BuildWorkflowResult,
@@ -45,7 +49,10 @@ serverToolRegistry[listGDriveFilesServerTool.name] = listGDriveFilesServerTool
 serverToolRegistry[readGDriveFileServerTool.name] = readGDriveFileServerTool
 serverToolRegistry[getOAuthCredentialsServerTool.name] = getOAuthCredentialsServerTool
 serverToolRegistry[makeApiRequestServerTool.name] = makeApiRequestServerTool
-
+serverToolRegistry[manageFilesServerTool.name] = manageFilesServerTool
+serverToolRegistry[manageEnvironmentServerTool.name] = manageEnvironmentServerTool
+serverToolRegistry[billingOperationsServerTool.name] = billingOperationsServerTool
+serverToolRegistry[usageAnalyticsServerTool.name] = usageAnalyticsServerTool
 // Main router function
 export async function routeExecution(toolName: string, payload: unknown): Promise<any> {
   const tool = serverToolRegistry[toolName]

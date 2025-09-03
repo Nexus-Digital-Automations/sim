@@ -1,0 +1,7 @@
+[2025-09-03T09:00:13.726Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-03T09:00:13.727Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components
+[2025-09-03T09:00:13.727Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-03T09:00:13.727Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-03T09:00:13.727Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components
+[2025-09-03T09:00:13.728Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-03T09:00:13.728Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2

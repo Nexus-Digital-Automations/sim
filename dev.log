@@ -37,3 +37,15 @@ sim dev:  ○ Compiling /api/copilot/chat ...
 sim dev:  ✓ Compiled /api/copilot/chat in 1556ms
 sim dev: [2025-09-03T07:26:04.078Z] [INFO] [CopilotChatAPI] Retrieved 0 chats for workflow a796b73a-a1ad-49d8-9f12-ba803ee68697
 sim dev:  GET /api/copilot/chat?workflowId=a796b73a-a1ad-49d8-9f12-ba803ee68697 200 in 1734ms
+sim dev:  ✓ Compiled instrumentation Node.js in 70ms
+sim dev:  ✓ Compiled instrumentation Edge in 1ms
+sim dev:  ✓ Compiled middleware in 2ms
+sim dev: [Main Instrumentation] register() called, environment: { NEXT_RUNTIME: 'edge', NODE_ENV: 'development' }
+sim dev: [Main Instrumentation] Loading Edge Runtime instrumentation...
+sim dev: [Main Instrumentation] Calling Edge Runtime register()...
+sim dev: [2025-09-03T09:05:41.170Z] [INFO] [EdgeInstrumentation] Edge Runtime instrumentation initialized
+sim dev:  ○ Compiling /api/nexus/chat ...
+sim dev:  ✓ Compiled /api/nexus/chat in 543ms
+sim dev: [2m2025-09-03T09:05:42.016Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim dev: [2m2025-09-03T09:05:42.016Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim dev:  GET /api/nexus/chat 200 in 849ms

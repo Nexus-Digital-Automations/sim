@@ -215,7 +215,7 @@ import { quickValidateEmail } from '@/lib/email/validation'
 import { env, isTruthy } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { auth, getSession, signIn, signUp } from './auth'
+import { auth, getSession } from './auth'
 
 const mockBetterAuth = betterAuth as any
 const mockDrizzleAdapter = drizzleAdapter as any

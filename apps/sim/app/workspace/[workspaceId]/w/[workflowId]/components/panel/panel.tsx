@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDownToLine, CircleSlash, History, Plus, X } from 'lucide-react'
+import { ArrowDownToLine, CircleSlash, History, Plus, X, Zap } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
 import { Chat } from './components/chat/chat'
 import { Console } from './components/console/console'
 import { Copilot } from './components/copilot/copilot'
+import { Nexus } from './components/nexus/nexus'
 import { Variables } from './components/variables/variables'
 
 const logger = createLogger('Panel')
@@ -30,6 +31,9 @@ export function Panel() {
   const [resizeStartX, setResizeStartX] = useState(0)
   const [resizeStartWidth, setResizeStartWidth] = useState(0)
   const copilotRef = useRef<{
+    createNewChat: () => void
+  }>(null)
+  const nexusRef = useRef<{
     createNewChat: () => void
   }>(null)
   const lastLoadedWorkflowRef = useRef<string | null>(null)
@@ -121,8 +125,12 @@ export function Panel() {
   // Handle new chat creation with data loading
   const handleNewChat = useCallback(async () => {
     await ensureCopilotDataLoaded()
-    copilotRef.current?.createNewChat()
-  }, [ensureCopilotDataLoaded])
+    if (activeTab === 'nexus') {
+      nexusRef.current?.createNewChat()
+    } else {
+      copilotRef.current?.createNewChat()
+    }
+  }, [ensureCopilotDataLoaded, activeTab])
 
   // Handle history dropdown opening - use smart caching instead of force refresh
   const handleHistoryDropdownOpen = useCallback(
@@ -219,7 +227,7 @@ export function Panel() {
   )
 
   // Handle tab clicks - no loading, just switch tabs
-  const handleTabClick = async (tab: 'chat' | 'console' | 'variables' | 'copilot') => {
+  const handleTabClick = async (tab: 'chat' | 'console' | 'variables' | 'copilot' | 'nexus') => {
     setActiveTab(tab)
     if (!isOpen) {
       togglePanel()
@@ -314,6 +322,17 @@ export function Panel() {
           }`}
         >
           Copilot
+        </button>
+        <button
+          onClick={() => handleTabClick('nexus')}
+          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+            isOpen && activeTab === 'nexus' ? 'panel-tab-active' : 'panel-tab-inactive'
+          }`}
+        >
+          <div className='flex items-center gap-1'>
+            <Zap className='h-3 w-3' />
+            <span>Nexus</span>
+          </div>
         </button>
         <button
           onClick={() => handleTabClick('variables')}
@@ -465,6 +484,23 @@ export function Panel() {
                   </DropdownMenu>
                 </>
               )}
+              {activeTab === 'nexus' && (
+                <>
+                  {/* Nexus New Chat Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleNewChat}
+                        className='font-medium text-md leading-normal transition-[filter] hover:brightness-75 focus:outline-none focus-visible:outline-none active:outline-none dark:hover:brightness-125'
+                        style={{ color: 'var(--base-muted-foreground)' }}
+                      >
+                        <Plus className='h-4 w-4' strokeWidth={2} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side='bottom'>New Nexus chat</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
               {(activeTab === 'console' || activeTab === 'chat') && (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -511,6 +547,9 @@ export function Panel() {
             </div>
             <div style={{ display: activeTab === 'copilot' ? 'block' : 'none', height: '100%' }}>
               <Copilot ref={copilotRef} panelWidth={panelWidth} />
+            </div>
+            <div style={{ display: activeTab === 'nexus' ? 'block' : 'none', height: '100%' }}>
+              <Nexus ref={nexusRef} panelWidth={panelWidth} />
             </div>
             <div style={{ display: activeTab === 'variables' ? 'block' : 'none', height: '100%' }}>
               <Variables />
