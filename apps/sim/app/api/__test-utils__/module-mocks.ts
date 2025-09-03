@@ -64,6 +64,15 @@ export const mockControls = {
 // Initialize with defaults
 mockControls.reset()
 
+// Mock auth API functionality
+let mockAuthApi = {
+  forgetPassword: vi.fn(),
+  resetPassword: vi.fn(),
+  signIn: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+}
+
 // Mock @/lib/auth
 vi.mock('@/lib/auth', () => {
   console.log('📦 Mocking @/lib/auth')
@@ -73,8 +82,14 @@ vi.mock('@/lib/auth', () => {
       console.log('🔍 getSession called, returning:', result?.user?.id || 'null')
       return Promise.resolve(result)
     }),
+    auth: {
+      api: mockAuthApi,
+    },
   }
 })
+
+// Export auth API mock controls for tests
+export { mockAuthApi }
 
 // Mock @/lib/auth/internal
 vi.mock('@/lib/auth/internal', () => {

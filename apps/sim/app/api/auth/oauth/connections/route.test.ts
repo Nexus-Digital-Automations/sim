@@ -1,63 +1,83 @@
 /**
- * Tests for OAuth connections API route
+ * Comprehensive Test Suite for OAuth Connections API - Bun/Vitest Compatible
+ * Tests OAuth connection listing functionality including authentication and error handling
+ * Covers successful connection retrieval, user authentication, and database error scenarios
+ *
+ * This test suite uses the new module-level mocking infrastructure for compatibility
+ * with bun/vitest and provides comprehensive logging for debugging and maintenance.
  *
  * @vitest-environment node
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createMockRequest } from '@/app/api/__test-utils__/utils'
+import {
+  createMockRequest,
+  mockUser,
+  setupEnhancedTestMocks,
+} from '@/app/api/__test-utils__/enhanced-utils'
+
+// Import module-level mocks
+import { mockControls } from '@/app/api/__test-utils__/module-mocks'
+
+// Mock jwt-decode at module level
+const mockJwtDecode = vi.fn()
+vi.mock('jwt-decode', () => ({
+  jwtDecode: mockJwtDecode,
+}))
 
 describe('OAuth Connections API Route', () => {
-  const mockGetSession = vi.fn()
-  const mockDb = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    limit: vi.fn(),
-  }
-  const mockLogger = {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  }
+  let mocks: any
+  let GET: any
 
-  const mockUUID = 'mock-uuid-12345678-90ab-cdef-1234-567890abcdef'
+  // Sample OAuth connection data for testing
+  const sampleConnections = [
+    {
+      id: 'account-1',
+      providerId: 'google-email',
+      accountId: 'test@example.com',
+      scope: 'email profile',
+      updatedAt: new Date('2024-01-01'),
+      idToken: null,
+    },
+    {
+      id: 'account-2',
+      providerId: 'github',
+      accountId: 'testuser',
+      scope: 'repo',
+      updatedAt: new Date('2024-01-02'),
+      idToken: null,
+    },
+  ]
 
-  beforeEach(() => {
+  const sampleUserRecord = [{ email: 'user@example.com' }]
+
+  beforeEach(async () => {
+    // Clear all mocks and reset modules for fresh state
+    vi.clearAllMocks()
     vi.resetModules()
 
-    vi.stubGlobal('crypto', {
-      randomUUID: vi.fn().mockReturnValue(mockUUID),
+    console.log('[SETUP] Initializing enhanced test mocks for OAuth connections API')
+
+    // Setup comprehensive test infrastructure
+    mocks = setupEnhancedTestMocks({
+      auth: { authenticated: true, user: mockUser },
+      database: {
+        select: {
+          results: [sampleConnections, sampleUserRecord],
+        },
+      },
     })
 
-    vi.doMock('@/lib/auth', () => ({
-      getSession: mockGetSession,
-    }))
+    console.log('[SETUP] Enhanced test infrastructure initialized successfully')
 
-    vi.doMock('@/db', () => ({
-      db: mockDb,
-    }))
-
-    vi.doMock('@/db/schema', () => ({
-      account: { userId: 'userId', providerId: 'providerId' },
-      user: { email: 'email', id: 'id' },
-    }))
-
-    vi.doMock('drizzle-orm', () => ({
-      eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),
-    }))
-
-    vi.doMock('jwt-decode', () => ({
-      jwtDecode: vi.fn(),
-    }))
-
-    vi.doMock('@/lib/logs/console/logger', () => ({
-      createLogger: vi.fn().mockReturnValue(mockLogger),
-    }))
+    // Import route handlers after mocks are set up
+    const routeModule = await import('./route')
+    GET = routeModule.GET
   })
 
   afterEach(() => {
+    // Clean up after each test for isolation
     vi.clearAllMocks()
+    mocks?.cleanup()
   })
 
   it('should return connections successfully', async () => {

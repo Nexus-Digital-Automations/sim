@@ -1,29 +1,33 @@
 import { afterAll, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
-// Mock window.matchMedia for theme provider
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // Deprecated
-    removeListener: vi.fn(), // Deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
+// Only set up browser globals if window is available (jsdom environment)
+// This prevents errors in node environment tests
+if (typeof window !== 'undefined') {
+  // Mock window.matchMedia for theme provider
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(), // Deprecated
+      removeListener: vi.fn(), // Deprecated
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
 
-// Mock ResizeObserver
+// Mock ResizeObserver (both node and jsdom environments)
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-// Mock IntersectionObserver
+// Mock IntersectionObserver (both node and jsdom environments)  
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
