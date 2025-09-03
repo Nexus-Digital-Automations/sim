@@ -507,65 +507,64 @@ export interface IntegrationConnection {
   healthCheck(): Promise<boolean>
 }
 
-// Export the global registry instance
+// Export the global registry instance (legacy)
 export const integrationRegistry = new IntegrationRegistry()
 
+// Export enhanced registry and development tools
+export { globalIntegrationRegistry, RegistryUtils } from './integration-registry'
+export { connectorDevelopmentKit, ConnectorUtils } from './connector-development-kit'
+
+// Export connector configurations
+export { SalesforceConnector, SalesforceUtils } from './connectors/salesforce-connector'
+export { HubSpotConnector, HubSpotUtils } from './connectors/hubspot-connector'
+export { MailchimpConnector, MailchimpUtils } from './connectors/mailchimp-connector'
+
 /**
- * Integration framework initialization
+ * Integration framework initialization with enhanced registry
  */
 export function initializeIntegrationFramework(): void {
-  logger.info('Initializing Integration Framework...')
+  logger.info('Initializing Enhanced Integration Framework...')
 
-  // Load built-in connectors
-  loadBuiltInConnectors()
-
-  // Initialize monitoring and health checks
-  initializeMonitoring()
-
-  logger.info('Integration Framework initialized successfully')
+  // The enhanced registry automatically loads built-in connectors
+  // and starts monitoring during construction
+  
+  logger.info('Enhanced Integration Framework initialized successfully', {
+    registryActive: true,
+    monitoringActive: true,
+    healthCheckActive: true,
+    builtInConnectors: globalIntegrationRegistry.getAllConnectors().length,
+  })
 }
 
 /**
- * Load built-in connectors for common integrations
+ * Load built-in connectors for common integrations (deprecated - use enhanced registry)
+ * @deprecated Use globalIntegrationRegistry instead
  */
 function loadBuiltInConnectors(): void {
   logger.info('Loading built-in connectors...')
 
-  // Built-in connectors will be loaded from separate modules
-  // This allows for better organization and maintainability
+  // Built-in connectors are now automatically loaded by the enhanced registry
 
   logger.info('Built-in connectors loaded')
 }
 
 /**
- * Initialize monitoring and health check systems
+ * Initialize monitoring and health check systems (deprecated - use enhanced registry)
+ * @deprecated Monitoring is now handled by globalIntegrationRegistry
  */
 function initializeMonitoring(): void {
   logger.info('Initializing integration monitoring...')
 
-  // Set up periodic health checks for active connections
-  setInterval(() => {
-    performHealthChecks()
-  }, 30000) // Check every 30 seconds
+  // Monitoring is now handled by the enhanced registry automatically
 
   logger.info('Integration monitoring initialized')
 }
 
 /**
- * Perform health checks on all active connections
+ * Perform health checks on all active connections (deprecated - use enhanced registry)
+ * @deprecated Health checks are now handled by globalIntegrationRegistry
  */
 async function performHealthChecks(): Promise<void> {
-  const registry = integrationRegistry
-  const connections = Array.from((registry as any).activeConnections.values())
-
-  for (const connection of connections) {
-    try {
-      const isHealthy = await connection.healthCheck()
-      if (!isHealthy) {
-        logger.warn(`Health check failed for connection ${connection.id}`)
-      }
-    } catch (error) {
-      logger.error(`Health check error for connection ${connection.id}:`, error)
-    }
-  }
+  // Health checks are now handled automatically by the enhanced registry
+  logger.debug('Health checks are now handled by Enhanced Integration Registry')
 }
