@@ -150,9 +150,56 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/TODO.json"
+    },
+    {
+      "id": "task_1756924810570_hugo6k1af",
+      "title": "Analyze and enhance test utils infrastructure for API test migration",
+      "description": "Review apps/sim/app/api/__test-utils__/ directory and enhance setupComprehensiveTestMocks to support all identified authentication patterns and database mocking with callback support",
+      "mode": "DEVELOPMENT",
+      "category": "enhancement",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/setupComprehensiveTestMocks.js",
+        "apps/sim/app/api/__test-utils__/"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T18:40:10.574Z",
+      "auto_research_created": true,
+      "assigned_agent": "development_session_1756924799080_1_general_4db43635",
+      "started_at": "2025-09-03T18:49:59.261Z",
+      "claimed_by": "development_session_1756924799080_1_general_4db43635",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756924799080_1_general_4db43635",
+          "role": "primary",
+          "assignedAt": "2025-09-03T18:49:59.261Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T18:52:02.633Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T18:52:02.634Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/TODO.json"
     }
   ],
-  "total_completed": 3,
-  "last_completion": "2025-09-03T18:49:32.367Z",
+  "total_completed": 4,
+  "last_completion": "2025-09-03T18:52:02.634Z",
   "created_at": "2025-09-03T18:42:19.980Z"
 }
