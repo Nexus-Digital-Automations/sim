@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1786,9 +1802,324 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756934386651_dwt4ues2m",
+      "title": "Expand integration capabilities with comprehensive business automation APIs",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/lib/integrations"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:19:46.655Z",
+      "auto_research_created": true,
+      "description": "No description provided",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:38:15.252Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:38:15.253Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933819991_emwz3lkkn",
+      "title": "Research current UX patterns and accessibility compliance",
+      "description": "Analyze current Sim interface, user flows, accessibility compliance, and identify pain points for non-technical users. Document existing onboarding, workflow creation patterns, and areas for improvement.",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:19.991Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756936653167_1_general_22970295",
+      "started_at": "2025-09-03T22:05:19.838Z",
+      "claimed_by": "development_session_1756936653167_1_general_22970295",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756936653167_1_general_22970295",
+          "role": "primary",
+          "assignedAt": "2025-09-03T22:05:19.838Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T23:07:38.892Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T23:07:38.893Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933981824_lkbtxp50p",
+      "title": "Research: Expand beyond AI-first to comprehensive general automation platform",
+      "description": "Research and analysis required for implementing: \"Expand beyond AI-first to comprehensive general automation platform\"\n\n**Implementation Task Details:**\nTransform Sim from AI-first platform to comprehensive general automation platform to compete directly with n8n, Zapier, and Make, including:\n\n**GENERAL AUTOMATION EXPANSION:**\n1. **Traditional API Integrations**: REST/GraphQL API blocks, webhook processors, HTTP request builders, API authentication managers\n2. **Database Connectors**: Advanced SQL query builders, NoSQL database integrations, data transformation pipelines, batch processing tools\n3. **File Processing Workflows**: CSV/Excel processors, PDF generators, document converters, file system operations, bulk file handlers\n4. **Communication Tools**: Advanced email automation, SMS/messaging integrations, notification systems, multi-channel broadcasting\n5. **Web Scraping and Data Collection**: Advanced scraping tools, data extraction pipelines, monitoring and alerting, scheduled data collection\n6. **Business Process Automation**: Invoice processing, approval workflows, document routing, compliance automation\n\n**NEW BLOCK CATEGORIES:**\n1. **Data Transformation Blocks**: JSON/XML processors, data mappers, formatters, validators, converters\n2. **Control Flow Blocks**: Advanced loops, conditional branching, error handling, retry logic, parallel execution\n3. **Scheduling and Timing**: Cron-like schedulers, time-based triggers, recurring workflows, calendar integrations\n4. **Monitoring and Analytics**: Workflow performance tracking, error monitoring, usage analytics, business intelligence\n5. **Security and Compliance**: Data encryption, access controls, audit logging, compliance reporting\n\n**TECHNICAL IMPLEMENTATION:**\n1. **Block Architecture**: Expand block registry with new categories, implement standardized block interfaces\n2. **Execution Engine**: Enhance executor to handle traditional automation patterns, improve performance for high-volume workflows\n3. **API Gateway**: Build unified API layer for external integrations, implement rate limiting and authentication\n4. **Data Pipeline**: Create ETL pipeline framework, implement data streaming capabilities\n5. **Monitoring System**: Build comprehensive workflow monitoring, implement alerting and notification systems\n\n**SUCCESS CRITERIA:**\n- 100+ new blocks covering traditional automation use cases\n- Performance comparable to n8n for high-volume workflows\n- Enterprise-grade security and compliance features\n- Comprehensive API integration capabilities\n- Advanced data transformation and ETL tools\n- Business process automation templates\n- Migration tools from competitors (n8n, Zapier, Make)\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933981823_qpk4h33l7\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933981824_lkbtxp50p.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933981824_lkbtxp50p.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:13:01.824Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933981823_qpk4h33l7",
+      "assigned_agent": "development_session_1756940883279_1_general_05f9807d",
+      "started_at": "2025-09-03T23:08:22.412Z",
+      "claimed_by": "development_session_1756940883279_1_general_05f9807d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790942_1_general_8626fa50",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:13:27.978Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T21:57:27.716Z",
+          "reason": "Task stale for 44 minutes"
+        },
+        {
+          "agentId": "development_session_1756936653167_1_general_22970295",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:57:49.642Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T23:07:50.298Z",
+          "reason": "Task stale for 70 minutes"
+        },
+        {
+          "agentId": "development_session_1756940883279_1_general_05f9807d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:08:22.412Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T23:08:45.435Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T23:08:45.436Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933803041_1a621hy80",
+      "title": "Research: Implement native custom coding support within Sim workflows for advanced customization",
+      "description": "Research and analysis required for implementing: \"Implement native custom coding support within Sim workflows for advanced customization\"\n\n**Implementation Task Details:**\nAdd JavaScript code blocks with inline execution, Python code integration, code editor features, and security/sandboxing. Research secure code execution patterns.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933803041_fbr00jk9j\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933803041_1a621hy80.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933803041_1a621hy80.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:03.041Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933803041_fbr00jk9j",
+      "assigned_agent": "development_session_1756940883279_1_general_05f9807d",
+      "started_at": "2025-09-03T23:08:51.115Z",
+      "claimed_by": "development_session_1756940883279_1_general_05f9807d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790945_1_general_a6aa7b56",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:11:20.043Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T21:57:27.716Z",
+          "reason": "Task stale for 46 minutes"
+        },
+        {
+          "agentId": "development_session_1756936653167_1_general_22970295",
+          "role": "primary",
+          "assignedAt": "2025-09-03T22:00:02.430Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T23:07:50.298Z",
+          "reason": "Task stale for 68 minutes"
+        },
+        {
+          "agentId": "development_session_1756940883279_1_general_05f9807d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:08:51.115Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T23:09:07.352Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T23:09:07.353Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933801000_mffqoe4j8",
+      "title": "Research: Implement advanced non-AI automation capabilities",
+      "description": "Research and analysis required for implementing: \"Implement advanced non-AI automation capabilities\"\n\n**Implementation Task Details:**\nCreate comprehensive automation engine with conditional branching, scheduling, workflow control, and event triggers\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933800997_dozrvn88l\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933801000_mffqoe4j8.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933801000_mffqoe4j8.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:01.000Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933800997_dozrvn88l",
+      "assigned_agent": "development_session_1756940883279_1_general_05f9807d",
+      "started_at": "2025-09-03T23:09:13.369Z",
+      "claimed_by": "development_session_1756940883279_1_general_05f9807d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790951_1_general_5bc7f034",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:15:23.188Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T21:57:27.716Z",
+          "reason": "Task stale for 42 minutes"
+        },
+        {
+          "agentId": "development_session_1756936653167_1_general_22970295",
+          "role": "primary",
+          "assignedAt": "2025-09-03T22:02:50.331Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T23:07:50.298Z",
+          "reason": "Task stale for 65 minutes"
+        },
+        {
+          "agentId": "development_session_1756940883279_1_general_05f9807d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:09:13.369Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T23:09:28.690Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T23:09:28.691Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 39,
-  "last_completion": "2025-09-03T21:23:06.226Z",
+  "total_completed": 44,
+  "last_completion": "2025-09-03T23:09:28.691Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

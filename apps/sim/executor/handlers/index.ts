@@ -1,6 +1,8 @@
 import { AdvancedConditionBlockHandler } from '@/executor/handlers/advanced-condition'
+import { AdvancedScheduleBlockHandler } from '@/executor/handlers/advanced-schedule'
 import { AgentBlockHandler } from '@/executor/handlers/agent/agent-handler'
 import { ApiBlockHandler } from '@/executor/handlers/api/api-handler'
+import { ApprovalGateBlockHandler } from '@/executor/handlers/approval-gate'
 import { ConditionBlockHandler } from '@/executor/handlers/condition/condition-handler'
 import { EvaluatorBlockHandler } from '@/executor/handlers/evaluator/evaluator-handler'
 import { FunctionBlockHandler } from '@/executor/handlers/function/function-handler'
@@ -15,8 +17,10 @@ import { WorkflowBlockHandler } from '@/executor/handlers/workflow/workflow-hand
 
 export {
   AdvancedConditionBlockHandler,
+  AdvancedScheduleBlockHandler,
   AgentBlockHandler,
   ApiBlockHandler,
+  ApprovalGateBlockHandler,
   ConditionBlockHandler,
   EvaluatorBlockHandler,
   FunctionBlockHandler,

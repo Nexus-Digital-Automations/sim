@@ -60,7 +60,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T09:50:39.799Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T09:50:39.799Z",
@@ -75,7 +81,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T18:39:59.081Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T18:39:59.081Z",
@@ -96,11 +108,80 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T19:05:35.113Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T19:05:35.113Z",
       "sessionId": "session_1756926335112",
+      "metadata": {}
+    },
+    "development_session_1756941203586_1_general_e8d59d73": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-03T23:13:23.587Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-03T23:13:23.587Z",
+      "sessionId": "session_1756941203586",
+      "metadata": {}
+    },
+    "development_session_1756941211772_1_general_f43a3fc1": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-03T23:13:31.772Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-03T23:13:31.772Z",
+      "sessionId": "session_1756941211772",
+      "metadata": {}
+    },
+    "development_session_1756941216372_1_general_e073c3c9": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-03T23:13:36.373Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-03T23:13:36.373Z",
+      "sessionId": "session_1756941216372",
       "metadata": {}
     }
   },

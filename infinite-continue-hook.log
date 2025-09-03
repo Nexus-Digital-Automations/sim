@@ -1,64 +1,73 @@
 {
   "execution": {
-    "timestamp": "2025-09-03T21:08:41.005Z",
+    "timestamp": "2025-09-03T23:24:08.093Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 23478,
-    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
-    "endTimestamp": "2025-09-03T21:08:41.009Z",
-    "durationMs": 4
+    "pid": 58329,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+    "endTimestamp": "2025-09-03T23:24:08.101Z",
+    "durationMs": 8
   },
   "input": {
-    "sessionId": "manual_test",
-    "transcriptPath": "",
-    "stopHookActive": true,
+    "sessionId": "8a00aa98-ff7b-483e-94b8-6ffc43860fbb",
+    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl",
+    "stopHookActive": false,
     "rawInput": {
-      "session_id": "manual_test",
-      "transcript_path": "",
-      "stop_hook_active": true,
-      "hook_event_name": "manual_execution"
+      "session_id": "8a00aa98-ff7b-483e-94b8-6ffc43860fbb",
+      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl",
+      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+      "hook_event_name": "Stop",
+      "stop_hook_active": false
     }
   },
   "projectState": {},
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-03T21:08:41.006Z",
-      "message": "Raw input data: \"\""
+      "timestamp": "2025-09-03T23:24:08.094Z",
+      "message": "Raw input data: \"{\"session_id\":\"8a00aa98-ff7b-483e-94b8-6ffc43860fbb\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
     },
     {
-      "timestamp": "2025-09-03T21:08:41.006Z",
-      "message": "Input data length: 0"
+      "timestamp": "2025-09-03T23:24:08.094Z",
+      "message": "Input data length: 321"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.006Z",
-      "message": "No input detected - running in manual mode"
-    },
-    {
-      "timestamp": "2025-09-03T21:08:41.006Z",
+      "timestamp": "2025-09-03T23:24:08.094Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.006Z",
-      "message": "Received manual_execution event from Claude Code"
+      "timestamp": "2025-09-03T23:24:08.094Z",
+      "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.009Z",
-      "message": "Found 0 total agents in TODO.json"
+      "timestamp": "2025-09-03T23:24:08.099Z",
+      "message": "Found 1 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.009Z",
-      "message": "Active agents found: 0, Stale agents removed: 0, Stale tasks reset: 0"
+      "timestamp": "2025-09-03T23:24:08.099Z",
+      "message": "Agent development_session_1756940883279_1_general_05f9807d: heartbeat=2025-09-03T23:08:03.280Z, timeSince=965s, isActive=false"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.009Z",
+      "timestamp": "2025-09-03T23:24:08.099Z",
+      "message": "Removed stale agent: development_session_1756940883279_1_general_05f9807d"
+    },
+    {
+      "timestamp": "2025-09-03T23:24:08.101Z",
+      "message": "Removed 1 stale agents from TODO.json"
+    },
+    {
+      "timestamp": "2025-09-03T23:24:08.101Z",
+      "message": "Active agents found: 0, Stale agents removed: 1, Stale tasks reset: 0"
+    },
+    {
+      "timestamp": "2025-09-03T23:24:08.101Z",
       "message": "No active agents detected - need agent initialization"
     },
     {
-      "timestamp": "2025-09-03T21:08:41.009Z",
+      "timestamp": "2025-09-03T23:24:08.101Z",
       "message": "Exiting with code 2: No active agents - providing initialization guidance"
     }
   ],

@@ -1,0 +1,41 @@
+{
+  "name": "sim-javascript-sandbox",
+  "version": "1.0.0",
+  "description": "Pre-installed packages for JavaScript code execution sandbox",
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.1",
+    "crypto-js": "^4.2.0",
+    "validator": "^13.11.0",
+    "cheerio": "^1.0.0-rc.12",
+    "csv-parser": "^3.0.0",
+    "xml2js": "^0.6.2",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "sharp": "^0.32.6",
+    "date-fns": "^2.30.0",
+    "ramda": "^0.29.1",
+    "immutable": "^4.3.4",
+    "rxjs": "^7.8.1",
+    "bluebird": "^3.7.2",
+    "async": "^3.2.4",
+    "underscore": "^1.13.6",
+    "qs": "^6.11.2",
+    "mime-types": "^2.1.35",
+    "node-fetch": "^3.3.2",
+    "form-data": "^4.0.0",
+    "multiparty": "^4.2.3",
+    "file-type": "^18.7.0",
+    "js-yaml": "^4.1.0",
+    "marked": "^9.1.6",
+    "highlight.js": "^11.9.0",
+    "sanitize-html": "^2.11.0",
+    "express-validator": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

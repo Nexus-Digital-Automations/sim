@@ -9,15 +9,15 @@
  * @version 1.0.0
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
-import { 
-  globalIntegrationRegistry, 
-  RegistryUtils,
-  type ConnectorSearchCriteria,
-  type IntegrationCategory 
-} from '@/lib/integrations/integration-registry'
+import { type NextRequest, NextResponse } from 'next/server'
 import type { IntegrationConnector } from '@/lib/integrations'
+import {
+  type ConnectorSearchCriteria,
+  globalIntegrationRegistry,
+  type IntegrationCategory,
+  RegistryUtils,
+} from '@/lib/integrations/integration-registry'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('IntegrationsRegistryAPI')
 
@@ -42,22 +42,22 @@ export async function GET(request: NextRequest) {
     switch (operation) {
       case 'list':
         return handleListConnectors(searchParams)
-      
+
       case 'search':
         return handleSearchConnectors(searchParams)
-      
+
       case 'categories':
         return handleGetCategories()
-      
+
       case 'stats':
         return handleGetStats()
-      
+
       case 'health':
         return handleGetHealth(searchParams)
-      
+
       case 'recommendations':
         return handleGetRecommendations(searchParams)
-      
+
       default:
         return NextResponse.json(
           {
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     logger.error('Integration registry API error:', error)
-    
+
     return NextResponse.json(
       {
         success: false,
@@ -92,16 +92,16 @@ export async function GET(request: NextRequest) {
 async function handleListConnectors(searchParams: URLSearchParams) {
   const category = searchParams.get('category') as IntegrationCategory | null
   const includeHealth = searchParams.get('includeHealth') === 'true'
-  const limit = parseInt(searchParams.get('limit') || '50')
-  const offset = parseInt(searchParams.get('offset') || '0')
+  const limit = Number.parseInt(searchParams.get('limit') || '50')
+  const offset = Number.parseInt(searchParams.get('offset') || '0')
 
   logger.debug('Listing connectors', { category, includeHealth, limit, offset })
 
   let connectors: IntegrationConnector[]
-  
+
   if (category) {
     const connectorsWithHealth = globalIntegrationRegistry.getConnectorsByCategory(category)
-    connectors = connectorsWithHealth.map(c => ({
+    connectors = connectorsWithHealth.map((c) => ({
       ...c,
       health: includeHealth ? c.health : undefined,
     }))
@@ -111,12 +111,14 @@ async function handleListConnectors(searchParams: URLSearchParams) {
 
   // Apply pagination
   const paginatedConnectors = connectors.slice(offset, offset + limit)
-  
+
   // Add health information if requested
-  const result = includeHealth ? paginatedConnectors.map(connector => ({
-    ...connector,
-    health: globalIntegrationRegistry.getConnectorHealth(connector.id),
-  })) : paginatedConnectors
+  const result = includeHealth
+    ? paginatedConnectors.map((connector) => ({
+        ...connector,
+        health: globalIntegrationRegistry.getConnectorHealth(connector.id),
+      }))
+    : paginatedConnectors
 
   return NextResponse.json({
     success: true,
@@ -171,13 +173,15 @@ async function handleSearchConnectors(searchParams: URLSearchParams) {
   logger.debug('Searching connectors', { searchCriteria })
 
   const results = globalIntegrationRegistry.searchConnectors(searchCriteria)
-  
+
   // Add health information for better search results
-  const enrichedResults = results.map(connector => ({
-    ...connector,
-    health: globalIntegrationRegistry.getConnectorHealth(connector.id),
-    relevanceScore: calculateRelevanceScore(connector, searchCriteria),
-  })).sort((a, b) => b.relevanceScore - a.relevanceScore)
+  const enrichedResults = results
+    .map((connector) => ({
+      ...connector,
+      health: globalIntegrationRegistry.getConnectorHealth(connector.id),
+      relevanceScore: calculateRelevanceScore(connector, searchCriteria),
+    }))
+    .sort((a, b) => b.relevanceScore - a.relevanceScore)
 
   return NextResponse.json({
     success: true,
@@ -200,7 +204,7 @@ async function handleGetCategories() {
   logger.debug('Getting integration categories')
 
   const categoriesWithHealth = RegistryUtils.getCategoriesWithHealth()
-  
+
   return NextResponse.json({
     success: true,
     data: {
@@ -220,7 +224,7 @@ async function handleGetStats() {
   logger.debug('Getting registry statistics')
 
   const stats = globalIntegrationRegistry.getRegistryStats()
-  
+
   return NextResponse.json({
     success: true,
     data: stats,
@@ -239,9 +243,9 @@ async function handleGetHealth(searchParams: URLSearchParams) {
 
   if (connectorId) {
     logger.debug(`Getting health for connector: ${connectorId}`)
-    
+
     const health = globalIntegrationRegistry.getConnectorHealth(connectorId)
-    
+
     if (!health) {
       return NextResponse.json(
         {
@@ -260,31 +264,30 @@ async function handleGetHealth(searchParams: URLSearchParams) {
         health,
       },
     })
-  } else {
-    logger.debug('Getting health status for all connectors')
-    
-    const allConnectors = globalIntegrationRegistry.getAllConnectors()
-    const healthStatus = allConnectors.map(connector => ({
-      connectorId: connector.id,
-      name: connector.name,
-      category: connector.category,
-      health: globalIntegrationRegistry.getConnectorHealth(connector.id),
-    }))
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        connectors: healthStatus,
-        summary: {
-          total: healthStatus.length,
-          healthy: healthStatus.filter(c => c.health?.status === 'healthy').length,
-          degraded: healthStatus.filter(c => c.health?.status === 'degraded').length,
-          unhealthy: healthStatus.filter(c => c.health?.status === 'unhealthy').length,
-          unknown: healthStatus.filter(c => c.health?.status === 'unknown').length,
-        },
-      },
-    })
   }
+  logger.debug('Getting health status for all connectors')
+
+  const allConnectors = globalIntegrationRegistry.getAllConnectors()
+  const healthStatus = allConnectors.map((connector) => ({
+    connectorId: connector.id,
+    name: connector.name,
+    category: connector.category,
+    health: globalIntegrationRegistry.getConnectorHealth(connector.id),
+  }))
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      connectors: healthStatus,
+      summary: {
+        total: healthStatus.length,
+        healthy: healthStatus.filter((c) => c.health?.status === 'healthy').length,
+        degraded: healthStatus.filter((c) => c.health?.status === 'degraded').length,
+        unhealthy: healthStatus.filter((c) => c.health?.status === 'unhealthy').length,
+        unknown: healthStatus.filter((c) => c.health?.status === 'unknown').length,
+      },
+    },
+  })
 }
 
 /**
@@ -292,13 +295,13 @@ async function handleGetHealth(searchParams: URLSearchParams) {
  */
 async function handleGetRecommendations(searchParams: URLSearchParams) {
   const category = searchParams.get('category') as IntegrationCategory | undefined
-  const limit = parseInt(searchParams.get('limit') || '5')
+  const limit = Number.parseInt(searchParams.get('limit') || '5')
 
   logger.debug('Getting connector recommendations', { category, limit })
 
   const recommendations = RegistryUtils.getRecommendations(category, limit)
-  
-  const enrichedRecommendations = recommendations.map(connector => ({
+
+  const enrichedRecommendations = recommendations.map((connector) => ({
     ...connector,
     health: globalIntegrationRegistry.getConnectorHealth(connector.id),
     reasonForRecommendation: generateRecommendationReason(connector),
@@ -336,13 +339,13 @@ export async function POST(request: NextRequest) {
     switch (operation) {
       case 'register':
         return handleRegisterConnector(data)
-      
+
       case 'updateMetrics':
         return handleUpdateMetrics(data)
-      
+
       case 'triggerHealthCheck':
         return handleTriggerHealthCheck(data)
-      
+
       default:
         return NextResponse.json(
           {
@@ -355,7 +358,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     logger.error('Integration registry management error:', error)
-    
+
     return NextResponse.json(
       {
         success: false,
@@ -373,7 +376,7 @@ export async function POST(request: NextRequest) {
 async function handleRegisterConnector(data: { connector: IntegrationConnector }) {
   // This would typically require admin authentication
   // For now, implementing the core functionality
-  
+
   logger.info(`Registering new connector: ${data.connector?.id}`)
 
   if (!data.connector) {
@@ -387,23 +390,22 @@ async function handleRegisterConnector(data: { connector: IntegrationConnector }
   }
 
   const result = globalIntegrationRegistry.registerConnector(data.connector)
-  
+
   if (result.success) {
     return NextResponse.json({
       success: true,
       data: result,
       message: 'Connector registered successfully',
     })
-  } else {
-    return NextResponse.json(
-      {
-        success: false,
-        error: result.message,
-        validationResults: result.validationResults,
-      },
-      { status: 400 }
-    )
   }
+  return NextResponse.json(
+    {
+      success: false,
+      error: result.message,
+      validationResults: result.validationResults,
+    },
+    { status: 400 }
+  )
 }
 
 /**
@@ -452,7 +454,7 @@ async function handleTriggerHealthCheck(data: { connectorId?: string }) {
 
   if (connectorId) {
     logger.info(`Triggering health check for connector: ${connectorId}`)
-    
+
     const connector = globalIntegrationRegistry.getConnector(connectorId)
     if (!connector) {
       return NextResponse.json(
@@ -467,7 +469,7 @@ async function handleTriggerHealthCheck(data: { connectorId?: string }) {
 
     // Health check would be triggered here
     // For now, returning success
-    
+
     return NextResponse.json({
       success: true,
       message: 'Health check triggered successfully',
@@ -477,22 +479,21 @@ async function handleTriggerHealthCheck(data: { connectorId?: string }) {
         timestamp: new Date().toISOString(),
       },
     })
-  } else {
-    logger.info('Triggering health check for all connectors')
-    
-    // Trigger health checks for all connectors
-    const allConnectors = globalIntegrationRegistry.getAllConnectors()
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Health checks triggered for all connectors',
-      data: {
-        connectorsCount: allConnectors.length,
-        healthChecksTriggered: true,
-        timestamp: new Date().toISOString(),
-      },
-    })
   }
+  logger.info('Triggering health check for all connectors')
+
+  // Trigger health checks for all connectors
+  const allConnectors = globalIntegrationRegistry.getAllConnectors()
+
+  return NextResponse.json({
+    success: true,
+    message: 'Health checks triggered for all connectors',
+    data: {
+      connectorsCount: allConnectors.length,
+      healthChecksTriggered: true,
+      timestamp: new Date().toISOString(),
+    },
+  })
 }
 
 // ====================================================================
@@ -503,7 +504,7 @@ async function handleTriggerHealthCheck(data: { connectorId?: string }) {
  * Calculate relevance score for search results
  */
 function calculateRelevanceScore(
-  connector: IntegrationConnector, 
+  connector: IntegrationConnector,
   criteria: ConnectorSearchCriteria
 ): number {
   let score = 0
@@ -518,7 +519,7 @@ function calculateRelevanceScore(
 
   // Tag match
   if (criteria.tags?.length) {
-    const matchingTags = criteria.tags.filter(tag => 
+    const matchingTags = criteria.tags.filter((tag) =>
       connector.metadata.tags.includes(tag.toLowerCase())
     )
     score += matchingTags.length * 5
@@ -556,26 +557,26 @@ function calculateRelevanceScore(
  */
 function generateRecommendationReason(connector: IntegrationConnector): string {
   const health = globalIntegrationRegistry.getConnectorHealth(connector.id)
-  
+
   const reasons: string[] = []
-  
+
   if (health?.successRate && health.successRate > 95) {
     reasons.push('high reliability')
   }
-  
+
   if (health?.status === 'healthy') {
     reasons.push('currently healthy')
   }
-  
+
   if (connector.operations.length > 5) {
     reasons.push('comprehensive feature set')
   }
-  
+
   if (health?.metrics.totalRequests && health.metrics.totalRequests > 100) {
     reasons.push('widely used')
   }
 
-  return reasons.length > 0 
+  return reasons.length > 0
     ? `Recommended for: ${reasons.join(', ')}`
     : 'Popular integration choice'
 }

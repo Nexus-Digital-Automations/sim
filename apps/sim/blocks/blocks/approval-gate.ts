@@ -1,9 +1,9 @@
 /**
  * Approval Gate Block Implementation
- * 
+ *
  * Implements manual approval gates for workflow automation with comprehensive
  * approval management, timeout handling, and notification systems.
- * 
+ *
  * Features:
  * - Manual approval workflow with multiple approvers
  * - Configurable timeout handling with fallback actions
@@ -11,14 +11,14 @@
  * - Approval history and audit trail
  * - Escalation and delegation support
  * - Production-ready state management and logging
- * 
+ *
  * @author Claude Code Assistant
  * @created 2025-09-03
  */
 
 import { UserCheckIcon } from '@/components/icons'
-import type { BlockConfig } from '@/blocks/types'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { BlockConfig } from '@/blocks/types'
 
 const logger = createLogger('ApprovalGateBlock')
 
@@ -66,7 +66,7 @@ interface ApprovalGateBlockOutput {
 
 /**
  * Approval Gate Block Configuration
- * 
+ *
  * Implements comprehensive approval workflow management with timeout handling,
  * escalation support, and multiple notification channels.
  */
@@ -74,7 +74,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
   type: 'approval-gate',
   name: 'Approval Gate',
   description: 'Pause workflow for manual approval with timeout and escalation',
-  longDescription: 
+  longDescription:
     'Advanced approval gate that pauses workflow execution for manual approval. Supports multiple approvers, timeout handling, escalation, and comprehensive notification systems.',
   docsLink: 'https://docs.sim.ai/blocks/approval-gate',
   bgColor: '#F59E0B',
@@ -90,7 +90,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       layout: 'full',
       required: true,
       placeholder: 'Approval Required: Expense Report #1234',
-      description: 'Clear title for the approval request'
+      description: 'Clear title for the approval request',
     },
 
     {
@@ -100,8 +100,9 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       layout: 'full',
       required: true,
       rows: 4,
-      placeholder: 'Please review and approve the attached expense report for $500. All receipts are included and within policy limits.',
-      description: 'Detailed message explaining what needs approval'
+      placeholder:
+        'Please review and approve the attached expense report for $500. All receipts are included and within policy limits.',
+      description: 'Detailed message explaining what needs approval',
     },
 
     // Approvers configuration
@@ -113,7 +114,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       required: true,
       multiSelect: true,
       placeholder: 'Select users who can approve...',
-      description: 'Users authorized to approve this request'
+      description: 'Users authorized to approve this request',
     },
 
     {
@@ -125,10 +126,10 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       options: [
         { label: 'Any One Approver', id: 'any' },
         { label: 'All Approvers Required', id: 'all' },
-        { label: 'Majority Vote', id: 'majority' }
+        { label: 'Majority Vote', id: 'majority' },
       ],
       value: () => 'any',
-      description: 'How many approvers are needed'
+      description: 'How many approvers are needed',
     },
 
     // Timeout configuration
@@ -140,7 +141,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       required: true,
       placeholder: '60',
       value: () => '60',
-      description: 'Time to wait before timeout'
+      description: 'Time to wait before timeout',
     },
 
     {
@@ -153,10 +154,10 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
         { label: 'Auto-approve', id: 'approve' },
         { label: 'Auto-reject', id: 'reject' },
         { label: 'Escalate to manager', id: 'escalate' },
-        { label: 'Stop workflow with error', id: 'error' }
+        { label: 'Stop workflow with error', id: 'error' },
       ],
       value: () => 'reject',
-      description: 'Action to take when timeout is reached'
+      description: 'Action to take when timeout is reached',
     },
 
     // Escalation configuration
@@ -166,7 +167,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       type: 'switch',
       layout: 'half',
       value: () => false,
-      description: 'Enable escalation to higher authorities'
+      description: 'Enable escalation to higher authorities',
     },
 
     {
@@ -176,11 +177,11 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       layout: 'half',
       multiSelect: true,
       placeholder: 'Select escalation approvers...',
-      description: 'Users to escalate to if original approvers don\'t respond',
+      description: "Users to escalate to if original approvers don't respond",
       condition: {
         field: 'enableEscalation',
-        value: true
-      }
+        value: true,
+      },
     },
 
     {
@@ -193,8 +194,8 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       description: 'Time to wait before escalating',
       condition: {
         field: 'enableEscalation',
-        value: true
-      }
+        value: true,
+      },
     },
 
     // Notification configuration
@@ -208,10 +209,10 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
         { label: 'Email', id: 'email' },
         { label: 'Webhook', id: 'webhook' },
         { label: 'Slack', id: 'slack' },
-        { label: 'In-app notification', id: 'inapp' }
+        { label: 'In-app notification', id: 'inapp' },
       ],
       value: () => ['email', 'inapp'],
-      description: 'How to notify approvers'
+      description: 'How to notify approvers',
     },
 
     // Email notification settings
@@ -223,13 +224,13 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       options: [
         { label: 'Standard Approval Request', id: 'standard' },
         { label: 'Urgent Approval Request', id: 'urgent' },
-        { label: 'Custom Template', id: 'custom' }
+        { label: 'Custom Template', id: 'custom' },
       ],
       value: () => 'standard',
       condition: {
         field: 'notificationMethod',
-        value: ['email']
-      }
+        value: ['email'],
+      },
     },
 
     {
@@ -238,11 +239,12 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       type: 'long-input',
       layout: 'full',
       rows: 6,
-      placeholder: 'Subject: {{approvalTitle}}\n\nDear {{approverName}},\n\n{{approvalMessage}}\n\nPlease approve or reject this request: {{approvalLink}}',
+      placeholder:
+        'Subject: {{approvalTitle}}\n\nDear {{approverName}},\n\n{{approvalMessage}}\n\nPlease approve or reject this request: {{approvalLink}}',
       condition: {
         field: 'emailTemplate',
-        value: 'custom'
-      }
+        value: 'custom',
+      },
     },
 
     // Webhook notification settings
@@ -254,8 +256,8 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       placeholder: 'https://your-webhook-endpoint.com/approval',
       condition: {
         field: 'notificationMethod',
-        value: ['webhook']
-      }
+        value: ['webhook'],
+      },
     },
 
     // Slack notification settings
@@ -267,8 +269,8 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       placeholder: '#approvals',
       condition: {
         field: 'notificationMethod',
-        value: ['slack']
-      }
+        value: ['slack'],
+      },
     },
 
     // Additional options
@@ -278,7 +280,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       type: 'switch',
       layout: 'half',
       value: () => false,
-      description: 'Allow approvers to delegate to others'
+      description: 'Allow approvers to delegate to others',
     },
 
     {
@@ -287,7 +289,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       type: 'switch',
       layout: 'half',
       value: () => false,
-      description: 'Require comments when approving/rejecting'
+      description: 'Require comments when approving/rejecting',
     },
 
     // Priority and urgency
@@ -300,10 +302,10 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
         { label: 'Low', id: 'low' },
         { label: 'Normal', id: 'normal' },
         { label: 'High', id: 'high' },
-        { label: 'Critical', id: 'critical' }
+        { label: 'Critical', id: 'critical' },
       ],
       value: () => 'normal',
-      description: 'Priority level for this approval'
+      description: 'Priority level for this approval',
     },
 
     // Context data for approval
@@ -314,7 +316,8 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       language: 'json',
       layout: 'full',
       description: 'Additional data to include in approval request',
-      placeholder: '{\n  "amount": 500,\n  "department": "Engineering",\n  "project": "Q4 Initiative"\n}'
+      placeholder:
+        '{\n  "amount": 500,\n  "department": "Engineering",\n  "project": "Q4 Initiative"\n}',
     },
 
     // Audit and compliance
@@ -324,7 +327,7 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       type: 'switch',
       layout: 'half',
       value: () => true,
-      description: 'Maintain detailed audit trail'
+      description: 'Maintain detailed audit trail',
     },
 
     {
@@ -335,14 +338,14 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
       options: [
         { label: 'Standard', id: 'standard' },
         { label: 'Enhanced', id: 'enhanced' },
-        { label: 'SOX Compliant', id: 'sox' }
+        { label: 'SOX Compliant', id: 'sox' },
       ],
       value: () => 'standard',
       condition: {
         field: 'auditRequired',
-        value: true
-      }
-    }
+        value: true,
+      },
+    },
   ],
 
   tools: {
@@ -354,32 +357,32 @@ export const ApprovalGateBlock: BlockConfig<ApprovalGateBlockOutput> = {
   },
 
   outputs: {
-    content: { 
-      type: 'string', 
-      description: 'Approval status summary and outcome details' 
+    content: {
+      type: 'string',
+      description: 'Approval status summary and outcome details',
     },
-    approvalStatus: { 
-      type: 'string', 
-      description: 'Current status of the approval request (pending, approved, rejected, timeout)' 
+    approvalStatus: {
+      type: 'string',
+      description: 'Current status of the approval request (pending, approved, rejected, timeout)',
     },
     approvalResult: {
       type: 'json',
-      description: 'Detailed approval result including who approved/rejected and when'
+      description: 'Detailed approval result including who approved/rejected and when',
     },
     approvalDetails: {
       type: 'json',
-      description: 'Comprehensive approval process details including history and notifications'
+      description: 'Comprehensive approval process details including history and notifications',
     },
     workflowControl: {
       type: 'json',
-      description: 'Workflow control information including pause/resume times and execution path'
-    }
-  }
+      description: 'Workflow control information including pause/resume times and execution path',
+    },
+  },
 }
 
 /**
  * Approval Gate Utility Functions
- * 
+ *
  * Provides comprehensive approval workflow management including notifications,
  * timeout handling, and state management.
  */
@@ -402,7 +405,10 @@ export function generateApprovalId(blockId: string, executionId: string): string
  * @param approvalType - Type of approval required
  * @returns Validation result
  */
-export function validateApprovers(approvers: string[], approvalType: string): {
+export function validateApprovers(
+  approvers: string[],
+  approvalType: string
+): {
   isValid: boolean
   error?: string
 } {
@@ -412,8 +418,8 @@ export function validateApprovers(approvers: string[], approvalType: string): {
     }
 
     // Remove duplicates and empty values
-    const uniqueApprovers = [...new Set(approvers.filter(a => a && a.trim()))]
-    
+    const uniqueApprovers = [...new Set(approvers.filter((a) => a?.trim()))]
+
     if (uniqueApprovers.length === 0) {
       return { isValid: false, error: 'At least one valid approver is required' }
     }
@@ -427,13 +433,15 @@ export function validateApprovers(approvers: string[], approvalType: string): {
         break
       case 'all':
         if (uniqueApprovers.length > 10) {
-          return { isValid: false, error: 'All-approver mode limited to 10 approvers for performance' }
+          return {
+            isValid: false,
+            error: 'All-approver mode limited to 10 approvers for performance',
+          }
         }
         break
     }
 
     return { isValid: true }
-
   } catch (error: any) {
     return { isValid: false, error: `Approvers validation failed: ${error.message}` }
   }
@@ -445,7 +453,10 @@ export function validateApprovers(approvers: string[], approvalType: string): {
  * @param approvalType - Type of approval required
  * @returns Approval requirements
  */
-export function calculateApprovalRequirements(approvers: string[], approvalType: string): {
+export function calculateApprovalRequirements(
+  approvers: string[],
+  approvalType: string
+): {
   totalApprovers: number
   requiredApprovals: number
   allowPartialApproval: boolean
@@ -459,32 +470,33 @@ export function calculateApprovalRequirements(approvers: string[], approvalType:
         totalApprovers,
         requiredApprovals: 1,
         allowPartialApproval: true,
-        approvalThreshold: 1
+        approvalThreshold: 1,
       }
-    
+
     case 'all':
       return {
         totalApprovers,
         requiredApprovals: totalApprovers,
         allowPartialApproval: false,
-        approvalThreshold: totalApprovers
+        approvalThreshold: totalApprovers,
       }
-    
-    case 'majority':
+
+    case 'majority': {
       const requiredApprovals = Math.ceil(totalApprovers / 2)
       return {
         totalApprovers,
         requiredApprovals,
         allowPartialApproval: true,
-        approvalThreshold: requiredApprovals
+        approvalThreshold: requiredApprovals,
       }
-    
+    }
+
     default:
       return {
         totalApprovers,
         requiredApprovals: 1,
         allowPartialApproval: true,
-        approvalThreshold: 1
+        approvalThreshold: 1,
       }
   }
 }
@@ -537,11 +549,11 @@ export function generateApprovalNotification(
       ...parsedContext,
       ...contextData,
       timeoutMinutes: config.timeoutMinutes,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     // Replace template variables in message
-    Object.keys(templateData).forEach(key => {
+    Object.keys(templateData).forEach((key) => {
       const regex = new RegExp(`{{${key}}}`, 'g')
       message = message.replace(regex, String(templateData[key]))
     })
@@ -553,21 +565,20 @@ export function generateApprovalNotification(
       metadata: {
         approvalId,
         contextData: parsedContext,
-        timeoutAt: new Date(Date.now() + (config.timeoutMinutes * 60 * 1000)).toISOString()
-      }
+        timeoutAt: new Date(Date.now() + config.timeoutMinutes * 60 * 1000).toISOString(),
+      },
     }
-
   } catch (error: any) {
     logger.error('Failed to generate approval notification', {
       approvalId,
-      error: error.message
+      error: error.message,
     })
 
     return {
       subject: config.approvalTitle || 'Approval Required',
       message: config.approvalMessage || 'Please review and approve this request.',
       priority: 'normal',
-      metadata: { approvalId, error: error.message }
+      metadata: { approvalId, error: error.message },
     }
   }
 }
@@ -575,7 +586,7 @@ export function generateApprovalNotification(
 /**
  * Determines if approval criteria are met
  * @param approvals - Array of approval responses
- * @param rejections - Array of rejection responses  
+ * @param rejections - Array of rejection responses
  * @param requirements - Approval requirements
  * @returns Whether approval criteria are satisfied
  */
@@ -612,8 +623,8 @@ export function isApprovalComplete(
         approvalsReceived,
         rejectionsReceived,
         approvalsRequired: requirements.requiredApprovals,
-        totalApprovers: requirements.totalApprovers
-      }
+        totalApprovers: requirements.totalApprovers,
+      },
     }
   }
 
@@ -627,15 +638,15 @@ export function isApprovalComplete(
         approvalsReceived,
         rejectionsReceived,
         approvalsRequired: requirements.requiredApprovals,
-        totalApprovers: requirements.totalApprovers
-      }
+        totalApprovers: requirements.totalApprovers,
+      },
     }
   }
 
   // Check if rejection threshold is met (more rejections than possible approvals)
   const remainingApprovers = requirements.totalApprovers - approvalsReceived - rejectionsReceived
   const maxPossibleApprovals = approvalsReceived + remainingApprovers
-  
+
   if (maxPossibleApprovals < requirements.requiredApprovals) {
     return {
       isComplete: true,
@@ -645,8 +656,8 @@ export function isApprovalComplete(
         approvalsReceived,
         rejectionsReceived,
         approvalsRequired: requirements.requiredApprovals,
-        totalApprovers: requirements.totalApprovers
-      }
+        totalApprovers: requirements.totalApprovers,
+      },
     }
   }
 
@@ -659,7 +670,7 @@ export function isApprovalComplete(
       approvalsReceived,
       rejectionsReceived,
       approvalsRequired: requirements.requiredApprovals,
-      totalApprovers: requirements.totalApprovers
-    }
+      totalApprovers: requirements.totalApprovers,
+    },
   }
 }

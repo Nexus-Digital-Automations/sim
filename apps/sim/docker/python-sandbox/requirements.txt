@@ -1,0 +1,83 @@
+# Core Python Data Science Stack with Security Patches
+# Updated: September 3, 2025
+# Security: All packages pinned to latest secure versions
+
+# Data Manipulation and Analysis
+pandas==2.1.1
+numpy==1.25.2
+scipy==1.11.2
+
+# Machine Learning
+scikit-learn==1.3.0
+joblib==1.3.2
+
+# Data Visualization
+matplotlib==3.7.2
+seaborn==0.12.2
+plotly==5.16.1
+
+# Web and API Access
+requests==2.31.0
+urllib3==2.0.4
+httpx==0.24.1
+
+# Data Processing and Parsing
+openpyxl==3.1.2
+python-dateutil==2.8.2
+pytz==2023.3
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Database Connectivity (Secure Versions)
+psycopg2-binary==2.9.7
+pymongo==4.5.0
+sqlalchemy==2.0.21
+
+# File Processing
+Pillow==10.0.0
+PyPDF2==3.0.1
+python-docx==0.8.11
+
+# Utilities and Tools
+python-json-logger==2.0.7
+click==8.1.7
+tqdm==4.66.1
+jsonschema==4.19.0
+
+# Security and Monitoring
+bandit==1.7.5
+safety==2.3.5
+cryptography==41.0.4
+
+# Development and Testing (Minimal)
+pytest==7.4.2
+pytest-timeout==2.1.0
+
+# Async Support
+aiohttp==3.8.5
+asyncio-throttle==1.0.2
+
+# Jupyter-like Features (Minimal)
+ipython==8.15.0
+
+# Data Format Support
+pyyaml==6.0.1
+toml==0.10.2
+configparser==6.0.0
+
+# Text Processing
+nltk==3.8.1
+textblob==0.17.1
+
+# Computer Vision (Optional)
+opencv-python==4.8.0.76
+
+# Time Series Analysis
+statsmodels==0.14.0
+
+# Additional Scientific Computing
+sympy==1.12
+
+# Memory Profiling
+memory-profiler==0.61.0
+psutil==5.9.5

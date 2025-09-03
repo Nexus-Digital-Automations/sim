@@ -7,7 +7,7 @@
  *
  * Features:
  * - Centralized connector registration and discovery
- * - Category-based organization and filtering  
+ * - Category-based organization and filtering
  * - Health monitoring and status tracking
  * - Performance metrics and analytics
  * - Automated connector validation and testing
@@ -20,19 +20,16 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  IntegrationConnector,
-  IntegrationCategory,
-  AuthMethod,
-  RateLimitStrategy,
-  IntegrationConnection,
-  RateLimitResult,
-} from './index'
-
-// Import connector configurations
-import { SalesforceConnector } from './connectors/salesforce-connector'
 import { HubSpotConnector } from './connectors/hubspot-connector'
 import { MailchimpConnector } from './connectors/mailchimp-connector'
+// Import connector configurations
+import { SalesforceConnector } from './connectors/salesforce-connector'
+import type {
+  AuthMethod,
+  IntegrationCategory,
+  IntegrationConnection,
+  IntegrationConnector,
+} from './index'
 
 const logger = createLogger('IntegrationRegistry')
 
@@ -161,16 +158,16 @@ export class EnhancedIntegrationRegistry {
   private healthStatus = new Map<string, ConnectorHealth>()
   private executionMetrics = new Map<string, any>()
   private connectorVersions = new Map<string, string[]>()
-  
+
   // Performance monitoring
   private metricsCollectionInterval?: NodeJS.Timeout
   private healthCheckInterval?: NodeJS.Timeout
-  
+
   constructor() {
     this.initializeRegistry()
     this.startPerformanceMonitoring()
     this.startHealthChecking()
-    
+
     logger.info('Enhanced Integration Registry initialized', {
       autoLoadConnectors: true,
       monitoringEnabled: true,
@@ -187,12 +184,12 @@ export class EnhancedIntegrationRegistry {
    */
   private initializeRegistry(): void {
     logger.info('Loading built-in connectors...')
-    
+
     // Register built-in connectors
     this.registerConnector(SalesforceConnector)
     this.registerConnector(HubSpotConnector)
     this.registerConnector(MailchimpConnector)
-    
+
     logger.info(`Registry initialized with ${this.connectors.size} connectors`)
   }
 
@@ -210,7 +207,7 @@ export class EnhancedIntegrationRegistry {
     try {
       // Validate connector configuration
       const validation = this.validateConnector(connector)
-      
+
       if (!validation.configValid) {
         return {
           success: false,
@@ -232,10 +229,10 @@ export class EnhancedIntegrationRegistry {
 
       // Register the connector
       this.connectors.set(connector.id, connector)
-      
+
       // Track version
       this.connectorVersions.set(connector.id, [...existingVersions, connector.version])
-      
+
       // Initialize health status
       this.healthStatus.set(connector.id, {
         connectorId: connector.id,
@@ -316,7 +313,7 @@ export class EnhancedIntegrationRegistry {
       if (!operation.id || !operation.name || !operation.path) {
         errors.push(`Operation ${operation.id || 'unnamed'} missing required fields`)
       }
-      
+
       if (!operation.inputSchema || !operation.outputSchema) {
         warnings.push(`Operation ${operation.id} missing schema definitions`)
       }
@@ -355,40 +352,37 @@ export class EnhancedIntegrationRegistry {
     // Filter by category
     if (criteria.category) {
       const categories = Array.isArray(criteria.category) ? criteria.category : [criteria.category]
-      results = results.filter(connector => categories.includes(connector.category))
+      results = results.filter((connector) => categories.includes(connector.category))
     }
 
     // Filter by authentication methods
     if (criteria.authMethods?.length) {
-      results = results.filter(connector => 
+      results = results.filter((connector) =>
         criteria.authMethods!.includes(connector.authentication.method)
       )
     }
 
     // Filter by tags
     if (criteria.tags?.length) {
-      results = results.filter(connector =>
-        criteria.tags!.some(tag => 
-          connector.metadata.tags.includes(tag.toLowerCase())
-        )
+      results = results.filter((connector) =>
+        criteria.tags!.some((tag) => connector.metadata.tags.includes(tag.toLowerCase()))
       )
     }
 
     // Search term filtering
     if (criteria.searchTerm) {
       const searchTerm = criteria.searchTerm.toLowerCase()
-      results = results.filter(connector =>
-        connector.name.toLowerCase().includes(searchTerm) ||
-        connector.description.toLowerCase().includes(searchTerm) ||
-        connector.metadata.tags.some(tag => tag.includes(searchTerm))
+      results = results.filter(
+        (connector) =>
+          connector.name.toLowerCase().includes(searchTerm) ||
+          connector.description.toLowerCase().includes(searchTerm) ||
+          connector.metadata.tags.some((tag) => tag.includes(searchTerm))
       )
     }
 
     // Filter by health check capability
     if (criteria.hasHealthCheck !== undefined) {
-      results = results.filter(connector => 
-        !!connector.healthCheck === criteria.hasHealthCheck
-      )
+      results = results.filter((connector) => !!connector.healthCheck === criteria.hasHealthCheck)
     }
 
     // Sort by relevance (could be improved with scoring algorithm)
@@ -396,12 +390,15 @@ export class EnhancedIntegrationRegistry {
       // Prioritize by category match, then by health status, then by name
       const healthA = this.healthStatus.get(a.id)?.status || 'unknown'
       const healthB = this.healthStatus.get(b.id)?.status || 'unknown'
-      
+
       if (healthA !== healthB) {
-        const healthOrder = { 'healthy': 0, 'degraded': 1, 'unknown': 2, 'unhealthy': 3 }
-        return healthOrder[healthA as keyof typeof healthOrder] - healthOrder[healthB as keyof typeof healthOrder]
+        const healthOrder = { healthy: 0, degraded: 1, unknown: 2, unhealthy: 3 }
+        return (
+          healthOrder[healthA as keyof typeof healthOrder] -
+          healthOrder[healthB as keyof typeof healthOrder]
+        )
       }
-      
+
       return a.name.localeCompare(b.name)
     })
 
@@ -432,23 +429,25 @@ export class EnhancedIntegrationRegistry {
   /**
    * Get connectors by category with performance metrics
    */
-  getConnectorsByCategory(category: IntegrationCategory): Array<IntegrationConnector & { health: ConnectorHealth }> {
+  getConnectorsByCategory(
+    category: IntegrationCategory
+  ): Array<IntegrationConnector & { health: ConnectorHealth }> {
     return Array.from(this.connectors.values())
-      .filter(connector => connector.category === category)
-      .map(connector => ({
+      .filter((connector) => connector.category === category)
+      .map((connector) => ({
         ...connector,
         health: this.healthStatus.get(connector.id)!,
       }))
       .sort((a, b) => {
         // Sort by health status, then by success rate
-        const statusOrder = { 'healthy': 0, 'degraded': 1, 'unknown': 2, 'unhealthy': 3 }
+        const statusOrder = { healthy: 0, degraded: 1, unknown: 2, unhealthy: 3 }
         const aStatus = statusOrder[a.health.status as keyof typeof statusOrder]
         const bStatus = statusOrder[b.health.status as keyof typeof statusOrder]
-        
+
         if (aStatus !== bStatus) {
           return aStatus - bStatus
         }
-        
+
         return b.health.successRate - a.health.successRate
       })
   }
@@ -458,11 +457,11 @@ export class EnhancedIntegrationRegistry {
    */
   getCategories(): Record<IntegrationCategory, number> {
     const categories: Partial<Record<IntegrationCategory, number>> = {}
-    
+
     for (const connector of this.connectors.values()) {
       categories[connector.category] = (categories[connector.category] || 0) + 1
     }
-    
+
     return categories as Record<IntegrationCategory, number>
   }
 
@@ -498,8 +497,8 @@ export class EnhancedIntegrationRegistry {
         if (metrics) {
           // Calculate success rate
           const totalRequests = metrics.successfulRequests + metrics.failedRequests
-          const successRate = totalRequests > 0 ? 
-            (metrics.successfulRequests / totalRequests) * 100 : 0
+          const successRate =
+            totalRequests > 0 ? (metrics.successfulRequests / totalRequests) * 100 : 0
 
           // Update health status
           const health = this.healthStatus.get(connectorId)
@@ -529,7 +528,7 @@ export class EnhancedIntegrationRegistry {
     )
 
     await Promise.allSettled(healthCheckPromises)
-    
+
     logger.debug('Health checks completed for all connectors', {
       totalConnectors: this.connectors.size,
     })
@@ -555,8 +554,11 @@ export class EnhancedIntegrationRegistry {
       // This would make an actual health check request
       // For now, simulating based on recent metrics
       const metrics = this.executionMetrics.get(connectorId)
-      const recentSuccessRate = metrics?.successfulRequests > 0 ? 
-        (metrics.successfulRequests / (metrics.successfulRequests + metrics.failedRequests)) * 100 : 100
+      const recentSuccessRate =
+        metrics?.successfulRequests > 0
+          ? (metrics.successfulRequests / (metrics.successfulRequests + metrics.failedRequests)) *
+            100
+          : 100
 
       health.responseTime = Date.now() - startTime
       health.lastChecked = new Date()
@@ -580,8 +582,10 @@ export class EnhancedIntegrationRegistry {
     } catch (error) {
       health.status = 'unhealthy'
       health.lastChecked = new Date()
-      health.issues = [`Health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
-      
+      health.issues = [
+        `Health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      ]
+
       logger.warn(`Health check failed for ${connectorId}:`, error)
     }
   }
@@ -607,7 +611,10 @@ export class EnhancedIntegrationRegistry {
     const allMetrics = Array.from(this.executionMetrics.values())
     const totalRequests = allMetrics.reduce((sum, m) => sum + m.totalRequests, 0)
     const successfulRequests = allMetrics.reduce((sum, m) => sum + m.successfulRequests, 0)
-    const totalResponseTime = allMetrics.reduce((sum, m) => sum + (m.averageResponseTime * m.totalRequests), 0)
+    const totalResponseTime = allMetrics.reduce(
+      (sum, m) => sum + m.averageResponseTime * m.totalRequests,
+      0
+    )
 
     // Get top performing connectors
     const topConnectors = Array.from(this.executionMetrics.entries())
@@ -615,8 +622,10 @@ export class EnhancedIntegrationRegistry {
         id,
         name: this.connectors.get(id)?.name || 'Unknown',
         requestCount: metrics.totalRequests,
-        successRate: metrics.totalRequests > 0 ? 
-          (metrics.successfulRequests / metrics.totalRequests) * 100 : 0,
+        successRate:
+          metrics.totalRequests > 0
+            ? (metrics.successfulRequests / metrics.totalRequests) * 100
+            : 0,
       }))
       .sort((a, b) => b.requestCount - a.requestCount)
       .slice(0, 10)
@@ -635,7 +644,8 @@ export class EnhancedIntegrationRegistry {
         averageResponseTime: totalRequests > 0 ? totalResponseTime / totalRequests : 0,
         totalRequests,
         successRate: totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 0,
-        errorRate: totalRequests > 0 ? ((totalRequests - successfulRequests) / totalRequests) * 100 : 0,
+        errorRate:
+          totalRequests > 0 ? ((totalRequests - successfulRequests) / totalRequests) * 100 : 0,
       },
       usage: {
         topConnectors,
@@ -667,7 +677,7 @@ export class EnhancedIntegrationRegistry {
 
     metrics.totalRequests++
     metrics.lastUsed = new Date()
-    
+
     if (success) {
       metrics.successfulRequests++
     } else {
@@ -702,11 +712,11 @@ export class EnhancedIntegrationRegistry {
    */
   shutdown(): void {
     logger.info('Shutting down Integration Registry...')
-    
+
     if (this.metricsCollectionInterval) {
       clearInterval(this.metricsCollectionInterval)
     }
-    
+
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval)
     }
@@ -739,10 +749,10 @@ export class EnhancedIntegrationRegistry {
       this.healthStatus.delete(id)
       this.executionMetrics.delete(id)
       this.connectorVersions.delete(id)
-      
+
       // Close any active connections for this connector
       this.closeConnectionsByConnector(id)
-      
+
       logger.info(`Connector ${id} unregistered successfully`)
     }
     return removed
@@ -780,7 +790,7 @@ export const RegistryUtils = {
   getRecommendations(category?: IntegrationCategory, limit = 5): IntegrationConnector[] {
     const stats = globalIntegrationRegistry.getRegistryStats()
     const topConnectors = stats.usage.topConnectors.slice(0, limit)
-    
+
     return topConnectors
       .map(({ id }) => globalIntegrationRegistry.getConnector(id))
       .filter(Boolean) as IntegrationConnector[]
@@ -792,7 +802,7 @@ export const RegistryUtils = {
   isConnectorAvailable(connectorId: string): boolean {
     const connector = globalIntegrationRegistry.getConnector(connectorId)
     if (!connector) return false
-    
+
     const health = globalIntegrationRegistry.getConnectorHealth(connectorId)
     return health?.status === 'healthy' || health?.status === 'degraded'
   },
@@ -807,12 +817,14 @@ export const RegistryUtils = {
     avgSuccessRate: number
   }> {
     const categories = globalIntegrationRegistry.getCategories()
-    
+
     return Object.entries(categories).map(([category, count]) => {
-      const connectors = globalIntegrationRegistry.getConnectorsByCategory(category as IntegrationCategory)
-      const healthyCount = connectors.filter(c => c.health.status === 'healthy').length
+      const connectors = globalIntegrationRegistry.getConnectorsByCategory(
+        category as IntegrationCategory
+      )
+      const healthyCount = connectors.filter((c) => c.health.status === 'healthy').length
       const avgSuccessRate = connectors.reduce((sum, c) => sum + c.health.successRate, 0) / count
-      
+
       return {
         category: category as IntegrationCategory,
         count,

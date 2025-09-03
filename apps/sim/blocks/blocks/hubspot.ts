@@ -7,7 +7,7 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
   name: 'HubSpot',
   description: 'Complete HubSpot CRM and marketing automation integration',
   longDescription:
-    'Comprehensive HubSpot CRM integration with OAuth authentication. Manage contacts, companies, deals, tickets, and marketing campaigns. Execute advanced searches, batch operations, and leverage HubSpot\'s powerful automation tools.',
+    "Comprehensive HubSpot CRM integration with OAuth authentication. Manage contacts, companies, deals, tickets, and marketing campaigns. Execute advanced searches, batch operations, and leverage HubSpot's powerful automation tools.",
   docsLink: 'https://docs.sim.ai/tools/hubspot',
   category: 'tools',
   bgColor: '#FF7A59',
@@ -62,20 +62,20 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       condition: { field: 'operation', value: ['contacts_get', 'contacts_update'] },
       required: true,
     },
-    
+
     {
       id: 'contactProperties',
       title: 'Properties to Retrieve',
       type: 'short-input',
       layout: 'full',
       placeholder: 'Comma-separated properties (e.g., firstname,lastname,email,phone)',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_list', 'contacts_get', 'contacts_search', 'contacts_batch_read'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_list', 'contacts_get', 'contacts_search', 'contacts_batch_read'],
       },
       defaultValue: 'firstname,lastname,email,phone,company,jobtitle,lifecyclestage',
     },
-    
+
     {
       id: 'contactData',
       title: 'Contact Properties (JSON)',
@@ -94,9 +94,9 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
   "country": "United States",
   "lifecyclestage": "lead"
 }`,
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_create', 'contacts_update'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_create', 'contacts_update'],
       },
       required: true,
     },
@@ -152,7 +152,7 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       placeholder: 'Search term (e.g., company name, email domain)',
       condition: { field: 'operation', value: 'contacts_search' },
     },
-    
+
     {
       id: 'searchFilters',
       title: 'Search Filters (JSON)',
@@ -191,7 +191,7 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       condition: { field: 'operation', value: 'contacts_batch_read' },
       required: true,
     },
-    
+
     {
       id: 'batchContacts',
       title: 'Contacts Data (JSON Array)',
@@ -226,33 +226,33 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       type: 'short-input',
       layout: 'quarter',
       placeholder: '100',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_list', 'companies_list', 'deals_list', 'contacts_search'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_list', 'companies_list', 'deals_list', 'contacts_search'],
       },
     },
-    
+
     {
       id: 'after',
       title: 'After (Pagination Cursor)',
       type: 'short-input',
       layout: 'half',
       placeholder: 'Cursor from previous response',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_list', 'companies_list', 'deals_list', 'contacts_search'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_list', 'companies_list', 'deals_list', 'contacts_search'],
       },
     },
-    
+
     {
       id: 'associations',
       title: 'Include Associations',
       type: 'short-input',
       layout: 'half',
       placeholder: 'companies,deals (comma-separated)',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_list', 'contacts_get', 'companies_list', 'deals_list'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_list', 'contacts_get', 'companies_list', 'deals_list'],
       },
     },
 
@@ -262,25 +262,25 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       title: 'Include Archived Records',
       type: 'checkbox',
       layout: 'half',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_list', 'companies_list', 'deals_list'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_list', 'companies_list', 'deals_list'],
       },
       defaultValue: false,
     },
-    
+
     {
       id: 'propertiesWithHistory',
       title: 'Properties with History',
       type: 'short-input',
       layout: 'full',
       placeholder: 'Properties to retrieve with historical values',
-      condition: { 
-        field: 'operation', 
-        value: ['contacts_get', 'contacts_batch_read'] 
+      condition: {
+        field: 'operation',
+        value: ['contacts_get', 'contacts_batch_read'],
       },
     },
-    
+
     {
       id: 'sortBy',
       title: 'Sort By',
@@ -289,7 +289,7 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       placeholder: 'Property name to sort by',
       condition: { field: 'operation', value: 'contacts_search' },
     },
-    
+
     {
       id: 'sortDirection',
       title: 'Sort Direction',
@@ -303,7 +303,7 @@ export const HubSpotBlock: BlockConfig<HubSpotResponse> = {
       defaultValue: 'ASCENDING',
     },
   ],
-  
+
   // Output configuration for different operations
   outputTemplate: (operation: string) => {
     switch (operation) {

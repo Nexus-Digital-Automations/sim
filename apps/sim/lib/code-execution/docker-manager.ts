@@ -1,602 +1,651 @@
-/**
- * Docker Container Manager for Secure Code Execution
- *
- * Provides Docker-based sandboxing for JavaScript and Python code execution
- * with comprehensive security measures and resource management.
- */
-
-import { spawn } from 'child_process'
-import crypto from 'crypto'
+import { spawn, ChildProcess } from 'child_process'
 import fs from 'fs/promises'
-import os from 'os'
 import path from 'path'
+import os from 'os'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('DockerManager')
 
-export interface DockerConfig {
+/**
+ * Docker Manager for Secure Code Execution
+ * 
+ * Provides secure, isolated Docker container execution for untrusted code with:
+ * - Container lifecycle management
+ * - Resource limits and monitoring
+ * - Security policy enforcement
+ * - Network isolation controls
+ * - File system protection
+ * - Execution timeout handling
+ * - Container pool management for performance
+ */
+
+export interface ContainerConfig {
   image: string
-  memory: string // e.g., '256m'
-  cpus: string // e.g., '0.5'
+  memory: number // bytes
+  cpuShares: number // relative CPU weight
   timeout: number // milliseconds
-  network: 'none' | 'host' | 'bridge'
   readOnly: boolean
-  removeAfterExecution: boolean
-  workdir: string
+  networkMode: 'none' | 'bridge' | 'host'
   user: string
-  environmentVariables: Record<string, string>
-  volumes?: Array<{
-    host: string
-    container: string
-    readonly: boolean
-  }>
-  ports?: Array<{
-    host: number
-    container: number
-    protocol: 'tcp' | 'udp'
-  }>
+  securityOpts: string[]
+  capDrop: string[]
+  capAdd: string[]
+}
+
+export interface ExecutionContext {
+  code: string
+  language: 'javascript' | 'python'
+  packages: string[]
+  envVars?: Record<string, any>
+  workflowContext?: Record<string, any>
 }
 
 export interface ExecutionResult {
   success: boolean
+  result: any
   stdout: string
   stderr: string
-  exitCode: number
   executionTime: number
-  containerId?: string
-  resourceUsage?: {
-    memoryUsage: number
-    cpuUsage: number
-  }
+  memoryUsage: number
+  debugInfo?: any
+  containerLogs?: string[]
+  securityViolations?: string[]
 }
 
+/**
+ * Container instance management
+ */
+interface ContainerInstance {
+  id: string
+  image: string
+  status: 'creating' | 'ready' | 'running' | 'cleanup' | 'error'
+  createdAt: Date
+  lastUsed: Date
+  execCount: number
+}
+
+/**
+ * Docker Manager class for secure code execution
+ */
 export class DockerManager {
-  private static instance: DockerManager
-  private containerPool: Map<string, string> = new Map()
+  private containerPool: Map<string, ContainerInstance> = new Map()
   private readonly maxPoolSize = 10
+  private readonly containerTimeout = 300000 // 5 minutes before cleanup
+  private cleanupInterval?: NodeJS.Timeout
 
-  private constructor() {}
-
-  static getInstance(): DockerManager {
-    if (!DockerManager.instance) {
-      DockerManager.instance = new DockerManager()
-    }
-    return DockerManager.instance
+  constructor() {
+    this.startCleanupService()
   }
 
   /**
-   * Check if Docker is available and running
+   * Execute code in a secure Docker container
    */
-  async checkDockerAvailability(): Promise<boolean> {
+  async executeCode(config: ContainerConfig & ExecutionContext): Promise<ExecutionResult> {
+    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const startTime = Date.now()
+
+    logger.info(`[${executionId}] Starting Docker code execution`, {
+      language: config.language,
+      image: config.image,
+      timeout: config.timeout,
+      memoryLimit: Math.round(config.memory / 1024 / 1024) + 'MB',
+    })
+
     try {
-      const result = await this.executeCommand('docker', ['--version'])
-      return result.success
+      // Validate Docker is available
+      await this.validateDockerAvailable()
+
+      // Get or create container
+      const container = await this.getOrCreateContainer(config, executionId)
+
+      // Execute code in container
+      const result = await this.executeInContainer(container, config, executionId)
+
+      // Update execution metrics
+      result.executionTime = Date.now() - startTime
+
+      logger.info(`[${executionId}] Docker execution completed successfully`, {
+        executionTime: result.executionTime,
+        memoryUsage: result.memoryUsage,
+        success: result.success,
+      })
+
+      return result
+
     } catch (error) {
-      logger.error('Docker is not available:', error)
-      return false
-    }
-  }
-
-  /**
-   * Build custom Docker images for code execution
-   */
-  async buildExecutionImages(): Promise<void> {
-    await Promise.all([this.buildJavaScriptImage(), this.buildPythonImage()])
-  }
-
-  /**
-   * Build JavaScript execution Docker image
-   */
-  private async buildJavaScriptImage(): Promise<void> {
-    const dockerfile = `
-FROM node:18-alpine
-
-# Create non-root user
-RUN addgroup -g 1000 simuser && \\
-    adduser -u 1000 -G simuser -s /bin/sh -D simuser
-
-# Install security updates
-RUN apk update && apk upgrade
-
-# Create working directory
-WORKDIR /app
-RUN chown simuser:simuser /app
-
-# Install common packages (whitelisted only)
-RUN npm install -g lodash moment axios uuid crypto-js validator cheerio csv-parser xml2js bcrypt jsonwebtoken sharp
-
-# Create execution script
-COPY --chown=simuser:simuser execute.js /app/
-RUN chmod +x /app/execute.js
-
-# Switch to non-root user
-USER simuser
-
-# Set security options
-ENV NODE_OPTIONS="--max-old-space-size=256 --no-deprecation"
-ENV NODE_ENV=sandbox
-
-ENTRYPOINT ["node", "/app/execute.js"]
-`
-
-    const executeScript = `
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-
-// Read code from mounted file
-const codePath = process.env.CODE_FILE || '/tmp/user-code.js';
-const outputPath = process.env.OUTPUT_FILE || '/tmp/output.json';
-
-async function executeCode() {
-  try {
-    const code = await fs.promises.readFile(codePath, 'utf8');
-    const startTime = Date.now();
-    
-    // Create secure context
-    const context = vm.createContext({
-      console,
-      require: (name) => {
-        const allowedModules = ['lodash', 'moment', 'axios', 'uuid', 'crypto-js', 'validator'];
-        if (allowedModules.includes(name)) {
-          return require(name);
-        }
-        throw new Error(\`Module '\${name}' is not allowed\`);
-      },
-      process: {
-        env: process.env,
-        version: process.version,
-        platform: process.platform
-      },
-      Buffer,
-      setTimeout,
-      setInterval,
-      clearTimeout,
-      clearInterval
-    });
-
-    // Execute code with timeout
-    const script = new vm.Script(\`(async () => { \${code} })()\`);
-    const result = await script.runInContext(context, {
-      timeout: parseInt(process.env.EXECUTION_TIMEOUT) || 30000,
-      displayErrors: true
-    });
-
-    const executionTime = Date.now() - startTime;
-    const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // MB
-
-    // Write output
-    const output = {
-      success: true,
-      result,
-      executionTime,
-      memoryUsage
-    };
-
-    await fs.promises.writeFile(outputPath, JSON.stringify(output, null, 2));
-    process.exit(0);
-  } catch (error) {
-    const output = {
-      success: false,
-      error: error.message,
-      stack: error.stack,
-      executionTime: Date.now() - startTime || 0,
-      memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024
-    };
-
-    await fs.promises.writeFile(outputPath, JSON.stringify(output, null, 2));
-    process.exit(1);
-  }
-}
-
-executeCode();
-`
-
-    await this.buildImage('sim-javascript', dockerfile, { 'execute.js': executeScript })
-    logger.info('JavaScript Docker image built successfully')
-  }
-
-  /**
-   * Build Python execution Docker image
-   */
-  private async buildPythonImage(): Promise<void> {
-    const dockerfile = `
-FROM python:3.11-alpine
-
-# Create non-root user
-RUN addgroup -g 1000 simuser && \\
-    adduser -u 1000 -G simuser -s /bin/sh -D simuser
-
-# Install system dependencies
-RUN apk update && apk upgrade && \\
-    apk add --no-cache gcc musl-dev libffi-dev openssl-dev
-
-# Install common Python packages
-RUN pip install --no-cache-dir pandas numpy matplotlib seaborn scikit-learn requests beautifulsoup4 openpyxl python-docx Pillow
-
-# Create working directory
-WORKDIR /app
-RUN chown simuser:simuser /app
-
-# Create execution script
-COPY --chown=simuser:simuser execute.py /app/
-RUN chmod +x /app/execute.py
-
-# Switch to non-root user
-USER simuser
-
-# Set Python environment
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONPATH=/app
-
-ENTRYPOINT ["python", "/app/execute.py"]
-`
-
-    const executeScript = `
-import os
-import sys
-import json
-import traceback
-import time
-import resource
-from pathlib import Path
-
-def execute_code():
-    code_file = os.environ.get('CODE_FILE', '/tmp/user-code.py')
-    output_file = os.environ.get('OUTPUT_FILE', '/tmp/output.json')
-    timeout = int(os.environ.get('EXECUTION_TIMEOUT', 60))
-    
-    try:
-        # Set resource limits
-        resource.setrlimit(resource.RLIMIT_CPU, (timeout, timeout))
-        resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))  # 256MB
-        
-        start_time = time.time()
-        
-        # Read and execute code
-        with open(code_file, 'r') as f:
-            code = f.read()
-        
-        # Create execution globals
-        exec_globals = {
-            '__name__': '__main__',
-            '__builtins__': __builtins__,
-            'print': print,
-            'len': len,
-            'range': range,
-            'enumerate': enumerate,
-            'zip': zip,
-            'map': map,
-            'filter': filter,
-            'sorted': sorted,
-            'sum': sum,
-            'min': min,
-            'max': max,
-        }
-        
-        # Execute code
-        exec(code, exec_globals)
-        
-        execution_time = (time.time() - start_time) * 1000  # ms
-        memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024  # MB
-        
-        # Get result if available
-        result = exec_globals.get('result', None)
-        
-        output = {
-            'success': True,
-            'result': result,
-            'execution_time': execution_time,
-            'memory_usage': memory_usage
-        }
-        
-        with open(output_file, 'w') as f:
-            json.dump(output, f, default=str, indent=2)
-            
-        sys.exit(0)
-        
-    except Exception as e:
-        execution_time = (time.time() - start_time) * 1000 if 'start_time' in locals() else 0
-        memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
-        
-        output = {
-            'success': False,
-            'error': str(e),
-            'traceback': traceback.format_exc(),
-            'execution_time': execution_time,
-            'memory_usage': memory_usage
-        }
-        
-        with open(output_file, 'w') as f:
-            json.dump(output, f, indent=2)
-            
-        sys.exit(1)
-
-if __name__ == '__main__':
-    execute_code()
-`
-
-    await this.buildImage('sim-python', dockerfile, { 'execute.py': executeScript })
-    logger.info('Python Docker image built successfully')
-  }
-
-  /**
-   * Execute JavaScript code in Docker container
-   */
-  async executeJavaScript(
-    code: string,
-    config: Partial<DockerConfig> = {}
-  ): Promise<ExecutionResult> {
-    const dockerConfig: DockerConfig = {
-      image: 'sim-javascript',
-      memory: config.memory || '256m',
-      cpus: config.cpus || '0.5',
-      timeout: config.timeout || 30000,
-      network: config.network || 'none',
-      readOnly: config.readOnly !== undefined ? config.readOnly : true,
-      removeAfterExecution:
-        config.removeAfterExecution !== undefined ? config.removeAfterExecution : true,
-      workdir: config.workdir || '/app',
-      user: config.user || '1000:1000',
-      environmentVariables: {
-        EXECUTION_TIMEOUT: String(config.timeout || 30000),
-        ...config.environmentVariables,
-      },
-    }
-
-    return this.executeInContainer(code, dockerConfig, 'javascript')
-  }
-
-  /**
-   * Execute Python code in Docker container
-   */
-  async executePython(code: string, config: Partial<DockerConfig> = {}): Promise<ExecutionResult> {
-    const dockerConfig: DockerConfig = {
-      image: 'sim-python',
-      memory: config.memory || '512m',
-      cpus: config.cpus || '0.5',
-      timeout: config.timeout || 60000,
-      network: config.network || 'none',
-      readOnly: config.readOnly !== undefined ? config.readOnly : true,
-      removeAfterExecution:
-        config.removeAfterExecution !== undefined ? config.removeAfterExecution : true,
-      workdir: config.workdir || '/app',
-      user: config.user || '1000:1000',
-      environmentVariables: {
-        EXECUTION_TIMEOUT: String(config.timeout || 60000),
-        ...config.environmentVariables,
-      },
-    }
-
-    return this.executeInContainer(code, dockerConfig, 'python')
-  }
-
-  /**
-   * Execute code in Docker container with security measures
-   */
-  private async executeInContainer(
-    code: string,
-    config: DockerConfig,
-    language: 'javascript' | 'python'
-  ): Promise<ExecutionResult> {
-    const executionId = crypto.randomBytes(8).toString('hex')
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `sim-docker-${executionId}-`))
-
-    try {
-      // Prepare files
-      const codeFile = path.join(
-        tempDir,
-        language === 'javascript' ? 'user-code.js' : 'user-code.py'
-      )
-      const outputFile = path.join(tempDir, 'output.json')
-
-      await fs.writeFile(codeFile, code)
-
-      // Build Docker command
-      const dockerArgs = [
-        'run',
-        '--rm', // Remove container after execution
-        '--memory',
-        config.memory,
-        '--cpus',
-        config.cpus,
-        '--network',
-        config.network,
-        '--user',
-        config.user,
-        '--workdir',
-        config.workdir,
-        '--security-opt',
-        'no-new-privileges',
-        '--cap-drop',
-        'ALL',
-        '--tmpfs',
-        '/tmp:rw,noexec,nosuid,size=100m',
-      ]
-
-      // Add read-only flag if specified
-      if (config.readOnly) {
-        dockerArgs.push('--read-only')
-      }
-
-      // Add volumes
-      dockerArgs.push(
-        '-v',
-        `${codeFile}:/tmp/user-code.${language === 'javascript' ? 'js' : 'py'}:ro`,
-        '-v',
-        `${outputFile}:/tmp/output.json:rw`
-      )
-
-      // Add environment variables
-      for (const [key, value] of Object.entries(config.environmentVariables)) {
-        dockerArgs.push('-e', `${key}=${value}`)
-      }
-
-      // Set environment for execution
-      dockerArgs.push(
-        '-e',
-        `CODE_FILE=/tmp/user-code.${language === 'javascript' ? 'js' : 'py'}`,
-        '-e',
-        'OUTPUT_FILE=/tmp/output.json'
-      )
-
-      // Add image
-      dockerArgs.push(config.image)
-
-      const startTime = Date.now()
-      const result = await this.executeCommand('docker', dockerArgs, config.timeout)
       const executionTime = Date.now() - startTime
-
-      // Read output
-      let output: any = {}
-      try {
-        const outputContent = await fs.readFile(outputFile, 'utf8')
-        output = JSON.parse(outputContent)
-      } catch (error) {
-        logger.warn(`Failed to read output file: ${error}`)
-        output = {
-          success: false,
-          error: 'Failed to read execution output',
-        }
-      }
+      logger.error(`[${executionId}] Docker execution failed`, {
+        error: error.message,
+        executionTime,
+      })
 
       return {
-        success: result.success && output.success,
-        stdout: result.stdout || '',
-        stderr: result.stderr || output.error || '',
-        exitCode: result.exitCode || (output.success ? 0 : 1),
-        executionTime: output.execution_time || executionTime,
-        resourceUsage: {
-          memoryUsage: output.memory_usage || 0,
-          cpuUsage: 0, // Would need additional monitoring
-        },
-      }
-    } finally {
-      // Cleanup temp directory
-      try {
-        await fs.rm(tempDir, { recursive: true })
-      } catch (error) {
-        logger.warn(`Failed to cleanup temp directory: ${error}`)
+        success: false,
+        result: null,
+        stdout: '',
+        stderr: error.message,
+        executionTime,
+        memoryUsage: 0,
+        securityViolations: ['container_execution_failed'],
       }
     }
   }
 
   /**
-   * Build Docker image from Dockerfile
+   * Validate Docker is available and accessible
    */
-  private async buildImage(
-    imageName: string,
-    dockerfile: string,
-    files: Record<string, string> = {}
-  ): Promise<void> {
-    const buildDir = await fs.mkdtemp(path.join(os.tmpdir(), `docker-build-${imageName}-`))
-
-    try {
-      // Write Dockerfile
-      await fs.writeFile(path.join(buildDir, 'Dockerfile'), dockerfile)
-
-      // Write additional files
-      for (const [filename, content] of Object.entries(files)) {
-        await fs.writeFile(path.join(buildDir, filename), content)
-      }
-
-      // Build image
-      const result = await this.executeCommand(
-        'docker',
-        ['build', '-t', imageName, '--no-cache', buildDir],
-        300000
-      ) // 5 minutes timeout for build
-
-      if (!result.success) {
-        throw new Error(`Failed to build Docker image ${imageName}: ${result.stderr}`)
-      }
-
-      logger.info(`Successfully built Docker image: ${imageName}`)
-    } finally {
-      // Cleanup build directory
-      try {
-        await fs.rm(buildDir, { recursive: true })
-      } catch (error) {
-        logger.warn(`Failed to cleanup build directory: ${error}`)
-      }
-    }
-  }
-
-  /**
-   * Execute shell command with timeout
-   */
-  private executeCommand(
-    command: string,
-    args: string[],
-    timeout = 30000
-  ): Promise<{ success: boolean; stdout: string; stderr: string; exitCode: number }> {
-    return new Promise((resolve) => {
-      let stdout = ''
-      let stderr = ''
-
-      const child = spawn(command, args, {
-        timeout,
+  private async validateDockerAvailable(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const dockerCheck = spawn('docker', ['version'], {
         stdio: ['pipe', 'pipe', 'pipe'],
       })
 
-      child.stdout.on('data', (data) => {
-        stdout += data.toString()
+      dockerCheck.on('close', (code) => {
+        if (code === 0) {
+          resolve()
+        } else {
+          reject(new Error('Docker is not available or not accessible'))
+        }
       })
 
-      child.stderr.on('data', (data) => {
-        stderr += data.toString()
-      })
-
-      child.on('close', (code) => {
-        resolve({
-          success: code === 0,
-          stdout: stdout.trim(),
-          stderr: stderr.trim(),
-          exitCode: code || 0,
-        })
-      })
-
-      child.on('error', (error) => {
-        resolve({
-          success: false,
-          stdout: stdout.trim(),
-          stderr: error.message,
-          exitCode: 1,
-        })
+      dockerCheck.on('error', (error) => {
+        reject(new Error(`Docker validation failed: ${error.message}`))
       })
     })
   }
 
   /**
-   * Cleanup Docker resources
+   * Get existing container or create new one
    */
-  async cleanup(): Promise<void> {
+  private async getOrCreateContainer(
+    config: ContainerConfig,
+    executionId: string
+  ): Promise<ContainerInstance> {
+    const imageKey = `${config.language}_${config.image}`
+    
+    // Try to get available container from pool
+    const availableContainer = Array.from(this.containerPool.values()).find(
+      (container) =>
+        container.image === imageKey &&
+        container.status === 'ready' &&
+        container.execCount < 50 // Limit reuse to prevent resource leaks
+    )
+
+    if (availableContainer) {
+      availableContainer.status = 'running'
+      availableContainer.lastUsed = new Date()
+      availableContainer.execCount++
+      
+      logger.debug(`[${executionId}] Reusing container ${availableContainer.id}`)
+      return availableContainer
+    }
+
+    // Create new container if none available
+    return await this.createContainer(config, executionId, imageKey)
+  }
+
+  /**
+   * Create new Docker container with security configuration
+   */
+  private async createContainer(
+    config: ContainerConfig,
+    executionId: string,
+    imageKey: string
+  ): Promise<ContainerInstance> {
+    const containerId = `sim_${config.language}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+
+    logger.info(`[${executionId}] Creating new container ${containerId}`)
+
+    const container: ContainerInstance = {
+      id: containerId,
+      image: imageKey,
+      status: 'creating',
+      createdAt: new Date(),
+      lastUsed: new Date(),
+      execCount: 0,
+    }
+
     try {
-      // Remove unused containers
-      await this.executeCommand('docker', ['container', 'prune', '-f'])
+      // Build Docker run command with security options
+      const dockerArgs = [
+        'run',
+        '--detach',
+        '--rm', // Auto-remove when stopped
+        '--name', containerId,
+        
+        // Resource limits
+        '--memory', `${Math.round(config.memory / 1024 / 1024)}m`,
+        '--cpu-shares', config.cpuShares.toString(),
+        '--pids-limit', '100',
+        
+        // Security hardening
+        '--cap-drop', 'ALL',
+        ...config.capAdd.map(cap => ['--cap-add', cap]).flat(),
+        '--security-opt', 'no-new-privileges',
+        '--user', config.user,
+        
+        // Network isolation
+        '--network', config.networkMode,
+        
+        // File system protection
+        ...(config.readOnly ? ['--read-only'] : []),
+        '--tmpfs', '/tmp',
+        '--tmpfs', '/var/tmp',
+        
+        // Container image
+        config.image,
+        
+        // Keep container alive
+        'sleep', 'infinity'
+      ]
 
-      // Remove unused images
-      await this.executeCommand('docker', ['image', 'prune', '-f'])
+      await this.executeDockerCommand(dockerArgs, executionId)
 
-      logger.info('Docker cleanup completed')
+      container.status = 'ready'
+      this.containerPool.set(containerId, container)
+
+      // Cleanup pool if it gets too large
+      if (this.containerPool.size > this.maxPoolSize) {
+        await this.cleanupOldestContainers()
+      }
+
+      logger.info(`[${executionId}] Container ${containerId} created successfully`)
+      return container
+
     } catch (error) {
-      logger.warn(`Docker cleanup failed: ${error}`)
+      container.status = 'error'
+      logger.error(`[${executionId}] Container creation failed`, {
+        containerId,
+        error: error.message,
+      })
+      throw error
     }
   }
 
   /**
-   * Get Docker system information
+   * Execute code inside the container
    */
-  async getSystemInfo(): Promise<any> {
+  private async executeInContainer(
+    container: ContainerInstance,
+    config: ContainerConfig & ExecutionContext,
+    executionId: string
+  ): Promise<ExecutionResult> {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sim-docker-'))
+    
     try {
-      const result = await this.executeCommand('docker', ['system', 'info', '--format', 'json'])
-      if (result.success) {
-        return JSON.parse(result.stdout)
+      // Prepare execution script based on language
+      const scriptPath = await this.prepareExecutionScript(config, tempDir)
+
+      // Copy script into container
+      await this.copyFileToContainer(container.id, scriptPath, '/tmp/execute.js', executionId)
+
+      // Execute script in container with timeout
+      const result = await this.runScriptInContainer(
+        container.id,
+        config,
+        executionId,
+        `/tmp/execute.${config.language === 'javascript' ? 'js' : 'py'}`
+      )
+
+      container.status = 'ready' // Mark as available for reuse
+
+      return result
+
+    } finally {
+      // Cleanup temporary files
+      try {
+        await fs.rm(tempDir, { recursive: true })
+      } catch (error) {
+        logger.warn(`[${executionId}] Failed to cleanup temp directory: ${error}`)
       }
-    } catch (error) {
-      logger.error(`Failed to get Docker system info: ${error}`)
     }
-    return null
+  }
+
+  /**
+   * Prepare execution script for the specified language
+   */
+  private async prepareExecutionScript(
+    config: ContainerConfig & ExecutionContext,
+    tempDir: string
+  ): Promise<string> {
+    const scriptExtension = config.language === 'javascript' ? 'js' : 'py'
+    const scriptPath = path.join(tempDir, `execute.${scriptExtension}`)
+
+    if (config.language === 'javascript') {
+      // JavaScript execution script
+      const jsScript = `
+const vm = require('vm');
+const fs = require('fs');
+
+// Set up environment variables
+${Object.entries(config.envVars || {})
+  .map(([key, value]) => `process.env['${key}'] = ${JSON.stringify(String(value))};`)
+  .join('\n')}
+
+// Workflow context
+const workflowContext = ${JSON.stringify(config.workflowContext || {}, null, 2)};
+
+// User code
+const userCode = ${JSON.stringify(config.code)};
+
+// Create secure execution context
+const context = vm.createContext({
+  console: {
+    log: (...args) => console.log('[USER]', ...args),
+    error: (...args) => console.error('[USER]', ...args),
+    warn: (...args) => console.warn('[USER]', ...args),
+    info: (...args) => console.info('[USER]', ...args),
+  },
+  setTimeout,
+  setInterval,
+  clearTimeout,
+  clearInterval,
+  Promise,
+  JSON,
+  Math,
+  Date,
+  Buffer,
+  ...workflowContext,
+});
+
+// Execute user code
+try {
+  const script = new vm.Script(userCode);
+  const result = script.runInContext(context, {
+    timeout: 30000,
+    displayErrors: true,
+  });
+  
+  console.log(JSON.stringify({ success: true, result }));
+} catch (error) {
+  console.error(JSON.stringify({ 
+    success: false, 
+    error: error.message,
+    stack: error.stack 
+  }));
+  process.exit(1);
+}
+      `
+      
+      await fs.writeFile(scriptPath, jsScript)
+    } else {
+      // Python execution script
+      const pyScript = `
+import sys
+import json
+import os
+import traceback
+
+# Set up environment variables
+${Object.entries(config.envVars || {})
+  .map(([key, value]) => `os.environ['${key}'] = ${JSON.stringify(String(value))}`)
+  .join('\n')}
+
+# Workflow context
+workflow_data = ${JSON.stringify(config.workflowContext || {}, null, 2)}
+
+try:
+    # Execute user code
+    result = None
+    exec('''${config.code.replace(/'/g, "\\'")}''', globals())
+    
+    # Output result
+    print(json.dumps({"success": True, "result": result}, default=str))
+    
+except Exception as e:
+    error_info = {
+        "success": False,
+        "error": str(e),
+        "error_type": type(e).__name__,
+        "traceback": traceback.format_exc()
+    }
+    print(json.dumps(error_info))
+    sys.exit(1)
+      `
+      
+      await fs.writeFile(scriptPath, pyScript)
+    }
+
+    return scriptPath
+  }
+
+  /**
+   * Copy file into container
+   */
+  private async copyFileToContainer(
+    containerId: string,
+    sourcePath: string,
+    destPath: string,
+    executionId: string
+  ): Promise<void> {
+    const dockerArgs = ['cp', sourcePath, `${containerId}:${destPath}`]
+    await this.executeDockerCommand(dockerArgs, executionId)
+  }
+
+  /**
+   * Execute script inside container
+   */
+  private async runScriptInContainer(
+    containerId: string,
+    config: ContainerConfig & ExecutionContext,
+    executionId: string,
+    scriptPath: string
+  ): Promise<ExecutionResult> {
+    const interpreter = config.language === 'javascript' ? 'node' : 'python3'
+    const dockerArgs = [
+      'exec',
+      '--user', config.user,
+      containerId,
+      interpreter,
+      scriptPath
+    ]
+
+    let stdout = ''
+    let stderr = ''
+    let memoryUsage = 0
+
+    return new Promise((resolve, reject) => {
+      const dockerProcess = spawn('docker', dockerArgs, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: config.timeout,
+      })
+
+      dockerProcess.stdout?.on('data', (data) => {
+        stdout += data.toString()
+      })
+
+      dockerProcess.stderr?.on('data', (data) => {
+        stderr += data.toString()
+      })
+
+      dockerProcess.on('close', (code) => {
+        try {
+          // Try to parse result from stdout
+          const lines = stdout.trim().split('\n')
+          const lastLine = lines[lines.length - 1]
+          
+          let result: any = null
+          let success = code === 0
+
+          try {
+            const parsed = JSON.parse(lastLine)
+            success = parsed.success
+            result = parsed.result || null
+            if (!success && parsed.error) {
+              stderr = parsed.error + (parsed.traceback ? '\n' + parsed.traceback : '')
+            }
+          } catch {
+            // If parsing fails, use raw output
+            result = success ? stdout : null
+          }
+
+          resolve({
+            success,
+            result,
+            stdout: lines.slice(0, -1).join('\n'),
+            stderr,
+            executionTime: 0, // Set by caller
+            memoryUsage,
+            debugInfo: {
+              containerId,
+              exitCode: code,
+            },
+          })
+
+        } catch (error) {
+          reject(error)
+        }
+      })
+
+      dockerProcess.on('error', (error) => {
+        reject(new Error(`Docker execution error: ${error.message}`))
+      })
+    })
+  }
+
+  /**
+   * Execute Docker command with error handling
+   */
+  private async executeDockerCommand(args: string[], executionId: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let stdout = ''
+      let stderr = ''
+
+      const dockerProcess = spawn('docker', args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      })
+
+      dockerProcess.stdout?.on('data', (data) => {
+        stdout += data.toString()
+      })
+
+      dockerProcess.stderr?.on('data', (data) => {
+        stderr += data.toString()
+      })
+
+      dockerProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve(stdout.trim())
+        } else {
+          reject(new Error(`Docker command failed with code ${code}: ${stderr}`))
+        }
+      })
+
+      dockerProcess.on('error', (error) => {
+        reject(new Error(`Docker command error: ${error.message}`))
+      })
+    })
+  }
+
+  /**
+   * Start cleanup service for container lifecycle management
+   */
+  private startCleanupService(): void {
+    this.cleanupInterval = setInterval(async () => {
+      await this.cleanupExpiredContainers()
+    }, 60000) // Run every minute
+  }
+
+  /**
+   * Cleanup expired or unused containers
+   */
+  private async cleanupExpiredContainers(): Promise<void> {
+    const now = new Date()
+    const containersToCleanup: string[] = []
+
+    for (const [containerId, container] of this.containerPool.entries()) {
+      const age = now.getTime() - container.lastUsed.getTime()
+      
+      if (
+        age > this.containerTimeout ||
+        container.status === 'error' ||
+        container.execCount > 50
+      ) {
+        containersToCleanup.push(containerId)
+      }
+    }
+
+    for (const containerId of containersToCleanup) {
+      await this.cleanupContainer(containerId)
+    }
+  }
+
+  /**
+   * Cleanup oldest containers when pool is full
+   */
+  private async cleanupOldestContainers(): Promise<void> {
+    const containers = Array.from(this.containerPool.values())
+      .filter(c => c.status === 'ready')
+      .sort((a, b) => a.lastUsed.getTime() - b.lastUsed.getTime())
+
+    const toCleanup = containers.slice(0, Math.max(1, containers.length - this.maxPoolSize + 2))
+    
+    for (const container of toCleanup) {
+      await this.cleanupContainer(container.id)
+    }
+  }
+
+  /**
+   * Cleanup individual container
+   */
+  private async cleanupContainer(containerId: string): Promise<void> {
+    try {
+      const container = this.containerPool.get(containerId)
+      if (!container) return
+
+      logger.debug(`Cleaning up container ${containerId}`)
+
+      // Stop container
+      await this.executeDockerCommand(['stop', containerId], 'cleanup')
+      
+      // Remove from pool
+      this.containerPool.delete(containerId)
+
+      logger.debug(`Container ${containerId} cleaned up successfully`)
+
+    } catch (error) {
+      logger.warn(`Failed to cleanup container ${containerId}: ${error.message}`)
+      // Remove from pool anyway
+      this.containerPool.delete(containerId)
+    }
+  }
+
+  /**
+   * Graceful shutdown - cleanup all containers
+   */
+  async shutdown(): Promise<void> {
+    logger.info('Shutting down Docker Manager...')
+
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+    }
+
+    // Cleanup all containers
+    const containerIds = Array.from(this.containerPool.keys())
+    await Promise.all(containerIds.map(id => this.cleanupContainer(id)))
+
+    logger.info('Docker Manager shutdown complete')
+  }
+
+  /**
+   * Get container pool status for monitoring
+   */
+  getStatus(): {
+    totalContainers: number
+    activeContainers: number
+    readyContainers: number
+    containersByImage: Record<string, number>
+  } {
+    const containers = Array.from(this.containerPool.values())
+    
+    return {
+      totalContainers: containers.length,
+      activeContainers: containers.filter(c => c.status === 'running').length,
+      readyContainers: containers.filter(c => c.status === 'ready').length,
+      containersByImage: containers.reduce((acc, container) => {
+        acc[container.image] = (acc[container.image] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+    }
   }
 }

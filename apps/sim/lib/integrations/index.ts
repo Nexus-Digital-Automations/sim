@@ -510,14 +510,13 @@ export interface IntegrationConnection {
 // Export the global registry instance (legacy)
 export const integrationRegistry = new IntegrationRegistry()
 
-// Export enhanced registry and development tools
-export { globalIntegrationRegistry, RegistryUtils } from './integration-registry'
-export { connectorDevelopmentKit, ConnectorUtils } from './connector-development-kit'
-
-// Export connector configurations
-export { SalesforceConnector, SalesforceUtils } from './connectors/salesforce-connector'
+export { ConnectorUtils, connectorDevelopmentKit } from './connector-development-kit'
 export { HubSpotConnector, HubSpotUtils } from './connectors/hubspot-connector'
 export { MailchimpConnector, MailchimpUtils } from './connectors/mailchimp-connector'
+// Export connector configurations
+export { SalesforceConnector, SalesforceUtils } from './connectors/salesforce-connector'
+// Export enhanced registry and development tools
+export { globalIntegrationRegistry, RegistryUtils } from './integration-registry'
 
 /**
  * Integration framework initialization with enhanced registry
@@ -527,7 +526,7 @@ export function initializeIntegrationFramework(): void {
 
   // The enhanced registry automatically loads built-in connectors
   // and starts monitoring during construction
-  
+
   logger.info('Enhanced Integration Framework initialized successfully', {
     registryActive: true,
     monitoringActive: true,

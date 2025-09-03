@@ -22,12 +22,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  ErrorHandlingConfig,
+  HealthCheckConfig,
   IntegrationConnector,
   IntegrationOperation,
   OAuth2Config,
   RateLimitConfig,
-  ErrorHandlingConfig,
-  HealthCheckConfig,
 } from '../index'
 
 const logger = createLogger('MailchimpConnector')
@@ -42,12 +42,12 @@ const logger = createLogger('MailchimpConnector')
 export const MAILCHIMP_CONFIG = {
   // Mailchimp API endpoints (server prefix is dynamic based on account)
   BASE_URL_TEMPLATE: 'https://{{server}}.api.mailchimp.com/3.0',
-  
+
   // OAuth configuration
   OAUTH_SCOPES: [
     // No specific scopes for Mailchimp OAuth - permissions are account-based
   ],
-  
+
   // Rate limiting (Mailchimp specific limits)
   RATE_LIMITS: {
     REQUESTS_PER_SECOND: 10,
@@ -55,7 +55,7 @@ export const MAILCHIMP_CONFIG = {
     DAILY_LIMIT: 1000000, // Based on plan
     BATCH_SIZE: 500, // Maximum batch operation size
   },
-  
+
   // Campaign types
   CAMPAIGN_TYPES: [
     'regular', // Standard email campaign
@@ -64,16 +64,10 @@ export const MAILCHIMP_CONFIG = {
     'rss', // RSS-driven campaign
     'variate', // Multivariate testing
   ],
-  
+
   // Subscriber statuses
-  SUBSCRIBER_STATUSES: [
-    'subscribed',
-    'unsubscribed', 
-    'cleaned',
-    'pending',
-    'transactional',
-  ],
-  
+  SUBSCRIBER_STATUSES: ['subscribed', 'unsubscribed', 'cleaned', 'pending', 'transactional'],
+
   // Merge field types
   MERGE_FIELD_TYPES: [
     'text',
@@ -168,7 +162,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'audiences_get',
     name: 'Get Audience',
@@ -229,7 +223,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'audiences_create',
     name: 'Create Audience',
@@ -308,7 +302,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   // Member Management Operations
   {
     id: 'members_list',
@@ -391,7 +385,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'members_add',
     name: 'Add Member',
@@ -528,7 +522,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'members_update',
     name: 'Update Member',
@@ -607,7 +601,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   // Campaign Operations
   {
     id: 'campaigns_list',
@@ -701,7 +695,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'campaigns_create',
     name: 'Create Campaign',
@@ -924,7 +918,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   {
     id: 'campaigns_send',
     name: 'Send Campaign',
@@ -949,7 +943,7 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
     },
     requiredScopes: [],
   },
-  
+
   // Template Operations
   {
     id: 'templates_list',
@@ -1044,7 +1038,7 @@ export const MailchimpConnector: IntegrationConnector = {
   category: 'marketing',
   version: '1.0.0',
   baseUrl: 'https://{{server}}.api.mailchimp.com/3.0', // Server prefix is dynamic
-  
+
   authentication: {
     method: 'oauth2',
     config: {
@@ -1056,7 +1050,7 @@ export const MailchimpConnector: IntegrationConnector = {
       pkce: false, // Mailchimp doesn't support PKCE
     } as OAuth2Config,
   },
-  
+
   rateLimit: {
     strategy: 'token_bucket',
     limits: {
@@ -1068,16 +1062,11 @@ export const MailchimpConnector: IntegrationConnector = {
       backoffMultiplier: 2,
     } as RateLimitConfig,
   },
-  
+
   operations: MAILCHIMP_OPERATIONS,
-  
-  transformations: [
-    'json_mapping',
-    'data_validation',
-    'data_enrichment',
-    'email_validation',
-  ],
-  
+
+  transformations: ['json_mapping', 'data_validation', 'data_enrichment', 'email_validation'],
+
   healthCheck: {
     endpoint: '/ping',
     method: 'GET',
@@ -1086,7 +1075,7 @@ export const MailchimpConnector: IntegrationConnector = {
     interval: 30000,
     maxFailures: 3,
   } as HealthCheckConfig,
-  
+
   errorHandling: {
     retry: {
       maxAttempts: 3,
@@ -1126,7 +1115,7 @@ export const MailchimpConnector: IntegrationConnector = {
       ttl: 86400000, // 24 hours
     },
   } as ErrorHandlingConfig,
-  
+
   metadata: {
     tags: [
       'email-marketing',
@@ -1155,7 +1144,7 @@ export class MailchimpUtils {
     // For now, returning placeholder
     return email.toLowerCase()
   }
-  
+
   /**
    * Extract server prefix from OAuth response or metadata URL
    */
@@ -1163,7 +1152,7 @@ export class MailchimpUtils {
     const match = metadataUrl.match(/https:\/\/([^.]+)\.api\.mailchimp\.com/)
     return match ? match[1] : 'us1' // Default to us1 if extraction fails
   }
-  
+
   /**
    * Validate email address format
    */
@@ -1171,22 +1160,22 @@ export class MailchimpUtils {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
-  
+
   /**
    * Format merge fields for Mailchimp API
    */
   static formatMergeFields(fields: Record<string, any>): Record<string, string> {
     const formatted: Record<string, string> = {}
-    
+
     for (const [key, value] of Object.entries(fields)) {
       if (value !== null && value !== undefined) {
         formatted[key.toUpperCase()] = String(value)
       }
     }
-    
+
     return formatted
   }
-  
+
   /**
    * Parse Mailchimp API errors
    */
@@ -1204,10 +1193,10 @@ export class MailchimpUtils {
         title: errorData.title || 'API Error',
         detail: errorData.detail || 'Unknown error occurred',
         instance: errorData.instance || '',
-        retryable: this.isRetryableError(errorData.type, error.response.status),
+        retryable: MailchimpUtils.isRetryableError(errorData.type, error.response.status),
       }
     }
-    
+
     return {
       type: 'network_error',
       title: 'Network Error',
@@ -1216,7 +1205,7 @@ export class MailchimpUtils {
       retryable: true,
     }
   }
-  
+
   /**
    * Determine if error is retryable
    */
@@ -1224,12 +1213,12 @@ export class MailchimpUtils {
     if ([429, 500, 502, 503, 504].includes(statusCode)) {
       return true
     }
-    
+
     const retryableTypes = [
       'http://developer.mailchimp.com/documentation/mailchimp/guides/error-glossary#429',
       'http://developer.mailchimp.com/documentation/mailchimp/guides/error-glossary#500',
     ]
-    
+
     return retryableTypes.includes(errorType)
   }
 }

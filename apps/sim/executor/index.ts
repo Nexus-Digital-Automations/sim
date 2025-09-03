@@ -157,6 +157,8 @@ export class Executor {
       new RouterBlockHandler(this.pathTracker),
       new ConditionBlockHandler(this.pathTracker, this.resolver),
       new AdvancedConditionBlockHandler(),
+      new AdvancedScheduleBlockHandler(),
+      new ApprovalGateBlockHandler(),
       new EvaluatorBlockHandler(),
       new FunctionBlockHandler(),
       new ApiBlockHandler(),

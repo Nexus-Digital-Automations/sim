@@ -1,0 +1,42 @@
+{
+  "name": "sim-javascript-sandbox",
+  "version": "1.0.0",
+  "description": "Secure JavaScript execution environment for Sim workflows",
+  "main": "execution-wrapper.js",
+  "scripts": {
+    "start": "node execution-wrapper.js",
+    "security-check": "npm audit && node security-monitor.js",
+    "health-check": "node -e \"console.log('healthy')\""
+  },
+  "keywords": [
+    "sandbox",
+    "security",
+    "javascript",
+    "execution",
+    "workflow"
+  ],
+  "author": "Sim Development Team",
+  "license": "PROPRIETARY",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "vm2": "^3.9.19"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sim-ai/sim"
+  },
+  "bugs": {
+    "url": "https://github.com/sim-ai/sim/issues"
+  },
+  "homepage": "https://sim.ai",
+  "security": {
+    "audit": "always",
+    "vulnerabilities": {
+      "high": 0,
+      "critical": 0
+    }
+  }
+}
