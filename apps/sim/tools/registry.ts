@@ -173,6 +173,7 @@ import {
   wikipediaSearchTool,
 } from '@/tools/wikipedia'
 import { workflowExecutorTool } from '@/tools/workflow'
+import { executeWorkflow, monitorWorkflows } from '@/tools/nexus'
 import { xReadTool, xSearchTool, xUserTool, xWriteTool } from '@/tools/x'
 import { youtubeSearchTool } from '@/tools/youtube'
 
@@ -324,6 +325,8 @@ export const tools: Record<string, ToolConfig> = {
   google_calendar_quick_add: googleCalendarQuickAddTool,
   google_calendar_invite: googleCalendarInviteTool,
   workflow_executor: workflowExecutorTool,
+  nexus_execute_workflow: executeWorkflow,
+  nexus_monitor_workflows: monitorWorkflows,
   wealthbox_read_contact: wealthboxReadContactTool,
   wealthbox_write_contact: wealthboxWriteContactTool,
   wealthbox_read_task: wealthboxReadTaskTool,

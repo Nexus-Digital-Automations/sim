@@ -1,10 +1,10 @@
 /**
  * Nexus Tools - Advanced Workflow Execution and Management
- * 
+ *
  * This module provides enterprise-grade workflow execution and monitoring capabilities
  * for the Sim workflow automation platform. These tools enable comprehensive workflow
  * orchestration with real-time monitoring, performance analytics, and error handling.
- * 
+ *
  * FEATURES:
  * - Advanced workflow execution engine with sync/async/debug modes
  * - Real-time execution monitoring and status tracking
@@ -12,53 +12,52 @@
  * - Error analysis and debugging capabilities
  * - Cost tracking and resource utilization monitoring
  * - Detailed execution logging and audit trails
- * 
+ *
  * ARCHITECTURE:
  * - Built on top of existing workflow infrastructure
  * - Integrates with workflowExecutionLogs and workflowExecutionSnapshots tables
  * - Uses advanced querying and analytics for performance insights
  * - Provides both programmatic API and monitoring interfaces
- * 
+ *
  * USAGE:
  * These tools are designed for advanced workflow management scenarios where
  * detailed execution control, monitoring, and analytics are required.
- * 
+ *
  * @author Claude Code
  * @version 1.0.0
  */
 
 export { executeWorkflow } from './execute-workflow'
 export { monitorWorkflows } from './monitor-workflows'
-
 export type {
+  DateRange,
+  ErrorAnalysis,
+  ErrorDetails,
   ExecuteWorkflowParams,
   ExecuteWorkflowResponse,
+  ExecutionContext,
+  ExecutionCostSummary,
+  ExecutionDetail,
+  ExecutionLogEntry,
+  ExecutionMetrics,
+  ExecutionResult,
+  ExecutionStats,
+  ExecutionSummary,
+  FileInfo,
+  FilterInfo,
+  MonitoringConfig,
   MonitorWorkflowsParams,
   MonitorWorkflowsResponse,
-  ExecutionDetail,
-  ExecutionSummary,
-  RunningExecution,
-  ExecutionLogEntry,
-  ExecutionCostSummary,
-  FileInfo,
-  ErrorDetails,
-  PaginationInfo,
-  FilterInfo,
-  DateRange,
-  ExecutionMetrics,
-  PerformanceAnalytics,
-  ErrorAnalysis,
-  WorkflowExecution,
-  ExecutionResult,
-  ExecutionContext,
   NodeExecutionResult,
-  ExecutionStats,
-  MonitoringConfig
+  PaginationInfo,
+  PerformanceAnalytics,
+  RunningExecution,
+  WorkflowExecution,
 } from './types'
 
 /**
  * Nexus Tools Registry
- * 
+ *
  * This constant provides a registry of all available Nexus tools
  * for use in dynamic tool loading and discovery systems.
  */
@@ -66,19 +65,20 @@ export const NEXUS_TOOLS = {
   executeWorkflow: {
     id: 'nexus_execute_workflow',
     name: 'Nexus Workflow Execution',
-    description: 'Advanced workflow execution with real-time monitoring and comprehensive result tracking',
+    description:
+      'Advanced workflow execution with real-time monitoring and comprehensive result tracking',
     category: 'workflow-execution',
     version: '1.0.0',
     capabilities: [
       'sync-execution',
-      'async-execution', 
+      'async-execution',
       'debug-mode',
       'real-time-monitoring',
       'parameter-injection',
       'error-handling',
       'performance-tracking',
-      'cost-analysis'
-    ]
+      'cost-analysis',
+    ],
   },
   monitorWorkflows: {
     id: 'nexus_monitor_workflows',
@@ -94,9 +94,9 @@ export const NEXUS_TOOLS = {
       'historical-metrics',
       'cost-tracking',
       'log-analysis',
-      'bottleneck-identification'
-    ]
-  }
+      'bottleneck-identification',
+    ],
+  },
 } as const
 
 /**
@@ -104,7 +104,7 @@ export const NEXUS_TOOLS = {
  */
 export const NEXUS_CAPABILITIES = {
   SYNC_EXECUTION: 'sync-execution',
-  ASYNC_EXECUTION: 'async-execution', 
+  ASYNC_EXECUTION: 'async-execution',
   DEBUG_MODE: 'debug-mode',
   REAL_TIME_MONITORING: 'real-time-monitoring',
   PARAMETER_INJECTION: 'parameter-injection',
@@ -118,7 +118,7 @@ export const NEXUS_CAPABILITIES = {
   HISTORICAL_METRICS: 'historical-metrics',
   COST_TRACKING: 'cost-tracking',
   LOG_ANALYSIS: 'log-analysis',
-  BOTTLENECK_IDENTIFICATION: 'bottleneck-identification'
+  BOTTLENECK_IDENTIFICATION: 'bottleneck-identification',
 } as const
 
 /**
@@ -136,7 +136,7 @@ export const NEXUS_DEFAULTS = {
   LOG_RETENTION_DAYS: 90,
   REALTIME_POLL_INTERVAL: 1000, // 1 second
   MAX_TRACE_SPANS: 1000,
-  MAX_LOG_ENTRIES: 1000
+  MAX_LOG_ENTRIES: 1000,
 } as const
 
 /**
@@ -153,7 +153,7 @@ export const NEXUS_ERROR_CODES = {
   INVALID_PARAMETERS: 'NEXUS_INVALID_PARAMETERS',
   SYSTEM_ERROR: 'NEXUS_SYSTEM_ERROR',
   DATABASE_ERROR: 'NEXUS_DATABASE_ERROR',
-  MONITORING_ERROR: 'NEXUS_MONITORING_ERROR'
+  MONITORING_ERROR: 'NEXUS_MONITORING_ERROR',
 } as const
 
 /**
@@ -166,7 +166,7 @@ export const NEXUS_STATUS_CODES = {
   RUNNING: 'running',
   COMPLETED: 'completed',
   FAILED: 'failed',
-  CANCELLED: 'cancelled'
+  CANCELLED: 'cancelled',
 } as const
 
 /**
@@ -189,27 +189,30 @@ export function getAllCapabilities(): string[] {
  */
 export function validateExecutionParams(params: Partial<ExecuteWorkflowParams>): string[] {
   const errors: string[] = []
-  
+
   if (!params.workflowId) {
     errors.push('workflowId is required')
   }
-  
+
   if (params.timeout && (params.timeout < 1 || params.timeout > 3600)) {
     errors.push('timeout must be between 1 and 3600 seconds')
   }
-  
+
   if (params.executionMode && !['async', 'sync', 'debug'].includes(params.executionMode)) {
     errors.push('executionMode must be async, sync, or debug')
   }
-  
+
   if (params.priority && !['low', 'normal', 'high', 'urgent'].includes(params.priority)) {
     errors.push('priority must be low, normal, high, or urgent')
   }
-  
-  if (params.triggerSource && !['manual', 'api', 'schedule', 'webhook', 'nexus'].includes(params.triggerSource)) {
+
+  if (
+    params.triggerSource &&
+    !['manual', 'api', 'schedule', 'webhook', 'nexus'].includes(params.triggerSource)
+  ) {
     errors.push('triggerSource must be manual, api, schedule, webhook, or nexus')
   }
-  
+
   return errors
 }
 
@@ -218,27 +221,30 @@ export function validateExecutionParams(params: Partial<ExecuteWorkflowParams>):
  */
 export function validateMonitoringParams(params: Partial<MonitorWorkflowsParams>): string[] {
   const errors: string[] = []
-  
+
   if (!params.action) {
     errors.push('action is required')
   }
-  
+
   if (params.limit && (params.limit < 1 || params.limit > 100)) {
     errors.push('limit must be between 1 and 100')
   }
-  
+
   if (params.offset && params.offset < 0) {
     errors.push('offset must be non-negative')
   }
-  
+
   if (params.status && !['running', 'completed', 'failed', 'cancelled'].includes(params.status)) {
     errors.push('status must be running, completed, failed, or cancelled')
   }
-  
-  if (params.trigger && !['manual', 'api', 'schedule', 'webhook', 'nexus'].includes(params.trigger)) {
+
+  if (
+    params.trigger &&
+    !['manual', 'api', 'schedule', 'webhook', 'nexus'].includes(params.trigger)
+  ) {
     errors.push('trigger must be manual, api, schedule, webhook, or nexus')
   }
-  
+
   return errors
 }
 
@@ -248,15 +254,16 @@ export function validateMonitoringParams(params: Partial<MonitorWorkflowsParams>
 export function formatExecutionDuration(durationMs: number): string {
   if (durationMs < 1000) {
     return `${durationMs}ms`
-  } else if (durationMs < 60000) {
-    return `${Math.round(durationMs / 1000)}s`
-  } else if (durationMs < 3600000) {
-    return `${Math.round(durationMs / 60000)}m ${Math.round((durationMs % 60000) / 1000)}s`
-  } else {
-    const hours = Math.floor(durationMs / 3600000)
-    const minutes = Math.floor((durationMs % 3600000) / 60000)
-    return `${hours}h ${minutes}m`
   }
+  if (durationMs < 60000) {
+    return `${Math.round(durationMs / 1000)}s`
+  }
+  if (durationMs < 3600000) {
+    return `${Math.round(durationMs / 60000)}m ${Math.round((durationMs % 60000) / 1000)}s`
+  }
+  const hours = Math.floor(durationMs / 3600000)
+  const minutes = Math.floor((durationMs % 3600000) / 60000)
+  return `${hours}h ${minutes}m`
 }
 
 /**
@@ -279,6 +286,6 @@ export function calculateSuccessRate(successful: number, total: number): number 
 /**
  * Utility function to generate operation IDs
  */
-export function generateOperationId(prefix: string = 'nexus'): string {
+export function generateOperationId(prefix = 'nexus'): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }

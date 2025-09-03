@@ -132,9 +132,11 @@ export const billingOperationsServerTool: BaseServerTool<
       operationId,
     })
 
+    let session: any = null
+    
     try {
       // Authenticate user and validate session
-      const session = await getSession()
+      session = await getSession()
       if (!session?.user) {
         logger.warn(`[${operationId}] Authentication required for billing operation`, {
           action: params.action,

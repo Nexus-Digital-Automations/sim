@@ -1,18 +1,13 @@
 /**
  * Nexus Tools Type Definitions
  * Shared types and interfaces for advanced workflow execution and monitoring
- * 
+ *
  * @author Claude Code
  * @version 1.0.0
  */
 
+import type { ExecutionEnvironment, ExecutionTrigger, TraceSpan } from '@/lib/logs/types'
 import type { ToolResponse } from '@/tools/types'
-import type { 
-  WorkflowState, 
-  ExecutionTrigger, 
-  ExecutionEnvironment, 
-  TraceSpan 
-} from '@/lib/logs/types'
 
 /**
  * Workflow execution request parameters
@@ -64,7 +59,15 @@ export interface ExecuteWorkflowResponse extends ToolResponse {
  * Workflow monitoring request parameters
  */
 export interface MonitorWorkflowsParams {
-  action: 'getExecution' | 'listExecutions' | 'getMetrics' | 'getLogs' | 'getPerformanceAnalytics' | 'getExecutionDetail' | 'getRealtimeStatus' | 'getErrorAnalysis'
+  action:
+    | 'getExecution'
+    | 'listExecutions'
+    | 'getMetrics'
+    | 'getLogs'
+    | 'getPerformanceAnalytics'
+    | 'getExecutionDetail'
+    | 'getRealtimeStatus'
+    | 'getErrorAnalysis'
   workflowId?: string
   executionId?: string
   status?: 'running' | 'completed' | 'failed' | 'cancelled'
@@ -195,16 +198,19 @@ export interface ExecutionCostSummary {
     completion?: number
     total?: number
   }
-  models?: Record<string, {
-    input?: number
-    output?: number
-    total?: number
-    tokens?: {
-      prompt?: number
-      completion?: number
+  models?: Record<
+    string,
+    {
+      input?: number
+      output?: number
       total?: number
+      tokens?: {
+        prompt?: number
+        completion?: number
+        total?: number
+      }
     }
-  }>
+  >
 }
 
 /**
