@@ -92,9 +92,10 @@ export const executeWorkflow = tool({
   }) => {
     const operationId = `workflow-exec-${Date.now()}`
     const executionId = nanoid()
+    let session: any = null
 
     try {
-      const session = await getSession()
+      session = await getSession()
       if (!session?.user) {
         throw new Error('Authentication required for workflow execution')
       }

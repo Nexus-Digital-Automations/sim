@@ -128,9 +128,10 @@ export const monitorWorkflows = tool({
     includeErrorDetails,
   }) => {
     const operationId = `workflow-monitor-${Date.now()}`
+    let session: any = null
 
     try {
-      const session = await getSession()
+      session = await getSession()
       if (!session?.user) {
         throw new Error('Authentication required for workflow monitoring')
       }
