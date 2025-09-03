@@ -1,12 +1,40 @@
 {
+  /**
+   * TypeScript Configuration for Sim AI Platform
+   *
+   * Optimized TypeScript configuration for Next.js applications with:
+   * - Strict type checking for code quality and safety
+   * - Path aliases matching Next.js routing and component structure
+   * - Modern ES2022 target with ESNext modules for optimal performance
+   * - Next.js integration with automatic type generation
+   *
+   * Key Features:
+   * - Bundler module resolution for modern tooling compatibility
+   * - Comprehensive path aliases for clean imports
+   * - Incremental compilation for faster development builds
+   * - JSON module support for configuration files
+   * - JSX preservation for Next.js optimization
+   *
+   * @see https://www.typescriptlang.org/tsconfig
+   * @see https://nextjs.org/docs/basic-features/typescript
+   */
   "compilerOptions": {
+    // Modern JavaScript target with optimal performance characteristics
     "target": "es2022",
+    // ESNext modules for tree-shaking and modern bundling
     "module": "esnext",
+    // Bundler-aware module resolution for Vite/Next.js compatibility
     "moduleResolution": "bundler",
+    // Standard library support for ES2022 + DOM APIs
     "lib": ["es2022", "dom", "dom.iterable"],
+
+    // Strict type checking for code safety and quality
     "strict": true,
+    // Enable CommonJS/ES Module interoperability
     "esModuleInterop": true,
+    // Skip type checking of declaration files for faster builds
     "skipLibCheck": true,
+    // Ensure consistent file name casing across platforms
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {

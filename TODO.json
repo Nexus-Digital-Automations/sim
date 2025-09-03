@@ -2,6 +2,35 @@
   "project": "sim",
   "tasks": [
     {
+      "id": "task_1756878228534_p1fxk38jd",
+      "title": "Add comprehensive comments and documentation to script files",
+      "description": "Per CLAUDE.md mandate: ADD COMPREHENSIVE COMMENTS TO ALL SCRIPT FILES. Review and enhance documentation for all JavaScript/TypeScript files in the scripts/ directory and other utility scripts throughout the project. Add:\n- File header comments explaining purpose and usage\n- Function documentation with parameters and return values\n- Inline comments for complex logic\n- Update outdated or incorrect comments\n- Ensure future developers can understand and maintain the code\n\nAFFECTED FILES:\n- scripts/ directory files\n- Utility scripts throughout the project\n- TaskManager API files\n- Build and configuration scripts\n\nSUCCESS CRITERIA:\n- All script files have comprehensive header comments\n- All functions documented with JSDoc-style comments\n- Complex logic explained with inline comments\n- Comments are accurate and up-to-date",
+      "mode": "DEVELOPMENT",
+      "category": "documentation",
+      "priority": "high",
+      "status": "in_progress",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T05:43:48.534Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756878149611_1_general_1be171df",
+      "started_at": "2025-09-03T05:43:54.099Z",
+      "claimed_by": "development_session_1756878149611_1_general_1be171df",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756878149611_1_general_1be171df",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:43:54.099Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ]
+    },
+    {
       "id": "task_1756808400739_jaq6pl8ns",
       "title": "Complete test infrastructure migration for remaining API test files",
       "description": "Complete the migration of remaining 118+ API test files to use the new bun/vitest compatible test infrastructure. The migration patterns have been proven successful (improving test pass rates from 15% to 89%) and need to be applied across all API test files.\n\nAFFECTED FILES:\n- All files in apps/sim/app/api/**/*.test.ts\n- Approximately 60+ API route test files\n- Focus on high-priority workflow, authentication, and core API tests\n\nMIGRATION APPROACH:\n1. Apply working patterns from successful migrations (versions, collaboration)\n2. Replace vi.doMock() with module-level vi.mock() patterns\n3. Use enhanced test utilities from apps/sim/app/api/__test-utils__/\n4. Implement proper authentication and database mocking\n5. Add comprehensive logging and production-ready comments\n\nSUCCESS CRITERIA:\n- 90%+ test pass rate across all migrated files\n- All authentication tests returning proper status codes (200/201 not 403/500)\n- Production-ready test patterns with comprehensive logging\n- Full compatibility with bun/vitest environment",
@@ -10,16 +39,19 @@
       "priority": "high",
       "status": "in_progress",
       "dependencies": [],
-      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
       "subtasks": [],
       "created_at": "2025-09-02T10:20:00.739Z",
       "auto_research_created": false,
-      "assigned_agent": "development_session_1756871458543_1_general_9f27745a",
-      "started_at": "2025-09-03T03:55:47.369Z",
-      "claimed_by": "development_session_1756871458543_1_general_9f27745a",
+      "assigned_agent": "development_session_1756877333580_1_general_353ba3f8",
+      "started_at": "2025-09-03T05:30:29.615Z",
+      "claimed_by": "development_session_1756877333580_1_general_353ba3f8",
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756844503855_1_general_92ed7f9d",
@@ -40,6 +72,19 @@
           "assignedAt": "2025-09-03T03:55:47.369Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T05:28:38.403Z",
+          "reason": "Task stale for 93 minutes"
+        },
+        {
+          "agentId": "development_session_1756877333580_1_general_353ba3f8",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:30:29.615Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
         }
       ]
     }
@@ -51,40 +96,52 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756871458543_1_general_9f27745a": {
+    "development_session_1756877333580_1_general_353ba3f8": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-03T03:50:58.544Z",
+      "lastHeartbeat": "2025-09-03T05:28:53.581Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-03T03:50:58.544Z",
-      "sessionId": "session_1756871458543",
+      "createdAt": "2025-09-03T05:28:53.581Z",
+      "sessionId": "session_1756877333580",
       "metadata": {
-        "renewedAt": "2025-09-03T03:54:57.536Z",
+        "renewedAt": "2025-09-03T05:29:32.291Z",
         "renewalReason": "Agent reinitialization requested"
       },
-      "lastRenewal": "2025-09-03T03:54:57.536Z",
+      "lastRenewal": "2025-09-03T05:29:32.291Z",
       "renewalCount": 1,
-      "agentId": "development_session_1756871458543_1_general_9f27745a"
+      "agentId": "development_session_1756877333580_1_general_353ba3f8"
     },
-    "development_session_1756872446253_1_general_f9682580": {
+    "development_session_1756878291793_1_general_e6affb1e": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-03T04:07:26.254Z",
+      "lastHeartbeat": "2025-09-03T05:44:51.795Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-03T04:07:26.254Z",
-      "sessionId": "session_1756872446253",
+      "createdAt": "2025-09-03T05:44:51.795Z",
+      "sessionId": "session_1756878291793",
       "metadata": {}
     }
   },

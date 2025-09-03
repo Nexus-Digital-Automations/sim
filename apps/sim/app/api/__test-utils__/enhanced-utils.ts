@@ -39,6 +39,7 @@ export interface EnhancedDatabaseResult {
   setUpdateResults: (results: any[]) => void
   setDeleteResults: (results: any[]) => void
   resetDatabase: () => void
+  throwError: (error: Error | string) => void
 }
 
 export interface EnhancedTestMocks {
@@ -154,6 +155,13 @@ export function setupEnhancedTestMocks(
     resetDatabase: () => {
       console.log('🔧 Enhanced database: Resetting to defaults')
       mockControls.setDatabaseResults([[]])
+    },
+    throwError: (error: Error | string) => {
+      console.log(
+        '🔧 Enhanced database: Configuring to throw error:',
+        error instanceof Error ? error.message : error
+      )
+      mockControls.setDatabaseError(error)
     },
   }
 

@@ -1,8 +1,36 @@
+/**
+ * Vitest Testing Configuration for Sim AI Platform
+ *
+ * Comprehensive test configuration optimized for Next.js applications with:
+ * - React component testing support via @vitejs/plugin-react
+ * - Environment variable loading from Next.js configuration
+ * - Advanced coverage reporting with multiple output formats
+ * - Path alias resolution matching Next.js configuration
+ * - Performance optimizations for large test suites
+ *
+ * Key Features:
+ * - Multi-threaded test execution for performance
+ * - Comprehensive coverage thresholds for code quality
+ * - CI/CD integration with JSON reporting
+ * - Mock configurations for browser APIs and dependencies
+ * - Environment-aware coverage enforcement
+ *
+ * Coverage Strategy:
+ * - Global thresholds: 80% (branches, functions, lines, statements)
+ * - Critical UI components: 95% coverage requirement
+ * - Authentication modules: 90% coverage requirement
+ * - API routes: 85% coverage requirement
+ *
+ * @see https://vitest.dev/config/
+ * @see https://github.com/vitest-dev/vitest/tree/main/examples/react-testing-lib
+ */
+
 import path, { resolve } from 'path'
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react'
 import { configDefaults, defineConfig } from 'vitest/config'
 
+// Load Next.js environment variables for test consistency
 const nextEnv = require('@next/env')
 const { loadEnvConfig } = nextEnv.default || nextEnv
 
@@ -10,7 +38,16 @@ const projectDir = process.cwd()
 loadEnvConfig(projectDir)
 
 export default defineConfig({
-  plugins: [react()],
+  /**
+   * Vite Plugins Configuration
+   * Essential plugins for React component testing and JSX transformation
+   */
+  plugins: [react()], // Enables React JSX transformation and Fast Refresh in tests
+
+  /**
+   * Test Configuration
+   * Comprehensive testing setup with coverage, environment, and performance settings
+   */
   test: {
     globals: true,
     environment: 'node',

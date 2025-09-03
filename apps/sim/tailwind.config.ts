@@ -1,16 +1,61 @@
+/**
+ * Tailwind CSS Configuration for Sim AI Platform
+ *
+ * This configuration extends Tailwind CSS with custom design tokens, animations,
+ * and utility classes specifically designed for the Sim AI platform.
+ *
+ * Key Features:
+ * - CSS-in-JS theme integration with CSS custom properties
+ * - Custom color palette supporting light/dark themes
+ * - Advanced animations for UI interactions and feedback
+ * - Design system consistency with reusable spacing and typography
+ * - Performance-optimized content scanning patterns
+ *
+ * Architecture:
+ * - Uses HSL color space for better theme variations
+ * - CSS custom properties for runtime theme switching
+ * - Semantic color naming for consistent UI patterns
+ * - Custom animations for enhanced user experience
+ *
+ * @see https://tailwindcss.com/docs/configuration
+ * @see https://ui.shadcn.com/docs/theming
+ */
+
 import type { Config } from 'tailwindcss'
 
 export default {
+  /**
+   * Dark Mode Configuration
+   * Uses CSS class strategy for manual theme switching
+   * Allows precise control over theme application and user preference persistence
+   */
   darkMode: ['class'],
+
+  /**
+   * Content Sources for CSS Generation
+   * Defines file patterns that Tailwind scans for class usage
+   * Optimized to include all component files while excluding dependencies
+   */
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    '!./app/node_modules/**',
-    '!**/node_modules/**',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}', // Next.js pages directory
+    './components/**/*.{js,ts,jsx,tsx,mdx}', // React components
+    './app/**/*.{js,ts,jsx,tsx,mdx}', // App Router directory
+    '!./app/node_modules/**', // Exclude app-level node_modules
+    '!**/node_modules/**', // Exclude all node_modules directories
   ],
+  /**
+   * Theme Configuration
+   * Extends Tailwind's default theme with custom design tokens
+   * Uses CSS custom properties for runtime theme switching
+   */
   theme: {
     extend: {
+      /**
+       * Color Palette
+       * Semantic color system using CSS custom properties
+       * Supports light/dark themes through HSL color space
+       * Each color references a CSS variable for dynamic theming
+       */
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

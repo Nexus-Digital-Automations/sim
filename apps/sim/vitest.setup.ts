@@ -1,10 +1,43 @@
+/**
+ * Vitest Test Setup Configuration
+ *
+ * Global test setup and mocking configuration for the Sim AI platform test suite.
+ * This file runs before each test file and sets up essential mocks and utilities.
+ *
+ * Key Features:
+ * - Browser API mocks (matchMedia, ResizeObserver, IntersectionObserver)
+ * - Global fetch mock for API testing
+ * - Application-specific store and service mocks
+ * - Console output filtering for cleaner test runs
+ * - Testing Library DOM utilities integration
+ *
+ * Mock Strategy:
+ * - Environment-aware mocking (window objects only in browser-like environments)
+ * - Comprehensive browser API coverage for headless testing
+ * - Application store mocking for isolated unit tests
+ * - Controlled console output for focused test results
+ *
+ * @see https://vitest.dev/config/#setupfiles
+ * @see https://testing-library.com/docs/ecosystem-jest-dom/
+ */
+
 import { afterAll, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
+
+/**
+ * Browser API Mocks
+ * Essential browser APIs that are not available in Node.js test environment
+ * Only applied when window object is available (jsdom environment)
+ */
 
 // Only set up browser globals if window is available (jsdom environment)
 // This prevents errors in node environment tests
 if (typeof window !== 'undefined') {
-  // Mock window.matchMedia for theme provider
+  /**
+   * Mock window.matchMedia for CSS media query testing
+   * Required for theme providers and responsive component testing
+   * Provides a consistent interface across different test environments
+   */
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query) => ({

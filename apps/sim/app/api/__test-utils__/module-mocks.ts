@@ -20,6 +20,7 @@ let mockAuthUser: any = null
 let mockDatabaseResults: any[] = [[]]
 let mockPermissionLevel = 'admin'
 let mockInternalTokenValid = true
+let mockDatabaseError: Error | string | null = null
 
 // Export runtime controls for tests
 export const mockControls = {
@@ -51,12 +52,19 @@ export const mockControls = {
     console.log('🔧 Mock internal token validity set:', valid)
   },
 
+  // Database error controls
+  setDatabaseError: (error: Error | string | null) => {
+    mockDatabaseError = error
+    console.log('🔧 Mock database error set:', error instanceof Error ? error.message : error)
+  },
+
   // Reset all mocks to defaults
   reset: () => {
     mockAuthUser = { id: 'user-123', email: 'test@example.com' }
     mockDatabaseResults = [[]]
     mockPermissionLevel = 'admin'
     mockInternalTokenValid = true
+    mockDatabaseError = null
     console.log('🔧 All mocks reset to defaults')
   },
 }
@@ -147,6 +155,12 @@ vi.mock('@/db', () => {
 
   const createSelectChain = () => {
     const resolveQuery = () => {
+      if (mockDatabaseError) {
+        const error =
+          mockDatabaseError instanceof Error ? mockDatabaseError : new Error(mockDatabaseError)
+        console.log('🔍 Database select chain throwing error:', error.message)
+        return Promise.reject(error)
+      }
       const result = mockDatabaseResults[callIndex] || mockDatabaseResults[0] || []
       callIndex = (callIndex + 1) % Math.max(mockDatabaseResults.length, 1)
       console.log('🔍 Database select chain resolved with:', result?.length, 'records')
@@ -266,6 +280,26 @@ vi.mock('@/db', () => {
 vi.mock('@/db/schema', () => {
   console.log('📦 Mocking @/db/schema')
   return {
+    account: {
+      id: 'id',
+      userId: 'userId',
+      providerId: 'providerId',
+      accountId: 'accountId',
+      accessToken: 'accessToken',
+      refreshToken: 'refreshToken',
+      idToken: 'idToken',
+      accessTokenExpiresAt: 'accessTokenExpiresAt',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
+    user: {
+      id: 'id',
+      email: 'email',
+      name: 'name',
+      image: 'image',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
     workflow: {
       id: 'id',
       userId: 'userId',

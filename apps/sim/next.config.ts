@@ -1,11 +1,48 @@
+/**
+ * Next.js Configuration for Sim AI Platform
+ *
+ * This configuration file sets up Next.js with:
+ * - Production-ready security headers and CSP policies
+ * - Image optimization for multiple cloud storage providers
+ * - Development tools and debugging features
+ * - Sentry error monitoring integration
+ * - Docker build optimizations
+ * - Turbo mode for enhanced development experience
+ *
+ * Key Features:
+ * - Comprehensive CORS configuration for API routes
+ * - Cross-Origin security policies for workflow execution
+ * - External image domain whitelisting for user uploads
+ * - Conditional Sentry integration for production monitoring
+ *
+ * Environment Dependencies:
+ * - DOCKER_BUILD: Enables standalone output for containerization
+ * - NEXT_PUBLIC_APP_URL: Configures CORS origins and redirects
+ * - SENTRY_*: Production error monitoring configuration
+ *
+ * @see https://nextjs.org/docs/api-reference/next.config.js/introduction
+ * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/
+ */
+
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import { env, isTruthy } from './lib/env'
 import { isDev, isHosted, isProd } from './lib/environment'
 import { getMainCSPPolicy, getWorkflowExecutionCSPPolicy } from './lib/security/csp'
 
+/**
+ * Main Next.js configuration object
+ * Configures core application settings, security policies, and build options
+ */
 const nextConfig: NextConfig = {
+  // Disable development indicators in production-like environments
   devIndicators: false,
+
+  /**
+   * Image Optimization Configuration
+   * Defines trusted domains for next/image component optimization
+   * Supports multiple cloud storage providers and CDNs
+   */
   images: {
     remotePatterns: [
       {

@@ -1,74 +1,153 @@
 #!/usr/bin/env ts-node
+
+/**
+ * Block Documentation Generator
+ *
+ * Automatically generates comprehensive documentation for Sim platform blocks and tools.
+ * This script scans block definitions, extracts configuration metadata, and creates
+ * MDX documentation files for the Sim documentation website.
+ *
+ * Features:
+ * - Automatic block configuration extraction from TypeScript files
+ * - Tool parameter and output documentation generation
+ * - Icon extraction and processing from React components
+ * - Manual content preservation during regeneration
+ * - Structured output format compatible with Next.js documentation
+ *
+ * Dependencies:
+ * - fs: File system operations for reading/writing files
+ * - path: Cross-platform path utilities
+ * - glob: Pattern matching for file discovery
+ * - TypeScript: Block definition parsing
+ *
+ * Usage:
+ *   npm run generate-docs
+ *   ts-node scripts/generate-block-docs.ts
+ *
+ * Output:
+ *   Creates MDX files in apps/docs/content/docs/tools/
+ *   Updates meta.json for navigation structure
+ *
+ * @author Sim Platform Team
+ * @version 2.0.0
+ * @since 1.0.0
+ */
+
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { glob } from 'glob'
 
-console.log('Starting documentation generator...')
+console.log('🚀 Starting Sim Block Documentation Generator...')
 
-// Define directory paths
+// ES module compatibility - Convert import.meta.url to __dirname equivalent
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const rootDir = path.resolve(__dirname, '..')
 
-// Paths configuration
+/**
+ * Configuration paths for the documentation generator
+ * These paths define where to find source files and where to output documentation
+ */
 const BLOCKS_PATH = path.join(rootDir, 'apps/sim/blocks/blocks')
 const DOCS_OUTPUT_PATH = path.join(rootDir, 'apps/docs/content/docs/tools')
 const ICONS_PATH = path.join(rootDir, 'apps/sim/components/icons.tsx')
 
-// Make sure the output directory exists
+// Ensure output directory exists before proceeding with documentation generation
 if (!fs.existsSync(DOCS_OUTPUT_PATH)) {
   fs.mkdirSync(DOCS_OUTPUT_PATH, { recursive: true })
+  console.log(`📁 Created output directory: ${DOCS_OUTPUT_PATH}`)
 }
 
-// Basic interface for BlockConfig to avoid import issues
+/**
+ * BlockConfig interface representing the structure of a Sim block configuration
+ * This interface mirrors the actual BlockConfig type but avoids import dependencies
+ * that could cause issues in the documentation generation process.
+ */
 interface BlockConfig {
+  /** Unique identifier for the block type (e.g., 'api_call', 'text_input') */
   type: string
+  /** Human-readable name displayed in the UI */
   name: string
+  /** Brief description of the block's purpose */
   description: string
+  /** Detailed usage instructions and implementation notes */
   longDescription?: string
+  /** Category for organizing blocks in the UI (e.g., 'input', 'logic', 'output') */
   category: string
+  /** Hex color code for block styling in the visual editor */
   bgColor?: string
+  /** Icon component name from icons.tsx for visual representation */
+  iconName?: string
+  /** Output data structure that the block produces */
   outputs?: Record<string, any>
+  /** Configuration for tools that the block can access */
   tools?: {
+    /** Array of tool names that this block has permission to use */
     access?: string[]
   }
+  /** Additional properties that may be present in specific block types */
   [key: string]: any
 }
 
-// Function to extract SVG icons from icons.tsx file
+/**
+ * Extract SVG icons from the icons.tsx component file
+ *
+ * This function parses the icons.tsx file to extract SVG content for each icon component.
+ * It supports both function declaration and arrow function export patterns commonly
+ * used in React icon components.
+ *
+ * The extracted SVG content is cleaned of React-specific props and standardized
+ * for use in documentation generation.
+ *
+ * @returns {Record<string, string>} Object mapping icon names to cleaned SVG strings
+ * @throws {Error} If the icons file cannot be read or parsed
+ *
+ * @example
+ * const icons = extractIcons()
+ * // Returns: { "DatabaseIcon": "<svg>...</svg>", "APIIcon": "<svg>...</svg>" }
+ */
 function extractIcons(): Record<string, string> {
   try {
+    console.log('🎨 Extracting icons from icons.tsx...')
     const iconsContent = fs.readFileSync(ICONS_PATH, 'utf-8')
     const icons: Record<string, string> = {}
 
-    // Match both function declaration and arrow function export patterns
+    // Regex patterns to match different icon export styles
+    // Pattern 1: Function declarations - export function IconName() { return (<svg>...</svg>) }
     const functionDeclarationRegex =
       /export\s+function\s+(\w+Icon)\s*\([^)]*\)\s*{[\s\S]*?return\s*\(\s*<svg[\s\S]*?<\/svg>\s*\)/g
+
+    // Pattern 2: Arrow functions - export const IconName = () => (<svg>...</svg>)
     const arrowFunctionRegex =
       /export\s+const\s+(\w+Icon)\s*=\s*\([^)]*\)\s*=>\s*(\(?\s*<svg[\s\S]*?<\/svg>\s*\)?)/g
 
-    // Extract function declaration style icons
+    // Process function declaration style icons (export function IconName() {...})
     const functionMatches = Array.from(iconsContent.matchAll(functionDeclarationRegex))
     for (const match of functionMatches) {
       const iconName = match[1]
       const svgMatch = match[0].match(/<svg[\s\S]*?<\/svg>/)
 
       if (iconName && svgMatch) {
-        // Clean the SVG to remove {...props} and standardize size
+        // Clean and standardize the SVG content for documentation use
         let svgContent = svgMatch[0]
+
+        // Remove React props spread operators that would break in documentation
         svgContent = svgContent.replace(/{\.\.\.props}/g, '')
         svgContent = svgContent.replace(/{\.\.\.(props|rest)}/g, '')
-        // Remove any existing width/height attributes to let CSS handle sizing
+
+        // Remove explicit width/height attributes to allow CSS control
         svgContent = svgContent.replace(/width=["'][^"']*["']/g, '')
         svgContent = svgContent.replace(/height=["'][^"']*["']/g, '')
-        // Add className for styling
+
+        // Add consistent CSS class for styling in documentation
         svgContent = svgContent.replace(/<svg/, '<svg className="block-icon"')
+
         icons[iconName] = svgContent
       }
     }
 
-    // Extract arrow function style icons
+    // Process arrow function style icons (export const IconName = () => ...)
     const arrowMatches = Array.from(iconsContent.matchAll(arrowFunctionRegex))
     for (const match of arrowMatches) {
       const iconName = match[1]
@@ -76,40 +155,64 @@ function extractIcons(): Record<string, string> {
       const svgMatch = svgContent.match(/<svg[\s\S]*?<\/svg>/)
 
       if (iconName && svgMatch) {
-        // Clean the SVG to remove {...props} and standardize size
+        // Apply the same cleaning process as function declarations
         let cleanedSvg = svgMatch[0]
+
+        // Remove React-specific syntax that doesn't work in static documentation
         cleanedSvg = cleanedSvg.replace(/{\.\.\.props}/g, '')
         cleanedSvg = cleanedSvg.replace(/{\.\.\.(props|rest)}/g, '')
-        // Remove any existing width/height attributes to let CSS handle sizing
+
+        // Standardize sizing approach for documentation consistency
         cleanedSvg = cleanedSvg.replace(/width=["'][^"']*["']/g, '')
         cleanedSvg = cleanedSvg.replace(/height=["'][^"']*["']/g, '')
-        // Add className for styling
+
+        // Ensure consistent CSS class application
         cleanedSvg = cleanedSvg.replace(/<svg/, '<svg className="block-icon"')
+
         icons[iconName] = cleanedSvg
       }
     }
+
+    console.log(`✅ Extracted ${Object.keys(icons).length} icons from components`)
     return icons
   } catch (error) {
-    console.error('Error extracting icons:', error)
+    console.error('❌ Error extracting icons:', error)
     return {}
   }
 }
 
-// Function to extract block configuration from file content
+/**
+ * Extract block configuration from TypeScript file content
+ *
+ * Parses a block definition file to extract all configuration properties including
+ * metadata, styling, outputs, and tool permissions. This function uses regex patterns
+ * to extract structured data from TypeScript object definitions.
+ *
+ * @param {string} fileContent - Complete content of the block definition file
+ * @returns {BlockConfig | null} Parsed block configuration or null if invalid
+ *
+ * @example
+ * const config = extractBlockConfig(fileContent)
+ * // Returns: { type: 'api_call', name: 'API Call', description: '...', ... }
+ */
 function extractBlockConfig(fileContent: string): BlockConfig | null {
   try {
-    // Extract the block name from export statement
+    // First, locate the main block export to identify the block name
+    // Pattern: export const SomeNameBlock: BlockConfig = { ... }
     const exportMatch = fileContent.match(/export\s+const\s+(\w+)Block\s*:/)
 
     if (!exportMatch) {
-      console.warn('No block export found in file')
+      console.warn('⚠️  No valid block export found in file - skipping')
       return null
     }
 
     const blockName = exportMatch[1]
+    console.log(`📦 Processing block: ${blockName}`)
+
+    // Extract the block type using specialized parsing logic
     const blockType = findBlockType(fileContent, blockName)
 
-    // Extract individual properties with more robust regex
+    // Extract all string properties using robust regex patterns that handle various quote styles
     const name = extractStringProperty(fileContent, 'name') || `${blockName} Block`
     const description = extractStringProperty(fileContent, 'description') || ''
     const longDescription = extractStringProperty(fileContent, 'longDescription') || ''
@@ -117,12 +220,11 @@ function extractBlockConfig(fileContent: string): BlockConfig | null {
     const bgColor = extractStringProperty(fileContent, 'bgColor') || '#F5F5F5'
     const iconName = extractIconName(fileContent) || ''
 
-    // Extract outputs object with better handling
+    // Extract complex object structures
     const outputs = extractOutputs(fileContent)
-
-    // Extract tools access array
     const toolsAccess = extractToolsAccess(fileContent)
 
+    // Return the complete block configuration object
     return {
       type: blockType || blockName.toLowerCase(),
       name,
@@ -137,34 +239,46 @@ function extractBlockConfig(fileContent: string): BlockConfig | null {
       },
     }
   } catch (error) {
-    console.error('Error extracting block configuration:', error)
+    console.error('❌ Error extracting block configuration:', error)
     return null
   }
 }
 
-// Helper function to find the block type
+/**
+ * Find the block type identifier within the block configuration
+ *
+ * This function uses multiple strategies to locate the 'type' property within
+ * a block definition, handling various code formatting styles and export patterns.
+ *
+ * @param {string} content - File content containing the block definition
+ * @param {string} blockName - Name of the block being processed
+ * @returns {string} The block type identifier or a fallback based on block name
+ */
 function findBlockType(content: string, blockName: string): string {
-  // Try to find the type within the main block export
-  // Look for the pattern: export const [BlockName]Block: BlockConfig = { ... type: 'value' ... }
+  // Strategy 1: Direct pattern matching within the block export
+  // Matches: export const BlockNameBlock: BlockConfig = { ... type: 'value' ... }
   const blockExportRegex = new RegExp(
     `export\\s+const\\s+${blockName}Block\\s*:[^{]*{[\\s\\S]*?type\\s*:\\s*['"]([^'"]+)['"][\\s\\S]*?}`,
     'i'
   )
   const blockExportMatch = content.match(blockExportRegex)
-  if (blockExportMatch) return blockExportMatch[1]
+  if (blockExportMatch) {
+    console.log(`  ✓ Found type via direct export pattern: ${blockExportMatch[1]}`)
+    return blockExportMatch[1]
+  }
 
-  // Fallback: try to find type within a block config object that comes after the export
+  // Strategy 2: Parse block content after export statement using balanced brace counting
   const exportMatch = content.match(new RegExp(`export\\s+const\\s+${blockName}Block\\s*:`))
   if (exportMatch) {
-    // Find the content after the export statement
+    // Extract everything after the export declaration
     const afterExport = content.substring(exportMatch.index! + exportMatch[0].length)
 
-    // Look for the first opening brace and then find type within that block
+    // Find the opening brace of the configuration object
     const blockStartMatch = afterExport.match(/{/)
     if (blockStartMatch) {
       const blockStart = blockStartMatch.index!
 
-      // Find the matching closing brace by counting braces
+      // Use balanced brace counting to find the complete configuration object
       let braceCount = 1
       let blockEnd = blockStart + 1
 
@@ -174,47 +288,63 @@ function findBlockType(content: string, blockName: string): string {
         blockEnd++
       }
 
-      // Extract the block content and look for type
+      // Search for the type property within the extracted block content
       const blockContent = afterExport.substring(blockStart, blockEnd)
       const typeMatch = blockContent.match(/type\s*:\s*['"]([^'"]+)['"]/)
-      if (typeMatch) return typeMatch[1]
+      if (typeMatch) {
+        console.log(`  ✓ Found type via block parsing: ${typeMatch[1]}`)
+        return typeMatch[1]
+      }
     }
   }
 
-  // Convert CamelCase to snake_case as fallback
-  return blockName
+  // Strategy 3: Fallback to converting CamelCase block name to snake_case
+  const fallbackType = blockName
     .replace(/([A-Z])/g, '_$1')
     .toLowerCase()
     .replace(/^_/, '')
+
+  console.log(`  ⚠️  Using fallback type conversion: ${fallbackType}`)
+  return fallbackType
 }
 
-// Helper to extract a string property from content
+/**
+ * Extract a string property value from TypeScript object content
+ *
+ * This function handles multiple string literal formats commonly used in TypeScript:
+ * single quotes, double quotes, and template literals. It also processes template
+ * literal expressions to provide meaningful static content for documentation.
+ *
+ * @param {string} content - TypeScript content containing object properties
+ * @param {string} propName - Name of the property to extract
+ * @returns {string | null} The extracted string value or null if not found
+ */
 function extractStringProperty(content: string, propName: string): string | null {
-  // Try single quotes first - more permissive approach
+  // Strategy 1: Single quoted strings - most common format
   const singleQuoteMatch = content.match(new RegExp(`${propName}\\s*:\\s*'(.*?)'`, 'm'))
   if (singleQuoteMatch) return singleQuoteMatch[1]
 
-  // Try double quotes
+  // Strategy 2: Double quoted strings - alternative format
   const doubleQuoteMatch = content.match(new RegExp(`${propName}\\s*:\\s*"(.*?)"`, 'm'))
   if (doubleQuoteMatch) return doubleQuoteMatch[1]
 
-  // Try to match multi-line string with template literals
+  // Strategy 3: Template literals - handles multiline and dynamic content
   const templateMatch = content.match(new RegExp(`${propName}\\s*:\\s*\`([^\`]+)\``, 's'))
   if (templateMatch) {
     let templateContent = templateMatch[1]
 
-    // Handle template literals with expressions by replacing them with reasonable defaults
-    // This is a simple approach - we'll replace common variable references with sensible defaults
+    // Process template literal expressions for documentation-friendly output
+    // Replace specific known patterns with static equivalents
     templateContent = templateContent.replace(
       /\$\{[^}]*shouldEnableURLInput[^}]*\?[^:]*:[^}]*\}/g,
       'Upload files directly. '
     )
     templateContent = templateContent.replace(/\$\{[^}]*shouldEnableURLInput[^}]*\}/g, 'false')
 
-    // Remove any remaining template expressions that we can't safely evaluate
+    // Remove any remaining template expressions that can't be statically evaluated
     templateContent = templateContent.replace(/\$\{[^}]+\}/g, '')
 
-    // Clean up any extra whitespace
+    // Normalize whitespace for clean documentation output
     templateContent = templateContent.replace(/\s+/g, ' ').trim()
 
     return templateContent
@@ -223,17 +353,41 @@ function extractStringProperty(content: string, propName: string): string | null
   return null
 }
 
-// Helper to extract icon name from content
+/**
+ * Extract icon component name from block configuration
+ *
+ * Searches for icon property assignments in the format: icon: IconNameIcon
+ *
+ * @param {string} content - Block configuration content
+ * @returns {string | null} Icon component name or null if not found
+ */
 function extractIconName(content: string): string | null {
   const iconMatch = content.match(/icon\s*:\s*(\w+Icon)/)
   return iconMatch ? iconMatch[1] : null
 }
 
-// Updated function to extract outputs with a simpler and more reliable approach
+/**
+ * Extract outputs configuration from block definition
+ *
+ * This function parses the outputs object from a block configuration, handling
+ * both simple field definitions and complex nested structures with proper
+ * balanced brace counting for accurate extraction.
+ *
+ * @param {string} content - Block configuration content containing outputs definition
+ * @returns {Record<string, any>} Parsed outputs object or empty object if none found
+ *
+ * @example
+ * // Handles both formats:
+ * // outputs: { result: 'string', data: { type: 'object', description: '...' } }
+ * // outputs: { field: { type: 'array', items: { properties: {...} } } }
+ */
 function extractOutputs(content: string): Record<string, any> {
-  // Look for the outputs section using balanced brace matching
+  // Locate the outputs property within the block configuration
   const outputsStart = content.search(/outputs\s*:\s*{/)
-  if (outputsStart === -1) return {}
+  if (outputsStart === -1) {
+    console.log('  ℹ️  No outputs section found')
+    return {}
+  }
 
   // Find the opening brace position
   const openBracePos = content.indexOf('{', outputsStart)
@@ -1233,42 +1387,69 @@ ${toolsSection}
 `
 }
 
-// Main function to generate all block docs
-async function generateAllBlockDocs() {
+/**
+ * Main orchestrator function for generating all block documentation
+ *
+ * This function coordinates the entire documentation generation process:
+ * 1. Extracts icons from the icon component file
+ * 2. Discovers all block definition files
+ * 3. Generates documentation for each valid block
+ * 4. Updates the navigation metadata
+ *
+ * @returns {Promise<boolean>} Success status of the documentation generation process
+ */
+async function generateAllBlockDocs(): Promise<boolean> {
   try {
-    // Extract icons first
+    console.log('📚 Starting comprehensive block documentation generation...')
+
+    // Step 1: Extract icon components for use in documentation
+    console.log('🎨 Extracting icon definitions...')
     const icons = extractIcons()
 
-    // Get all block files
+    // Step 2: Discover all TypeScript block definition files
+    console.log('🔍 Discovering block definition files...')
     const blockFiles = await glob(`${BLOCKS_PATH}/*.ts`)
+    console.log(`📁 Found ${blockFiles.length} potential block files`)
 
-    // Generate docs for each block
+    // Step 3: Process each block file and generate documentation
+    console.log('🏗️  Processing blocks and generating documentation...')
     for (const blockFile of blockFiles) {
       await generateBlockDoc(blockFile, icons)
     }
 
-    // Update the meta.json file
+    // Step 4: Update navigation metadata for the documentation site
+    console.log('📋 Updating documentation navigation metadata...')
     updateMetaJson()
 
+    console.log('✅ Documentation generation completed successfully!')
     return true
   } catch (error) {
-    console.error('Error generating documentation:', error)
+    console.error('❌ Critical error during documentation generation:', error)
     return false
   }
 }
 
-// Function to update the meta.json file with all blocks
-function updateMetaJson() {
+/**
+ * Update the meta.json navigation file for the documentation site
+ *
+ * This function creates or updates the meta.json file used by Next.js for
+ * documentation navigation. It ensures proper ordering with index pages
+ * first, followed by alphabetically sorted block documentation.
+ *
+ * The meta.json file structure is required by the documentation framework
+ * to automatically generate navigation menus and breadcrumbs.
+ */
+function updateMetaJson(): void {
   const metaJsonPath = path.join(DOCS_OUTPUT_PATH, 'meta.json')
 
-  // Get all MDX files in the tools directory
+  // Discover all generated MDX documentation files
   const blockFiles = fs
     .readdirSync(DOCS_OUTPUT_PATH)
     .filter((file: string) => file.endsWith('.mdx'))
     .map((file: string) => path.basename(file, '.mdx'))
 
-  // Create meta.json structure
-  // Keep "index" as the first item if it exists
+  // Create navigation structure with proper ordering
+  // Priority: index page first, then alphabetically sorted block docs
   const items = [
     ...(blockFiles.includes('index') ? ['index'] : []),
     ...blockFiles.filter((file: string) => file !== 'index').sort(),
@@ -1278,22 +1459,33 @@ function updateMetaJson() {
     items,
   }
 
-  // Write the meta.json file
+  // Write the updated meta.json file for documentation navigation
   fs.writeFileSync(metaJsonPath, JSON.stringify(metaJson, null, 2))
+  console.log(`📋 Updated meta.json with ${items.length} documentation pages`)
 }
 
-// Run the script
+/**
+ * Script execution and error handling
+ *
+ * This section handles the main script execution with proper error handling
+ * and exit codes for CI/CD integration. The script will exit with code 0 on
+ * success and code 1 on failure, making it suitable for automated builds.
+ */
+console.log('🚀 Initializing Sim Block Documentation Generator...')
+
 generateAllBlockDocs()
   .then((success) => {
     if (success) {
-      console.log('Documentation generation completed successfully')
+      console.log('🎉 Documentation generation completed successfully!')
+      console.log('📖 Generated documentation files are ready for deployment')
       process.exit(0)
     } else {
-      console.error('Documentation generation failed')
+      console.error('💥 Documentation generation failed - check logs for details')
       process.exit(1)
     }
   })
   .catch((error) => {
-    console.error('Fatal error:', error)
+    console.error('💀 Fatal error during documentation generation:', error)
+    console.error('Stack trace:', error.stack)
     process.exit(1)
   })

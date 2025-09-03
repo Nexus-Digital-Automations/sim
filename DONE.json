@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -970,9 +983,40 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756878296697_wp6gsjfx4",
+      "title": "Add comprehensive comments and documentation to utility functions throughout sim project",
+      "mode": "DEVELOPMENT",
+      "category": "documentation",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T05:44:56.697Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T05:52:11.643Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T05:52:11.645Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 23,
-  "last_completion": "2025-09-03T03:54:34.184Z",
+  "total_completed": 24,
+  "last_completion": "2025-09-03T05:52:11.645Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }
