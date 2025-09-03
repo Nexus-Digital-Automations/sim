@@ -10,7 +10,7 @@
 import { and, eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { db } from '@/db'
 import { registryBlocks, webhookExecutionLogs } from '@/db/schema'
 
@@ -116,7 +116,7 @@ function validateBlockManifest(
 export async function GET(request: NextRequest, { params }: { params: { blockId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -192,7 +192,7 @@ export async function GET(request: NextRequest, { params }: { params: { blockId:
 export async function PUT(request: NextRequest, { params }: { params: { blockId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -390,7 +390,7 @@ export async function PUT(request: NextRequest, { params }: { params: { blockId:
 export async function DELETE(request: NextRequest, { params }: { params: { blockId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },

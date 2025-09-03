@@ -230,7 +230,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
       // Verify database insertion was called
       expect(mocks.database.mockDb.insert).toHaveBeenCalled()
-      
+
       console.log('[TEST] Basic live edit operation verified')
     })
 
@@ -256,12 +256,12 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
-      
+
       // Verify operation validation was called
       expect(mockLiveEditUtils.validateOperation).toHaveBeenCalledWith(
         expect.objectContaining({ operationType: 'insert' })
       )
-      
+
       console.log('[TEST] Insert operation handling verified')
     })
 
@@ -284,10 +284,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
-      
+
       // Verify operation sanitization was called
       expect(mockLiveEditUtils.sanitizeOperation).toHaveBeenCalled()
-      
+
       console.log('[TEST] Delete operation handling verified')
     })
 
@@ -312,7 +312,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
-      
+
       console.log('[TEST] Move operation handling verified')
     })
 
@@ -338,7 +338,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
-      
+
       console.log('[TEST] Edge operation handling verified')
     })
   })
@@ -363,7 +363,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.timestamp).toBe(clientTimestamp)
-      
+
       console.log('[TEST] Client-provided timestamp verified')
     })
 
@@ -388,7 +388,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
       expect(data.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
       expect(data.timestamp).toBeLessThanOrEqual(afterTimestamp)
-      
+
       console.log('[TEST] Server timestamp generation verified')
     })
 
@@ -410,10 +410,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.applied).toBe(true)
-      
+
       // Verify vector clock operations were called
       expect(mockVectorClock.increment).toHaveBeenCalled()
-      
+
       console.log('[TEST] Vector clock operation ordering verified')
     })
   })
@@ -462,10 +462,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(data.conflicts.length).toBeGreaterThan(0)
       expect(data.transformedOperation).toBeDefined()
       expect(data.message).toContain('conflicts')
-      
+
       // Verify conflict detection was called
       expect(mockOperationalTransform.detectConflicts).toHaveBeenCalled()
-      
+
       console.log('[TEST] Concurrent edit conflict detection verified')
     })
 
@@ -481,7 +481,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
           resolutionSuggestion: 'transform',
         },
       ])
-      
+
       mockOperationalTransform.applyTransforms.mockReturnValue({
         transformedOperation: {
           ...conflictingOperation,
@@ -521,10 +521,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(data.transformedOperation).toBeDefined()
       expect(data.transformedOperation.transformationType).toBe('conflict')
       expect(data.transformedOperation.appliedTransforms.length).toBeGreaterThan(0)
-      
+
       // Verify operational transforms were applied
       expect(mockOperationalTransform.applyTransforms).toHaveBeenCalled()
-      
+
       console.log('[TEST] Operational transform application verified')
     })
 
@@ -575,7 +575,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(202)
       const data = await response.json()
       expect(data.conflicts.length).toBeGreaterThan(0)
-      
+
       console.log('[TEST] Insert-insert position conflicts verified')
     })
 
@@ -626,7 +626,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       const conflict = data.conflicts[0]
       expect(conflict.conflictType).toBe('dependency_violation')
       expect(conflict.resolutionSuggestion).toBe('manual')
-      
+
       console.log('[TEST] Delete-update conflicts verified')
     })
 
@@ -677,7 +677,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(202)
       const data = await response.json()
       expect(data.conflicts[0].conflictType).toBe('concurrent_move')
-      
+
       console.log('[TEST] Move-move conflicts verified')
     })
 
@@ -720,7 +720,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
       expect(data.applied).toBe(true)
       expect(data.conflicts).toEqual([])
-      
+
       console.log('[TEST] Same author conflict skipping verified')
     })
   })
@@ -745,7 +745,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
-      
+
       console.log('[TEST] Authentication requirement verified')
     })
 
@@ -772,10 +772,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Insufficient permissions')
-      
+
       // Verify permission check was called
       expect(mockCollaborateRoute.validateWorkflowPermissions).toHaveBeenCalled()
-      
+
       console.log('[TEST] Edit permission requirement verified')
     })
   })
@@ -805,10 +805,10 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       const data = await response.json()
       expect(data.error).toBe('Invalid request data')
       expect(data.details).toBeDefined()
-      
+
       // Verify validation was called
       expect(mockLiveEditUtils.validateOperation).toHaveBeenCalled()
-      
+
       console.log('[TEST] Operation schema validation verified')
     })
 
@@ -820,7 +820,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
       for (const type of validTypes) {
         console.log(`[TEST] Validating operation type: ${type}`)
-        
+
         const operationData = {
           operationType: type,
           operationTarget: 'block',
@@ -832,7 +832,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
         expect(response.status).toBe(200)
       }
-      
+
       console.log('[TEST] Operation type validation verified')
     })
 
@@ -844,7 +844,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
       for (const target of validTargets) {
         console.log(`[TEST] Validating operation target: ${target}`)
-        
+
         const operationData = {
           operationType: 'update',
           operationTarget: target,
@@ -856,7 +856,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
 
         expect(response.status).toBe(200)
       }
-      
+
       console.log('[TEST] Operation target validation verified')
     })
 
@@ -882,7 +882,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
-      
+
       console.log('[TEST] Database insertion error handling verified')
     })
 
@@ -905,7 +905,7 @@ describe('Live Editing API - POST /api/workflows/[id]/live-edit', () => {
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
-      
+
       console.log('[TEST] Malformed JSON request handling verified')
     })
   })
@@ -1186,7 +1186,7 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
-      
+
       console.log('[TEST] Authentication requirement for changes verified')
     })
 
@@ -1207,7 +1207,7 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
       expect(response.status).toBe(403)
       const data = await response.json()
       expect(data.error).toBe('Access denied')
-      
+
       console.log('[TEST] Workflow access permission requirement verified')
     })
 
@@ -1226,7 +1226,7 @@ describe('Live Editing API - GET /api/workflows/[id]/live-edit/changes', () => {
 
       console.log(`[TEST] View access response status: ${response.status}`)
       expect(response.status).toBe(200)
-      
+
       console.log('[TEST] View access for retrieving changes verified')
     })
   })

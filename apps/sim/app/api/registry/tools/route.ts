@@ -16,7 +16,7 @@ import crypto from 'crypto'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { db } from '@/db'
 import { registryRateLimits, registryTools } from '@/db/schema'
 
@@ -170,7 +170,7 @@ async function validateWebhookUrl(url: string): Promise<boolean> {
 export async function GET(request: NextRequest) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -421,6 +421,276 @@ export async function POST(request: NextRequest) {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to register tool',
+        },
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PUT /api/registry/tools
+ * Update an existing custom tool
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    // Authentication check
+    const session = await getSession()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 }
+      )
+    }
+
+    // Parse and validate request body
+    const body = await request.json()
+    const { id, ...updateData } = body
+
+    if (!id) {
+      return NextResponse.json(
+        { error: { code: 'MISSING_ID', message: 'Tool ID is required for update' } },
+        { status: 400 }
+      )
+    }
+
+    const toolData = UpdateToolSchema.parse(updateData)
+
+    // Check if tool exists and user owns it
+    const existingTool = await db
+      .select()
+      .from(registryTools)
+      .where(and(eq(registryTools.id, id), eq(registryTools.userId, session.user.id)))
+      .limit(1)
+
+    if (existingTool.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'TOOL_NOT_FOUND',
+            message: 'Tool not found or access denied',
+          },
+        },
+        { status: 404 }
+      )
+    }
+
+    // If name is being updated, check for duplicates
+    if (toolData.name && toolData.name !== existingTool[0].name) {
+      const duplicateTool = await db
+        .select({ id: registryTools.id })
+        .from(registryTools)
+        .where(
+          and(
+            eq(registryTools.userId, session.user.id),
+            eq(registryTools.name, toolData.name),
+            sql`${registryTools.id} != ${id}`
+          )
+        )
+        .limit(1)
+
+      if (duplicateTool.length > 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'DUPLICATE_NAME',
+              message: `Tool with name '${toolData.name}' already exists`,
+            },
+          },
+          { status: 409 }
+        )
+      }
+    }
+
+    // Validate webhook URL if provided
+    if (toolData.webhookUrl) {
+      const isWebhookValid = await validateWebhookUrl(toolData.webhookUrl)
+      if (!isWebhookValid) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'WEBHOOK_VALIDATION_FAILED',
+              message: 'Webhook URL is not accessible or invalid',
+            },
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Prepare update values
+    const updateValues: any = {
+      updatedAt: new Date(),
+    }
+
+    // Only update provided fields
+    if (toolData.name !== undefined) updateValues.name = toolData.name
+    if (toolData.displayName !== undefined) updateValues.displayName = toolData.displayName
+    if (toolData.description !== undefined) updateValues.description = toolData.description
+    if (toolData.icon !== undefined) updateValues.icon = toolData.icon
+    if (toolData.category !== undefined) updateValues.category = toolData.category
+    if (toolData.version !== undefined) updateValues.version = toolData.version
+    if (toolData.manifest !== undefined) {
+      updateValues.manifest = toolData.manifest
+      updateValues.configSchema = toolData.manifest.configSchema
+      updateValues.inputSchema = toolData.manifest.inputSchema || {}
+      updateValues.outputSchema = toolData.manifest.outputSchema || {}
+    }
+    if (toolData.webhookUrl !== undefined) updateValues.webhookUrl = toolData.webhookUrl
+    if (toolData.webhookMethod !== undefined) updateValues.webhookMethod = toolData.webhookMethod
+    if (toolData.webhookTimeout !== undefined) updateValues.webhookTimeout = toolData.webhookTimeout
+    if (toolData.webhookRetryCount !== undefined)
+      updateValues.webhookRetryCount = toolData.webhookRetryCount
+    if (toolData.authentication !== undefined) updateValues.authentication = toolData.authentication
+    if (toolData.tags !== undefined) updateValues.tags = toolData.tags
+    if (toolData.metadata !== undefined) updateValues.metadata = toolData.metadata
+
+    // Update tool record
+    const [updatedTool] = await db
+      .update(registryTools)
+      .set(updateValues)
+      .where(eq(registryTools.id, id))
+      .returning({
+        id: registryTools.id,
+        name: registryTools.name,
+        displayName: registryTools.displayName,
+        status: registryTools.status,
+        version: registryTools.version,
+        updatedAt: registryTools.updatedAt,
+      })
+
+    console.log(
+      `Tool updated: ${toolData.name || existingTool[0].name} (${id}) by user ${session.user.id}`
+    )
+
+    return NextResponse.json({
+      id: updatedTool.id,
+      name: updatedTool.name,
+      displayName: updatedTool.displayName,
+      status: updatedTool.status,
+      version: updatedTool.version,
+      updatedAt: updatedTool.updatedAt,
+    })
+  } catch (error) {
+    console.error('Error updating registry tool:', error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid tool update data',
+            details: error.errors,
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to update tool',
+        },
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE /api/registry/tools
+ * Delete a custom tool
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Authentication check
+    const session = await getSession()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 }
+      )
+    }
+
+    // Parse request body to get tool ID
+    const body = await request.json()
+    const { id } = body
+
+    if (!id) {
+      return NextResponse.json(
+        { error: { code: 'MISSING_ID', message: 'Tool ID is required for deletion' } },
+        { status: 400 }
+      )
+    }
+
+    // Check if tool exists and user owns it
+    const existingTool = await db
+      .select({
+        id: registryTools.id,
+        name: registryTools.name,
+        usageCount: registryTools.usageCount,
+        status: registryTools.status,
+      })
+      .from(registryTools)
+      .where(and(eq(registryTools.id, id), eq(registryTools.userId, session.user.id)))
+      .limit(1)
+
+    if (existingTool.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'TOOL_NOT_FOUND',
+            message: 'Tool not found or access denied',
+          },
+        },
+        { status: 404 }
+      )
+    }
+
+    const tool = existingTool[0]
+
+    // Safety check: prevent deletion of tools that are in use
+    if (tool.usageCount > 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'TOOL_IN_USE',
+            message: `Cannot delete tool '${tool.name}' as it is currently being used in ${tool.usageCount} workflow(s)`,
+            details: { usageCount: tool.usageCount },
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    // Instead of hard delete, mark as inactive for safety
+    await db
+      .update(registryTools)
+      .set({
+        status: 'inactive',
+        updatedAt: new Date(),
+      })
+      .where(eq(registryTools.id, id))
+
+    console.log(`Tool deactivated: ${tool.name} (${id}) by user ${session.user.id}`)
+
+    return NextResponse.json({
+      success: true,
+      message: `Tool '${tool.name}' has been deactivated`,
+      toolId: id,
+      toolName: tool.name,
+      action: 'deactivated',
+    })
+  } catch (error) {
+    console.error('Error deleting registry tool:', error)
+
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to delete tool',
         },
       },
       { status: 500 }

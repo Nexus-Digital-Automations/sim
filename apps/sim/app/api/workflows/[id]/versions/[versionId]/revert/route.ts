@@ -16,7 +16,7 @@ import crypto from 'crypto'
 import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
@@ -60,9 +60,9 @@ async function analyzeRevertChanges(
   riskLevel: 'low' | 'medium' | 'high'
 }> {
   const currentBlocks = currentWorkflow.blocks || []
-  const targetBlocks = targetVersion.state.blocks || []
+  const targetBlocks = targetVersion.workflowState.blocks || []
   const currentEdges = currentWorkflow.edges || []
-  const targetEdges = targetVersion.state.edges || []
+  const targetEdges = targetVersion.workflowState.edges || []
 
   // Analyze block changes
   const currentBlockIds = new Set(currentBlocks.map((b: any) => b.id))
@@ -99,17 +99,17 @@ async function analyzeRevertChanges(
   // Analyze configuration changes
   const configChanges: string[] = []
 
-  if (currentWorkflow.name !== targetVersion.state.name) {
+  if (currentWorkflow.name !== targetVersion.workflowState.name) {
     configChanges.push('Workflow name changed')
   }
 
-  if (currentWorkflow.description !== targetVersion.state.description) {
+  if (currentWorkflow.description !== targetVersion.workflowState.description) {
     configChanges.push('Workflow description changed')
   }
 
   if (
     JSON.stringify(currentWorkflow.variables || {}) !==
-    JSON.stringify(targetVersion.state.variables || {})
+    JSON.stringify(targetVersion.workflowState.variables || {})
   ) {
     configChanges.push('Workflow variables changed')
   }
@@ -143,19 +143,29 @@ async function analyzeRevertChanges(
 async function createRevertBackup(
   workflowId: string,
   userId: string,
+  currentWorkflow: any,
   backupName?: string,
   backupDescription?: string
 ): Promise<WorkflowVersion> {
   const versionManager = new WorkflowVersionManager()
 
+  // Convert current workflow to the expected currentState format
+  const currentState = {
+    blocks: currentWorkflow.blocks || {},
+    edges: currentWorkflow.edges || [],
+    loops: currentWorkflow.loops || {},
+    parallels: currentWorkflow.parallels || {},
+  }
+
   const backupVersion = await versionManager.createVersion(
     workflowId,
+    currentState,
     {
-      type: 'checkpoint',
-      name: backupName || `Pre-revert backup ${new Date().toISOString()}`,
+      versionType: 'checkpoint',
+      branchName: 'main',
+      incrementType: 'patch',
+      versionTag: backupName || `Pre-revert backup ${new Date().toISOString()}`,
       description: backupDescription || 'Automatic backup created before version revert',
-      tags: ['backup', 'pre-revert'],
-      automatic: true,
     },
     userId
   )
@@ -172,7 +182,7 @@ async function performRevert(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const targetState = targetVersion.state
+    const targetState = targetVersion.workflowState
 
     // Begin transaction
     await db.transaction(async (tx) => {
@@ -244,15 +254,29 @@ export async function POST(
     let isInternal = false
 
     try {
-      const session = await auth()
+      const session = await getSession()
       if (!session?.user?.id) {
         // Try internal token auth
         const authHeader = request.headers.get('authorization')
         if (authHeader?.startsWith('Bearer ')) {
           const token = authHeader.slice(7)
-          const internalAuth = await verifyInternalToken(token)
-          if (internalAuth.success && internalAuth.userId) {
-            userId = internalAuth.userId
+          const isInternalCall = await verifyInternalToken(token)
+          if (isInternalCall) {
+            // For internal calls, we need workflowId to determine user context
+            const [workflowData] = await db
+              .select({ userId: workflowTable.userId })
+              .from(workflowTable)
+              .where(eq(workflowTable.id, workflowId))
+              .limit(1)
+
+            if (!workflowData) {
+              return NextResponse.json(
+                { error: { code: 'WORKFLOW_NOT_FOUND', message: 'Workflow not found' } },
+                { status: 404 }
+              )
+            }
+
+            userId = workflowData.userId
             isInternal = true
           } else {
             return NextResponse.json(
@@ -279,7 +303,7 @@ export async function POST(
     // Check permissions (need write access for revert)
     if (!isInternal) {
       const permissions = await getUserEntityPermissions(userId, 'workflow', workflowId)
-      if (!permissions.write) {
+      if (!permissions || (permissions !== 'write' && permissions !== 'admin')) {
         return NextResponse.json(
           { error: { code: 'FORBIDDEN', message: 'Insufficient permissions to revert workflow' } },
           { status: 403 }
@@ -309,11 +333,19 @@ export async function POST(
 
     // Load target version
     const versionManager = new WorkflowVersionManager()
-    const targetVersion = await versionManager.getVersion(workflowId, versionId)
+    const targetVersion = await versionManager.getVersionById(versionId)
 
     if (!targetVersion) {
       return NextResponse.json(
         { error: { code: 'VERSION_NOT_FOUND', message: 'Version not found' } },
+        { status: 404 }
+      )
+    }
+
+    // Verify the version belongs to the correct workflow
+    if (targetVersion.workflowId !== workflowId) {
+      return NextResponse.json(
+        { error: { code: 'VERSION_NOT_FOUND', message: 'Version not found for this workflow' } },
         { status: 404 }
       )
     }
@@ -368,8 +400,8 @@ export async function POST(
         workflowId,
         targetVersion: {
           id: targetVersion.id,
-          version: targetVersion.version,
-          name: targetVersion.name,
+          version: targetVersion.versionNumber,
+          name: targetVersion.versionTag || targetVersion.versionNumber,
           createdAt: targetVersion.createdAt,
         },
         changeAnalysis,
@@ -395,6 +427,7 @@ export async function POST(
         backupVersion = await createRevertBackup(
           workflowId,
           userId,
+          currentWorkflow,
           revertOptions.backupName,
           revertOptions.backupDescription
         )
@@ -433,20 +466,24 @@ export async function POST(
 
     // Create new version record for the revert
     try {
+      // Load the reverted workflow state to create the version
+      const revertedWorkflow = await loadWorkflowFromNormalizedTables(workflowId)
+      const revertedState = {
+        blocks: revertedWorkflow?.blocks || {},
+        edges: revertedWorkflow?.edges || [],
+        loops: revertedWorkflow?.loops || {},
+        parallels: revertedWorkflow?.parallels || {},
+      }
+
       const revertVersion = await versionManager.createVersion(
         workflowId,
+        revertedState,
         {
-          type: 'manual',
-          name: `Reverted to v${targetVersion.version}`,
-          description: `Reverted workflow to version ${targetVersion.version}${revertOptions.reason ? `: ${revertOptions.reason}` : ''}`,
-          tags: ['revert', ...(revertOptions.tags || [])],
-          metadata: {
-            revertedFrom: currentWorkflow.lastSynced,
-            revertedTo: targetVersion.version,
-            revertedToId: versionId,
-            backupVersionId: backupVersion?.id,
-            changeAnalysis,
-          },
+          versionType: 'manual',
+          branchName: 'main',
+          incrementType: 'patch',
+          versionTag: `Reverted to v${targetVersion.versionNumber}`,
+          description: `Reverted workflow to version ${targetVersion.versionNumber}${revertOptions.reason ? `: ${revertOptions.reason}` : ''}`,
         },
         userId
       )
@@ -463,17 +500,17 @@ export async function POST(
         workflowId,
         revertedTo: {
           versionId: targetVersion.id,
-          version: targetVersion.version,
-          name: targetVersion.name,
+          version: targetVersion.versionNumber,
+          name: targetVersion.versionTag || targetVersion.versionNumber,
         },
         newVersion: {
           id: revertVersion.id,
-          version: revertVersion.version,
+          version: revertVersion.versionNumber,
         },
         backup: backupVersion
           ? {
               id: backupVersion.id,
-              version: backupVersion.version,
+              version: backupVersion.versionNumber,
             }
           : null,
         changeAnalysis,
@@ -488,13 +525,13 @@ export async function POST(
         workflowId,
         revertedTo: {
           versionId: targetVersion.id,
-          version: targetVersion.version,
-          name: targetVersion.name,
+          version: targetVersion.versionNumber,
+          name: targetVersion.versionTag || targetVersion.versionNumber,
         },
         backup: backupVersion
           ? {
               id: backupVersion.id,
-              version: backupVersion.version,
+              version: backupVersion.versionNumber,
             }
           : null,
         changeAnalysis,

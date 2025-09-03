@@ -57,7 +57,12 @@ const sampleWorkspaceWorkflow = {
   userId: 'other-user-456',
   workspaceId: 'workspace-456',
   variables: {
-    'var-workspace': { id: 'var-workspace', name: 'workspaceVar', type: 'string', value: '"shared"' },
+    'var-workspace': {
+      id: 'var-workspace',
+      name: 'workspaceVar',
+      type: 'string',
+      value: '"shared"',
+    },
   },
 }
 
@@ -546,11 +551,14 @@ describe('Workflow Variables API - Comprehensive Test Suite', () => {
       // Log test execution for debugging
       console.log('[TEST] Testing malformed JSON handling for variables update')
 
-      const request = new NextRequest('http://localhost:3000/api/workflows/workflow-123/variables', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'invalid-json-content',
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/workflows/workflow-123/variables',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: 'invalid-json-content',
+        }
+      )
 
       const response = await POST(request, { params: Promise.resolve({ id: 'workflow-123' }) })
 

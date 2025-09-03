@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
- * 
+ *
  * Comprehensive Button Component Tests
- * 
+ *
  * This test suite provides complete coverage for the Button component including:
  * - Basic rendering and prop handling
  * - All variant and size combinations
@@ -14,9 +14,9 @@
  * - Theme switching compatibility
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
-import { renderWithProviders, mockDataGenerators, testingHelpers, accessibilityHelpers } from '@/__tests__/test-utils'
+import { screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { accessibilityHelpers, renderWithProviders, testingHelpers } from '@/__tests__/test-utils'
 import { Button, type ButtonProps } from './button'
 
 /**
@@ -27,7 +27,7 @@ const originalConsoleError = console.error
 
 beforeEach(() => {
   vi.clearAllMocks()
-  
+
   // Suppress known warnings during testing
   console.warn = vi.fn()
   console.error = vi.fn()
@@ -44,9 +44,9 @@ afterEach(() => {
 function renderButton(props: Partial<ButtonProps> = {}) {
   const defaultProps: ButtonProps = {
     children: 'Test Button',
-    ...props
+    ...props,
   }
-  
+
   return renderWithProviders(<Button {...defaultProps} />)
 }
 
@@ -64,7 +64,7 @@ describe('Button Component', () => {
     it('should render with default props', () => {
       renderButton()
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toHaveTextContent('Test Button')
       expect(button).toBeEnabled()
@@ -72,20 +72,20 @@ describe('Button Component', () => {
 
     it('should render with custom text content', () => {
       renderButton({ children: 'Custom Button Text' })
-      
+
       expect(screen.getByRole('button', { name: /custom button text/i })).toBeInTheDocument()
     })
 
     it('should render with JSX children', () => {
-      renderButton({ 
+      renderButton({
         children: (
           <>
-            <span data-testid="icon">🚀</span>
+            <span data-testid='icon'>🚀</span>
             <span>Launch</span>
           </>
-        )
+        ),
       })
-      
+
       expect(screen.getByTestId('icon')).toBeInTheDocument()
       expect(screen.getByText('Launch')).toBeInTheDocument()
     })
@@ -93,7 +93,7 @@ describe('Button Component', () => {
     it('should forward ref correctly', () => {
       const ref = vi.fn()
       renderWithProviders(<Button ref={ref}>Ref Test</Button>)
-      
+
       expect(ref).toHaveBeenCalledWith(expect.any(HTMLButtonElement))
     })
   })
@@ -105,20 +105,20 @@ describe('Button Component', () => {
   describe('Button Variants', () => {
     const variants: Array<ButtonProps['variant']> = [
       'default',
-      'destructive', 
+      'destructive',
       'outline',
       'secondary',
       'ghost',
-      'link'
+      'link',
     ]
 
     it.each(variants)('should render %s variant correctly', (variant) => {
       renderButton({ variant })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toHaveClass('inline-flex')
-      
+
       // Check variant-specific classes are applied
       const variantClassMap = {
         default: 'bg-primary',
@@ -126,14 +126,14 @@ describe('Button Component', () => {
         outline: 'border',
         secondary: 'bg-secondary',
         ghost: 'hover:bg-accent',
-        link: 'underline-offset-4'
+        link: 'underline-offset-4',
       }
-      
+
       if (variant && variantClassMap[variant]) {
         // Check if button has the variant-specific class
         const expectedClass = variantClassMap[variant]
         const classList = button.className.split(' ')
-        const hasExpectedClass = classList.some(cls => cls.includes(expectedClass.split('-')[0]))
+        const hasExpectedClass = classList.some((cls) => cls.includes(expectedClass.split('-')[0]))
         expect(hasExpectedClass).toBe(true)
       }
     })
@@ -141,9 +141,9 @@ describe('Button Component', () => {
     it('should apply hover effects correctly', async () => {
       const { user } = renderButton({ variant: 'default' })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       await user.hover(button)
-      
+
       // Button should remain accessible during hover
       expect(button).toBeInTheDocument()
       expect(button).toBeVisible()
@@ -160,29 +160,29 @@ describe('Button Component', () => {
     it.each(sizes)('should render %s size correctly', (size) => {
       renderButton({ size })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
-      
+
       // Check size-specific classes are applied
       const sizeClassMap = {
         default: 'h-10',
         sm: 'h-9',
         lg: 'h-11',
-        icon: 'h-10'
+        icon: 'h-10',
       }
-      
+
       if (size && sizeClassMap[size]) {
         expect(button).toHaveClass(sizeClassMap[size])
       }
     })
 
     it('should render icon size with icon content', () => {
-      renderButton({ 
+      renderButton({
         size: 'icon',
-        children: <span data-testid="icon-content">⭐</span>,
-        'aria-label': 'Star button'
+        children: <span data-testid='icon-content'>⭐</span>,
+        'aria-label': 'Star button',
       })
-      
+
       const button = screen.getByRole('button', { name: /star button/i })
       expect(button).toBeInTheDocument()
       expect(screen.getByTestId('icon-content')).toBeInTheDocument()
@@ -197,10 +197,10 @@ describe('Button Component', () => {
     it('should handle click events', async () => {
       const handleClick = vi.fn()
       const { user } = renderButton({ onClick: handleClick })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       await user.click(button)
-      
+
       expect(handleClick).toHaveBeenCalledOnce()
       expect(handleClick).toHaveBeenCalledWith(expect.any(Object))
     })
@@ -208,48 +208,48 @@ describe('Button Component', () => {
     it('should handle multiple rapid clicks', async () => {
       const handleClick = vi.fn()
       const { user } = renderButton({ onClick: handleClick })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       // Simulate rapid clicking
       await user.click(button)
       await user.click(button)
       await user.click(button)
-      
+
       expect(handleClick).toHaveBeenCalledTimes(3)
     })
 
     it('should handle keyboard activation (Enter)', async () => {
       const handleClick = vi.fn()
       const { user } = renderButton({ onClick: handleClick })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       button.focus()
-      
+
       await user.keyboard('{Enter}')
-      
+
       expect(handleClick).toHaveBeenCalledOnce()
     })
 
     it('should handle keyboard activation (Space)', async () => {
       const handleClick = vi.fn()
       const { user } = renderButton({ onClick: handleClick })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       button.focus()
-      
+
       await user.keyboard(' ')
-      
+
       expect(handleClick).toHaveBeenCalledOnce()
     })
 
     it('should not trigger click when disabled', async () => {
       const handleClick = vi.fn()
       const { user } = renderButton({ onClick: handleClick, disabled: true })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       await user.click(button)
-      
+
       expect(handleClick).not.toHaveBeenCalled()
       expect(button).toBeDisabled()
     })
@@ -263,18 +263,18 @@ describe('Button Component', () => {
     it('should have proper button role', () => {
       renderButton()
       const button = screen.getByRole('button')
-      
+
       expect(button).toBeInTheDocument()
       expect(button.tagName).toBe('BUTTON')
     })
 
     it('should support aria-label for icon buttons', () => {
-      renderButton({ 
+      renderButton({
         'aria-label': 'Close dialog',
         children: '×',
-        size: 'icon'
+        size: 'icon',
       })
-      
+
       const button = screen.getByRole('button', { name: /close dialog/i })
       expect(button).toHaveAttribute('aria-label', 'Close dialog')
     })
@@ -282,14 +282,14 @@ describe('Button Component', () => {
     it('should support aria-describedby', () => {
       renderButton({ 'aria-describedby': 'button-description' })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toHaveAttribute('aria-describedby', 'button-description')
     })
 
     it('should be focusable by default', () => {
       renderButton()
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       button.focus()
       expect(button).toHaveFocus()
     })
@@ -297,7 +297,7 @@ describe('Button Component', () => {
     it('should not be focusable when disabled', () => {
       renderButton({ disabled: true })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       button.focus()
       expect(button).not.toHaveFocus()
     })
@@ -305,20 +305,22 @@ describe('Button Component', () => {
     it('should have visible focus indicator', async () => {
       const { user } = renderButton()
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       await user.tab()
-      
+
       expect(button).toHaveFocus()
       // Focus indicator would be applied by default browser styles or custom focus styles
       const classList = button.className.split(' ')
-      const hasFocusClass = classList.some(cls => cls.includes('focus') || cls.includes('outline'))
+      const hasFocusClass = classList.some(
+        (cls) => cls.includes('focus') || cls.includes('outline')
+      )
       expect(button).toBeVisible() // Focus should make button visible and accessible
     })
 
     it('should meet color contrast requirements', () => {
       renderButton({ variant: 'default' })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       // Basic color contrast check (would be enhanced with actual color analysis)
       const styles = getComputedStyle(button)
       expect(styles.color).toBeTruthy()
@@ -334,12 +336,12 @@ describe('Button Component', () => {
     it('should render as child component when asChild is true', () => {
       renderWithProviders(
         <Button asChild>
-          <a href="/test" data-testid="link-button">
+          <a href='/test' data-testid='link-button'>
             Link Button
           </a>
         </Button>
       )
-      
+
       const link = screen.getByTestId('link-button')
       expect(link).toBeInTheDocument()
       expect(link.tagName).toBe('A')
@@ -348,16 +350,18 @@ describe('Button Component', () => {
 
     it('should apply button classes to child component', () => {
       renderWithProviders(
-        <Button asChild variant="destructive" size="lg">
-          <div data-testid="div-button">Custom Component</div>
+        <Button asChild variant='destructive' size='lg'>
+          <div data-testid='div-button'>Custom Component</div>
         </Button>
       )
-      
+
       const div = screen.getByTestId('div-button')
       // Check that child component receives button classes
       const classList = div.className.split(' ')
-      const hasDestructiveClass = classList.some(cls => cls.includes('destructive') || cls.includes('bg-'))
-      const hasLargeClass = classList.some(cls => cls.includes('h-11') || cls.includes('lg'))
+      const hasDestructiveClass = classList.some(
+        (cls) => cls.includes('destructive') || cls.includes('bg-')
+      )
+      const hasLargeClass = classList.some((cls) => cls.includes('h-11') || cls.includes('lg'))
       expect(hasDestructiveClass || hasLargeClass).toBe(true) // Should have button styling
     })
 
@@ -365,15 +369,15 @@ describe('Button Component', () => {
       const handleClick = vi.fn()
       const { user } = renderWithProviders(
         <Button asChild>
-          <button onClick={handleClick} data-testid="child-button">
+          <button onClick={handleClick} data-testid='child-button'>
             Child Button
           </button>
         </Button>
       )
-      
+
       const button = screen.getByTestId('child-button')
       await user.click(button)
-      
+
       expect(handleClick).toHaveBeenCalledOnce()
     })
   })
@@ -386,23 +390,23 @@ describe('Button Component', () => {
     it('should merge custom className with default classes', () => {
       renderButton({ className: 'custom-button-class' })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toHaveClass('custom-button-class')
       // Check for default button classes
       const classList = button.className.split(' ')
-      const hasFlexClass = classList.some(cls => cls.includes('flex') || cls.includes('inline'))
+      const hasFlexClass = classList.some((cls) => cls.includes('flex') || cls.includes('inline'))
       expect(hasFlexClass).toBe(true) // Should have button layout classes
     })
 
     it('should apply custom CSS properties', () => {
-      renderButton({ 
-        style: { 
+      renderButton({
+        style: {
           backgroundColor: 'red',
           color: 'white',
-          fontSize: '16px'
-        }
+          fontSize: '16px',
+        },
       })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       const styles = getComputedStyle(button)
       expect(styles.backgroundColor).toBe('rgb(255, 0, 0)') // red as RGB
@@ -411,11 +415,11 @@ describe('Button Component', () => {
     })
 
     it('should support custom data attributes', () => {
-      renderButton({ 
+      renderButton({
         'data-testid': 'custom-button',
-        'data-analytics': 'cta-button'
+        'data-analytics': 'cta-button',
       })
-      
+
       const button = screen.getByTestId('custom-button')
       expect(button).toHaveAttribute('data-analytics', 'cta-button')
     })
@@ -429,35 +433,37 @@ describe('Button Component', () => {
     it('should handle disabled state correctly', () => {
       renderButton({ disabled: true })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeDisabled()
       // Check for disabled styling
       const classList = button.className.split(' ')
-      const hasDisabledClass = classList.some(cls => cls.includes('disabled') || cls.includes('opacity'))
+      const hasDisabledClass = classList.some(
+        (cls) => cls.includes('disabled') || cls.includes('opacity')
+      )
       expect(button).toHaveAttribute('disabled') // HTML disabled attribute is most important
     })
 
     it('should show loading state when provided', () => {
-      renderButton({ 
+      renderButton({
         disabled: true,
         children: (
           <>
-            <span data-testid="spinner">🔄</span>
+            <span data-testid='spinner'>🔄</span>
             Loading...
           </>
-        )
+        ),
       })
-      
+
       expect(screen.getByTestId('spinner')).toBeInTheDocument()
       expect(screen.getByText('Loading...')).toBeInTheDocument()
     })
 
     it('should handle form submission state', () => {
-      renderButton({ 
+      renderButton({
         type: 'submit',
-        form: 'test-form'
+        form: 'test-form',
       })
-      
+
       const button = screen.getByRole('button', { name: /test button/i })
       expect(button).toHaveAttribute('type', 'submit')
       expect(button).toHaveAttribute('form', 'test-form')
@@ -471,34 +477,36 @@ describe('Button Component', () => {
   describe('Theme Compatibility', () => {
     it('should render correctly in light theme', () => {
       const { switchTheme } = renderButton({ variant: 'default' })
-      
+
       switchTheme('light')
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toBeVisible()
     })
 
     it('should render correctly in dark theme', async () => {
       const { switchTheme } = renderButton({ variant: 'default' })
-      
+
       await switchTheme('dark')
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toBeVisible()
     })
 
     it('should maintain accessibility in dark theme', async () => {
       const { switchTheme } = renderButton({ variant: 'outline' })
-      
+
       await switchTheme('dark')
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       expect(button).toBeInTheDocument()
       // Check for outline variant classes
       const classList = button.className.split(' ')
-      const hasOutlineClass = classList.some(cls => cls.includes('border') || cls.includes('outline'))
+      const hasOutlineClass = classList.some(
+        (cls) => cls.includes('border') || cls.includes('outline')
+      )
       expect(button).toBeVisible() // Should remain visible and accessible in dark theme
     })
   })
@@ -511,7 +519,7 @@ describe('Button Component', () => {
     it('should handle undefined children gracefully', () => {
       renderWithProviders(<Button>{undefined}</Button>)
       const button = screen.getByRole('button')
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toBeEmpty()
     })
@@ -519,27 +527,28 @@ describe('Button Component', () => {
     it('should handle null children gracefully', () => {
       renderWithProviders(<Button>{null}</Button>)
       const button = screen.getByRole('button')
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toBeEmpty()
     })
 
     it('should handle very long text content', () => {
-      const longText = 'This is a very long button text that should be handled gracefully by the component without breaking the layout or accessibility features'
-      
+      const longText =
+        'This is a very long button text that should be handled gracefully by the component without breaking the layout or accessibility features'
+
       renderButton({ children: longText })
       const button = screen.getByRole('button', { name: new RegExp(longText.substring(0, 20)) })
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toHaveTextContent(longText)
     })
 
     it('should handle special characters in text', () => {
       const specialText = '< > & " \' ® © ™ 中文 🚀 🎉'
-      
+
       renderButton({ children: specialText })
       const button = screen.getByText(specialText)
-      
+
       expect(button).toBeInTheDocument()
       expect(button).toHaveTextContent(specialText)
     })
@@ -554,17 +563,17 @@ describe('Button Component', () => {
       const renderTime = await testingHelpers.measureRenderTime(() => {
         renderButton()
       })
-      
+
       // Button should render within reasonable time (adjust threshold as needed)
       expect(renderTime).toBeLessThan(100) // 100ms threshold
     })
 
     it('should not cause memory leaks on mount/unmount', () => {
       const memoryTracker = testingHelpers.detectMemoryLeaks('Button')
-      
+
       const { unmount } = renderButton()
       unmount()
-      
+
       const memoryDiff = memoryTracker.check()
       // Should not have significant memory increase after unmount
       expect(memoryDiff).toBeLessThan(100000) // 100KB threshold
@@ -572,19 +581,19 @@ describe('Button Component', () => {
 
     it('should handle rapid re-renders efficiently', () => {
       let renderCount = 0
-      
+
       function TestWrapper({ text }: { text: string }) {
         renderCount++
         return <Button>{text}</Button>
       }
-      
-      const { rerender } = renderWithProviders(<TestWrapper text="Initial" />)
-      
+
+      const { rerender } = renderWithProviders(<TestWrapper text='Initial' />)
+
       // Trigger multiple re-renders
       for (let i = 0; i < 10; i++) {
         rerender(<TestWrapper text={`Update ${i}`} />)
       }
-      
+
       expect(renderCount).toBe(11) // Initial + 10 updates
       expect(screen.getByText('Update 9')).toBeInTheDocument()
     })
@@ -599,53 +608,53 @@ describe('Button Component', () => {
       const handleSubmit = vi.fn((e) => e.preventDefault())
       const { user } = renderWithProviders(
         <form onSubmit={handleSubmit}>
-          <input data-testid="input" type="text" name="test" />
-          <Button type="submit">Submit Form</Button>
+          <input data-testid='input' type='text' name='test' />
+          <Button type='submit'>Submit Form</Button>
         </form>
       )
-      
+
       const input = screen.getByTestId('input')
       const button = screen.getByRole('button', { name: /submit form/i })
-      
+
       await user.type(input, 'test value')
       await user.click(button)
-      
+
       expect(handleSubmit).toHaveBeenCalledOnce()
     })
 
     it('should work with React Router Link', () => {
       renderWithProviders(
         <Button asChild>
-          <a href="/dashboard" data-testid="nav-link">
+          <a href='/dashboard' data-testid='nav-link'>
             Go to Dashboard
           </a>
         </Button>
       )
-      
+
       const link = screen.getByTestId('nav-link')
       expect(link).toHaveAttribute('href', '/dashboard')
       // Check that link received button classes
       const classList = link.className.split(' ')
-      const hasButtonClass = classList.some(cls => cls.includes('flex') || cls.includes('button') || cls.includes('inline'))
+      const hasButtonClass = classList.some(
+        (cls) => cls.includes('flex') || cls.includes('button') || cls.includes('inline')
+      )
       expect(link).toBeInTheDocument() // Link should be properly rendered with button styling
     })
 
     it('should work in dialog/modal context', () => {
       const handleClose = vi.fn()
-      
+
       renderWithProviders(
-        <div role="dialog" aria-modal="true">
+        <div role='dialog' aria-modal='true'>
           <h2>Test Dialog</h2>
           <p>Dialog content</p>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant='outline' onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="default">
-            Confirm
-          </Button>
+          <Button variant='default'>Confirm</Button>
         </div>
       )
-      
+
       expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument()
     })
@@ -659,7 +668,7 @@ describe('Button Component', () => {
     it('should pass basic accessibility checks', () => {
       renderButton({ 'aria-label': 'Test button' })
       const button = screen.getByRole('button', { name: /test button/i })
-      
+
       const accessibilityResults = accessibilityHelpers.checkAriaAttributes(button)
       expect(accessibilityResults.hasRole).toBe(false) // Button role is implicit
       expect(accessibilityResults.hasAriaLabel).toBe(true)
@@ -669,7 +678,7 @@ describe('Button Component', () => {
     it('should have proper screen reader content', () => {
       renderButton({ children: 'Save Changes' })
       const button = screen.getByRole('button', { name: /save changes/i })
-      
+
       const screenReaderResults = accessibilityHelpers.checkScreenReaderContent(button)
       expect(screenReaderResults.hasScreenReaderText).toBe(true)
       expect(screenReaderResults.screenReaderText).toBe('Save Changes')
@@ -677,7 +686,7 @@ describe('Button Component', () => {
 
     it('should support keyboard navigation', async () => {
       const { user } = renderButton()
-      
+
       const keyboardResults = await accessibilityHelpers.testKeyboardNavigation(user)
       expect(keyboardResults.canReceiveFocus).toBe(true)
     })

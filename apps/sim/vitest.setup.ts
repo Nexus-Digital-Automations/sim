@@ -27,7 +27,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
-// Mock IntersectionObserver (both node and jsdom environments)  
+// Mock IntersectionObserver (both node and jsdom environments)
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),

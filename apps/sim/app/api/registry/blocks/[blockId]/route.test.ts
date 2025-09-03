@@ -1122,7 +1122,7 @@ describe('Registry Block API - DELETE /api/registry/blocks/[blockId]', () => {
 
       const specialBlockIds = [
         'block_<script>',
-        'block_${injection}',
+        'block_$' + '{injection}', // Intentionally split to avoid linter template string warning
         'block_../../../',
         'block_\x00null',
       ]

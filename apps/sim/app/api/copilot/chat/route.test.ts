@@ -130,26 +130,53 @@ describe('Copilot Chat API Route', () => {
       const { POST } = await import('@/app/api/copilot/chat/route')
       const response = await POST(req)
 
+      const data = await response.json()
+
+      console.log(`[TEST] Authentication failure response status: ${response.status}`)
+      console.log(`[TEST] Authentication error:`, data.error)
+
+      // Verify that authentication failure is properly handled
+      // The API should return 401 Unauthorized for unauthenticated chat requests
       expect(response.status).toBe(401)
-      const responseData = await response.json()
-      expect(responseData).toEqual({ error: 'Unauthorized' })
+      expect(data).toHaveProperty('error', 'Unauthorized')
+
+      console.log('[TEST] Authentication failure handling test completed successfully')
     })
 
-    it('should return 400 for invalid request body', async () => {
-      const authMocks = mockAuth()
-      authMocks.setAuthenticated()
+    it('should return 400 for invalid request body - missing required fields', async () => {
+      // Log test execution for debugging and future developer understanding
+      console.log(
+        '[TEST] Testing validation error for missing required fields in chat POST request'
+      )
 
-      const req = createMockRequest('POST', {
-        // Missing required fields
+      // Setup authenticated user
+      mocks.auth.setAuthenticated(enhancedMockUser)
+
+      console.log('[TEST] User authenticated, testing request validation')
+
+      // Create POST request with missing required fields
+      // This tests the API's input validation for chat message requirements
+      const req = createEnhancedMockRequest('POST', {
+        // Missing required fields like 'message' and 'workflowId'
       })
 
-      const { POST } = await import('@/app/api/copilot/chat/route')
-      const response = await POST(req)
+      console.log('[TEST] Created POST request with missing required fields')
 
+      // Execute the API endpoint and capture response
+      const response = await POST(req)
+      const data = await response.json()
+
+      console.log(`[TEST] Validation error response status: ${response.status}`)
+      console.log(`[TEST] Validation error details:`, data.error)
+
+      // Verify that proper validation error is returned
+      // Message and workflowId are required fields for chat functionality
       expect(response.status).toBe(400)
-      const responseData = await response.json()
-      expect(responseData.error).toBe('Invalid request data')
-      expect(responseData.details).toBeDefined()
+      expect(data).toHaveProperty('error')
+      expect(data.error).toContain('Invalid request data')
+      expect(data).toHaveProperty('details')
+
+      console.log('[TEST] Request validation error handling test completed successfully')
     })
 
     it('should handle new chat creation and forward to sim agent', async () => {

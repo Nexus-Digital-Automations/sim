@@ -65,7 +65,7 @@ export const mockControls = {
 mockControls.reset()
 
 // Mock auth API functionality
-let mockAuthApi = {
+const mockAuthApi = {
   forgetPassword: vi.fn(),
   resetPassword: vi.fn(),
   signIn: vi.fn(),

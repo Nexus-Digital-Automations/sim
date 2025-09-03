@@ -125,7 +125,11 @@ export function createMockRequest(
 ): NextRequest {
   const url = 'http://localhost:3000/api/test'
 
-  const requestInit: RequestInit = {
+  const requestInit: {
+    method: string
+    headers: Headers
+    body?: string
+  } = {
     method,
     headers: new Headers(headers),
   }

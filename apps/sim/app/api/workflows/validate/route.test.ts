@@ -227,7 +227,10 @@ describe('Workflow Validation API - POST /api/workflows/validate', () => {
     // Configure workflow validator to return successful validation by default
     mockWorkflowValidator.validateWorkflowStructure.mockResolvedValue({ isValid: true, errors: [] })
     mockWorkflowValidator.validateConnections.mockResolvedValue({ isValid: true, errors: [] })
-    mockWorkflowValidator.validateBlockConfigurations.mockResolvedValue({ isValid: true, errors: [] })
+    mockWorkflowValidator.validateBlockConfigurations.mockResolvedValue({
+      isValid: true,
+      errors: [],
+    })
 
     console.log('[SETUP] Test infrastructure initialized for workflow validation API')
   })

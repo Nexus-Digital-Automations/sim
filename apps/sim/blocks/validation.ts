@@ -301,7 +301,14 @@ export function validateBlockConfig(
       })
     } else {
       Object.entries(blockConfig.outputs).forEach(([outputKey, outputConfig]) => {
-        const outputValidation = validateOutputFieldDefinition(outputConfig)
+        // Skip the special 'visualization' key as it has a different structure
+        if (outputKey === 'visualization') {
+          return
+        }
+        // TypeScript assertion: we've filtered out visualization, so this must be OutputFieldDefinition
+        const outputValidation = validateOutputFieldDefinition(
+          outputConfig as OutputFieldDefinition
+        )
         if (!outputValidation.isValid) {
           outputValidation.errors.forEach((error) => {
             errors.push({

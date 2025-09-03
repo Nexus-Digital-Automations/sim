@@ -89,7 +89,10 @@ vi.mock('@/services/queue', () => ({
     checkRateLimit: mockRateLimiter.checkRateLimit,
   })),
   RateLimitError: class RateLimitError extends Error {
-    constructor(message: string, public statusCode = 429) {
+    constructor(
+      message: string,
+      public statusCode = 429
+    ) {
       super(message)
       this.name = 'RateLimitError'
     }
@@ -237,7 +240,13 @@ describe('Workflow Execution API - Comprehensive Test Suite', () => {
           results: [
             [{ plan: 'free' }], // Subscription lookup
             [{ userId: 'user-123' }], // API key lookup
-            [{ id: 'env-id', userId: 'user-123', variables: { OPENAI_API_KEY: 'encrypted:key-value' } }], // Environment variables
+            [
+              {
+                id: 'env-id',
+                userId: 'user-123',
+                variables: { OPENAI_API_KEY: 'encrypted:key-value' },
+              },
+            ], // Environment variables
           ],
         },
       },
@@ -385,7 +394,9 @@ describe('Workflow Execution API - Comprehensive Test Suite', () => {
       })
 
       const request = createMockRequest('GET')
-      const response = await GET(request, { params: Promise.resolve({ id: 'nonexistent-workflow' }) })
+      const response = await GET(request, {
+        params: Promise.resolve({ id: 'nonexistent-workflow' }),
+      })
 
       console.log(`[TEST] Access denied response status: ${response.status}`)
       expect(response.status).toBe(404)

@@ -233,7 +233,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
 
     mockExportUtils.generateWorkflowComments.mockReturnValue(sampleExportComments)
     mockExportUtils.calculateComplexity.mockReturnValue('Simple')
-    mockExportUtils.sanitizeFilename.mockImplementation((name) => 
+    mockExportUtils.sanitizeFilename.mockImplementation((name) =>
       name.replace(/[<>:"|*?]/g, '_').replace(/\//g, '_')
     )
 
@@ -465,7 +465,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(content).toContain('# Sim Workflow Export')
       expect(content).toContain('# Generated on:')
       expect(content).toContain('Test Export Workflow')
-      
+
       console.log('[TEST] YAML export content verified')
     })
 
@@ -484,7 +484,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(content).toContain('Format: YAML (compact)')
       // Should not include general comments when includeComments=false
       expect(content).not.toContain('# This workflow was exported from Sim')
-      
+
       console.log('[TEST] YAML formatting options verified')
     })
 
@@ -503,7 +503,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(content).toContain('metadata')
       expect(content).toContain('workflow-123')
       expect(content).toContain('Test Export Workflow')
-      
+
       console.log('[TEST] YAML metadata inclusion verified')
     })
 
@@ -521,7 +521,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       const content = await response.text()
       // Should not include metadata when includeMetadata=false
       expect(content).not.toContain('"metadata"')
-      
+
       console.log('[TEST] YAML metadata exclusion verified')
     })
   })
@@ -546,7 +546,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(parsed.version).toBe('1.0')
       expect(parsed.workflow).toBeDefined()
       expect(parsed.metadata).toBeDefined()
-      
+
       console.log('[TEST] JSON pretty formatting verified')
     })
 
@@ -570,7 +570,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       // Should still be valid JSON
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe('1.0')
-      
+
       console.log('[TEST] JSON compact formatting verified')
     })
 
@@ -589,7 +589,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
 
       // Should use 4-space indentation
       expect(content).toContain('    "version"')
-      
+
       console.log('[TEST] JSON custom indentation verified')
     })
   })
@@ -612,7 +612,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       const content = await response.text()
       // Should be base64 encoded (as per mock implementation)
       expect(content.length > 0).toBe(true)
-      
+
       console.log('[TEST] ZIP export format verified')
     })
   })
@@ -638,13 +638,13 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
 
       // Public values should remain
       expect(content).toContain('https://example.com')
-      
+
       // Verify secret filtering was called
       expect(mockExportUtils.filterSecrets).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({ maskSecrets: true })
       )
-      
+
       console.log('[TEST] Secret masking verified')
     })
 
@@ -668,13 +668,13 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(content).not.toContain('[REDACTED]')
       expect(content).toContain('secret-api-key-123')
       expect(content).toContain('super-secret-password')
-      
+
       // Verify secret filtering was called with correct options
       expect(mockExportUtils.filterSecrets).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({ maskSecrets: false })
       )
-      
+
       console.log('[TEST] No masking verified')
     })
 
@@ -701,13 +701,13 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
 
       // Some sensitive fields should still be masked
       expect(content).toContain('[REDACTED]')
-      
+
       // Verify filtering options were applied correctly
       expect(mockExportUtils.filterSecrets).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({ maskCredentials: true, maskSecrets: false })
       )
-      
+
       console.log('[TEST] Credential masking verified')
     })
 
@@ -751,7 +751,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(content).not.toContain('nested-secret')
       expect(content).not.toContain('another-secret')
       expect(content).toContain('safe-value')
-      
+
       console.log('[TEST] Nested secret filtering verified')
     })
   })
@@ -777,7 +777,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(parsed.variables).toBeDefined()
       expect(parsed.variables.API_KEY).toBe('secret-api-key-123')
       expect(parsed.variables.PUBLIC_URL).toBe('https://example.com')
-      
+
       console.log('[TEST] Variable inclusion verified')
     })
 
@@ -796,7 +796,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       const parsed = JSON.parse(content)
 
       expect(parsed.variables).toBeUndefined()
-      
+
       console.log('[TEST] Variable exclusion verified')
     })
 
@@ -816,7 +816,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
 
       expect(parsed.metadata.executionHistory).toBeDefined()
       expect(Array.isArray(parsed.metadata.executionHistory)).toBe(true)
-      
+
       console.log('[TEST] Execution history inclusion verified')
     })
 
@@ -838,7 +838,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(parsed.documentation.overview).toBeDefined()
       expect(parsed.documentation.architecture).toBeDefined()
       expect(parsed.documentation.usage).toBeDefined()
-      
+
       console.log('[TEST] Documentation generation verified')
     })
 
@@ -861,10 +861,10 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(parsed.comments.blocks).toBe(2)
       expect(parsed.comments.connections).toBe(1)
       expect(parsed.comments.complexity).toBeDefined()
-      
+
       // Verify comment generation was called
       expect(mockExportUtils.generateWorkflowComments).toHaveBeenCalled()
-      
+
       console.log('[TEST] Workflow comment generation verified')
     })
   })
@@ -882,7 +882,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       console.log(`[TEST] Import optimization response status: ${response.status}`)
       expect(response.status).toBe(200)
       // Implementation should optimize structure for reimport
-      
+
       console.log('[TEST] Import optimization verified')
     })
 
@@ -898,7 +898,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       console.log(`[TEST] Block comments response status: ${response.status}`)
       expect(response.status).toBe(200)
       // Should include detailed block-level comments
-      
+
       console.log('[TEST] Block comment inclusion verified')
     })
 
@@ -914,7 +914,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       console.log(`[TEST] Connection labels response status: ${response.status}`)
       expect(response.status).toBe(200)
       // Should include connection metadata and labels
-      
+
       console.log('[TEST] Connection label inclusion verified')
     })
   })
@@ -932,7 +932,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate')
       expect(response.headers.get('Pragma')).toBe('no-cache')
       expect(response.headers.get('Expires')).toBe('0')
-      
+
       console.log('[TEST] Cache headers verified')
     })
 
@@ -967,10 +967,10 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(response.status).toBe(200)
       const disposition = response.headers.get('Content-Disposition')
       expect(disposition).toContain('Test_Workflow___With_Special_Chars__Name.yaml')
-      
+
       // Verify sanitization was called
       expect(mockExportUtils.sanitizeFilename).toHaveBeenCalled()
-      
+
       console.log('[TEST] Filename sanitization verified')
     })
 
@@ -990,7 +990,7 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toContain('Serialization failed')
-      
+
       console.log('[TEST] Export error handling verified')
     })
   })
@@ -1023,10 +1023,10 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       const parsed = JSON.parse(content)
 
       expect(parsed.comments.complexity).toBe('Simple')
-      
+
       // Verify complexity calculation was called
       expect(mockExportUtils.calculateComplexity).toHaveBeenCalledWith(simpleWorkflow)
-      
+
       console.log('[TEST] Simple workflow complexity verified')
     })
 
@@ -1071,10 +1071,10 @@ describe('Workflow Export API - Comprehensive Test Suite', () => {
       const parsed = JSON.parse(content)
 
       expect(parsed.comments.complexity).toBe('Very Complex')
-      
+
       // Verify complexity calculation was called
       expect(mockExportUtils.calculateComplexity).toHaveBeenCalledWith(complexWorkflow)
-      
+
       console.log('[TEST] Complex workflow complexity verified')
     })
   })
@@ -1133,7 +1133,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
       const data = await response.json()
       expect(data.error).toBe('Bulk export not yet implemented')
       expect(data.details).toBe('This endpoint is under development')
-      
+
       console.log('[TEST] Bulk export not implemented verified')
     })
 
@@ -1155,7 +1155,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
-      
+
       console.log('[TEST] Bulk export authentication requirement verified')
     })
 
@@ -1173,7 +1173,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
 
       console.log(`[TEST] Bulk export schema validation response status: ${response.status}`)
       expect(response.status).toBe(500) // Error in parsing due to missing workflowIds
-      
+
       console.log('[TEST] Bulk export schema validation verified')
     })
 
@@ -1193,7 +1193,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
-      
+
       console.log('[TEST] Bulk export malformed JSON handling verified')
     })
   })
@@ -1232,7 +1232,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
       // 4. Include shared resources if requested
       // 5. Apply consistent options across all workflows
       // 6. Return the archive with appropriate headers
-      
+
       console.log('[TEST] Future bulk export planning verified')
     })
 
@@ -1257,7 +1257,7 @@ describe('Workflow Export API - POST /api/workflows/[id]/export (Bulk Export)', 
       // - Shared templates and blocks
       // - Workspace configuration
       // - Common credentials (with proper security filtering)
-      
+
       console.log('[TEST] Shared resource inclusion planning verified')
     })
   })

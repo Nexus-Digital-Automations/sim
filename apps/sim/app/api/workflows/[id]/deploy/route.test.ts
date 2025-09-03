@@ -280,7 +280,9 @@ describe('Workflow Deployment API - Comprehensive Test Suite', () => {
       })
 
       const request = createMockRequest('POST')
-      const response = await POST(request, { params: Promise.resolve({ id: 'nonexistent-workflow' }) })
+      const response = await POST(request, {
+        params: Promise.resolve({ id: 'nonexistent-workflow' }),
+      })
 
       console.log(`[TEST] Access denied response status: ${response.status}`)
       expect(response.status).toBe(404)
@@ -363,10 +365,9 @@ describe('Workflow Deployment API - Comprehensive Test Suite', () => {
               if (selectCallCount === 1) {
                 // Workflow lookup
                 return Promise.resolve([deployedWorkflow])
-              } else {
-                // API key lookup
-                return Promise.resolve([{ key: 'sim_deployedkey12345', id: 'api-key-id' }])
               }
+              // API key lookup
+              return Promise.resolve([{ key: 'sim_deployedkey12345', id: 'api-key-id' }])
             },
           }),
         }),
@@ -399,10 +400,9 @@ describe('Workflow Deployment API - Comprehensive Test Suite', () => {
               if (selectCallCount <= 4) {
                 // First few calls for workflow data loading
                 return Promise.resolve([])
-              } else {
-                // API key lookup - return empty for new key generation
-                return Promise.resolve([])
               }
+              // API key lookup - return empty for new key generation
+              return Promise.resolve([])
             },
             orderBy: () => ({
               limit: () => Promise.resolve([]),
@@ -558,10 +558,9 @@ describe('Workflow Deployment API - Comprehensive Test Suite', () => {
               if (selectCallCount <= 4) {
                 // First few calls for workflow data loading
                 return Promise.resolve([])
-              } else {
-                // API key lookup - return existing key
-                return Promise.resolve([existingApiKey])
               }
+              // API key lookup - return existing key
+              return Promise.resolve([existingApiKey])
             },
             orderBy: () => ({
               limit: () => Promise.resolve([existingApiKey]),

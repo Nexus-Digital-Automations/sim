@@ -10,7 +10,7 @@
 import { and, eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { db } from '@/db'
 import { registryTools, webhookExecutionLogs } from '@/db/schema'
 
@@ -85,7 +85,7 @@ async function validateWebhookUrl(url: string): Promise<boolean> {
 export async function GET(request: NextRequest, { params }: { params: { toolId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest, { params }: { params: { toolId: 
 export async function PUT(request: NextRequest, { params }: { params: { toolId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -321,7 +321,7 @@ export async function PUT(request: NextRequest, { params }: { params: { toolId: 
 export async function DELETE(request: NextRequest, { params }: { params: { toolId: string } }) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },

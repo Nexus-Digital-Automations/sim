@@ -1,6 +1,6 @@
 /**
  * Enhanced Testing Utilities for React Component Testing
- * 
+ *
  * This file provides comprehensive testing utilities including:
  * - Enhanced render functions with providers
  * - Mock data generators
@@ -10,8 +10,8 @@
  * - Performance testing helpers
  */
 
-import React, { type ReactElement, type ReactNode } from 'react'
-import { render, type RenderOptions } from '@testing-library/react'
+import type { ReactElement, ReactNode } from 'react'
+import { type RenderOptions, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from 'next-themes'
 import { vi } from 'vitest'
@@ -25,22 +25,22 @@ interface EnhancedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
    * Initial theme for theme provider
    */
   initialTheme?: 'light' | 'dark' | 'system'
-  
+
   /**
    * Mock user data for authentication contexts
    */
   mockUser?: Record<string, any>
-  
+
   /**
    * Mock workflow state for workflow-dependent components
    */
   mockWorkflow?: Partial<WorkflowState>
-  
+
   /**
    * Whether to include router mock
    */
   withRouter?: boolean
-  
+
   /**
    * Custom wrapper component
    */
@@ -51,12 +51,12 @@ interface EnhancedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
  * All providers wrapper for comprehensive testing
  * Includes theme, auth, router, and state providers
  */
-function AllProviders({ 
-  children, 
+function AllProviders({
+  children,
   initialTheme = 'light',
   mockUser,
   mockWorkflow,
-  withRouter = true 
+  withRouter = true,
 }: {
   children: ReactNode
   initialTheme?: 'light' | 'dark' | 'system'
@@ -66,7 +66,7 @@ function AllProviders({
 }) {
   let wrappedChildren = (
     <ThemeProvider
-      attribute="class"
+      attribute='class'
       defaultTheme={initialTheme}
       enableSystem
       disableTransitionOnChange
@@ -78,7 +78,7 @@ function AllProviders({
   // Add router provider if needed
   if (withRouter) {
     // Router mock would be added here in a real implementation
-    wrappedChildren = <div data-testid="router-provider">{wrappedChildren}</div>
+    wrappedChildren = <div data-testid='router-provider'>{wrappedChildren}</div>
   }
 
   return wrappedChildren
@@ -86,15 +86,12 @@ function AllProviders({
 
 /**
  * Enhanced render function with all providers and utilities
- * 
+ *
  * @param ui - React component to render
  * @param options - Enhanced render options
  * @returns Render result with additional utilities
  */
-export function renderWithProviders(
-  ui: ReactElement,
-  options: EnhancedRenderOptions = {}
-) {
+export function renderWithProviders(ui: ReactElement, options: EnhancedRenderOptions = {}) {
   const {
     initialTheme = 'light',
     mockUser,
@@ -105,7 +102,7 @@ export function renderWithProviders(
 
   // Create wrapper with all providers
   const Wrapper = ({ children }: { children: ReactNode }) => (
-    <AllProviders 
+    <AllProviders
       initialTheme={initialTheme}
       mockUser={mockUser}
       mockWorkflow={mockWorkflow}
@@ -116,33 +113,33 @@ export function renderWithProviders(
   )
 
   // Render with providers
-  const renderResult = render(ui, { 
+  const renderResult = render(ui, {
     wrapper: options.wrapper || Wrapper,
-    ...renderOptions 
+    ...renderOptions,
   })
 
   // Return enhanced render result with utilities
   return {
     ...renderResult,
     user: userEvent.setup(),
-    
+
     // Theme testing utilities
     switchTheme: async (theme: 'light' | 'dark' | 'system') => {
       // Implementation for theme switching during tests
       document.documentElement.className = theme === 'dark' ? 'dark' : ''
     },
-    
+
     // Async utilities
     waitForLoadingToFinish: async () => {
       const { findByText, queryByText } = renderResult
-      
+
       // Wait for common loading indicators to disappear
       const loadingTexts = ['Loading...', 'Please wait', 'Fetching data']
-      
+
       for (const text of loadingTexts) {
         const element = queryByText(text)
         if (element) {
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             const observer = new MutationObserver(() => {
               if (!document.contains(element)) {
                 observer.disconnect()
@@ -154,7 +151,7 @@ export function renderWithProviders(
         }
       }
     },
-    
+
     // Accessibility testing helpers
     checkAccessibility: async () => {
       // This would integrate with axe-core for accessibility testing
@@ -162,10 +159,10 @@ export function renderWithProviders(
         violations: [],
         passes: [],
         incomplete: [],
-        inapplicable: []
+        inapplicable: [],
       }
       return axeResults
-    }
+    },
   }
 }
 
@@ -184,7 +181,7 @@ export const mockDataGenerators = {
     createdAt: new Date(),
     updatedAt: new Date(),
     emailVerified: true,
-    ...overrides
+    ...overrides,
   }),
 
   /**
@@ -198,7 +195,7 @@ export const mockDataGenerators = {
     subBlocks: {},
     outputs: {},
     enabled: true,
-    ...overrides
+    ...overrides,
   }),
 
   /**
@@ -209,20 +206,18 @@ export const mockDataGenerators = {
     edges: [],
     loops: {},
     parallels: {},
-    ...overrides
+    ...overrides,
   }),
 
   /**
    * Generate mock API response
    */
-  createMockApiResponse: function<T>(data: T, success = true) {
-    return {
-      success,
-      data: success ? data : null,
-      error: success ? null : 'Mock error message',
-      timestamp: new Date().toISOString()
-    }
-  },
+  createMockApiResponse: <T,>(data: T, success = true) => ({
+    success,
+    data: success ? data : null,
+    error: success ? null : 'Mock error message',
+    timestamp: new Date().toISOString(),
+  }),
 
   /**
    * Generate mock form data
@@ -231,8 +226,8 @@ export const mockDataGenerators = {
     email: 'test@example.com',
     password: 'password123',
     name: 'Test User',
-    ...fields
-  })
+    ...fields,
+  }),
 }
 
 /**
@@ -243,19 +238,19 @@ export const testingHelpers = {
    * Wait for element to be removed from DOM
    */
   waitForRemoval: async (element: Element) => {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       if (!document.contains(element)) {
         resolve()
         return
       }
-      
+
       const observer = new MutationObserver(() => {
         if (!document.contains(element)) {
           observer.disconnect()
           resolve()
         }
       })
-      
+
       observer.observe(document.body, { childList: true, subtree: true })
     })
   },
@@ -266,9 +261,9 @@ export const testingHelpers = {
   simulateFileUpload: (input: HTMLInputElement, file: File) => {
     Object.defineProperty(input, 'files', {
       value: [file],
-      configurable: true
+      configurable: true,
     })
-    
+
     const event = new Event('change', { bubbles: true })
     input.dispatchEvent(event)
   },
@@ -276,11 +271,7 @@ export const testingHelpers = {
   /**
    * Create mock file for testing
    */
-  createMockFile: (
-    name = 'test.txt',
-    type = 'text/plain',
-    content = 'Test file content'
-  ): File => {
+  createMockFile: (name = 'test.txt', type = 'text/plain', content = 'Test file content'): File => {
     return new File([content], name, { type })
   },
 
@@ -289,7 +280,7 @@ export const testingHelpers = {
    */
   mockClipboard: {
     writeText: vi.fn(),
-    readText: vi.fn().mockResolvedValue('mocked clipboard content')
+    readText: vi.fn().mockResolvedValue('mocked clipboard content'),
   },
 
   /**
@@ -298,7 +289,7 @@ export const testingHelpers = {
   measureRenderTime: async (renderFn: () => void): Promise<number> => {
     const start = performance.now()
     renderFn()
-    await new Promise(resolve => requestAnimationFrame(resolve))
+    await new Promise((resolve) => requestAnimationFrame(resolve))
     const end = performance.now()
     return end - start
   },
@@ -308,20 +299,21 @@ export const testingHelpers = {
    */
   detectMemoryLeaks: (componentName: string) => {
     const initialMemory = (performance as any).memory?.usedJSHeapSize || 0
-    
+
     return {
       check: () => {
         const currentMemory = (performance as any).memory?.usedJSHeapSize || 0
         const diff = currentMemory - initialMemory
-        
-        if (diff > 1000000) { // 1MB threshold
+
+        if (diff > 1000000) {
+          // 1MB threshold
           console.warn(`Potential memory leak in ${componentName}: ${diff} bytes`)
         }
-        
+
         return diff
-      }
+      },
     }
-  }
+  },
 }
 
 /**
@@ -342,7 +334,7 @@ export const mockImplementations = {
     query: {},
     asPath: '/',
     route: '/',
-    isReady: true
+    isReady: true,
   },
 
   /**
@@ -351,16 +343,16 @@ export const mockImplementations = {
   mockAuthClient: {
     signIn: {
       email: vi.fn(),
-      social: vi.fn()
+      social: vi.fn(),
     },
     signUp: {
-      email: vi.fn()
+      email: vi.fn(),
     },
     signOut: vi.fn(),
     getSession: vi.fn(),
     emailOtp: {
-      sendVerificationOtp: vi.fn()
-    }
+      sendVerificationOtp: vi.fn(),
+    },
   },
 
   /**
@@ -372,7 +364,7 @@ export const mockImplementations = {
       json: () => Promise.resolve(response),
       text: () => Promise.resolve(JSON.stringify(response)),
       blob: () => Promise.resolve(new Blob()),
-      status: ok ? 200 : 400
+      status: ok ? 200 : 400,
     })
   },
 
@@ -384,8 +376,8 @@ export const mockImplementations = {
     close: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    readyState: WebSocket.OPEN
-  }
+    readyState: WebSocket.OPEN,
+  },
 }
 
 /**
@@ -399,8 +391,9 @@ export const accessibilityHelpers = {
     const results = {
       hasRole: element.hasAttribute('role'),
       hasAriaLabel: element.hasAttribute('aria-label') || element.hasAttribute('aria-labelledby'),
-      hasAriaDescription: element.hasAttribute('aria-description') || element.hasAttribute('aria-describedby'),
-      isAccessible: true
+      hasAriaDescription:
+        element.hasAttribute('aria-description') || element.hasAttribute('aria-describedby'),
+      isAccessible: true,
     }
 
     // Basic accessibility checks
@@ -408,7 +401,11 @@ export const accessibilityHelpers = {
       results.isAccessible = false
     }
 
-    if (element.tagName === 'INPUT' && element.getAttribute('type') !== 'hidden' && !results.hasAriaLabel) {
+    if (
+      element.tagName === 'INPUT' &&
+      element.getAttribute('type') !== 'hidden' &&
+      !results.hasAriaLabel
+    ) {
       results.isAccessible = false
     }
 
@@ -422,10 +419,10 @@ export const accessibilityHelpers = {
     // Test Tab navigation
     await user.tab()
     const activeElement = document.activeElement
-    
+
     return {
       canReceiveFocus: activeElement !== document.body,
-      activeElement
+      activeElement,
     }
   },
 
@@ -436,14 +433,14 @@ export const accessibilityHelpers = {
     const textContent = element.textContent || ''
     const ariaLabel = element.getAttribute('aria-label') || ''
     const altText = element.getAttribute('alt') || ''
-    
+
     const screenReaderText = ariaLabel || altText || textContent
-    
+
     return {
       hasScreenReaderText: !!screenReaderText.trim(),
-      screenReaderText: screenReaderText.trim()
+      screenReaderText: screenReaderText.trim(),
     }
-  }
+  },
 }
 
 /**
@@ -456,12 +453,12 @@ export const customMatchers = {
   toBeAccessible: (element: Element) => {
     const { isAccessible } = accessibilityHelpers.checkAriaAttributes(element)
     const { hasScreenReaderText } = accessibilityHelpers.checkScreenReaderContent(element)
-    
+
     return {
       pass: isAccessible && hasScreenReaderText,
-      message: () => `Element is ${isAccessible && hasScreenReaderText ? '' : 'not '}accessible`
+      message: () => `Element is ${isAccessible && hasScreenReaderText ? '' : 'not '}accessible`,
     }
-  }
+  },
 }
 
 // Re-export testing library utilities for convenience

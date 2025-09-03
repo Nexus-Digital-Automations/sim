@@ -424,7 +424,9 @@ describe('Collaborative Workflow API - GET /api/workflows/[id]/collaborate', () 
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
 
-      console.log('[TEST] Authentication requirement for collaborator listing enforced successfully')
+      console.log(
+        '[TEST] Authentication requirement for collaborator listing enforced successfully'
+      )
     })
 
     /**
@@ -743,12 +745,16 @@ describe('Collaborative Workflow API - POST /api/workflows/[id]/collaborate', ()
         params: Promise.resolve({ id: 'workflow-collab-123' }),
       })
 
-      console.log(`[TEST] Unauthenticated collaborator addition response status: ${response.status}`)
+      console.log(
+        `[TEST] Unauthenticated collaborator addition response status: ${response.status}`
+      )
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
 
-      console.log('[TEST] Authentication requirement for adding collaborators enforced successfully')
+      console.log(
+        '[TEST] Authentication requirement for adding collaborators enforced successfully'
+      )
     })
 
     /**
@@ -950,7 +956,9 @@ describe('Collaborative Workflow API - DELETE /api/workflows/[id]/collaborate', 
       const data = await response.json()
       expect(data.error).toBe('Unauthorized')
 
-      console.log('[TEST] Authentication requirement for removing collaborators enforced successfully')
+      console.log(
+        '[TEST] Authentication requirement for removing collaborators enforced successfully'
+      )
     })
   })
 

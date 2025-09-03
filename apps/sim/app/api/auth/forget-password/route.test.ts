@@ -14,7 +14,6 @@ import {
   mockUser,
   setupEnhancedTestMocks,
 } from '@/app/api/__test-utils__/enhanced-utils'
-
 // Import module-level mocks and auth API controls
 import { mockAuthApi } from '@/app/api/__test-utils__/module-mocks'
 

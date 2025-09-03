@@ -16,7 +16,7 @@ import crypto from 'crypto'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { db } from '@/db'
 import { registryBlocks, registryRateLimits } from '@/db/schema'
 
@@ -200,7 +200,7 @@ function validateBlockManifest(manifest: z.infer<typeof BlockManifestSchema>): {
 export async function GET(request: NextRequest) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -316,7 +316,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Authentication check
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
@@ -487,6 +487,307 @@ export async function POST(request: NextRequest) {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to register block',
+        },
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PUT /api/registry/blocks
+ * Update an existing custom block
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    // Authentication check
+    const session = await getSession()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 }
+      )
+    }
+
+    // Parse and validate request body
+    const body = await request.json()
+    const { id, ...updateData } = body
+
+    if (!id) {
+      return NextResponse.json(
+        { error: { code: 'MISSING_ID', message: 'Block ID is required for update' } },
+        { status: 400 }
+      )
+    }
+
+    const blockData = UpdateBlockSchema.parse(updateData)
+
+    // Check if block exists and user owns it
+    const existingBlock = await db
+      .select()
+      .from(registryBlocks)
+      .where(and(eq(registryBlocks.id, id), eq(registryBlocks.userId, session.user.id)))
+      .limit(1)
+
+    if (existingBlock.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'BLOCK_NOT_FOUND',
+            message: 'Block not found or access denied',
+          },
+        },
+        { status: 404 }
+      )
+    }
+
+    // If name is being updated, check for duplicates
+    if (blockData.name && blockData.name !== existingBlock[0].name) {
+      const duplicateBlock = await db
+        .select({ id: registryBlocks.id })
+        .from(registryBlocks)
+        .where(
+          and(
+            eq(registryBlocks.userId, session.user.id),
+            eq(registryBlocks.name, blockData.name),
+            sql`${registryBlocks.id} != ${id}`
+          )
+        )
+        .limit(1)
+
+      if (duplicateBlock.length > 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'DUPLICATE_NAME',
+              message: `Block with name '${blockData.name}' already exists`,
+            },
+          },
+          { status: 409 }
+        )
+      }
+    }
+
+    // Validate manifest if provided
+    if (blockData.manifest) {
+      const manifestValidation = validateBlockManifest(blockData.manifest)
+      if (!manifestValidation.valid) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'INVALID_MANIFEST',
+              message: 'Block manifest validation failed',
+              details: manifestValidation.errors,
+            },
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate execution URL if provided
+    if (blockData.executionUrl) {
+      const isExecutionUrlValid = await validateExecutionUrl(blockData.executionUrl)
+      if (!isExecutionUrlValid) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'EXECUTION_URL_VALIDATION_FAILED',
+              message: 'Execution URL is not accessible or invalid',
+            },
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate validation URL if provided
+    if (blockData.validationUrl) {
+      const isValidationUrlValid = await validateExecutionUrl(blockData.validationUrl)
+      if (!isValidationUrlValid) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'VALIDATION_URL_VALIDATION_FAILED',
+              message: 'Validation URL is not accessible or invalid',
+            },
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Prepare update values
+    const updateValues: any = {
+      updatedAt: new Date(),
+    }
+
+    // Only update provided fields
+    if (blockData.name !== undefined) updateValues.name = blockData.name
+    if (blockData.displayName !== undefined) updateValues.displayName = blockData.displayName
+    if (blockData.description !== undefined) updateValues.description = blockData.description
+    if (blockData.icon !== undefined) updateValues.icon = blockData.icon
+    if (blockData.category !== undefined) updateValues.category = blockData.category
+    if (blockData.version !== undefined) updateValues.version = blockData.version
+    if (blockData.manifest !== undefined) {
+      updateValues.manifest = blockData.manifest
+      updateValues.inputPorts = blockData.manifest.inputPorts
+      updateValues.outputPorts = blockData.manifest.outputPorts
+      updateValues.configSchema = blockData.manifest.configSchema
+    }
+    if (blockData.executionUrl !== undefined) updateValues.executionUrl = blockData.executionUrl
+    if (blockData.validationUrl !== undefined) updateValues.validationUrl = blockData.validationUrl
+    if (blockData.executionTimeout !== undefined)
+      updateValues.executionTimeout = blockData.executionTimeout
+    if (blockData.tags !== undefined) updateValues.tags = blockData.tags
+    if (blockData.metadata !== undefined) updateValues.metadata = blockData.metadata
+
+    // Update block record
+    const [updatedBlock] = await db
+      .update(registryBlocks)
+      .set(updateValues)
+      .where(eq(registryBlocks.id, id))
+      .returning({
+        id: registryBlocks.id,
+        name: registryBlocks.name,
+        displayName: registryBlocks.displayName,
+        status: registryBlocks.status,
+        version: registryBlocks.version,
+        updatedAt: registryBlocks.updatedAt,
+      })
+
+    console.log(
+      `Block updated: ${blockData.name || existingBlock[0].name} (${id}) by user ${session.user.id}`
+    )
+
+    return NextResponse.json({
+      id: updatedBlock.id,
+      name: updatedBlock.name,
+      displayName: updatedBlock.displayName,
+      status: updatedBlock.status,
+      version: updatedBlock.version,
+      updatedAt: updatedBlock.updatedAt,
+    })
+  } catch (error) {
+    console.error('Error updating registry block:', error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid block update data',
+            details: error.errors,
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to update block',
+        },
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE /api/registry/blocks
+ * Delete a custom block
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Authentication check
+    const session = await getSession()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 }
+      )
+    }
+
+    // Parse request body to get block ID
+    const body = await request.json()
+    const { id } = body
+
+    if (!id) {
+      return NextResponse.json(
+        { error: { code: 'MISSING_ID', message: 'Block ID is required for deletion' } },
+        { status: 400 }
+      )
+    }
+
+    // Check if block exists and user owns it
+    const existingBlock = await db
+      .select({
+        id: registryBlocks.id,
+        name: registryBlocks.name,
+        usageCount: registryBlocks.usageCount,
+        status: registryBlocks.status,
+      })
+      .from(registryBlocks)
+      .where(and(eq(registryBlocks.id, id), eq(registryBlocks.userId, session.user.id)))
+      .limit(1)
+
+    if (existingBlock.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'BLOCK_NOT_FOUND',
+            message: 'Block not found or access denied',
+          },
+        },
+        { status: 404 }
+      )
+    }
+
+    const block = existingBlock[0]
+
+    // Safety check: prevent deletion of blocks that are in use
+    if (block.usageCount > 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'BLOCK_IN_USE',
+            message: `Cannot delete block '${block.name}' as it is currently being used in ${block.usageCount} workflow(s)`,
+            details: { usageCount: block.usageCount },
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    // Instead of hard delete, mark as inactive for safety
+    await db
+      .update(registryBlocks)
+      .set({
+        status: 'inactive',
+        updatedAt: new Date(),
+      })
+      .where(eq(registryBlocks.id, id))
+
+    console.log(`Block deactivated: ${block.name} (${id}) by user ${session.user.id}`)
+
+    return NextResponse.json({
+      success: true,
+      message: `Block '${block.name}' has been deactivated`,
+      blockId: id,
+      blockName: block.name,
+      action: 'deactivated',
+    })
+  } catch (error) {
+    console.error('Error deleting registry block:', error)
+
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to delete block',
         },
       },
       { status: 500 }

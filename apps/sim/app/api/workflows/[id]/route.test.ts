@@ -453,7 +453,9 @@ describe('Workflow by ID API - Comprehensive Test Suite', () => {
       })
 
       // Configure permissions to allow admin access
-      const { getUserEntityPermissions, hasAdminPermission } = await import('@/lib/permissions/utils')
+      const { getUserEntityPermissions, hasAdminPermission } = await import(
+        '@/lib/permissions/utils'
+      )
       vi.mocked(getUserEntityPermissions).mockResolvedValue('admin')
       vi.mocked(hasAdminPermission).mockResolvedValue(true)
 
@@ -496,7 +498,9 @@ describe('Workflow by ID API - Comprehensive Test Suite', () => {
       }))
 
       // Configure permissions to deny admin access
-      const { getUserEntityPermissions, hasAdminPermission } = await import('@/lib/permissions/utils')
+      const { getUserEntityPermissions, hasAdminPermission } = await import(
+        '@/lib/permissions/utils'
+      )
       vi.mocked(getUserEntityPermissions).mockResolvedValue('read')
       vi.mocked(hasAdminPermission).mockResolvedValue(false)
 

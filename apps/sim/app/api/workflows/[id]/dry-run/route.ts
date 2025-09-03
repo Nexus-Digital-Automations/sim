@@ -15,13 +15,16 @@
  */
 
 import crypto from 'crypto'
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import { loadWorkflowFromNormalizedTables } from '@/lib/workflows/db-helpers'
+import { db } from '@/db'
+import { workflow as workflowTable } from '@/db/schema'
 
 const logger = createLogger('WorkflowDryRunAPI')
 
@@ -230,16 +233,16 @@ async function executeDryRunBlock(
     }
 
     // Simulate execution time based on block type
-    const simulatedDelay =
-      {
-        api_call: 200,
-        webhook: 150,
-        mysql_query: 50,
-        postgresql_query: 50,
-        s3_upload: 500,
-        openai_chat: 1000,
-        default: 10,
-      }[blockType] || 10
+    const delayMap: Record<string, number> = {
+      api_call: 200,
+      webhook: 150,
+      mysql_query: 50,
+      postgresql_query: 50,
+      s3_upload: 500,
+      openai_chat: 1000,
+      default: 10,
+    }
+    const simulatedDelay = delayMap[blockType] || delayMap.default
 
     // Add small random variation to make timing realistic
     await new Promise((resolve) => setTimeout(resolve, simulatedDelay + Math.random() * 20))
@@ -534,15 +537,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     let isInternal = false
 
     try {
-      const session = await auth()
+      const session = await getSession()
       if (!session?.user?.id) {
         // Try internal token auth
         const authHeader = request.headers.get('authorization')
         if (authHeader?.startsWith('Bearer ')) {
           const token = authHeader.slice(7)
-          const internalAuth = await verifyInternalToken(token)
-          if (internalAuth.success && internalAuth.userId) {
-            userId = internalAuth.userId
+          const isInternalCall = await verifyInternalToken(token)
+          if (isInternalCall) {
+            // For internal calls, we need workflowId to determine user context
+            const [workflowData] = await db
+              .select({ userId: workflowTable.userId })
+              .from(workflowTable)
+              .where(eq(workflowTable.id, workflowId))
+              .limit(1)
+
+            if (!workflowData) {
+              return NextResponse.json(
+                { error: { code: 'WORKFLOW_NOT_FOUND', message: 'Workflow not found' } },
+                { status: 404 }
+              )
+            }
+
+            userId = workflowData.userId
             isInternal = true
           } else {
             return NextResponse.json(
@@ -569,7 +586,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Check permissions (need read access for dry-run)
     if (!isInternal) {
       const permissions = await getUserEntityPermissions(userId, 'workflow', workflowId)
-      if (!permissions.read) {
+      if (!permissions) {
         return NextResponse.json(
           { error: { code: 'FORBIDDEN', message: 'Insufficient permissions to run workflow' } },
           { status: 403 }

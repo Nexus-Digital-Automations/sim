@@ -193,7 +193,11 @@ export function createEnhancedMockRequest(
 ): NextRequest {
   console.log(`🔧 Creating enhanced ${method} request to ${url}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: {
+    method: string
+    headers: Headers
+    body?: string
+  } = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

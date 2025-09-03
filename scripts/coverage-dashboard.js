@@ -18,21 +18,21 @@
  *   node scripts/coverage-dashboard.js [--badge] [--trend] [--report]
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from 'url';
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // ES module compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /**
  * Configuration for coverage dashboard
  */
 const CONFIG = {
-  coverageDir: path.join(__dirname, "../apps/sim/coverage"),
-  outputDir: path.join(__dirname, "../coverage-reports"),
-  badgeDir: path.join(__dirname, "../apps/sim/public/badges"),
+  coverageDir: path.join(__dirname, '../apps/sim/coverage'),
+  outputDir: path.join(__dirname, '../coverage-reports'),
+  badgeDir: path.join(__dirname, '../apps/sim/public/badges'),
   thresholds: {
     excellent: 95,
     good: 85,
@@ -40,30 +40,27 @@ const CONFIG = {
     poor: 60,
   },
   colors: {
-    excellent: "#4c1",
-    good: "#97CA00",
-    acceptable: "#dfb317",
-    poor: "#fe7d37",
-    fail: "#e05d44",
+    excellent: '#4c1',
+    good: '#97CA00',
+    acceptable: '#dfb317',
+    poor: '#fe7d37',
+    fail: '#e05d44',
   },
-};
+}
 
 /**
  * Logger utility for structured logging
  */
 const logger = {
-  info: (message, data = {}) =>
-    console.log(`ℹ️  ${message}`, Object.keys(data).length ? data : ""),
+  info: (message, data = {}) => console.log(`ℹ️  ${message}`, Object.keys(data).length ? data : ''),
   success: (message, data = {}) =>
-    console.log(`✅ ${message}`, Object.keys(data).length ? data : ""),
-  warn: (message, data = {}) =>
-    console.log(`⚠️  ${message}`, Object.keys(data).length ? data : ""),
+    console.log(`✅ ${message}`, Object.keys(data).length ? data : ''),
+  warn: (message, data = {}) => console.log(`⚠️  ${message}`, Object.keys(data).length ? data : ''),
   error: (message, data = {}) =>
-    console.error(`❌ ${message}`, Object.keys(data).length ? data : ""),
+    console.error(`❌ ${message}`, Object.keys(data).length ? data : ''),
   debug: (message, data = {}) =>
-    process.env.DEBUG &&
-    console.log(`🔍 ${message}`, Object.keys(data).length ? data : ""),
-};
+    process.env.DEBUG && console.log(`🔍 ${message}`, Object.keys(data).length ? data : ''),
+}
 
 /**
  * Parse coverage data from JSON file
@@ -71,136 +68,118 @@ const logger = {
  * @returns {Object} Parsed coverage metrics
  */
 function parseCoverageData(coverageFile) {
-  logger.info("Parsing coverage data", { file: coverageFile });
+  logger.info('Parsing coverage data', { file: coverageFile })
 
   try {
     if (!fs.existsSync(coverageFile)) {
-      logger.warn("Coverage file not found", { file: coverageFile });
-      return null;
+      logger.warn('Coverage file not found', { file: coverageFile })
+      return null
     }
 
-    const coverageData = JSON.parse(fs.readFileSync(coverageFile, "utf8"));
+    const coverageData = JSON.parse(fs.readFileSync(coverageFile, 'utf8'))
 
-    let totalLines = 0,
-      coveredLines = 0;
-    let totalFunctions = 0,
-      coveredFunctions = 0;
-    let totalStatements = 0,
-      coveredStatements = 0;
-    let totalBranches = 0,
-      coveredBranches = 0;
+    let totalLines = 0
+    let coveredLines = 0
+    let totalFunctions = 0
+    let coveredFunctions = 0
+    let totalStatements = 0
+    let coveredStatements = 0
+    let totalBranches = 0
+    let coveredBranches = 0
 
     // Detailed file-by-file analysis
-    const fileMetrics = {};
+    const fileMetrics = {}
 
     Object.entries(coverageData).forEach(([filePath, fileData]) => {
-      const lines = Object.keys(fileData.l || {}).length;
-      const linesCovered = Object.values(fileData.l || {}).filter(
-        (x) => x > 0,
-      ).length;
-      const functions = Object.keys(fileData.f || {}).length;
-      const functionsCovered = Object.values(fileData.f || {}).filter(
-        (x) => x > 0,
-      ).length;
-      const statements = Object.keys(fileData.s || {}).length;
-      const statementsCovered = Object.values(fileData.s || {}).filter(
-        (x) => x > 0,
-      ).length;
-      const branches = Object.keys(fileData.b || {}).length * 2;
-      const branchData = Object.values(fileData.b || {});
+      const lines = Object.keys(fileData.l || {}).length
+      const linesCovered = Object.values(fileData.l || {}).filter((x) => x > 0).length
+      const functions = Object.keys(fileData.f || {}).length
+      const functionsCovered = Object.values(fileData.f || {}).filter((x) => x > 0).length
+      const statements = Object.keys(fileData.s || {}).length
+      const statementsCovered = Object.values(fileData.s || {}).filter((x) => x > 0).length
+      const branches = Object.keys(fileData.b || {}).length * 2
+      const branchData = Object.values(fileData.b || {})
       const branchesCovered = branchData.reduce(
         (acc, branch) => acc + branch.filter((x) => x > 0).length,
-        0,
-      );
+        0
+      )
 
       // Aggregate totals
-      totalLines += lines;
-      coveredLines += linesCovered;
-      totalFunctions += functions;
-      coveredFunctions += functionsCovered;
-      totalStatements += statements;
-      coveredStatements += statementsCovered;
-      totalBranches += branches;
-      coveredBranches += branchesCovered;
+      totalLines += lines
+      coveredLines += linesCovered
+      totalFunctions += functions
+      coveredFunctions += functionsCovered
+      totalStatements += statements
+      coveredStatements += statementsCovered
+      totalBranches += branches
+      coveredBranches += branchesCovered
 
       // Store file-specific metrics
       fileMetrics[filePath] = {
         lines: {
           total: lines,
           covered: linesCovered,
-          percentage: lines
-            ? ((linesCovered / lines) * 100).toFixed(2)
-            : "0.00",
+          percentage: lines ? ((linesCovered / lines) * 100).toFixed(2) : '0.00',
         },
         functions: {
           total: functions,
           covered: functionsCovered,
-          percentage: functions
-            ? ((functionsCovered / functions) * 100).toFixed(2)
-            : "0.00",
+          percentage: functions ? ((functionsCovered / functions) * 100).toFixed(2) : '0.00',
         },
         statements: {
           total: statements,
           covered: statementsCovered,
-          percentage: statements
-            ? ((statementsCovered / statements) * 100).toFixed(2)
-            : "0.00",
+          percentage: statements ? ((statementsCovered / statements) * 100).toFixed(2) : '0.00',
         },
         branches: {
           total: branches,
           covered: branchesCovered,
-          percentage: branches
-            ? ((branchesCovered / branches) * 100).toFixed(2)
-            : "0.00",
+          percentage: branches ? ((branchesCovered / branches) * 100).toFixed(2) : '0.00',
         },
-      };
-    });
+      }
+    })
 
     // Calculate overall percentages
     const metrics = {
       lines: {
         total: totalLines,
         covered: coveredLines,
-        percentage: totalLines
-          ? ((coveredLines / totalLines) * 100).toFixed(2)
-          : "0.00",
+        percentage: totalLines ? ((coveredLines / totalLines) * 100).toFixed(2) : '0.00',
       },
       functions: {
         total: totalFunctions,
         covered: coveredFunctions,
         percentage: totalFunctions
           ? ((coveredFunctions / totalFunctions) * 100).toFixed(2)
-          : "0.00",
+          : '0.00',
       },
       statements: {
         total: totalStatements,
         covered: coveredStatements,
         percentage: totalStatements
           ? ((coveredStatements / totalStatements) * 100).toFixed(2)
-          : "0.00",
+          : '0.00',
       },
       branches: {
         total: totalBranches,
         covered: coveredBranches,
-        percentage: totalBranches
-          ? ((coveredBranches / totalBranches) * 100).toFixed(2)
-          : "0.00",
+        percentage: totalBranches ? ((coveredBranches / totalBranches) * 100).toFixed(2) : '0.00',
       },
-    };
+    }
 
     // Calculate overall coverage (average of all metrics)
     const overallPercentage = (
-      (parseFloat(metrics.lines.percentage) +
-        parseFloat(metrics.functions.percentage) +
-        parseFloat(metrics.statements.percentage) +
-        parseFloat(metrics.branches.percentage)) /
+      (Number.parseFloat(metrics.lines.percentage) +
+        Number.parseFloat(metrics.functions.percentage) +
+        Number.parseFloat(metrics.statements.percentage) +
+        Number.parseFloat(metrics.branches.percentage)) /
       4
-    ).toFixed(2);
+    ).toFixed(2)
 
-    logger.success("Coverage data parsed successfully", {
+    logger.success('Coverage data parsed successfully', {
       overall: `${overallPercentage}%`,
       files: Object.keys(fileMetrics).length,
-    });
+    })
 
     return {
       overall: overallPercentage,
@@ -208,10 +187,10 @@ function parseCoverageData(coverageFile) {
       fileMetrics,
       timestamp: new Date().toISOString(),
       filesAnalyzed: Object.keys(fileMetrics).length,
-    };
+    }
   } catch (error) {
-    logger.error("Error parsing coverage data", { error: error.message });
-    return null;
+    logger.error('Error parsing coverage data', { error: error.message })
+    return null
   }
 }
 
@@ -221,29 +200,29 @@ function parseCoverageData(coverageFile) {
  * @returns {string} SVG badge content
  */
 function generateCoverageBadge(coverage) {
-  logger.info("Generating coverage badge", { coverage: `${coverage}%` });
+  logger.info('Generating coverage badge', { coverage: `${coverage}%` })
 
-  const coverageNum = parseFloat(coverage);
-  let color = CONFIG.colors.fail;
-  let status = "poor";
+  const coverageNum = Number.parseFloat(coverage)
+  let color = CONFIG.colors.fail
+  let status = 'poor'
 
   if (coverageNum >= CONFIG.thresholds.excellent) {
-    color = CONFIG.colors.excellent;
-    status = "excellent";
+    color = CONFIG.colors.excellent
+    status = 'excellent'
   } else if (coverageNum >= CONFIG.thresholds.good) {
-    color = CONFIG.colors.good;
-    status = "good";
+    color = CONFIG.colors.good
+    status = 'good'
   } else if (coverageNum >= CONFIG.thresholds.acceptable) {
-    color = CONFIG.colors.acceptable;
-    status = "acceptable";
+    color = CONFIG.colors.acceptable
+    status = 'acceptable'
   } else if (coverageNum >= CONFIG.thresholds.poor) {
-    color = CONFIG.colors.poor;
-    status = "poor";
+    color = CONFIG.colors.poor
+    status = 'poor'
   }
 
-  const badgeText = `${coverage}%`;
-  const textWidth = badgeText.length * 7 + 10; // Approximate text width
-  const totalWidth = 63 + textWidth; // Label width + text width
+  const badgeText = `${coverage}%`
+  const textWidth = badgeText.length * 7 + 10 // Approximate text width
+  const totalWidth = 63 + textWidth // Label width + text width
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="20">
     <linearGradient id="b" x2="0" y2="100%">
@@ -264,10 +243,10 @@ function generateCoverageBadge(coverage) {
       <text x="${630 + textWidth * 5}" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="${textWidth * 10 - 100}">${badgeText}</text>
       <text x="${630 + textWidth * 5}" y="140" transform="scale(.1)" textLength="${textWidth * 10 - 100}">${badgeText}</text>
     </g>
-  </svg>`;
+  </svg>`
 
-  logger.success("Coverage badge generated", { status, color });
-  return svg;
+  logger.success('Coverage badge generated', { status, color })
+  return svg
 }
 
 /**
@@ -276,50 +255,49 @@ function generateCoverageBadge(coverage) {
  * @returns {string} HTML report content
  */
 function generateHtmlReport(coverageData) {
-  logger.info("Generating HTML coverage report");
+  logger.info('Generating HTML coverage report')
 
   if (!coverageData) {
-    return "<html><body><h1>Coverage Report</h1><p>No coverage data available</p></body></html>";
+    return '<html><body><h1>Coverage Report</h1><p>No coverage data available</p></body></html>'
   }
 
-  const { overall, metrics, fileMetrics, timestamp, filesAnalyzed } =
-    coverageData;
-  const qualityGate = parseFloat(overall) >= 80 ? "PASSED" : "FAILED";
-  const qualityGateClass = parseFloat(overall) >= 80 ? "success" : "failure";
+  const { overall, metrics, fileMetrics, timestamp, filesAnalyzed } = coverageData
+  const qualityGate = Number.parseFloat(overall) >= 80 ? 'PASSED' : 'FAILED'
+  const qualityGateClass = Number.parseFloat(overall) >= 80 ? 'success' : 'failure'
 
   // Generate file breakdown table
   const fileRows = Object.entries(fileMetrics)
     .sort(
       ([, a], [, b]) =>
-        parseFloat(a.lines.percentage) - parseFloat(b.lines.percentage),
+        Number.parseFloat(a.lines.percentage) - Number.parseFloat(b.lines.percentage)
     )
     .map(([filePath, data]) => {
       const overallFile = (
-        (parseFloat(data.lines.percentage) +
-          parseFloat(data.functions.percentage) +
-          parseFloat(data.statements.percentage) +
-          parseFloat(data.branches.percentage)) /
+        (Number.parseFloat(data.lines.percentage) +
+          Number.parseFloat(data.functions.percentage) +
+          Number.parseFloat(data.statements.percentage) +
+          Number.parseFloat(data.branches.percentage)) /
         4
-      ).toFixed(2);
+      ).toFixed(2)
       const statusClass =
-        parseFloat(overallFile) >= 80
-          ? "good"
-          : parseFloat(overallFile) >= 60
-            ? "medium"
-            : "poor";
+        Number.parseFloat(overallFile) >= 80
+          ? 'good'
+          : Number.parseFloat(overallFile) >= 60
+            ? 'medium'
+            : 'poor'
 
       return `
         <tr class="${statusClass}">
-          <td><code>${filePath.replace(process.cwd(), "")}</code></td>
+          <td><code>${filePath.replace(process.cwd(), '')}</code></td>
           <td>${data.lines.percentage}%</td>
           <td>${data.functions.percentage}%</td>
           <td>${data.statements.percentage}%</td>
           <td>${data.branches.percentage}%</td>
           <td><strong>${overallFile}%</strong></td>
         </tr>
-      `;
+      `
     })
-    .join("");
+    .join('')
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -475,10 +453,10 @@ function generateHtmlReport(coverageData) {
         </div>
     </div>
 </body>
-</html>`;
+</html>`
 
-  logger.success("HTML report generated");
-  return html;
+  logger.success('HTML report generated')
+  return html
 }
 
 /**
@@ -486,44 +464,44 @@ function generateHtmlReport(coverageData) {
  * @param {Object} coverageData - Current coverage data
  */
 function saveCoverageTrend(coverageData) {
-  logger.info("Saving coverage trend data");
+  logger.info('Saving coverage trend data')
 
   try {
     // Ensure output directory exists
     if (!fs.existsSync(CONFIG.outputDir)) {
-      fs.mkdirSync(CONFIG.outputDir, { recursive: true });
+      fs.mkdirSync(CONFIG.outputDir, { recursive: true })
     }
 
-    const trendFile = path.join(CONFIG.outputDir, "coverage-trend.json");
-    let trendData = [];
+    const trendFile = path.join(CONFIG.outputDir, 'coverage-trend.json')
+    let trendData = []
 
     // Load existing trend data
     if (fs.existsSync(trendFile)) {
-      trendData = JSON.parse(fs.readFileSync(trendFile, "utf8"));
+      trendData = JSON.parse(fs.readFileSync(trendFile, 'utf8'))
     }
 
     // Add current data point
     trendData.push({
       timestamp: coverageData.timestamp,
-      overall: parseFloat(coverageData.overall),
-      lines: parseFloat(coverageData.metrics.lines.percentage),
-      functions: parseFloat(coverageData.metrics.functions.percentage),
-      statements: parseFloat(coverageData.metrics.statements.percentage),
-      branches: parseFloat(coverageData.metrics.branches.percentage),
+      overall: Number.parseFloat(coverageData.overall),
+      lines: Number.parseFloat(coverageData.metrics.lines.percentage),
+      functions: Number.parseFloat(coverageData.metrics.functions.percentage),
+      statements: Number.parseFloat(coverageData.metrics.statements.percentage),
+      branches: Number.parseFloat(coverageData.metrics.branches.percentage),
       filesAnalyzed: coverageData.filesAnalyzed,
-    });
+    })
 
     // Keep only last 100 data points
     if (trendData.length > 100) {
-      trendData = trendData.slice(-100);
+      trendData = trendData.slice(-100)
     }
 
-    fs.writeFileSync(trendFile, JSON.stringify(trendData, null, 2));
-    logger.success("Coverage trend data saved", {
+    fs.writeFileSync(trendFile, JSON.stringify(trendData, null, 2))
+    logger.success('Coverage trend data saved', {
       dataPoints: trendData.length,
-    });
+    })
   } catch (error) {
-    logger.error("Error saving coverage trend", { error: error.message });
+    logger.error('Error saving coverage trend', { error: error.message })
   }
 }
 
@@ -531,80 +509,78 @@ function saveCoverageTrend(coverageData) {
  * Main execution function
  */
 async function main() {
-  logger.info("🚀 Starting Coverage Dashboard Generator");
+  logger.info('🚀 Starting Coverage Dashboard Generator')
 
-  const args = process.argv.slice(2);
-  const generateBadge = args.includes("--badge");
-  const analyzeTrend = args.includes("--trend");
-  const generateReport = args.includes("--report") || args.length === 0;
+  const args = process.argv.slice(2)
+  const generateBadge = args.includes('--badge')
+  const analyzeTrend = args.includes('--trend')
+  const generateReport = args.includes('--report') || args.length === 0
 
   // Parse coverage data
-  const coverageFile = path.join(CONFIG.coverageDir, "coverage-final.json");
-  const coverageData = parseCoverageData(coverageFile);
+  const coverageFile = path.join(CONFIG.coverageDir, 'coverage-final.json')
+  const coverageData = parseCoverageData(coverageFile)
 
   if (!coverageData) {
-    logger.error("❌ Cannot proceed without coverage data");
-    process.exit(1);
+    logger.error('❌ Cannot proceed without coverage data')
+    process.exit(1)
   }
-
   // Ensure output directories exist
-  [CONFIG.outputDir, CONFIG.badgeDir].forEach((dir) => {
+
+  ;[CONFIG.outputDir, CONFIG.badgeDir].forEach((dir) => {
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      logger.debug("Created directory", { dir });
+      fs.mkdirSync(dir, { recursive: true })
+      logger.debug('Created directory', { dir })
     }
-  });
+  })
 
   // Generate coverage badge
   if (generateBadge) {
-    logger.info("📛 Generating coverage badge...");
-    const badgeSvg = generateCoverageBadge(coverageData.overall);
-    const badgePath = path.join(CONFIG.badgeDir, "coverage.svg");
-    fs.writeFileSync(badgePath, badgeSvg);
-    logger.success("Coverage badge saved", { path: badgePath });
+    logger.info('📛 Generating coverage badge...')
+    const badgeSvg = generateCoverageBadge(coverageData.overall)
+    const badgePath = path.join(CONFIG.badgeDir, 'coverage.svg')
+    fs.writeFileSync(badgePath, badgeSvg)
+    logger.success('Coverage badge saved', { path: badgePath })
   }
 
   // Generate HTML report
   if (generateReport) {
-    logger.info("📄 Generating HTML coverage report...");
-    const htmlReport = generateHtmlReport(coverageData);
-    const reportPath = path.join(CONFIG.outputDir, "coverage-report.html");
-    fs.writeFileSync(reportPath, htmlReport);
-    logger.success("HTML report saved", { path: reportPath });
+    logger.info('📄 Generating HTML coverage report...')
+    const htmlReport = generateHtmlReport(coverageData)
+    const reportPath = path.join(CONFIG.outputDir, 'coverage-report.html')
+    fs.writeFileSync(reportPath, htmlReport)
+    logger.success('HTML report saved', { path: reportPath })
   }
 
   // Analyze coverage trends
   if (analyzeTrend) {
-    logger.info("📈 Analyzing coverage trends...");
-    saveCoverageTrend(coverageData);
+    logger.info('📈 Analyzing coverage trends...')
+    saveCoverageTrend(coverageData)
   }
 
   // Output summary
-  logger.success("✨ Coverage dashboard generation completed", {
+  logger.success('✨ Coverage dashboard generation completed', {
     overall: `${coverageData.overall}%`,
-    qualityGate: parseFloat(coverageData.overall) >= 80 ? "PASSED" : "FAILED",
+    qualityGate: Number.parseFloat(coverageData.overall) >= 80 ? 'PASSED' : 'FAILED',
     filesAnalyzed: coverageData.filesAnalyzed,
-  });
+  })
 
   // Exit with appropriate code for CI/CD
-  const exitCode = parseFloat(coverageData.overall) >= 80 ? 0 : 1;
-  process.exit(exitCode);
+  const exitCode = Number.parseFloat(coverageData.overall) >= 80 ? 0 : 1
+  process.exit(exitCode)
 }
 
 // Run the dashboard generator
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1].endsWith('coverage-dashboard.js')) {
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1].endsWith('coverage-dashboard.js')
+) {
   main().catch((error) => {
-    logger.error("Fatal error in coverage dashboard", {
+    logger.error('Fatal error in coverage dashboard', {
       error: error.message,
       stack: error.stack,
-    });
-    process.exit(1);
-  });
+    })
+    process.exit(1)
+  })
 }
 
-export {
-  parseCoverageData,
-  generateCoverageBadge,
-  generateHtmlReport,
-  saveCoverageTrend,
-};
+export { parseCoverageData, generateCoverageBadge, generateHtmlReport, saveCoverageTrend }

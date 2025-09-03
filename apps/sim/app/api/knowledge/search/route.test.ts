@@ -313,17 +313,34 @@ describe('Knowledge Search API Route', () => {
       expect(mockGetUserId).toHaveBeenCalledWith(expect.any(String), 'workflow-123')
     })
 
-    it.concurrent('should return unauthorized for unauthenticated request', async () => {
-      mockGetUserId.mockResolvedValue(null)
+    it.concurrent(
+      'should return unauthorized for unauthenticated request with security logging',
+      async () => {
+        const logger = mockConsoleLogger()
+        logger.info('[Knowledge Search] Testing unauthorized access scenario')
+        logger.debug('[Knowledge Search] Attempted search data:', validSearchData)
 
-      const req = createMockRequest('POST', validSearchData)
-      const { POST } = await import('@/app/api/knowledge/search/route')
-      const response = await POST(req)
-      const data = await response.json()
+        mockGetUserId.mockResolvedValue(null)
 
-      expect(response.status).toBe(401)
-      expect(data.error).toBe('Unauthorized')
-    })
+        const req = createMockRequest('POST', validSearchData)
+        const { POST } = await import('@/app/api/knowledge/search/route')
+        const response = await POST(req)
+        const data = await response.json()
+
+        logger.warn('[Knowledge Search] Unauthorized search attempt blocked')
+        logger.debug('[Knowledge Search] Security response:', data)
+
+        expect(response.status).toBe(401)
+        expect(data.error).toBe('Unauthorized')
+
+        // Verify no search operations were attempted
+        expect(mockHandleVectorOnlySearch).not.toHaveBeenCalled()
+        expect(mockHandleTagOnlySearch).not.toHaveBeenCalled()
+        expect(mockGenerateSearchEmbedding).not.toHaveBeenCalled()
+
+        logger.info('[Knowledge Search] Unauthorized access test completed')
+      }
+    )
 
     it.concurrent('should return not found for workflow that does not exist', async () => {
       const workflowData = {

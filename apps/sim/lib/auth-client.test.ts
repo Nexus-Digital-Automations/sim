@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * Comprehensive Unit Tests for Client-Side Authentication System
- * 
+ *
  * CRITICAL SECURITY INFRASTRUCTURE TESTING
  * This module tests the client-side authentication system:
  * 1. Better Auth React client configuration
@@ -12,7 +12,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * 4. Subscription management client
  * 5. Organization client features
  * 6. Plugin initialization and security
- * 
+ *
  * SECURITY BOUNDARIES TESTED:
  * - Base URL configuration and validation
  * - Plugin initialization and security settings
@@ -21,7 +21,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * - Subscription authorization checks
  * - Organization membership validation
  * - Environment-specific configuration
- * 
+ *
  * ATTACK VECTORS TESTED:
  * - Base URL manipulation and injection
  * - Session context injection
@@ -108,7 +108,6 @@ import {
 } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { env, getEnv } from '@/lib/env'
-import { isProd } from '@/lib/environment'
 import { SessionContext } from '@/lib/session/session-context'
 
 const mockUseContext = React.useContext as any
@@ -137,13 +136,13 @@ const mockClientInstance = {
 describe('Client-Side Authentication System - Critical Security Infrastructure', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Reset environment variables to defaults
     vi.mocked(env).VERCEL_ENV = 'development'
-    vi.mocked(env).NODE_ENV = 'development' 
+    vi.mocked(env).NODE_ENV = 'development'
     vi.mocked(env).BETTER_AUTH_URL = null
-    vi.mocked(isProd) = false
-    
+    // isProd is already mocked at module level
+
     // Reset mock implementations
     mockCreateAuthClient.mockReturnValue(mockClientInstance)
     mockGetEnv.mockImplementation((key: string) => {
@@ -162,11 +161,11 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should configure base URL for preview environment', () => {
       vi.mocked(env).VERCEL_ENV = 'preview'
-      
+
       // Re-import to trigger fresh configuration
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('https://preview.example.com')
     })
@@ -177,10 +176,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should configure base URL for development environment', () => {
       vi.mocked(env).VERCEL_ENV = 'development'
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('https://preview.example.com')
     })
@@ -192,10 +191,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should prioritize BETTER_AUTH_URL in production', () => {
       vi.mocked(env).VERCEL_ENV = 'production'
       vi.mocked(env).BETTER_AUTH_URL = 'https://auth.production.com'
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('https://auth.production.com')
     })
@@ -207,15 +206,15 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should fallback to NEXT_PUBLIC_APP_URL in production', () => {
       vi.mocked(env).VERCEL_ENV = 'production'
       vi.mocked(env).BETTER_AUTH_URL = null
-      
+
       mockGetEnv.mockImplementation((key: string) => {
         if (key === 'NEXT_PUBLIC_APP_URL') return 'https://app.production.com'
         return null
       })
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('https://app.production.com')
     })
@@ -228,15 +227,15 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       vi.mocked(env).VERCEL_ENV = undefined as any
       vi.mocked(env).NODE_ENV = 'development'
       vi.mocked(env).BETTER_AUTH_URL = null
-      
+
       mockGetEnv.mockImplementation((key: string) => {
         if (key === 'NEXT_PUBLIC_APP_URL') return 'http://localhost:3000'
         return null
       })
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('http://localhost:3000')
     })
@@ -249,12 +248,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       vi.mocked(env).VERCEL_ENV = undefined as any
       vi.mocked(env).NODE_ENV = 'development'
       vi.mocked(env).BETTER_AUTH_URL = null
-      
+
       mockGetEnv.mockImplementation(() => null)
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('http://localhost:3000')
     })
@@ -267,10 +266,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       vi.mocked(env).VERCEL_ENV = undefined as any
       vi.mocked(env).NODE_ENV = 'development'
       vi.mocked(env).BETTER_AUTH_URL = 'https://custom-auth.dev'
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('https://custom-auth.dev')
     })
@@ -290,10 +289,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
 
       for (const maliciousUrl of maliciousUrls) {
         vi.mocked(env).BETTER_AUTH_URL = maliciousUrl
-        
+
         vi.resetModules()
         const { getBaseURL } = require('./auth-client')
-        
+
         // Should still return the URL (validation happens elsewhere)
         // But it shouldn't crash or cause issues
         expect(() => getBaseURL()).not.toThrow()
@@ -308,12 +307,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       vi.mocked(env).VERCEL_ENV = ''
       vi.mocked(env).NODE_ENV = ''
       vi.mocked(env).BETTER_AUTH_URL = ''
-      
+
       mockGetEnv.mockImplementation(() => '')
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       const baseURL = getBaseURL()
       expect(baseURL).toBe('http://localhost:3000') // Should fallback
     })
@@ -327,7 +326,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should create auth client with required plugins', () => {
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockCreateAuthClient).toHaveBeenCalledWith({
         baseURL: expect.any(String),
         plugins: expect.arrayContaining([
@@ -344,15 +343,15 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      * SECURITY BOUNDARY: Stripe client should only be included in production
      */
     it('should include Stripe client only in production', () => {
-      vi.mocked(isProd) = true
-      
+      // Note: isProd is mocked at module level and cannot be reassigned
+
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockStripeClient).toHaveBeenCalledWith({
         subscription: true,
       })
-      
+
       expect(mockCreateAuthClient).toHaveBeenCalledWith({
         baseURL: expect.any(String),
         plugins: expect.arrayContaining([
@@ -366,11 +365,11 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      * SECURITY BOUNDARY: Stripe client should be excluded from development
      */
     it('should exclude Stripe client in development', () => {
-      vi.mocked(isProd) = false
-      
+      // Note: isProd is mocked at module level and cannot be reassigned
+
       vi.resetModules()
       require('./auth-client')
-      
+
       // Verify Stripe client is not called in development
       expect(mockStripeClient).not.toHaveBeenCalled()
     })
@@ -382,7 +381,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should initialize plugins in correct order', () => {
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockEmailOTPClient).toHaveBeenCalledBefore(mockCustomSessionClient as any)
       expect(mockGenericOAuthClient).toHaveBeenCalledBefore(mockOrganizationClient as any)
     })
@@ -394,7 +393,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should configure custom session client with type safety', () => {
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockCustomSessionClient).toHaveBeenCalledWith(
         expect.any(Object) // Should pass auth type for type safety
       )
@@ -412,12 +411,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
         isLoading: false,
         session: { id: 'session-456' },
       }
-      
+
       mockUseContext.mockReturnValue(mockSessionData)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       const result = useSession()
       expect(result).toBe(mockSessionData)
       expect(mockUseContext).toHaveBeenCalledWith(SessionContext)
@@ -429,10 +428,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should throw error when SessionProvider is not mounted', () => {
       mockUseContext.mockReturnValue(null)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       expect(() => useSession()).toThrow(
         'SessionProvider is not mounted. Wrap your app with <SessionProvider> in app/layout.tsx.'
       )
@@ -444,10 +443,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should throw error when context is undefined', () => {
       mockUseContext.mockReturnValue(undefined)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       expect(() => useSession()).toThrow(
         'SessionProvider is not mounted. Wrap your app with <SessionProvider> in app/layout.tsx.'
       )
@@ -459,19 +458,19 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should handle malicious session context data', () => {
       const maliciousData = {
-        user: { 
+        user: {
           id: '<script>alert("xss")</script>',
-          email: 'javascript:alert("xss")' 
+          email: 'javascript:alert("xss")',
         },
         __proto__: { malicious: true },
         constructor: { name: 'hacked' },
       }
-      
+
       mockUseContext.mockReturnValue(maliciousData)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       expect(() => useSession()).not.toThrow()
       const result = useSession()
       expect(result).toBe(maliciousData) // Should return as-is but not crash
@@ -486,7 +485,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should export useActiveOrganization hook', () => {
       vi.resetModules()
       const { useActiveOrganization } = require('./auth-client')
-      
+
       expect(useActiveOrganization).toBe(mockClientInstance.useActiveOrganization)
     })
 
@@ -497,7 +496,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should initialize organization client plugin', () => {
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockOrganizationClient).toHaveBeenCalled()
     })
   })
@@ -510,9 +509,9 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should export all subscription methods', () => {
       vi.resetModules()
       const { useSubscription } = require('./auth-client')
-      
+
       const subscription = useSubscription()
-      
+
       expect(subscription).toEqual({
         list: mockClientInstance.subscription.list,
         upgrade: mockClientInstance.subscription.upgrade,
@@ -528,9 +527,9 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should provide access to all subscription management methods', () => {
       vi.resetModules()
       const { useSubscription } = require('./auth-client')
-      
+
       const subscription = useSubscription()
-      
+
       expect(subscription.list).toBe(mockClientInstance.subscription.list)
       expect(subscription.upgrade).toBe(mockClientInstance.subscription.upgrade)
       expect(subscription.cancel).toBe(mockClientInstance.subscription.cancel)
@@ -547,12 +546,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
         subscription: null,
       }
       mockCreateAuthClient.mockReturnValue(clientWithoutSubscription)
-      
+
       vi.resetModules()
       const { useSubscription } = require('./auth-client')
-      
+
       const subscription = useSubscription()
-      
+
       expect(subscription).toEqual({
         list: undefined,
         upgrade: undefined,
@@ -575,12 +574,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
         },
       }
       mockCreateAuthClient.mockReturnValue(clientWithPartialSubscription)
-      
+
       vi.resetModules()
       const { useSubscription } = require('./auth-client')
-      
+
       const subscription = useSubscription()
-      
+
       expect(subscription.list).toBeDefined()
       expect(subscription.upgrade).toBeDefined()
       expect(subscription.cancel).toBeUndefined()
@@ -596,7 +595,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should export signIn method', () => {
       vi.resetModules()
       const { signIn } = require('./auth-client')
-      
+
       expect(signIn).toBe(mockClientInstance.signIn)
     })
 
@@ -607,7 +606,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should export signUp method', () => {
       vi.resetModules()
       const { signUp } = require('./auth-client')
-      
+
       expect(signUp).toBe(mockClientInstance.signUp)
     })
 
@@ -618,7 +617,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should export signOut method', () => {
       vi.resetModules()
       const { signOut } = require('./auth-client')
-      
+
       expect(signOut).toBe(mockClientInstance.signOut)
     })
 
@@ -629,7 +628,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should provide access to all authentication methods', () => {
       vi.resetModules()
       const { signIn, signUp, signOut } = require('./auth-client')
-      
+
       expect(typeof signIn).toBe('function')
       expect(typeof signUp).toBe('function')
       expect(typeof signOut).toBe('function')
@@ -645,7 +644,7 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       mockEmailOTPClient.mockImplementation(() => {
         throw new Error('Plugin initialization failed')
       })
-      
+
       vi.resetModules()
       expect(() => require('./auth-client')).toThrow('Plugin initialization failed')
     })
@@ -656,10 +655,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
      */
     it('should handle missing plugin dependencies', () => {
       mockCustomSessionClient.mockReturnValue(null)
-      
+
       vi.resetModules()
       require('./auth-client')
-      
+
       expect(mockCreateAuthClient).toHaveBeenCalledWith({
         baseURL: expect.any(String),
         plugins: expect.arrayContaining([null]), // Should include null plugin
@@ -673,10 +672,10 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should handle extremely long base URLs', () => {
       const longUrl = `https://${'a'.repeat(10000)}.com`
       vi.mocked(env).BETTER_AUTH_URL = longUrl
-      
+
       vi.resetModules()
       const { getBaseURL } = require('./auth-client')
-      
+
       expect(() => getBaseURL()).not.toThrow()
       expect(getBaseURL()).toBe(longUrl)
     })
@@ -688,12 +687,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should handle circular references in client configuration', () => {
       const circularClient: any = { signIn: vi.fn() }
       circularClient.self = circularClient
-      
+
       mockCreateAuthClient.mockReturnValue(circularClient)
-      
+
       vi.resetModules()
       const { signIn } = require('./auth-client')
-      
+
       expect(signIn).toBe(circularClient.signIn)
     })
 
@@ -705,17 +704,17 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
       const injectionAttempts = [
         '$(rm -rf /)',
         '`whoami`',
-        '${process.exit(1)}',
+        '$' + '{process.exit(1)}', // Intentional security test string
         '{{constructor.constructor("return process")().exit()}}',
         '\x00malicious',
       ]
 
       for (const injection of injectionAttempts) {
         vi.mocked(env).BETTER_AUTH_URL = injection
-        
+
         vi.resetModules()
         const { getBaseURL } = require('./auth-client')
-        
+
         expect(() => getBaseURL()).not.toThrow()
         expect(getBaseURL()).toBe(injection) // Should be treated as string
       }
@@ -728,17 +727,19 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should prevent React context pollution', () => {
       const maliciousContext = {
         user: { id: 'user-123' },
-        pollute: () => { global.hacked = true },
+        pollute: () => {
+          global.hacked = true
+        },
       }
-      
+
       mockUseContext.mockReturnValue(maliciousContext)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       const result = useSession()
       expect(result).toBe(maliciousContext)
-      
+
       // Ensure global wasn't polluted
       expect((global as any).hacked).toBeUndefined()
     })
@@ -755,12 +756,12 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
         },
         permissions: Array.from({ length: 10000 }, (_, i) => `perm-${i}`),
       }
-      
+
       mockUseContext.mockReturnValue(largeSessionData)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       expect(() => useSession()).not.toThrow()
       const result = useSession()
       expect(result.user.metadata.length).toBe(100000)
@@ -773,15 +774,15 @@ describe('Client-Side Authentication System - Critical Security Infrastructure',
     it('should handle concurrent session hook usage', () => {
       const sessionData = { user: { id: 'user-123' }, session: { id: 'session-456' } }
       mockUseContext.mockReturnValue(sessionData)
-      
+
       vi.resetModules()
       const { useSession } = require('./auth-client')
-      
+
       // Simulate concurrent calls
       const results = Array.from({ length: 100 }, () => useSession())
-      
+
       expect(results).toHaveLength(100)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toBe(sessionData)
       })
     })

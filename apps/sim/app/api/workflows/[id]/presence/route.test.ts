@@ -110,7 +110,6 @@ const sampleInactiveSession = {
   userEmail: 'inactive@example.com',
 }
 
-
 describe('Workflow Presence API - GET /api/workflows/[id]/presence', () => {
   let mocks: any
 
