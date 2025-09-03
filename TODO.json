@@ -366,23 +366,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1756941981087_q8k4nverf",
-      "title": "Research advanced web scraping and data collection automation capabilities",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-03T23:26:21.088Z",
-      "auto_research_created": false,
-      "description": "No description provided"
-    },
-    {
       "id": "task_1756941378957_irebvyk85",
       "title": "Research workflow monitoring and observability best practices",
       "description": "Comprehensive research on industry best practices for workflow monitoring including: 1) Monitoring architecture patterns (real-time vs batch, event-driven systems, distributed tracing, metrics aggregation) 2) Key Performance Indicators (execution metrics, resource utilization, business metrics, reliability metrics) 3) Alerting and notification systems (intelligent alerting, escalation policies, anomaly detection) 4) Analytics and reporting (time-series data, dashboard design, business intelligence, cost optimization) 5) Debugging and troubleshooting (execution replay, distributed tracing, variable inspection) 6) Industry examples (Airflow, Prefect, n8n, cloud-native solutions) - Provide specific technical recommendations for Sim platform",
