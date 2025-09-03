@@ -327,27 +327,6 @@
       "auto_research_created": true
     },
     {
-      "id": "task_1756941992400_arht6835u",
-      "title": "Comprehensive Competitive Analysis: n8n, Zapier, and Make Deep Dive for Sim Strategy",
-      "description": "Conduct comprehensive competitive analysis of leading automation platforms (n8n, Zapier, Make) covering architecture, ecosystem, UX, business models, performance, and migration patterns to inform Sims expansion strategy",
-      "mode": "RESEARCH",
-      "category": "research",
-      "priority": "high",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "./development/research-reports/research-report-task_1756941992400_arht6835u.md"
-      ],
-      "success_criteria": [
-        "Research report created: ./development/research-reports/research-report-task_1756941992400_arht6835u.md"
-      ],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-03T23:26:32.400Z",
-      "auto_research_created": false
-    },
-    {
       "id": "task_1756941982327_835f1aw6k",
       "title": "Research Database Connectors & Data Transformation Blocks",
       "description": "Comprehensive research of database integration and data transformation capabilities from leading automation platforms. Analyze SQL/NoSQL connectors, ETL operations, data processing blocks, and implementation patterns for 25+ data processing blocks.",
@@ -518,7 +497,10 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -636,7 +618,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:24:12.666Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:24:12.666Z",
@@ -651,7 +639,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:26:14.679Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:26:14.679Z",
@@ -666,7 +660,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:26:15.666Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:26:15.666Z",
@@ -681,7 +681,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:26:15.691Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:26:15.691Z",
@@ -702,7 +708,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:26:15.717Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:26:15.717Z",
