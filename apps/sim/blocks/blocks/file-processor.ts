@@ -1,4 +1,4 @@
-import { DocumentIcon } from '@heroicons/react/24/outline'
+import { ComponentIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { FileResponse } from '@/tools/file/types'
 
@@ -11,7 +11,7 @@ export const FileProcessorBlock: BlockConfig<FileResponse> = {
   docsLink: 'https://docs.sim.ai/blocks/file-processor',
   category: 'blocks',
   bgColor: '#F59E0B',
-  icon: DocumentIcon,
+  icon: ComponentIcon,
   subBlocks: [
     {
       id: 'inputSource',

@@ -1,4 +1,4 @@
-import { ChartBarIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { MonitorResponse } from '@/tools/monitor/types'
 

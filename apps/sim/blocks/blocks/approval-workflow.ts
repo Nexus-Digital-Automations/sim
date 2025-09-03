@@ -1,4 +1,4 @@
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { ComponentIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { ApprovalResponse } from '@/tools/approval/types'
 
@@ -11,7 +11,7 @@ export const ApprovalWorkflowBlock: BlockConfig<ApprovalResponse> = {
   docsLink: 'https://docs.sim.ai/blocks/approval-workflow',
   category: 'blocks',
   bgColor: '#059669',
-  icon: CheckCircleIcon,
+  icon: ComponentIcon,
   subBlocks: [
     {
       id: 'workflowName',

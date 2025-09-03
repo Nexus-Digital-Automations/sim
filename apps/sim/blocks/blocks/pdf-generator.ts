@@ -1,4 +1,4 @@
-import { DocumentTextIcon } from '@heroicons/react/24/outline'
+import { ComponentIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { DocumentResponse } from '@/tools/document/types'
 
@@ -11,7 +11,7 @@ export const PdfGeneratorBlock: BlockConfig<DocumentResponse> = {
   docsLink: 'https://docs.sim.ai/blocks/pdf-generator',
   category: 'blocks',
   bgColor: '#DC2626',
-  icon: DocumentTextIcon,
+  icon: ComponentIcon,
   subBlocks: [
     {
       id: 'generationMode',

@@ -1,4 +1,4 @@
-import { EnvelopeIcon } from '@heroicons/react/24/outline'
+import { MailIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
 import type { EmailResponse } from '@/tools/email/types'
 
@@ -11,7 +11,7 @@ export const EmailAutomationBlock: BlockConfig<EmailResponse> = {
   docsLink: 'https://docs.sim.ai/blocks/email-automation',
   category: 'blocks',
   bgColor: '#3B82F6',
-  icon: EnvelopeIcon,
+  icon: MailIcon,
   subBlocks: [
     {
       id: 'emailProvider',

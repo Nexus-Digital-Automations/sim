@@ -80,6 +80,18 @@ import { WikipediaBlock } from '@/blocks/blocks/wikipedia'
 import { WorkflowBlock } from '@/blocks/blocks/workflow'
 import { XBlock } from '@/blocks/blocks/x'
 import { YouTubeBlock } from '@/blocks/blocks/youtube'
+// Traditional Automation Blocks
+import { RestApiBlock } from '@/blocks/blocks/rest-api'
+import { GraphQLApiBlock } from '@/blocks/blocks/graphql-api'
+import { WebhookProcessorBlock } from '@/blocks/blocks/webhook-processor'
+import { AuthManagerBlock } from '@/blocks/blocks/auth-manager'
+import { SqlQueryBuilderBlock } from '@/blocks/blocks/sql-query-builder'
+import { DataTransformerBlock } from '@/blocks/blocks/data-transformer'
+import { ApprovalWorkflowBlock } from '@/blocks/blocks/approval-workflow'
+import { PdfGeneratorBlock } from '@/blocks/blocks/pdf-generator'
+import { EmailAutomationBlock } from '@/blocks/blocks/email-automation'
+import { FileProcessorBlock } from '@/blocks/blocks/file-processor'
+import { SystemMonitorBlock } from '@/blocks/blocks/system-monitor'
 import type { BlockConfig } from '@/blocks/types'
 
 // Registry of all available blocks, alphabetically sorted
@@ -88,15 +100,20 @@ export const registry: Record<string, BlockConfig> = {
   agent: AgentBlock,
   airtable: AirtableBlock,
   api: ApiBlock,
+  approval_workflow: ApprovalWorkflowBlock,
   arxiv: ArxivBlock,
+  auth_manager: AuthManagerBlock,
   browser_use: BrowserUseBlock,
   clay: ClayBlock,
   condition: ConditionBlock,
   confluence: ConfluenceBlock,
+  data_transformer: DataTransformerBlock,
   discord: DiscordBlock,
   elevenlabs: ElevenLabsBlock,
+  email_automation: EmailAutomationBlock,
   evaluator: EvaluatorBlock,
   exa: ExaBlock,
+  file_processor: FileProcessorBlock,
   firecrawl: FirecrawlBlock,
   file: FileBlock,
   function: FunctionBlock,
@@ -108,6 +125,7 @@ export const registry: Record<string, BlockConfig> = {
   google_drive: GoogleDriveBlock,
   google_search: GoogleSearchBlock,
   google_sheets: GoogleSheetsBlock,
+  graphql_api: GraphQLApiBlock,
   huggingface: HuggingFaceBlock,
   hunter: HunterBlock,
   image_generator: ImageGeneratorBlock,
@@ -128,6 +146,7 @@ export const registry: Record<string, BlockConfig> = {
   outlook: OutlookBlock,
   onedrive: OneDriveBlock,
   parallel_ai: ParallelBlock,
+  pdf_generator: PdfGeneratorBlock,
   perplexity: PerplexityBlock,
   pinecone: PineconeBlock,
   postgresql: PostgreSQLBlock,
@@ -136,13 +155,16 @@ export const registry: Record<string, BlockConfig> = {
   memory: MemoryBlock,
   reddit: RedditBlock,
   response: ResponseBlock,
+  rest_api: RestApiBlock,
   router: RouterBlock,
   schedule: ScheduleBlock,
   s3: S3Block,
   serper: SerperBlock,
   sharepoint: SharepointBlock,
+  sql_query_builder: SqlQueryBuilderBlock,
   stagehand: StagehandBlock,
   stagehand_agent: StagehandAgentBlock,
+  system_monitor: SystemMonitorBlock,
   slack: SlackBlock,
   starter: StarterBlock,
   supabase: SupabaseBlock,
@@ -156,6 +178,7 @@ export const registry: Record<string, BlockConfig> = {
   vision: VisionBlock,
   wealthbox: WealthboxBlock,
   webhook: WebhookBlock,
+  webhook_processor: WebhookProcessorBlock,
   whatsapp: WhatsAppBlock,
   wikipedia: WikipediaBlock,
   workflow: WorkflowBlock,
