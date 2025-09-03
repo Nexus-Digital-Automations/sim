@@ -1362,9 +1362,433 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756933851195_gsqkog6aq",
+      "title": "Research: Build context-sensitive help and documentation system",
+      "description": "Research and analysis required for implementing: \"Build context-sensitive help and documentation system\"\n\n**Implementation Task Details:**\nImplement context-sensitive help system, embedded documentation, video tutorials integration, community support features, and smart help suggestions based on user actions.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933851195_oq2mw7g4c\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933851195_gsqkog6aq.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933851195_gsqkog6aq.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:51.195Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933851195_oq2mw7g4c",
+      "assigned_agent": "development_session_1756933790952_1_general_de99f6b1",
+      "started_at": "2025-09-03T21:11:02.422Z",
+      "claimed_by": "development_session_1756933790952_1_general_de99f6b1",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790952_1_general_de99f6b1",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:11:02.422Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:12:11.765Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:12:11.766Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933806808_vm2axlydb",
+      "title": "Research: Implement comprehensive monitoring and analytics for Sim workflows",
+      "description": "Research and analysis required for implementing: \"Implement comprehensive monitoring and analytics for Sim workflows\"\n\n**Implementation Task Details:**\n\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933806807_i5ridsdiq\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933806808_vm2axlydb.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933806808_vm2axlydb.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:06.808Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933806807_i5ridsdiq",
+      "assigned_agent": "development_session_1756933790951_1_general_5bc7f034",
+      "started_at": "2025-09-03T21:10:22.447Z",
+      "claimed_by": "development_session_1756933790951_1_general_5bc7f034",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790951_1_general_5bc7f034",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:10:22.447Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:12:22.745Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:12:22.745Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933836415_tnqbpodrb",
+      "title": "Research: Enhance visual workflow builder with drag-and-drop improvements",
+      "description": "Research and analysis required for implementing: \"Enhance visual workflow builder with drag-and-drop improvements\"\n\n**Implementation Task Details:**\nImprove drag-and-drop interface, add visual connection indicators, implement real-time validation feedback, enhance workflow visualization, and add contextual preview modes.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933836414_kekdp750x\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933836415_tnqbpodrb.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933836415_tnqbpodrb.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:36.415Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933836414_kekdp750x",
+      "assigned_agent": "development_session_1756933790942_1_general_8626fa50",
+      "started_at": "2025-09-03T21:11:16.006Z",
+      "claimed_by": "development_session_1756933790942_1_general_8626fa50",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790942_1_general_8626fa50",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:11:16.006Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:13:08.177Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:13:08.178Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933962200_k6e4g80vo",
+      "title": "Research: Build community integration marketplace with template sharing and rating system",
+      "description": "Research and analysis required for implementing: \"Build community integration marketplace with template sharing and rating system\"\n\n**Implementation Task Details:**\nImplement a comprehensive community marketplace to compete with n8n community features, including:\n\n**COMMUNITY MARKETPLACE FEATURES:**\n1. **Template Sharing Platform**: User-generated workflow templates, community contributions, template publishing workflow\n2. **Rating and Review System**: 5-star ratings, written reviews, usage statistics, quality indicators\n3. **Integration Discovery**: Community-contributed connectors, custom blocks marketplace, plugin architecture\n4. **User-Generated Content**: Template galleries, workflow showcases, best practice documentation\n5. **Community Features**: User profiles, contribution tracking, reputation system, badges and achievements\n6. **Moderation System**: Quality control, approval workflows, community guidelines, spam prevention\n\n**TECHNICAL IMPLEMENTATION:**\n1. **Database Extensions**: Community users, template submissions, ratings, reviews, moderation queues\n2. **API Endpoints**: Template CRUD operations, rating/review APIs, user profile management, search and discovery\n3. **UI Components**: Marketplace browser, template cards, rating displays, user profiles, submission forms\n4. **Quality Control**: Automated template validation, manual review process, quality scoring algorithms\n5. **Social Features**: Following users, template collections, sharing workflows, activity feeds\n6. **Security**: Template sandboxing, malicious code detection, user permission management\n\n**SUCCESS CRITERIA:**\n- Community template submission and approval workflow\n- Template rating and review functionality\n- Advanced search and filtering for community content\n- User reputation and contribution tracking system\n- Integration with existing workflow editor\n- Moderation tools and quality control measures\n- Social features for community engagement\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933962200_ogk8oj5dg\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933962200_k6e4g80vo.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933962200_k6e4g80vo.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:12:42.200Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933962200_ogk8oj5dg",
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-03T21:12:58.586Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:12:58.586Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756933817627_1_general_13f6385f"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:13:47.377Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:13:47.378Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933946746_b8e64tjke",
+      "title": "Research: Create comprehensive template library system with business automation categories",
+      "description": "Research and analysis required for implementing: \"Create comprehensive template library system with business automation categories\"\n\n**Implementation Task Details:**\nImplement a comprehensive template library system to compete with n8n, including categorized templates for:\n\n**TEMPLATE CATEGORIES:**\n1. **Business Automation**: CRM workflows, marketing campaigns, sales pipelines, lead management\n2. **Data Processing & ETL**: Data transformation pipelines, database synchronization, API data collection\n3. **DevOps & CI/CD**: Deployment automation, testing workflows, monitoring and alerting\n4. **Social Media Management**: Content publishing, engagement tracking, cross-platform posting\n5. **E-commerce Automation**: Order processing, inventory management, customer service workflows\n6. **Financial & Accounting**: Invoice processing, payment automation, financial reporting\n\n**TECHNICAL IMPLEMENTATION:**\n1. **Database Schema**: Extend schema with template categories, tags, usage tracking, ratings\n2. **Template Storage**: JSONB workflow templates with metadata, version control, usage analytics\n3. **Discovery System**: Search, filtering, recommendations based on user behavior and industry\n4. **Template Management**: Creation, editing, publishing, versioning, and quality control\n5. **Integration Points**: Seamless template instantiation in workflow editor\n\n**SUCCESS CRITERIA:**\n- 50+ high-quality templates across all categories\n- Template discovery and search functionality\n- One-click template instantiation\n- Template usage analytics and optimization\n- Community rating and review system\n- Template versioning and updates\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756933946746_egbh0ooez\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756933946746_b8e64tjke.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756933946746_b8e64tjke.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:12:26.746Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756933946746_egbh0ooez",
+      "assigned_agent": "development_session_1756933790951_1_general_5bc7f034",
+      "started_at": "2025-09-03T21:12:41.330Z",
+      "claimed_by": "development_session_1756933790951_1_general_5bc7f034",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756933790951_1_general_5bc7f034",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:12:41.330Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:15:16.173Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:15:16.174Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756934380897_lod4qlvi0",
+      "title": "Research: Implement comprehensive monitoring and analytics for Sim workflows",
+      "description": "Research and analysis required for implementing: \"Implement comprehensive monitoring and analytics for Sim workflows\"\n\n**Implementation Task Details:**\nBuild observability platform with real-time monitoring, alerting, analytics, and debugging tools\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756934380897_rtylfd61f\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756934380897_lod4qlvi0.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756934380897_lod4qlvi0.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:19:40.897Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756934380897_rtylfd61f",
+      "assigned_agent": "development_session_1756934363040_1_general_ec1fbfc8",
+      "started_at": "2025-09-03T21:20:26.207Z",
+      "claimed_by": "development_session_1756934363040_1_general_ec1fbfc8",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756934363040_1_general_ec1fbfc8",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:20:26.207Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:21:59.592Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:21:59.592Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756934431064_xhily3qbq",
+      "title": "Research: Implement advanced non-AI automation capabilities to match n8n flexibility",
+      "description": "Research and analysis required for implementing: \"Implement advanced non-AI automation capabilities to match n8n flexibility\"\n\n**Implementation Task Details:**\nImplement comprehensive automation engine with:\n1. Complex conditional branching system with IF/ELSE/SWITCH logic\n2. Advanced scheduling system with cron-based scheduling and visual cron builder\n3. Workflow control features with pause/resume, manual approval gates, retry mechanisms\n4. Event trigger system with HTTP webhooks, file system watchers, database change triggers\n\nExtend existing Sim workflow engine architecture in apps/sim/executor/ and apps/sim/blocks/ with new block types and enhanced execution engine.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756934431064_d15ng6f54\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756934431064_xhily3qbq.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756934431064_xhily3qbq.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:20:31.064Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756934431064_d15ng6f54",
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-03T21:20:36.996Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:20:36.996Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756934362073_1_general_0f8ce4ce"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:22:08.419Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:22:08.420Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756934386652_qce37isga",
+      "title": "Research: Expand integration capabilities with comprehensive business automation APIs",
+      "description": "Research and analysis required for implementing: \"Expand integration capabilities with comprehensive business automation APIs\"\n\n**Implementation Task Details:**\n\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756934386651_dwt4ues2m\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756934386652_qce37isga.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756934386652_qce37isga.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:19:46.652Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756934386651_dwt4ues2m",
+      "assigned_agent": "development_session_1756934363075_1_general_64fef08f",
+      "started_at": "2025-09-03T21:20:18.503Z",
+      "claimed_by": "development_session_1756934363075_1_general_64fef08f",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756934363075_1_general_64fef08f",
+          "role": "primary",
+          "assignedAt": "2025-09-03T21:20:18.503Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T21:23:06.225Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T21:23:06.226Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 31,
-  "last_completion": "2025-09-03T09:30:01.335Z",
+  "total_completed": 39,
+  "last_completion": "2025-09-03T21:23:06.226Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

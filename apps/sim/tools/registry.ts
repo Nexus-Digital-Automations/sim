@@ -64,6 +64,7 @@ import {
   hunterEmailFinderTool,
   hunterEmailVerifierTool,
 } from '@/tools/hunter'
+import { javaScriptExecuteTool } from '@/tools/javascript/execute'
 import { readUrlTool } from '@/tools/jina'
 import { jiraBulkRetrieveTool, jiraRetrieveTool, jiraUpdateTool, jiraWriteTool } from '@/tools/jira'
 import {
@@ -132,6 +133,7 @@ import {
   queryTool as postgresQueryTool,
   updateTool as postgresUpdateTool,
 } from '@/tools/postgresql'
+import { pythonExecuteTool } from '@/tools/python/execute'
 import { qdrantFetchTool, qdrantSearchTool, qdrantUpsertTool } from '@/tools/qdrant'
 import { redditGetCommentsTool, redditGetPostsTool, redditHotPostsTool } from '@/tools/reddit'
 import { s3GetObjectTool } from '@/tools/s3'
@@ -187,6 +189,8 @@ export const tools: Record<string, ToolConfig> = {
   http_request: httpRequest,
   huggingface_chat: huggingfaceChatTool,
   function_execute: functionExecuteTool,
+  javascript_execute: javaScriptExecuteTool,
+  python_execute: pythonExecuteTool,
   vision_tool: visionTool,
   file_parser: fileParseTool,
   firecrawl_scrape: scrapeTool,

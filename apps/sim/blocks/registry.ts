@@ -3,6 +3,7 @@
  *
  */
 
+import { AdvancedConditionBlock } from '@/blocks/blocks/advanced-condition'
 import { AgentBlock } from '@/blocks/blocks/agent'
 import { AirtableBlock } from '@/blocks/blocks/airtable'
 import { ApiBlock } from '@/blocks/blocks/api'
@@ -29,6 +30,7 @@ import { GoogleSheetsBlock } from '@/blocks/blocks/google_sheets'
 import { HuggingFaceBlock } from '@/blocks/blocks/huggingface'
 import { HunterBlock } from '@/blocks/blocks/hunter'
 import { ImageGeneratorBlock } from '@/blocks/blocks/image_generator'
+import { JavaScriptBlock } from '@/blocks/blocks/javascript'
 import { JinaBlock } from '@/blocks/blocks/jina'
 import { JiraBlock } from '@/blocks/blocks/jira'
 import { KnowledgeBlock } from '@/blocks/blocks/knowledge'
@@ -49,6 +51,7 @@ import { ParallelBlock } from '@/blocks/blocks/parallel'
 import { PerplexityBlock } from '@/blocks/blocks/perplexity'
 import { PineconeBlock } from '@/blocks/blocks/pinecone'
 import { PostgreSQLBlock } from '@/blocks/blocks/postgresql'
+import { PythonBlock } from '@/blocks/blocks/python'
 import { QdrantBlock } from '@/blocks/blocks/qdrant'
 import { RedditBlock } from '@/blocks/blocks/reddit'
 import { ResponseBlock } from '@/blocks/blocks/response'
@@ -62,6 +65,7 @@ import { StagehandBlock } from '@/blocks/blocks/stagehand'
 import { StagehandAgentBlock } from '@/blocks/blocks/stagehand_agent'
 import { StarterBlock } from '@/blocks/blocks/starter'
 import { SupabaseBlock } from '@/blocks/blocks/supabase'
+import { SwitchBlock } from '@/blocks/blocks/switch'
 import { TavilyBlock } from '@/blocks/blocks/tavily'
 import { TelegramBlock } from '@/blocks/blocks/telegram'
 import { ThinkingBlock } from '@/blocks/blocks/thinking'
@@ -80,6 +84,7 @@ import type { BlockConfig } from '@/blocks/types'
 
 // Registry of all available blocks, alphabetically sorted
 export const registry: Record<string, BlockConfig> = {
+  'advanced-condition': AdvancedConditionBlock,
   agent: AgentBlock,
   airtable: AirtableBlock,
   api: ApiBlock,
@@ -106,6 +111,7 @@ export const registry: Record<string, BlockConfig> = {
   huggingface: HuggingFaceBlock,
   hunter: HunterBlock,
   image_generator: ImageGeneratorBlock,
+  javascript: JavaScriptBlock,
   jina: JinaBlock,
   jira: JiraBlock,
   knowledge: KnowledgeBlock,
@@ -125,6 +131,7 @@ export const registry: Record<string, BlockConfig> = {
   perplexity: PerplexityBlock,
   pinecone: PineconeBlock,
   postgresql: PostgreSQLBlock,
+  python: PythonBlock,
   qdrant: QdrantBlock,
   memory: MemoryBlock,
   reddit: RedditBlock,
@@ -139,6 +146,7 @@ export const registry: Record<string, BlockConfig> = {
   slack: SlackBlock,
   starter: StarterBlock,
   supabase: SupabaseBlock,
+  switch: SwitchBlock,
   tavily: TavilyBlock,
   telegram: TelegramBlock,
   thinking: ThinkingBlock,

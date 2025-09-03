@@ -1,3 +1,4 @@
+import { AdvancedConditionBlockHandler } from '@/executor/handlers/advanced-condition'
 import { AgentBlockHandler } from '@/executor/handlers/agent/agent-handler'
 import { ApiBlockHandler } from '@/executor/handlers/api/api-handler'
 import { ConditionBlockHandler } from '@/executor/handlers/condition/condition-handler'
@@ -8,10 +9,12 @@ import { LoopBlockHandler } from '@/executor/handlers/loop/loop-handler'
 import { ParallelBlockHandler } from '@/executor/handlers/parallel/parallel-handler'
 import { ResponseBlockHandler } from '@/executor/handlers/response/response-handler'
 import { RouterBlockHandler } from '@/executor/handlers/router/router-handler'
+import { SwitchBlockHandler } from '@/executor/handlers/switch'
 import { TriggerBlockHandler } from '@/executor/handlers/trigger/trigger-handler'
 import { WorkflowBlockHandler } from '@/executor/handlers/workflow/workflow-handler'
 
 export {
+  AdvancedConditionBlockHandler,
   AgentBlockHandler,
   ApiBlockHandler,
   ConditionBlockHandler,
@@ -22,6 +25,7 @@ export {
   ParallelBlockHandler,
   ResponseBlockHandler,
   RouterBlockHandler,
+  SwitchBlockHandler,
   TriggerBlockHandler,
   WorkflowBlockHandler,
 }

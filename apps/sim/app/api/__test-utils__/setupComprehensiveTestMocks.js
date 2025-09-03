@@ -24,9 +24,9 @@
 
 import { vi } from 'vitest'
 
+export * from './enhanced-utils'
 // Import the existing utilities for backward compatibility
 export * from './utils'
-export * from './enhanced-utils'
 
 // Import module controls for enhanced functionality
 import { mockControls } from './module-mocks'
@@ -514,7 +514,7 @@ function createEnhancedMockControls(
           [{ userId: config.auth?.user?.id || 'user-123' }],
           []
         ])
-        if (verboseLogging) console.log('🔧 Auth: API key configured', apiKey.substring(0, 8) + '...')
+        if (verboseLogging) console.log('🔧 Auth: API key configured', `${apiKey.substring(0, 8)}...`)
       },
       
       setInternalTokenValid: (valid: boolean) => {
@@ -598,7 +598,7 @@ function createEnhancedMockControls(
       },
       
       clearError: () => {
-        delete storageMocks.error
+        storageMocks.error = undefined
         if (verboseLogging) console.log('🔧 Storage: Error cleared')
       },
       

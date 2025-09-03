@@ -4,6 +4,7 @@ import type { TraceSpan } from '@/lib/logs/types'
 import type { BlockOutput } from '@/blocks/types'
 import { BlockType } from '@/executor/consts'
 import {
+  AdvancedConditionBlockHandler,
   AgentBlockHandler,
   ApiBlockHandler,
   ConditionBlockHandler,
@@ -14,6 +15,7 @@ import {
   ParallelBlockHandler,
   ResponseBlockHandler,
   RouterBlockHandler,
+  SwitchBlockHandler,
   TriggerBlockHandler,
   WorkflowBlockHandler,
 } from '@/executor/handlers'
@@ -154,12 +156,14 @@ export class Executor {
       new AgentBlockHandler(),
       new RouterBlockHandler(this.pathTracker),
       new ConditionBlockHandler(this.pathTracker, this.resolver),
+      new AdvancedConditionBlockHandler(),
       new EvaluatorBlockHandler(),
       new FunctionBlockHandler(),
       new ApiBlockHandler(),
       new LoopBlockHandler(this.resolver, this.pathTracker),
       new ParallelBlockHandler(this.resolver, this.pathTracker),
       new ResponseBlockHandler(),
+      new SwitchBlockHandler(),
       new WorkflowBlockHandler(),
       new GenericBlockHandler(),
     ]

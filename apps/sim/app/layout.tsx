@@ -50,8 +50,10 @@ if (typeof window !== 'undefined') {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 3, // Allow zoom for accessibility
+  minimumScale: 1,
+  userScalable: true, // Enable zoom for accessibility compliance
+  viewportFit: 'cover', // Support iPhone notch and safe areas
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#0c0c0c' },
