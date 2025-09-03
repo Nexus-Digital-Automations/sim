@@ -1,6 +1,6 @@
 /**
  * Bun/Vitest Compatible Test Suite for OAuth Token API
- * 
+ *
  * This is a migrated test suite using the proven module-mocks.ts pattern that works
  * reliably with bun and vitest 3.x without vi.doMock() issues.
  *
@@ -43,7 +43,7 @@ import { GET, POST } from './route'
  */
 function createMockRequest(method = 'POST', body?: any): NextRequest {
   const url = 'http://localhost:3000/api/auth/oauth/token'
-  
+
   const requestInit: RequestInit = {
     method,
     headers: new Headers({
@@ -185,7 +185,10 @@ describe('OAuth Token API Routes - Bun Compatible', () => {
         expect(response.status).toBe(200)
 
         const data = await response.json()
-        console.log('📊 Workflow access token received:', `${data.accessToken?.substring(0, 10)}...`)
+        console.log(
+          '📊 Workflow access token received:',
+          `${data.accessToken?.substring(0, 10)}...`
+        )
         expect(data).toHaveProperty('accessToken', 'fresh-token')
 
         // Verify authentication and credential retrieval were called
@@ -508,7 +511,7 @@ describe('OAuth Token API Routes - Bun Compatible', () => {
 
         // Valid UUID-like format
         const validCredentialId = 'credential-12345678-90ab-cdef-1234-567890abcdef'
-        
+
         mockGetCredential.mockResolvedValueOnce({
           id: validCredentialId,
           accessToken: 'test-token',
@@ -688,9 +691,7 @@ describe('OAuth Token API Routes - Bun Compatible', () => {
       })
 
       // Setup token refresh to fail with expired refresh token
-      mockRefreshTokenIfNeeded.mockRejectedValue(
-        new Error('Refresh token has expired')
-      )
+      mockRefreshTokenIfNeeded.mockRejectedValue(new Error('Refresh token has expired'))
 
       const request = createMockRequest('POST', {
         credentialId: 'credential-id',
@@ -735,10 +736,7 @@ describe('OAuth Token API Routes - Bun Compatible', () => {
       const request2 = createMockRequest('POST', { credentialId: 'credential-id' })
 
       // Execute concurrent requests
-      const [response1, response2] = await Promise.all([
-        POST(request1),
-        POST(request2)
-      ])
+      const [response1, response2] = await Promise.all([POST(request1), POST(request2)])
 
       // Both should succeed
       expect(response1.status).toBe(200)
@@ -797,7 +795,7 @@ describe('OAuth Token API Routes - Bun Compatible', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(200)
-      
+
       // Verify response structure
       const data = await response.json()
       expect(data).toHaveProperty('accessToken')

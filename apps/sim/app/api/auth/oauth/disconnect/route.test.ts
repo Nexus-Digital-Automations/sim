@@ -1,6 +1,6 @@
 /**
  * Bun/Vitest Compatible Test Suite for OAuth Disconnect API
- * 
+ *
  * This is a migrated test suite using the proven module-mocks.ts pattern that works
  * reliably with bun and vitest 3.x without vi.doMock() issues.
  *
@@ -18,7 +18,6 @@ import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // Import module mocks FIRST - this must be before any other imports
 import { mockControls, mockUser } from '../../../__test-utils__/module-mocks'
-
 import { POST } from './route'
 
 /**
@@ -27,7 +26,7 @@ import { POST } from './route'
  */
 function createMockRequest(method = 'POST', body?: any): NextRequest {
   const url = 'http://localhost:3000/api/auth/oauth/disconnect'
-  
+
   const requestInit: RequestInit = {
     method,
     headers: new Headers({
@@ -81,10 +80,10 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Setup authenticated user
       mockControls.setAuthUser(mockUser)
-      
+
       // Configure successful database delete operation
       mockControls.setDatabaseResults([
-        [{ id: 'deleted-credential' }] // Successful delete result
+        [{ id: 'deleted-credential' }], // Successful delete result
       ])
 
       const request = createMockRequest('POST', {
@@ -112,7 +111,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Configure database to simulate successful deletion
       mockControls.setDatabaseResults([
-        [{ id: 'credential-123' }] // Successful delete result
+        [{ id: 'credential-123' }], // Successful delete result
       ])
 
       console.log('🔧 Database configured for successful provider disconnection')
@@ -135,7 +134,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Configure database to simulate successful deletion of specific provider ID
       mockControls.setDatabaseResults([
-        [{ id: 'credential-google-email' }] // Specific provider delete result
+        [{ id: 'credential-google-email' }], // Specific provider delete result
       ])
 
       console.log('🔧 Database configured for specific provider ID disconnection')
@@ -159,10 +158,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Configure database to simulate deletion of multiple credentials
       mockControls.setDatabaseResults([
-        [
-          { id: 'credential-google-1' },
-          { id: 'credential-google-2' }
-        ] // Multiple delete results
+        [{ id: 'credential-google-1' }, { id: 'credential-google-2' }], // Multiple delete results
       ])
 
       const request = createMockRequest('POST', {
@@ -180,7 +176,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Configure database to return empty results (no credentials to delete)
       mockControls.setDatabaseResults([
-        [] // No credentials found to delete
+        [], // No credentials found to delete
       ])
 
       const request = createMockRequest('POST', {
@@ -220,9 +216,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
       console.log('📋 Testing: Provider parameter format validation')
 
       // Configure successful deletion for valid provider
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-123' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'credential-123' }]])
 
       const request = createMockRequest('POST', {
         provider: 'google-email', // Valid complex provider name
@@ -328,9 +322,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
       console.log('📋 Testing: Malformed request headers')
 
       // Setup successful database operation
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-123' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'credential-123' }]])
 
       // Create request with malformed headers
       const request = new NextRequest('http://localhost:3000/api/auth/oauth/disconnect', {
@@ -358,7 +350,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
       console.log('📋 Testing: Google OAuth provider disconnection')
 
       mockControls.setDatabaseResults([
-        [{ id: 'google-credential-1', providerId: 'google-default' }]
+        [{ id: 'google-credential-1', providerId: 'google-default' }],
       ])
 
       const request = createMockRequest('POST', {
@@ -374,9 +366,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should disconnect GitHub OAuth provider', async () => {
       console.log('📋 Testing: GitHub OAuth provider disconnection')
 
-      mockControls.setDatabaseResults([
-        [{ id: 'github-credential-1', providerId: 'github' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'github-credential-1', providerId: 'github' }]])
 
       const request = createMockRequest('POST', {
         provider: 'github',
@@ -391,9 +381,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should disconnect Slack OAuth provider', async () => {
       console.log('📋 Testing: Slack OAuth provider disconnection')
 
-      mockControls.setDatabaseResults([
-        [{ id: 'slack-credential-1', providerId: 'slack-bot' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'slack-credential-1', providerId: 'slack-bot' }]])
 
       const request = createMockRequest('POST', {
         provider: 'slack',
@@ -410,7 +398,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
       console.log('📋 Testing: Custom provider names')
 
       mockControls.setDatabaseResults([
-        [{ id: 'custom-credential-1', providerId: 'custom-provider-feature' }]
+        [{ id: 'custom-credential-1', providerId: 'custom-provider-feature' }],
       ])
 
       const request = createMockRequest('POST', {
@@ -435,17 +423,14 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       // Configure database for multiple operations
       mockControls.setDatabaseResults([
-        [{ id: 'credential-1' }] // First request result
+        [{ id: 'credential-1' }], // First request result
       ])
 
       const request1 = createMockRequest('POST', { provider: 'google' })
       const request2 = createMockRequest('POST', { provider: 'github' })
 
       // Execute concurrent requests
-      const [response1, response2] = await Promise.all([
-        POST(request1),
-        POST(request2)
-      ])
+      const [response1, response2] = await Promise.all([POST(request1), POST(request2)])
 
       // Both should handle gracefully
       expect([200, 500].includes(response1.status)).toBe(true)
@@ -455,11 +440,10 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should handle very long provider names', async () => {
       console.log('📋 Testing: Very long provider names')
 
-      const longProviderName = 'very-long-provider-name-that-exceeds-normal-limits-but-should-still-be-handled-gracefully'
-      
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-long', providerId: longProviderName }]
-      ])
+      const longProviderName =
+        'very-long-provider-name-that-exceeds-normal-limits-but-should-still-be-handled-gracefully'
+
+      mockControls.setDatabaseResults([[{ id: 'credential-long', providerId: longProviderName }]])
 
       const request = createMockRequest('POST', {
         provider: longProviderName,
@@ -473,9 +457,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should handle special characters in provider names', async () => {
       console.log('📋 Testing: Special characters in provider names')
 
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-special' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'credential-special' }]])
 
       const request = createMockRequest('POST', {
         provider: 'provider-with-special!@#$%^&*()characters',
@@ -516,9 +498,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should return consistent response format for success', async () => {
       console.log('📋 Testing: Success response format consistency')
 
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-123' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'credential-123' }]])
 
       const request = createMockRequest('POST', {
         provider: 'google',
@@ -527,7 +507,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       expect(response.status).toBe(200)
       const data = await response.json()
-      
+
       // Verify response structure
       expect(data).toHaveProperty('success')
       expect(typeof data.success).toBe('boolean')
@@ -543,7 +523,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
 
       expect(response.status).toBe(400)
       const data = await response.json()
-      
+
       // Verify error response structure
       expect(data).toHaveProperty('error')
       expect(typeof data.error).toBe('string')
@@ -553,9 +533,7 @@ describe('OAuth Disconnect API Route - Bun Compatible', () => {
     it('should include appropriate headers in response', async () => {
       console.log('📋 Testing: Response headers')
 
-      mockControls.setDatabaseResults([
-        [{ id: 'credential-123' }]
-      ])
+      mockControls.setDatabaseResults([[{ id: 'credential-123' }]])
 
       const request = createMockRequest('POST', {
         provider: 'google',

@@ -1,6 +1,6 @@
 /**
  * Nexus Copilot Chat API - Advanced AI Assistant
- * Integrates Claude 3.5 Sonnet with comprehensive Sim platform tools
+ * Integrates configurable AI models (OpenAI GPT-5 mini by default) with comprehensive Sim platform tools
  * Provides streaming responses with tool orchestration and context management
  */
 
@@ -9,8 +9,10 @@ import { streamText } from 'ai'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
+import { getCopilotModel } from '@/lib/copilot/config'
 import { env } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
+import { openaiProvider } from '@/providers/openai'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // 1 minute timeout for complex operations
@@ -29,6 +31,18 @@ const getAnthropicClient = () => {
   return new Anthropic({
     apiKey,
   })
+}
+
+// Get the appropriate API key based on provider
+const getProviderApiKey = (provider: string) => {
+  switch (provider) {
+    case 'openai':
+      return env.OPENAI_API_KEY_1 || env.OPENAI_API_KEY_2 || env.OPENAI_API_KEY_3
+    case 'anthropic':
+      return env.ANTHROPIC_API_KEY_1 || env.ANTHROPIC_API_KEY_2 || env.ANTHROPIC_API_KEY_3
+    default:
+      throw new Error(`Unsupported provider: ${provider}`)
+  }
 }
 
 // Request schema validation
@@ -474,6 +488,16 @@ export async function POST(req: NextRequest) {
       stream,
     })
 
+    // Get the configured model for Nexus
+    const copilotConfig = getCopilotModel('chat')
+    const provider = copilotConfig.provider
+    const model = copilotConfig.model
+
+    logger.info(`[${operationId}] Using configured model`, {
+      provider,
+      model,
+    })
+
     // Enhanced system prompt with context awareness
     const systemPrompt = `You are Nexus, an advanced AI assistant integrated into the Sim workflow platform.
 
@@ -508,12 +532,51 @@ export async function POST(req: NextRequest) {
 
 You have access to comprehensive tools for managing all aspects of the Sim platform. Use them proactively to help users accomplish their goals efficiently.`
 
-    // Initialize Anthropic client
+    // Get API key for the configured provider
+    const apiKey = getProviderApiKey(provider)
+    if (!apiKey) {
+      throw new Error(`Missing API key for provider: ${provider}`)
+    }
+
+    // Configure streaming response with tool orchestration based on provider
+    if (provider === 'openai') {
+      // Use OpenAI provider
+      const result = await openaiProvider.executeRequest({
+        model,
+        messages,
+        systemPrompt,
+        maxTokens,
+        temperature,
+        tools: Object.entries(nexusTools).map(([id, tool]) => ({
+          id,
+          description: tool.description,
+          parameters: tool.parameters,
+        })),
+        stream: true,
+        apiKey,
+      })
+
+      // Convert OpenAI provider response to AI SDK stream
+      if ('stream' in result) {
+        return new Response(result.stream, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'X-Operation-ID': operationId,
+            'X-Nexus-Version': '1.0.0',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+        })
+      }
+      return Response.json(result)
+    }
+
+    // Use Anthropic (fallback)
     const anthropic = getAnthropicClient()
 
-    // Configure streaming response with tool orchestration
     const result = await streamText({
-      model: anthropic('claude-3-5-sonnet-20241022'), // Latest model
+      model: anthropic.models['claude-3-5-sonnet-20241022'],
       messages,
       system: systemPrompt,
       maxTokens,
@@ -555,7 +618,7 @@ You have access to comprehensive tools for managing all aspects of the Sim platf
     })
 
     // Return streaming response
-    return result.toAIStreamResponse({
+    return result.toDataStreamResponse({
       headers: {
         'X-Operation-ID': operationId,
         'X-Nexus-Version': '1.0.0',
@@ -590,21 +653,23 @@ You have access to comprehensive tools for managing all aspects of the Sim platf
  */
 export async function GET() {
   try {
-    // Test Anthropic API key availability
-    const hasApiKey = !!(
-      env.ANTHROPIC_API_KEY_1 ||
-      env.ANTHROPIC_API_KEY_2 ||
-      env.ANTHROPIC_API_KEY_3
-    )
+    // Get the current configuration
+    const copilotConfig = getCopilotModel('chat')
+    const provider = copilotConfig.provider
+    const model = copilotConfig.model
+
+    // Test API key availability for the configured provider
+    const hasApiKey = !!getProviderApiKey(provider)
 
     return Response.json({
       status: 'healthy',
       service: 'nexus-api',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
-      anthropic: {
+      model: {
+        provider,
+        model,
         configured: hasApiKey,
-        model: 'claude-3-5-sonnet-20241022',
       },
       tools: {
         available: Object.keys(nexusTools).length,

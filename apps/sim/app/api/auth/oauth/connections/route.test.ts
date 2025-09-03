@@ -1,6 +1,6 @@
 /**
  * Bun/Vitest Compatible Test Suite for OAuth Connections API
- * 
+ *
  * This is a migrated test suite using the proven module-mocks.ts pattern that works
  * reliably with bun and vitest 3.x without vi.doMock() issues.
  *
@@ -14,8 +14,8 @@
  * Run with: bun run test --run app/api/auth/oauth/connections/route.test.ts
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock OAuth utility at module level for OAuth-specific functionality
 vi.mock('@/lib/oauth/oauth', () => ({
@@ -88,11 +88,11 @@ vi.mock('crypto', async (importOriginal) => {
   }
 })
 
-import { GET } from './route'
-import { parseProvider } from '@/lib/oauth/oauth'
 import { jwtDecode } from 'jwt-decode'
 import { getSession } from '@/lib/auth'
+import { parseProvider } from '@/lib/oauth/oauth'
 import { db } from '@/db'
+import { GET } from './route'
 
 // Get mocked functions
 const mockParseProvider = parseProvider as ReturnType<typeof vi.fn>
@@ -108,7 +108,7 @@ const mockUser = { id: 'user-123', email: 'test@example.com' }
  */
 function createMockRequest(method = 'GET', body?: any): NextRequest {
   const url = 'http://localhost:3000/api/auth/oauth/connections'
-  
+
   const requestInit: RequestInit = {
     method,
     headers: new Headers({
@@ -170,7 +170,7 @@ describe('OAuth Connections API Route - Bun Compatible', () => {
 
     // Configure JWT decode mock with default behavior
     mockJwtDecode.mockReset()
-    
+
     // Set up default database responses
     mockDb.select.mockReturnValue({
       from: vi.fn().mockReturnValue({
@@ -235,7 +235,7 @@ describe('OAuth Connections API Route - Bun Compatible', () => {
 
       // Configure database with connection and user data
       mockControls.setDatabaseResults([sampleConnections, sampleUserRecord])
-      
+
       console.log('🔧 Database configured with', sampleConnections.length, 'sample connections')
 
       const request = createMockRequest('GET')
@@ -270,7 +270,7 @@ describe('OAuth Connections API Route - Bun Compatible', () => {
 
       // Configure database to return empty results
       mockControls.setDatabaseResults([[], []])
-      
+
       console.log('🔧 Database configured to return no connections')
 
       const request = createMockRequest('GET')
@@ -545,7 +545,7 @@ describe('OAuth Connections API Route - Bun Compatible', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.connections).toHaveLength(3)
-      
+
       // Verify each provider was processed correctly
       const providers = data.connections.map((conn: any) => conn.baseProvider)
       expect(providers).toContain('google')

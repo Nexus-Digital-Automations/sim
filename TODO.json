@@ -57,7 +57,7 @@
       "mode": "DEVELOPMENT",
       "category": "test-setup",
       "priority": "high",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "apps/sim/app/api/__test-utils__/",
@@ -69,9 +69,9 @@
       "subtasks": [],
       "created_at": "2025-09-02T10:20:00.739Z",
       "auto_research_created": false,
-      "assigned_agent": "development_session_1756891770416_1_general_98ee918d",
-      "started_at": "2025-09-03T09:30:49.826Z",
-      "claimed_by": "development_session_1756891770416_1_general_98ee918d",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756844503855_1_general_92ed7f9d",
@@ -129,6 +129,25 @@
           "assignedAt": "2025-09-03T09:30:49.826Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T17:39:18.319Z",
+          "reason": "Task stale for 488 minutes"
+        },
+        {
+          "agentId": "development_session_1756921163497_1_general_78a2799e",
+          "role": "primary",
+          "assignedAt": "2025-09-03T17:39:30.974Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T18:34:11.441Z",
+          "reason": "Task stale for 55 minutes"
         }
       ]
     }
@@ -140,13 +159,13 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756891770416_1_general_98ee918d": {
+    "development_session_1756924457803_1_general_16464d92": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-03T09:29:30.416Z",
+      "lastHeartbeat": "2025-09-03T18:34:17.803Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -157,8 +176,8 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-03T09:29:30.416Z",
-      "sessionId": "session_1756891770416",
+      "createdAt": "2025-09-03T18:34:17.803Z",
+      "sessionId": "session_1756924457803",
       "metadata": {}
     }
   },

@@ -9,9 +9,9 @@
  * @vitest-environment node
  */
 
+import { NextRequest } from 'next/server'
 // Import vitest functions FIRST before any vi.fn() calls
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { NextRequest } from 'next/server'
 import {
   createMockRequest,
   mockUser,

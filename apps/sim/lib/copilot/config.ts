@@ -106,8 +106,8 @@ function parseBooleanEnv(value: string | undefined): boolean | null {
 
 export const DEFAULT_COPILOT_CONFIG: CopilotConfig = {
   chat: {
-    defaultProvider: 'anthropic',
-    defaultModel: 'claude-3-7-sonnet-latest',
+    defaultProvider: 'openai',
+    defaultModel: 'gpt-5-mini',
     temperature: 0.1,
     maxTokens: 8192,
     systemPrompt: AGENT_MODE_SYSTEM_PROMPT,

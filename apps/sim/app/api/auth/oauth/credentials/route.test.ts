@@ -1,12 +1,12 @@
 /**
  * Bun/Vitest Compatible Test Suite for OAuth Credentials API
- * 
+ *
  * This is a migrated test suite using proven bun/vitest compatible patterns that work
  * reliably with bun and vitest 3.x without vi.doMock() issues.
  *
  * Key improvements:
  * - Uses module-level vi.mock() calls with factory functions
- * - Provides comprehensive logging for debugging test failures  
+ * - Provides comprehensive logging for debugging test failures
  * - Includes runtime mock controls for different test scenarios
  * - Production-ready test coverage with proper status codes (200/400/401/403)
  * - Comprehensive error handling and authentication testing
@@ -14,8 +14,8 @@
  * Run with: bun run test --run app/api/auth/oauth/credentials/route.test.ts
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Global mock state containers
 let mockAuthUser: any = null
@@ -218,9 +218,9 @@ vi.mock('crypto', async (importOriginal) => {
   }
 })
 
-import { GET } from './route'
-import { parseProvider } from '@/lib/oauth/oauth'
 import { jwtDecode } from 'jwt-decode'
+import { parseProvider } from '@/lib/oauth/oauth'
+import { GET } from './route'
 
 const mockUser = { id: 'user-123', email: 'test@example.com' }
 
@@ -287,7 +287,7 @@ describe('OAuth Credentials API Route - Bun Compatible', () => {
 
       // Setup authenticated user
       mockControls.setAuthUser(mockUser)
-      
+
       // Mock empty credentials for test
       mockControls.setDatabaseResults([[]])
 
@@ -366,7 +366,7 @@ describe('OAuth Credentials API Route - Bun Compatible', () => {
 
     it('should handle no credentials found gracefully', async () => {
       console.log('📋 Testing: No credentials found handling')
-      
+
       // Configure database to return empty results
       mockControls.setDatabaseResults([[]])
 
