@@ -366,23 +366,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1756941990764_rti5yl58u",
-      "title": "Research API Integration & Traditional Automation Blocks Architecture",
-      "description": "Comprehensive research of n8n, Zapier, and Make API integration patterns including REST/GraphQL blocks, webhook processing, traditional integrations, and technical implementation analysis",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-03T23:26:30.765Z",
-      "auto_research_created": false
-    },
-    {
       "id": "task_1756941981087_q8k4nverf",
       "title": "Research advanced web scraping and data collection automation capabilities",
       "mode": "DEVELOPMENT",
