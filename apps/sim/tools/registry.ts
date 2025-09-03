@@ -98,6 +98,7 @@ import {
   queryTool as mysqlQueryTool,
   updateTool as mysqlUpdateTool,
 } from '@/tools/mysql'
+import { executeWorkflow, monitorWorkflows } from '@/tools/nexus'
 import {
   notionCreateDatabaseTool,
   notionCreatePageTool,
@@ -173,7 +174,6 @@ import {
   wikipediaSearchTool,
 } from '@/tools/wikipedia'
 import { workflowExecutorTool } from '@/tools/workflow'
-import { executeWorkflow, monitorWorkflows } from '@/tools/nexus'
 import { xReadTool, xSearchTool, xUserTool, xWriteTool } from '@/tools/x'
 import { youtubeSearchTool } from '@/tools/youtube'
 

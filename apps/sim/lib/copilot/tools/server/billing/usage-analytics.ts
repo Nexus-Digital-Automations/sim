@@ -1,36 +1,28 @@
 /**
  * Nexus Copilot Tool: Advanced Usage Analytics
  * Provides detailed analytics, reporting, and insights for platform usage
- * 
+ *
  * This tool offers comprehensive usage analytics including:
  * - Performance metrics and bottleneck identification
  * - User behavior analysis and usage patterns
  * - Resource utilization tracking and optimization
  * - Trend analysis and predictive insights
  * - Cost optimization recommendations
- * 
+ *
  * Dependencies: database, billing system, authentication
  * Usage: Used by Nexus Copilot for advanced usage analytics and reporting
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  */
 
-import type { BaseServerTool } from '@/lib/copilot/tools/server/base-tool'
-import { db } from '@/db'
-import { 
-  userStats, 
-  user, 
-  organization, 
-  workflow, 
-  workflowExecutionLogs, 
-  subscription,
-  workflowExecutionSnapshots 
-} from '@/db/schema'
-import { eq, and, desc, sum, count, avg, gte, lte, sql, or, asc, isNull, isNotNull } from 'drizzle-orm'
+import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import { getSession } from '@/lib/auth'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getSubscriptionState, getUsageData } from '@/lib/billing'
+import type { BaseServerTool } from '@/lib/copilot/tools/server/base-tool'
+import { createLogger } from '@/lib/logs/console/logger'
+import { db } from '@/db'
+import { userStats, workflow, workflowExecutionLogs } from '@/db/schema'
 
 // Initialize comprehensive logger for detailed operation tracking
 const logger = createLogger('NexusUsageAnalytics')
@@ -41,29 +33,38 @@ const logger = createLogger('NexusUsageAnalytics')
  */
 interface UsageAnalyticsParams {
   /** Type of analytics to generate - determines the analysis scope and depth */
-  analysisType: 'overview' | 'performance' | 'users' | 'workflows' | 'resources' | 'trends' | 'predictions' | 'optimization' | 'benchmarks'
-  
+  analysisType:
+    | 'overview'
+    | 'performance'
+    | 'users'
+    | 'workflows'
+    | 'resources'
+    | 'trends'
+    | 'predictions'
+    | 'optimization'
+    | 'benchmarks'
+
   /** Organization ID for organization-level analytics (optional) */
   organizationId?: string
-  
+
   /** Time window for analysis - affects data aggregation and trends */
   timeframe: '1h' | '24h' | '7d' | '30d' | '90d' | '1y'
-  
+
   /** Time grouping for trend analysis - determines granularity of time-series data */
   groupBy?: 'hour' | 'day' | 'week' | 'month'
-  
+
   /** Include individual user metrics in team/organization analytics */
   includeUserDetails?: boolean
-  
+
   /** Include detailed performance breakdowns and bottleneck analysis */
   includePerformanceDetails?: boolean
-  
+
   /** Filter by specific resource types for focused analysis */
   resourceTypes?: string[]
-  
+
   /** Minimum threshold for filtering low-usage items */
   minUsageThreshold?: number
-  
+
   /** Maximum number of items to return (for top N analysis) */
   limit?: number
 }
@@ -75,25 +76,25 @@ interface UsageAnalyticsParams {
 interface UsageAnalyticsResult {
   /** Operation execution status */
   status: 'success' | 'error'
-  
+
   /** Type of analysis that was performed */
   analysisType: string
-  
+
   /** Operation tracking ID for debugging and audit trails */
   operationId: string
-  
+
   /** Time window analyzed */
   timeframe: string
-  
+
   /** Actual date range of analyzed data */
   dateRange: {
     start: string
     end: string
   }
-  
+
   /** Main analytics data - structure varies by analysis type */
   data?: any
-  
+
   /** Key insights and findings from the analysis */
   insights?: {
     summary: string
@@ -101,10 +102,10 @@ interface UsageAnalyticsResult {
     recommendations: string[]
     alerts?: string[]
   }
-  
+
   /** Error message if operation failed */
   message?: string
-  
+
   /** Operation execution metadata */
   metadata?: {
     executedAt: string
@@ -117,176 +118,230 @@ interface UsageAnalyticsResult {
 
 /**
  * Advanced Usage Analytics Tool
- * 
+ *
  * Provides enterprise-grade analytics capabilities including:
  * - Real-time performance monitoring and bottleneck identification
  * - User behavior analysis and engagement patterns
- * - Resource utilization tracking and optimization recommendations  
+ * - Resource utilization tracking and optimization recommendations
  * - Predictive analytics and trend forecasting
  * - Cost optimization insights and efficiency metrics
  * - Comparative benchmarking and performance scoring
  */
-export const usageAnalyticsServerTool: BaseServerTool<UsageAnalyticsParams, UsageAnalyticsResult> = {
-  name: 'usage_analytics',
-  
-  /**
-   * Execute usage analytics based on analysis type
-   * Handles authentication, data aggregation, and comprehensive insights generation
-   * 
-   * @param params - Usage analytics parameters
-   * @returns Promise resolving to analytics result
-   */
-  async execute(params: UsageAnalyticsParams): Promise<UsageAnalyticsResult> {
-    // Generate unique operation identifier for comprehensive tracking
-    const operationId = `analytics-${params.analysisType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const startTime = Date.now()
-    
-    logger.info(`[${operationId}] Starting usage analytics: ${params.analysisType}`, {
-      analysisType: params.analysisType,
-      timeframe: params.timeframe,
-      organizationId: params.organizationId,
-      includeUserDetails: params.includeUserDetails,
-      operationId
-    })
-    
-    let session: any = null
-    
-    try {
-      // Authenticate user and validate session
-      session = await getSession()
-      if (!session?.user) {
-        logger.warn(`[${operationId}] Authentication required for analytics operation`, { 
-          analysisType: params.analysisType 
-        })
-        throw new Error('Authentication required - please log in to access analytics data')
-      }
-      
-      const userId = session.user.id
-      logger.info(`[${operationId}] User authenticated for analytics operation`, {
-        userId,
+export const usageAnalyticsServerTool: BaseServerTool<UsageAnalyticsParams, UsageAnalyticsResult> =
+  {
+    name: 'usage_analytics',
+
+    /**
+     * Execute usage analytics based on analysis type
+     * Handles authentication, data aggregation, and comprehensive insights generation
+     *
+     * @param params - Usage analytics parameters
+     * @returns Promise resolving to analytics result
+     */
+    async execute(params: UsageAnalyticsParams): Promise<UsageAnalyticsResult> {
+      // Generate unique operation identifier for comprehensive tracking
+      const operationId = `analytics-${params.analysisType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const startTime = Date.now()
+
+      logger.info(`[${operationId}] Starting usage analytics: ${params.analysisType}`, {
         analysisType: params.analysisType,
-        operationId
-      })
-      
-      // Calculate date range based on timeframe
-      const { startDate, endDate } = calculateDateRange(params.timeframe)
-      
-      // Execute specific analytics operation based on analysis type
-      let analyticsData: any
-      let dataPoints = 0
-      
-      switch (params.analysisType) {
-        case 'overview':
-          analyticsData = await generateOverviewAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'performance':
-          analyticsData = await generatePerformanceAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'workflows':
-          analyticsData = await generateWorkflowAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'users':
-          analyticsData = await generateUserAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'resources':
-          analyticsData = await generateResourceAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'trends':
-          analyticsData = await generateTrendAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'predictions':
-          analyticsData = await generatePredictiveAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'optimization':
-          analyticsData = await generateOptimizationAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        case 'benchmarks':
-          analyticsData = await generateBenchmarkAnalytics(operationId, userId, params, startDate, endDate)
-          break
-          
-        default:
-          throw new Error(`Unsupported analysis type: ${params.analysisType}`)
-      }
-      
-      // Extract data points count for metadata
-      dataPoints = extractDataPointsCount(analyticsData)
-      
-      const executionTime = Date.now() - startTime
-      
-      logger.info(`[${operationId}] Usage analytics completed successfully`, {
-        analysisType: params.analysisType,
-        userId,
-        executionTime,
-        dataPoints,
-        operationId
-      })
-      
-      return {
-        status: 'success',
-        analysisType: params.analysisType,
-        operationId,
         timeframe: params.timeframe,
-        dateRange: {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        },
-        data: analyticsData,
-        insights: generateInsights(params.analysisType, analyticsData),
-        metadata: {
-          executedAt: new Date().toISOString(),
-          executedBy: userId,
+        organizationId: params.organizationId,
+        includeUserDetails: params.includeUserDetails,
+        operationId,
+      })
+
+      let session: any = null
+
+      try {
+        // Authenticate user and validate session
+        session = await getSession()
+        if (!session?.user) {
+          logger.warn(`[${operationId}] Authentication required for analytics operation`, {
+            analysisType: params.analysisType,
+          })
+          throw new Error('Authentication required - please log in to access analytics data')
+        }
+
+        const userId = session.user.id
+        logger.info(`[${operationId}] User authenticated for analytics operation`, {
+          userId,
+          analysisType: params.analysisType,
+          operationId,
+        })
+
+        // Calculate date range based on timeframe
+        const { startDate, endDate } = calculateDateRange(params.timeframe)
+
+        // Execute specific analytics operation based on analysis type
+        let analyticsData: any
+        let dataPoints = 0
+
+        switch (params.analysisType) {
+          case 'overview':
+            analyticsData = await generateOverviewAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'performance':
+            analyticsData = await generatePerformanceAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'workflows':
+            analyticsData = await generateWorkflowAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'users':
+            analyticsData = await generateUserAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'resources':
+            analyticsData = await generateResourceAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'trends':
+            analyticsData = await generateTrendAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'predictions':
+            analyticsData = await generatePredictiveAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'optimization':
+            analyticsData = await generateOptimizationAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          case 'benchmarks':
+            analyticsData = await generateBenchmarkAnalytics(
+              operationId,
+              userId,
+              params,
+              startDate,
+              endDate
+            )
+            break
+
+          default:
+            throw new Error(`Unsupported analysis type: ${params.analysisType}`)
+        }
+
+        // Extract data points count for metadata
+        dataPoints = extractDataPointsCount(analyticsData)
+
+        const executionTime = Date.now() - startTime
+
+        logger.info(`[${operationId}] Usage analytics completed successfully`, {
+          analysisType: params.analysisType,
+          userId,
           executionTime,
           dataPoints,
-          processingMethod: 'real-time-aggregation'
+          operationId,
+        })
+
+        return {
+          status: 'success',
+          analysisType: params.analysisType,
+          operationId,
+          timeframe: params.timeframe,
+          dateRange: {
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
+          },
+          data: analyticsData,
+          insights: generateInsights(params.analysisType, analyticsData),
+          metadata: {
+            executedAt: new Date().toISOString(),
+            executedBy: userId,
+            executionTime,
+            dataPoints,
+            processingMethod: 'real-time-aggregation',
+          },
         }
-      }
-      
-    } catch (error) {
-      const executionTime = Date.now() - startTime
-      
-      logger.error(`[${operationId}] Usage analytics failed`, {
-        analysisType: params.analysisType,
-        userId: session?.user?.id,
-        error: error.message,
-        stack: error.stack,
-        executionTime,
-        operationId
-      })
-      
-      return {
-        status: 'error',
-        analysisType: params.analysisType,
-        operationId,
-        timeframe: params.timeframe,
-        dateRange: {
-          start: new Date().toISOString(),
-          end: new Date().toISOString()
-        },
-        message: `Analytics operation failed: ${error.message}`,
-        metadata: {
-          executedAt: new Date().toISOString(),
-          executedBy: session?.user?.id || 'unknown',
+      } catch (error) {
+        const executionTime = Date.now() - startTime
+
+        logger.error(`[${operationId}] Usage analytics failed`, {
+          analysisType: params.analysisType,
+          userId: session?.user?.id,
+          error: error.message,
+          stack: error.stack,
           executionTime,
-          dataPoints: 0,
-          processingMethod: 'failed'
+          operationId,
+        })
+
+        return {
+          status: 'error',
+          analysisType: params.analysisType,
+          operationId,
+          timeframe: params.timeframe,
+          dateRange: {
+            start: new Date().toISOString(),
+            end: new Date().toISOString(),
+          },
+          message: `Analytics operation failed: ${error.message}`,
+          metadata: {
+            executedAt: new Date().toISOString(),
+            executedBy: session?.user?.id || 'unknown',
+            executionTime,
+            dataPoints: 0,
+            processingMethod: 'failed',
+          },
         }
       }
-    }
+    },
   }
-}
 
 /**
  * Generate comprehensive overview analytics
  * Provides high-level metrics and KPIs across all platform usage
- * 
+ *
  * @param operationId - Unique operation identifier for tracking
  * @param userId - Authenticated user ID
  * @param params - Analytics parameters
@@ -302,60 +357,62 @@ async function generateOverviewAnalytics(
   endDate: Date
 ): Promise<any> {
   logger.info(`[${operationId}] Generating overview analytics`, { userId })
-  
+
   // Get user statistics for overview metrics
-  const userStatsQuery = await db.select({
-    totalManualExecutions: userStats.totalManualExecutions,
-    totalApiCalls: userStats.totalApiCalls,
-    totalWebhookTriggers: userStats.totalWebhookTriggers,
-    totalScheduledExecutions: userStats.totalScheduledExecutions,
-    totalChatExecutions: userStats.totalChatExecutions,
-    totalTokensUsed: userStats.totalTokensUsed,
-    totalCost: userStats.totalCost,
-    currentPeriodCost: userStats.currentPeriodCost,
-    lastPeriodCost: userStats.lastPeriodCost,
-    totalCopilotCost: userStats.totalCopilotCost,
-    totalCopilotTokens: userStats.totalCopilotTokens,
-    totalCopilotCalls: userStats.totalCopilotCalls,
-    lastActive: userStats.lastActive
-  })
-  .from(userStats)
-  .where(eq(userStats.userId, userId))
-  .limit(1)
-  
+  const userStatsQuery = await db
+    .select({
+      totalManualExecutions: userStats.totalManualExecutions,
+      totalApiCalls: userStats.totalApiCalls,
+      totalWebhookTriggers: userStats.totalWebhookTriggers,
+      totalScheduledExecutions: userStats.totalScheduledExecutions,
+      totalChatExecutions: userStats.totalChatExecutions,
+      totalTokensUsed: userStats.totalTokensUsed,
+      totalCost: userStats.totalCost,
+      currentPeriodCost: userStats.currentPeriodCost,
+      lastPeriodCost: userStats.lastPeriodCost,
+      totalCopilotCost: userStats.totalCopilotCost,
+      totalCopilotTokens: userStats.totalCopilotTokens,
+      totalCopilotCalls: userStats.totalCopilotCalls,
+      lastActive: userStats.lastActive,
+    })
+    .from(userStats)
+    .where(eq(userStats.userId, userId))
+    .limit(1)
+
   const stats = userStatsQuery[0]
-  
+
   if (!stats) {
     logger.warn(`[${operationId}] No user statistics found`, { userId })
     return { message: 'No usage data available' }
   }
-  
+
   // Calculate aggregate metrics
-  const totalExecutions = (stats.totalManualExecutions || 0) + 
-                         (stats.totalApiCalls || 0) + 
-                         (stats.totalWebhookTriggers || 0) + 
-                         (stats.totalScheduledExecutions || 0) + 
-                         (stats.totalChatExecutions || 0)
-  
+  const totalExecutions =
+    (stats.totalManualExecutions || 0) +
+    (stats.totalApiCalls || 0) +
+    (stats.totalWebhookTriggers || 0) +
+    (stats.totalScheduledExecutions || 0) +
+    (stats.totalChatExecutions || 0)
+
   const currentPeriodCost = Number(stats.currentPeriodCost) || 0
   const lastPeriodCost = Number(stats.lastPeriodCost) || 0
   const totalCost = Number(stats.totalCost) || 0
-  
+
   // Calculate period-over-period changes
-  const costChange = lastPeriodCost > 0 ? 
-    ((currentPeriodCost - lastPeriodCost) / lastPeriodCost) * 100 : 0
-  
+  const costChange =
+    lastPeriodCost > 0 ? ((currentPeriodCost - lastPeriodCost) / lastPeriodCost) * 100 : 0
+
   // Get subscription information for context
   const subscriptionState = await getSubscriptionState(userId)
   const usageData = await getUsageData(userId)
-  
+
   logger.info(`[${operationId}] Overview analytics generated`, {
     userId,
     totalExecutions,
     totalCost,
-    currentPeriodCost
+    currentPeriodCost,
   })
-  
+
   return {
     summary: {
       totalExecutions,
@@ -364,41 +421,42 @@ async function generateOverviewAnalytics(
       lastPeriodCost,
       costChangePercent: costChange,
       activeFeatures: calculateActiveFeatures(stats),
-      efficiencyScore: calculateOverallEfficiency(stats, totalExecutions, totalCost)
+      efficiencyScore: calculateOverallEfficiency(stats, totalExecutions, totalCost),
     },
     executionBreakdown: {
       manualExecutions: stats.totalManualExecutions || 0,
       apiCalls: stats.totalApiCalls || 0,
       webhookTriggers: stats.totalWebhookTriggers || 0,
       scheduledExecutions: stats.totalScheduledExecutions || 0,
-      chatExecutions: stats.totalChatExecutions || 0
+      chatExecutions: stats.totalChatExecutions || 0,
     },
     copilotUsage: {
       totalCalls: stats.totalCopilotCalls || 0,
       totalTokens: stats.totalCopilotTokens || 0,
       totalCost: Number(stats.totalCopilotCost) || 0,
-      averageTokensPerCall: stats.totalCopilotCalls > 0 ? 
-        Math.round((stats.totalCopilotTokens || 0) / stats.totalCopilotCalls) : 0
+      averageTokensPerCall:
+        stats.totalCopilotCalls > 0
+          ? Math.round((stats.totalCopilotTokens || 0) / stats.totalCopilotCalls)
+          : 0,
     },
     billing: {
       plan: subscriptionState.planName,
       usageLimit: usageData.limit,
       usagePercentage: usageData.percentUsed,
-      billingStatus: usageData.isExceeded ? 'exceeded' : 
-                     usageData.isWarning ? 'warning' : 'ok'
+      billingStatus: usageData.isExceeded ? 'exceeded' : usageData.isWarning ? 'warning' : 'ok',
     },
     activity: {
       lastActive: stats.lastActive,
       daysSinceLastActive: calculateDaysSince(stats.lastActive),
-      isActiveUser: isUserActive(stats.lastActive)
-    }
+      isActiveUser: isUserActive(stats.lastActive),
+    },
   }
 }
 
 /**
  * Generate performance analytics with bottleneck identification
  * Analyzes system performance, response times, and error rates
- * 
+ *
  * @param operationId - Unique operation identifier for tracking
  * @param userId - Authenticated user ID
  * @param params - Analytics parameters
@@ -413,92 +471,100 @@ async function generatePerformanceAnalytics(
   startDate: Date,
   endDate: Date
 ): Promise<any> {
-  logger.info(`[${operationId}] Generating performance analytics`, { 
+  logger.info(`[${operationId}] Generating performance analytics`, {
     userId,
-    includeDetails: params.includePerformanceDetails 
+    includeDetails: params.includePerformanceDetails,
   })
-  
+
   // Get workflow execution data for performance analysis
   // Note: This is a simplified implementation - would need more detailed execution logs
-  const workflowExecutions = await db.select({
-    workflowId: workflowExecutionLogs.workflowId,
-    status: workflowExecutionLogs.status,
-    executionTime: workflowExecutionLogs.executionTime,
-    cost: workflowExecutionLogs.cost,
-    createdAt: workflowExecutionLogs.createdAt
-  })
-  .from(workflowExecutionLogs)
-  .where(
-    and(
-      eq(workflowExecutionLogs.userId, userId),
-      gte(workflowExecutionLogs.createdAt, startDate),
-      lte(workflowExecutionLogs.createdAt, endDate)
+  const workflowExecutions = await db
+    .select({
+      workflowId: workflowExecutionLogs.workflowId,
+      status: workflowExecutionLogs.status,
+      executionTime: workflowExecutionLogs.executionTime,
+      cost: workflowExecutionLogs.cost,
+      createdAt: workflowExecutionLogs.createdAt,
+    })
+    .from(workflowExecutionLogs)
+    .where(
+      and(
+        eq(workflowExecutionLogs.userId, userId),
+        gte(workflowExecutionLogs.createdAt, startDate),
+        lte(workflowExecutionLogs.createdAt, endDate)
+      )
     )
-  )
-  .orderBy(desc(workflowExecutionLogs.createdAt))
-  .limit(params.limit || 1000)
-  
+    .orderBy(desc(workflowExecutionLogs.createdAt))
+    .limit(params.limit || 1000)
+
   // Analyze performance metrics
-  const successfulExecutions = workflowExecutions.filter(e => e.status === 'success')
-  const failedExecutions = workflowExecutions.filter(e => e.status === 'error' || e.status === 'failed')
-  
+  const successfulExecutions = workflowExecutions.filter((e) => e.status === 'success')
+  const failedExecutions = workflowExecutions.filter(
+    (e) => e.status === 'error' || e.status === 'failed'
+  )
+
   const totalExecutions = workflowExecutions.length
-  const successRate = totalExecutions > 0 ? (successfulExecutions.length / totalExecutions) * 100 : 0
+  const successRate =
+    totalExecutions > 0 ? (successfulExecutions.length / totalExecutions) * 100 : 0
   const errorRate = totalExecutions > 0 ? (failedExecutions.length / totalExecutions) * 100 : 0
-  
+
   // Calculate execution time statistics
   const executionTimes = successfulExecutions
-    .map(e => e.executionTime || 0)
-    .filter(time => time > 0)
-  
-  const avgExecutionTime = executionTimes.length > 0 ? 
-    executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length : 0
-  
+    .map((e) => e.executionTime || 0)
+    .filter((time) => time > 0)
+
+  const avgExecutionTime =
+    executionTimes.length > 0
+      ? executionTimes.reduce((sum, time) => sum + time, 0) / executionTimes.length
+      : 0
+
   const p50ExecutionTime = calculatePercentile(executionTimes, 50)
   const p95ExecutionTime = calculatePercentile(executionTimes, 95)
   const p99ExecutionTime = calculatePercentile(executionTimes, 99)
-  
+
   // Identify performance bottlenecks
-  const slowExecutions = workflowExecutions.filter(e => (e.executionTime || 0) > avgExecutionTime * 2)
+  const slowExecutions = workflowExecutions.filter(
+    (e) => (e.executionTime || 0) > avgExecutionTime * 2
+  )
   const performanceBottlenecks = identifyBottlenecks(slowExecutions)
-  
+
   logger.info(`[${operationId}] Performance analytics generated`, {
     userId,
     totalExecutions,
     successRate,
-    avgExecutionTime
+    avgExecutionTime,
   })
-  
+
   return {
     summary: {
       totalExecutions,
       successfulExecutions: successfulExecutions.length,
       failedExecutions: failedExecutions.length,
       successRate,
-      errorRate
+      errorRate,
     },
     executionTimes: {
       average: avgExecutionTime,
       median: p50ExecutionTime,
       p95: p95ExecutionTime,
-      p99: p99ExecutionTime
+      p99: p99ExecutionTime,
     },
     performance: {
       bottlenecks: performanceBottlenecks,
       slowExecutionsCount: slowExecutions.length,
-      performanceGrade: calculatePerformanceGrade(successRate, avgExecutionTime, errorRate)
+      performanceGrade: calculatePerformanceGrade(successRate, avgExecutionTime, errorRate),
     },
     trends: {
-      executionTrend: analyzeTrend(workflowExecutions.map(e => e.createdAt)),
-      performanceTrend: analyzPerformanceTrend(workflowExecutions)
-    }
+      executionTrend: analyzeTrend(workflowExecutions.map((e) => e.createdAt)),
+      performanceTrend: analyzPerformanceTrend(workflowExecutions),
+    },
   }
 }
 
 /**
  * Generate workflow-specific analytics
  * Analyzes workflow usage patterns, efficiency, and optimization opportunities
- * 
+ *
  * @param operationId - Unique operation identifier for tracking
  * @param userId - Authenticated user ID
  * @param params - Analytics parameters
@@ -514,94 +580,97 @@ async function generateWorkflowAnalytics(
   endDate: Date
 ): Promise<any> {
   logger.info(`[${operationId}] Generating workflow analytics`, { userId })
-  
+
   // Get user's workflows with execution statistics
-  const workflowsQuery = await db.select({
-    id: workflow.id,
-    name: workflow.name,
-    description: workflow.description,
-    tags: workflow.tags,
-    isPublic: workflow.isPublic,
-    createdAt: workflow.createdAt,
-    updatedAt: workflow.updatedAt,
-    executionCount: workflow.executionCount,
-    lastExecutedAt: workflow.lastExecutedAt,
-    avgExecutionTime: workflow.avgExecutionTime,
-    successRate: workflow.successRate
-  })
-  .from(workflow)
-  .where(eq(workflow.userId, userId))
-  .orderBy(desc(workflow.executionCount))
-  .limit(params.limit || 100)
-  
+  const workflowsQuery = await db
+    .select({
+      id: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      tags: workflow.tags,
+      isPublic: workflow.isPublic,
+      createdAt: workflow.createdAt,
+      updatedAt: workflow.updatedAt,
+      executionCount: workflow.executionCount,
+      lastExecutedAt: workflow.lastExecutedAt,
+      avgExecutionTime: workflow.avgExecutionTime,
+      successRate: workflow.successRate,
+    })
+    .from(workflow)
+    .where(eq(workflow.userId, userId))
+    .orderBy(desc(workflow.executionCount))
+    .limit(params.limit || 100)
+
   // Analyze workflow metrics
   const totalWorkflows = workflowsQuery.length
-  const activeWorkflows = workflowsQuery.filter(w => (w.executionCount || 0) > 0)
-  const recentlyUsedWorkflows = workflowsQuery.filter(w => 
-    w.lastExecutedAt && w.lastExecutedAt >= startDate
+  const activeWorkflows = workflowsQuery.filter((w) => (w.executionCount || 0) > 0)
+  const recentlyUsedWorkflows = workflowsQuery.filter(
+    (w) => w.lastExecutedAt && w.lastExecutedAt >= startDate
   )
-  
+
   // Calculate aggregate statistics
   const totalExecutions = workflowsQuery.reduce((sum, w) => sum + (w.executionCount || 0), 0)
-  const avgSuccessRate = activeWorkflows.length > 0 ? 
-    activeWorkflows.reduce((sum, w) => sum + (w.successRate || 0), 0) / activeWorkflows.length : 0
-  
+  const avgSuccessRate =
+    activeWorkflows.length > 0
+      ? activeWorkflows.reduce((sum, w) => sum + (w.successRate || 0), 0) / activeWorkflows.length
+      : 0
+
   // Identify top performing workflows
   const topWorkflows = workflowsQuery
-    .filter(w => (w.executionCount || 0) > 0)
+    .filter((w) => (w.executionCount || 0) > 0)
     .sort((a, b) => (b.executionCount || 0) - (a.executionCount || 0))
     .slice(0, 10)
-  
+
   // Identify optimization opportunities
-  const underperformingWorkflows = workflowsQuery.filter(w => 
-    (w.successRate || 0) < 80 && (w.executionCount || 0) > 5
+  const underperformingWorkflows = workflowsQuery.filter(
+    (w) => (w.successRate || 0) < 80 && (w.executionCount || 0) > 5
   )
-  
+
   logger.info(`[${operationId}] Workflow analytics generated`, {
     userId,
     totalWorkflows,
     activeWorkflows: activeWorkflows.length,
-    totalExecutions
+    totalExecutions,
   })
-  
+
   return {
     summary: {
       totalWorkflows,
       activeWorkflows: activeWorkflows.length,
       recentlyUsedWorkflows: recentlyUsedWorkflows.length,
       totalExecutions,
-      averageSuccessRate: avgSuccessRate
+      averageSuccessRate: avgSuccessRate,
     },
-    topWorkflows: topWorkflows.map(w => ({
+    topWorkflows: topWorkflows.map((w) => ({
       id: w.id,
       name: w.name,
       executionCount: w.executionCount || 0,
       successRate: w.successRate || 0,
       avgExecutionTime: w.avgExecutionTime || 0,
-      lastExecutedAt: w.lastExecutedAt
+      lastExecutedAt: w.lastExecutedAt,
     })),
     optimization: {
-      underperformingWorkflows: underperformingWorkflows.map(w => ({
+      underperformingWorkflows: underperformingWorkflows.map((w) => ({
         id: w.id,
         name: w.name,
         successRate: w.successRate || 0,
         executionCount: w.executionCount || 0,
-        issues: identifyWorkflowIssues(w)
+        issues: identifyWorkflowIssues(w),
       })),
-      recommendations: generateWorkflowRecommendations(workflowsQuery)
+      recommendations: generateWorkflowRecommendations(workflowsQuery),
     },
     usage_patterns: {
       mostUsedTags: extractMostUsedTags(workflowsQuery),
       creationTrend: analyzeWorkflowCreationTrend(workflowsQuery, startDate, endDate),
-      usageDistribution: analyzeUsageDistribution(workflowsQuery)
-    }
+      usageDistribution: analyzeUsageDistribution(workflowsQuery),
+    },
   }
 }
 
 /**
  * Generate resource utilization analytics
  * Analyzes resource consumption, costs, and optimization opportunities
- * 
+ *
  * @param operationId - Unique operation identifier for tracking
  * @param userId - Authenticated user ID
  * @param params - Analytics parameters
@@ -617,79 +686,80 @@ async function generateResourceAnalytics(
   endDate: Date
 ): Promise<any> {
   logger.info(`[${operationId}] Generating resource analytics`, { userId })
-  
+
   // Get user statistics for resource analysis
-  const stats = await db.select({
-    totalTokensUsed: userStats.totalTokensUsed,
-    totalCost: userStats.totalCost,
-    currentPeriodCost: userStats.currentPeriodCost,
-    totalCopilotTokens: userStats.totalCopilotTokens,
-    totalCopilotCost: userStats.totalCopilotCost,
-    totalCopilotCalls: userStats.totalCopilotCalls
-  })
-  .from(userStats)
-  .where(eq(userStats.userId, userId))
-  .limit(1)
-  
+  const stats = await db
+    .select({
+      totalTokensUsed: userStats.totalTokensUsed,
+      totalCost: userStats.totalCost,
+      currentPeriodCost: userStats.currentPeriodCost,
+      totalCopilotTokens: userStats.totalCopilotTokens,
+      totalCopilotCost: userStats.totalCopilotCost,
+      totalCopilotCalls: userStats.totalCopilotCalls,
+    })
+    .from(userStats)
+    .where(eq(userStats.userId, userId))
+    .limit(1)
+
   const userStatsData = stats[0]
-  
+
   if (!userStatsData) {
     return { message: 'No resource utilization data available' }
   }
-  
+
   // Calculate resource metrics
   const totalTokens = userStatsData.totalTokensUsed || 0
   const copilotTokens = userStatsData.totalCopilotTokens || 0
   const workflowTokens = Math.max(0, totalTokens - copilotTokens)
-  
+
   const totalCost = Number(userStatsData.totalCost) || 0
   const copilotCost = Number(userStatsData.totalCopilotCost) || 0
   const workflowCost = Math.max(0, totalCost - copilotCost)
-  
+
   const avgCostPerToken = totalTokens > 0 ? totalCost / totalTokens : 0
-  const avgCopilotCostPerCall = (userStatsData.totalCopilotCalls || 0) > 0 ? 
-    copilotCost / userStatsData.totalCopilotCalls : 0
-  
+  const avgCopilotCostPerCall =
+    (userStatsData.totalCopilotCalls || 0) > 0 ? copilotCost / userStatsData.totalCopilotCalls : 0
+
   logger.info(`[${operationId}] Resource analytics generated`, {
     userId,
     totalTokens,
     totalCost,
-    avgCostPerToken
+    avgCostPerToken,
   })
-  
+
   return {
     summary: {
       totalTokensUsed: totalTokens,
       totalCost,
       currentPeriodCost: Number(userStatsData.currentPeriodCost) || 0,
-      averageCostPerToken: avgCostPerToken
+      averageCostPerToken: avgCostPerToken,
     },
     tokenUtilization: {
       workflowTokens,
       copilotTokens,
-      copilotPercentage: totalTokens > 0 ? (copilotTokens / totalTokens) * 100 : 0
+      copilotPercentage: totalTokens > 0 ? (copilotTokens / totalTokens) * 100 : 0,
     },
     costBreakdown: {
       workflowCost,
       copilotCost,
-      copilotPercentage: totalCost > 0 ? (copilotCost / totalCost) * 100 : 0
+      copilotPercentage: totalCost > 0 ? (copilotCost / totalCost) * 100 : 0,
     },
     efficiency: {
       costPerToken: avgCostPerToken,
       copilotCostPerCall: avgCopilotCostPerCall,
-      resourceEfficiencyScore: calculateResourceEfficiency(userStatsData)
+      resourceEfficiencyScore: calculateResourceEfficiency(userStatsData),
     },
     optimization: {
       recommendations: generateResourceOptimizations(userStatsData),
-      potentialSavings: calculatePotentialResourceSavings(userStatsData)
-    }
+      potentialSavings: calculatePotentialResourceSavings(userStatsData),
+    },
   }
 }
 
 /**
  * Generate predictive analytics and forecasting
  * Uses historical data to predict future usage and costs
- * 
+ *
  * @param operationId - Unique operation identifier for tracking
  * @param userId - Authenticated user ID
  * @param params - Analytics parameters
@@ -705,61 +775,61 @@ async function generatePredictiveAnalytics(
   endDate: Date
 ): Promise<any> {
   logger.info(`[${operationId}] Generating predictive analytics`, { userId })
-  
+
   // Get historical usage data
   const usageData = await getUsageData(userId)
-  const stats = await db.select()
-    .from(userStats)
-    .where(eq(userStats.userId, userId))
-    .limit(1)
-  
+  const stats = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1)
+
   const userStatsData = stats[0]
-  
+
   if (!userStatsData) {
     return { message: 'Insufficient data for predictions' }
   }
-  
+
   // Simple trend-based predictions (would be more sophisticated in production)
   const currentPeriodCost = Number(userStatsData.currentPeriodCost) || 0
   const lastPeriodCost = Number(userStatsData.lastPeriodCost) || 0
-  
+
   // Calculate growth rate
-  const growthRate = lastPeriodCost > 0 ? 
-    ((currentPeriodCost - lastPeriodCost) / lastPeriodCost) : 0
-  
+  const growthRate = lastPeriodCost > 0 ? (currentPeriodCost - lastPeriodCost) / lastPeriodCost : 0
+
   // Predict next period costs
   const predictedNextPeriodCost = currentPeriodCost * (1 + growthRate)
   const predicted3MonthCost = currentPeriodCost * (1 + growthRate) * 3
-  
+
   // Usage limit predictions
   const usageGrowthRate = currentPeriodCost / (usageData.limit || 1)
-  const daysUntilLimitReached = usageGrowthRate > 0 ? 
-    Math.floor((1 - usageData.percentUsed / 100) / usageGrowthRate * 30) : null
-  
+  const daysUntilLimitReached =
+    usageGrowthRate > 0
+      ? Math.floor(((1 - usageData.percentUsed / 100) / usageGrowthRate) * 30)
+      : null
+
   logger.info(`[${operationId}] Predictive analytics generated`, {
     userId,
     growthRate,
-    predictedNextPeriodCost
+    predictedNextPeriodCost,
   })
-  
+
   return {
     predictions: {
       nextPeriodCost: predictedNextPeriodCost,
       next3MonthsCost: predicted3MonthCost,
       growthRate: growthRate * 100,
-      daysUntilLimitReached
+      daysUntilLimitReached,
     },
     forecasting: {
       trend: growthRate > 0.1 ? 'increasing' : growthRate < -0.1 ? 'decreasing' : 'stable',
       confidence: 'medium', // Would calculate based on data variance
-      factors: identifyGrowthFactors(userStatsData)
+      factors: identifyGrowthFactors(userStatsData),
     },
     recommendations: {
-      budgetAdjustment: predictedNextPeriodCost > usageData.limit ? 
-        'Consider increasing usage limit' : 'Current limit sufficient',
+      budgetAdjustment:
+        predictedNextPeriodCost > usageData.limit
+          ? 'Consider increasing usage limit'
+          : 'Current limit sufficient',
       planRecommendation: generatePlanRecommendation(predictedNextPeriodCost),
-      actionItems: generatePredictiveActionItems(growthRate, daysUntilLimitReached)
-    }
+      actionItems: generatePredictiveActionItems(growthRate, daysUntilLimitReached),
+    },
   }
 }
 
@@ -768,10 +838,10 @@ async function generatePredictiveAnalytics(
 /**
  * Calculate date range based on timeframe parameter
  */
-function calculateDateRange(timeframe: string): { startDate: Date, endDate: Date } {
+function calculateDateRange(timeframe: string): { startDate: Date; endDate: Date } {
   const endDate = new Date()
   const startDate = new Date()
-  
+
   switch (timeframe) {
     case '1h':
       startDate.setHours(startDate.getHours() - 1)
@@ -794,7 +864,7 @@ function calculateDateRange(timeframe: string): { startDate: Date, endDate: Date
     default:
       startDate.setDate(startDate.getDate() - 30) // Default to 30 days
   }
-  
+
   return { startDate, endDate }
 }
 
@@ -802,7 +872,7 @@ function calculateDateRange(timeframe: string): { startDate: Date, endDate: Date
  * Calculate days since a given date
  */
 function calculateDaysSince(date: Date | null): number {
-  if (!date) return Infinity
+  if (!date) return Number.POSITIVE_INFINITY
   return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
@@ -832,11 +902,15 @@ function calculateActiveFeatures(stats: any): number {
 /**
  * Calculate overall efficiency score based on usage patterns
  */
-function calculateOverallEfficiency(stats: any, totalExecutions: number, totalCost: number): number {
+function calculateOverallEfficiency(
+  stats: any,
+  totalExecutions: number,
+  totalCost: number
+): number {
   if (totalExecutions === 0 || totalCost === 0) return 0
-  
+
   const costPerExecution = totalCost / totalExecutions
-  const efficiency = Math.min(100, Math.max(0, 100 - (costPerExecution * 100)))
+  const efficiency = Math.min(100, Math.max(0, 100 - costPerExecution * 100))
   return Math.round(efficiency)
 }
 
@@ -844,19 +918,43 @@ function calculateOverallEfficiency(stats: any, totalExecutions: number, totalCo
 // (Additional helper functions would continue here for production implementation)
 
 // Placeholder implementations for remaining analytics functions
-async function generateUserAnalytics(operationId: string, userId: string, params: any, startDate: Date, endDate: Date) {
+async function generateUserAnalytics(
+  operationId: string,
+  userId: string,
+  params: any,
+  startDate: Date,
+  endDate: Date
+) {
   return { message: 'User analytics not yet implemented' }
 }
 
-async function generateTrendAnalytics(operationId: string, userId: string, params: any, startDate: Date, endDate: Date) {
+async function generateTrendAnalytics(
+  operationId: string,
+  userId: string,
+  params: any,
+  startDate: Date,
+  endDate: Date
+) {
   return { message: 'Trend analytics not yet implemented' }
 }
 
-async function generateOptimizationAnalytics(operationId: string, userId: string, params: any, startDate: Date, endDate: Date) {
+async function generateOptimizationAnalytics(
+  operationId: string,
+  userId: string,
+  params: any,
+  startDate: Date,
+  endDate: Date
+) {
   return { message: 'Optimization analytics not yet implemented' }
 }
 
-async function generateBenchmarkAnalytics(operationId: string, userId: string, params: any, startDate: Date, endDate: Date) {
+async function generateBenchmarkAnalytics(
+  operationId: string,
+  userId: string,
+  params: any,
+  startDate: Date,
+  endDate: Date
+) {
   return { message: 'Benchmark analytics not yet implemented' }
 }
 
@@ -869,7 +967,7 @@ function generateInsights(analysisType: string, data: any): any {
   return {
     summary: `${analysisType} analysis completed successfully`,
     keyFindings: ['Data processed successfully'],
-    recommendations: ['Continue monitoring usage patterns']
+    recommendations: ['Continue monitoring usage patterns'],
   }
 }
 
@@ -884,7 +982,11 @@ function identifyBottlenecks(executions: any[]): any[] {
   return [] // Simplified implementation
 }
 
-function calculatePerformanceGrade(successRate: number, avgTime: number, errorRate: number): string {
+function calculatePerformanceGrade(
+  successRate: number,
+  avgTime: number,
+  errorRate: number
+): string {
   if (successRate >= 95 && errorRate <= 5) return 'A'
   if (successRate >= 90 && errorRate <= 10) return 'B'
   if (successRate >= 80 && errorRate <= 20) return 'C'
@@ -944,7 +1046,10 @@ function generatePlanRecommendation(predictedCost: number): string {
   return 'Free plan sufficient'
 }
 
-function generatePredictiveActionItems(growthRate: number, daysUntilLimit: number | null): string[] {
+function generatePredictiveActionItems(
+  growthRate: number,
+  daysUntilLimit: number | null
+): string[] {
   const actions = []
   if (growthRate > 0.2) actions.push('Monitor rapid growth')
   if (daysUntilLimit && daysUntilLimit < 30) actions.push('Plan for limit increase')

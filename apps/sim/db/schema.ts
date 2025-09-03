@@ -2108,7 +2108,7 @@ export const registryRateLimits = pgTable('registry_rate_limits', {
 
 /**
  * Files table - Comprehensive file management for workspaces
- * 
+ *
  * Provides advanced file management capabilities including:
  * - Workspace-scoped organization
  * - Hierarchical folder structure
@@ -2125,11 +2125,11 @@ export const files = pgTable(
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
-    folderId: text('folder_id')
-      .references(() => folders.id, { onDelete: 'set null' }),
-    knowledgeBaseId: text('knowledge_base_id')
-      .references(() => knowledgeBase.id, { onDelete: 'set null' }),
-    
+    folderId: text('folder_id').references(() => folders.id, { onDelete: 'set null' }),
+    knowledgeBaseId: text('knowledge_base_id').references(() => knowledgeBase.id, {
+      onDelete: 'set null',
+    }),
+
     // Core file properties
     name: text('name').notNull(),
     description: text('description'),
@@ -2137,26 +2137,25 @@ export const files = pgTable(
     mimeType: text('mime_type').notNull(),
     fileUrl: text('file_url').notNull(),
     storageProvider: text('storage_provider').notNull().default('s3'),
-    
+
     // Enhanced metadata
     metadata: jsonb('metadata').default('{}'),
     tags: jsonb('tags').default('[]'),
     isPublic: boolean('is_public').notNull().default(false),
-    
+
     // Processing tracking
     processingStatus: text('processing_status').notNull().default('pending'),
     processingError: text('processing_error'),
-    
+
     // File integrity and versioning
     checksum: text('checksum'),
     version: integer('version').notNull().default(1),
-    
+
     // Audit fields
     createdBy: text('created_by')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    updatedBy: text('updated_by')
-      .references(() => user.id),
+    updatedBy: text('updated_by').references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
     deletedAt: timestamp('deleted_at'), // Soft delete
@@ -2168,29 +2167,34 @@ export const files = pgTable(
     knowledgeBaseIdx: index('files_knowledge_base_id_idx').on(table.knowledgeBaseId),
     nameIdx: index('files_name_idx').on(table.name),
     mimeTypeIdx: index('files_mime_type_idx').on(table.mimeType),
-    
+
     // Audit indexes
     createdByIdx: index('files_created_by_idx').on(table.createdBy),
     createdAtIdx: index('files_created_at_idx').on(table.createdAt),
     updatedAtIdx: index('files_updated_at_idx').on(table.updatedAt),
-    
+
     // Processing indexes
     processingStatusIdx: index('files_processing_status_idx').on(table.processingStatus),
-    
+
     // Advanced indexes
     tagsIdx: index('files_tags_gin_idx').using('gin', table.tags),
     metadataIdx: index('files_metadata_gin_idx').using('gin', table.metadata),
-    softDeleteIdx: index('files_soft_delete_idx').on(table.deletedAt).where(sql`${table.deletedAt} IS NULL`),
-    
+    softDeleteIdx: index('files_soft_delete_idx')
+      .on(table.deletedAt)
+      .where(sql`${table.deletedAt} IS NULL`),
+
     // Composite indexes for common queries
     workspaceFolderIdx: index('files_workspace_folder_idx').on(table.workspaceId, table.folderId),
-    workspaceStatusIdx: index('files_workspace_status_idx').on(table.workspaceId, table.processingStatus),
+    workspaceStatusIdx: index('files_workspace_status_idx').on(
+      table.workspaceId,
+      table.processingStatus
+    ),
   })
 )
 
 /**
  * Folders table - Hierarchical folder organization
- * 
+ *
  * Supports unlimited nesting depth with:
  * - Workspace isolation
  * - Parent-child relationships
@@ -2206,24 +2210,23 @@ export const folders = pgTable(
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
     parentId: text('parent_id'), // Self-referencing for hierarchy
-    
+
     // Folder properties
     name: text('name').notNull(),
     description: text('description'),
     color: text('color').default('#6B7280'),
     isExpanded: boolean('is_expanded').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
-    
+
     // Enhanced metadata
     metadata: jsonb('metadata').default('{}'),
     fileCount: integer('file_count').notNull().default(0),
-    
+
     // Audit fields
     createdBy: text('created_by')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    updatedBy: text('updated_by')
-      .references(() => user.id),
+    updatedBy: text('updated_by').references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
@@ -2233,11 +2236,11 @@ export const folders = pgTable(
     parentIdx: index('folders_parent_id_idx').on(table.parentId),
     createdByIdx: index('folders_created_by_idx').on(table.createdBy),
     sortOrderIdx: index('folders_sort_order_idx').on(table.sortOrder),
-    
+
     // Composite indexes for hierarchy queries
     workspaceParentIdx: index('folders_workspace_parent_idx').on(table.workspaceId, table.parentId),
     parentSortIdx: index('folders_parent_sort_idx').on(table.parentId, table.sortOrder),
-    
+
     // Foreign key constraint for parent folder
     parentFolderFk: sql`CONSTRAINT folders_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE`,
   })
@@ -2245,7 +2248,7 @@ export const folders = pgTable(
 
 /**
  * Enhanced Environment Variables table - Secure variable management
- * 
+ *
  * Replaces basic environment table with:
  * - Workspace-scoped variables
  * - Enhanced encryption and security
@@ -2262,42 +2265,44 @@ export const environmentVariables = pgTable(
       .references(() => workspace.id, { onDelete: 'cascade' }),
     key: text('key').notNull(),
     encryptedValue: text('encrypted_value').notNull(),
-    
+
     // Enhanced properties
     description: text('description'),
     category: text('category'), // api, database, auth, etc.
     isSecret: boolean('is_secret').notNull().default(false),
-    
+
     // Usage tracking
     accessCount: integer('access_count').notNull().default(0),
     lastAccessedAt: timestamp('last_accessed_at'),
-    
+
     // Flexible metadata
     metadata: jsonb('metadata').default('{}'),
-    
+
     // Audit fields
     createdBy: text('created_by')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    updatedBy: text('updated_by')
-      .references(() => user.id),
+    updatedBy: text('updated_by').references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
     // Unique constraint on workspace + key
-    workspaceKeyUnique: uniqueIndex('env_vars_workspace_key_unique').on(table.workspaceId, table.key),
-    
+    workspaceKeyUnique: uniqueIndex('env_vars_workspace_key_unique').on(
+      table.workspaceId,
+      table.key
+    ),
+
     // Core indexes
     workspaceIdx: index('env_vars_workspace_id_idx').on(table.workspaceId),
     keyIdx: index('env_vars_key_idx').on(table.key),
     categoryIdx: index('env_vars_category_idx').on(table.category),
     isSecretIdx: index('env_vars_is_secret_idx').on(table.isSecret),
     createdByIdx: index('env_vars_created_by_idx').on(table.createdBy),
-    
+
     // Advanced indexes
     metadataIdx: index('env_vars_metadata_gin_idx').using('gin', table.metadata),
-    
+
     // Usage analytics indexes
     accessCountIdx: index('env_vars_access_count_idx').on(table.accessCount),
     lastAccessedIdx: index('env_vars_last_accessed_idx').on(table.lastAccessedAt),
@@ -2306,7 +2311,7 @@ export const environmentVariables = pgTable(
 
 /**
  * File Access Logs table - Comprehensive audit trail
- * 
+ *
  * Tracks all file operations for:
  * - Security auditing
  * - Usage analytics
@@ -2323,17 +2328,17 @@ export const fileAccessLogs = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    
+
     // Action tracking
     action: text('action').notNull(), // view, download, edit, delete, share
-    
+
     // Request context
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
-    
+
     // Flexible metadata for action-specific data
     metadata: jsonb('metadata').default('{}'),
-    
+
     // Timestamp
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
@@ -2343,11 +2348,11 @@ export const fileAccessLogs = pgTable(
     userIdIdx: index('file_access_logs_user_id_idx').on(table.userId),
     actionIdx: index('file_access_logs_action_idx').on(table.action),
     createdAtIdx: index('file_access_logs_created_at_idx').on(table.createdAt),
-    
+
     // Composite indexes for analytics
     fileUserIdx: index('file_access_logs_file_user_idx').on(table.fileId, table.userId),
     userActionIdx: index('file_access_logs_user_action_idx').on(table.userId, table.action),
-    
+
     // Time-based analytics
     dailyStatsIdx: index('file_access_logs_daily_stats_idx').on(
       sql`DATE(${table.createdAt})`,

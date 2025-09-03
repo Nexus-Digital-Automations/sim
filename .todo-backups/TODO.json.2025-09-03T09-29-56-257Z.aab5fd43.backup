@@ -1,0 +1,259 @@
+{
+  "project": "sim",
+  "tasks": [
+    {
+      "id": "task_1756882236834_5xk9zmpl1",
+      "title": "Debug signup 500 error - Better Auth investigation",
+      "description": "Deep investigation into /api/auth/sign-up/email 500 error. Database is working, need to identify specific auth configuration or validation issues.",
+      "mode": "DEVELOPMENT",
+      "category": "bug",
+      "priority": "critical",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T06:50:36.834Z",
+      "auto_research_created": false,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756882230402_1_general_f17bbe28",
+          "role": "primary",
+          "assignedAt": "2025-09-03T06:50:42.286Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T08:51:43.136Z",
+          "reason": "Task stale for 121 minutes"
+        }
+      ]
+    },
+    {
+      "id": "task_1756882172982_3lru7c8d3",
+      "title": "Debug signup 500 error - database connected but endpoint failing",
+      "mode": "DEVELOPMENT",
+      "category": "bug",
+      "priority": "critical",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T06:49:32.982Z",
+      "auto_research_created": false,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756882153615_1_general_e8cbf1c4",
+          "role": "primary",
+          "assignedAt": "2025-09-03T06:49:37.884Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T08:51:43.136Z",
+          "reason": "Task stale for 122 minutes"
+        }
+      ],
+      "description": "No description provided"
+    },
+    {
+      "id": "task_1756888903884_r006apt8j",
+      "title": "Implement Nexus Copilot - Comprehensive API Integration",
+      "description": "Build a powerful Nexus copilot system that integrates with ALL API features in the Sim codebase. This will create a self-powered AI assistant using Claude API that can interact with workflows, users, billing, knowledge bases, templates, and all other system components.\n\nCOMPREHENSIVE INTEGRATION SCOPE:\n\n1. NEXUS TOOLSET CREATION:\n- Create apps/sim/lib/nexus/tools/ directory\n- Implement comprehensive tools for ALL major API endpoints:\n  * Workflow management (create, read, update, delete, execute)\n  * User management and authentication\n  * Billing and subscription management\n  * Knowledge base operations\n  * Template management and deployment\n  * File operations (upload, download, organize)\n  * OAuth credential management\n  * Organization and team management\n  * Environment variable management\n  * Usage tracking and analytics\n  * Webhook management\n  * Custom tool integration\n\n2. NEXUS BACKEND API:\n- Create apps/sim/app/api/nexus/chat/route.ts\n- Implement streaming Claude 3.5 Sonnet integration\n- Connect all Nexus tools with proper error handling\n- Add comprehensive logging and monitoring\n\n3. NEXUS FRONTEND INTEGRATION:\n- Duplicate and enhance copilot UI components\n- Create dedicated Nexus panel in workflow editor\n- Implement rich UI for tool responses\n- Add visual feedback for complex operations\n\n4. TOOL IMPLEMENTATION REQUIREMENTS:\n- Each tool must have comprehensive error handling\n- All tools should include detailed logging\n- Implement proper authentication and authorization\n- Add input validation and sanitization\n- Include comprehensive JSDoc documentation\n\n5. ADVANCED FEATURES:\n- Multi-step workflow automation\n- Contextual awareness of current workspace/workflow\n- Intelligent suggestions based on user activity\n- Integration with existing Sim copilot for coordination\n\nSUCCESS CRITERIA:\n- Nexus can perform ALL major operations available via Sim APIs\n- Complete integration with authentication and authorization\n- Comprehensive error handling and user feedback\n- Production-ready code with full logging and monitoring\n- Seamless UI integration with existing workflow editor",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "/apps/sim/app/api",
+        "/apps/sim/lib",
+        "/apps/sim/app/workspace/[workspaceId]/w/[workflowId]/components/panel"
+      ],
+      "success_criteria": [
+        "Nexus copilot successfully integrated into workflow editor",
+        "All major API endpoints accessible via Nexus tools",
+        "Comprehensive error handling and logging implemented",
+        "Production-ready code with full documentation"
+      ],
+      "estimate": "8-12 hours",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T08:41:43.888Z",
+      "auto_research_created": true,
+      "assigned_agent": "development_session_1756882153615_1_general_e8cbf1c4",
+      "started_at": "2025-09-03T08:51:14.539Z",
+      "claimed_by": "development_session_1756882153615_1_general_e8cbf1c4",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756882153615_1_general_e8cbf1c4",
+          "role": "primary",
+          "assignedAt": "2025-09-03T08:51:14.539Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T08:52:33.699Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "pending"
+          }
+        }
+      ]
+    },
+    {
+      "id": "task_1756808400739_jaq6pl8ns",
+      "title": "Complete test infrastructure migration for remaining API test files",
+      "description": "Complete the migration of remaining 118+ API test files to use the new bun/vitest compatible test infrastructure. The migration patterns have been proven successful (improving test pass rates from 15% to 89%) and need to be applied across all API test files.\n\nAFFECTED FILES:\n- All files in apps/sim/app/api/**/*.test.ts\n- Approximately 60+ API route test files\n- Focus on high-priority workflow, authentication, and core API tests\n\nMIGRATION APPROACH:\n1. Apply working patterns from successful migrations (versions, collaboration)\n2. Replace vi.doMock() with module-level vi.mock() patterns\n3. Use enhanced test utilities from apps/sim/app/api/__test-utils__/\n4. Implement proper authentication and database mocking\n5. Add comprehensive logging and production-ready comments\n\nSUCCESS CRITERIA:\n- 90%+ test pass rate across all migrated files\n- All authentication tests returning proper status codes (200/201 not 403/500)\n- Production-ready test patterns with comprehensive logging\n- Full compatibility with bun/vitest environment",
+      "mode": "DEVELOPMENT",
+      "category": "test-setup",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "1-2 weeks",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-02T10:20:00.739Z",
+      "auto_research_created": false,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756844503855_1_general_92ed7f9d",
+          "role": "primary",
+          "assignedAt": "2025-09-02T20:22:01.975Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T03:50:53.815Z",
+          "reason": "Task stale for 449 minutes"
+        },
+        {
+          "agentId": "development_session_1756871458543_1_general_9f27745a",
+          "role": "primary",
+          "assignedAt": "2025-09-03T03:55:47.369Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T05:28:38.403Z",
+          "reason": "Task stale for 93 minutes"
+        },
+        {
+          "agentId": "development_session_1756877333580_1_general_353ba3f8",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:30:29.615Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T05:55:45.374Z",
+          "reason": "Task stale for 25 minutes"
+        },
+        {
+          "agent": "agent_1756878984280",
+          "action": "claimed",
+          "timestamp": "2025-09-03T05:56:24.280Z"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T06:17:34.539Z",
+          "reason": "Task stale for 21 minutes"
+        }
+      ]
+    }
+  ],
+  "current_mode": "DEVELOPMENT",
+  "last_mode": null,
+  "execution_count": 0,
+  "review_strikes": 0,
+  "strikes_completed_last_run": false,
+  "last_hook_activation": 1756781766326,
+  "agents": {
+    "development_session_1756891770416_1_general_98ee918d": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-03T09:29:30.416Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-03T09:29:30.416Z",
+      "sessionId": "session_1756891770416",
+      "metadata": {}
+    }
+  },
+  "settings": {
+    "auto_sort_enabled": true,
+    "sort_criteria": {
+      "primary": "category",
+      "secondary": "created_at"
+    },
+    "priority_values": {
+      "critical": 4,
+      "high": 3,
+      "medium": 2,
+      "low": 1
+    },
+    "category_enabled": true,
+    "category_ranks": {
+      "linter-error": 1,
+      "build-error": 2,
+      "start-error": 3,
+      "error": 4,
+      "missing-feature": 5,
+      "missing-test": 6,
+      "test-linter-error": 7,
+      "test-error": 8,
+      "bug": 9,
+      "enhancement": 10,
+      "refactor": 11,
+      "documentation": 12,
+      "chore": 13,
+      "research": 14
+    }
+  },
+  "current_task_index": 0
+}

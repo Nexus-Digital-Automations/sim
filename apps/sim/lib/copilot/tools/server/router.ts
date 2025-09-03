@@ -1,12 +1,14 @@
 import type { BaseServerTool } from '@/lib/copilot/tools/server/base-tool'
+import { billingOperationsServerTool } from '@/lib/copilot/tools/server/billing/billing-operations'
+import { usageAnalyticsServerTool } from '@/lib/copilot/tools/server/billing/usage-analytics'
 import { getBlocksAndToolsServerTool } from '@/lib/copilot/tools/server/blocks/get-blocks-and-tools'
 import { getBlocksMetadataServerTool } from '@/lib/copilot/tools/server/blocks/get-blocks-metadata-tool'
 import { searchDocumentationServerTool } from '@/lib/copilot/tools/server/docs/search-documentation'
+import { manageEnvironmentServerTool } from '@/lib/copilot/tools/server/environment'
+import { manageFilesServerTool } from '@/lib/copilot/tools/server/files'
 import { listGDriveFilesServerTool } from '@/lib/copilot/tools/server/gdrive/list-files'
 import { readGDriveFileServerTool } from '@/lib/copilot/tools/server/gdrive/read-file'
 import { makeApiRequestServerTool } from '@/lib/copilot/tools/server/other/make-api-request'
-import { manageFilesServerTool } from '@/lib/copilot/tools/server/files'
-import { manageEnvironmentServerTool } from '@/lib/copilot/tools/server/environment'
 import { searchOnlineServerTool } from '@/lib/copilot/tools/server/other/search-online'
 import { getEnvironmentVariablesServerTool } from '@/lib/copilot/tools/server/user/get-environment-variables'
 import { getOAuthCredentialsServerTool } from '@/lib/copilot/tools/server/user/get-oauth-credentials'
@@ -14,8 +16,6 @@ import { setEnvironmentVariablesServerTool } from '@/lib/copilot/tools/server/us
 import { buildWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/build-workflow'
 import { editWorkflowServerTool } from '@/lib/copilot/tools/server/workflow/edit-workflow'
 import { getWorkflowConsoleServerTool } from '@/lib/copilot/tools/server/workflow/get-workflow-console'
-import { billingOperationsServerTool } from '@/lib/copilot/tools/server/billing/billing-operations'
-import { usageAnalyticsServerTool } from '@/lib/copilot/tools/server/billing/usage-analytics'
 import {
   BuildWorkflowInput,
   BuildWorkflowResult,

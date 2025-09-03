@@ -147,13 +147,14 @@ export async function middleware(request: NextRequest) {
 
   const userAgent = request.headers.get('user-agent') || ''
 
-  // Check if this is a webhook endpoint that should be exempt from User-Agent validation
+  // Check if this is a webhook endpoint or Better Auth endpoint that should be exempt from User-Agent validation
   const isWebhookEndpoint = url.pathname.startsWith('/api/webhooks/trigger/')
+  const isBetterAuthEndpoint = url.pathname.startsWith('/api/auth/')
 
   const isSuspicious = SUSPICIOUS_UA_PATTERNS.some((pattern) => pattern.test(userAgent))
 
-  // Block suspicious requests, but exempt webhook endpoints from User-Agent validation only
-  if (isSuspicious && !isWebhookEndpoint) {
+  // Block suspicious requests, but exempt webhook endpoints and Better Auth endpoints from User-Agent validation
+  if (isSuspicious && !isWebhookEndpoint && !isBetterAuthEndpoint) {
     logger.warn('Blocked suspicious request', {
       userAgent,
       ip: request.headers.get('x-forwarded-for') || 'unknown',

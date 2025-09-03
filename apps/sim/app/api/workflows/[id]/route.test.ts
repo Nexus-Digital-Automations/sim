@@ -9,22 +9,19 @@
  * @vitest-environment node
  */
 
-import { NextRequest } from 'next/server'
+// Import vitest functions FIRST before any vi.fn() calls
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { NextRequest } from 'next/server'
 import {
   createMockRequest,
   mockUser,
   setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/utils'
 
-// Module-level mocks - Required for bun/vitest compatibility
-const mockWorkflowDbHelpers = {
-  loadWorkflowFromNormalizedTables: vi.fn(),
-}
-
+// Module-level mocks using factory functions - Required for bun/vitest compatibility
 // Mock workflow database helpers at module level
 vi.mock('@/lib/workflows/db-helpers', () => ({
-  loadWorkflowFromNormalizedTables: mockWorkflowDbHelpers.loadWorkflowFromNormalizedTables,
+  loadWorkflowFromNormalizedTables: vi.fn(),
 }))
 
 // Mock permissions utils at module level
@@ -39,15 +36,13 @@ vi.mock('@/lib/auth/internal', () => ({
 }))
 
 // Mock console logger at module level
-const mockLogger = {
-  debug: vi.fn(),
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-}
-
 vi.mock('@/lib/logs/console/logger', () => ({
-  createLogger: vi.fn().mockReturnValue(mockLogger),
+  createLogger: vi.fn().mockReturnValue({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
 }))
 
 // Mock workflow data for consistent testing
@@ -395,7 +390,9 @@ describe('Workflow by ID API - Comprehensive Test Suite', () => {
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
-      expect(mockLogger.error).toHaveBeenCalled()
+      const { createLogger } = await import('@/lib/logs/console/logger')
+      const mockLogger = vi.mocked(createLogger).mock.results[0]?.value
+      expect(mockLogger?.error).toHaveBeenCalled()
     })
   })
 
@@ -667,7 +664,9 @@ describe('Workflow by ID API - Comprehensive Test Suite', () => {
       expect(response.status).toBe(500)
       const data = await response.json()
       expect(data.error).toBe('Internal server error')
-      expect(mockLogger.error).toHaveBeenCalled()
+      const { createLogger } = await import('@/lib/logs/console/logger')
+      const mockLogger = vi.mocked(createLogger).mock.results[0]?.value
+      expect(mockLogger?.error).toHaveBeenCalled()
     })
 
     it('should handle malformed JSON in PUT requests', async () => {

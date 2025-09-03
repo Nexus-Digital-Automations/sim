@@ -133,7 +133,7 @@ export const billingOperationsServerTool: BaseServerTool<
     })
 
     let session: any = null
-    
+
     try {
       // Authenticate user and validate session
       session = await getSession()
@@ -827,7 +827,10 @@ function analyzUsagePattern(executionMetrics: any): string {
 
   const manualRatio = ((Number(executionMetrics.manualExecutions) || 0) / total) * 100
   const automatedRatio =
-    (((Number(executionMetrics.webhookTriggers) || 0) + (Number(executionMetrics.scheduledExecutions) || 0)) / total) * 100
+    (((Number(executionMetrics.webhookTriggers) || 0) +
+      (Number(executionMetrics.scheduledExecutions) || 0)) /
+      total) *
+    100
 
   if (automatedRatio > 60) return 'automation-heavy'
   if (manualRatio > 60) return 'manual-heavy'
