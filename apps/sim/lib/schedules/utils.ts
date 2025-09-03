@@ -1,11 +1,11 @@
 /**
  * Schedule Management Utilities - Cron Expression and Workflow Scheduling
- * 
+ *
  * This module provides comprehensive scheduling functionality for Sim workflows,
  * including cron expression generation, validation, and timezone-aware execution timing.
  * It handles various scheduling patterns from simple intervals to complex multi-timezone
  * recurring schedules.
- * 
+ *
  * Core Features:
  * - Cron expression generation from user-friendly schedule options
  * - Timezone-aware date/time calculations with DST handling
@@ -13,7 +13,7 @@
  * - Human-readable cron expression descriptions
  * - Workflow starter block configuration parsing
  * - Complex date/time manipulation with fallback handling
- * 
+ *
  * Supported Schedule Types:
  * - Minutes: Every N minutes (configurable interval)
  * - Hourly: Every hour at specific minute offset
@@ -21,19 +21,19 @@
  * - Weekly: Once per week on specified day and time
  * - Monthly: Once per month on specified day and time
  * - Custom: User-defined cron expressions
- * 
+ *
  * Timezone Support:
  * - Full IANA timezone database support
  * - Automatic DST transition handling
  * - Timezone-aware execution scheduling
  * - UTC fallback for invalid timezones
- * 
+ *
  * Performance Characteristics:
  * - Schedule calculation: ~1-5ms for simple patterns
  * - Timezone conversion: ~2-10ms depending on complexity
  * - Cron validation: ~1-3ms using croner library
  * - Memory usage: Minimal (stateless operations)
- * 
+ *
  * @fileoverview Workflow scheduling and cron expression utilities
  * @version 2.0.0
  * @author Sim Workflow Team
@@ -47,35 +47,35 @@ const logger = createLogger('ScheduleUtils')
 
 /**
  * Validates cron expression syntax and calculates next execution time
- * 
+ *
  * This function performs comprehensive validation of cron expressions using the
  * croner library, ensuring they are syntactically correct and will produce future
  * execution times. It's essential for preventing invalid schedules from being saved.
- * 
+ *
  * Validation Process:
  * 1. Checks for empty or null expressions
  * 2. Attempts to parse expression using croner library
  * 3. Calculates next run time to ensure expression is actionable
  * 4. Returns detailed validation results with error messages
- * 
+ *
  * Common Validation Failures:
  * - Empty or whitespace-only expressions
  * - Invalid syntax (wrong number of fields, invalid characters)
  * - Expressions that produce no future occurrences
  * - Malformed time ranges or intervals
- * 
+ *
  * Performance: ~1-3ms for typical expressions
- * 
+ *
  * @param cronExpression - Cron expression string to validate (5-field format)
  * @returns Validation result object with success status and details
- * 
+ *
  * @example
  * // Valid expression
  * const result = validateCronExpression('0 9 * * 1')
  * if (result.isValid) {
  *   console.log('Next run:', result.nextRun)
  * }
- * 
+ *
  * @example
  * // Invalid expression
  * const result = validateCronExpression('invalid syntax')
@@ -120,7 +120,7 @@ export function validateCronExpression(cronExpression: string): {
 
 /**
  * Type definition for workflow block subblock values
- * 
+ *
  * Represents the data structure for individual subblock values within
  * workflow blocks, particularly for schedule configuration blocks.
  */
@@ -131,7 +131,7 @@ export interface SubBlockValue {
 
 /**
  * Type definition for workflow block state
- * 
+ *
  * Represents the complete state of a workflow block including its type,
  * configuration subblocks, and any additional properties.
  */
@@ -146,7 +146,7 @@ export interface BlockState {
 
 /**
  * Mapping of day abbreviations to cron day-of-week numbers
- * 
+ *
  * Converts human-readable day abbreviations to the numeric values
  * used in cron expressions. Sunday = 0, Monday = 1, etc.
  */
@@ -162,15 +162,15 @@ export const DAY_MAP: Record<string, number> = {
 
 /**
  * Safely extracts a string value from a block's subblock configuration
- * 
+ *
  * This utility function provides safe access to subblock values with automatic
  * fallback to empty string for missing or undefined values. It handles the
  * common pattern of extracting configuration values from workflow blocks.
- * 
+ *
  * @param block - The workflow block containing subblock configurations
  * @param id - The subblock identifier to extract
  * @returns The subblock value as string, or empty string if not found
- * 
+ *
  * @example
  * const scheduleTime = getSubBlockValue(starterBlock, 'scheduleTime')
  * const timezone = getSubBlockValue(starterBlock, 'timezone') || 'UTC'
@@ -182,19 +182,19 @@ export function getSubBlockValue(block: BlockState, id: string): string {
 
 /**
  * Parses time string into hours and minutes with robust error handling
- * 
+ *
  * This function safely converts time strings in "HH:MM" format into numeric
  * hour and minute values. It provides sensible defaults and handles various
  * edge cases including invalid input, missing colons, and non-numeric values.
- * 
+ *
  * Default Behavior:
  * - Returns [9, 0] (9:00 AM) for invalid or empty input
  * - Handles both 12-hour and 24-hour formats
  * - Validates numeric conversion and provides fallbacks
- * 
+ *
  * @param timeString - Time string in "HH:MM" format (null/undefined safe)
  * @returns Tuple of [hours, minutes] as numbers, defaults to [9, 0]
- * 
+ *
  * @example
  * parseTimeString('14:30') // [14, 30]
  * parseTimeString('9:05')  // [9, 5]

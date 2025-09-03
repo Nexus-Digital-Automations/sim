@@ -1014,9 +1014,172 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756878834132_9fapbxzch",
+      "title": "Fix critical linter errors in lib/utils.ts JSDoc comments",
+      "description": "CRITICAL LINTER ERROR: Fix syntax errors in JSDoc comments in apps/sim/lib/utils.ts. The linter is failing due to improperly escaped cron expressions and JSDoc syntax issues.\n\nERRORS TO FIX:\n- Line 241: Cron expression syntax causing parser errors\n- JSDoc @example blocks with unescaped cron patterns\n- Multiple parse errors preventing successful linting\n\nIMMEDIATE ACTIONS:\n1. Fix escaped cron expressions in JSDoc comments\n2. Correct @example block syntax\n3. Ensure all comments use proper JSDoc formatting\n4. Re-run linter to verify fixes",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T05:53:54.132Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756878149611_1_general_1be171df",
+      "started_at": "2025-09-03T05:53:54.141Z",
+      "claimed_by": "development_session_1756878149611_1_general_1be171df",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756878149611_1_general_1be171df",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:53:54.141Z",
+          "reassignReason": null,
+          "claimPriority": "urgent"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T05:55:08.532Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T05:55:08.533Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756878228534_p1fxk38jd",
+      "title": "Add comprehensive comments and documentation to script files",
+      "description": "Per CLAUDE.md mandate: ADD COMPREHENSIVE COMMENTS TO ALL SCRIPT FILES. Review and enhance documentation for all JavaScript/TypeScript files in the scripts/ directory and other utility scripts throughout the project. Add:\n- File header comments explaining purpose and usage\n- Function documentation with parameters and return values\n- Inline comments for complex logic\n- Update outdated or incorrect comments\n- Ensure future developers can understand and maintain the code\n\nAFFECTED FILES:\n- scripts/ directory files\n- Utility scripts throughout the project\n- TaskManager API files\n- Build and configuration scripts\n\nSUCCESS CRITERIA:\n- All script files have comprehensive header comments\n- All functions documented with JSDoc-style comments\n- Complex logic explained with inline comments\n- Comments are accurate and up-to-date",
+      "mode": "DEVELOPMENT",
+      "category": "documentation",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T05:43:48.534Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756878149611_1_general_1be171df",
+      "started_at": "2025-09-03T05:43:54.099Z",
+      "claimed_by": "development_session_1756878149611_1_general_1be171df",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756878149611_1_general_1be171df",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:43:54.099Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "switch_context": {
+        "switchedTo": "task_1756878834132_9fapbxzch",
+        "switchedAt": "2025-09-03T05:53:54.138Z",
+        "switchedBy": "development_session_1756878149611_1_general_1be171df",
+        "canResume": true,
+        "workProgress": null,
+        "resumedAt": "2025-09-03T05:55:15.756Z",
+        "resumedBy": "development_session_1756878149611_1_general_1be171df"
+      },
+      "status_history": [
+        {
+          "from": "in_progress",
+          "to": "switched",
+          "timestamp": "2025-09-03T05:53:54.138Z",
+          "agent": "development_session_1756878149611_1_general_1be171df",
+          "reason": "Switched to urgent task task_1756878834132_9fapbxzch",
+          "operationId": "op_1756878834137_wrmdc54v5"
+        },
+        {
+          "from": "switched",
+          "to": "in_progress",
+          "timestamp": "2025-09-03T05:55:15.756Z",
+          "agent": "development_session_1756878149611_1_general_1be171df",
+          "reason": "Task resumed from switched status",
+          "operationId": "op_1756878915753_ju2877k0s"
+        }
+      ],
+      "resumed_at": "2025-09-03T05:55:15.756Z",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T05:55:28.732Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T05:55:28.733Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756879176225_4biyfonuj",
+      "title": "Fix JSON formatting linter errors in TODO.json and DONE.json",
+      "description": "Biome formatter found formatting issues in TODO.json and DONE.json files that need immediate correction",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T05:59:36.225Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756879133510_1_general_72f2b05d",
+      "started_at": "2025-09-03T05:59:42.438Z",
+      "claimed_by": "development_session_1756879133510_1_general_72f2b05d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756879133510_1_general_72f2b05d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T05:59:42.438Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T06:00:12.938Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T06:00:12.939Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 24,
-  "last_completion": "2025-09-03T05:52:11.645Z",
+  "total_completed": 27,
+  "last_completion": "2025-09-03T06:00:12.939Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

@@ -1,23 +1,23 @@
 {
   "execution": {
-    "timestamp": "2025-09-03T05:42:17.198Z",
+    "timestamp": "2025-09-03T05:58:39.566Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 65304,
+    "pid": 4129,
     "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
-    "endTimestamp": "2025-09-03T05:42:17.201Z",
-    "durationMs": 3
+    "endTimestamp": "2025-09-03T05:58:39.568Z",
+    "durationMs": 2
   },
   "input": {
-    "sessionId": "5698cdfd-a6ed-4d40-be3d-2b66068811c0",
-    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/5698cdfd-a6ed-4d40-be3d-2b66068811c0.jsonl",
+    "sessionId": "1e279b5d-ccac-427f-93ea-fbe2913a33cd",
+    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/1e279b5d-ccac-427f-93ea-fbe2913a33cd.jsonl",
     "stopHookActive": false,
     "rawInput": {
-      "session_id": "5698cdfd-a6ed-4d40-be3d-2b66068811c0",
-      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/5698cdfd-a6ed-4d40-be3d-2b66068811c0.jsonl",
+      "session_id": "1e279b5d-ccac-427f-93ea-fbe2913a33cd",
+      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/1e279b5d-ccac-427f-93ea-fbe2913a33cd.jsonl",
       "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
       "hook_event_name": "Stop",
       "stop_hook_active": false
@@ -27,43 +27,43 @@
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-03T05:42:17.199Z",
-      "message": "Raw input data: \"{\"session_id\":\"5698cdfd-a6ed-4d40-be3d-2b66068811c0\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/5698cdfd-a6ed-4d40-be3d-2b66068811c0.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
+      "timestamp": "2025-09-03T05:58:39.567Z",
+      "message": "Raw input data: \"{\"session_id\":\"1e279b5d-ccac-427f-93ea-fbe2913a33cd\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/1e279b5d-ccac-427f-93ea-fbe2913a33cd.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
     },
     {
-      "timestamp": "2025-09-03T05:42:17.199Z",
+      "timestamp": "2025-09-03T05:58:39.567Z",
       "message": "Input data length: 321"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.199Z",
+      "timestamp": "2025-09-03T05:58:39.567Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.199Z",
+      "timestamp": "2025-09-03T05:58:39.567Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
+      "timestamp": "2025-09-03T05:58:39.568Z",
       "message": "Found 1 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
-      "message": "Agent development_session_1756877333580_1_general_353ba3f8: heartbeat=2025-09-03T05:28:53.581Z, timeSince=804s, isActive=true"
+      "timestamp": "2025-09-03T05:58:39.568Z",
+      "message": "Agent development_session_1756878291793_1_general_e6affb1e: heartbeat=2025-09-03T05:44:51.795Z, timeSince=828s, isActive=true"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
-      "message": "Active agents found: 1, Stale agents removed: 0"
+      "timestamp": "2025-09-03T05:58:39.568Z",
+      "message": "Active agents found: 1, Stale agents removed: 0, Stale tasks reset: 0"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
+      "timestamp": "2025-09-03T05:58:39.568Z",
       "message": "Task status: 0 pending, 1 in_progress, 0 completed"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
+      "timestamp": "2025-09-03T05:58:39.568Z",
       "message": "Never-stop mode: Providing instructive task management guidance"
     },
     {
-      "timestamp": "2025-09-03T05:42:17.201Z",
+      "timestamp": "2025-09-03T05:58:39.568Z",
       "message": "Exiting with code 2: Infinite continue mode - providing task guidance"
     }
   ],
