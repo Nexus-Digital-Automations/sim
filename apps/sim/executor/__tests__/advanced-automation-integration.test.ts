@@ -8,7 +8,7 @@
  * @created 2025-09-03
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Executor } from '@/executor/index'
 import type { SerializedWorkflow } from '@/serializer/types'
 
@@ -101,7 +101,12 @@ vi.mock('@/blocks/blocks/approval-gate', () => ({
     isComplete: false,
     isApproved: false,
     reason: 'Waiting',
-    summary: { approvalsReceived: 0, rejectionsReceived: 0, approvalsRequired: 1, totalApprovers: 1 },
+    summary: {
+      approvalsReceived: 0,
+      rejectionsReceived: 0,
+      approvalsRequired: 1,
+      totalApprovers: 1,
+    },
   })),
 }))
 

@@ -1,17 +1,17 @@
 /**
  * Template Library Types - Comprehensive Type Definitions
- * 
+ *
  * This file defines all TypeScript interfaces, types, and enums for the
  * comprehensive template library and community marketplace system.
- * 
+ *
  * Type Categories:
  * - Core Template Types: Basic template structure and metadata
- * - Search & Discovery: Query interfaces and result types  
+ * - Search & Discovery: Query interfaces and result types
  * - Community Features: Rating, review, and social interaction types
  * - Template Management: Creation, validation, and lifecycle types
  * - Analytics & Reporting: Usage metrics and performance tracking
  * - Enterprise Features: Governance, approval, and organization types
- * 
+ *
  * @author Claude Code Template System
  * @version 2.0.0
  */
@@ -38,13 +38,13 @@ export type TemplateComplexity = 'simple' | 'moderate' | 'complex' | 'enterprise
 /**
  * Template status in the publication and review process
  */
-export type TemplateStatus = 
-  | 'draft'           // Being created or edited
-  | 'pending_review'  // Submitted for moderation
-  | 'approved'        // Ready for publication
-  | 'published'       // Live in marketplace
-  | 'archived'        // Deprecated or removed
-  | 'rejected'        // Failed moderation review
+export type TemplateStatus =
+  | 'draft' // Being created or edited
+  | 'pending_review' // Submitted for moderation
+  | 'approved' // Ready for publication
+  | 'published' // Live in marketplace
+  | 'archived' // Deprecated or removed
+  | 'rejected' // Failed moderation review
 
 /**
  * Template category system for organization and discovery
@@ -70,35 +70,35 @@ export interface TemplateMetadata {
   description?: string
   author: string
   category: string
-  
+
   // Visual Branding
   icon: string
   color: string
   thumbnail?: string
-  
+
   // Classification and Discovery
   tags: string[]
   difficulty: TemplateDifficulty
   complexity?: TemplateComplexity
   version: string
-  
+
   // Usage Information
   estimatedTime?: string
   estimatedExecutionTime?: string
   requirements: string[]
   useCases: string[]
   blockTypes?: string[]
-  
+
   // Publishing and Visibility
   visibility: TemplateVisibility
   status: TemplateStatus
   isPublic: boolean
   allowComments: boolean
-  
+
   // Auto-generated Tags and Metadata
   autoTags?: string[]
   qualityScore?: number
-  
+
   // Timestamps
   createdAt?: Date
   updatedAt?: Date
@@ -124,22 +124,22 @@ export interface Template {
   state: any // Workflow state with sanitized credentials
   createdAt: Date
   updatedAt: Date
-  
+
   // Enhanced metadata
   metadata?: TemplateMetadata
   qualityScore?: number
-  
+
   // User-specific data
   isStarred?: boolean
   isOwner?: boolean
   canEdit?: boolean
-  
+
   // Community data
   ratingAverage?: number
   ratingCount?: number
   downloadCount?: number
   forkCount?: number
-  
+
   // Analytics data
   recentViews?: number
   trending?: boolean
@@ -158,28 +158,28 @@ export interface TemplateSearchFilters {
   categories?: string[]
   tags?: string[]
   difficulty?: TemplateDifficulty[]
-  
+
   // Rating and popularity filters
   minStars?: number
   maxStars?: number
   minViews?: number
   minRating?: number
-  
+
   // Content filters
   hasDescription?: boolean
   hasThumbnail?: boolean
-  
+
   // Date range filters
   createdAfter?: Date
   createdBefore?: Date
   updatedAfter?: Date
   updatedBefore?: Date
-  
+
   // User filters
   authorId?: string
   organizationId?: string
   excludeAuthors?: string[]
-  
+
   // Technical filters
   blockTypes?: string[]
   complexity?: TemplateComplexity[]
@@ -195,25 +195,33 @@ export interface TemplateSearchQuery {
   search?: string
   category?: string
   filters?: TemplateSearchFilters
-  
+
   // Sorting and ordering
-  sortBy?: 'name' | 'createdAt' | 'updatedAt' | 'views' | 'stars' | 'rating' | 'relevance' | 'trending'
+  sortBy?:
+    | 'name'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'views'
+    | 'stars'
+    | 'rating'
+    | 'relevance'
+    | 'trending'
   sortOrder?: 'asc' | 'desc'
-  
+
   // Pagination
   page?: number
   limit?: number
-  
+
   // User context
   userId?: string
   organizationId?: string
-  
+
   // Result options
   includeState?: boolean
   includeMetadata?: boolean
   includeAnalytics?: boolean
   includeUserData?: boolean
-  
+
   // Special filters
   starredOnly?: boolean
   ownedOnly?: boolean
@@ -278,7 +286,7 @@ export interface TemplateRating {
   reported: boolean
   createdAt: Date
   updatedAt: Date
-  
+
   // User information
   userDisplayName?: string
   userAvatar?: string
@@ -300,15 +308,15 @@ export interface TemplateComment {
   isModerator: boolean
   createdAt: Date
   updatedAt: Date
-  
+
   // User information
   userDisplayName: string
   userAvatar?: string
-  
+
   // Moderation
   isHidden: boolean
   reportCount: number
-  
+
   // Thread information
   replies?: TemplateComment[]
   replyCount: number
@@ -331,11 +339,11 @@ export interface TemplateCollection {
   stars: number
   createdAt: Date
   updatedAt: Date
-  
+
   // Collection metadata
   tags: string[]
   category?: string
-  
+
   // Templates (when populated)
   templates?: Template[]
 }
@@ -350,21 +358,21 @@ export interface TemplateUserProfile {
   avatar?: string
   website?: string
   location?: string
-  
+
   // Community statistics
   templatesCreated: number
   templatesShared: number
   totalViews: number
   totalStars: number
   contributionScore: number
-  
+
   // Activity data
   joinedAt: Date
   lastActive: Date
   isActive: boolean
   isVerified: boolean
   isModerator: boolean
-  
+
   // Social features
   followers: number
   following: number
@@ -383,13 +391,13 @@ export interface TemplateCreationOptions {
   userId: string
   workspaceId?: string
   organizationId?: string
-  
+
   // Processing options
   sanitizeCredentials?: boolean
   validateQuality?: boolean
   generateThumbnail?: boolean
   autoPublish?: boolean
-  
+
   // Publication options
   visibility?: TemplateVisibility
   requireApproval?: boolean
@@ -403,16 +411,16 @@ export interface TemplateCustomization {
   // Basic customization
   workflowName?: string
   description?: string
-  
+
   // Variable substitutions
   variables?: Record<string, any>
-  
+
   // Block-level overrides
   blockOverrides?: Record<string, any>
-  
+
   // Credential mappings
   credentialMappings?: Record<string, string>
-  
+
   // Configuration overrides
   configOverrides?: {
     environment?: Record<string, string>
@@ -428,16 +436,16 @@ export interface TemplateInstantiationOptions {
   userId: string
   workspaceId: string
   organizationId?: string
-  
+
   // Instantiation behavior
   validateDependencies?: boolean
   resolveCredentials?: boolean
   runPostInstallation?: boolean
-  
+
   // Naming and organization
   folderPath?: string
   tags?: string[]
-  
+
   // Tracking options
   trackUsage?: boolean
   analyticsContext?: Record<string, any>
@@ -451,12 +459,12 @@ export interface TemplateValidationResult {
   errors: string[]
   warnings: string[]
   suggestions: string[]
-  
+
   // Validation scores
   qualityScore: number
   securityScore: number
   completenessScore: number
-  
+
   // Detailed checks
   checks: {
     syntax: boolean
@@ -466,7 +474,7 @@ export interface TemplateValidationResult {
     compliance: boolean
     quality: boolean
   }
-  
+
   // Recommendations
   recommendations: {
     priority: 'low' | 'medium' | 'high' | 'critical'
@@ -483,23 +491,23 @@ export interface TemplateVersionInfo {
   templateId: string
   version: string
   previousVersion?: string
-  
+
   // Version metadata
   versionName?: string
   description?: string
   changelog: string[]
-  
+
   // Change tracking
   changedBlocks: string[]
   addedBlocks: string[]
   removedBlocks: string[]
-  
+
   // Publication information
   publishedBy: string
   publishedAt: Date
   isActive: boolean
   isBeta: boolean
-  
+
   // Compatibility
   compatibilityNotes?: string[]
   migrationRequired: boolean
@@ -516,34 +524,34 @@ export interface TemplateVersionInfo {
 export interface TemplateUsageAnalytics {
   templateId: string
   period: 'day' | 'week' | 'month' | 'year' | 'all'
-  
+
   // Usage metrics
   views: number
   downloads: number
   instantiations: number
   forks: number
-  
+
   // Engagement metrics
   stars: number
   comments: number
   ratings: number
   averageRating: number
-  
+
   // Performance metrics
   successRate: number
   averageExecutionTime: number
   errorRate: number
-  
+
   // User analytics
   uniqueUsers: number
   returningUsers: number
   newUsers: number
-  
+
   // Geographic and temporal data
   topCountries: { country: string; count: number }[]
   dailyActivity: { date: string; count: number }[]
   peakUsageTimes: { hour: number; count: number }[]
-  
+
   // Conversion metrics
   instantiationRate: number // views to instantiations
   retentionRate: number
@@ -559,7 +567,7 @@ export interface TemplateMarketplaceAnalytics {
   activeTemplates: number
   totalUsers: number
   activeUsers: number
-  
+
   // Category distribution
   categoryStats: {
     category: string
@@ -568,22 +576,22 @@ export interface TemplateMarketplaceAnalytics {
     averageRating: number
     totalViews: number
   }[]
-  
+
   // Trending data
   trendingTemplates: Template[]
   trendingCategories: string[]
   trendingTags: string[]
-  
+
   // Quality metrics
   averageQualityScore: number
   averageRating: number
   moderationQueue: number
-  
+
   // Community metrics
   totalRatings: number
   totalComments: number
   activeContributors: number
-  
+
   // Growth metrics
   newTemplatesThisMonth: number
   newUsersThisMonth: number
@@ -599,7 +607,7 @@ export interface TemplateMarketplaceAnalytics {
  */
 export interface TemplateGovernance {
   organizationId: string
-  
+
   // Approval workflows
   requiresApproval: boolean
   approvalWorkflow: {
@@ -610,7 +618,7 @@ export interface TemplateGovernance {
       autoApprove?: boolean
     }[]
   }
-  
+
   // Quality gates
   qualityGates: {
     minimumQualityScore: number
@@ -618,19 +626,19 @@ export interface TemplateGovernance {
     prohibitedContent: string[]
     securityScanRequired: boolean
   }
-  
+
   // Visibility controls
   defaultVisibility: TemplateVisibility
   allowedVisibilityLevels: TemplateVisibility[]
-  
+
   // Category restrictions
   allowedCategories: string[]
   restrictedCategories: string[]
-  
+
   // Publishing controls
   autoPublishEnabled: boolean
   moderationLevel: 'basic' | 'strict' | 'enterprise'
-  
+
   // Compliance requirements
   complianceChecks: string[]
   auditingEnabled: boolean
@@ -648,29 +656,29 @@ export interface TemplateRepository {
   organizationId: string
   name: string
   description?: string
-  
+
   // Repository settings
   visibility: 'public' | 'internal' | 'private'
   accessLevel: 'read' | 'write' | 'admin'
-  
+
   // Content organization
   categories: TemplateCategory[]
   tags: string[]
   templateCount: number
-  
+
   // Access control
   permissions: {
     userId: string
     role: 'viewer' | 'contributor' | 'maintainer' | 'admin'
     permissions: string[]
   }[]
-  
+
   // Repository metadata
   createdBy: string
   createdAt: Date
   updatedAt: Date
   lastActivityAt: Date
-  
+
   // Analytics
   totalViews: number
   totalDownloads: number
@@ -731,19 +739,24 @@ export interface TemplateOperationResult {
  */
 export interface TemplateEvent {
   id: string
-  type: 'template.created' | 'template.updated' | 'template.published' | 'template.starred' | 'template.instantiated'
+  type:
+    | 'template.created'
+    | 'template.updated'
+    | 'template.published'
+    | 'template.starred'
+    | 'template.instantiated'
   templateId: string
   userId: string
   organizationId?: string
-  
+
   // Event data
   data: Record<string, any>
-  
+
   // Event metadata
   timestamp: Date
   version: string
   source: string
-  
+
   // Delivery information
   deliveryAttempts: number
   lastDelivery?: Date
@@ -766,7 +779,7 @@ export interface TemplateSystemConfig {
     advancedAnalytics: boolean
     enterpriseGovernance: boolean
   }
-  
+
   // Limits and quotas
   limits: {
     maxTemplatesPerUser: number
@@ -775,7 +788,7 @@ export interface TemplateSystemConfig {
     maxTagsPerTemplate: number
     maxCollectionsPerUser: number
   }
-  
+
   // Quality and validation
   validation: {
     enableQualityScoring: boolean
@@ -783,7 +796,7 @@ export interface TemplateSystemConfig {
     enableSecurityScanning: boolean
     enableComplianceChecks: boolean
   }
-  
+
   // Community features
   community: {
     enableRatings: boolean
@@ -792,7 +805,7 @@ export interface TemplateSystemConfig {
     enableFollowing: boolean
     moderationEnabled: boolean
   }
-  
+
   // Analytics and tracking
   analytics: {
     enableUsageTracking: boolean
@@ -823,7 +836,12 @@ export interface TemplateSearchSuggestion {
 export interface TemplateRecommendation {
   template: Template
   score: number
-  reason: 'similar_to_used' | 'trending' | 'highly_rated' | 'same_category' | 'collaborative_filtering'
+  reason:
+    | 'similar_to_used'
+    | 'trending'
+    | 'highly_rated'
+    | 'same_category'
+    | 'collaborative_filtering'
   confidence: number
 }
 
@@ -834,7 +852,7 @@ export interface TemplateDiff {
   templateId: string
   fromVersion: string
   toVersion: string
-  
+
   changes: {
     type: 'added' | 'removed' | 'modified'
     path: string
@@ -842,7 +860,7 @@ export interface TemplateDiff {
     newValue?: any
     description: string
   }[]
-  
+
   summary: {
     blocksAdded: number
     blocksRemoved: number
@@ -887,5 +905,5 @@ export type {
   TemplateSystemConfig,
   TemplateSearchSuggestion,
   TemplateRecommendation,
-  TemplateDiff
+  TemplateDiff,
 }

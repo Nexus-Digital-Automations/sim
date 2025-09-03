@@ -1,29 +1,30 @@
 /**
  * Tutorial Definitions - Comprehensive tutorial content for Sim workflow automation
- * 
+ *
  * This file contains all tutorial definitions including:
  * - First workflow creation tutorial
  * - Advanced workflow patterns
  * - Block-specific tutorials
  * - Integration tutorials
  * - Debugging and optimization tutorials
- * 
+ *
  * @created 2025-09-03
  * @author Claude Development System
  */
 
-import type { Tutorial, TutorialStep } from './tutorial-system'
+import type { Tutorial } from './tutorial-system'
 
 /**
  * Welcome and First Workflow Tutorial
- * 
+ *
  * Guides new users through creating their first automation workflow
  * with comprehensive accessibility support and step-by-step validation.
  */
 export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
   id: 'first-workflow',
   title: 'Create Your First Workflow',
-  description: 'Learn to build a simple automation workflow step by step. Perfect for beginners to understand the core concepts of workflow automation.',
+  description:
+    'Learn to build a simple automation workflow step by step. Perfect for beginners to understand the core concepts of workflow automation.',
   category: 'basic',
   estimatedDuration: 15,
   prerequisites: [],
@@ -49,12 +50,14 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
       action: 'highlight',
       position: 'center',
       hints: [
-        'This is your workflow canvas where you\'ll build automations',
+        "This is your workflow canvas where you'll build automations",
         'Use the panel on the right for tools and configuration',
-        'The control bar at the top manages workflow execution'
+        'The control bar at the top manages workflow execution',
       ],
-      accessibilityInstructions: 'The workflow canvas is the main area where you build automations. Use tab navigation to explore interface elements.',
-      screenReaderText: 'Welcome to Sim. This tutorial will teach you to create automation workflows step by step.'
+      accessibilityInstructions:
+        'The workflow canvas is the main area where you build automations. Use tab navigation to explore interface elements.',
+      screenReaderText:
+        'Welcome to Sim. This tutorial will teach you to create automation workflows step by step.',
     },
     {
       id: 'understand-interface',
@@ -81,11 +84,12 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
       hints: [
         'Look for a panel or drawer button on the right side of the screen',
         'The panel should slide open to reveal tools and options',
-        'If the panel is already open, this step will complete automatically'
+        'If the panel is already open, this step will complete automatically',
       ],
       keyboardShortcuts: ['Ctrl+Shift+P', 'Alt+P'],
-      accessibilityInstructions: 'Use Tab to navigate to the panel toggle button, then press Enter or Space to open it.',
-      screenReaderText: 'Open the side panel to access workflow tools and the block library.'
+      accessibilityInstructions:
+        'Use Tab to navigate to the panel toggle button, then press Enter or Space to open it.',
+      screenReaderText: 'Open the side panel to access workflow tools and the block library.',
     },
     {
       id: 'add-starter-block',
@@ -111,10 +115,12 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         'Look for a block labeled "Starter" or "Trigger" in the block library',
         'Drag the Starter block from the library onto the canvas',
         'Alternatively, click the "Add Block" button and select Starter',
-        'The Starter block is usually the first block in automation workflows'
+        'The Starter block is usually the first block in automation workflows',
       ],
-      accessibilityInstructions: 'Navigate to the block library, find the Starter block, and press Enter to add it to the workflow.',
-      screenReaderText: 'Add a Starter block to begin your workflow. This block will trigger the automation to run.'
+      accessibilityInstructions:
+        'Navigate to the block library, find the Starter block, and press Enter to add it to the workflow.',
+      screenReaderText:
+        'Add a Starter block to begin your workflow. This block will trigger the automation to run.',
     },
     {
       id: 'add-action-block',
@@ -140,10 +146,12 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         'Look for the "Response" block in the block library',
         'Drag it onto the canvas near your Starter block',
         'Response blocks are commonly used to display results or send data',
-        'You can search for "response" in the block library to find it quickly'
+        'You can search for "response" in the block library to find it quickly',
       ],
-      accessibilityInstructions: 'Navigate to the block library, find the Response block, and add it to your workflow.',
-      screenReaderText: 'Add a Response block to your workflow. This will perform an action when the workflow runs.'
+      accessibilityInstructions:
+        'Navigate to the block library, find the Response block, and add it to your workflow.',
+      screenReaderText:
+        'Add a Response block to your workflow. This will perform an action when the workflow runs.',
     },
     {
       id: 'connect-blocks',
@@ -169,10 +177,12 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         'Look for small circles or handles on the edges of blocks - these are connection points',
         'Drag from the output connector (usually on the right) of the Starter block',
         'Drop the connection on the input connector (usually on the left) of the Response block',
-        'You should see a line or arrow connecting the two blocks when successful'
+        'You should see a line or arrow connecting the two blocks when successful',
       ],
-      accessibilityInstructions: 'Use keyboard navigation to select the Starter block, press C to start connecting, then navigate to the Response block and press Enter to complete the connection.',
-      screenReaderText: 'Connect the Starter block to the Response block to create a workflow sequence.'
+      accessibilityInstructions:
+        'Use keyboard navigation to select the Starter block, press C to start connecting, then navigate to the Response block and press Enter to complete the connection.',
+      screenReaderText:
+        'Connect the Starter block to the Response block to create a workflow sequence.',
     },
     {
       id: 'configure-response',
@@ -194,18 +204,21 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
       action: 'click',
       validation: () => {
         // Check if response block has been configured
-        const responseInputs = document.querySelectorAll('input[value*="Hello"], textarea[value*="Hello"]')
-        return responseInputs.length > 0 || 
-               document.querySelector('.subblock-editor') !== null
+        const responseInputs = document.querySelectorAll(
+          'input[value*="Hello"], textarea[value*="Hello"]'
+        )
+        return responseInputs.length > 0 || document.querySelector('.subblock-editor') !== null
       },
       hints: [
         'Click directly on the Response block to select and configure it',
         'Look for an input field where you can type your message',
         'Try entering a simple message like "Hello World!" or "Test successful!"',
-        'Make sure to save or confirm your changes'
+        'Make sure to save or confirm your changes',
       ],
-      accessibilityInstructions: 'Navigate to the Response block, press Enter to open configuration, then use Tab to find the message field and enter your text.',
-      screenReaderText: 'Configure the Response block by adding a message that will be displayed when the workflow runs.'
+      accessibilityInstructions:
+        'Navigate to the Response block, press Enter to open configuration, then use Tab to find the message field and enter your text.',
+      screenReaderText:
+        'Configure the Response block by adding a message that will be displayed when the workflow runs.',
     },
     {
       id: 'run-workflow',
@@ -232,18 +245,19 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         // Check for execution indicators
         const executionButton = document.querySelector('[data-testid="run-button"]')
         const activeBlocks = document.querySelectorAll('.block-active, .block-executing')
-        return activeBlocks.length > 0 || 
-               document.querySelector('.execution-results') !== null
+        return activeBlocks.length > 0 || document.querySelector('.execution-results') !== null
       },
       hints: [
         'Look for a green "Play" or "Run" button in the top control bar',
         'The button might have a triangle (▶) icon',
         'After clicking, watch the blocks light up as they execute',
-        'Check the console panel on the right for output results'
+        'Check the console panel on the right for output results',
       ],
       keyboardShortcuts: ['Ctrl+Enter', 'F5'],
-      accessibilityInstructions: 'Navigate to the control bar and find the Run button. Press Enter or Space to execute your workflow.',
-      screenReaderText: 'Run your workflow to see the automation in action. Look for the Play or Run button in the control bar.'
+      accessibilityInstructions:
+        'Navigate to the control bar and find the Run button. Press Enter or Space to execute your workflow.',
+      screenReaderText:
+        'Run your workflow to see the automation in action. Look for the Play or Run button in the control bar.',
     },
     {
       id: 'view-results',
@@ -271,14 +285,16 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         'Open the Console tab in the right panel to see execution logs',
         'Look for your custom message in the output',
         'Green indicators usually mean successful execution',
-        'Red indicators show errors that need attention'
+        'Red indicators show errors that need attention',
       ],
-      accessibilityInstructions: 'Navigate to the Console panel to review your workflow execution results.',
-      screenReaderText: 'Review your workflow results in the Console panel. You should see your custom message indicating successful execution.'
+      accessibilityInstructions:
+        'Navigate to the Console panel to review your workflow execution results.',
+      screenReaderText:
+        'Review your workflow results in the Console panel. You should see your custom message indicating successful execution.',
     },
     {
       id: 'next-steps',
-      title: 'What\'s Next?',
+      title: "What's Next?",
       description: 'Learn about more advanced workflow features',
       target: '.workflow-container',
       content: `
@@ -313,16 +329,22 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
         'Save this workflow as a template for future reference',
         'Explore the block library to see all available automation blocks',
         'Try the guided workflow wizards for common automation patterns',
-        'Use the AI Copilot for assistance with more complex workflows'
+        'Use the AI Copilot for assistance with more complex workflows',
       ],
-      accessibilityInstructions: 'Tutorial completed successfully. Explore additional tutorials and advanced features when ready.',
-      screenReaderText: 'Congratulations! You have completed your first workflow tutorial and learned the fundamental concepts of automation.'
-    }
+      accessibilityInstructions:
+        'Tutorial completed successfully. Explore additional tutorials and advanced features when ready.',
+      screenReaderText:
+        'Congratulations! You have completed your first workflow tutorial and learned the fundamental concepts of automation.',
+    },
   ],
   completionRewards: {
     badges: ['first-workflow', 'automation-basics'],
     unlockFeatures: ['intermediate-tutorials', 'workflow-templates'],
-    nextRecommendations: ['conditional-workflow', 'api-integration-basics', 'data-processing-intro']
+    nextRecommendations: [
+      'conditional-workflow',
+      'api-integration-basics',
+      'data-processing-intro',
+    ],
   },
   metadata: {
     version: '1.0.0',
@@ -331,20 +353,21 @@ export const FIRST_WORKFLOW_TUTORIAL: Tutorial = {
     author: 'Claude Development System',
     difficulty: 1,
     popularity: 95,
-    completionRate: 87
-  }
+    completionRate: 87,
+  },
 }
 
 /**
  * Conditional Logic Tutorial
- * 
+ *
  * Teaches users how to add decision-making to their workflows
  * using condition blocks and branching logic.
  */
 export const CONDITIONAL_WORKFLOW_TUTORIAL: Tutorial = {
   id: 'conditional-workflow',
   title: 'Add Logic and Conditions',
-  description: 'Learn to create smart workflows that make decisions based on data using conditional logic and branching.',
+  description:
+    'Learn to create smart workflows that make decisions based on data using conditional logic and branching.',
   category: 'intermediate',
   estimatedDuration: 20,
   prerequisites: ['first-workflow'],
@@ -371,10 +394,12 @@ export const CONDITIONAL_WORKFLOW_TUTORIAL: Tutorial = {
       hints: [
         'Conditional logic makes workflows intelligent and responsive',
         'Use IF/THEN patterns to automate decision-making',
-        'Conditions can check numbers, text, dates, and more'
+        'Conditions can check numbers, text, dates, and more',
       ],
-      accessibilityInstructions: 'Learn about conditional logic concepts that make workflows intelligent.',
-      screenReaderText: 'Introduction to conditional logic in workflows. Learn to make intelligent automation decisions.'
+      accessibilityInstructions:
+        'Learn about conditional logic concepts that make workflows intelligent.',
+      screenReaderText:
+        'Introduction to conditional logic in workflows. Learn to make intelligent automation decisions.',
     },
     {
       id: 'add-data-source',
@@ -399,10 +424,12 @@ export const CONDITIONAL_WORKFLOW_TUTORIAL: Tutorial = {
         'Add a Starter block first to trigger the workflow',
         'Then find and add a JavaScript block for generating data',
         'JavaScript blocks let you create and manipulate data',
-        'You can also use other data sources like API calls or databases'
+        'You can also use other data sources like API calls or databases',
       ],
-      accessibilityInstructions: 'Add a Starter block and JavaScript block to create a data source for conditional logic.',
-      screenReaderText: 'Add blocks to create sample data that we can evaluate with conditional logic.'
+      accessibilityInstructions:
+        'Add a Starter block and JavaScript block to create a data source for conditional logic.',
+      screenReaderText:
+        'Add blocks to create sample data that we can evaluate with conditional logic.',
     },
     {
       id: 'configure-data',
@@ -427,17 +454,21 @@ return {
       `,
       action: 'click',
       validation: () => {
-        const codeInputs = document.querySelectorAll('textarea[data-language="javascript"], .monaco-editor')
+        const codeInputs = document.querySelectorAll(
+          'textarea[data-language="javascript"], .monaco-editor'
+        )
         return codeInputs.length > 0
       },
       hints: [
         'Click on the JavaScript block to open its configuration',
         'Paste the provided code into the code editor',
         'The code creates time data we can evaluate',
-        'Save your changes when done'
+        'Save your changes when done',
       ],
-      accessibilityInstructions: 'Configure the JavaScript block with the provided code to generate time-based data.',
-      screenReaderText: 'Configure the JavaScript block to generate sample data for conditional evaluation.'
+      accessibilityInstructions:
+        'Configure the JavaScript block with the provided code to generate time-based data.',
+      screenReaderText:
+        'Configure the JavaScript block to generate sample data for conditional evaluation.',
     },
     {
       id: 'add-condition-block',
@@ -463,10 +494,11 @@ return {
         'Look for the "Condition" block in the block library',
         'Condition blocks usually have a diamond shape or IF/THEN icon',
         'Drag it onto the canvas after your existing blocks',
-        'You might find it under "Logic" or "Control Flow" categories'
+        'You might find it under "Logic" or "Control Flow" categories',
       ],
-      accessibilityInstructions: 'Find and add a Condition block to implement decision logic in your workflow.',
-      screenReaderText: 'Add a Condition block to create decision-making logic in your workflow.'
+      accessibilityInstructions:
+        'Find and add a Condition block to implement decision logic in your workflow.',
+      screenReaderText: 'Add a Condition block to create decision-making logic in your workflow.',
     },
     {
       id: 'connect-to-condition',
@@ -493,15 +525,17 @@ return {
         'Connect the output of the JavaScript block to the input of the Condition block',
         'You should now have at least two connections in your workflow',
         'The data will flow: Starter → JavaScript → Condition',
-        'Make sure all connections are properly established'
+        'Make sure all connections are properly established',
       ],
-      accessibilityInstructions: 'Connect the JavaScript block output to the Condition block input to create a data flow.',
-      screenReaderText: 'Connect your blocks in sequence to create a data flow for conditional evaluation.'
+      accessibilityInstructions:
+        'Connect the JavaScript block output to the Condition block input to create a data flow.',
+      screenReaderText:
+        'Connect your blocks in sequence to create a data flow for conditional evaluation.',
     },
     {
       id: 'configure-condition',
       title: 'Configure the Condition',
-      description: 'Set up the condition to check if it\'s morning or evening',
+      description: "Set up the condition to check if it's morning or evening",
       target: '[data-block-type="condition"]',
       content: `
         <div>
@@ -517,18 +551,20 @@ return {
       `,
       action: 'click',
       validation: () => {
-        const conditionInputs = document.querySelectorAll('input[value*="period"], select[value*="equals"]')
-        return conditionInputs.length > 0 ||
-               document.querySelector('.condition-editor') !== null
+        const conditionInputs = document.querySelectorAll(
+          'input[value*="period"], select[value*="equals"]'
+        )
+        return conditionInputs.length > 0 || document.querySelector('.condition-editor') !== null
       },
       hints: [
         'Click on the Condition block to open its configuration',
         'Look for fields to set the condition logic',
         'Set up: period equals "morning"',
-        'This creates a TRUE/FALSE decision point'
+        'This creates a TRUE/FALSE decision point',
       ],
       accessibilityInstructions: 'Configure the condition to check if the period equals morning.',
-      screenReaderText: 'Configure the Condition block to evaluate if the current time period is morning.'
+      screenReaderText:
+        'Configure the Condition block to evaluate if the current time period is morning.',
     },
     {
       id: 'add-true-action',
@@ -545,17 +581,21 @@ return {
       action: 'drag',
       validation: () => {
         const responseBlocks = document.querySelectorAll('[data-block-type="response"]')
-        const conditionConnections = document.querySelectorAll('.react-flow__edge[data-source*="condition"]')
+        const conditionConnections = document.querySelectorAll(
+          '.react-flow__edge[data-source*="condition"]'
+        )
         return responseBlocks.length >= 1 && conditionConnections.length >= 1
       },
       hints: [
         'Add a Response block for the TRUE/morning case',
         'Connect it to the TRUE output of the Condition block',
         'Look for outputs labeled "true", "yes", or with checkmark icons',
-        'Configure the message for morning time'
+        'Configure the message for morning time',
       ],
-      accessibilityInstructions: 'Add and connect a Response block to handle the TRUE condition path.',
-      screenReaderText: 'Add a Response block for when the condition is true, representing the morning case.'
+      accessibilityInstructions:
+        'Add and connect a Response block to handle the TRUE condition path.',
+      screenReaderText:
+        'Add a Response block for when the condition is true, representing the morning case.',
     },
     {
       id: 'add-false-action',
@@ -572,17 +612,21 @@ return {
       action: 'drag',
       validation: () => {
         const responseBlocks = document.querySelectorAll('[data-block-type="response"]')
-        const conditionConnections = document.querySelectorAll('.react-flow__edge[data-source*="condition"]')
+        const conditionConnections = document.querySelectorAll(
+          '.react-flow__edge[data-source*="condition"]'
+        )
         return responseBlocks.length >= 2 && conditionConnections.length >= 2
       },
       hints: [
         'Add a second Response block for the FALSE/evening case',
         'Connect it to the FALSE output of the Condition block',
         'Look for outputs labeled "false", "no", or with X icons',
-        'Configure a different message for evening time'
+        'Configure a different message for evening time',
       ],
-      accessibilityInstructions: 'Add and connect a second Response block to handle the FALSE condition path.',
-      screenReaderText: 'Add a Response block for when the condition is false, representing the evening case.'
+      accessibilityInstructions:
+        'Add and connect a second Response block to handle the FALSE condition path.',
+      screenReaderText:
+        'Add a Response block for when the condition is false, representing the evening case.',
     },
     {
       id: 'test-conditional-workflow',
@@ -613,17 +657,18 @@ return {
         'Click the Run button to execute your conditional workflow',
         'Watch which path lights up during execution',
         'Check the console for the appropriate time-based message',
-        'Try running it at different times to see different outcomes'
+        'Try running it at different times to see different outcomes',
       ],
       keyboardShortcuts: ['Ctrl+Enter'],
       accessibilityInstructions: 'Run the workflow to test your conditional logic implementation.',
-      screenReaderText: 'Run your workflow to see how conditional logic creates different execution paths based on data.'
-    }
+      screenReaderText:
+        'Run your workflow to see how conditional logic creates different execution paths based on data.',
+    },
   ],
   completionRewards: {
     badges: ['conditional-logic', 'smart-workflows'],
     unlockFeatures: ['advanced-conditions', 'loop-tutorials'],
-    nextRecommendations: ['loop-processing', 'api-integration', 'advanced-conditions']
+    nextRecommendations: ['loop-processing', 'api-integration', 'advanced-conditions'],
   },
   metadata: {
     version: '1.0.0',
@@ -632,20 +677,21 @@ return {
     author: 'Claude Development System',
     difficulty: 2,
     popularity: 78,
-    completionRate: 72
-  }
+    completionRate: 72,
+  },
 }
 
 /**
  * API Integration Tutorial
- * 
+ *
  * Teaches users how to connect workflows to external services
  * and APIs for real-world automation scenarios.
  */
 export const API_INTEGRATION_TUTORIAL: Tutorial = {
   id: 'api-integration-basics',
   title: 'Connect to External Services',
-  description: 'Learn to integrate your workflows with external APIs and services to create powerful automations that interact with the real world.',
+  description:
+    'Learn to integrate your workflows with external APIs and services to create powerful automations that interact with the real world.',
   category: 'intermediate',
   estimatedDuration: 25,
   prerequisites: ['first-workflow'],
@@ -672,10 +718,12 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
       hints: [
         'APIs are like bridges between different software systems',
         'They allow automated data exchange and actions',
-        'Most web services provide APIs for automation'
+        'Most web services provide APIs for automation',
       ],
-      accessibilityInstructions: 'Learn about API concepts and how they enable service integrations.',
-      screenReaderText: 'Introduction to API integrations and how they connect workflows to external services.'
+      accessibilityInstructions:
+        'Learn about API concepts and how they enable service integrations.',
+      screenReaderText:
+        'Introduction to API integrations and how they connect workflows to external services.',
     },
     {
       id: 'add-api-block',
@@ -696,17 +744,21 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
       action: 'drag',
       validation: () => {
         const starterBlocks = document.querySelectorAll('[data-block-type="starter"]')
-        const apiBlocks = document.querySelectorAll('[data-block-type="api"], [data-block-type="http"]')
+        const apiBlocks = document.querySelectorAll(
+          '[data-block-type="api"], [data-block-type="http"]'
+        )
         return starterBlocks.length > 0 && apiBlocks.length > 0
       },
       hints: [
         'Look for "API", "HTTP", or "Web Request" blocks',
         'These blocks can communicate with external services',
         'Start with a Starter block as usual',
-        'API blocks are usually found in the "Integration" category'
+        'API blocks are usually found in the "Integration" category',
       ],
-      accessibilityInstructions: 'Add Starter and API blocks to enable external service communication.',
-      screenReaderText: 'Add an API block to enable your workflow to communicate with external services.'
+      accessibilityInstructions:
+        'Add Starter and API blocks to enable external service communication.',
+      screenReaderText:
+        'Add an API block to enable your workflow to communicate with external services.',
     },
     {
       id: 'configure-weather-api',
@@ -730,18 +782,21 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
       `,
       action: 'click',
       validation: () => {
-        const urlInputs = document.querySelectorAll('input[value*="openweathermap"], input[value*="weather"]')
-        return urlInputs.length > 0 ||
-               document.querySelector('.api-config-panel') !== null
+        const urlInputs = document.querySelectorAll(
+          'input[value*="openweathermap"], input[value*="weather"]'
+        )
+        return urlInputs.length > 0 || document.querySelector('.api-config-panel') !== null
       },
       hints: [
         'Click on the API block to open its configuration',
         'Set the method to GET (for retrieving data)',
         'Enter the weather API URL exactly as provided',
-        'Make sure to save your configuration'
+        'Make sure to save your configuration',
       ],
-      accessibilityInstructions: 'Configure the API block with the weather service URL and parameters.',
-      screenReaderText: 'Configure the API block to fetch weather data from an external weather service.'
+      accessibilityInstructions:
+        'Configure the API block with the weather service URL and parameters.',
+      screenReaderText:
+        'Configure the API block to fetch weather data from an external weather service.',
     },
     {
       id: 'add-condition-for-weather',
@@ -764,10 +819,11 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
         'Add a Condition block after the API block',
         'This will evaluate the temperature from the weather data',
         'Connect the API block output to the Condition block input',
-        'We\'ll configure the actual condition in the next step'
+        "We'll configure the actual condition in the next step",
       ],
-      accessibilityInstructions: 'Add a Condition block to evaluate the weather data returned by the API.',
-      screenReaderText: 'Add a Condition block to check if weather conditions require an alert.'
+      accessibilityInstructions:
+        'Add a Condition block to evaluate the weather data returned by the API.',
+      screenReaderText: 'Add a Condition block to check if weather conditions require an alert.',
     },
     {
       id: 'configure-weather-condition',
@@ -789,17 +845,18 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
       action: 'click',
       validation: () => {
         const tempInputs = document.querySelectorAll('input[value*="temp"], input[value="5"]')
-        return tempInputs.length > 0 ||
-               document.querySelector('.condition-config') !== null
+        return tempInputs.length > 0 || document.querySelector('.condition-config') !== null
       },
       hints: [
         'Click on the Condition block to configure it',
         'Use "main.temp" to access the temperature from the API response',
         'Set the operator to "less than" and value to 5',
-        'This checks if temperature is below 5 degrees Celsius'
+        'This checks if temperature is below 5 degrees Celsius',
       ],
-      accessibilityInstructions: 'Configure the condition to check if temperature is below 5 degrees.',
-      screenReaderText: 'Configure the Condition block to check for cold weather requiring an alert.'
+      accessibilityInstructions:
+        'Configure the condition to check if temperature is below 5 degrees.',
+      screenReaderText:
+        'Configure the Condition block to check for cold weather requiring an alert.',
     },
     {
       id: 'add-alert-response',
@@ -816,17 +873,20 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
       action: 'drag',
       validation: () => {
         const responseBlocks = document.querySelectorAll('[data-block-type="response"]')
-        const conditionEdges = document.querySelectorAll('.react-flow__edge[data-source*="condition"]')
+        const conditionEdges = document.querySelectorAll(
+          '.react-flow__edge[data-source*="condition"]'
+        )
         return responseBlocks.length >= 1 && conditionEdges.length >= 1
       },
       hints: [
         'Add a Response block for the cold weather alert',
         'Connect it to the TRUE output of the Condition block',
         'Configure an appropriate cold weather message',
-        'Use emojis or clear text to make the alert noticeable'
+        'Use emojis or clear text to make the alert noticeable',
       ],
-      accessibilityInstructions: 'Add a Response block connected to the TRUE condition path for cold weather alerts.',
-      screenReaderText: 'Add an alert response for when cold weather conditions are detected.'
+      accessibilityInstructions:
+        'Add a Response block connected to the TRUE condition path for cold weather alerts.',
+      screenReaderText: 'Add an alert response for when cold weather conditions are detected.',
     },
     {
       id: 'add-normal-response',
@@ -849,10 +909,10 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
         'Add a second Response block for normal weather',
         'Connect it to the FALSE output of the Condition block',
         'This handles when temperature is NOT below 5°C',
-        'Configure a positive message for normal weather'
+        'Configure a positive message for normal weather',
       ],
       accessibilityInstructions: 'Add a second Response block for normal weather conditions.',
-      screenReaderText: 'Add a response for normal weather when no alert is needed.'
+      screenReaderText: 'Add a response for normal weather when no alert is needed.',
     },
     {
       id: 'test-api-workflow',
@@ -884,17 +944,19 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
         'Click Run to execute your API integration workflow',
         'Watch for the API call to complete first',
         'Check the console for the actual weather data received',
-        'See which condition path executes based on real temperature'
+        'See which condition path executes based on real temperature',
       ],
       keyboardShortcuts: ['Ctrl+Enter'],
-      accessibilityInstructions: 'Run the workflow to test your API integration with real weather data.',
-      screenReaderText: 'Test your API integration workflow to see how it processes real external data.'
-    }
+      accessibilityInstructions:
+        'Run the workflow to test your API integration with real weather data.',
+      screenReaderText:
+        'Test your API integration workflow to see how it processes real external data.',
+    },
   ],
   completionRewards: {
     badges: ['api-integration', 'external-services'],
     unlockFeatures: ['advanced-integrations', 'authentication-tutorials'],
-    nextRecommendations: ['database-integration', 'webhook-handling', 'authentication-flows']
+    nextRecommendations: ['database-integration', 'webhook-handling', 'authentication-flows'],
   },
   metadata: {
     version: '1.0.0',
@@ -903,20 +965,21 @@ export const API_INTEGRATION_TUTORIAL: Tutorial = {
     author: 'Claude Development System',
     difficulty: 3,
     popularity: 85,
-    completionRate: 68
-  }
+    completionRate: 68,
+  },
 }
 
 /**
  * Loop Processing Tutorial
- * 
+ *
  * Teaches users how to process multiple items efficiently
  * using loop blocks and batch operations.
  */
 export const LOOP_PROCESSING_TUTORIAL: Tutorial = {
   id: 'loop-processing',
   title: 'Process Multiple Items with Loops',
-  description: 'Learn to handle lists of data efficiently using loop blocks to process multiple items automatically.',
+  description:
+    'Learn to handle lists of data efficiently using loop blocks to process multiple items automatically.',
   category: 'intermediate',
   estimatedDuration: 18,
   prerequisites: ['first-workflow', 'conditional-workflow'],
@@ -943,10 +1006,11 @@ export const LOOP_PROCESSING_TUTORIAL: Tutorial = {
       hints: [
         'Loops are perfect for repetitive tasks with multiple items',
         'They save time by automating batch operations',
-        'Each iteration of the loop processes one item from the list'
+        'Each iteration of the loop processes one item from the list',
       ],
       accessibilityInstructions: 'Learn about loop concepts for processing multiple data items.',
-      screenReaderText: 'Introduction to loops for batch processing of multiple items in workflows.'
+      screenReaderText:
+        'Introduction to loops for batch processing of multiple items in workflows.',
     },
     {
       id: 'create-sample-data',
@@ -974,10 +1038,11 @@ export const LOOP_PROCESSING_TUTORIAL: Tutorial = {
         'Start with a Starter block as usual',
         'Add a JavaScript block to generate sample data',
         'The JavaScript block will create an array of items to process',
-        'Connect the Starter to the JavaScript block'
+        'Connect the Starter to the JavaScript block',
       ],
-      accessibilityInstructions: 'Add blocks to create sample data for loop processing demonstration.',
-      screenReaderText: 'Add blocks to create sample data that we can process with loops.'
+      accessibilityInstructions:
+        'Add blocks to create sample data for loop processing demonstration.',
+      screenReaderText: 'Add blocks to create sample data that we can process with loops.',
     },
     {
       id: 'configure-data-list',
@@ -1002,17 +1067,20 @@ return { orders };</code></pre>
       `,
       action: 'click',
       validation: () => {
-        const codeEditors = document.querySelectorAll('textarea[data-language="javascript"], .monaco-editor')
+        const codeEditors = document.querySelectorAll(
+          'textarea[data-language="javascript"], .monaco-editor'
+        )
         return codeEditors.length > 0
       },
       hints: [
         'Click on the JavaScript block to open the code editor',
         'Paste the provided code to create sample order data',
         'The code creates an array of order objects',
-        'Each order has id, customer, amount, and status fields'
+        'Each order has id, customer, amount, and status fields',
       ],
-      accessibilityInstructions: 'Configure the JavaScript block with sample order data for processing.',
-      screenReaderText: 'Configure sample order data that will be processed by the loop.'
+      accessibilityInstructions:
+        'Configure the JavaScript block with sample order data for processing.',
+      screenReaderText: 'Configure sample order data that will be processed by the loop.',
     },
     {
       id: 'add-loop-block',
@@ -1031,17 +1099,20 @@ return { orders };</code></pre>
       `,
       action: 'drag',
       validation: () => {
-        const loopBlocks = document.querySelectorAll('[data-block-type="loop"], [data-subflow-type="loop"]')
+        const loopBlocks = document.querySelectorAll(
+          '[data-block-type="loop"], [data-subflow-type="loop"]'
+        )
         return loopBlocks.length > 0
       },
       hints: [
         'Look for "Loop", "For Each", or "Iterate" blocks',
         'Loop blocks are often larger containers that hold other blocks',
         'They might be in the "Control Flow" or "Logic" category',
-        'Drag it onto the canvas after your JavaScript block'
+        'Drag it onto the canvas after your JavaScript block',
       ],
-      accessibilityInstructions: 'Add a Loop block to create a container for processing each data item.',
-      screenReaderText: 'Add a Loop block that will process each order from your data list.'
+      accessibilityInstructions:
+        'Add a Loop block to create a container for processing each data item.',
+      screenReaderText: 'Add a Loop block that will process each order from your data list.',
     },
     {
       id: 'configure-loop-source',
@@ -1062,17 +1133,18 @@ return { orders };</code></pre>
       action: 'click',
       validation: () => {
         const loopConnections = document.querySelectorAll('.react-flow__edge[data-target*="loop"]')
-        return loopConnections.length > 0 ||
-               document.querySelector('.loop-config-panel') !== null
+        return loopConnections.length > 0 || document.querySelector('.loop-config-panel') !== null
       },
       hints: [
         'Connect the JavaScript block to the Loop block first',
         'Click on the Loop block to configure it',
         'Set the data source to iterate over the "orders" array',
-        'The loop will run once for each order in the list'
+        'The loop will run once for each order in the list',
       ],
-      accessibilityInstructions: 'Connect the data source to the Loop block and configure the iteration.',
-      screenReaderText: 'Connect your data source to the Loop block and configure it to process each order.'
+      accessibilityInstructions:
+        'Connect the data source to the Loop block and configure the iteration.',
+      screenReaderText:
+        'Connect your data source to the Loop block and configure it to process each order.',
     },
     {
       id: 'add-processing-logic',
@@ -1092,17 +1164,21 @@ return { orders };</code></pre>
       `,
       action: 'drag',
       validation: () => {
-        const conditionsInLoop = document.querySelectorAll('[data-parent-id*="loop"] [data-block-type="condition"]')
+        const conditionsInLoop = document.querySelectorAll(
+          '[data-parent-id*="loop"] [data-block-type="condition"]'
+        )
         return conditionsInLoop.length > 0
       },
       hints: [
         'Drag blocks INTO the loop container (they should appear inside)',
         'Add a Condition block first to check order amounts',
         'The blocks inside will run for each order',
-        'Look for visual indicators that blocks are inside the loop'
+        'Look for visual indicators that blocks are inside the loop',
       ],
-      accessibilityInstructions: 'Add processing blocks inside the loop container to define per-item actions.',
-      screenReaderText: 'Add blocks inside the loop to define what processing happens for each order.'
+      accessibilityInstructions:
+        'Add processing blocks inside the loop container to define per-item actions.',
+      screenReaderText:
+        'Add blocks inside the loop to define what processing happens for each order.',
     },
     {
       id: 'configure-order-condition',
@@ -1130,10 +1206,10 @@ return { orders };</code></pre>
         'Click on the Condition block inside the loop',
         'Use "amount" to check the current order\'s amount',
         'Set it to check if amount is greater than 100',
-        'Each loop iteration will check the current order\'s amount'
+        "Each loop iteration will check the current order's amount",
       ],
       accessibilityInstructions: 'Configure the condition to check if order amount exceeds $100.',
-      screenReaderText: 'Configure the condition to identify high-value orders over $100.'
+      screenReaderText: 'Configure the condition to identify high-value orders over $100.',
     },
     {
       id: 'add-high-value-response',
@@ -1150,17 +1226,20 @@ return { orders };</code></pre>
       `,
       action: 'drag',
       validation: () => {
-        const responsesInLoop = document.querySelectorAll('[data-parent-id*="loop"] [data-block-type="response"]')
+        const responsesInLoop = document.querySelectorAll(
+          '[data-parent-id*="loop"] [data-block-type="response"]'
+        )
         return responsesInLoop.length >= 1
       },
       hints: [
         'Add a Response block inside the loop, not outside',
         'Connect it to the TRUE path of the condition',
         'Use template variables to include order details',
-        'This will run for each high-value order found'
+        'This will run for each high-value order found',
       ],
-      accessibilityInstructions: 'Add a Response block inside the loop for high-value order processing.',
-      screenReaderText: 'Add a response for processing high-value orders over $100.'
+      accessibilityInstructions:
+        'Add a Response block inside the loop for high-value order processing.',
+      screenReaderText: 'Add a response for processing high-value orders over $100.',
     },
     {
       id: 'add-standard-response',
@@ -1176,17 +1255,19 @@ return { orders };</code></pre>
       `,
       action: 'drag',
       validation: () => {
-        const responsesInLoop = document.querySelectorAll('[data-parent-id*="loop"] [data-block-type="response"]')
+        const responsesInLoop = document.querySelectorAll(
+          '[data-parent-id*="loop"] [data-block-type="response"]'
+        )
         return responsesInLoop.length >= 2
       },
       hints: [
         'Add another Response block inside the loop',
         'Connect it to the FALSE path of the condition',
         'This handles orders $100 and under',
-        'Each order will trigger one of the two responses'
+        'Each order will trigger one of the two responses',
       ],
       accessibilityInstructions: 'Add a second response inside the loop for standard orders.',
-      screenReaderText: 'Add a response for processing standard orders under $100.'
+      screenReaderText: 'Add a response for processing standard orders under $100.',
     },
     {
       id: 'test-loop-processing',
@@ -1210,7 +1291,9 @@ return { orders };</code></pre>
       `,
       action: 'click',
       validation: () => {
-        const loopResults = document.querySelectorAll('.loop-iteration-result, .batch-processing-result')
+        const loopResults = document.querySelectorAll(
+          '.loop-iteration-result, .batch-processing-result'
+        )
         const consoleOutputs = document.querySelectorAll('.console-output')
         return loopResults.length > 0 || consoleOutputs.length > 0
       },
@@ -1218,17 +1301,18 @@ return { orders };</code></pre>
         'Click Run to see batch processing in action',
         'Watch the loop execute multiple times',
         'Check the console for all 4 order processing results',
-        'Notice how each order is handled individually'
+        'Notice how each order is handled individually',
       ],
       keyboardShortcuts: ['Ctrl+Enter'],
       accessibilityInstructions: 'Run the workflow to test batch processing of multiple orders.',
-      screenReaderText: 'Test your loop processing workflow to see how it handles multiple orders automatically.'
-    }
+      screenReaderText:
+        'Test your loop processing workflow to see how it handles multiple orders automatically.',
+    },
   ],
   completionRewards: {
     badges: ['batch-processing', 'loop-master'],
     unlockFeatures: ['advanced-loops', 'parallel-processing'],
-    nextRecommendations: ['parallel-processing', 'advanced-conditions', 'data-transformation']
+    nextRecommendations: ['parallel-processing', 'advanced-conditions', 'data-transformation'],
   },
   metadata: {
     version: '1.0.0',
@@ -1237,8 +1321,8 @@ return { orders };</code></pre>
     author: 'Claude Development System',
     difficulty: 3,
     popularity: 74,
-    completionRate: 65
-  }
+    completionRate: 65,
+  },
 }
 
 /**
@@ -1248,7 +1332,7 @@ export const TUTORIAL_DEFINITIONS = {
   [FIRST_WORKFLOW_TUTORIAL.id]: FIRST_WORKFLOW_TUTORIAL,
   [CONDITIONAL_WORKFLOW_TUTORIAL.id]: CONDITIONAL_WORKFLOW_TUTORIAL,
   [API_INTEGRATION_TUTORIAL.id]: API_INTEGRATION_TUTORIAL,
-  [LOOP_PROCESSING_TUTORIAL.id]: LOOP_PROCESSING_TUTORIAL
+  [LOOP_PROCESSING_TUTORIAL.id]: LOOP_PROCESSING_TUTORIAL,
 } as const
 
 /**
@@ -1269,14 +1353,16 @@ export function getAllTutorials(): Tutorial[] {
  * Get tutorials by category
  */
 export function getTutorialsByCategory(category: Tutorial['category']): Tutorial[] {
-  return getAllTutorials().filter(tutorial => tutorial.category === category)
+  return getAllTutorials().filter((tutorial) => tutorial.category === category)
 }
 
 /**
  * Get beginner tutorials (no prerequisites)
  */
 export function getBeginnerTutorials(): Tutorial[] {
-  return getAllTutorials().filter(tutorial => !tutorial.prerequisites || tutorial.prerequisites.length === 0)
+  return getAllTutorials().filter(
+    (tutorial) => !tutorial.prerequisites || tutorial.prerequisites.length === 0
+  )
 }
 
 /**
@@ -1284,16 +1370,16 @@ export function getBeginnerTutorials(): Tutorial[] {
  */
 export function getRecommendedTutorials(completedTutorialIds: string[]): Tutorial[] {
   const completed = new Set(completedTutorialIds)
-  
-  return getAllTutorials().filter(tutorial => {
+
+  return getAllTutorials().filter((tutorial) => {
     // Skip already completed tutorials
     if (completed.has(tutorial.id)) return false
-    
+
     // Check if prerequisites are met
     if (tutorial.prerequisites) {
-      return tutorial.prerequisites.every(prereq => completed.has(prereq))
+      return tutorial.prerequisites.every((prereq) => completed.has(prereq))
     }
-    
+
     return true
   })
 }

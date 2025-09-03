@@ -4,7 +4,7 @@ const logger = createLogger('ResourceMonitor')
 
 /**
  * Resource Monitoring System for Code Execution
- * 
+ *
  * Provides comprehensive monitoring and alerting for code execution resources:
  * - Real-time memory usage tracking
  * - CPU utilization monitoring
@@ -94,7 +94,7 @@ export class ResourceMonitor {
   /**
    * Start continuous resource monitoring
    */
-  startMonitoring(intervalMs: number = 1000): void {
+  startMonitoring(intervalMs = 1000): void {
     if (this.isMonitoring) {
       logger.warn('Monitoring already active', { executionId: this.executionId })
       return
@@ -163,7 +163,6 @@ export class ResourceMonitor {
           time: `${metrics.executionTimeMs}ms`,
         })
       }
-
     } catch (error) {
       logger.error('Failed to collect metrics', {
         executionId: this.executionId,
@@ -178,11 +177,11 @@ export class ResourceMonitor {
   private estimateCpuUsage(): number {
     const usage = process.cpuUsage()
     const totalUsage = usage.user + usage.system
-    
+
     // Convert to percentage (simplified calculation)
     // In real implementation, you'd want to use process.cpuUsage(previousValue)
     const cpuPercent = Math.min(100, Math.max(0, (totalUsage / 1000000) * 10)) // Rough approximation
-    
+
     this.cpuSamples.push(cpuPercent)
     if (this.cpuSamples.length > 10) {
       this.cpuSamples = this.cpuSamples.slice(-10) // Keep last 10 samples
@@ -196,7 +195,7 @@ export class ResourceMonitor {
    */
   private updatePeakValues(metrics: ResourceMetrics): void {
     this.peakMemoryMB = Math.max(this.peakMemoryMB, metrics.memoryUsageMB)
-    
+
     if (this.cpuSamples.length > 0) {
       this.averageCpuPercent = Math.round(
         this.cpuSamples.reduce((a, b) => a + b, 0) / this.cpuSamples.length
@@ -211,41 +210,64 @@ export class ResourceMonitor {
     // Memory limit check
     if (metrics.memoryUsageMB > this.limits.maxMemoryMB * 0.9) {
       const severity = metrics.memoryUsageMB > this.limits.maxMemoryMB ? 'critical' : 'warning'
-      this.generateAlert('memory', severity, 
+      this.generateAlert(
+        'memory',
+        severity,
         `Memory usage ${severity}: ${metrics.memoryUsageMB}MB / ${this.limits.maxMemoryMB}MB`,
-        metrics.memoryUsageMB, this.limits.maxMemoryMB)
+        metrics.memoryUsageMB,
+        this.limits.maxMemoryMB
+      )
     }
 
     // CPU limit check
     if (metrics.cpuUsagePercent > this.limits.maxCpuPercent * 0.9) {
       const severity = metrics.cpuUsagePercent > this.limits.maxCpuPercent ? 'critical' : 'warning'
-      this.generateAlert('cpu', severity,
+      this.generateAlert(
+        'cpu',
+        severity,
         `CPU usage ${severity}: ${metrics.cpuUsagePercent}% / ${this.limits.maxCpuPercent}%`,
-        metrics.cpuUsagePercent, this.limits.maxCpuPercent)
+        metrics.cpuUsagePercent,
+        this.limits.maxCpuPercent
+      )
     }
 
     // Execution time check
     if (metrics.executionTimeMs > this.limits.maxExecutionTimeMs * 0.9) {
-      const severity = metrics.executionTimeMs > this.limits.maxExecutionTimeMs ? 'critical' : 'warning'
-      this.generateAlert('time', severity,
+      const severity =
+        metrics.executionTimeMs > this.limits.maxExecutionTimeMs ? 'critical' : 'warning'
+      this.generateAlert(
+        'time',
+        severity,
         `Execution time ${severity}: ${metrics.executionTimeMs}ms / ${this.limits.maxExecutionTimeMs}ms`,
-        metrics.executionTimeMs, this.limits.maxExecutionTimeMs)
+        metrics.executionTimeMs,
+        this.limits.maxExecutionTimeMs
+      )
     }
 
     // Network request limit check
     if (this.networkRequestCount > this.limits.maxNetworkRequests * 0.9) {
-      const severity = this.networkRequestCount > this.limits.maxNetworkRequests ? 'critical' : 'warning'
-      this.generateAlert('network', severity,
+      const severity =
+        this.networkRequestCount > this.limits.maxNetworkRequests ? 'critical' : 'warning'
+      this.generateAlert(
+        'network',
+        severity,
         `Network requests ${severity}: ${this.networkRequestCount} / ${this.limits.maxNetworkRequests}`,
-        this.networkRequestCount, this.limits.maxNetworkRequests)
+        this.networkRequestCount,
+        this.limits.maxNetworkRequests
+      )
     }
 
     // File operation limit check
     if (this.fileOperationCount > this.limits.maxFileOperations * 0.9) {
-      const severity = this.fileOperationCount > this.limits.maxFileOperations ? 'critical' : 'warning'
-      this.generateAlert('file', severity,
+      const severity =
+        this.fileOperationCount > this.limits.maxFileOperations ? 'critical' : 'warning'
+      this.generateAlert(
+        'file',
+        severity,
         `File operations ${severity}: ${this.fileOperationCount} / ${this.limits.maxFileOperations}`,
-        this.fileOperationCount, this.limits.maxFileOperations)
+        this.fileOperationCount,
+        this.limits.maxFileOperations
+      )
     }
   }
 
@@ -261,9 +283,9 @@ export class ResourceMonitor {
   ): void {
     // Avoid duplicate alerts (same type and severity within 5 seconds)
     const recentAlert = this.alerts.find(
-      alert => 
-        alert.type === type && 
-        alert.severity === severity && 
+      (alert) =>
+        alert.type === type &&
+        alert.severity === severity &&
         Date.now() - alert.timestamp.getTime() < 5000
     )
 
@@ -374,7 +396,11 @@ export class ResourceMonitor {
     const violations: Array<{ type: string; current: number; limit: number }> = []
 
     if (usage.memory.current > this.limits.maxMemoryMB) {
-      violations.push({ type: 'memory', current: usage.memory.current, limit: this.limits.maxMemoryMB })
+      violations.push({
+        type: 'memory',
+        current: usage.memory.current,
+        limit: this.limits.maxMemoryMB,
+      })
     }
 
     if (usage.cpu.current > this.limits.maxCpuPercent) {
@@ -382,15 +408,27 @@ export class ResourceMonitor {
     }
 
     if (usage.time.current > this.limits.maxExecutionTimeMs) {
-      violations.push({ type: 'time', current: usage.time.current, limit: this.limits.maxExecutionTimeMs })
+      violations.push({
+        type: 'time',
+        current: usage.time.current,
+        limit: this.limits.maxExecutionTimeMs,
+      })
     }
 
     if (usage.network.requests > this.limits.maxNetworkRequests) {
-      violations.push({ type: 'network', current: usage.network.requests, limit: this.limits.maxNetworkRequests })
+      violations.push({
+        type: 'network',
+        current: usage.network.requests,
+        limit: this.limits.maxNetworkRequests,
+      })
     }
 
     if (usage.files.operations > this.limits.maxFileOperations) {
-      violations.push({ type: 'files', current: usage.files.operations, limit: this.limits.maxFileOperations })
+      violations.push({
+        type: 'files',
+        current: usage.files.operations,
+        limit: this.limits.maxFileOperations,
+      })
     }
 
     return {
@@ -451,7 +489,7 @@ export class ResourceMonitor {
     efficiency: number
   } {
     const report = this.generatePerformanceReport()
-    
+
     return {
       executionTime: report.totalExecutionTime,
       peakMemoryMB: report.peakMemoryUsage,
@@ -466,7 +504,10 @@ export class ResourceMonitor {
   /**
    * Static method to create monitor with default limits
    */
-  static createDefault(executionId: string, customLimits?: Partial<ResourceLimits>): ResourceMonitor {
+  static createDefault(
+    executionId: string,
+    customLimits?: Partial<ResourceLimits>
+  ): ResourceMonitor {
     const defaultLimits: ResourceLimits = {
       maxMemoryMB: 512,
       maxCpuPercent: 80,
@@ -488,7 +529,7 @@ export class ResourceMonitor {
     this.metrics = []
     this.alerts = []
     this.cpuSamples = []
-    
+
     logger.debug('Resource monitor disposed', {
       executionId: this.executionId,
     })

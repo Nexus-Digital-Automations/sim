@@ -8,10 +8,10 @@
  * @created 2025-09-03
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { AdvancedScheduleBlockHandler } from './advanced-schedule'
-import type { SerializedBlock } from '@/serializer/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExecutionContext } from '@/executor/types'
+import type { SerializedBlock } from '@/serializer/types'
+import { AdvancedScheduleBlockHandler } from './advanced-schedule'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -53,7 +53,7 @@ describe('AdvancedScheduleBlockHandler', () => {
 
   beforeEach(() => {
     handler = new AdvancedScheduleBlockHandler()
-    
+
     mockBlock = {
       id: 'test-schedule-block',
       type: 'advanced-schedule',
@@ -112,7 +112,7 @@ describe('AdvancedScheduleBlockHandler', () => {
 
       it('should handle different simple intervals', async () => {
         const minuteInputs = { ...simpleInputs, simpleInterval: 'minutes', simpleValue: '30' }
-        
+
         const result = await handler.execute(mockBlock, minuteInputs, mockContext)
 
         expect(result.success).toBe(true)
@@ -167,7 +167,7 @@ describe('AdvancedScheduleBlockHandler', () => {
 
       it('should fail with empty cron expression', async () => {
         const invalidInputs = { ...cronInputs, cronExpression: '' }
-        
+
         const result = await handler.execute(mockBlock, invalidInputs, mockContext)
 
         expect(result.success).toBe(false)

@@ -8,13 +8,13 @@
  * @created 2025-09-03
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdvancedConditionBlockHandler } from '@/executor/handlers/advanced-condition'
-import { SwitchBlockHandler } from '@/executor/handlers/switch'
-import { ApprovalGateBlockHandler } from '@/executor/handlers/approval-gate'
 import { AdvancedScheduleBlockHandler } from '@/executor/handlers/advanced-schedule'
-import type { SerializedBlock } from '@/serializer/types'
+import { ApprovalGateBlockHandler } from '@/executor/handlers/approval-gate'
+import { SwitchBlockHandler } from '@/executor/handlers/switch'
 import type { ExecutionContext } from '@/executor/types'
+import type { SerializedBlock } from '@/serializer/types'
 
 // Mock dependencies for performance testing
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -59,7 +59,12 @@ vi.mock('@/blocks/blocks/approval-gate', () => ({
     allowPartialApproval: true,
     approvalThreshold: 1,
   })),
-  generateApprovalNotification: vi.fn(() => ({ subject: 'Test', message: 'Test', priority: 'normal', metadata: {} })),
+  generateApprovalNotification: vi.fn(() => ({
+    subject: 'Test',
+    message: 'Test',
+    priority: 'normal',
+    metadata: {},
+  })),
 }))
 
 vi.mock('@/blocks/blocks/advanced-schedule', () => ({
@@ -145,9 +150,7 @@ describe('Performance Benchmark Tests', () => {
 
       const inputs = {
         expression: '"test"',
-        cases: [
-          { caseValue: 'test', caseLabel: 'Test Case' },
-        ],
+        cases: [{ caseValue: 'test', caseLabel: 'Test Case' }],
         defaultCase: true,
         strictComparison: true,
       }
@@ -170,10 +173,12 @@ describe('Performance Benchmark Tests', () => {
 
       const inputs = {
         expression: '"case50"',
-        cases: Array(100).fill(null).map((_, i) => ({
-          caseValue: `case${i}`,
-          caseLabel: `Case ${i}`,
-        })),
+        cases: Array(100)
+          .fill(null)
+          .map((_, i) => ({
+            caseValue: `case${i}`,
+            caseLabel: `Case ${i}`,
+          })),
         defaultCase: true,
       }
 
@@ -223,7 +228,9 @@ describe('Performance Benchmark Tests', () => {
       const inputs = {
         approvalTitle: 'Test Approval',
         approvalMessage: 'Test message',
-        approvers: Array(50).fill(null).map((_, i) => `user${i}@test.com`),
+        approvers: Array(50)
+          .fill(null)
+          .map((_, i) => `user${i}@test.com`),
         approvalType: 'majority',
         timeoutMinutes: 60,
         notificationMethod: ['email'],
@@ -335,24 +342,28 @@ describe('Performance Benchmark Tests', () => {
 
       const inputs = {
         expression: 'Math.floor(Math.random() * 10)',
-        cases: Array(10).fill(null).map((_, i) => ({
-          caseValue: i,
-          caseLabel: `Case ${i}`,
-        })),
+        cases: Array(10)
+          .fill(null)
+          .map((_, i) => ({
+            caseValue: i,
+            caseLabel: `Case ${i}`,
+          })),
         defaultCase: true,
       }
 
       const startTime = performance.now()
-      
+
       // Execute 100 concurrent operations
-      const promises = Array(100).fill(null).map(() =>
-        handler.execute(block, inputs, { ...mockContext, executionId: Math.random().toString() })
-      )
+      const promises = Array(100)
+        .fill(null)
+        .map(() =>
+          handler.execute(block, inputs, { ...mockContext, executionId: Math.random().toString() })
+        )
 
       const results = await Promise.all(promises)
       const duration = performance.now() - startTime
 
-      expect(results.every(r => r.success)).toBe(true)
+      expect(results.every((r) => r.success)).toBe(true)
       expect(duration).toBeLessThan(5000) // All 100 concurrent executions within 5s
       expect(results.length).toBe(100)
     })

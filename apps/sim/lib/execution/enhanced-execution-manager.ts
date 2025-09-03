@@ -1,10 +1,10 @@
 /**
  * Enhanced Code Execution Manager
- * 
+ *
  * Provides enterprise-grade code execution with comprehensive security,
  * performance optimization, and backward compatibility. Integrates Docker
  * sandboxing, security analysis, and governance workflows.
- * 
+ *
  * Features:
  * - Backward compatibility with existing VM-based execution
  * - Docker-based security sandboxing for enhanced protection
@@ -12,16 +12,16 @@
  * - Performance optimization and caching
  * - Enterprise governance and compliance
  * - Comprehensive audit logging and monitoring
- * 
+ *
  * Author: Claude Development Agent
  * Created: September 3, 2025
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
-import { dockerSandbox, type ContainerConfig, type ExecutionResult } from './docker-sandbox'
-import { codeSecurityAnalyzer, type SecurityAnalysis } from '../security/code-analyzer'
-import { createContext, Script } from 'vm'
 import { randomBytes } from 'crypto'
+import { createContext, Script } from 'vm'
+import { createLogger } from '@/lib/logs/console/logger'
+import { codeSecurityAnalyzer, type SecurityAnalysis } from '../security/code-analyzer'
+import { type ContainerConfig, dockerSandbox } from './docker-sandbox'
 
 const logger = createLogger('EnhancedExecutionManager')
 
@@ -150,9 +150,9 @@ export class EnhancedExecutionManager {
     averageExecutionTime: 0,
     cacheHitRate: 0,
     securityViolations: 0,
-    governanceBlocks: 0
+    governanceBlocks: 0,
   }
-  
+
   private defaultConfig: EnhancedExecutionConfig = {
     method: 'auto',
     securityLevel: 'enhanced',
@@ -163,7 +163,7 @@ export class EnhancedExecutionManager {
     timeout: 30000,
     memoryLimit: '512MB',
     networkAccess: 'restricted',
-    complianceFrameworks: ['OWASP']
+    complianceFrameworks: ['OWASP'],
   }
 
   constructor(config?: Partial<EnhancedExecutionConfig>) {
@@ -177,18 +177,18 @@ export class EnhancedExecutionManager {
   async executeCode(request: EnhancedExecutionRequest): Promise<EnhancedExecutionResponse> {
     const executionId = randomBytes(8).toString('hex')
     const startTime = Date.now()
-    
+
     logger.info('Starting enhanced code execution', {
       executionId,
       language: request.language,
       codeLength: request.code.length,
-      method: request.config?.method || this.defaultConfig.method
+      method: request.config?.method || this.defaultConfig.method,
     })
 
     try {
       // Merge configuration
       const config = { ...this.defaultConfig, ...request.config }
-      
+
       // Update metrics
       this.metrics.totalExecutions++
 
@@ -197,7 +197,7 @@ export class EnhancedExecutionManager {
       if (config.enableSecurityAnalysis) {
         logger.info('Performing security analysis', { executionId })
         securityAnalysis = await this.performSecurityAnalysis(request, config)
-        
+
         // Check if execution should be blocked due to security
         if (!securityAnalysis.approved) {
           this.metrics.securityViolations++
@@ -209,7 +209,7 @@ export class EnhancedExecutionManager {
       let governanceApproval: GovernanceApproval | undefined
       if (config.enableGovernance) {
         governanceApproval = await this.checkGovernanceApproval(request, config, securityAnalysis)
-        
+
         if (governanceApproval.required && !governanceApproval.approved) {
           this.metrics.governanceBlocks++
           return this.createGovernanceBlockedResponse(executionId, governanceApproval, startTime)
@@ -220,7 +220,7 @@ export class EnhancedExecutionManager {
       if (config.enableCaching) {
         const cacheKey = this.generateCacheKey(request, config)
         const cached = this.getFromCache(cacheKey, securityAnalysis)
-        
+
         if (cached) {
           logger.info('Cache hit for execution', { executionId, cacheKey })
           this.updateCacheStats(true)
@@ -230,7 +230,7 @@ export class EnhancedExecutionManager {
 
       // Determine execution method
       const executionMethod = this.determineExecutionMethod(request, config, securityAnalysis)
-      
+
       // Execute code
       let result: EnhancedExecutionResponse
       switch (executionMethod) {
@@ -270,19 +270,18 @@ export class EnhancedExecutionManager {
         executionId,
         success: result.success,
         method: executionMethod,
-        executionTime
+        executionTime,
       })
 
       return result
-
     } catch (error) {
       this.metrics.failedExecutions++
       const executionTime = Date.now() - startTime
-      
+
       logger.error('Enhanced code execution failed', {
         executionId,
         error: error.message,
-        executionTime
+        executionTime,
       })
 
       return this.createErrorResponse(executionId, error, startTime)
@@ -297,24 +296,20 @@ export class EnhancedExecutionManager {
     config: EnhancedExecutionConfig
   ): Promise<SecurityAnalysis> {
     const packages = config.customPackages || []
-    
+
     // Configure security analyzer
     codeSecurityAnalyzer.updateConfig({
       enableStaticAnalysis: true,
       enableDynamicMonitoring: true,
       enablePackageScanning: packages.length > 0,
       enablePolicyEnforcement: true,
-      riskThreshold: config.securityLevel === 'maximum' ? 30 : 
-                   config.securityLevel === 'enhanced' ? 50 : 70,
+      riskThreshold:
+        config.securityLevel === 'maximum' ? 30 : config.securityLevel === 'enhanced' ? 50 : 70,
       strictMode: config.securityLevel === 'maximum',
-      complianceFrameworks: config.complianceFrameworks || ['OWASP']
+      complianceFrameworks: config.complianceFrameworks || ['OWASP'],
     })
 
-    return await codeSecurityAnalyzer.analyzeCode(
-      request.code,
-      request.language,
-      packages
-    )
+    return await codeSecurityAnalyzer.analyzeCode(request.code, request.language, packages)
   }
 
   /**
@@ -327,7 +322,7 @@ export class EnhancedExecutionManager {
   ): Promise<GovernanceApproval> {
     // Simple governance rules - in production, this would integrate with
     // enterprise governance systems
-    const requiresApproval = 
+    const requiresApproval =
       config.securityLevel === 'maximum' ||
       (securityAnalysis && securityAnalysis.riskScore > 40) ||
       request.code.includes('fetch') ||
@@ -338,7 +333,7 @@ export class EnhancedExecutionManager {
       required: requiresApproval,
       approved: !requiresApproval, // Auto-approve if not required
       timestamp: new Date(),
-      conditions: requiresApproval ? ['Security review required'] : []
+      conditions: requiresApproval ? ['Security review required'] : [],
     }
   }
 
@@ -356,15 +351,22 @@ export class EnhancedExecutionManager {
 
     // Auto-selection based on security analysis
     const riskScore = securityAnalysis?.riskScore || 0
-    const hasNetworkAccess = request.code.includes('fetch') || 
-                            request.code.includes('requests') ||
-                            request.code.includes('urllib')
-    const hasFileOperations = request.code.includes('fs.') ||
-                             request.code.includes('open(') ||
-                             request.code.includes('file')
+    const hasNetworkAccess =
+      request.code.includes('fetch') ||
+      request.code.includes('requests') ||
+      request.code.includes('urllib')
+    const hasFileOperations =
+      request.code.includes('fs.') ||
+      request.code.includes('open(') ||
+      request.code.includes('file')
 
     // Use Docker for high-risk code or operations requiring enhanced security
-    if (riskScore > 30 || hasNetworkAccess || hasFileOperations || config.securityLevel === 'maximum') {
+    if (
+      riskScore > 30 ||
+      hasNetworkAccess ||
+      hasFileOperations ||
+      config.securityLevel === 'maximum'
+    ) {
       return 'docker'
     }
 
@@ -386,30 +388,30 @@ export class EnhancedExecutionManager {
       language: request.language,
       securityLevel: config.securityLevel,
       resources: {
-        cpu: config.securityLevel === 'maximum' ? '0.5' : 
-             config.securityLevel === 'enhanced' ? '1.0' : '2.0',
+        cpu:
+          config.securityLevel === 'maximum'
+            ? '0.5'
+            : config.securityLevel === 'enhanced'
+              ? '1.0'
+              : '2.0',
         memory: config.memoryLimit,
         timeout: config.timeout,
-        diskSpace: '100MB'
+        diskSpace: '100MB',
       },
       networking: config.networkAccess,
       filesystem: 'temporary',
       enableDebugging: false,
-      customPackages: config.customPackages
+      customPackages: config.customPackages,
     }
 
-    const result = await dockerSandbox.executeCode(
-      request.code,
-      request.language,
-      containerConfig
-    )
+    const result = await dockerSandbox.executeCode(request.code, request.language, containerConfig)
 
     // Transform Docker result to enhanced response format
     return {
       success: result.success,
       output: result.output,
       executionMethod: 'docker',
-      error: result.error
+      error: result.error,
     }
   }
 
@@ -425,7 +427,7 @@ export class EnhancedExecutionManager {
 
     const startTime = Date.now()
     let stdout = ''
-    
+
     try {
       // Use existing VM logic for backward compatibility
       const context = createContext({
@@ -433,18 +435,18 @@ export class EnhancedExecutionManager {
         environmentVariables: request.environmentVariables || {},
         console: {
           log: (...args: any[]) => {
-            const logMessage = args.map(arg => 
-              typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-            ).join(' ') + '\n'
+            const logMessage = `${args
+              .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+              .join(' ')}\n`
             stdout += logMessage
           },
           error: (...args: any[]) => {
-            const errorMessage = args.map(arg => 
-              typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-            ).join(' ') + '\n'
+            const errorMessage = `${args
+              .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+              .join(' ')}\n`
             stdout += `ERROR: ${errorMessage}`
-          }
-        }
+          },
+        },
       })
 
       const wrappedCode = `
@@ -460,13 +462,13 @@ export class EnhancedExecutionManager {
 
       const script = new Script(wrappedCode, {
         filename: 'user-function.js',
-        timeout: config.timeout
+        timeout: config.timeout,
       })
 
       const result = await script.runInContext(context, {
         timeout: config.timeout,
         displayErrors: true,
-        breakOnSigint: true
+        breakOnSigint: true,
       })
 
       const executionTime = Date.now() - startTime
@@ -483,7 +485,7 @@ export class EnhancedExecutionManager {
             cpu: { usage: 0, time: executionTime },
             memory: { used: 0, max: 0, limit: 0 },
             disk: { read: 0, write: 0 },
-            network: { incoming: 0, outgoing: 0, requests: 0 }
+            network: { incoming: 0, outgoing: 0, requests: 0 },
           },
           securityReport: {
             riskScore: 0,
@@ -492,15 +494,14 @@ export class EnhancedExecutionManager {
             fileOperations: [],
             policyCompliance: true,
             threatLevel: 'none',
-            executionTimeMs: executionTime
-          }
+            executionTimeMs: executionTime,
+          },
         },
-        executionMethod: 'vm'
+        executionMethod: 'vm',
       }
-
     } catch (error) {
       const executionTime = Date.now() - startTime
-      
+
       return {
         success: false,
         output: {
@@ -513,7 +514,7 @@ export class EnhancedExecutionManager {
             cpu: { usage: 0, time: executionTime },
             memory: { used: 0, max: 0, limit: 0 },
             disk: { read: 0, write: 0 },
-            network: { incoming: 0, outgoing: 0, requests: 0 }
+            network: { incoming: 0, outgoing: 0, requests: 0 },
           },
           securityReport: {
             riskScore: 100,
@@ -522,11 +523,11 @@ export class EnhancedExecutionManager {
             fileOperations: [],
             policyCompliance: false,
             threatLevel: 'high',
-            executionTimeMs: executionTime
-          }
+            executionTimeMs: executionTime,
+          },
         },
         executionMethod: 'vm',
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -546,22 +547,25 @@ export class EnhancedExecutionManager {
         method: config.method,
         securityLevel: config.securityLevel,
         networkAccess: config.networkAccess,
-        customPackages: config.customPackages
-      }
+        customPackages: config.customPackages,
+      },
     }
-    
+
     const hash = require('crypto')
       .createHash('sha256')
       .update(JSON.stringify(keyData))
       .digest('hex')
-    
+
     return hash
   }
 
   /**
    * Get result from cache
    */
-  private getFromCache(cacheKey: string, securityAnalysis?: SecurityAnalysis): ExecutionCacheEntry | null {
+  private getFromCache(
+    cacheKey: string,
+    securityAnalysis?: SecurityAnalysis
+  ): ExecutionCacheEntry | null {
     const cached = this.cache.get(cacheKey)
     if (!cached) return null
 
@@ -569,7 +573,7 @@ export class EnhancedExecutionManager {
     const now = new Date()
     const ageMs = now.getTime() - cached.timestamp.getTime()
     const ttlMs = 15 * 60 * 1000
-    
+
     if (ageMs > ttlMs) {
       this.cache.delete(cacheKey)
       return null
@@ -597,22 +601,22 @@ export class EnhancedExecutionManager {
     securityAnalysis?: SecurityAnalysis
   ): void {
     const securityHash = securityAnalysis ? this.generateSecurityHash(securityAnalysis) : ''
-    
+
     this.cache.set(cacheKey, {
       result: { ...result },
       timestamp: new Date(),
       hits: 0,
-      securityHash
+      securityHash,
     })
 
     // Cleanup old entries if cache gets too large
     if (this.cache.size > 1000) {
       const oldestKeys = Array.from(this.cache.entries())
-        .sort(([,a], [,b]) => a.timestamp.getTime() - b.timestamp.getTime())
+        .sort(([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime())
         .slice(0, 100)
         .map(([key]) => key)
-      
-      oldestKeys.forEach(key => this.cache.delete(key))
+
+      oldestKeys.forEach((key) => this.cache.delete(key))
     }
   }
 
@@ -624,13 +628,10 @@ export class EnhancedExecutionManager {
       riskScore: securityAnalysis.riskScore,
       threatLevel: securityAnalysis.threatLevel,
       approved: securityAnalysis.approved,
-      violationCount: securityAnalysis.staticAnalysis.dangerousPatterns.length
+      violationCount: securityAnalysis.staticAnalysis.dangerousPatterns.length,
     }
-    
-    return require('crypto')
-      .createHash('md5')
-      .update(JSON.stringify(securityData))
-      .digest('hex')
+
+    return require('crypto').createHash('md5').update(JSON.stringify(securityData)).digest('hex')
   }
 
   /**
@@ -642,7 +643,7 @@ export class EnhancedExecutionManager {
     startTime: number
   ): EnhancedExecutionResponse {
     const executionTime = Date.now() - startTime
-    
+
     return {
       success: false,
       output: {
@@ -655,7 +656,7 @@ export class EnhancedExecutionManager {
           cpu: { usage: 0, time: 0 },
           memory: { used: 0, max: 0, limit: 0 },
           disk: { read: 0, write: 0 },
-          network: { incoming: 0, outgoing: 0, requests: 0 }
+          network: { incoming: 0, outgoing: 0, requests: 0 },
         },
         securityReport: {
           riskScore: securityAnalysis.riskScore,
@@ -664,12 +665,12 @@ export class EnhancedExecutionManager {
           fileOperations: [],
           policyCompliance: false,
           threatLevel: securityAnalysis.threatLevel,
-          executionTimeMs: executionTime
-        }
+          executionTimeMs: executionTime,
+        },
       },
       securityAnalysis,
       executionMethod: 'blocked',
-      error: `Security risk too high: ${securityAnalysis.riskScore}/100`
+      error: `Security risk too high: ${securityAnalysis.riskScore}/100`,
     }
   }
 
@@ -682,7 +683,7 @@ export class EnhancedExecutionManager {
     startTime: number
   ): EnhancedExecutionResponse {
     const executionTime = Date.now() - startTime
-    
+
     return {
       success: false,
       output: {
@@ -695,7 +696,7 @@ export class EnhancedExecutionManager {
           cpu: { usage: 0, time: 0 },
           memory: { used: 0, max: 0, limit: 0 },
           disk: { read: 0, write: 0 },
-          network: { incoming: 0, outgoing: 0, requests: 0 }
+          network: { incoming: 0, outgoing: 0, requests: 0 },
         },
         securityReport: {
           riskScore: 0,
@@ -704,12 +705,12 @@ export class EnhancedExecutionManager {
           fileOperations: [],
           policyCompliance: true,
           threatLevel: 'none',
-          executionTimeMs: executionTime
-        }
+          executionTimeMs: executionTime,
+        },
       },
       governanceApproval,
       executionMethod: 'blocked',
-      error: 'Governance approval required'
+      error: 'Governance approval required',
     }
   }
 
@@ -722,7 +723,7 @@ export class EnhancedExecutionManager {
     startTime: number
   ): EnhancedExecutionResponse {
     const executionTime = Date.now() - startTime
-    
+
     return {
       success: false,
       output: {
@@ -735,7 +736,7 @@ export class EnhancedExecutionManager {
           cpu: { usage: 0, time: 0 },
           memory: { used: 0, max: 0, limit: 0 },
           disk: { read: 0, write: 0 },
-          network: { incoming: 0, outgoing: 0, requests: 0 }
+          network: { incoming: 0, outgoing: 0, requests: 0 },
         },
         securityReport: {
           riskScore: 100,
@@ -744,11 +745,11 @@ export class EnhancedExecutionManager {
           fileOperations: [],
           policyCompliance: false,
           threatLevel: 'critical',
-          executionTimeMs: executionTime
-        }
+          executionTimeMs: executionTime,
+        },
       },
       executionMethod: 'error',
-      error: error.message
+      error: error.message,
     }
   }
 
@@ -758,10 +759,10 @@ export class EnhancedExecutionManager {
   private updateCacheStats(hit: boolean): void {
     const currentRate = this.metrics.cacheHitRate
     const totalRequests = this.metrics.totalExecutions
-    const newRate = hit ? 
-      (currentRate * (totalRequests - 1) + 1) / totalRequests :
-      (currentRate * (totalRequests - 1)) / totalRequests
-    
+    const newRate = hit
+      ? (currentRate * (totalRequests - 1) + 1) / totalRequests
+      : (currentRate * (totalRequests - 1)) / totalRequests
+
     this.metrics.cacheHitRate = newRate
   }
 
@@ -771,8 +772,8 @@ export class EnhancedExecutionManager {
   private updateAverageExecutionTime(newTime: number): void {
     const currentAvg = this.metrics.averageExecutionTime
     const totalExecutions = this.metrics.totalExecutions
-    
-    this.metrics.averageExecutionTime = 
+
+    this.metrics.averageExecutionTime =
       (currentAvg * (totalExecutions - 1) + newTime) / totalExecutions
   }
 
@@ -799,11 +800,11 @@ export class EnhancedExecutionManager {
       size: this.cache.size,
       hitRate: this.metrics.cacheHitRate,
       entries: Array.from(this.cache.entries()).map(([key, entry]) => ({
-        key: key.substring(0, 16) + '...',
+        key: `${key.substring(0, 16)}...`,
         hits: entry.hits,
         age: Date.now() - entry.timestamp.getTime(),
-        success: entry.result.success
-      }))
+        success: entry.result.success,
+      })),
     }
   }
 }

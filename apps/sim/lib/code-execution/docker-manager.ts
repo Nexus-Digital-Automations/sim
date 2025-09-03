@@ -1,14 +1,14 @@
-import { spawn, ChildProcess } from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs/promises'
-import path from 'path'
 import os from 'os'
+import path from 'path'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('DockerManager')
 
 /**
  * Docker Manager for Secure Code Execution
- * 
+ *
  * Provides secure, isolated Docker container execution for untrusted code with:
  * - Container lifecycle management
  * - Resource limits and monitoring
@@ -88,7 +88,7 @@ export class DockerManager {
       language: config.language,
       image: config.image,
       timeout: config.timeout,
-      memoryLimit: Math.round(config.memory / 1024 / 1024) + 'MB',
+      memoryLimit: `${Math.round(config.memory / 1024 / 1024)}MB`,
     })
 
     try {
@@ -111,7 +111,6 @@ export class DockerManager {
       })
 
       return result
-
     } catch (error) {
       const executionTime = Date.now() - startTime
       logger.error(`[${executionId}] Docker execution failed`, {
@@ -162,20 +161,18 @@ export class DockerManager {
     executionId: string
   ): Promise<ContainerInstance> {
     const imageKey = `${config.language}_${config.image}`
-    
+
     // Try to get available container from pool
     const availableContainer = Array.from(this.containerPool.values()).find(
       (container) =>
-        container.image === imageKey &&
-        container.status === 'ready' &&
-        container.execCount < 50 // Limit reuse to prevent resource leaks
+        container.image === imageKey && container.status === 'ready' && container.execCount < 50 // Limit reuse to prevent resource leaks
     )
 
     if (availableContainer) {
       availableContainer.status = 'running'
       availableContainer.lastUsed = new Date()
       availableContainer.execCount++
-      
+
       logger.debug(`[${executionId}] Reusing container ${availableContainer.id}`)
       return availableContainer
     }
@@ -211,32 +208,43 @@ export class DockerManager {
         'run',
         '--detach',
         '--rm', // Auto-remove when stopped
-        '--name', containerId,
-        
+        '--name',
+        containerId,
+
         // Resource limits
-        '--memory', `${Math.round(config.memory / 1024 / 1024)}m`,
-        '--cpu-shares', config.cpuShares.toString(),
-        '--pids-limit', '100',
-        
+        '--memory',
+        `${Math.round(config.memory / 1024 / 1024)}m`,
+        '--cpu-shares',
+        config.cpuShares.toString(),
+        '--pids-limit',
+        '100',
+
         // Security hardening
-        '--cap-drop', 'ALL',
-        ...config.capAdd.map(cap => ['--cap-add', cap]).flat(),
-        '--security-opt', 'no-new-privileges',
-        '--user', config.user,
-        
+        '--cap-drop',
+        'ALL',
+        ...config.capAdd.flatMap((cap) => ['--cap-add', cap]),
+        '--security-opt',
+        'no-new-privileges',
+        '--user',
+        config.user,
+
         // Network isolation
-        '--network', config.networkMode,
-        
+        '--network',
+        config.networkMode,
+
         // File system protection
         ...(config.readOnly ? ['--read-only'] : []),
-        '--tmpfs', '/tmp',
-        '--tmpfs', '/var/tmp',
-        
+        '--tmpfs',
+        '/tmp',
+        '--tmpfs',
+        '/var/tmp',
+
         // Container image
         config.image,
-        
+
         // Keep container alive
-        'sleep', 'infinity'
+        'sleep',
+        'infinity',
       ]
 
       await this.executeDockerCommand(dockerArgs, executionId)
@@ -251,7 +259,6 @@ export class DockerManager {
 
       logger.info(`[${executionId}] Container ${containerId} created successfully`)
       return container
-
     } catch (error) {
       container.status = 'error'
       logger.error(`[${executionId}] Container creation failed`, {
@@ -271,7 +278,7 @@ export class DockerManager {
     executionId: string
   ): Promise<ExecutionResult> {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sim-docker-'))
-    
+
     try {
       // Prepare execution script based on language
       const scriptPath = await this.prepareExecutionScript(config, tempDir)
@@ -290,7 +297,6 @@ export class DockerManager {
       container.status = 'ready' // Mark as available for reuse
 
       return result
-
     } finally {
       // Cleanup temporary files
       try {
@@ -366,7 +372,7 @@ try {
   process.exit(1);
 }
       `
-      
+
       await fs.writeFile(scriptPath, jsScript)
     } else {
       // Python execution script
@@ -402,7 +408,7 @@ except Exception as e:
     print(json.dumps(error_info))
     sys.exit(1)
       `
-      
+
       await fs.writeFile(scriptPath, pyScript)
     }
 
@@ -432,17 +438,11 @@ except Exception as e:
     scriptPath: string
   ): Promise<ExecutionResult> {
     const interpreter = config.language === 'javascript' ? 'node' : 'python3'
-    const dockerArgs = [
-      'exec',
-      '--user', config.user,
-      containerId,
-      interpreter,
-      scriptPath
-    ]
+    const dockerArgs = ['exec', '--user', config.user, containerId, interpreter, scriptPath]
 
     let stdout = ''
     let stderr = ''
-    let memoryUsage = 0
+    const memoryUsage = 0
 
     return new Promise((resolve, reject) => {
       const dockerProcess = spawn('docker', dockerArgs, {
@@ -463,7 +463,7 @@ except Exception as e:
           // Try to parse result from stdout
           const lines = stdout.trim().split('\n')
           const lastLine = lines[lines.length - 1]
-          
+
           let result: any = null
           let success = code === 0
 
@@ -472,7 +472,7 @@ except Exception as e:
             success = parsed.success
             result = parsed.result || null
             if (!success && parsed.error) {
-              stderr = parsed.error + (parsed.traceback ? '\n' + parsed.traceback : '')
+              stderr = parsed.error + (parsed.traceback ? `\n${parsed.traceback}` : '')
             }
           } catch {
             // If parsing fails, use raw output
@@ -491,7 +491,6 @@ except Exception as e:
               exitCode: code,
             },
           })
-
         } catch (error) {
           reject(error)
         }
@@ -555,12 +554,8 @@ except Exception as e:
 
     for (const [containerId, container] of this.containerPool.entries()) {
       const age = now.getTime() - container.lastUsed.getTime()
-      
-      if (
-        age > this.containerTimeout ||
-        container.status === 'error' ||
-        container.execCount > 50
-      ) {
+
+      if (age > this.containerTimeout || container.status === 'error' || container.execCount > 50) {
         containersToCleanup.push(containerId)
       }
     }
@@ -575,11 +570,11 @@ except Exception as e:
    */
   private async cleanupOldestContainers(): Promise<void> {
     const containers = Array.from(this.containerPool.values())
-      .filter(c => c.status === 'ready')
+      .filter((c) => c.status === 'ready')
       .sort((a, b) => a.lastUsed.getTime() - b.lastUsed.getTime())
 
     const toCleanup = containers.slice(0, Math.max(1, containers.length - this.maxPoolSize + 2))
-    
+
     for (const container of toCleanup) {
       await this.cleanupContainer(container.id)
     }
@@ -597,12 +592,11 @@ except Exception as e:
 
       // Stop container
       await this.executeDockerCommand(['stop', containerId], 'cleanup')
-      
+
       // Remove from pool
       this.containerPool.delete(containerId)
 
       logger.debug(`Container ${containerId} cleaned up successfully`)
-
     } catch (error) {
       logger.warn(`Failed to cleanup container ${containerId}: ${error.message}`)
       // Remove from pool anyway
@@ -622,7 +616,7 @@ except Exception as e:
 
     // Cleanup all containers
     const containerIds = Array.from(this.containerPool.keys())
-    await Promise.all(containerIds.map(id => this.cleanupContainer(id)))
+    await Promise.all(containerIds.map((id) => this.cleanupContainer(id)))
 
     logger.info('Docker Manager shutdown complete')
   }
@@ -637,15 +631,18 @@ except Exception as e:
     containersByImage: Record<string, number>
   } {
     const containers = Array.from(this.containerPool.values())
-    
+
     return {
       totalContainers: containers.length,
-      activeContainers: containers.filter(c => c.status === 'running').length,
-      readyContainers: containers.filter(c => c.status === 'ready').length,
-      containersByImage: containers.reduce((acc, container) => {
-        acc[container.image] = (acc[container.image] || 0) + 1
-        return acc
-      }, {} as Record<string, number>)
+      activeContainers: containers.filter((c) => c.status === 'running').length,
+      readyContainers: containers.filter((c) => c.status === 'ready').length,
+      containersByImage: containers.reduce(
+        (acc, container) => {
+          acc[container.image] = (acc[container.image] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>
+      ),
     }
   }
 }

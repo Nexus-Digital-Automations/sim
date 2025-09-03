@@ -1,9 +1,9 @@
 /**
  * Docker-Based Security Sandboxing System
- * 
+ *
  * Provides secure, enterprise-grade code execution through Docker containers
  * with multi-layer security, resource limits, and comprehensive monitoring.
- * 
+ *
  * Features:
  * - Multi-layer container security with capability dropping
  * - Resource limits (CPU, memory, disk, network)
@@ -11,15 +11,14 @@
  * - Comprehensive security monitoring and violation detection
  * - Automatic container lifecycle management and cleanup
  * - Performance optimization with container pooling
- * 
+ *
  * Author: Claude Development Agent
  * Created: September 3, 2025
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
+import { type ChildProcess, spawn } from 'child_process'
 import { randomBytes } from 'crypto'
-import { spawn, type ChildProcess } from 'child_process'
-import { promisify } from 'util'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('DockerSandbox')
 
@@ -30,10 +29,10 @@ export interface ContainerConfig {
   language: 'javascript' | 'python'
   securityLevel: 'basic' | 'enhanced' | 'maximum'
   resources: {
-    cpu: string        // e.g., "0.5" cores
-    memory: string     // e.g., "256MB"
-    timeout: number    // milliseconds
-    diskSpace: string  // e.g., "100MB"
+    cpu: string // e.g., "0.5" cores
+    memory: string // e.g., "256MB"
+    timeout: number // milliseconds
+    diskSpace: string // e.g., "100MB"
   }
   networking: 'none' | 'restricted' | 'monitored'
   filesystem: 'none' | 'readonly' | 'temporary'
@@ -65,22 +64,22 @@ export interface ExecutionResult {
  */
 export interface ResourceMetrics {
   cpu: {
-    usage: number       // Percentage
-    time: number        // Milliseconds
+    usage: number // Percentage
+    time: number // Milliseconds
   }
   memory: {
-    used: number        // Bytes
-    max: number         // Bytes
-    limit: number       // Bytes
+    used: number // Bytes
+    max: number // Bytes
+    limit: number // Bytes
   }
   disk: {
-    read: number        // Bytes
-    write: number       // Bytes
+    read: number // Bytes
+    write: number // Bytes
   }
   network: {
-    incoming: number    // Bytes
-    outgoing: number    // Bytes
-    requests: number    // Count
+    incoming: number // Bytes
+    outgoing: number // Bytes
+    requests: number // Count
   }
 }
 
@@ -88,7 +87,7 @@ export interface ResourceMetrics {
  * Security analysis report
  */
 export interface SecurityReport {
-  riskScore: number               // 0-100
+  riskScore: number // 0-100
   violations: SecurityViolation[]
   networkRequests: NetworkRequest[]
   fileOperations: FileOperation[]
@@ -165,13 +164,13 @@ class ContainerPool {
    */
   private async warmupPools() {
     logger.info('Warming up container pools...')
-    
+
     const languages = ['javascript', 'python'] as const
-    
+
     for (const language of languages) {
       const poolKey = `${language}-basic`
       this.pools.set(poolKey, [])
-      
+
       // Create warmup containers
       for (let i = 0; i < this.warmupContainers; i++) {
         try {
@@ -179,7 +178,9 @@ class ContainerPool {
           this.pools.get(poolKey)!.push(container)
           logger.info(`Created warmup container for ${language}`, { containerId: container.id })
         } catch (error) {
-          logger.error(`Failed to create warmup container for ${language}`, { error: error.message })
+          logger.error(`Failed to create warmup container for ${language}`, {
+            error: error.message,
+          })
         }
       }
     }
@@ -196,11 +197,11 @@ class ContainerPool {
         cpu: '0.5',
         memory: '256MB',
         timeout: 30000,
-        diskSpace: '100MB'
+        diskSpace: '100MB',
       },
       networking: 'none',
       filesystem: 'readonly',
-      enableDebugging: false
+      enableDebugging: false,
     }
 
     return await this.createContainer(config)
@@ -212,9 +213,9 @@ class ContainerPool {
   async getContainer(config: ContainerConfig): Promise<Container> {
     const poolKey = `${config.language}-${config.securityLevel}`
     const pool = this.pools.get(poolKey) || []
-    
+
     // Try to get an available container from pool
-    const available = pool.find(c => c.status === 'created')
+    const available = pool.find((c) => c.status === 'created')
     if (available) {
       logger.info('Reusing pooled container', { containerId: available.id })
       return available
@@ -222,7 +223,7 @@ class ContainerPool {
 
     // Create new container if pool is empty or all busy
     const newContainer = await this.createContainer(config)
-    
+
     // Add to pool if there's space
     if (pool.length < this.maxPoolSize) {
       pool.push(newContainer)
@@ -238,7 +239,7 @@ class ContainerPool {
   private async createContainer(config: ContainerConfig): Promise<Container> {
     const containerId = randomBytes(8).toString('hex')
     const containerName = `sim-sandbox-${config.language}-${containerId}`
-    
+
     logger.info('Creating new container', { containerId, language: config.language })
 
     const container: Container = {
@@ -250,7 +251,7 @@ class ContainerPool {
       createdAt: new Date(),
       cleanup: async () => {
         await this.cleanupContainer(containerId)
-      }
+      },
     }
 
     return container
@@ -275,22 +276,22 @@ class ContainerPool {
    */
   private async cleanupContainer(containerId: string): Promise<void> {
     logger.info('Cleaning up container', { containerId })
-    
+
     try {
       // Stop and remove container
       await this.runDockerCommand(['stop', containerId])
       await this.runDockerCommand(['rm', containerId])
-      
+
       // Remove from pools
       for (const [poolKey, pool] of this.pools.entries()) {
-        const index = pool.findIndex(c => c.id === containerId)
+        const index = pool.findIndex((c) => c.id === containerId)
         if (index !== -1) {
           pool.splice(index, 1)
           this.pools.set(poolKey, pool)
           break
         }
       }
-      
+
       logger.info('Container cleaned up successfully', { containerId })
     } catch (error) {
       logger.error('Failed to cleanup container', { containerId, error: error.message })
@@ -329,18 +330,18 @@ class ContainerPool {
    */
   async cleanup(): Promise<void> {
     logger.info('Cleaning up all container pools...')
-    
+
     const cleanupPromises: Promise<void>[] = []
-    
+
     for (const [poolKey, pool] of this.pools.entries()) {
       for (const container of pool) {
         cleanupPromises.push(container.cleanup())
       }
     }
-    
+
     await Promise.all(cleanupPromises)
     this.pools.clear()
-    
+
     logger.info('All container pools cleaned up')
   }
 }
@@ -354,12 +355,12 @@ export class DockerSandbox {
 
   constructor() {
     this.pool = new ContainerPool()
-    
+
     // Cleanup on process exit
     process.on('exit', () => {
       this.cleanup()
     })
-    
+
     process.on('SIGINT', () => {
       this.cleanup()
       process.exit(0)
@@ -370,9 +371,9 @@ export class DockerSandbox {
    * Create a new container with security configuration
    */
   async createContainer(config: ContainerConfig): Promise<Container> {
-    logger.info('Creating secure container', { 
-      language: config.language, 
-      securityLevel: config.securityLevel 
+    logger.info('Creating secure container', {
+      language: config.language,
+      securityLevel: config.securityLevel,
     })
 
     try {
@@ -395,7 +396,7 @@ export class DockerSandbox {
   ): Promise<ExecutionResult> {
     const executionId = randomBytes(6).toString('hex')
     const startTime = Date.now()
-    
+
     logger.info('Starting code execution', { executionId, language })
 
     // Build container configuration
@@ -407,12 +408,12 @@ export class DockerSandbox {
         memory: config?.resources?.memory || '512MB',
         timeout: config?.resources?.timeout || 30000,
         diskSpace: config?.resources?.diskSpace || '100MB',
-        ...config?.resources
+        ...config?.resources,
       },
       networking: config?.networking || 'none',
       filesystem: config?.filesystem || 'readonly',
       enableDebugging: config?.enableDebugging || false,
-      customPackages: config?.customPackages || []
+      customPackages: config?.customPackages || [],
     }
 
     let container: Container | null = null
@@ -420,28 +421,22 @@ export class DockerSandbox {
     try {
       // Create secure container
       container = await this.createContainer(containerConfig)
-      
+
       // Execute code with security monitoring
-      const result = await this.runCodeInContainer(
-        container,
-        code,
-        executionId,
-        startTime
-      )
+      const result = await this.runCodeInContainer(container, code, executionId, startTime)
 
       logger.info('Code execution completed', {
         executionId,
         success: result.success,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       })
 
       return result
-
     } catch (error) {
       logger.error('Code execution failed', {
         executionId,
         error: error.message,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       })
 
       return {
@@ -453,9 +448,9 @@ export class DockerSandbox {
           executionTime: Date.now() - startTime,
           memoryUsage: 0,
           resourceUsage: this.getEmptyResourceMetrics(),
-          securityReport: this.getEmptySecurityReport()
+          securityReport: this.getEmptySecurityReport(),
         },
-        error: error.message
+        error: error.message,
       }
     } finally {
       // Cleanup container
@@ -475,10 +470,10 @@ export class DockerSandbox {
     startTime: number
   ): Promise<ExecutionResult> {
     const dockerArgs = this.buildDockerRunArgs(container, code)
-    
-    logger.info('Running Docker container', { 
+
+    logger.info('Running Docker container', {
       containerId: container.id,
-      executionId 
+      executionId,
     })
 
     return new Promise((resolve, reject) => {
@@ -506,24 +501,20 @@ export class DockerSandbox {
 
       process.on('close', async (code) => {
         clearTimeout(timeout)
-        
+
         if (killed) return // Already handled by timeout
 
         const executionTime = Date.now() - startTime
-        
+
         try {
           // Parse execution results
           const result = this.parseExecutionOutput(stdout, stderr, code === 0)
-          
+
           // Collect resource metrics
           const resourceUsage = await this.collectResourceMetrics(container.id)
-          
+
           // Generate security report
-          const securityReport = await this.generateSecurityReport(
-            container,
-            code,
-            executionTime
-          )
+          const securityReport = await this.generateSecurityReport(container, code, executionTime)
 
           resolve({
             success: code === 0,
@@ -534,9 +525,9 @@ export class DockerSandbox {
               executionTime,
               memoryUsage: resourceUsage.memory.used,
               resourceUsage,
-              securityReport
+              securityReport,
             },
-            containerId: container.id
+            containerId: container.id,
           })
         } catch (error) {
           reject(new Error(`Failed to process execution results: ${error.message}`))
@@ -556,19 +547,29 @@ export class DockerSandbox {
   private buildDockerRunArgs(container: Container, code: string): string[] {
     const args = [
       'run',
-      '--rm',                                    // Remove container after execution
-      '--name', container.name,                  // Container name
-      '--user', '1001:1001',                    // Run as non-root user
-      '--read-only',                            // Read-only filesystem
-      '--tmpfs', '/tmp:noexec,nosuid,size=100m', // Temporary filesystem
-      '--no-new-privileges',                    // Prevent privilege escalation
-      '--cap-drop', 'ALL',                      // Drop all capabilities
-      '--security-opt', 'no-new-privileges:true', // Additional security
-      '--memory', container.config.resources.memory,
-      '--cpus', container.config.resources.cpu,
-      '--pids-limit', '100',                    // Limit number of processes
-      '--ulimit', 'nproc=100:100',             // Limit processes
-      '--ulimit', 'nofile=100:100',            // Limit open files
+      '--rm', // Remove container after execution
+      '--name',
+      container.name, // Container name
+      '--user',
+      '1001:1001', // Run as non-root user
+      '--read-only', // Read-only filesystem
+      '--tmpfs',
+      '/tmp:noexec,nosuid,size=100m', // Temporary filesystem
+      '--no-new-privileges', // Prevent privilege escalation
+      '--cap-drop',
+      'ALL', // Drop all capabilities
+      '--security-opt',
+      'no-new-privileges:true', // Additional security
+      '--memory',
+      container.config.resources.memory,
+      '--cpus',
+      container.config.resources.cpu,
+      '--pids-limit',
+      '100', // Limit number of processes
+      '--ulimit',
+      'nproc=100:100', // Limit processes
+      '--ulimit',
+      'nofile=100:100', // Limit open files
     ]
 
     // Network configuration
@@ -580,9 +581,12 @@ export class DockerSandbox {
 
     // Environment variables
     args.push(
-      '--env', `EXECUTION_TIMEOUT=${container.config.resources.timeout}`,
-      '--env', `MEMORY_LIMIT=${container.config.resources.memory}`,
-      '--env', `ENABLE_DEBUGGING=${container.config.enableDebugging}`
+      '--env',
+      `EXECUTION_TIMEOUT=${container.config.resources.timeout}`,
+      '--env',
+      `MEMORY_LIMIT=${container.config.resources.memory}`,
+      '--env',
+      `ENABLE_DEBUGGING=${container.config.enableDebugging}`
     )
 
     // Container image
@@ -600,9 +604,9 @@ export class DockerSandbox {
   private parseExecutionOutput(stdout: string, stderr: string, success: boolean) {
     try {
       // Try to parse structured output
-      const lines = stdout.split('\n').filter(line => line.trim())
+      const lines = stdout.split('\n').filter((line) => line.trim())
       const lastLine = lines[lines.length - 1]
-      
+
       let result = null
       let cleanStdout = stdout
 
@@ -620,13 +624,13 @@ export class DockerSandbox {
       return {
         result,
         stdout: cleanStdout,
-        stderr
+        stderr,
       }
     } catch (error) {
       return {
         result: null,
         stdout,
-        stderr
+        stderr,
       }
     }
   }
@@ -641,22 +645,22 @@ export class DockerSandbox {
       return {
         cpu: {
           usage: 0,
-          time: 0
+          time: 0,
         },
         memory: {
           used: 0,
           max: 0,
-          limit: 0
+          limit: 0,
         },
         disk: {
           read: 0,
-          write: 0
+          write: 0,
         },
         network: {
           incoming: 0,
           outgoing: 0,
-          requests: 0
-        }
+          requests: 0,
+        },
       }
     } catch (error) {
       logger.error('Failed to collect resource metrics', { containerId, error: error.message })
@@ -678,16 +682,41 @@ export class DockerSandbox {
       networkRequests: [],
       fileOperations: [],
       policyCompliance: true,
-      executionTimeMs
+      executionTimeMs,
     }
 
     // Basic static analysis for dangerous patterns
     const dangerousPatterns = [
-      { pattern: /eval\s*\(/gi, type: 'code', severity: 'high' as const, desc: 'Use of eval() function' },
-      { pattern: /Function\s*\(/gi, type: 'code', severity: 'medium' as const, desc: 'Dynamic function creation' },
-      { pattern: /exec\s*\(/gi, type: 'code', severity: 'high' as const, desc: 'Code execution function' },
-      { pattern: /spawn\s*\(/gi, type: 'runtime', severity: 'high' as const, desc: 'Process spawning' },
-      { pattern: /child_process/gi, type: 'runtime', severity: 'critical' as const, desc: 'Child process usage' }
+      {
+        pattern: /eval\s*\(/gi,
+        type: 'code',
+        severity: 'high' as const,
+        desc: 'Use of eval() function',
+      },
+      {
+        pattern: /Function\s*\(/gi,
+        type: 'code',
+        severity: 'medium' as const,
+        desc: 'Dynamic function creation',
+      },
+      {
+        pattern: /exec\s*\(/gi,
+        type: 'code',
+        severity: 'high' as const,
+        desc: 'Code execution function',
+      },
+      {
+        pattern: /spawn\s*\(/gi,
+        type: 'runtime',
+        severity: 'high' as const,
+        desc: 'Process spawning',
+      },
+      {
+        pattern: /child_process/gi,
+        type: 'runtime',
+        severity: 'critical' as const,
+        desc: 'Child process usage',
+      },
     ]
 
     for (const { pattern, type, severity, desc } of dangerousPatterns) {
@@ -697,9 +726,10 @@ export class DockerSandbox {
           severity,
           description: desc,
           timestamp: new Date(),
-          context: { pattern: pattern.toString() }
+          context: { pattern: pattern.toString() },
         })
-        report.riskScore += severity === 'critical' ? 25 : severity === 'high' ? 15 : severity === 'medium' ? 10 : 5
+        report.riskScore +=
+          severity === 'critical' ? 25 : severity === 'high' ? 15 : severity === 'medium' ? 10 : 5
       }
     }
 
@@ -717,7 +747,7 @@ export class DockerSandbox {
       cpu: { usage: 0, time: 0 },
       memory: { used: 0, max: 0, limit: 0 },
       disk: { read: 0, write: 0 },
-      network: { incoming: 0, outgoing: 0, requests: 0 }
+      network: { incoming: 0, outgoing: 0, requests: 0 },
     }
   }
 
@@ -731,7 +761,7 @@ export class DockerSandbox {
       networkRequests: [],
       fileOperations: [],
       policyCompliance: true,
-      executionTimeMs: 0
+      executionTimeMs: 0,
     }
   }
 
@@ -751,18 +781,18 @@ export class DockerSandbox {
    */
   async cleanup(): Promise<void> {
     logger.info('Cleaning up Docker sandbox...')
-    
+
     // Cleanup active containers
-    const cleanupPromises = Array.from(this.activeContainers.values()).map(
-      container => container.cleanup()
+    const cleanupPromises = Array.from(this.activeContainers.values()).map((container) =>
+      container.cleanup()
     )
-    
+
     await Promise.all(cleanupPromises)
     this.activeContainers.clear()
-    
+
     // Cleanup container pool
     await this.pool.cleanup()
-    
+
     logger.info('Docker sandbox cleanup complete')
   }
 }

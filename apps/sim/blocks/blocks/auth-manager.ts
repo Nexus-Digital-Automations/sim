@@ -35,8 +35,8 @@ export const AuthManagerBlock: BlockConfig<AuthResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder: 'https://auth.example.com/oauth/token',
-      condition: { 
-        field: 'authType', 
+      condition: {
+        field: 'authType',
         value: ['oauth2_code', 'oauth2_client', 'oauth2_password', 'jwt_refresh'],
       },
       required: true,
@@ -47,8 +47,8 @@ export const AuthManagerBlock: BlockConfig<AuthResponse> = {
       type: 'short-input',
       layout: 'half',
       placeholder: 'your-client-id',
-      condition: { 
-        field: 'authType', 
+      condition: {
+        field: 'authType',
         value: ['oauth2_code', 'oauth2_client', 'oauth2_password'],
       },
       required: true,
@@ -60,8 +60,8 @@ export const AuthManagerBlock: BlockConfig<AuthResponse> = {
       layout: 'half',
       placeholder: 'your-client-secret',
       password: true,
-      condition: { 
-        field: 'authType', 
+      condition: {
+        field: 'authType',
         value: ['oauth2_code', 'oauth2_client', 'oauth2_password'],
       },
       required: true,
@@ -110,8 +110,8 @@ export const AuthManagerBlock: BlockConfig<AuthResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'read:user read:repo write:repo',
-      condition: { 
-        field: 'authType', 
+      condition: {
+        field: 'authType',
         value: ['oauth2_code', 'oauth2_client', 'oauth2_password'],
       },
       description: 'Space-separated list of OAuth scopes',

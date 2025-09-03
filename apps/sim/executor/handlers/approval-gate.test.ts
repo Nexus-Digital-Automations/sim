@@ -8,10 +8,10 @@
  * @created 2025-09-03
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { ApprovalGateBlockHandler } from './approval-gate'
-import type { SerializedBlock } from '@/serializer/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExecutionContext } from '@/executor/types'
+import type { SerializedBlock } from '@/serializer/types'
+import { ApprovalGateBlockHandler } from './approval-gate'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -58,7 +58,7 @@ describe('ApprovalGateBlockHandler', () => {
 
   beforeEach(() => {
     handler = new ApprovalGateBlockHandler()
-    
+
     mockBlock = {
       id: 'test-block-id',
       type: 'approval-gate',
@@ -120,7 +120,7 @@ describe('ApprovalGateBlockHandler', () => {
 
     it('should fail with missing approval title', async () => {
       const invalidInputs = { ...validInputs, approvalTitle: '' }
-      
+
       const result = await handler.execute(mockBlock, invalidInputs, mockContext)
 
       expect(result.success).toBe(false)
@@ -130,7 +130,7 @@ describe('ApprovalGateBlockHandler', () => {
 
     it('should fail with missing approval message', async () => {
       const invalidInputs = { ...validInputs, approvalMessage: '' }
-      
+
       const result = await handler.execute(mockBlock, invalidInputs, mockContext)
 
       expect(result.success).toBe(false)
@@ -161,18 +161,22 @@ describe('ApprovalGateBlockHandler', () => {
     describe('handleApprovalResponse', () => {
       beforeEach(() => {
         // Reset static state
-        ApprovalGateBlockHandler['activeApprovals'].clear()
-        ApprovalGateBlockHandler['approvalTimeouts'].clear()
+        ApprovalGateBlockHandler.activeApprovals.clear()
+        ApprovalGateBlockHandler.approvalTimeouts.clear()
       })
 
       it('should handle approval response when approval exists', async () => {
         // First create an approval
-        await handler.execute(mockBlock, {
-          approvalTitle: 'Test',
-          approvalMessage: 'Test message',
-          approvers: ['user1@test.com'],
-          approvalType: 'any',
-        }, mockContext)
+        await handler.execute(
+          mockBlock,
+          {
+            approvalTitle: 'Test',
+            approvalMessage: 'Test message',
+            approvers: ['user1@test.com'],
+            approvalType: 'any',
+          },
+          mockContext
+        )
 
         const approvalId = 'approval_test-block-id_test-execution-id_test'
         const result = await ApprovalGateBlockHandler.handleApprovalResponse(

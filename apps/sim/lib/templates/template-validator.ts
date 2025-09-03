@@ -1,6 +1,6 @@
 /**
  * Template Validator - Quality Control and Security Scanning System
- * 
+ *
  * This module provides comprehensive template validation functionality including:
  * - Quality scoring with detailed metrics and recommendations
  * - Security scanning for vulnerabilities and compliance issues
@@ -8,7 +8,7 @@
  * - Accessibility validation for inclusive workflow design
  * - Content moderation and policy compliance checking
  * - Automated testing and validation workflows
- * 
+ *
  * Validation Layers:
  * 1. Syntax Validation: Workflow structure and block configuration
  * 2. Security Scanning: Credential exposure and injection risks
@@ -16,20 +16,13 @@
  * 4. Performance Analysis: Execution time and resource optimization
  * 5. Compliance Checking: Policy and regulatory requirements
  * 6. Content Moderation: Community guidelines and standards
- * 
+ *
  * @author Claude Code Template System
  * @version 2.0.0
  */
 
-import { z } from 'zod'
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  TemplateValidationResult,
-  Template,
-  TemplateMetadata,
-  TemplateDifficulty,
-  TemplateComplexity
-} from './types'
+import type { TemplateMetadata, TemplateValidationResult } from './types'
 
 // Initialize structured logger for validation operations
 const logger = createLogger('TemplateValidator')
@@ -42,12 +35,12 @@ export type ValidationSeverity = 'info' | 'warning' | 'error' | 'critical'
 /**
  * Validation category types for organizing checks
  */
-export type ValidationCategory = 
-  | 'syntax' 
-  | 'security' 
-  | 'performance' 
-  | 'accessibility' 
-  | 'quality' 
+export type ValidationCategory =
+  | 'syntax'
+  | 'security'
+  | 'performance'
+  | 'accessibility'
+  | 'quality'
   | 'compliance'
   | 'content'
 
@@ -112,7 +105,7 @@ export interface QualityAssessmentOptions {
 
 /**
  * Comprehensive Template Validator Class
- * 
+ *
  * Provides enterprise-grade validation with configurable rules and policies.
  * Supports multiple validation modes from basic syntax checking to comprehensive
  * enterprise security and compliance validation.
@@ -126,22 +119,22 @@ export class TemplateValidator {
     this.requestId = requestId || crypto.randomUUID().slice(0, 8)
     this.startTime = Date.now()
     this.validationRules = new Map()
-    
+
     // Initialize default validation rules
     this.initializeValidationRules()
-    
+
     logger.info(`[${this.requestId}] TemplateValidator initialized`, {
       ruleCount: this.validationRules.size,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
   /**
    * Comprehensive template validation with detailed analysis
-   * 
+   *
    * Performs multi-layered validation including syntax, security, quality,
    * performance, accessibility, and compliance checks with detailed reporting.
-   * 
+   *
    * @param template - Template to validate
    * @param options - Validation configuration options
    * @returns Promise<TemplateValidationResult> - Complete validation results
@@ -156,42 +149,38 @@ export class TemplateValidator {
     } = {}
   ): Promise<TemplateValidationResult> {
     const operationId = `validate_${Date.now()}`
-    
+
     logger.info(`[${this.requestId}] Starting comprehensive template validation`, {
       operationId,
       templateId: template.id,
       templateName: template.name,
       skipCategories: options.skipCategories || [],
-      customRules: options.customRules?.length || 0
+      customRules: options.customRules?.length || 0,
     })
 
     try {
       const validationStart = Date.now()
       const issues: ValidationIssue[] = []
       const scores: Record<string, number> = {}
-      
+
       // Add custom rules if provided
       if (options.customRules) {
-        options.customRules.forEach(rule => {
+        options.customRules.forEach((rule) => {
           this.validationRules.set(rule.id, rule)
         })
       }
 
       // Run validation categories
       const categoriesToRun = Array.from(this.validationRules.values())
-        .map(rule => rule.category)
+        .map((rule) => rule.category)
         .filter((category, index, arr) => arr.indexOf(category) === index)
-        .filter(category => !options.skipCategories?.includes(category))
+        .filter((category) => !options.skipCategories?.includes(category))
 
       for (const category of categoriesToRun) {
         logger.info(`[${this.requestId}] Running ${category} validation`, { operationId })
-        
-        const categoryIssues = await this.runValidationCategory(
-          category,
-          template,
-          options
-        )
-        
+
+        const categoryIssues = await this.runValidationCategory(category, template, options)
+
         issues.push(...categoryIssues)
         scores[category] = this.calculateCategoryScore(categoryIssues)
       }
@@ -202,8 +191,8 @@ export class TemplateValidator {
       const completenessScore = this.calculateCompletenessScore(template)
 
       // Determine validation status
-      const criticalIssues = issues.filter(i => i.severity === 'critical')
-      const errorIssues = issues.filter(i => i.severity === 'error')
+      const criticalIssues = issues.filter((i) => i.severity === 'critical')
+      const errorIssues = issues.filter((i) => i.severity === 'error')
       const isValid = criticalIssues.length === 0 && errorIssues.length === 0
 
       // Generate recommendations
@@ -212,24 +201,24 @@ export class TemplateValidator {
       const validationTime = Date.now() - validationStart
       const result: TemplateValidationResult = {
         isValid,
-        errors: errorIssues.map(i => i.message),
-        warnings: issues.filter(i => i.severity === 'warning').map(i => i.message),
-        suggestions: issues.filter(i => i.severity === 'info').map(i => i.message),
-        
+        errors: errorIssues.map((i) => i.message),
+        warnings: issues.filter((i) => i.severity === 'warning').map((i) => i.message),
+        suggestions: issues.filter((i) => i.severity === 'info').map((i) => i.message),
+
         qualityScore,
         securityScore,
         completenessScore,
-        
+
         checks: {
           syntax: scores.syntax >= 80,
           security: scores.security >= 80,
           performance: scores.performance >= 70,
           accessibility: scores.accessibility >= 70,
           compliance: scores.compliance >= 90,
-          quality: scores.quality >= 75
+          quality: scores.quality >= 75,
         },
-        
-        recommendations
+
+        recommendations,
       }
 
       logger.info(`[${this.requestId}] Template validation completed`, {
@@ -238,17 +227,16 @@ export class TemplateValidator {
         qualityScore,
         securityScore,
         issueCount: issues.length,
-        validationTime
+        validationTime,
       })
 
       return result
-
     } catch (error) {
       const elapsed = Date.now() - this.startTime
       logger.error(`[${this.requestId}] Template validation failed`, {
         operationId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        processingTime: elapsed
+        processingTime: elapsed,
       })
       throw error
     }
@@ -256,10 +244,10 @@ export class TemplateValidator {
 
   /**
    * Security-focused template scanning for vulnerabilities and risks
-   * 
+   *
    * Performs deep security analysis including credential exposure detection,
    * injection risk assessment, data leak prevention, and external connection validation.
-   * 
+   *
    * @param template - Template to scan for security issues
    * @param options - Security scan configuration
    * @returns Promise<SecurityScanResult> - Detailed security analysis
@@ -271,7 +259,7 @@ export class TemplateValidator {
       checkCredentialExposure: true,
       checkInjectionRisks: true,
       checkDataLeaks: true,
-      checkExternalConnections: true
+      checkExternalConnections: true,
     }
   ): Promise<{
     isSecure: boolean
@@ -283,11 +271,11 @@ export class TemplateValidator {
   }> {
     const operationId = `security_scan_${Date.now()}`
     const scanStart = Date.now()
-    
+
     logger.info(`[${this.requestId}] Starting security scan`, {
       operationId,
       templateId: template.id,
-      scanLevel: options.scanLevel
+      scanLevel: options.scanLevel,
     })
 
     try {
@@ -319,10 +307,10 @@ export class TemplateValidator {
       }
 
       // Calculate security score
-      const criticalCount = vulnerabilities.filter(v => v.severity === 'critical').length
-      const errorCount = vulnerabilities.filter(v => v.severity === 'error').length
-      const warningCount = vulnerabilities.filter(v => v.severity === 'warning').length
-      
+      const criticalCount = vulnerabilities.filter((v) => v.severity === 'critical').length
+      const errorCount = vulnerabilities.filter((v) => v.severity === 'error').length
+      const warningCount = vulnerabilities.filter((v) => v.severity === 'warning').length
+
       let securityScore = 100
       securityScore -= criticalCount * 30
       securityScore -= errorCount * 15
@@ -340,7 +328,7 @@ export class TemplateValidator {
         isSecure,
         securityScore,
         vulnerabilityCount: vulnerabilities.length,
-        scanTime
+        scanTime,
       })
 
       return {
@@ -349,15 +337,14 @@ export class TemplateValidator {
         vulnerabilities,
         recommendations,
         scanLevel: options.scanLevel,
-        scanTime
+        scanTime,
       }
-
     } catch (error) {
       const elapsed = Date.now() - scanStart
       logger.error(`[${this.requestId}] Security scan failed`, {
         operationId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        processingTime: elapsed
+        processingTime: elapsed,
       })
       throw error
     }
@@ -365,10 +352,10 @@ export class TemplateValidator {
 
   /**
    * Template compliance validation for regulatory requirements
-   * 
+   *
    * Validates templates against various compliance frameworks and standards
    * including data privacy regulations, industry standards, and organizational policies.
-   * 
+   *
    * @param template - Template to validate for compliance
    * @param frameworks - Compliance frameworks to check against
    * @returns Promise<ComplianceResult> - Compliance validation results
@@ -380,42 +367,49 @@ export class TemplateValidator {
     isCompliant: boolean
     complianceScore: number
     violations: ValidationIssue[]
-    frameworkResults: Record<string, { compliant: boolean; score: number; issues: ValidationIssue[] }>
+    frameworkResults: Record<
+      string,
+      { compliant: boolean; score: number; issues: ValidationIssue[] }
+    >
     recommendations: string[]
   }> {
     const operationId = `compliance_check_${Date.now()}`
-    
+
     logger.info(`[${this.requestId}] Starting compliance validation`, {
       operationId,
       templateId: template.id,
-      frameworks
+      frameworks,
     })
 
     try {
-      const frameworkResults: Record<string, { compliant: boolean; score: number; issues: ValidationIssue[] }> = {}
+      const frameworkResults: Record<
+        string,
+        { compliant: boolean; score: number; issues: ValidationIssue[] }
+      > = {}
       const allViolations: ValidationIssue[] = []
 
       // Check each compliance framework
       for (const framework of frameworks) {
         const frameworkIssues = this.checkFrameworkCompliance(template, framework)
         const frameworkScore = this.calculateCategoryScore(frameworkIssues)
-        const isFrameworkCompliant = frameworkIssues.filter(i => ['critical', 'error'].includes(i.severity)).length === 0
+        const isFrameworkCompliant =
+          frameworkIssues.filter((i) => ['critical', 'error'].includes(i.severity)).length === 0
 
         frameworkResults[framework] = {
           compliant: isFrameworkCompliant,
           score: frameworkScore,
-          issues: frameworkIssues
+          issues: frameworkIssues,
         }
 
         allViolations.push(...frameworkIssues)
       }
 
       // Calculate overall compliance
-      const complianceScore = Object.values(frameworkResults)
-        .reduce((acc, result) => acc + result.score, 0) / frameworks.length
-      
-      const isCompliant = Object.values(frameworkResults)
-        .every(result => result.compliant)
+      const complianceScore =
+        Object.values(frameworkResults).reduce((acc, result) => acc + result.score, 0) /
+        frameworks.length
+
+      const isCompliant = Object.values(frameworkResults).every((result) => result.compliant)
 
       // Generate compliance recommendations
       const recommendations = this.generateComplianceRecommendations(allViolations, frameworks)
@@ -424,7 +418,7 @@ export class TemplateValidator {
         operationId,
         isCompliant,
         complianceScore,
-        violationCount: allViolations.length
+        violationCount: allViolations.length,
       })
 
       return {
@@ -432,13 +426,12 @@ export class TemplateValidator {
         complianceScore,
         violations: allViolations,
         frameworkResults,
-        recommendations
+        recommendations,
       }
-
     } catch (error) {
       logger.error(`[${this.requestId}] Compliance check failed`, {
         operationId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -459,7 +452,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'error',
         description: 'Validates that the workflow has a valid structure with required fields',
-        check: (template) => this.checkWorkflowStructure(template)
+        check: (template) => this.checkWorkflowStructure(template),
       },
       {
         id: 'syntax-002',
@@ -468,7 +461,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'error',
         description: 'Validates that all blocks have proper configuration',
-        check: (template) => this.checkBlockConfiguration(template)
+        check: (template) => this.checkBlockConfiguration(template),
       },
 
       // Security validation rules
@@ -479,7 +472,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'critical',
         description: 'Detects exposed credentials or sensitive information',
-        check: (template) => this.scanCredentialExposure(template)
+        check: (template) => this.scanCredentialExposure(template),
       },
       {
         id: 'security-002',
@@ -488,7 +481,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'error',
         description: 'Identifies potential injection vulnerabilities',
-        check: (template) => this.scanInjectionRisks(template)
+        check: (template) => this.scanInjectionRisks(template),
       },
 
       // Quality validation rules
@@ -499,7 +492,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'warning',
         description: 'Checks for complete template metadata and documentation',
-        check: (template, metadata) => this.checkTemplateCompleteness(template, metadata)
+        check: (template, metadata) => this.checkTemplateCompleteness(template, metadata),
       },
       {
         id: 'quality-002',
@@ -508,7 +501,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'info',
         description: 'Validates adherence to workflow best practices',
-        check: (template) => this.checkBestPractices(template)
+        check: (template) => this.checkBestPractices(template),
       },
 
       // Performance validation rules
@@ -519,7 +512,7 @@ export class TemplateValidator {
         enabled: true,
         severity: 'warning',
         description: 'Analyzes workflow efficiency and optimization opportunities',
-        check: (template) => this.checkExecutionEfficiency(template)
+        check: (template) => this.checkExecutionEfficiency(template),
       },
 
       // Accessibility validation rules
@@ -530,11 +523,11 @@ export class TemplateValidator {
         enabled: true,
         severity: 'warning',
         description: 'Validates accessibility features and inclusive design',
-        check: (template) => this.checkAccessibility(template)
-      }
+        check: (template) => this.checkAccessibility(template),
+      },
     ]
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       this.validationRules.set(rule.id, rule)
     })
   }
@@ -544,11 +537,12 @@ export class TemplateValidator {
     template: any,
     options: any
   ): Promise<ValidationIssue[]> {
-    const categoryRules = Array.from(this.validationRules.values())
-      .filter(rule => rule.category === category && rule.enabled)
-    
+    const categoryRules = Array.from(this.validationRules.values()).filter(
+      (rule) => rule.category === category && rule.enabled
+    )
+
     const issues: ValidationIssue[] = []
-    
+
     for (const rule of categoryRules) {
       try {
         const ruleIssues = rule.check(template, template.metadata)
@@ -557,14 +551,14 @@ export class TemplateValidator {
         logger.warn(`[${this.requestId}] Validation rule ${rule.id} failed`, { error })
       }
     }
-    
+
     return issues
   }
 
   private calculateCategoryScore(issues: ValidationIssue[]): number {
     let score = 100
-    
-    issues.forEach(issue => {
+
+    issues.forEach((issue) => {
       switch (issue.severity) {
         case 'critical':
           score -= 30
@@ -580,7 +574,7 @@ export class TemplateValidator {
           break
       }
     })
-    
+
     return Math.max(0, score)
   }
 
@@ -591,7 +585,7 @@ export class TemplateValidator {
   private calculateCompletenessScore(template: any): number {
     let score = 0
     const maxScore = 100
-    
+
     // Check for required fields
     if (template.name) score += 20
     if (template.description) score += 20
@@ -599,31 +593,34 @@ export class TemplateValidator {
     if (template.author) score += 10
     if (template.icon) score += 5
     if (template.color) score += 5
-    
+
     // Check for metadata completeness
     const metadata = template.metadata || template.state?.metadata
     if (metadata?.tags && metadata.tags.length > 0) score += 10
     if (metadata?.difficulty) score += 5
     if (metadata?.useCases && metadata.useCases.length > 0) score += 10
-    
+
     return Math.min(score, maxScore)
   }
 
-  private generateRecommendations(issues: ValidationIssue[], scores: Record<string, number>): any[] {
+  private generateRecommendations(
+    issues: ValidationIssue[],
+    scores: Record<string, number>
+  ): any[] {
     const recommendations: any[] = []
-    
+
     // Generate recommendations based on issues
-    issues.forEach(issue => {
+    issues.forEach((issue) => {
       if (issue.fixSuggestion) {
         recommendations.push({
           priority: this.mapSeverityToPriority(issue.severity),
           category: issue.category,
           message: issue.fixSuggestion,
-          code: issue.code
+          code: issue.code,
         })
       }
     })
-    
+
     // Generate score-based recommendations
     Object.entries(scores).forEach(([category, score]) => {
       if (score < 70) {
@@ -631,20 +628,26 @@ export class TemplateValidator {
           priority: 'medium',
           category,
           message: `Consider improving ${category} score (currently ${score}/100)`,
-          code: `${category}-improvement`
+          code: `${category}-improvement`,
         })
       }
     })
-    
+
     return recommendations
   }
 
-  private mapSeverityToPriority(severity: ValidationSeverity): 'low' | 'medium' | 'high' | 'critical' {
+  private mapSeverityToPriority(
+    severity: ValidationSeverity
+  ): 'low' | 'medium' | 'high' | 'critical' {
     switch (severity) {
-      case 'critical': return 'critical'
-      case 'error': return 'high'
-      case 'warning': return 'medium'
-      case 'info': return 'low'
+      case 'critical':
+        return 'critical'
+      case 'error':
+        return 'high'
+      case 'warning':
+        return 'medium'
+      case 'info':
+        return 'low'
     }
   }
 
@@ -652,7 +655,7 @@ export class TemplateValidator {
 
   private checkWorkflowStructure(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     if (!template.state) {
       issues.push({
         id: 'syntax-001-no-state',
@@ -661,10 +664,10 @@ export class TemplateValidator {
         code: 'NO_WORKFLOW_STATE',
         message: 'Template is missing workflow state',
         fixSuggestion: 'Ensure template includes valid workflow state data',
-        autoFixable: false
+        autoFixable: false,
       })
     }
-    
+
     if (!template.state?.blocks || Object.keys(template.state.blocks).length === 0) {
       issues.push({
         id: 'syntax-001-no-blocks',
@@ -673,16 +676,16 @@ export class TemplateValidator {
         code: 'NO_BLOCKS',
         message: 'Workflow has no blocks defined',
         fixSuggestion: 'Add at least one block to the workflow',
-        autoFixable: false
+        autoFixable: false,
       })
     }
-    
+
     return issues
   }
 
   private checkBlockConfiguration(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     if (template.state?.blocks) {
       Object.entries(template.state.blocks).forEach(([blockId, block]: [string, any]) => {
         if (!block.type) {
@@ -694,18 +697,18 @@ export class TemplateValidator {
             message: `Block ${blockId} is missing required 'type' field`,
             location: { blockId },
             fixSuggestion: 'Add a valid block type',
-            autoFixable: false
+            autoFixable: false,
           })
         }
       })
     }
-    
+
     return issues
   }
 
   private scanCredentialExposure(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for exposed credentials in block configurations
     if (template.state?.blocks) {
       Object.entries(template.state.blocks).forEach(([blockId, block]: [string, any]) => {
@@ -720,31 +723,31 @@ export class TemplateValidator {
                 message: `Potential credential exposure in block ${blockId}, field ${key}`,
                 location: { blockId, field: key },
                 fixSuggestion: 'Remove sensitive values and use environment variables instead',
-                autoFixable: true
+                autoFixable: true,
               })
             }
           })
         }
       })
     }
-    
+
     return issues
   }
 
   private scanInjectionRisks(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for potential injection patterns
     const dangerousPatterns = [
       /\$\{.*eval.*\}/i,
       /\$\{.*exec.*\}/i,
       /\$\{.*system.*\}/i,
       /<script.*>/i,
-      /javascript:/i
+      /javascript:/i,
     ]
-    
+
     const checkValue = (value: string, blockId: string, field: string) => {
-      dangerousPatterns.forEach(pattern => {
+      dangerousPatterns.forEach((pattern) => {
         if (pattern.test(value)) {
           issues.push({
             id: 'security-002-injection',
@@ -754,14 +757,14 @@ export class TemplateValidator {
             message: `Potential injection risk detected in block ${blockId}, field ${field}`,
             location: { blockId, field },
             fixSuggestion: 'Sanitize input values and avoid dangerous patterns',
-            autoFixable: false
+            autoFixable: false,
           })
         }
       })
     }
-    
+
     // Recursively check all string values
-    const scanObject = (obj: any, blockId: string, path: string = '') => {
+    const scanObject = (obj: any, blockId: string, path = '') => {
       if (typeof obj === 'string') {
         checkValue(obj, blockId, path)
       } else if (obj && typeof obj === 'object') {
@@ -770,19 +773,19 @@ export class TemplateValidator {
         })
       }
     }
-    
+
     if (template.state?.blocks) {
       Object.entries(template.state.blocks).forEach(([blockId, block]) => {
         scanObject(block, blockId)
       })
     }
-    
+
     return issues
   }
 
   private scanDataLeaks(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for potential data leakage patterns
     const sensitivePatterns = [
       /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/, // Credit card numbers
@@ -790,16 +793,16 @@ export class TemplateValidator {
       /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, // Email addresses
       /\b(?:\d{1,3}\.){3}\d{1,3}\b/, // IP addresses
     ]
-    
+
     // Implementation would scan template content for sensitive data patterns
     // This is a simplified version - real implementation would be more comprehensive
-    
+
     return issues
   }
 
   private scanExternalConnections(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for external API calls and connections
     if (template.state?.blocks) {
       Object.entries(template.state.blocks).forEach(([blockId, block]: [string, any]) => {
@@ -815,32 +818,32 @@ export class TemplateValidator {
               message: `Block ${blockId} connects to unverified external service: ${url}`,
               location: { blockId },
               fixSuggestion: 'Verify the security and reliability of external connections',
-              autoFixable: false
+              autoFixable: false,
             })
           }
         }
       })
     }
-    
+
     return issues
   }
 
   private scanEnterpriseCompliance(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Enterprise-specific compliance checks would go here
     // This could include checks for:
     // - Data residency requirements
     // - Encryption standards
     // - Audit trail requirements
     // - Access control validation
-    
+
     return issues
   }
 
   private checkTemplateCompleteness(template: any, metadata?: TemplateMetadata): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     if (!template.description || template.description.length < 50) {
       issues.push({
         id: 'quality-001-description',
@@ -849,10 +852,10 @@ export class TemplateValidator {
         code: 'INCOMPLETE_DESCRIPTION',
         message: 'Template description is missing or too short',
         fixSuggestion: 'Add a detailed description (at least 50 characters)',
-        autoFixable: false
+        autoFixable: false,
       })
     }
-    
+
     const templateMetadata = metadata || template.state?.metadata
     if (!templateMetadata?.tags || templateMetadata.tags.length === 0) {
       issues.push({
@@ -862,22 +865,23 @@ export class TemplateValidator {
         code: 'MISSING_TAGS',
         message: 'Template has no tags for discoverability',
         fixSuggestion: 'Add relevant tags to improve template discoverability',
-        autoFixable: false
+        autoFixable: false,
       })
     }
-    
+
     return issues
   }
 
   private checkBestPractices(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for error handling blocks
-    const hasErrorHandling = template.state?.blocks && 
-      Object.values(template.state.blocks).some((block: any) => 
-        block.type === 'condition' || block.type === 'router'
+    const hasErrorHandling =
+      template.state?.blocks &&
+      Object.values(template.state.blocks).some(
+        (block: any) => block.type === 'condition' || block.type === 'router'
       )
-    
+
     if (!hasErrorHandling) {
       issues.push({
         id: 'quality-002-error-handling',
@@ -886,16 +890,16 @@ export class TemplateValidator {
         code: 'MISSING_ERROR_HANDLING',
         message: 'Template lacks error handling mechanisms',
         fixSuggestion: 'Add condition or router blocks for better error handling',
-        autoFixable: false
+        autoFixable: false,
       })
     }
-    
+
     return issues
   }
 
   private checkExecutionEfficiency(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for potential performance issues
     if (template.state?.blocks) {
       const blockCount = Object.keys(template.state.blocks).length
@@ -907,30 +911,30 @@ export class TemplateValidator {
           code: 'HIGH_COMPLEXITY',
           message: `Template has high complexity with ${blockCount} blocks`,
           fixSuggestion: 'Consider breaking down into smaller, reusable workflows',
-          autoFixable: false
+          autoFixable: false,
         })
       }
     }
-    
+
     return issues
   }
 
   private checkAccessibility(template: any): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     // Check for accessibility considerations
     // This could include checks for:
     // - Color contrast in visual elements
     // - Alternative text for images
     // - Keyboard accessibility
     // - Screen reader compatibility
-    
+
     return issues
   }
 
   private checkFrameworkCompliance(template: any, framework: string): ValidationIssue[] {
     const issues: ValidationIssue[] = []
-    
+
     switch (framework) {
       case 'GDPR':
         // GDPR-specific checks
@@ -945,32 +949,35 @@ export class TemplateValidator {
         // PCI-DSS-specific checks
         break
     }
-    
+
     return issues
   }
 
   private generateSecurityRecommendations(vulnerabilities: ValidationIssue[]): string[] {
     const recommendations: string[] = []
-    
-    vulnerabilities.forEach(vuln => {
+
+    vulnerabilities.forEach((vuln) => {
       if (vuln.fixSuggestion) {
         recommendations.push(vuln.fixSuggestion)
       }
     })
-    
+
     return [...new Set(recommendations)] // Remove duplicates
   }
 
-  private generateComplianceRecommendations(violations: ValidationIssue[], frameworks: string[]): string[] {
+  private generateComplianceRecommendations(
+    violations: ValidationIssue[],
+    frameworks: string[]
+  ): string[] {
     const recommendations: string[] = []
-    
-    frameworks.forEach(framework => {
-      const frameworkViolations = violations.filter(v => v.code.includes(framework.toLowerCase()))
+
+    frameworks.forEach((framework) => {
+      const frameworkViolations = violations.filter((v) => v.code.includes(framework.toLowerCase()))
       if (frameworkViolations.length > 0) {
         recommendations.push(`Address ${frameworkViolations.length} ${framework} compliance issues`)
       }
     })
-    
+
     return recommendations
   }
 
@@ -984,9 +991,9 @@ export class TemplateValidator {
       'api.anthropic.com',
       'api.github.com',
       'api.slack.com',
-      'hooks.zapier.com'
+      'hooks.zapier.com',
     ]
-    
+
     try {
       const urlObj = new URL(url)
       return verifiedDomains.includes(urlObj.hostname)

@@ -48,7 +48,8 @@ export const FileProcessorBlock: BlockConfig<FileResponse> = {
       type: 'file-upload',
       layout: 'full',
       condition: { field: 'inputSource', value: 'upload' },
-      acceptedTypes: '.csv,.xlsx,.xls,.pdf,.docx,.doc,.txt,.json,.xml,.html,.png,.jpg,.jpeg,.gif,.zip',
+      acceptedTypes:
+        '.csv,.xlsx,.xls,.pdf,.docx,.doc,.txt,.json,.xml,.html,.png,.jpg,.jpeg,.gif,.zip',
       multiple: true,
       maxSize: 50,
       required: true,
@@ -176,8 +177,8 @@ export const FileProcessorBlock: BlockConfig<FileResponse> = {
   "encoding": "utf-8",
   "dateFormat": "YYYY-MM-DD"
 }`,
-      condition: { 
-        field: 'extractionType', 
+      condition: {
+        field: 'extractionType',
         value: 'structured',
       },
       description: 'CSV parsing configuration',
@@ -197,8 +198,8 @@ export const FileProcessorBlock: BlockConfig<FileResponse> = {
   "columns": ["A", "B", "C", "D"],
   "dateColumns": ["created_date", "updated_date"]
 }`,
-      condition: { 
-        field: 'extractionType', 
+      condition: {
+        field: 'extractionType',
         value: 'structured',
       },
       description: 'Excel parsing configuration',

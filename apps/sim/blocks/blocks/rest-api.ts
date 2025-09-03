@@ -141,8 +141,8 @@ export const RestApiBlock: BlockConfig<RequestResponse> = {
       type: 'code',
       layout: 'full',
       placeholder: 'Enter JSON, XML, or plain text...',
-      condition: { 
-        field: 'method', 
+      condition: {
+        field: 'method',
         value: ['POST', 'PUT', 'PATCH'],
       },
       wandConfig: {

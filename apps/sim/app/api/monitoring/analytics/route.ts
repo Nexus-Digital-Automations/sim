@@ -8,11 +8,10 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { analyticsService } from '@/lib/monitoring/analytics/analytics-service'
-import type { 
-  MonitoringApiResponse, 
-  TimeRange, 
+import type {
+  BusinessMetrics,
+  MonitoringApiResponse,
   WorkflowAnalytics,
-  BusinessMetrics 
 } from '@/lib/monitoring/types'
 
 const logger = createLogger('AnalyticsAPI')
@@ -50,7 +49,7 @@ const ReportGenerationSchema = z.object({
     'business_overview',
     'sla_compliance',
     'user_activity',
-    'trend_analysis'
+    'trend_analysis',
   ]),
   timeRange: TimeRangeSchema,
   workspaceId: z.string(),
@@ -87,9 +86,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           success: false,
-          error: { 
-            code: 'INVALID_TYPE', 
-            message: 'Analytics type must be either "workflow" or "business"' 
+          error: {
+            code: 'INVALID_TYPE',
+            message: 'Analytics type must be either "workflow" or "business"',
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -117,7 +116,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         granularity: params.timeRange.granularity,
       })
 
-      const analytics = await analyticsService.getWorkflowAnalytics(params.workflowId, params.timeRange)
+      const analytics = await analyticsService.getWorkflowAnalytics(
+        params.workflowId,
+        params.timeRange
+      )
 
       // Filter response based on include flags
       const filteredAnalytics: Partial<WorkflowAnalytics> = {
@@ -148,61 +150,63 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         data: filteredAnalytics,
       }
 
-      logger.info(`[${requestId}] Successfully retrieved workflow analytics for ${params.workflowId}`)
-      return NextResponse.json(response, { status: 200 })
-
-    } else {
-      // Business Analytics
-      const params = BusinessMetricsQuerySchema.parse({
-        workspaceId: searchParams.get('workspaceId'),
-        timeRange: {
-          start: searchParams.get('startDate'),
-          end: searchParams.get('endDate'),
-          granularity: searchParams.get('granularity') || 'day',
-        },
-        includeGrowthMetrics: searchParams.get('includeGrowthMetrics') !== 'false',
-        includeUsageMetrics: searchParams.get('includeUsageMetrics') !== 'false',
-        includeCostEfficiency: searchParams.get('includeCostEfficiency') !== 'false',
-        includeReliabilityMetrics: searchParams.get('includeReliabilityMetrics') !== 'false',
-      })
-
-      logger.debug(`[${requestId}] Fetching business metrics`, {
-        workspaceId: params.workspaceId,
-        timeRange: `${params.timeRange.start} to ${params.timeRange.end}`,
-      })
-
-      const businessMetrics = await analyticsService.getBusinessMetrics(params.workspaceId, params.timeRange)
-
-      // Filter response based on include flags
-      const filteredMetrics: Partial<BusinessMetrics> = {
-        timeRange: businessMetrics.timeRange,
-        workspaceMetrics: businessMetrics.workspaceMetrics,
-      }
-
-      if (params.includeGrowthMetrics) {
-        filteredMetrics.growthMetrics = businessMetrics.growthMetrics
-      }
-
-      if (params.includeUsageMetrics) {
-        filteredMetrics.usageMetrics = businessMetrics.usageMetrics
-      }
-
-      if (params.includeReliabilityMetrics && businessMetrics.usageMetrics) {
-        filteredMetrics.usageMetrics = {
-          ...filteredMetrics.usageMetrics!,
-          systemReliability: businessMetrics.usageMetrics.systemReliability,
-        }
-      }
-
-      const response: MonitoringApiResponse<Partial<BusinessMetrics>> = {
-        success: true,
-        data: filteredMetrics,
-      }
-
-      logger.info(`[${requestId}] Successfully retrieved business metrics for ${params.workspaceId}`)
+      logger.info(
+        `[${requestId}] Successfully retrieved workflow analytics for ${params.workflowId}`
+      )
       return NextResponse.json(response, { status: 200 })
     }
+    // Business Analytics
+    const params = BusinessMetricsQuerySchema.parse({
+      workspaceId: searchParams.get('workspaceId'),
+      timeRange: {
+        start: searchParams.get('startDate'),
+        end: searchParams.get('endDate'),
+        granularity: searchParams.get('granularity') || 'day',
+      },
+      includeGrowthMetrics: searchParams.get('includeGrowthMetrics') !== 'false',
+      includeUsageMetrics: searchParams.get('includeUsageMetrics') !== 'false',
+      includeCostEfficiency: searchParams.get('includeCostEfficiency') !== 'false',
+      includeReliabilityMetrics: searchParams.get('includeReliabilityMetrics') !== 'false',
+    })
 
+    logger.debug(`[${requestId}] Fetching business metrics`, {
+      workspaceId: params.workspaceId,
+      timeRange: `${params.timeRange.start} to ${params.timeRange.end}`,
+    })
+
+    const businessMetrics = await analyticsService.getBusinessMetrics(
+      params.workspaceId,
+      params.timeRange
+    )
+
+    // Filter response based on include flags
+    const filteredMetrics: Partial<BusinessMetrics> = {
+      timeRange: businessMetrics.timeRange,
+      workspaceMetrics: businessMetrics.workspaceMetrics,
+    }
+
+    if (params.includeGrowthMetrics) {
+      filteredMetrics.growthMetrics = businessMetrics.growthMetrics
+    }
+
+    if (params.includeUsageMetrics) {
+      filteredMetrics.usageMetrics = businessMetrics.usageMetrics
+    }
+
+    if (params.includeReliabilityMetrics && businessMetrics.usageMetrics) {
+      filteredMetrics.usageMetrics = {
+        ...filteredMetrics.usageMetrics!,
+        systemReliability: businessMetrics.usageMetrics.systemReliability,
+      }
+    }
+
+    const response: MonitoringApiResponse<Partial<BusinessMetrics>> = {
+      success: true,
+      data: filteredMetrics,
+    }
+
+    logger.info(`[${requestId}] Successfully retrieved business metrics for ${params.workspaceId}`)
+    return NextResponse.json(response, { status: 200 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid analytics request parameters`, { errors: error.errors })
@@ -300,7 +304,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     logger.info(`[${requestId}] Generated downloadable ${params.format} report`)
     return NextResponse.json(response, { status: 200 })
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid report generation parameters`, { errors: error.errors })
@@ -374,7 +377,6 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     logger.info(`[${requestId}] Successfully invalidated analytics cache`)
     return NextResponse.json(response, { status: 200 })
-
   } catch (error) {
     logger.error(`[${requestId}] Error invalidating cache:`, error)
     return NextResponse.json(

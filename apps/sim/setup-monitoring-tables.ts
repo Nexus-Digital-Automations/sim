@@ -4,14 +4,14 @@
  * Setup script to create monitoring system database tables directly
  */
 
-import { db } from './db/index';
+import { db } from './db/index'
 
 async function createMonitoringTables() {
-  console.log('🚀 Creating monitoring system database tables...');
+  console.log('🚀 Creating monitoring system database tables...')
 
   try {
     // Create alert_rules table
-    console.log('Creating alert_rules table...');
+    console.log('Creating alert_rules table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS alert_rules (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -29,10 +29,10 @@ async function createMonitoringTables() {
           updated_at TIMESTAMP DEFAULT NOW(),
           created_by UUID NOT NULL
       )
-    `);
+    `)
 
     // Create alert_instances table
-    console.log('Creating alert_instances table...');
+    console.log('Creating alert_instances table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS alert_instances (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,10 +50,10 @@ async function createMonitoringTables() {
           escalation_level INTEGER DEFAULT 0,
           created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create alert_notifications table
-    console.log('Creating alert_notifications table...');
+    console.log('Creating alert_notifications table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS alert_notifications (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -66,10 +66,10 @@ async function createMonitoringTables() {
           error_message TEXT,
           escalation_level INTEGER DEFAULT 0
       )
-    `);
+    `)
 
     // Create performance_metrics table
-    console.log('Creating performance_metrics table...');
+    console.log('Creating performance_metrics table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS performance_metrics (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,10 +83,10 @@ async function createMonitoringTables() {
           aggregation_type TEXT CHECK (aggregation_type IN ('instant', 'avg', 'sum', 'max', 'min', 'count')),
           created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create workflow_executions_monitoring table
-    console.log('Creating workflow_executions_monitoring table...');
+    console.log('Creating workflow_executions_monitoring table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS workflow_executions_monitoring (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -113,10 +113,10 @@ async function createMonitoringTables() {
           created_at TIMESTAMP DEFAULT NOW(),
           updated_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create workflow_execution_steps table
-    console.log('Creating workflow_execution_steps table...');
+    console.log('Creating workflow_execution_steps table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS workflow_execution_steps (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -136,10 +136,10 @@ async function createMonitoringTables() {
           resource_usage JSONB,
           created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create monitoring_dashboards table
-    console.log('Creating monitoring_dashboards table...');
+    console.log('Creating monitoring_dashboards table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS monitoring_dashboards (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -154,10 +154,10 @@ async function createMonitoringTables() {
           updated_at TIMESTAMP DEFAULT NOW(),
           created_by UUID NOT NULL
       )
-    `);
+    `)
 
     // Create debug_sessions table
-    console.log('Creating debug_sessions table...');
+    console.log('Creating debug_sessions table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS debug_sessions (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -171,10 +171,10 @@ async function createMonitoringTables() {
           created_at TIMESTAMP DEFAULT NOW(),
           completed_at TIMESTAMP
       )
-    `);
+    `)
 
     // Create execution_replays table
-    console.log('Creating execution_replays table...');
+    console.log('Creating execution_replays table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS execution_replays (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -188,10 +188,10 @@ async function createMonitoringTables() {
           completed_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create monitoring_events table
-    console.log('Creating monitoring_events table...');
+    console.log('Creating monitoring_events table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS monitoring_events (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -205,10 +205,10 @@ async function createMonitoringTables() {
           timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
           created_at TIMESTAMP DEFAULT NOW()
       )
-    `);
+    `)
 
     // Create business_metrics_snapshots table
-    console.log('Creating business_metrics_snapshots table...');
+    console.log('Creating business_metrics_snapshots table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS business_metrics_snapshots (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -220,10 +220,10 @@ async function createMonitoringTables() {
           
           UNIQUE(workspace_id, snapshot_date, snapshot_hour)
       )
-    `);
+    `)
 
     // Create workflow_analytics_cache table
-    console.log('Creating workflow_analytics_cache table...');
+    console.log('Creating workflow_analytics_cache table...')
     await db.execute(`
       CREATE TABLE IF NOT EXISTS workflow_analytics_cache (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -237,25 +237,35 @@ async function createMonitoringTables() {
           
           UNIQUE(workflow_id, time_range_start, time_range_end, granularity)
       )
-    `);
+    `)
 
-    console.log('Creating indexes...');
+    console.log('Creating indexes...')
 
     // Create essential indexes
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_alert_rules_workspace_id ON alert_rules(workspace_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_alert_instances_rule_id ON alert_instances(rule_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_performance_metrics_execution_id ON performance_metrics(execution_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_workflow_executions_monitoring_workspace_id ON workflow_executions_monitoring(workspace_id)');
-    await db.execute('CREATE INDEX IF NOT EXISTS idx_workflow_execution_steps_execution_id ON workflow_execution_steps(execution_id)');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_alert_rules_workspace_id ON alert_rules(workspace_id)'
+    )
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_alert_instances_rule_id ON alert_instances(rule_id)'
+    )
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_performance_metrics_execution_id ON performance_metrics(execution_id)'
+    )
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_workflow_executions_monitoring_workspace_id ON workflow_executions_monitoring(workspace_id)'
+    )
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_workflow_execution_steps_execution_id ON workflow_execution_steps(execution_id)'
+    )
 
-    console.log('✅ All monitoring tables created successfully!');
+    console.log('✅ All monitoring tables created successfully!')
 
     // Verify tables exist
-    console.log('🧪 Verifying table creation...');
+    console.log('🧪 Verifying table creation...')
     const tables = [
       'alert_rules',
       'alert_instances',
-      'alert_notifications', 
+      'alert_notifications',
       'performance_metrics',
       'workflow_executions_monitoring',
       'workflow_execution_steps',
@@ -264,24 +274,23 @@ async function createMonitoringTables() {
       'execution_replays',
       'monitoring_events',
       'business_metrics_snapshots',
-      'workflow_analytics_cache'
-    ];
+      'workflow_analytics_cache',
+    ]
 
     for (const table of tables) {
       try {
-        const result = await db.execute(`SELECT 1 FROM ${table} LIMIT 0`);
-        console.log(`✅ Table ${table} exists and accessible`);
+        const result = await db.execute(`SELECT 1 FROM ${table} LIMIT 0`)
+        console.log(`✅ Table ${table} exists and accessible`)
       } catch (error) {
-        console.log(`❌ Table ${table} verification failed:`, error);
+        console.log(`❌ Table ${table} verification failed:`, error)
       }
     }
 
-    console.log('🎉 Monitoring system database setup completed successfully!');
-
+    console.log('🎉 Monitoring system database setup completed successfully!')
   } catch (error) {
-    console.error('❌ Failed to create monitoring tables:', error);
-    throw error;
+    console.error('❌ Failed to create monitoring tables:', error)
+    throw error
   }
 }
 
-createMonitoringTables().catch(console.error);
+createMonitoringTables().catch(console.error)

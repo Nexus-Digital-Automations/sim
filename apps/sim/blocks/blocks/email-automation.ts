@@ -104,8 +104,8 @@ export const EmailAutomationBlock: BlockConfig<EmailResponse> = {
       layout: 'full',
       placeholder: 'your-api-key',
       password: true,
-      condition: { 
-        field: 'emailProvider', 
+      condition: {
+        field: 'emailProvider',
         value: ['sendgrid', 'mailgun', 'ses', 'postmark'],
       },
       required: true,
@@ -190,8 +190,8 @@ export const EmailAutomationBlock: BlockConfig<EmailResponse> = {
     }
   }
 ]`,
-      condition: { 
-        field: 'campaignType', 
+      condition: {
+        field: 'campaignType',
         value: ['bulk', 'newsletter', 'ab_test'],
       },
       required: true,
@@ -450,8 +450,8 @@ Email preferences: {{preferencesLink}}`,
       title: 'Timezone',
       type: 'dropdown',
       layout: 'full',
-      condition: { 
-        field: 'scheduling', 
+      condition: {
+        field: 'scheduling',
         value: ['scheduled', 'optimal'],
       },
       options: [
@@ -491,8 +491,8 @@ Email preferences: {{preferencesLink}}`,
       title: 'Enable Rate Limiting',
       type: 'switch',
       layout: 'half',
-      condition: { 
-        field: 'campaignType', 
+      condition: {
+        field: 'campaignType',
         value: ['bulk', 'newsletter'],
       },
       description: 'Control email sending rate',

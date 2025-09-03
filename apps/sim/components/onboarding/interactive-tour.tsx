@@ -2,28 +2,28 @@
 
 /**
  * Interactive Tour Component - Visual tutorial overlay system
- * 
+ *
  * Provides step-by-step guided tours with:
  * - Element highlighting and positioning
  * - Accessible navigation and announcements
  * - Progress tracking and validation
  * - Keyboard navigation support
  * - Screen reader compatibility
- * 
+ *
  * @created 2025-09-03
  * @author Claude Development System
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, CheckCircle, HelpCircle, Keyboard, SkipForward, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowRight, CheckCircle, HelpCircle, Keyboard, SkipForward, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
-import type { Tutorial, TutorialStep, TutorialSession } from '@/lib/onboarding/tutorial-system'
+import type { Tutorial, TutorialSession, TutorialStep } from '@/lib/onboarding/tutorial-system'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('InteractiveTour')
 
@@ -58,7 +58,7 @@ interface TooltipPosition {
 
 /**
  * Interactive Tour Component
- * 
+ *
  * Provides comprehensive tutorial overlay with accessibility support,
  * element highlighting, step navigation, and progress tracking.
  */
@@ -74,7 +74,7 @@ export function InteractiveTour({
   className,
   overlayClassName,
   accessibilityMode = true,
-  keyboardNavigation = true
+  keyboardNavigation = true,
 }: InteractiveTourProps) {
   // State management
   const [targetElement, setTargetElement] = useState<Element | null>(null)
@@ -84,15 +84,15 @@ export function InteractiveTour({
   const [showHint, setShowHint] = useState(false)
   const [validationPassed, setValidationPassed] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
-  
+
   // Refs for DOM manipulation and accessibility
   const overlayRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
   const highlightRef = useRef<HTMLDivElement>(null)
-  
+
   // Calculate current step progress
-  const currentStepIndex = tutorial.steps.findIndex(step => step.id === currentStep.id)
+  const currentStepIndex = tutorial.steps.findIndex((step) => step.id === currentStep.id)
   const progress = Math.round(((currentStepIndex + 1) / tutorial.steps.length) * 100)
   const isLastStep = currentStepIndex === tutorial.steps.length - 1
 
@@ -101,11 +101,11 @@ export function InteractiveTour({
    */
   const findAndPositionTarget = useCallback(() => {
     const operationId = Date.now().toString()
-    
+
     logger.info(`[${operationId}] Finding target element`, {
       stepId: currentStep.id,
       target: currentStep.target,
-      sessionId: session.id
+      sessionId: session.id,
     })
 
     try {
@@ -116,7 +116,7 @@ export function InteractiveTour({
         setTooltipPosition({
           top: window.innerHeight / 2 - 200,
           left: window.innerWidth / 2 - 200,
-          placement: 'bottom'
+          placement: 'bottom',
         })
         return
       }
@@ -126,16 +126,16 @@ export function InteractiveTour({
       if (!element) {
         logger.warn(`[${operationId}] Target element not found`, {
           target: currentStep.target,
-          stepId: currentStep.id
+          stepId: currentStep.id,
         })
-        
+
         // Fallback to center positioning
         setTargetElement(null)
         setTargetPosition(null)
         setTooltipPosition({
           top: window.innerHeight / 2 - 200,
           left: window.innerWidth / 2 - 200,
-          placement: 'bottom'
+          placement: 'bottom',
         })
         return
       }
@@ -147,12 +147,12 @@ export function InteractiveTour({
         left: rect.left + window.scrollX,
         width: rect.width,
         height: rect.height,
-        element
+        element,
       }
 
       // Calculate tooltip position based on element position and step preferences
       const tooltipPos = calculateTooltipPosition(elementPosition, currentStep.position)
-      
+
       setTargetElement(element)
       setTargetPosition(elementPosition)
       setTooltipPosition(tooltipPos)
@@ -163,7 +163,7 @@ export function InteractiveTour({
         element.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
-          inline: 'center'
+          inline: 'center',
         })
       }
 
@@ -176,21 +176,20 @@ export function InteractiveTour({
       logger.info(`[${operationId}] Target element positioned successfully`, {
         elementPosition,
         tooltipPosition: tooltipPos,
-        stepId: currentStep.id
+        stepId: currentStep.id,
       })
-
     } catch (error) {
       logger.error(`[${operationId}] Error positioning target element`, {
         target: currentStep.target,
         error: error instanceof Error ? error.message : String(error),
-        stepId: currentStep.id
+        stepId: currentStep.id,
       })
-      
+
       // Fallback positioning
       setTooltipPosition({
         top: window.innerHeight / 2 - 200,
         left: window.innerWidth / 2 - 200,
-        placement: 'bottom'
+        placement: 'bottom',
       })
     }
   }, [currentStep, session.id, accessibilityMode])
@@ -198,14 +197,17 @@ export function InteractiveTour({
   /**
    * Calculate optimal tooltip position relative to target element
    */
-  const calculateTooltipPosition = (elementPos: ElementPosition, preferredPosition?: string): TooltipPosition => {
+  const calculateTooltipPosition = (
+    elementPos: ElementPosition,
+    preferredPosition?: string
+  ): TooltipPosition => {
     const tooltipWidth = 400
     const tooltipHeight = 300
     const padding = 16
-    
+
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    
+
     let placement: TooltipPosition['placement'] = 'bottom'
     let top = elementPos.top + elementPos.height + padding
     let left = elementPos.left + elementPos.width / 2 - tooltipWidth / 2
@@ -239,7 +241,6 @@ export function InteractiveTour({
             left = elementPos.left + elementPos.width + padding
           }
           break
-        case 'bottom':
         default:
           // Keep default bottom placement
           break
@@ -290,16 +291,17 @@ export function InteractiveTour({
     }
 
     try {
-      const isValid = typeof currentStep.validation === 'string' 
-        ? document.querySelector(currentStep.validation) !== null
-        : currentStep.validation()
+      const isValid =
+        typeof currentStep.validation === 'string'
+          ? document.querySelector(currentStep.validation) !== null
+          : currentStep.validation()
 
       setValidationPassed(isValid)
       return isValid
     } catch (error) {
       logger.error('Step validation error', {
         stepId: currentStep.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       setValidationPassed(false)
       return false
@@ -311,11 +313,11 @@ export function InteractiveTour({
    */
   const handleStepComplete = useCallback(() => {
     const operationId = Date.now().toString()
-    
+
     logger.info(`[${operationId}] Completing tutorial step`, {
       stepId: currentStep.id,
       sessionId: session.id,
-      validationPassed
+      validationPassed,
     })
 
     if (currentStep.validation && !validateStep()) {
@@ -335,7 +337,7 @@ export function InteractiveTour({
     onStepComplete(session.id, currentStep.id, {
       timeOnStep: Date.now() - session.startedAt.getTime(),
       hintsUsed: showHint ? 1 : 0,
-      validationAttempts: validationPassed ? 1 : 0
+      validationAttempts: validationPassed ? 1 : 0,
     })
 
     // Announce completion to screen readers
@@ -346,7 +348,7 @@ export function InteractiveTour({
     logger.info(`[${operationId}] Tutorial step completed successfully`, {
       stepId: currentStep.id,
       sessionId: session.id,
-      isLastStep
+      isLastStep,
     })
 
     if (isLastStep) {
@@ -363,7 +365,7 @@ export function InteractiveTour({
     onStepComplete,
     onComplete,
     onRequestHint,
-    isLastStep
+    isLastStep,
   ])
 
   /**
@@ -376,7 +378,7 @@ export function InteractiveTour({
 
     logger.info('Skipping tutorial step', {
       stepId: currentStep.id,
-      sessionId: session.id
+      sessionId: session.id,
     })
 
     // Cleanup
@@ -399,7 +401,7 @@ export function InteractiveTour({
   const handleExit = useCallback(() => {
     logger.info('Exiting tutorial', {
       sessionId: session.id,
-      currentStepId: currentStep.id
+      currentStepId: currentStep.id,
     })
 
     // Cleanup
@@ -427,9 +429,9 @@ export function InteractiveTour({
     announcement.style.position = 'absolute'
     announcement.style.left = '-10000px'
     announcement.textContent = message
-    
+
     document.body.appendChild(announcement)
-    
+
     setTimeout(() => {
       document.body.removeChild(announcement)
     }, 1000)
@@ -443,9 +445,11 @@ export function InteractiveTour({
 
     const handleKeydown = (event: KeyboardEvent) => {
       // Don't interfere with form inputs
-      if (event.target instanceof HTMLInputElement || 
-          event.target instanceof HTMLTextAreaElement ||
-          event.target instanceof HTMLSelectElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement
+      ) {
         return
       }
 
@@ -487,7 +491,14 @@ export function InteractiveTour({
 
     document.addEventListener('keydown', handleKeydown)
     return () => document.removeEventListener('keydown', handleKeydown)
-  }, [keyboardNavigation, handleStepComplete, handleStepSkip, handleExit, onRequestHint, session.id])
+  }, [
+    keyboardNavigation,
+    handleStepComplete,
+    handleStepSkip,
+    handleExit,
+    onRequestHint,
+    session.id,
+  ])
 
   /**
    * Initialize tour when step changes
@@ -551,17 +562,17 @@ export function InteractiveTour({
           overlayClassName
         )}
         style={{
-          pointerEvents: 'none'
+          pointerEvents: 'none',
         }}
-        role="presentation"
-        aria-hidden="true"
+        role='presentation'
+        aria-hidden='true'
       />
 
       {/* Element highlight */}
       {targetPosition && isHighlighted && (
         <div
           ref={highlightRef}
-          className="fixed z-[10000] pointer-events-none"
+          className='pointer-events-none fixed z-[10000]'
           style={{
             top: targetPosition.top - 4,
             left: targetPosition.left - 4,
@@ -575,10 +586,10 @@ export function InteractiveTour({
             `,
             borderRadius: '8px',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            animation: 'tutorial-highlight 2s ease-in-out infinite alternate'
+            animation: 'tutorial-highlight 2s ease-in-out infinite alternate',
           }}
-          role="presentation"
-          aria-hidden="true"
+          role='presentation'
+          aria-hidden='true'
         />
       )}
 
@@ -587,7 +598,7 @@ export function InteractiveTour({
         <Card
           ref={tooltipRef}
           className={cn(
-            'fixed z-[10001] w-[400px] max-w-[90vw] shadow-2xl border-2 border-primary/20',
+            'fixed z-[10001] w-[400px] max-w-[90vw] border-2 border-primary/20 shadow-2xl',
             'bg-background/95 backdrop-blur-sm',
             className
           )}
@@ -595,71 +606,74 @@ export function InteractiveTour({
             top: tooltipPosition.top,
             left: tooltipPosition.left,
             pointerEvents: 'auto',
-            transform: tooltipPosition.placement === 'center' ? 'translate(-50%, -50%)' : undefined
+            transform: tooltipPosition.placement === 'center' ? 'translate(-50%, -50%)' : undefined,
           }}
           id={`tutorial-step-${currentStep.id}`}
-          role="dialog"
+          role='dialog'
           aria-labelledby={`tutorial-step-title-${currentStep.id}`}
           aria-describedby={`tutorial-step-content-${currentStep.id}`}
           tabIndex={-1}
         >
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="text-xs">
+          <CardHeader className='pb-3'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-2'>
+                <Badge variant='secondary' className='text-xs'>
                   Step {currentStepIndex + 1} of {tutorial.steps.length}
                 </Badge>
                 {currentStep.optional && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant='outline' className='text-xs'>
                     Optional
                   </Badge>
                 )}
                 {validationPassed && (
-                  <CheckCircle className="w-4 h-4 text-green-500" aria-label="Validation passed" />
+                  <CheckCircle className='h-4 w-4 text-green-500' aria-label='Validation passed' />
                 )}
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleExit}
-                className="h-6 w-6 p-0"
-                aria-label="Exit tutorial"
+                className='h-6 w-6 p-0'
+                aria-label='Exit tutorial'
               >
-                <X className="w-4 h-4" />
+                <X className='h-4 w-4' />
               </Button>
             </div>
-            <div className="space-y-2">
-              <CardTitle 
+            <div className='space-y-2'>
+              <CardTitle
                 id={`tutorial-step-title-${currentStep.id}`}
-                className="text-lg font-semibold"
+                className='font-semibold text-lg'
               >
                 {currentStep.title}
               </CardTitle>
-              <Progress 
+              <Progress
                 ref={progressRef}
-                value={progress} 
-                className="h-2"
+                value={progress}
+                className='h-2'
                 aria-label={`Tutorial progress: ${progress}% complete`}
               />
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4">
+          <CardContent className='space-y-4'>
             {/* Step content */}
-            <div 
+            <div
               id={`tutorial-step-content-${currentStep.id}`}
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ 
-                __html: typeof currentStep.content === 'string' ? currentStep.content : currentStep.description
+              className='prose prose-sm dark:prose-invert max-w-none'
+              dangerouslySetInnerHTML={{
+                __html:
+                  typeof currentStep.content === 'string'
+                    ? currentStep.content
+                    : currentStep.description,
               }}
             />
 
             {/* Accessibility instructions */}
             {accessibilityMode && currentStep.accessibilityInstructions && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-                <div className="flex items-start space-x-2">
-                  <Keyboard className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
-                  <div className="text-sm text-blue-800 dark:text-blue-200">
+              <div className='rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20'>
+                <div className='flex items-start space-x-2'>
+                  <Keyboard className='mt-0.5 h-4 w-4 text-blue-600 dark:text-blue-400' />
+                  <div className='text-blue-800 text-sm dark:text-blue-200'>
                     <strong>Accessibility:</strong> {currentStep.accessibilityInstructions}
                   </div>
                 </div>
@@ -667,19 +681,21 @@ export function InteractiveTour({
             )}
 
             {/* Keyboard shortcuts */}
-            {keyboardNavigation && currentStep.keyboardShortcuts && currentStep.keyboardShortcuts.length > 0 && (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Keyboard className="w-4 h-4" />
-                <span>Shortcuts: {currentStep.keyboardShortcuts.join(', ')}</span>
-              </div>
-            )}
+            {keyboardNavigation &&
+              currentStep.keyboardShortcuts &&
+              currentStep.keyboardShortcuts.length > 0 && (
+                <div className='flex items-center space-x-2 text-muted-foreground text-sm'>
+                  <Keyboard className='h-4 w-4' />
+                  <span>Shortcuts: {currentStep.keyboardShortcuts.join(', ')}</span>
+                </div>
+              )}
 
             {/* Hint section */}
             {showHint && currentStep.hints && currentStep.hints.length > 0 && (
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
-                <div className="flex items-start space-x-2">
-                  <HelpCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
-                  <div className="text-sm text-yellow-800 dark:text-yellow-200">
+              <div className='rounded-md border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20'>
+                <div className='flex items-start space-x-2'>
+                  <HelpCircle className='mt-0.5 h-4 w-4 text-yellow-600 dark:text-yellow-400' />
+                  <div className='text-sm text-yellow-800 dark:text-yellow-200'>
                     <strong>Hint:</strong> {currentStep.hints[0]}
                   </div>
                 </div>
@@ -688,46 +704,41 @@ export function InteractiveTour({
 
             {/* Validation message */}
             {currentStep.validation && !validationPassed && (
-              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md border border-orange-200 dark:border-orange-800">
-                <div className="text-sm text-orange-800 dark:text-orange-200">
+              <div className='rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-900/20'>
+                <div className='text-orange-800 text-sm dark:text-orange-200'>
                   Please complete the required action before continuing.
                 </div>
               </div>
             )}
 
             {/* Action buttons */}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center space-x-2">
+            <div className='flex items-center justify-between pt-2'>
+              <div className='flex items-center space-x-2'>
                 {!showHint && currentStep.hints && currentStep.hints.length > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant='outline'
+                        size='sm'
                         onClick={() => {
                           setShowHint(true)
                           onRequestHint(session.id)
                         }}
-                        className="h-8"
+                        className='h-8'
                       >
-                        <HelpCircle className="w-4 h-4 mr-1" />
+                        <HelpCircle className='mr-1 h-4 w-4' />
                         Hint
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Get a hint for this step</TooltipContent>
                   </Tooltip>
                 )}
-                
+
                 {currentStep.skipable !== false && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleStepSkip}
-                        className="h-8"
-                      >
-                        <SkipForward className="w-4 h-4 mr-1" />
+                      <Button variant='outline' size='sm' onClick={handleStepSkip} className='h-8'>
+                        <SkipForward className='mr-1 h-4 w-4' />
                         Skip
                       </Button>
                     </TooltipTrigger>
@@ -736,22 +747,22 @@ export function InteractiveTour({
                 )}
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <Button
-                  variant={validationPassed || !currentStep.validation ? "default" : "outline"}
+                  variant={validationPassed || !currentStep.validation ? 'default' : 'outline'}
                   onClick={handleStepComplete}
                   disabled={currentStep.validation && !validationPassed}
-                  className="h-8"
+                  className='h-8'
                 >
                   {isLastStep ? (
                     <>
                       Complete Tutorial
-                      <CheckCircle className="w-4 h-4 ml-1" />
+                      <CheckCircle className='ml-1 h-4 w-4' />
                     </>
                   ) : (
                     <>
                       Next
-                      <ArrowRight className="w-4 h-4 ml-1" />
+                      <ArrowRight className='ml-1 h-4 w-4' />
                     </>
                   )}
                 </Button>
@@ -759,8 +770,8 @@ export function InteractiveTour({
             </div>
 
             {/* Tutorial info */}
-            <div className="pt-2 border-t text-xs text-muted-foreground">
-              <div className="flex items-center justify-between">
+            <div className='border-t pt-2 text-muted-foreground text-xs'>
+              <div className='flex items-center justify-between'>
                 <span>{tutorial.title}</span>
                 <span>~{tutorial.estimatedDuration} min</span>
               </div>

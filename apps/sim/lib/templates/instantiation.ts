@@ -1,6 +1,6 @@
 /**
  * Template Instantiation System - One-Click Template Creation
- * 
+ *
  * This module provides comprehensive template instantiation functionality including:
  * - One-click template creation with smart defaults
  * - Guided customization wizard with field validation
@@ -9,7 +9,7 @@
  * - Pre-flight validation and error prevention
  * - Post-instantiation setup and verification
  * - Usage tracking and analytics integration
- * 
+ *
  * Instantiation Features:
  * - Smart variable detection and substitution
  * - Credential mapping and secure handling
@@ -18,22 +18,17 @@
  * - Dependency validation and installation
  * - Configuration drift detection
  * - Rollback and recovery mechanisms
- * 
+ *
  * @author Claude Code Template System
  * @version 2.0.0
  */
 
+import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
-import { z } from 'zod'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, workflow, user } from '@/db/schema'
-import { eq } from 'drizzle-orm'
-import type {
-  TemplateCustomization,
-  TemplateInstantiationOptions,
-  Template
-} from './types'
+import { templates } from '@/db/schema'
+import type { TemplateCustomization, TemplateInstantiationOptions } from './types'
 
 // Initialize structured logger for instantiation operations
 const logger = createLogger('TemplateInstantiation')
@@ -96,25 +91,25 @@ export interface InstantiationResult {
   workflowName: string
   templateId: string
   userId: string
-  
+
   // Customization applied
   variablesApplied: Record<string, any>
   blocksCustomized: number
   dependenciesResolved: number
-  
+
   // Validation results
   validationErrors: string[]
   validationWarnings: string[]
-  
+
   // Setup information
   setupRequired: boolean
   setupInstructions?: string[]
   configurationNeeded: string[]
-  
+
   // Analytics
   instantiationTime: number
   processingSteps: string[]
-  
+
   // Post-instantiation
   testResults?: {
     passed: boolean
@@ -128,7 +123,7 @@ export interface InstantiationResult {
 
 /**
  * Comprehensive Template Instantiation Service
- * 
+ *
  * Provides enterprise-grade template instantiation with guided setup,
  * validation, customization, and post-deployment verification.
  */
@@ -139,18 +134,18 @@ export class TemplateInstantiator {
   constructor(requestId?: string) {
     this.requestId = requestId || crypto.randomUUID().slice(0, 8)
     this.startTime = Date.now()
-    
+
     logger.info(`[${this.requestId}] TemplateInstantiator initialized`, {
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 
   /**
    * Analyze template for customization opportunities
-   * 
+   *
    * Examines template structure to identify variables, blocks that can be
    * customized, and dependencies that need to be resolved.
-   * 
+   *
    * @param templateId - Template to analyze
    * @returns Promise<TemplateAnalysis> - Analysis results with customization options
    */
@@ -163,10 +158,10 @@ export class TemplateInstantiator {
     recommendations: string[]
   }> {
     const operationId = `analyze_${Date.now()}`
-    
+
     logger.info(`[${this.requestId}] Analyzing template for instantiation`, {
       operationId,
-      templateId
+      templateId,
     })
 
     try {
@@ -185,17 +180,21 @@ export class TemplateInstantiator {
 
       // Extract variables from template
       const variables = await this.extractVariables(templateState)
-      
+
       // Identify customizable blocks
       const customizableBlocks = await this.identifyCustomizableBlocks(templateState)
-      
+
       // Analyze dependencies
       const dependencies = await this.analyzeDependencies(templateState)
-      
+
       // Calculate complexity and setup time
-      const complexity = this.calculateInstantiationComplexity(variables, customizableBlocks, dependencies)
+      const complexity = this.calculateInstantiationComplexity(
+        variables,
+        customizableBlocks,
+        dependencies
+      )
       const estimatedSetupTime = this.estimateSetupTime(complexity, dependencies)
-      
+
       // Generate recommendations
       const recommendations = this.generateInstantiationRecommendations(
         variables,
@@ -211,7 +210,7 @@ export class TemplateInstantiator {
         customizableBlockCount: customizableBlocks.length,
         dependencyCount: dependencies.length,
         complexity,
-        processingTime: elapsed
+        processingTime: elapsed,
       })
 
       return {
@@ -220,16 +219,15 @@ export class TemplateInstantiator {
         dependencies,
         estimatedSetupTime,
         complexity,
-        recommendations
+        recommendations,
       }
-
     } catch (error) {
       const elapsed = Date.now() - this.startTime
       logger.error(`[${this.requestId}] Template analysis failed`, {
         operationId,
         templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        processingTime: elapsed
+        processingTime: elapsed,
       })
       throw error
     }
@@ -237,10 +235,10 @@ export class TemplateInstantiator {
 
   /**
    * Instantiate template with comprehensive customization
-   * 
+   *
    * Creates a new workflow from a template with user customizations,
    * variable substitutions, dependency resolution, and validation.
-   * 
+   *
    * @param templateId - Template to instantiate
    * @param customization - User-provided customizations
    * @param options - Instantiation options and preferences
@@ -253,17 +251,17 @@ export class TemplateInstantiator {
   ): Promise<InstantiationResult> {
     const operationId = `instantiate_${Date.now()}`
     const processingSteps: string[] = []
-    
+
     logger.info(`[${this.requestId}] Starting template instantiation`, {
       operationId,
       templateId,
       userId: options.userId,
-      workflowName: customization.workflowName
+      workflowName: customization.workflowName,
     })
 
     try {
       const instantiationStart = Date.now()
-      
+
       // Step 1: Fetch and validate template
       processingSteps.push('Fetching template')
       const [template] = await db
@@ -283,7 +281,7 @@ export class TemplateInstantiator {
       // Step 3: Pre-flight validation
       processingSteps.push('Running pre-flight checks')
       const validationResult = await this.runPreFlightValidation(template, customization, options)
-      
+
       if (validationResult.errors.length > 0 && !options.ignoreValidationErrors) {
         return {
           success: false,
@@ -298,7 +296,7 @@ export class TemplateInstantiator {
           setupRequired: false,
           configurationNeeded: [],
           instantiationTime: Date.now() - instantiationStart,
-          processingSteps
+          processingSteps,
         }
       }
 
@@ -320,7 +318,10 @@ export class TemplateInstantiator {
       const workflowData = {
         id: workflowId,
         name: customization.workflowName || template.name,
-        description: customization.description || template.description || `Created from template: ${template.name}`,
+        description:
+          customization.description ||
+          template.description ||
+          `Created from template: ${template.name}`,
         userId: options.userId,
         workspaceId: options.workspaceId,
         folderId: options.folderId || null,
@@ -331,7 +332,7 @@ export class TemplateInstantiator {
         tags: customization.tags || [],
         createdAt: new Date(),
         updatedAt: new Date(),
-        lastModifiedBy: options.userId
+        lastModifiedBy: options.userId,
       }
 
       // Step 7: Create workflow in database (simulation - would use workflow service)
@@ -341,13 +342,18 @@ export class TemplateInstantiator {
 
       // Step 8: Post-instantiation setup
       processingSteps.push('Post-instantiation setup')
-      const setupResult = await this.performPostInstantiationSetup(workflowId, customizedState, options)
+      const setupResult = await this.performPostInstantiationSetup(
+        workflowId,
+        customizedState,
+        options
+      )
 
       // Step 9: Run validation tests
       processingSteps.push('Running validation tests')
-      const testResults = options.runPostInstantiationTests !== false 
-        ? await this.runValidationTests(workflowId, customizedState)
-        : undefined
+      const testResults =
+        options.runPostInstantiationTests !== false
+          ? await this.runValidationTests(workflowId, customizedState)
+          : undefined
 
       // Step 10: Track usage analytics
       processingSteps.push('Recording analytics')
@@ -355,7 +361,7 @@ export class TemplateInstantiator {
         customizationCount: Object.keys(customization.variables || {}).length,
         blocksCustomized: Object.keys(customization.blockOverrides || {}).length,
         dependenciesResolved: dependencyResult.resolved.length,
-        setupTime: Date.now() - instantiationStart
+        setupTime: Date.now() - instantiationStart,
       })
 
       // Step 11: Update template usage statistics
@@ -368,21 +374,21 @@ export class TemplateInstantiator {
         workflowName: workflowData.name,
         templateId,
         userId: options.userId,
-        
+
         variablesApplied: customization.variables || {},
         blocksCustomized: Object.keys(customization.blockOverrides || {}).length,
         dependenciesResolved: dependencyResult.resolved.length,
-        
+
         validationErrors: [],
         validationWarnings: validationResult.warnings,
-        
+
         setupRequired: setupResult.setupRequired,
         setupInstructions: setupResult.instructions,
         configurationNeeded: setupResult.configurationNeeded,
-        
+
         instantiationTime,
         processingSteps,
-        testResults
+        testResults,
       }
 
       logger.info(`[${this.requestId}] Template instantiation completed successfully`, {
@@ -390,11 +396,10 @@ export class TemplateInstantiator {
         workflowId,
         instantiationTime,
         variablesApplied: Object.keys(customization.variables || {}).length,
-        testsRun: testResults?.tests.length || 0
+        testsRun: testResults?.tests.length || 0,
       })
 
       return result
-
     } catch (error) {
       const elapsed = Date.now() - this.startTime
       logger.error(`[${this.requestId}] Template instantiation failed`, {
@@ -402,9 +407,9 @@ export class TemplateInstantiator {
         templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
         processingTime: elapsed,
-        step: processingSteps[processingSteps.length - 1] || 'initialization'
+        step: processingSteps[processingSteps.length - 1] || 'initialization',
       })
-      
+
       return {
         success: false,
         workflowName: customization.workflowName || 'Unknown',
@@ -418,14 +423,14 @@ export class TemplateInstantiator {
         setupRequired: false,
         configurationNeeded: [],
         instantiationTime: Date.now() - this.startTime,
-        processingSteps
+        processingSteps,
       }
     }
   }
 
   /**
    * Validate template customization before instantiation
-   * 
+   *
    * Performs comprehensive validation of user customizations including
    * variable validation, dependency checks, and configuration verification.
    */
@@ -440,11 +445,11 @@ export class TemplateInstantiator {
     suggestions: string[]
   }> {
     const operationId = `validate_${Date.now()}`
-    
+
     logger.info(`[${this.requestId}] Validating template customization`, {
       operationId,
       templateId,
-      userId: options.userId
+      userId: options.userId,
     })
 
     try {
@@ -474,10 +479,10 @@ export class TemplateInstantiator {
       // Validate variables
       if (customization.variables) {
         const templateVariables = await this.extractVariables(template.state as any)
-        
+
         for (const [variableName, value] of Object.entries(customization.variables)) {
-          const variableConfig = templateVariables.find(v => v.name === variableName)
-          
+          const variableConfig = templateVariables.find((v) => v.name === variableName)
+
           if (!variableConfig) {
             warnings.push(`Variable '${variableName}' is not used in template`)
             continue
@@ -497,7 +502,11 @@ export class TemplateInstantiator {
 
           // Validate patterns and constraints
           if (variableConfig.validation) {
-            const constraintValidation = this.validateVariableConstraints(variableName, value, variableConfig.validation)
+            const constraintValidation = this.validateVariableConstraints(
+              variableName,
+              value,
+              variableConfig.validation
+            )
             if (!constraintValidation.valid) {
               errors.push(constraintValidation.error!)
             }
@@ -506,8 +515,8 @@ export class TemplateInstantiator {
 
         // Check for missing required variables
         templateVariables
-          .filter(v => v.required)
-          .forEach(variable => {
+          .filter((v) => v.required)
+          .forEach((variable) => {
             if (!(variable.name in customization.variables!)) {
               errors.push(`Required variable '${variable.name}' is not provided`)
             }
@@ -517,7 +526,7 @@ export class TemplateInstantiator {
       // Validate block overrides
       if (customization.blockOverrides) {
         const templateState = template.state as any
-        
+
         for (const blockId of Object.keys(customization.blockOverrides)) {
           if (!templateState.blocks?.[blockId]) {
             warnings.push(`Block '${blockId}' does not exist in template`)
@@ -526,7 +535,10 @@ export class TemplateInstantiator {
       }
 
       // Validate workspace permissions
-      const hasWorkspaceAccess = await this.validateWorkspaceAccess(options.userId, options.workspaceId)
+      const hasWorkspaceAccess = await this.validateWorkspaceAccess(
+        options.userId,
+        options.workspaceId
+      )
       if (!hasWorkspaceAccess) {
         errors.push('You do not have access to the specified workspace')
       }
@@ -541,27 +553,26 @@ export class TemplateInstantiator {
       }
 
       const isValid = errors.length === 0
-      
+
       logger.info(`[${this.requestId}] Customization validation completed`, {
         operationId,
         isValid,
         errorCount: errors.length,
-        warningCount: warnings.length
+        warningCount: warnings.length,
       })
 
       return { isValid, errors, warnings, suggestions }
-
     } catch (error) {
       logger.error(`[${this.requestId}] Customization validation failed`, {
         operationId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
-      
+
       return {
         isValid: false,
-        errors: ['Validation failed: ' + (error instanceof Error ? error.message : 'Unknown error')],
+        errors: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
         warnings: [],
-        suggestions: []
+        suggestions: [],
       }
     }
   }
@@ -581,11 +592,11 @@ export class TemplateInstantiator {
     }
 
     // Scan template for variable patterns like ${variableName}
-    const extractFromObject = (obj: any, path: string = '') => {
+    const extractFromObject = (obj: any, path = '') => {
       if (typeof obj === 'string') {
         const variableMatches = obj.match(/\$\{([^}]+)\}/g)
         if (variableMatches) {
-          variableMatches.forEach(match => {
+          variableMatches.forEach((match) => {
             const variableName = match.slice(2, -1).trim()
             if (!variableMap.has(variableName)) {
               variableMap.set(variableName, {
@@ -593,7 +604,7 @@ export class TemplateInstantiator {
                 type: this.inferVariableType(variableName, obj),
                 description: `Variable extracted from ${path}`,
                 required: true,
-                category: 'auto-detected'
+                category: 'auto-detected',
               })
             }
           })
@@ -621,7 +632,7 @@ export class TemplateInstantiator {
       Object.entries(templateState.blocks).forEach(([blockId, block]: [string, any]) => {
         // Identify blocks that can be customized based on type and configuration
         const isCustomizable = this.isBlockCustomizable(block)
-        
+
         if (isCustomizable) {
           customizableBlocks.push({
             blockId,
@@ -632,9 +643,9 @@ export class TemplateInstantiator {
               configuration: this.getCustomizableFields(block),
               connections: {
                 input: block.inputs || [],
-                output: block.outputs || []
-              }
-            }
+                output: block.outputs || [],
+              },
+            },
           })
         }
       })
@@ -651,7 +662,7 @@ export class TemplateInstantiator {
       Object.values(templateState.blocks).forEach((block: any) => {
         // Analyze block type for dependencies
         const blockDependencies = this.getBlockDependencies(block)
-        blockDependencies.forEach(dep => {
+        blockDependencies.forEach((dep) => {
           const depKey = `${dep.type}:${dep.name}`
           if (!dependencySet.has(depKey)) {
             dependencySet.add(depKey)
@@ -670,19 +681,19 @@ export class TemplateInstantiator {
     dependencies: DependencyRequirement[]
   ): 'simple' | 'moderate' | 'complex' {
     let complexity = 0
-    
+
     // Variable complexity
     complexity += variables.length
-    complexity += variables.filter(v => v.required).length * 2
-    complexity += variables.filter(v => v.type === 'credential').length * 3
-    
+    complexity += variables.filter((v) => v.required).length * 2
+    complexity += variables.filter((v) => v.type === 'credential').length * 3
+
     // Block complexity
     complexity += blocks.length * 2
-    
+
     // Dependency complexity
     complexity += dependencies.length * 2
-    complexity += dependencies.filter(d => d.required).length * 3
-    complexity += dependencies.filter(d => d.configurationRequired).length * 2
+    complexity += dependencies.filter((d) => d.required).length * 3
+    complexity += dependencies.filter((d) => d.configurationRequired).length * 2
 
     if (complexity <= 5) return 'simple'
     if (complexity <= 15) return 'moderate'
@@ -693,14 +704,14 @@ export class TemplateInstantiator {
     const baseTimes = {
       simple: 2,
       moderate: 5,
-      complex: 15
+      complex: 15,
     }
-    
+
     let minutes = baseTimes[complexity as keyof typeof baseTimes] || 5
-    
+
     // Add time for dependencies
-    minutes += dependencies.filter(d => d.configurationRequired).length * 3
-    minutes += dependencies.filter(d => d.type === 'credential').length * 2
+    minutes += dependencies.filter((d) => d.configurationRequired).length * 3
+    minutes += dependencies.filter((d) => d.type === 'credential').length * 2
 
     if (minutes <= 2) return '< 2 minutes'
     if (minutes <= 5) return '2-5 minutes'
@@ -718,25 +729,29 @@ export class TemplateInstantiator {
     const recommendations: string[] = []
 
     // Variable recommendations
-    const credentialVariables = variables.filter(v => v.type === 'credential')
+    const credentialVariables = variables.filter((v) => v.type === 'credential')
     if (credentialVariables.length > 0) {
       recommendations.push(`Prepare ${credentialVariables.length} credential(s) before starting`)
     }
 
-    const requiredVariables = variables.filter(v => v.required)
+    const requiredVariables = variables.filter((v) => v.required)
     if (requiredVariables.length > 3) {
       recommendations.push('Consider preparing all required values in advance to speed up setup')
     }
 
     // Dependency recommendations
-    const integrationDeps = dependencies.filter(d => d.type === 'integration')
+    const integrationDeps = dependencies.filter((d) => d.type === 'integration')
     if (integrationDeps.length > 0) {
-      recommendations.push(`Ensure you have access to: ${integrationDeps.map(d => d.name).join(', ')}`)
+      recommendations.push(
+        `Ensure you have access to: ${integrationDeps.map((d) => d.name).join(', ')}`
+      )
     }
 
     // Complexity recommendations
     if (complexity === 'complex') {
-      recommendations.push('This is a complex template - consider setting aside adequate time for setup')
+      recommendations.push(
+        'This is a complex template - consider setting aside adequate time for setup'
+      )
       recommendations.push('Review all customization options before proceeding')
     }
 
@@ -849,16 +864,16 @@ export class TemplateInstantiator {
       {
         name: 'Workflow Structure Validation',
         status: 'passed' as const,
-        message: 'Workflow structure is valid'
+        message: 'Workflow structure is valid',
       },
       {
         name: 'Block Configuration Check',
         status: 'passed' as const,
-        message: 'All blocks are properly configured'
-      }
+        message: 'All blocks are properly configured',
+      },
     ]
 
-    const passed = tests.every(test => test.status === 'passed')
+    const passed = tests.every((test) => test.status === 'passed')
 
     return { passed, tests }
   }
@@ -871,7 +886,7 @@ export class TemplateInstantiator {
     logger.info(`[${this.requestId}] Recording instantiation analytics`, {
       templateId,
       userId,
-      metrics
+      metrics,
     })
     // This would integrate with the analytics system
   }
@@ -881,7 +896,7 @@ export class TemplateInstantiator {
     await db
       .update(templates)
       .set({
-        views: templates.views + 1 // This would be more sophisticated in practice
+        views: templates.views + 1, // This would be more sophisticated in practice
       })
       .where(eq(templates.id, templateId))
   }
@@ -890,13 +905,16 @@ export class TemplateInstantiator {
 
   private inferVariableType(name: string, context: string): VariableConfig['type'] {
     const lowerName = name.toLowerCase()
-    
+
     if (lowerName.includes('email')) return 'email'
     if (lowerName.includes('url') || lowerName.includes('endpoint')) return 'url'
-    if (lowerName.includes('key') || lowerName.includes('token') || lowerName.includes('secret')) return 'credential'
-    if (lowerName.includes('count') || lowerName.includes('number') || lowerName.includes('limit')) return 'number'
-    if (lowerName.includes('enable') || lowerName.includes('flag') || lowerName.includes('active')) return 'boolean'
-    
+    if (lowerName.includes('key') || lowerName.includes('token') || lowerName.includes('secret'))
+      return 'credential'
+    if (lowerName.includes('count') || lowerName.includes('number') || lowerName.includes('limit'))
+      return 'number'
+    if (lowerName.includes('enable') || lowerName.includes('flag') || lowerName.includes('active'))
+      return 'boolean'
+
     return 'string'
   }
 
@@ -913,7 +931,7 @@ export class TemplateInstantiator {
 
   private getBlockDependencies(block: any): DependencyRequirement[] {
     const dependencies: DependencyRequirement[] = []
-    
+
     // Map block types to their dependencies
     switch (block.type) {
       case 'gmail':
@@ -925,7 +943,7 @@ export class TemplateInstantiator {
           description: 'Google OAuth credentials for API access',
           required: true,
           configurationRequired: true,
-          setupInstructions: 'Configure Google OAuth in the integrations section'
+          setupInstructions: 'Configure Google OAuth in the integrations section',
         })
         break
       case 'slack':
@@ -934,7 +952,7 @@ export class TemplateInstantiator {
           name: 'Slack Token',
           description: 'Slack bot token for workspace access',
           required: true,
-          configurationRequired: true
+          configurationRequired: true,
         })
         break
       case 'api':
@@ -944,16 +962,20 @@ export class TemplateInstantiator {
             name: 'API Credentials',
             description: 'API authentication credentials',
             required: true,
-            configurationRequired: false
+            configurationRequired: false,
           })
         }
         break
     }
-    
+
     return dependencies
   }
 
-  private validateVariableType(name: string, value: any, config: VariableConfig): { valid: boolean; error?: string } {
+  private validateVariableType(
+    name: string,
+    value: any,
+    config: VariableConfig
+  ): { valid: boolean; error?: string } {
     switch (config.type) {
       case 'string':
         if (typeof value !== 'string') {
@@ -966,16 +988,20 @@ export class TemplateInstantiator {
         }
         break
       case 'boolean':
-        if (typeof value !== 'boolean' && !['true', 'false', '1', '0'].includes(String(value).toLowerCase())) {
+        if (
+          typeof value !== 'boolean' &&
+          !['true', 'false', '1', '0'].includes(String(value).toLowerCase())
+        ) {
           return { valid: false, error: `Variable '${name}' must be a boolean` }
         }
         break
-      case 'email':
+      case 'email': {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(String(value))) {
           return { valid: false, error: `Variable '${name}' must be a valid email address` }
         }
         break
+      }
       case 'url':
         try {
           new URL(String(value))
@@ -984,7 +1010,7 @@ export class TemplateInstantiator {
         }
         break
     }
-    
+
     return { valid: true }
   }
 
@@ -1001,21 +1027,28 @@ export class TemplateInstantiator {
     }
 
     if (validation.min !== undefined) {
-      if ((typeof value === 'string' && value.length < validation.min) ||
-          (typeof value === 'number' && value < validation.min)) {
+      if (
+        (typeof value === 'string' && value.length < validation.min) ||
+        (typeof value === 'number' && value < validation.min)
+      ) {
         return { valid: false, error: `Variable '${name}' is below minimum value/length` }
       }
     }
 
     if (validation.max !== undefined) {
-      if ((typeof value === 'string' && value.length > validation.max) ||
-          (typeof value === 'number' && value > validation.max)) {
+      if (
+        (typeof value === 'string' && value.length > validation.max) ||
+        (typeof value === 'number' && value > validation.max)
+      ) {
         return { valid: false, error: `Variable '${name}' exceeds maximum value/length` }
       }
     }
 
     if (validation.options && !validation.options.includes(String(value))) {
-      return { valid: false, error: `Variable '${name}' must be one of: ${validation.options.join(', ')}` }
+      return {
+        valid: false,
+        error: `Variable '${name}' must be one of: ${validation.options.join(', ')}`,
+      }
     }
 
     return { valid: true }
@@ -1035,9 +1068,11 @@ export class TemplateInstantiator {
           result = result.replace(new RegExp(`\\$\\{${key}\\}`, 'g'), String(value))
         })
         return result
-      } else if (Array.isArray(item)) {
+      }
+      if (Array.isArray(item)) {
         return item.map(substitute)
-      } else if (item && typeof item === 'object') {
+      }
+      if (item && typeof item === 'object') {
         const result: any = {}
         Object.entries(item).forEach(([key, value]) => {
           result[key] = substitute(value)
@@ -1047,7 +1082,7 @@ export class TemplateInstantiator {
       return item
     }
 
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       obj[key] = substitute(obj[key])
     })
   }
@@ -1082,14 +1117,14 @@ export class TemplateInstantiator {
     if (configOverrides.environment && templateState.metadata) {
       templateState.metadata.environment = {
         ...templateState.metadata.environment,
-        ...configOverrides.environment
+        ...configOverrides.environment,
       }
     }
 
     if (configOverrides.settings && templateState.metadata) {
       templateState.metadata.settings = {
         ...templateState.metadata.settings,
-        ...configOverrides.settings
+        ...configOverrides.settings,
       }
     }
   }

@@ -4,7 +4,7 @@ const logger = createLogger('SecurityPolicy')
 
 /**
  * Security Policy Engine for Code Execution
- * 
+ *
  * Provides comprehensive security analysis and policy enforcement for user-submitted code:
  * - Static code analysis for dangerous patterns
  * - Resource usage monitoring and limits
@@ -81,10 +81,13 @@ export class SecurityPolicy {
   /**
    * Validate code against security policies
    */
-  async validateCode(code: string, language: 'javascript' | 'python'): Promise<SecurityAnalysisResult> {
-    logger.info('Performing security analysis', { 
-      language, 
-      codeLength: code.length 
+  async validateCode(
+    code: string,
+    language: 'javascript' | 'python'
+  ): Promise<SecurityAnalysisResult> {
+    logger.info('Performing security analysis', {
+      language,
+      codeLength: code.length,
     })
 
     const violations: SecurityViolation[] = []
@@ -100,7 +103,8 @@ export class SecurityPolicy {
 
     // Determine risk level based on violations
     const riskLevel = this.calculateRiskLevel(violations)
-    const passed = riskLevel !== 'critical' && violations.filter(v => v.severity === 'high').length === 0
+    const passed =
+      riskLevel !== 'critical' && violations.filter((v) => v.severity === 'high').length === 0
 
     logger.info('Security analysis completed', {
       passed,
@@ -355,7 +359,7 @@ export class SecurityPolicy {
   ): void {
     // Check for complex code patterns
     const complexityMetrics = this.calculateComplexity(code)
-    
+
     if (complexityMetrics.cyclomaticComplexity > 20) {
       warnings.push('High code complexity detected - consider breaking into smaller functions')
     }
@@ -433,15 +437,15 @@ export class SecurityPolicy {
     nesting: number
     lines: number
   } {
-    const lines = code.split('\n').filter(line => line.trim().length > 0).length
-    
+    const lines = code.split('\n').filter((line) => line.trim().length > 0).length
+
     // Simple cyclomatic complexity calculation
     const cyclomaticKeywords = (code.match(/\b(if|while|for|catch|case|&&|\|\|)\b/g) || []).length
     const cyclomaticComplexity = cyclomaticKeywords + 1
 
     // Simple nesting calculation
-    const openBraces = (code.match(/[\(\[\{]/g) || []).length
-    const closeBraces = (code.match(/[\)\]\}]/g) || []).length
+    const openBraces = (code.match(/[([{]/g) || []).length
+    const closeBraces = (code.match(/[)\]}]/g) || []).length
     const nesting = Math.abs(openBraces - closeBraces) + Math.max(openBraces, closeBraces) / 10
 
     return {
@@ -454,17 +458,22 @@ export class SecurityPolicy {
   /**
    * Calculate overall risk level from violations
    */
-  private calculateRiskLevel(violations: SecurityViolation[]): 'low' | 'medium' | 'high' | 'critical' {
-    if (violations.some(v => v.severity === 'critical')) {
+  private calculateRiskLevel(
+    violations: SecurityViolation[]
+  ): 'low' | 'medium' | 'high' | 'critical' {
+    if (violations.some((v) => v.severity === 'critical')) {
       return 'critical'
     }
-    if (violations.filter(v => v.severity === 'high').length >= 2) {
+    if (violations.filter((v) => v.severity === 'high').length >= 2) {
       return 'high'
     }
-    if (violations.some(v => v.severity === 'high') || violations.filter(v => v.severity === 'medium').length >= 3) {
+    if (
+      violations.some((v) => v.severity === 'high') ||
+      violations.filter((v) => v.severity === 'medium').length >= 3
+    ) {
       return 'high'
     }
-    if (violations.filter(v => v.severity === 'medium').length >= 1) {
+    if (violations.filter((v) => v.severity === 'medium').length >= 1) {
       return 'medium'
     }
     return 'low'
@@ -473,7 +482,7 @@ export class SecurityPolicy {
   /**
    * Log network access attempt
    */
-  logNetworkAttempt(url: string, method: string = 'GET', allowed: boolean = true, reason?: string): void {
+  logNetworkAttempt(url: string, method = 'GET', allowed = true, reason?: string): void {
     const attempt: NetworkAttempt = {
       url,
       method,
@@ -481,7 +490,7 @@ export class SecurityPolicy {
       allowed,
       reason,
     }
-    
+
     this.networkAttempts.push(attempt)
     this.resourceUsage.networkRequestCount++
 
@@ -496,7 +505,7 @@ export class SecurityPolicy {
   logFileSystemAccess(
     path: string,
     operation: 'read' | 'write' | 'execute' | 'delete',
-    allowed: boolean = true,
+    allowed = true,
     reason?: string
   ): void {
     const access: FileSystemAccess = {
@@ -506,7 +515,7 @@ export class SecurityPolicy {
       allowed,
       reason,
     }
-    
+
     this.fileSystemAccess.push(access)
     this.resourceUsage.fileOperationCount++
 
@@ -574,7 +583,7 @@ export class SecurityPolicy {
   isUrlAllowed(url: string): { allowed: boolean; reason?: string } {
     try {
       const urlObj = new URL(url)
-      
+
       // Block local/private network access
       const privateNetworks = [
         '127.0.0.1',
@@ -599,7 +608,7 @@ export class SecurityPolicy {
         '192.168.',
       ]
 
-      if (privateNetworks.some(network => urlObj.hostname.startsWith(network))) {
+      if (privateNetworks.some((network) => urlObj.hostname.startsWith(network))) {
         return { allowed: false, reason: 'Access to private networks is blocked' }
       }
 
@@ -610,13 +619,28 @@ export class SecurityPolicy {
       }
 
       // Block suspicious ports
-      const suspiciousPorts = ['22', '23', '25', '53', '135', '139', '445', '1433', '3389', '5432', '5984', '6379', '9200', '11211', '27017']
+      const suspiciousPorts = [
+        '22',
+        '23',
+        '25',
+        '53',
+        '135',
+        '139',
+        '445',
+        '1433',
+        '3389',
+        '5432',
+        '5984',
+        '6379',
+        '9200',
+        '11211',
+        '27017',
+      ]
       if (urlObj.port && suspiciousPorts.includes(urlObj.port)) {
         return { allowed: false, reason: `Port ${urlObj.port} is blocked for security` }
       }
 
       return { allowed: true }
-
     } catch (error) {
       return { allowed: false, reason: 'Invalid URL format' }
     }
@@ -625,7 +649,10 @@ export class SecurityPolicy {
   /**
    * Check if file path is allowed
    */
-  isPathAllowed(path: string, operation: 'read' | 'write' | 'execute' | 'delete'): { allowed: boolean; reason?: string } {
+  isPathAllowed(
+    path: string,
+    operation: 'read' | 'write' | 'execute' | 'delete'
+  ): { allowed: boolean; reason?: string } {
     // Block access to system directories
     const systemPaths = [
       '/etc/',
@@ -640,7 +667,7 @@ export class SecurityPolicy {
       '/usr/sbin/',
     ]
 
-    if (systemPaths.some(sysPath => path.startsWith(sysPath))) {
+    if (systemPaths.some((sysPath) => path.startsWith(sysPath))) {
       return { allowed: false, reason: 'Access to system directories is blocked' }
     }
 
@@ -653,7 +680,7 @@ export class SecurityPolicy {
       '/home/.ssh/',
     ]
 
-    if (sensitiveFiles.some(file => path.includes(file))) {
+    if (sensitiveFiles.some((file) => path.includes(file))) {
       return { allowed: false, reason: 'Access to sensitive files is blocked' }
     }
 

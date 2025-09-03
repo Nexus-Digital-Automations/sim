@@ -1,10 +1,10 @@
 /**
  * Enhanced Function Execution API
- * 
+ *
  * Provides enterprise-grade code execution with comprehensive security,
  * Docker sandboxing, and performance optimization while maintaining
  * backward compatibility with existing function execution API.
- * 
+ *
  * Features:
  * - Automatic execution method selection (VM/Docker)
  * - Real-time security analysis and threat detection
@@ -12,14 +12,17 @@
  * - Enterprise governance and compliance workflows
  * - Comprehensive audit logging and monitoring
  * - Backward compatibility with existing API contracts
- * 
+ *
  * Author: Claude Development Agent
  * Created: September 3, 2025
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
+import {
+  type EnhancedExecutionRequest,
+  enhancedExecutionManager,
+} from '@/lib/execution/enhanced-execution-manager'
 import { createLogger } from '@/lib/logs/console/logger'
-import { enhancedExecutionManager, type EnhancedExecutionRequest } from '@/lib/execution/enhanced-execution-manager'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -41,7 +44,7 @@ interface EnhancedAPIRequest {
   workflowVariables?: Record<string, any>
   workflowId?: string
   isCustomTool?: boolean
-  
+
   // Enhanced security and execution options
   security?: {
     level?: 'basic' | 'enhanced' | 'maximum'
@@ -81,7 +84,7 @@ export async function POST(req: NextRequest) {
       workflowId,
       isCustomTool = false,
       security = {},
-      execution = {}
+      execution = {},
     } = body
 
     logger.info(`Enhanced function execution request`, {
@@ -93,61 +96,67 @@ export async function POST(req: NextRequest) {
       workflowId,
       isCustomTool,
       securityLevel: security.level || 'enhanced',
-      executionMethod: execution.method || 'auto'
+      executionMethod: execution.method || 'auto',
     })
 
     // Validate required fields
     if (!code || typeof code !== 'string') {
-      return NextResponse.json({
-        success: false,
-        error: 'Code is required and must be a string',
-        output: {
-          result: null,
-          stdout: '',
-          stderr: 'Code validation failed',
-          executionTime: 0,
-          memoryUsage: 0,
-          resourceUsage: {},
-          securityReport: {
-            riskScore: 100,
-            violations: [{ type: 'validation_error', description: 'Invalid code parameter' }],
-            networkRequests: [],
-            fileOperations: [],
-            policyCompliance: false,
-            threatLevel: 'high',
-            executionTimeMs: 0
-          }
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Code is required and must be a string',
+          output: {
+            result: null,
+            stdout: '',
+            stderr: 'Code validation failed',
+            executionTime: 0,
+            memoryUsage: 0,
+            resourceUsage: {},
+            securityReport: {
+              riskScore: 100,
+              violations: [{ type: 'validation_error', description: 'Invalid code parameter' }],
+              networkRequests: [],
+              fileOperations: [],
+              policyCompliance: false,
+              threatLevel: 'high',
+              executionTimeMs: 0,
+            },
+          },
+          executionMethod: 'validation',
+          requestId,
         },
-        executionMethod: 'validation',
-        requestId
-      }, { status: 400 })
+        { status: 400 }
+      )
     }
 
     // Validate language
     if (!['javascript', 'python'].includes(language)) {
-      return NextResponse.json({
-        success: false,
-        error: `Unsupported language: ${language}. Supported languages: javascript, python`,
-        output: {
-          result: null,
-          stdout: '',
-          stderr: 'Language validation failed',
-          executionTime: 0,
-          memoryUsage: 0,
-          resourceUsage: {},
-          securityReport: {
-            riskScore: 100,
-            violations: [{ type: 'validation_error', description: 'Invalid language parameter' }],
-            networkRequests: [],
-            fileOperations: [],
-            policyCompliance: false,
-            threatLevel: 'high',
-            executionTimeMs: 0
-          }
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Unsupported language: ${language}. Supported languages: javascript, python`,
+          output: {
+            result: null,
+            stdout: '',
+            stderr: 'Language validation failed',
+            executionTime: 0,
+            memoryUsage: 0,
+            resourceUsage: {},
+            securityReport: {
+              riskScore: 100,
+              violations: [{ type: 'validation_error', description: 'Invalid language parameter' }],
+              networkRequests: [],
+              fileOperations: [],
+              policyCompliance: false,
+              threatLevel: 'high',
+              executionTimeMs: 0,
+            },
+          },
+          executionMethod: 'validation',
+          requestId,
         },
-        executionMethod: 'validation',
-        requestId
-      }, { status: 400 })
+        { status: 400 }
+      )
     }
 
     // Build enhanced execution request
@@ -172,22 +181,22 @@ export async function POST(req: NextRequest) {
         memoryLimit: execution.memoryLimit || '512MB',
         networkAccess: execution.networkAccess || 'restricted',
         customPackages: execution.customPackages || [],
-        complianceFrameworks: security.complianceFrameworks || ['OWASP']
-      }
+        complianceFrameworks: security.complianceFrameworks || ['OWASP'],
+      },
     }
 
     // Execute code with enhanced security and performance
     const result = await enhancedExecutionManager.executeCode(enhancedRequest)
 
     const executionTime = Date.now() - startTime
-    
+
     logger.info(`Enhanced function execution completed`, {
       requestId,
       success: result.success,
       method: result.executionMethod,
       executionTime,
       riskScore: result.securityAnalysis?.riskScore || 0,
-      cacheHit: result.cacheHit || false
+      cacheHit: result.cacheHit || false,
     })
 
     // Add request metadata to response
@@ -196,32 +205,35 @@ export async function POST(req: NextRequest) {
       requestId,
       timestamp: new Date().toISOString(),
       apiVersion: '2.0',
-      
+
       // Backward compatibility fields
       debug: result.debug || {
         requestId,
         executionMethod: result.executionMethod,
         securityLevel: enhancedRequest.config?.securityLevel,
         cacheHit: result.cacheHit,
-        performanceMetrics: enhancedExecutionManager.getMetrics()
-      }
+        performanceMetrics: enhancedExecutionManager.getMetrics(),
+      },
     }
 
     // Return appropriate HTTP status
-    const status = result.success ? 200 : 
-                  result.error?.includes('Security') ? 403 :
-                  result.error?.includes('Governance') ? 409 : 500
+    const status = result.success
+      ? 200
+      : result.error?.includes('Security')
+        ? 403
+        : result.error?.includes('Governance')
+          ? 409
+          : 500
 
     return NextResponse.json(response, { status })
-
   } catch (error: any) {
     const executionTime = Date.now() - startTime
-    
+
     logger.error(`Enhanced function execution failed`, {
       requestId,
       error: error.message || 'Unknown error',
       stack: error.stack,
-      executionTime
+      executionTime,
     })
 
     const errorResponse = {
@@ -237,7 +249,7 @@ export async function POST(req: NextRequest) {
           cpu: { usage: 0, time: 0 },
           memory: { used: 0, max: 0, limit: 0 },
           disk: { read: 0, write: 0 },
-          network: { incoming: 0, outgoing: 0, requests: 0 }
+          network: { incoming: 0, outgoing: 0, requests: 0 },
         },
         securityReport: {
           riskScore: 100,
@@ -246,8 +258,8 @@ export async function POST(req: NextRequest) {
           fileOperations: [],
           policyCompliance: false,
           threatLevel: 'critical',
-          executionTimeMs: executionTime
-        }
+          executionTimeMs: executionTime,
+        },
       },
       executionMethod: 'error',
       requestId,
@@ -257,8 +269,8 @@ export async function POST(req: NextRequest) {
         requestId,
         errorType: error.constructor.name,
         errorMessage: error.message,
-        executionTime
-      }
+        executionTime,
+      },
     }
 
     return NextResponse.json(errorResponse, { status: 500 })
@@ -286,13 +298,13 @@ export async function GET(req: NextRequest) {
         'security-analysis',
         'performance-optimization',
         'enterprise-governance',
-        'comprehensive-logging'
+        'comprehensive-logging',
       ],
       supportedLanguages: ['javascript', 'python'],
       securityLevels: ['basic', 'enhanced', 'maximum'],
       executionMethods: ['vm', 'docker', 'auto'],
       networkAccessModes: ['none', 'restricted', 'monitored'],
-      
+
       // Performance metrics
       metrics: {
         totalExecutions: metrics.totalExecutions,
@@ -301,24 +313,24 @@ export async function GET(req: NextRequest) {
         averageExecutionTime: Math.round(metrics.averageExecutionTime),
         cacheHitRate: Math.round(metrics.cacheHitRate * 100) / 100,
         securityViolations: metrics.securityViolations,
-        governanceBlocks: metrics.governanceBlocks
+        governanceBlocks: metrics.governanceBlocks,
       },
-      
+
       // Cache statistics
       cache: {
         size: cacheStats.size,
         hitRate: Math.round(cacheStats.hitRate * 100) / 100,
-        recentEntries: cacheStats.entries.slice(0, 5) // Show recent 5 entries
+        recentEntries: cacheStats.entries.slice(0, 5), // Show recent 5 entries
       },
-      
+
       // API documentation
       documentation: {
         endpoint: '/api/function/execute/enhanced',
         methods: ['POST', 'GET'],
         postDescription: 'Execute code with enhanced security and performance features',
-        getDescription: 'Get API status, metrics, and capabilities information'
+        getDescription: 'Get API status, metrics, and capabilities information',
       },
-      
+
       // Example request format
       exampleRequest: {
         code: 'console.log("Hello from enhanced execution!"); return {message: "success"};',
@@ -327,29 +339,31 @@ export async function GET(req: NextRequest) {
         security: {
           level: 'enhanced',
           enableAnalysis: true,
-          enableGovernance: false
+          enableGovernance: false,
         },
         execution: {
           method: 'auto',
           memoryLimit: '256MB',
           networkAccess: 'restricted',
-          enableCaching: true
-        }
-      }
+          enableCaching: true,
+        },
+      },
     }
 
     return NextResponse.json(response)
-
   } catch (error: any) {
     logger.error('Enhanced function API health check failed', { error: error.message })
-    
-    return NextResponse.json({
-      service: 'Enhanced Function Execution API',
-      version: '2.0',
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      error: error.message
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        service: 'Enhanced Function Execution API',
+        version: '2.0',
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error.message,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -357,13 +371,16 @@ export async function GET(req: NextRequest) {
  * OPTIONS handler for CORS preflight
  */
 export async function OPTIONS(req: NextRequest) {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Allow': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  return NextResponse.json(
+    {},
+    {
+      status: 200,
+      headers: {
+        Allow: 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
     }
-  })
+  )
 }

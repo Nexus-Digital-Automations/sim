@@ -1,6 +1,6 @@
 /**
  * Comprehensive Integration Tests for Native Custom Coding Support
- * 
+ *
  * Tests all aspects of the JavaScript and Python code blocks:
  * - Block configuration and registration
  * - Code execution APIs
@@ -12,13 +12,13 @@
  * - Error handling and recovery
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import { DockerManager } from '@/lib/code-execution/docker-manager'
+import { ResourceMonitor } from '@/lib/code-execution/monitoring'
+import { SecurityPolicy } from '@/lib/code-execution/security'
 import { JavaScriptBlock } from '@/blocks/blocks/javascript'
 import { PythonBlock } from '@/blocks/blocks/python'
-import { DockerManager } from '@/lib/code-execution/docker-manager'
-import { SecurityPolicy } from '@/lib/code-execution/security'
-import { ResourceMonitor } from '@/lib/code-execution/monitoring'
 
 describe('Code Blocks Integration Tests', () => {
   let dockerManager: DockerManager
@@ -46,7 +46,7 @@ describe('Code Blocks Integration Tests', () => {
 
   afterAll(() => {
     // Clean up environment
-    delete process.env.NODE_ENV
+    process.env.NODE_ENV = undefined
   })
 
   describe('JavaScript Code Block', () => {
@@ -55,22 +55,22 @@ describe('Code Blocks Integration Tests', () => {
       expect(JavaScriptBlock.name).toBe('JavaScript Code')
       expect(JavaScriptBlock.category).toBe('blocks')
       expect(JavaScriptBlock.bgColor).toBe('#F7DF1E')
-      
+
       // Check required subBlocks
-      const codeSubBlock = JavaScriptBlock.subBlocks.find(sb => sb.id === 'code')
+      const codeSubBlock = JavaScriptBlock.subBlocks.find((sb) => sb.id === 'code')
       expect(codeSubBlock).toBeDefined()
       expect(codeSubBlock?.type).toBe('code')
       expect(codeSubBlock?.language).toBe('javascript')
       expect(codeSubBlock?.required).toBe(true)
 
       // Check package selection subBlock
-      const packagesSubBlock = JavaScriptBlock.subBlocks.find(sb => sb.id === 'packages')
+      const packagesSubBlock = JavaScriptBlock.subBlocks.find((sb) => sb.id === 'packages')
       expect(packagesSubBlock).toBeDefined()
       expect(packagesSubBlock?.type).toBe('checkbox-list')
       expect(packagesSubBlock?.multiSelect).toBe(true)
 
       // Check security configuration subBlocks
-      const sandboxSubBlock = JavaScriptBlock.subBlocks.find(sb => sb.id === 'sandboxMode')
+      const sandboxSubBlock = JavaScriptBlock.subBlocks.find((sb) => sb.id === 'sandboxMode')
       expect(sandboxSubBlock).toBeDefined()
       expect(sandboxSubBlock?.type).toBe('dropdown')
     })
@@ -105,30 +105,30 @@ describe('Code Blocks Integration Tests', () => {
       expect(PythonBlock.name).toBe('Python Code')
       expect(PythonBlock.category).toBe('blocks')
       expect(PythonBlock.bgColor).toBe('#3776ab')
-      
+
       // Check required subBlocks
-      const codeSubBlock = PythonBlock.subBlocks.find(sb => sb.id === 'code')
+      const codeSubBlock = PythonBlock.subBlocks.find((sb) => sb.id === 'code')
       expect(codeSubBlock).toBeDefined()
       expect(codeSubBlock?.type).toBe('code')
       expect(codeSubBlock?.language).toBe('python')
       expect(codeSubBlock?.required).toBe(true)
 
       // Check Python-specific features
-      const pythonVersionSubBlock = PythonBlock.subBlocks.find(sb => sb.id === 'pythonVersion')
+      const pythonVersionSubBlock = PythonBlock.subBlocks.find((sb) => sb.id === 'pythonVersion')
       expect(pythonVersionSubBlock).toBeDefined()
       expect(pythonVersionSubBlock?.type).toBe('dropdown')
 
-      const outputFormatSubBlock = PythonBlock.subBlocks.find(sb => sb.id === 'outputFormat')
+      const outputFormatSubBlock = PythonBlock.subBlocks.find((sb) => sb.id === 'outputFormat')
       expect(outputFormatSubBlock).toBeDefined()
     })
 
     test('should have data science package options', () => {
-      const packagesSubBlock = PythonBlock.subBlocks.find(sb => sb.id === 'packages')
+      const packagesSubBlock = PythonBlock.subBlocks.find((sb) => sb.id === 'packages')
       expect(packagesSubBlock).toBeDefined()
       expect(Array.isArray(packagesSubBlock?.options)).toBe(true)
-      
+
       const packageOptions = packagesSubBlock?.options as any[]
-      const pandasPackage = packageOptions?.find(opt => opt.id === 'pandas')
+      const pandasPackage = packageOptions?.find((opt) => opt.id === 'pandas')
       expect(pandasPackage).toBeDefined()
       expect(pandasPackage?.label).toContain('pandas')
       expect(pandasPackage?.label).toContain('Data manipulation')
@@ -144,12 +144,12 @@ describe('Code Blocks Integration Tests', () => {
       `
 
       const result = await securityPolicy.validateCode(dangerousCode, 'javascript')
-      
+
       expect(result.passed).toBe(false)
       expect(result.riskLevel).toBe('critical')
       expect(result.violations.length).toBeGreaterThan(0)
-      
-      const evalViolation = result.violations.find(v => v.type === 'code_injection')
+
+      const evalViolation = result.violations.find((v) => v.type === 'code_injection')
       expect(evalViolation).toBeDefined()
       expect(evalViolation?.severity).toBe('critical')
     })
@@ -163,12 +163,12 @@ describe('Code Blocks Integration Tests', () => {
       `
 
       const result = await securityPolicy.validateCode(dangerousCode, 'python')
-      
+
       expect(result.passed).toBe(false)
       expect(result.riskLevel).toBe('critical')
       expect(result.violations.length).toBeGreaterThan(0)
-      
-      const execViolation = result.violations.find(v => v.type === 'code_injection')
+
+      const execViolation = result.violations.find((v) => v.type === 'code_injection')
       expect(execViolation).toBeDefined()
       expect(execViolation?.severity).toBe('critical')
     })
@@ -182,7 +182,7 @@ describe('Code Blocks Integration Tests', () => {
       `
 
       const result = await securityPolicy.validateCode(safeCode, 'javascript')
-      
+
       expect(result.passed).toBe(true)
       expect(result.riskLevel).toBe('low')
       expect(result.violations.length).toBe(0)
@@ -198,17 +198,17 @@ describe('Code Blocks Integration Tests', () => {
       `
 
       const result = await securityPolicy.validateCode(safeCode, 'python')
-      
+
       expect(result.passed).toBe(true)
       expect(result.riskLevel).toBe('low')
-      expect(result.violations.filter(v => v.severity === 'high').length).toBe(0)
+      expect(result.violations.filter((v) => v.severity === 'high').length).toBe(0)
     })
 
     test('should validate network access permissions', () => {
       // Test allowed URLs
       expect(securityPolicy.isUrlAllowed('https://api.github.com').allowed).toBe(true)
       expect(securityPolicy.isUrlAllowed('http://httpbin.org/get').allowed).toBe(true)
-      
+
       // Test blocked URLs
       expect(securityPolicy.isUrlAllowed('http://localhost:3000').allowed).toBe(false)
       expect(securityPolicy.isUrlAllowed('http://127.0.0.1:8080').allowed).toBe(false)
@@ -219,7 +219,7 @@ describe('Code Blocks Integration Tests', () => {
       // Test allowed paths
       expect(securityPolicy.isPathAllowed('/tmp/safe-file.txt', 'write').allowed).toBe(true)
       expect(securityPolicy.isPathAllowed('/var/tmp/output.json', 'write').allowed).toBe(true)
-      
+
       // Test blocked paths
       expect(securityPolicy.isPathAllowed('/etc/passwd', 'read').allowed).toBe(false)
       expect(securityPolicy.isPathAllowed('/root/.ssh/id_rsa', 'read').allowed).toBe(false)
@@ -231,7 +231,7 @@ describe('Code Blocks Integration Tests', () => {
     test('should initialize with default limits', () => {
       const monitor = ResourceMonitor.createDefault('test-exec')
       const usage = monitor.getCurrentUsage()
-      
+
       expect(usage.memory.limit).toBe(512) // Default memory limit
       expect(usage.cpu.limit).toBe(80) // Default CPU limit
       expect(usage.time.limit).toBe(60000) // Default time limit
@@ -244,7 +244,7 @@ describe('Code Blocks Integration Tests', () => {
       resourceMonitor.updateMemoryUsage(128)
 
       const usage = resourceMonitor.getCurrentUsage()
-      
+
       expect(usage.network.requests).toBe(2)
       expect(usage.files.operations).toBe(1)
       expect(usage.memory.peak).toBe(128)
@@ -256,7 +256,7 @@ describe('Code Blocks Integration Tests', () => {
 
       const status = resourceMonitor.hasExceededLimits()
       expect(status.exceeded).toBe(true)
-      expect(status.violations.some(v => v.type === 'memory')).toBe(true)
+      expect(status.violations.some((v) => v.type === 'memory')).toBe(true)
     })
 
     test('should generate performance report', () => {
@@ -264,7 +264,7 @@ describe('Code Blocks Integration Tests', () => {
       resourceMonitor.updateMemoryUsage(256)
 
       const report = resourceMonitor.generatePerformanceReport()
-      
+
       expect(report.executionId).toBe('test-execution-001')
       expect(report.peakMemoryUsage).toBe(256)
       expect(report.efficiency.overall).toBeGreaterThan(0)
@@ -278,7 +278,7 @@ describe('Code Blocks Integration Tests', () => {
       const mockValidation = vi.spyOn(dockerManager, 'validateDockerAvailable' as any)
       mockValidation.mockResolvedValue(undefined)
 
-      await expect(dockerManager['validateDockerAvailable']()).resolves.not.toThrow()
+      await expect(dockerManager.validateDockerAvailable()).resolves.not.toThrow()
     })
 
     test('should create container with security configuration', async () => {
@@ -311,7 +311,7 @@ describe('Code Blocks Integration Tests', () => {
       })
 
       const result = await dockerManager.executeCode(config)
-      
+
       expect(result.success).toBe(true)
       expect(result.executionTime).toBeGreaterThan(0)
       expect(mockExecute).toHaveBeenCalledWith(config)
@@ -319,7 +319,7 @@ describe('Code Blocks Integration Tests', () => {
 
     test('should handle container pool management', () => {
       const status = dockerManager.getStatus()
-      
+
       expect(status.totalContainers).toBe(0) // No containers initially
       expect(status.activeContainers).toBe(0)
       expect(status.readyContainers).toBe(0)
@@ -334,14 +334,14 @@ describe('Code Blocks Integration Tests', () => {
         json: async () => ({
           // Missing required 'code' parameter
           packages: ['lodash'],
-          timeout: 30000
-        })
+          timeout: 30000,
+        }),
       } as NextRequest
 
       // In a real test, we'd import and call the POST handler
       // For now, we test the parameter validation logic
       const requestBody = await invalidRequest.json()
-      
+
       expect(requestBody.code).toBeUndefined()
       // This would trigger a 400 error in the actual handler
     })
@@ -349,18 +349,28 @@ describe('Code Blocks Integration Tests', () => {
     test('should handle package whitelist validation', async () => {
       const validPackages = ['lodash', 'moment', 'axios']
       const invalidPackages = ['malicious-package', 'fs-extra']
-      
+
       // Test whitelisted packages
       const WHITELISTED_PACKAGES = new Set([
-        'lodash', 'moment', 'axios', 'uuid', 'crypto-js', 'validator',
-        'cheerio', 'csv-parser', 'xml2js', 'bcrypt', 'jsonwebtoken', 'sharp'
+        'lodash',
+        'moment',
+        'axios',
+        'uuid',
+        'crypto-js',
+        'validator',
+        'cheerio',
+        'csv-parser',
+        'xml2js',
+        'bcrypt',
+        'jsonwebtoken',
+        'sharp',
       ])
 
-      validPackages.forEach(pkg => {
+      validPackages.forEach((pkg) => {
         expect(WHITELISTED_PACKAGES.has(pkg)).toBe(true)
       })
 
-      invalidPackages.forEach(pkg => {
+      invalidPackages.forEach((pkg) => {
         expect(WHITELISTED_PACKAGES.has(pkg)).toBe(false)
       })
     })
@@ -383,26 +393,34 @@ describe('Code Blocks Integration Tests', () => {
   describe('Python Execution API', () => {
     test('should validate Python package whitelist', () => {
       const WHITELISTED_PACKAGES = new Set([
-        'pandas', 'numpy', 'matplotlib', 'seaborn', 'scikit-learn',
-        'requests', 'beautifulsoup4', 'openpyxl', 'python-docx', 'Pillow'
+        'pandas',
+        'numpy',
+        'matplotlib',
+        'seaborn',
+        'scikit-learn',
+        'requests',
+        'beautifulsoup4',
+        'openpyxl',
+        'python-docx',
+        'Pillow',
       ])
 
       const validPackages = ['pandas', 'numpy', 'requests']
       const invalidPackages = ['os', 'subprocess', 'pickle']
 
-      validPackages.forEach(pkg => {
+      validPackages.forEach((pkg) => {
         expect(WHITELISTED_PACKAGES.has(pkg)).toBe(true)
       })
 
-      invalidPackages.forEach(pkg => {
+      invalidPackages.forEach((pkg) => {
         expect(WHITELISTED_PACKAGES.has(pkg)).toBe(false)
       })
     })
 
     test('should support multiple Python versions', () => {
       const supportedVersions = ['3.9', '3.10', '3.11']
-      
-      supportedVersions.forEach(version => {
+
+      supportedVersions.forEach((version) => {
         const pythonExecutable = `python${version}`
         expect(pythonExecutable).toMatch(/^python3\.\d+$/)
       })
@@ -410,8 +428,8 @@ describe('Code Blocks Integration Tests', () => {
 
     test('should handle different output formats', () => {
       const outputFormats = ['auto', 'json', 'string', 'pickle', 'csv']
-      
-      outputFormats.forEach(format => {
+
+      outputFormats.forEach((format) => {
         expect(['auto', 'json', 'string', 'pickle', 'csv']).toContain(format)
       })
     })
@@ -475,14 +493,14 @@ describe('Code Blocks Integration Tests', () => {
         result: {
           mean: { A: 2.0, B: 5.0, C: 8.0 },
           sum: { A: 6, B: 15, C: 24 },
-          shape: [3, 3]
+          shape: [3, 3],
         },
         stdout: 'Analysis complete\n',
         stderr: '',
         executionTime: 450,
         memoryUsage: 64,
         installedPackages: ['pandas', 'numpy'],
-        generatedFiles: []
+        generatedFiles: [],
       }
 
       expect(expectedResult.success).toBe(true)
@@ -493,11 +511,11 @@ describe('Code Blocks Integration Tests', () => {
     test('should handle workflow context integration', async () => {
       const workflowContext = {
         environmentVariables: { API_KEY: 'test-key-123' },
-        blockData: { 
-          'previous-block': { result: [1, 2, 3, 4, 5] }
+        blockData: {
+          'previous-block': { result: [1, 2, 3, 4, 5] },
         },
         blockNameMapping: { 'block-123': 'previous-block' },
-        workflowVariables: { threshold: 3 }
+        workflowVariables: { threshold: 3 },
       }
 
       const code = `
@@ -551,8 +569,8 @@ describe('Code Blocks Integration Tests', () => {
         debugInfo: null,
         securityReport: {
           violations: [],
-          riskLevel: 'low'
-        }
+          riskLevel: 'low',
+        },
       }
 
       expect(errorResult.success).toBe(false)
@@ -569,7 +587,7 @@ describe('Code Blocks Integration Tests', () => {
       for (let i = 0; i < concurrentExecutions; i++) {
         const monitor = ResourceMonitor.createDefault(`concurrent-exec-${i}`)
         promises.push(
-          new Promise(resolve => {
+          new Promise((resolve) => {
             // Mock concurrent execution
             setTimeout(() => {
               monitor.incrementNetworkRequests()
@@ -583,7 +601,7 @@ describe('Code Blocks Integration Tests', () => {
 
       const results = await Promise.all(promises)
       expect(results).toHaveLength(concurrentExecutions)
-      
+
       results.forEach((result: any) => {
         expect(result.executionId).toBeDefined()
         expect(result.totalExecutionTime).toBeGreaterThanOrEqual(0)
@@ -592,7 +610,7 @@ describe('Code Blocks Integration Tests', () => {
 
     test('should monitor resource usage under load', async () => {
       const monitor = ResourceMonitor.createDefault('load-test')
-      
+
       // Simulate high resource usage
       for (let i = 0; i < 100; i++) {
         monitor.incrementNetworkRequests()
@@ -608,7 +626,7 @@ describe('Code Blocks Integration Tests', () => {
       expect(usage.network.requests).toBe(100)
       expect(usage.files.operations).toBe(10)
       expect(usage.memory.peak).toBeGreaterThan(200)
-      
+
       // Check if any limits were exceeded
       if (limits.exceeded) {
         expect(limits.violations.length).toBeGreaterThan(0)
@@ -624,14 +642,14 @@ describe('Monaco Editor Integration', () => {
     const workflowContext = {
       environmentVariables: { DATABASE_URL: 'test-db' },
       blockOutputs: { 'api-call': { data: [] } },
-      packages: ['lodash', 'axios']
+      packages: ['lodash', 'axios'],
     }
 
     // Mock completion suggestions
     const suggestions = [
       { label: '{{DATABASE_URL}}', kind: 'Variable' },
       { label: '<api-call.data>', kind: 'Reference' },
-      { label: 'lodash', kind: 'Module' }
+      { label: 'lodash', kind: 'Module' },
     ]
 
     expect(suggestions).toHaveLength(3)
@@ -642,8 +660,8 @@ describe('Monaco Editor Integration', () => {
 
   test('should support multiple programming languages', () => {
     const supportedLanguages = ['javascript', 'python', 'typescript']
-    
-    supportedLanguages.forEach(language => {
+
+    supportedLanguages.forEach((language) => {
       expect(['javascript', 'python', 'typescript']).toContain(language)
     })
   })

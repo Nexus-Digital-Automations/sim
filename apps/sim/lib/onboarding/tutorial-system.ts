@@ -1,19 +1,19 @@
 /**
  * Tutorial System - Core infrastructure for managing interactive tutorials and onboarding
- * 
+ *
  * This system provides:
  * - Progressive tutorial management with step-by-step guidance
  * - Context-aware hint system and help suggestions
  * - Achievement-based learning progression
  * - User progress tracking and analytics
  * - Integration with accessibility features
- * 
+ *
  * @created 2025-09-03
  * @author Claude Development System
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { nanoid } from 'nanoid'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('TutorialSystem')
 
@@ -132,7 +132,7 @@ export interface TutorialProgress {
 
 /**
  * Core Tutorial System Class
- * 
+ *
  * Manages tutorial lifecycle, progress tracking, and user interactions
  * with comprehensive accessibility support and analytics integration.
  */
@@ -153,7 +153,7 @@ export class TutorialSystem {
     logger.info('Initializing Tutorial System', {
       accessibilityMode: options?.accessibilityMode || false,
       keyboardNavigation: options?.keyboardNavigation || false,
-      enableAnalytics: options?.enableAnalytics || true
+      enableAnalytics: options?.enableAnalytics || true,
     })
 
     this.accessibilityMode = options?.accessibilityMode || false
@@ -171,16 +171,20 @@ export class TutorialSystem {
   /**
    * Start a new tutorial session with comprehensive accessibility support
    */
-  async startTutorial(tutorialId: string, userId: string, context?: Partial<TutorialContext>): Promise<TutorialSession> {
+  async startTutorial(
+    tutorialId: string,
+    userId: string,
+    context?: Partial<TutorialContext>
+  ): Promise<TutorialSession> {
     const operationId = nanoid()
     const startTime = Date.now()
-    
+
     logger.info(`[${operationId}] Starting tutorial session`, {
       tutorialId,
       userId,
       context,
       accessibilityMode: this.accessibilityMode,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     try {
@@ -191,7 +195,7 @@ export class TutorialSystem {
         logger.error(`[${operationId}] Tutorial not found`, {
           tutorialId,
           userId,
-          error: error.message
+          error: error.message,
         })
         throw error
       }
@@ -200,14 +204,14 @@ export class TutorialSystem {
       const userProgress = this.userProgress.get(userId)
       if (tutorial.prerequisites && userProgress) {
         const missingPrerequisites = tutorial.prerequisites.filter(
-          prereq => !userProgress.completedTutorials.includes(prereq)
+          (prereq) => !userProgress.completedTutorials.includes(prereq)
         )
         if (missingPrerequisites.length > 0) {
           const error = new Error(`Missing prerequisites: ${missingPrerequisites.join(', ')}`)
           logger.warn(`[${operationId}] Prerequisites not met`, {
             tutorialId,
             userId,
-            missingPrerequisites
+            missingPrerequisites,
           })
           throw error
         }
@@ -234,14 +238,14 @@ export class TutorialSystem {
             showHints: true,
             playAudio: false,
             highContrast: false,
-            reducedMotion: false
+            reducedMotion: false,
           },
           sessionData: {},
-          ...context
+          ...context,
         },
         userDifficulty: userProgress?.currentLevel || 'beginner',
         accessibilityMode: this.accessibilityMode,
-        keyboardNavigation: this.keyboardNavigation
+        keyboardNavigation: this.keyboardNavigation,
       }
 
       // Store session
@@ -264,7 +268,7 @@ export class TutorialSystem {
         sessionId: session.id,
         tutorialId,
         userId,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return session
@@ -275,7 +279,7 @@ export class TutorialSystem {
         userId,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
       throw error
     }
@@ -284,7 +288,11 @@ export class TutorialSystem {
   /**
    * Track user progress through tutorial steps with accessibility announcements
    */
-  async trackProgress(sessionId: string, stepId: string, data?: Record<string, any>): Promise<void> {
+  async trackProgress(
+    sessionId: string,
+    stepId: string,
+    data?: Record<string, any>
+  ): Promise<void> {
     const operationId = nanoid()
     const startTime = Date.now()
 
@@ -292,7 +300,7 @@ export class TutorialSystem {
       sessionId,
       stepId,
       data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     try {
@@ -313,23 +321,24 @@ export class TutorialSystem {
 
       // Validate step completion if validation exists
       if (currentStep.validation) {
-        const isValid = typeof currentStep.validation === 'string' 
-          ? this.validateStepBySelector(currentStep.validation)
-          : currentStep.validation()
+        const isValid =
+          typeof currentStep.validation === 'string'
+            ? this.validateStepBySelector(currentStep.validation)
+            : currentStep.validation()
 
         if (!isValid) {
           logger.warn(`[${operationId}] Step validation failed`, {
             sessionId,
             stepId,
-            validationType: typeof currentStep.validation
+            validationType: typeof currentStep.validation,
           })
-          
+
           // Provide hint if validation fails
           const hint = await this.provideTutorialHint(sessionId, {
             currentStep: currentStep,
-            validationFailed: true
+            validationFailed: true,
           })
-          
+
           this.emit('stepValidationFailed', { session, step: currentStep, hint })
           return
         }
@@ -371,9 +380,8 @@ export class TutorialSystem {
         stepId,
         nextStepId: nextStep?.id,
         progress: `${session.currentStepIndex}/${tutorial.steps.length}`,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
-
     } catch (error) {
       const processingTime = Date.now() - startTime
       logger.error(`[${operationId}] Failed to track tutorial progress`, {
@@ -381,7 +389,7 @@ export class TutorialSystem {
         stepId,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
       throw error
     }
@@ -397,7 +405,7 @@ export class TutorialSystem {
     logger.info(`[${operationId}] Providing tutorial hint`, {
       sessionId,
       context: Object.keys(context),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     try {
@@ -428,7 +436,7 @@ export class TutorialSystem {
           content: this.generateValidationHint(currentStep, context),
           priority: 'high',
           triggers: ['validation-failed'],
-          accessibilityText: `Validation failed for ${currentStep.title}. ${this.generateValidationHint(currentStep, context)}`
+          accessibilityText: `Validation failed for ${currentStep.title}. ${this.generateValidationHint(currentStep, context)}`,
         }
       } else if (context.userStuck) {
         // Provide help for stuck users
@@ -439,13 +447,13 @@ export class TutorialSystem {
           content: this.generateStuckUserHint(currentStep, session),
           priority: 'medium',
           triggers: ['user-stuck'],
-          accessibilityText: `Hint for ${currentStep.title}: ${this.generateStuckUserHint(currentStep, session)}`
+          accessibilityText: `Hint for ${currentStep.title}: ${this.generateStuckUserHint(currentStep, session)}`,
         }
       } else {
         // Provide general step hint
         const availableHints = currentStep.hints || ['Click on the highlighted element to continue']
         const hintIndex = session.hintsUsed % availableHints.length
-        
+
         hint = {
           id: nanoid(),
           type: 'info',
@@ -453,7 +461,7 @@ export class TutorialSystem {
           content: availableHints[hintIndex],
           priority: 'medium',
           triggers: ['general-hint'],
-          accessibilityText: `Tip: ${availableHints[hintIndex]}`
+          accessibilityText: `Tip: ${availableHints[hintIndex]}`,
         }
       }
 
@@ -473,18 +481,17 @@ export class TutorialSystem {
         hintId: hint.id,
         hintType: hint.type,
         priority: hint.priority,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return hint
-
     } catch (error) {
       const processingTime = Date.now() - startTime
       logger.error(`[${operationId}] Failed to provide tutorial hint`, {
         sessionId,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       // Return fallback hint
@@ -494,7 +501,7 @@ export class TutorialSystem {
         title: 'General Help',
         content: 'If you need help, you can skip this step or return to the tutorial menu.',
         priority: 'low',
-        triggers: ['fallback']
+        triggers: ['fallback'],
       }
     }
   }
@@ -508,7 +515,7 @@ export class TutorialSystem {
 
     logger.info(`[${operationId}] Completing tutorial session`, {
       sessionId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     try {
@@ -527,20 +534,24 @@ export class TutorialSystem {
       const completedStepsCount = session.completedSteps.length
       const totalStepsCount = tutorial.steps.length
       const completionRate = completedStepsCount / totalStepsCount
-      
+
       // Calculate score (0-100 based on completion rate, speed, and hints used)
       const baseScore = completionRate * 100
-      const speedBonus = Math.max(0, 20 - (completionTime / (1000 * 60))) // Bonus for completing under 20 minutes
+      const speedBonus = Math.max(0, 20 - completionTime / (1000 * 60)) // Bonus for completing under 20 minutes
       const hintPenalty = Math.min(20, session.hintsUsed * 2) // Penalty for using too many hints
       const skipPenalty = session.skippedSteps.length * 5 // Penalty for skipping steps
-      
-      const finalScore = Math.max(0, Math.min(100, baseScore + speedBonus - hintPenalty - skipPenalty))
+
+      const finalScore = Math.max(
+        0,
+        Math.min(100, baseScore + speedBonus - hintPenalty - skipPenalty)
+      )
 
       // Determine achievements
       const achievements: string[] = []
       if (completionRate === 1) achievements.push('tutorial-completionist')
       if (session.hintsUsed === 0) achievements.push('tutorial-independent')
-      if (completionTime < tutorial.estimatedDuration * 60 * 1000) achievements.push('tutorial-speedster')
+      if (completionTime < tutorial.estimatedDuration * 60 * 1000)
+        achievements.push('tutorial-speedster')
       if (session.skippedSteps.length === 0) achievements.push('tutorial-thorough')
 
       // Update session
@@ -553,7 +564,7 @@ export class TutorialSystem {
         tutorialId: tutorial.id,
         score: finalScore,
         timeSpent: completionTime,
-        achievements
+        achievements,
       })
 
       // Generate next recommendations
@@ -567,7 +578,7 @@ export class TutorialSystem {
         skippedSteps: session.skippedSteps.length,
         achievements,
         nextRecommendations,
-        feedback: this.generateCompletionFeedback(finalScore, session, tutorial)
+        feedback: this.generateCompletionFeedback(finalScore, session, tutorial),
       }
 
       // Cleanup session
@@ -591,18 +602,17 @@ export class TutorialSystem {
         score: Math.round(finalScore),
         completionRate: Math.round(completionRate * 100),
         achievements: achievements.length,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return result
-
     } catch (error) {
       const processingTime = Date.now() - startTime
       logger.error(`[${operationId}] Failed to complete tutorial`, {
         sessionId,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
       throw error
     }
@@ -613,7 +623,7 @@ export class TutorialSystem {
   private async initializeTutorialUI(session: TutorialSession): Promise<void> {
     // Initialize tutorial overlay, highlighting, and accessibility features
     logger.info('Initializing tutorial UI', { sessionId: session.id })
-    
+
     // Setup accessibility features if enabled
     if (this.accessibilityMode) {
       this.setupAccessibilityFeatures()
@@ -621,10 +631,10 @@ export class TutorialSystem {
   }
 
   private async showStep(session: TutorialSession, step: TutorialStep): Promise<void> {
-    logger.info('Showing tutorial step', { 
-      sessionId: session.id, 
+    logger.info('Showing tutorial step', {
+      sessionId: session.id,
       stepId: step.id,
-      stepTitle: step.title 
+      stepTitle: step.title,
     })
 
     // Implementation would show step overlay, highlight target element, etc.
@@ -657,21 +667,30 @@ export class TutorialSystem {
     return `Try ${step.action || 'interacting with'} the highlighted element. You can also skip this step if needed.`
   }
 
-  private generateCompletionFeedback(score: number, session: TutorialSession, tutorial: Tutorial): string {
-    if (score >= 90) return `Excellent work! You mastered ${tutorial.title} with outstanding performance.`
+  private generateCompletionFeedback(
+    score: number,
+    session: TutorialSession,
+    tutorial: Tutorial
+  ): string {
+    if (score >= 90)
+      return `Excellent work! You mastered ${tutorial.title} with outstanding performance.`
     if (score >= 70) return `Great job! You completed ${tutorial.title} successfully.`
-    if (score >= 50) return `Good effort! You finished ${tutorial.title}. Consider reviewing the steps you found challenging.`
+    if (score >= 50)
+      return `Good effort! You finished ${tutorial.title}. Consider reviewing the steps you found challenging.`
     return `You completed ${tutorial.title}. Review the tutorial content and try practicing the skills you learned.`
   }
 
-  private async updateUserProgress(userId: string, data: {
-    tutorialId: string
-    score: number
-    timeSpent: number
-    achievements: string[]
-  }): Promise<void> {
+  private async updateUserProgress(
+    userId: string,
+    data: {
+      tutorialId: string
+      score: number
+      timeSpent: number
+      achievements: string[]
+    }
+  ): Promise<void> {
     // Update user progress tracking
-    let progress = this.userProgress.get(userId) || {
+    const progress = this.userProgress.get(userId) || {
       userId,
       totalTutorialsCompleted: 0,
       totalTimeSpent: 0,
@@ -683,11 +702,11 @@ export class TutorialSystem {
         showHints: true,
         playAudio: false,
         highContrast: false,
-        reducedMotion: false
+        reducedMotion: false,
       },
       weakAreas: [],
       recommendedTutorials: [],
-      lastActivity: new Date()
+      lastActivity: new Date(),
     }
 
     progress.totalTutorialsCompleted += 1
@@ -704,27 +723,30 @@ export class TutorialSystem {
     }
 
     this.userProgress.set(userId, progress)
-    
+
     logger.info('User progress updated', {
       userId,
       tutorialId: data.tutorialId,
       newLevel: progress.currentLevel,
       totalCompleted: progress.totalTutorialsCompleted,
-      averageScore: Math.round(progress.averageScore)
+      averageScore: Math.round(progress.averageScore),
     })
   }
 
-  private async getRecommendedTutorials(userId: string, completedTutorial: Tutorial): Promise<Tutorial[]> {
+  private async getRecommendedTutorials(
+    userId: string,
+    completedTutorial: Tutorial
+  ): Promise<Tutorial[]> {
     // Generate intelligent tutorial recommendations
     const userProgress = this.userProgress.get(userId)
     if (!userProgress) return []
 
     // Get tutorials that build on the completed one
     const recommendations = Array.from(this.tutorials.values())
-      .filter(t => 
-        t.id !== completedTutorial.id &&
-        t.prerequisites?.includes(completedTutorial.id) ||
-        t.category === completedTutorial.category
+      .filter(
+        (t) =>
+          (t.id !== completedTutorial.id && t.prerequisites?.includes(completedTutorial.id)) ||
+          t.category === completedTutorial.category
       )
       .slice(0, 3)
 
@@ -733,7 +755,7 @@ export class TutorialSystem {
 
   private setupKeyboardNavigation(): void {
     logger.info('Setting up keyboard navigation for tutorials')
-    
+
     document.addEventListener('keydown', (event) => {
       if (!this.activeSession) return
 
@@ -764,7 +786,7 @@ export class TutorialSystem {
 
   private setupAccessibilityFeatures(): void {
     logger.info('Setting up accessibility features for tutorials')
-    
+
     // Setup ARIA live regions for announcements
     const liveRegion = document.createElement('div')
     liveRegion.setAttribute('aria-live', 'polite')
@@ -779,7 +801,7 @@ export class TutorialSystem {
     const liveRegion = document.getElementById('tutorial-announcements')
     if (liveRegion) {
       liveRegion.textContent = message
-      
+
       // Clear after announcement to allow repeated messages
       setTimeout(() => {
         liveRegion.textContent = ''
@@ -848,7 +870,7 @@ export class TutorialSystem {
     logger.info('Tutorial added to system', {
       tutorialId: tutorial.id,
       title: tutorial.title,
-      stepsCount: tutorial.steps.length
+      stepsCount: tutorial.steps.length,
     })
   }
 
@@ -858,13 +880,13 @@ export class TutorialSystem {
 
   public getAvailableTutorials(userId?: string): Tutorial[] {
     const tutorials = Array.from(this.tutorials.values())
-    
+
     if (userId) {
       const userProgress = this.userProgress.get(userId)
       // Filter based on prerequisites and user level
-      return tutorials.filter(tutorial => {
+      return tutorials.filter((tutorial) => {
         if (tutorial.prerequisites) {
-          return tutorial.prerequisites.every(prereq => 
+          return tutorial.prerequisites.every((prereq) =>
             userProgress?.completedTutorials.includes(prereq)
           )
         }
@@ -882,13 +904,13 @@ export class TutorialSystem {
   // Event system
   private emit(event: string, data: any): void {
     const handlers = this.eventHandlers.get(event) || []
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       try {
         handler(data)
       } catch (error) {
         logger.error('Error in tutorial event handler', {
           event,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     })
@@ -911,18 +933,18 @@ export class TutorialSystem {
   // Cleanup
   public destroy(): void {
     logger.info('Destroying tutorial system')
-    
+
     // Clear all sessions and data
     this.sessions.clear()
     this.eventHandlers.clear()
     this.activeSession = null
-    
+
     // Remove accessibility elements
     const liveRegion = document.getElementById('tutorial-announcements')
     if (liveRegion) {
       liveRegion.remove()
     }
-    
+
     // Remove event listeners
     document.removeEventListener('keydown', () => {})
   }
@@ -932,7 +954,7 @@ export class TutorialSystem {
 export const tutorialSystem = new TutorialSystem({
   accessibilityMode: true,
   keyboardNavigation: true,
-  enableAnalytics: true
+  enableAnalytics: true,
 })
 
 export default TutorialSystem

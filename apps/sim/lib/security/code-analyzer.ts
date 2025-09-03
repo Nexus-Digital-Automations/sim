@@ -1,26 +1,26 @@
 /**
  * Comprehensive Code Security Analyzer
- * 
+ *
  * Provides enterprise-grade static and dynamic code analysis with:
  * - Static analysis for dangerous patterns and vulnerabilities
  * - Package vulnerability scanning and dependency analysis
  * - Security policy enforcement and violation reporting
  * - Dynamic monitoring of runtime behavior
  * - Automated security remediation suggestions
- * 
+ *
  * Features:
  * - Sub-100ms analysis response times for real-time feedback
  * - 100% coverage of code execution requests
  * - Machine learning-based threat detection
  * - Integration with industry security databases
  * - Comprehensive audit trail for compliance
- * 
+ *
  * Author: Claude Development Agent
  * Created: September 3, 2025
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { randomBytes } from 'crypto'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('CodeSecurityAnalyzer')
 
@@ -32,9 +32,9 @@ export interface SecurityAnalysisConfig {
   enableDynamicMonitoring: boolean
   enablePackageScanning: boolean
   enablePolicyEnforcement: boolean
-  riskThreshold: number              // 0-100, blocks execution above this score
-  strictMode: boolean                // Enhanced security for enterprise
-  complianceFrameworks: string[]     // GDPR, HIPAA, SOC2, etc.
+  riskThreshold: number // 0-100, blocks execution above this score
+  strictMode: boolean // Enhanced security for enterprise
+  complianceFrameworks: string[] // GDPR, HIPAA, SOC2, etc.
 }
 
 /**
@@ -45,15 +45,15 @@ export interface SecurityAnalysis {
   timestamp: Date
   code: string
   language: 'javascript' | 'python'
-  riskScore: number                  // 0-100 overall risk assessment
+  riskScore: number // 0-100 overall risk assessment
   threatLevel: 'none' | 'low' | 'medium' | 'high' | 'critical'
-  approved: boolean                  // Whether code is approved for execution
-  
+  approved: boolean // Whether code is approved for execution
+
   staticAnalysis: StaticAnalysisResult
   packageAnalysis: PackageAnalysisResult
   policyCompliance: PolicyComplianceResult
   recommendations: SecurityRecommendation[]
-  
+
   executionTimeMs: number
   cacheHit: boolean
 }
@@ -95,7 +95,7 @@ export interface SecurityVulnerability {
   remediation: string
   references: string[]
   location: CodeLocation
-  confidence: number                 // 0-100 confidence in detection
+  confidence: number // 0-100 confidence in detection
 }
 
 /**
@@ -107,7 +107,7 @@ export interface CodeComplexityMetrics {
   functions: number
   depth: number
   maintainabilityIndex: number
-  technicalDebt: number             // Estimated hours to fix issues
+  technicalDebt: number // Estimated hours to fix issues
 }
 
 /**
@@ -163,7 +163,7 @@ export interface PackageInfo {
 export interface PackageVulnerability {
   packageName: string
   packageVersion: string
-  vulnerabilityId: string           // CVE, GHSA, etc.
+  vulnerabilityId: string // CVE, GHSA, etc.
   severity: 'low' | 'medium' | 'high' | 'critical'
   description: string
   affectedVersions: string
@@ -230,7 +230,7 @@ class AnalysisCache {
   set(codeHash: string, analysis: SecurityAnalysis): void {
     // Clean expired entries
     this.cleanup()
-    
+
     // Remove oldest if at capacity
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
@@ -242,9 +242,9 @@ class AnalysisCache {
 
   get(codeHash: string): SecurityAnalysis | null {
     const entry = this.cache.get(codeHash)
-    
+
     if (!entry) return null
-    
+
     // Check if expired
     if (Date.now() - entry.timestamp.getTime() > this.ttlMs) {
       this.cache.delete(codeHash)
@@ -257,14 +257,14 @@ class AnalysisCache {
   private cleanup(): void {
     const now = Date.now()
     const toDelete: string[] = []
-    
+
     for (const [key, analysis] of this.cache.entries()) {
       if (now - analysis.timestamp.getTime() > this.ttlMs) {
         toDelete.push(key)
       }
     }
-    
-    toDelete.forEach(key => this.cache.delete(key))
+
+    toDelete.forEach((key) => this.cache.delete(key))
   }
 
   clear(): void {
@@ -275,7 +275,7 @@ class AnalysisCache {
     return {
       size: this.cache.size,
       maxSize: this.maxSize,
-      ttlMs: this.ttlMs
+      ttlMs: this.ttlMs,
     }
   }
 }
@@ -296,7 +296,7 @@ export class CodeSecurityAnalyzer {
       riskThreshold: 50,
       strictMode: false,
       complianceFrameworks: ['OWASP'],
-      ...config
+      ...config,
     }
 
     logger.info('Code Security Analyzer initialized', { config: this.config })
@@ -326,18 +326,32 @@ export class CodeSecurityAnalyzer {
     try {
       // Perform comprehensive analysis
       const [staticAnalysis, packageAnalysis, policyCompliance] = await Promise.all([
-        this.config.enableStaticAnalysis ? this.performStaticAnalysis(code, language) : this.getEmptyStaticAnalysis(),
-        this.config.enablePackageScanning && packages ? this.analyzePackages(packages, language) : this.getEmptyPackageAnalysis(),
-        this.config.enablePolicyEnforcement ? this.checkPolicyCompliance(code, language) : this.getEmptyPolicyCompliance()
+        this.config.enableStaticAnalysis
+          ? this.performStaticAnalysis(code, language)
+          : this.getEmptyStaticAnalysis(),
+        this.config.enablePackageScanning && packages
+          ? this.analyzePackages(packages, language)
+          : this.getEmptyPackageAnalysis(),
+        this.config.enablePolicyEnforcement
+          ? this.checkPolicyCompliance(code, language)
+          : this.getEmptyPolicyCompliance(),
       ])
 
       // Calculate overall risk score
-      const riskScore = this.calculateOverallRiskScore(staticAnalysis, packageAnalysis, policyCompliance)
+      const riskScore = this.calculateOverallRiskScore(
+        staticAnalysis,
+        packageAnalysis,
+        policyCompliance
+      )
       const threatLevel = this.determineThreatLevel(riskScore)
       const approved = riskScore <= this.config.riskThreshold
 
       // Generate recommendations
-      const recommendations = this.generateRecommendations(staticAnalysis, packageAnalysis, policyCompliance)
+      const recommendations = this.generateRecommendations(
+        staticAnalysis,
+        packageAnalysis,
+        policyCompliance
+      )
 
       const analysis: SecurityAnalysis = {
         analysisId,
@@ -352,7 +366,7 @@ export class CodeSecurityAnalyzer {
         policyCompliance,
         recommendations,
         executionTimeMs: Date.now() - startTime,
-        cacheHit: false
+        cacheHit: false,
       }
 
       // Cache result for performance
@@ -363,11 +377,10 @@ export class CodeSecurityAnalyzer {
         riskScore,
         threatLevel,
         approved,
-        executionTime: analysis.executionTimeMs
+        executionTime: analysis.executionTimeMs,
       })
 
       return analysis
-
     } catch (error) {
       logger.error('Security analysis failed', { analysisId, error: error.message })
       throw new Error(`Security analysis failed: ${error.message}`)
@@ -377,29 +390,39 @@ export class CodeSecurityAnalyzer {
   /**
    * Perform static code analysis
    */
-  private async performStaticAnalysis(code: string, language: string): Promise<StaticAnalysisResult> {
+  private async performStaticAnalysis(
+    code: string,
+    language: string
+  ): Promise<StaticAnalysisResult> {
     const dangerousPatterns = await this.detectDangerousPatterns(code, language)
     const vulnerabilities = await this.detectVulnerabilities(code, language)
     const codeComplexity = this.calculateComplexity(code, language)
     const suspiciousActivity = this.detectSuspiciousActivity(code, language)
-    
-    const riskScore = this.calculateStaticRiskScore(dangerousPatterns, vulnerabilities, suspiciousActivity)
+
+    const riskScore = this.calculateStaticRiskScore(
+      dangerousPatterns,
+      vulnerabilities,
+      suspiciousActivity
+    )
 
     return {
       dangerousPatterns,
       vulnerabilities,
       codeComplexity,
       suspiciousActivity,
-      riskScore
+      riskScore,
     }
   }
 
   /**
    * Detect dangerous code patterns
    */
-  private async detectDangerousPatterns(code: string, language: string): Promise<DangerousPattern[]> {
+  private async detectDangerousPatterns(
+    code: string,
+    language: string
+  ): Promise<DangerousPattern[]> {
     const patterns: DangerousPattern[] = []
-    
+
     // JavaScript-specific patterns
     if (language === 'javascript') {
       const jsPatterns = [
@@ -408,43 +431,43 @@ export class CodeSecurityAnalyzer {
           type: 'execution' as const,
           severity: 'critical' as const,
           description: 'Use of eval() function allows arbitrary code execution',
-          suggestion: 'Use JSON.parse() for JSON data or specific parsing functions'
+          suggestion: 'Use JSON.parse() for JSON data or specific parsing functions',
         },
         {
           regex: /Function\s*\(/gi,
           type: 'execution' as const,
           severity: 'high' as const,
           description: 'Dynamic function creation can lead to code injection',
-          suggestion: 'Use predefined functions or safe alternatives'
+          suggestion: 'Use predefined functions or safe alternatives',
         },
         {
           regex: /document\.write\s*\(/gi,
           type: 'injection' as const,
           severity: 'medium' as const,
           description: 'document.write can lead to XSS vulnerabilities',
-          suggestion: 'Use DOM manipulation methods like appendChild()'
+          suggestion: 'Use DOM manipulation methods like appendChild()',
         },
         {
           regex: /innerHTML\s*=/gi,
           type: 'injection' as const,
           severity: 'medium' as const,
           description: 'innerHTML assignment can lead to XSS if user input is involved',
-          suggestion: 'Use textContent or safe DOM methods'
+          suggestion: 'Use textContent or safe DOM methods',
         },
         {
           regex: /child_process/gi,
           type: 'execution' as const,
           severity: 'critical' as const,
           description: 'Child process execution can lead to command injection',
-          suggestion: 'Avoid system command execution or use safe alternatives'
+          suggestion: 'Avoid system command execution or use safe alternatives',
         },
         {
           regex: /fs\.(readFile|writeFile|unlink)/gi,
           type: 'filesystem' as const,
           severity: 'high' as const,
           description: 'File system operations require careful validation',
-          suggestion: 'Validate file paths and implement access controls'
-        }
+          suggestion: 'Validate file paths and implement access controls',
+        },
       ]
 
       for (const pattern of jsPatterns) {
@@ -457,7 +480,7 @@ export class CodeSecurityAnalyzer {
             description: pattern.description,
             location: this.getCodeLocation(code, match.index || 0),
             suggestion: pattern.suggestion,
-            blocked: pattern.severity === 'critical'
+            blocked: pattern.severity === 'critical',
           })
         }
       }
@@ -471,36 +494,36 @@ export class CodeSecurityAnalyzer {
           type: 'execution' as const,
           severity: 'critical' as const,
           description: 'exec() function allows arbitrary code execution',
-          suggestion: 'Use specific functions or safe alternatives'
+          suggestion: 'Use specific functions or safe alternatives',
         },
         {
           regex: /eval\s*\(/gi,
           type: 'execution' as const,
           severity: 'critical' as const,
           description: 'eval() function can execute malicious code',
-          suggestion: 'Use ast.literal_eval() for safe evaluation'
+          suggestion: 'Use ast.literal_eval() for safe evaluation',
         },
         {
           regex: /__import__\s*\(/gi,
           type: 'execution' as const,
           severity: 'high' as const,
           description: 'Dynamic imports can load malicious modules',
-          suggestion: 'Use explicit import statements'
+          suggestion: 'Use explicit import statements',
         },
         {
           regex: /subprocess\.(call|check_call|run|Popen)/gi,
           type: 'execution' as const,
           severity: 'critical' as const,
           description: 'Subprocess execution can lead to command injection',
-          suggestion: 'Avoid system commands or use safe alternatives'
+          suggestion: 'Avoid system commands or use safe alternatives',
         },
         {
           regex: /open\s*\(/gi,
           type: 'filesystem' as const,
           severity: 'medium' as const,
           description: 'File operations require path validation',
-          suggestion: 'Validate file paths and implement access controls'
-        }
+          suggestion: 'Validate file paths and implement access controls',
+        },
       ]
 
       for (const pattern of pythonPatterns) {
@@ -513,7 +536,7 @@ export class CodeSecurityAnalyzer {
             description: pattern.description,
             location: this.getCodeLocation(code, match.index || 0),
             suggestion: pattern.suggestion,
-            blocked: pattern.severity === 'critical'
+            blocked: pattern.severity === 'critical',
           })
         }
       }
@@ -525,7 +548,10 @@ export class CodeSecurityAnalyzer {
   /**
    * Detect security vulnerabilities
    */
-  private async detectVulnerabilities(code: string, language: string): Promise<SecurityVulnerability[]> {
+  private async detectVulnerabilities(
+    code: string,
+    language: string
+  ): Promise<SecurityVulnerability[]> {
     const vulnerabilities: SecurityVulnerability[] = []
 
     // Check for common vulnerability patterns
@@ -536,7 +562,7 @@ export class CodeSecurityAnalyzer {
         severity: 'critical' as const,
         description: 'Hard-coded password detected',
         impact: 'Credentials exposed in source code',
-        remediation: 'Use environment variables or secure configuration'
+        remediation: 'Use environment variables or secure configuration',
       },
       {
         pattern: /api[_-]?key.*=.*["'][^"']*["']/gi,
@@ -544,7 +570,7 @@ export class CodeSecurityAnalyzer {
         severity: 'high' as const,
         description: 'Hard-coded API key detected',
         impact: 'API credentials exposed in source code',
-        remediation: 'Use environment variables or secure key management'
+        remediation: 'Use environment variables or secure key management',
       },
       {
         pattern: /secret.*=.*["'][^"']*["']/gi,
@@ -552,8 +578,8 @@ export class CodeSecurityAnalyzer {
         severity: 'high' as const,
         description: 'Hard-coded secret detected',
         impact: 'Sensitive information exposed',
-        remediation: 'Use secure configuration management'
-      }
+        remediation: 'Use secure configuration management',
+      },
     ]
 
     for (const vulnPattern of vulnPatterns) {
@@ -567,9 +593,11 @@ export class CodeSecurityAnalyzer {
           description: vulnPattern.description,
           impact: vulnPattern.impact,
           remediation: vulnPattern.remediation,
-          references: [`https://cwe.mitre.org/data/definitions/${vulnPattern.cwe.split('-')[1]}.html`],
+          references: [
+            `https://cwe.mitre.org/data/definitions/${vulnPattern.cwe.split('-')[1]}.html`,
+          ],
           location: this.getCodeLocation(code, match.index || 0),
-          confidence: 85
+          confidence: 85,
         })
       }
     }
@@ -582,16 +610,22 @@ export class CodeSecurityAnalyzer {
    */
   private calculateComplexity(code: string, language: string): CodeComplexityMetrics {
     const lines = code.split('\n')
-    const linesOfCode = lines.filter(line => line.trim() && !line.trim().startsWith('//')).length
-    
+    const linesOfCode = lines.filter((line) => line.trim() && !line.trim().startsWith('//')).length
+
     // Simple complexity estimation
     const functions = (code.match(/function|def /g) || []).length
     const conditions = (code.match(/if |else |elif |while |for /g) || []).length
     const depth = this.calculateNestingDepth(code)
-    
+
     const cyclomaticComplexity = 1 + conditions
-    const maintainabilityIndex = Math.max(0, 171 - 5.2 * Math.log(linesOfCode) - 0.23 * cyclomaticComplexity)
-    const technicalDebt = Math.max(0, (cyclomaticComplexity - 10) * 0.5 + (linesOfCode - 100) * 0.01)
+    const maintainabilityIndex = Math.max(
+      0,
+      171 - 5.2 * Math.log(linesOfCode) - 0.23 * cyclomaticComplexity
+    )
+    const technicalDebt = Math.max(
+      0,
+      (cyclomaticComplexity - 10) * 0.5 + (linesOfCode - 100) * 0.01
+    )
 
     return {
       cyclomaticComplexity,
@@ -599,7 +633,7 @@ export class CodeSecurityAnalyzer {
       functions,
       depth,
       maintainabilityIndex,
-      technicalDebt
+      technicalDebt,
     }
   }
 
@@ -609,7 +643,7 @@ export class CodeSecurityAnalyzer {
   private calculateNestingDepth(code: string): number {
     let maxDepth = 0
     let currentDepth = 0
-    
+
     for (const char of code) {
       if (char === '{' || char === '(') {
         currentDepth++
@@ -618,7 +652,7 @@ export class CodeSecurityAnalyzer {
         currentDepth = Math.max(0, currentDepth - 1)
       }
     }
-    
+
     return maxDepth
   }
 
@@ -636,7 +670,7 @@ export class CodeSecurityAnalyzer {
         description: 'Code contains escape sequences that may indicate obfuscation',
         confidence: 70,
         location: this.getCodeLocation(code, 0),
-        context: 'Escape sequences detected'
+        context: 'Escape sequences detected',
       })
     }
 
@@ -649,7 +683,7 @@ export class CodeSecurityAnalyzer {
         description: 'Base64 encoded strings detected',
         confidence: 60,
         location: this.getCodeLocation(code, 0),
-        context: `${base64Matches.length} base64 strings found`
+        context: `${base64Matches.length} base64 strings found`,
       })
     }
 
@@ -659,7 +693,10 @@ export class CodeSecurityAnalyzer {
   /**
    * Analyze package vulnerabilities
    */
-  private async analyzePackages(packages: string[], language: string): Promise<PackageAnalysisResult> {
+  private async analyzePackages(
+    packages: string[],
+    language: string
+  ): Promise<PackageAnalysisResult> {
     const packageInfos: PackageInfo[] = []
     const vulnerabilities: PackageVulnerability[] = []
     const blockedPackages: string[] = []
@@ -674,7 +711,7 @@ export class CodeSecurityAnalyzer {
         riskScore: this.calculatePackageRiskScore(packageName),
         lastUpdated: new Date(),
         maintainers: 1,
-        downloads: 1000
+        downloads: 1000,
       }
 
       packageInfos.push(packageInfo)
@@ -685,7 +722,8 @@ export class CodeSecurityAnalyzer {
       }
     }
 
-    const riskScore = packageInfos.reduce((sum, pkg) => sum + pkg.riskScore, 0) / Math.max(1, packageInfos.length)
+    const riskScore =
+      packageInfos.reduce((sum, pkg) => sum + pkg.riskScore, 0) / Math.max(1, packageInfos.length)
     const outdatedPackages = 0 // Would check actual versions in production
 
     return {
@@ -693,7 +731,7 @@ export class CodeSecurityAnalyzer {
       vulnerabilities,
       riskScore,
       outdatedPackages,
-      blockedPackages
+      blockedPackages,
     }
   }
 
@@ -702,8 +740,17 @@ export class CodeSecurityAnalyzer {
    */
   private isTrustedPackage(packageName: string): boolean {
     const trustedPackages = [
-      'lodash', 'axios', 'express', 'react', 'vue', 'angular',
-      'pandas', 'numpy', 'requests', 'flask', 'django'
+      'lodash',
+      'axios',
+      'express',
+      'react',
+      'vue',
+      'angular',
+      'pandas',
+      'numpy',
+      'requests',
+      'flask',
+      'django',
     ]
     return trustedPackages.includes(packageName)
   }
@@ -715,16 +762,19 @@ export class CodeSecurityAnalyzer {
     // Mock scoring - would use real vulnerability data in production
     const highRiskPackages = ['eval-package', 'exec-tools', 'shell-runner']
     if (highRiskPackages.includes(packageName)) return 85
-    
+
     if (!this.isTrustedPackage(packageName)) return 45
-    
+
     return 15
   }
 
   /**
    * Check policy compliance
    */
-  private async checkPolicyCompliance(code: string, language: string): Promise<PolicyComplianceResult> {
+  private async checkPolicyCompliance(
+    code: string,
+    language: string
+  ): Promise<PolicyComplianceResult> {
     const violations: PolicyViolation[] = []
     const requirements: ComplianceRequirement[] = []
 
@@ -734,14 +784,14 @@ export class CodeSecurityAnalyzer {
         id: 'A03-injection',
         description: 'Injection vulnerabilities',
         pattern: /eval|exec|innerHTML/gi,
-        severity: 'high' as const
+        severity: 'high' as const,
       },
       {
         id: 'A05-security-misconfiguration',
         description: 'Security misconfiguration',
         pattern: /console\.log.*password|console\.log.*secret/gi,
-        severity: 'medium' as const
-      }
+        severity: 'medium' as const,
+      },
     ]
 
     for (const check of owaspChecks) {
@@ -751,7 +801,7 @@ export class CodeSecurityAnalyzer {
           severity: check.severity,
           description: check.description,
           requirement: 'OWASP Top 10',
-          remediation: 'Review and remediate security issues'
+          remediation: 'Review and remediate security issues',
         })
       }
 
@@ -760,7 +810,7 @@ export class CodeSecurityAnalyzer {
         framework: 'OWASP',
         description: check.description,
         satisfied: !check.pattern.test(code),
-        controls: [check.id]
+        controls: [check.id],
       })
     }
 
@@ -774,7 +824,7 @@ export class CodeSecurityAnalyzer {
       framework: 'OWASP',
       violations,
       requirements,
-      riskScore
+      riskScore,
     }
   }
 
@@ -797,7 +847,7 @@ export class CodeSecurityAnalyzer {
           description: `Address ${pattern.description}`,
           action: pattern.suggestion || 'Review and fix security issue',
           effort: 'moderate',
-          impact: 'Reduces security risk significantly'
+          impact: 'Reduces security risk significantly',
         })
       }
     }
@@ -810,7 +860,7 @@ export class CodeSecurityAnalyzer {
         description: `Replace high-risk package: ${blocked}`,
         action: 'Find secure alternative package',
         effort: 'moderate',
-        impact: 'Eliminates package-based vulnerabilities'
+        impact: 'Eliminates package-based vulnerabilities',
       })
     }
 
@@ -822,7 +872,7 @@ export class CodeSecurityAnalyzer {
         description: violation.description,
         action: violation.remediation,
         effort: 'easy',
-        impact: 'Improves compliance posture'
+        impact: 'Improves compliance posture',
       })
     }
 
@@ -840,13 +890,13 @@ export class CodeSecurityAnalyzer {
     const weights = {
       static: 0.4,
       package: 0.3,
-      policy: 0.3
+      policy: 0.3,
     }
 
     return Math.round(
       staticAnalysis.riskScore * weights.static +
-      packageAnalysis.riskScore * weights.package +
-      policyCompliance.riskScore * weights.policy
+        packageAnalysis.riskScore * weights.package +
+        policyCompliance.riskScore * weights.policy
     )
   }
 
@@ -869,7 +919,7 @@ export class CodeSecurityAnalyzer {
     }, 0)
 
     const activityScore = activities.reduce((sum, a) => {
-      return sum + (a.confidence / 10)
+      return sum + a.confidence / 10
     }, 0)
 
     return Math.min(100, patternScore + vulnScore + activityScore)
@@ -893,14 +943,14 @@ export class CodeSecurityAnalyzer {
     const lines = code.substring(0, index).split('\n')
     const line = lines.length
     const column = lines[lines.length - 1].length + 1
-    
+
     const codeLines = code.split('\n')
     const snippet = codeLines[line - 1] || ''
 
     return {
       line,
       column,
-      snippet: snippet.trim()
+      snippet: snippet.trim(),
     }
   }
 
@@ -911,7 +961,7 @@ export class CodeSecurityAnalyzer {
     let hash = 0
     for (let i = 0; i < code.length; i++) {
       const char = code.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return hash.toString(16)
@@ -930,10 +980,10 @@ export class CodeSecurityAnalyzer {
         functions: 0,
         depth: 0,
         maintainabilityIndex: 100,
-        technicalDebt: 0
+        technicalDebt: 0,
       },
       suspiciousActivity: [],
-      riskScore: 0
+      riskScore: 0,
     }
   }
 
@@ -943,7 +993,7 @@ export class CodeSecurityAnalyzer {
       vulnerabilities: [],
       riskScore: 0,
       outdatedPackages: 0,
-      blockedPackages: []
+      blockedPackages: [],
     }
   }
 
@@ -953,7 +1003,7 @@ export class CodeSecurityAnalyzer {
       framework: 'none',
       violations: [],
       requirements: [],
-      riskScore: 0
+      riskScore: 0,
     }
   }
 

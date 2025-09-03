@@ -5,10 +5,10 @@
 
 import { performance } from 'perf_hooks'
 import { createLogger } from '@/lib/logs/console/logger'
-import { monitoringSystem, executionMonitor, performanceCollector } from '@/lib/monitoring'
-import type { ExecutionContext, BlockLog } from '@/executor/types'
+import { executionMonitor, monitoringSystem, performanceCollector } from '@/lib/monitoring'
+import type { PerformanceMetrics } from '@/lib/monitoring/types'
+import type { ExecutionContext } from '@/executor/types'
 import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
-import type { LiveExecutionStatus, PerformanceMetrics } from '@/lib/monitoring/types'
 
 const logger = createLogger('MonitoringHooks')
 
@@ -98,7 +98,6 @@ export class ExecutorMonitoringHooks {
       }
 
       logger.info(`[${operationId}] Execution monitoring started for ${executionId}`)
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to start execution monitoring:`, error)
       // Don't throw - monitoring failures shouldn't break execution
@@ -127,9 +126,9 @@ export class ExecutorMonitoringHooks {
 
       // Calculate progress
       const completedBlocks = monitoringContext.blockStartTimes.size - 1 // Exclude current block
-      const progress = monitoringContext.totalBlocks ? 
-        Math.round((completedBlocks / monitoringContext.totalBlocks) * 100) : 
-        0
+      const progress = monitoringContext.totalBlocks
+        ? Math.round((completedBlocks / monitoringContext.totalBlocks) * 100)
+        : 0
 
       // Update execution status with current block
       await executionMonitor.updateExecutionStatus(executionId, {
@@ -149,7 +148,6 @@ export class ExecutorMonitoringHooks {
         blockType: block.type,
         progress,
       })
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to update block monitoring:`, error)
     }
@@ -182,7 +180,7 @@ export class ExecutorMonitoringHooks {
       // Collect performance metrics
       if (this.METRICS_COLLECTION_ENABLED) {
         const resourceUsage = await this.collectResourceUsage()
-        
+
         const metrics: Partial<PerformanceMetrics> = {
           executionId,
           workflowId: monitoringContext.workflowId,
@@ -210,7 +208,6 @@ export class ExecutorMonitoringHooks {
         executionTime: `${executionTime.toFixed(2)}ms`,
         blockType: block.type,
       })
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to collect block metrics:`, error)
     }
@@ -241,7 +238,7 @@ export class ExecutorMonitoringHooks {
       // Collect error metrics
       if (this.METRICS_COLLECTION_ENABLED) {
         const resourceUsage = await this.collectResourceUsage()
-        
+
         const metrics: Partial<PerformanceMetrics> = {
           executionId,
           workflowId: monitoringContext.workflowId,
@@ -276,7 +273,6 @@ export class ExecutorMonitoringHooks {
         executionTime: `${executionTime.toFixed(2)}ms`,
         error: error.message,
       })
-
     } catch (monitoringError) {
       logger.error(`[${operationId}] Failed to collect block error metrics:`, monitoringError)
     }
@@ -320,7 +316,6 @@ export class ExecutorMonitoringHooks {
         totalTime: `${totalExecutionTime.toFixed(2)}ms`,
         blocksExecuted: monitoringContext.blockStartTimes.size,
       })
-
     } catch (monitoringError) {
       logger.error(`[${operationId}] Failed to complete execution monitoring:`, monitoringError)
     } finally {
@@ -367,7 +362,7 @@ export class ExecutorMonitoringHooks {
   }> {
     // In a real implementation, this would collect actual system metrics
     const memoryUsage = process.memoryUsage()
-    
+
     return {
       cpu: 0, // Would need system-specific CPU monitoring
       memory: memoryUsage.heapUsed,
@@ -400,7 +395,7 @@ export class ExecutorMonitoringHooks {
       ...metrics,
     }))
 
-    const successfulBlocks = blockMetrics.filter(m => m.success).length
+    const successfulBlocks = blockMetrics.filter((m) => m.success).length
     const totalExecutionTime = blockMetrics.reduce((sum, m) => sum + m.executionTime, 0)
 
     return {
@@ -424,7 +419,7 @@ export class ExecutorMonitoringHooks {
   /**
    * Clean up stale monitoring contexts
    */
-  cleanupStaleContexts(maxAgeMs: number = 3600000): void {
+  cleanupStaleContexts(maxAgeMs = 3600000): void {
     const now = performance.now()
     const staleExecutions: string[] = []
 
@@ -457,12 +452,27 @@ export function integrateMonitoringWithExecutor(executor: any): void {
 
   // Add monitoring hooks to executor if they support the lifecycle events
   if (typeof executor.addHook === 'function') {
-    executor.addHook('execution:start', executorMonitoringHooks.onExecutionStart.bind(executorMonitoringHooks))
-    executor.addHook('block:start', executorMonitoringHooks.onBlockStart.bind(executorMonitoringHooks))
-    executor.addHook('block:complete', executorMonitoringHooks.onBlockComplete.bind(executorMonitoringHooks))
-    executor.addHook('block:error', executorMonitoringHooks.onBlockError.bind(executorMonitoringHooks))
-    executor.addHook('execution:complete', executorMonitoringHooks.onExecutionComplete.bind(executorMonitoringHooks))
-    
+    executor.addHook(
+      'execution:start',
+      executorMonitoringHooks.onExecutionStart.bind(executorMonitoringHooks)
+    )
+    executor.addHook(
+      'block:start',
+      executorMonitoringHooks.onBlockStart.bind(executorMonitoringHooks)
+    )
+    executor.addHook(
+      'block:complete',
+      executorMonitoringHooks.onBlockComplete.bind(executorMonitoringHooks)
+    )
+    executor.addHook(
+      'block:error',
+      executorMonitoringHooks.onBlockError.bind(executorMonitoringHooks)
+    )
+    executor.addHook(
+      'execution:complete',
+      executorMonitoringHooks.onExecutionComplete.bind(executorMonitoringHooks)
+    )
+
     logger.info('Monitoring hooks integrated with executor')
   } else {
     logger.warn('Executor does not support hook system - manual integration required')

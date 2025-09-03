@@ -45,7 +45,10 @@ export const WebhookProcessorBlock: BlockConfig<WebhookResponse> = {
       options: [
         { label: 'Any', id: 'any' },
         { label: 'JSON (application/json)', id: 'application/json' },
-        { label: 'Form Data (application/x-www-form-urlencoded)', id: 'application/x-www-form-urlencoded' },
+        {
+          label: 'Form Data (application/x-www-form-urlencoded)',
+          id: 'application/x-www-form-urlencoded',
+        },
         { label: 'XML (application/xml)', id: 'application/xml' },
         { label: 'Plain Text (text/plain)', id: 'text/plain' },
         { label: 'Multipart Form (multipart/form-data)', id: 'multipart/form-data' },

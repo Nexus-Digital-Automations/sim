@@ -128,8 +128,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'users, orders, products',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -142,8 +142,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder: 'users.id, users.name, orders.total, COUNT(*) as order_count',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -157,8 +157,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'table',
       layout: 'full',
       columns: ['Type', 'Table', 'Condition'],
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -170,8 +170,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'long-input',
       layout: 'full',
       placeholder: 'users.active = true AND orders.created_at > ?',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: ['select', 'update', 'delete'] },
       },
@@ -184,8 +184,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'half',
       placeholder: 'users.id, users.name',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -197,8 +197,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'half',
       placeholder: 'COUNT(*) > 5',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -210,8 +210,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'half',
       placeholder: 'created_at DESC, name ASC',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -223,8 +223,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'half',
       placeholder: '100',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'select' },
       },
@@ -237,8 +237,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'users',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'insert' },
       },
@@ -255,8 +255,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
   "email": "john@example.com",
   "active": true
 }`,
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'insert' },
       },
@@ -270,8 +270,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'users',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'update' },
       },
@@ -288,8 +288,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
   "email": "jane@example.com",
   "updated_at": "NOW()"
 }`,
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'update' },
       },
@@ -303,8 +303,8 @@ export const SqlQueryBuilderBlock: BlockConfig<DatabaseResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'users',
-      condition: { 
-        field: 'queryMode', 
+      condition: {
+        field: 'queryMode',
         value: 'visual',
         and: { field: 'operation', value: 'delete' },
       },

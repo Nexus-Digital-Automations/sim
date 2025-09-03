@@ -18,11 +18,11 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import {
-  generateApprovalId,
-  validateApprovers,
   calculateApprovalRequirements,
+  generateApprovalId,
   generateApprovalNotification,
   isApprovalComplete,
+  validateApprovers,
 } from '@/blocks/blocks/approval-gate'
 import type { BlockHandler, ExecutionContext, NormalizedBlockOutput } from '@/executor/types'
 import type { SerializedBlock } from '@/serializer/types'
@@ -155,7 +155,9 @@ export class ApprovalGateBlockHandler implements BlockHandler {
         timeoutMinutes,
         timeoutAction,
         priority,
-        notificationMethods: Array.isArray(notificationMethod) ? notificationMethod.join(',') : notificationMethod,
+        notificationMethods: Array.isArray(notificationMethod)
+          ? notificationMethod.join(',')
+          : notificationMethod,
       })
 
       // Generate unique approval ID
@@ -216,7 +218,7 @@ export class ApprovalGateBlockHandler implements BlockHandler {
       const approvalDetails = {
         approvalId,
         requestedApprovers: approvers,
-        notificationsSent: notificationResults.filter(n => n.status === 'sent').length,
+        notificationsSent: notificationResults.filter((n) => n.status === 'sent').length,
         timeoutMinutes,
         escalationLevel: 0,
         approvalHistory: [
@@ -327,12 +329,14 @@ export class ApprovalGateBlockHandler implements BlockHandler {
     notification: any,
     methods: string | string[],
     inputs: Record<string, any>
-  ): Promise<Array<{
-    method: string
-    sentTo: string
-    sentAt: string
-    status: 'sent' | 'failed' | 'pending'
-  }>> {
+  ): Promise<
+    Array<{
+      method: string
+      sentTo: string
+      sentAt: string
+      status: 'sent' | 'failed' | 'pending'
+    }>
+  > {
     const notificationMethods = Array.isArray(methods) ? methods : [methods]
     const results: Array<{
       method: string
@@ -469,9 +473,12 @@ export class ApprovalGateBlockHandler implements BlockHandler {
       }
 
       // Set new timeout
-      const timeout = setTimeout(() => {
-        this.handleApprovalTimeout(approvalId, timeoutAction)
-      }, timeoutMinutes * 60 * 1000)
+      const timeout = setTimeout(
+        () => {
+          this.handleApprovalTimeout(approvalId, timeoutAction)
+        },
+        timeoutMinutes * 60 * 1000
+      )
 
       ApprovalGateBlockHandler.approvalTimeouts.set(approvalId, timeout)
 
@@ -534,8 +541,6 @@ export class ApprovalGateBlockHandler implements BlockHandler {
           approvalState.status = 'timeout'
           approvalState.resolvedAt = new Date().toISOString()
           break
-
-        case 'error':
         default:
           approvalState.status = 'timeout'
           approvalState.resolvedAt = new Date().toISOString()
@@ -594,8 +599,8 @@ export class ApprovalGateBlockHandler implements BlockHandler {
       }
 
       // Check if user has already responded
-      const existingApproval = approvalState.approvals.find(a => a.by === userId)
-      const existingRejection = approvalState.rejections.find(r => r.by === userId)
+      const existingApproval = approvalState.approvals.find((a) => a.by === userId)
+      const existingRejection = approvalState.rejections.find((r) => r.by === userId)
 
       if (existingApproval || existingRejection) {
         return { success: false, approvalComplete: false, error: 'User has already responded' }
@@ -707,7 +712,7 @@ export class ApprovalGateBlockHandler implements BlockHandler {
    * @param reason - Reason for cancellation
    * @returns Cancellation result
    */
-  static cancelApproval(approvalId: string, reason: string = 'Cancelled'): boolean {
+  static cancelApproval(approvalId: string, reason = 'Cancelled'): boolean {
     try {
       const approvalState = ApprovalGateBlockHandler.activeApprovals.get(approvalId)
       if (!approvalState || approvalState.status !== 'pending') {
