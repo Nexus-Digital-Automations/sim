@@ -1,0 +1,741 @@
+{
+  "api_catalog": {
+    "version": "1.0.0",
+    "generated": "2025-09-03",
+    "total_endpoints": 180,
+    "categories": 15,
+    "description": "Complete API endpoint catalog for Nexus implementation reference"
+  },
+  "authentication": {
+    "base_path": "/api/auth",
+    "description": "Authentication and session management",
+    "endpoints": [
+      {
+        "path": "/api/auth/[...all]",
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "description": "Better Auth integration for all auth operations",
+        "authentication": "none",
+        "parameters": {
+          "dynamic": "Better Auth handles all auth routes"
+        }
+      },
+      {
+        "path": "/api/auth/forget-password",
+        "methods": ["POST"],
+        "description": "Initiate password reset flow",
+        "authentication": "none",
+        "request_schema": {
+          "email": "string (required)"
+        }
+      },
+      {
+        "path": "/api/auth/reset-password",
+        "methods": ["POST"],
+        "description": "Complete password reset with token",
+        "authentication": "token",
+        "request_schema": {
+          "token": "string (required)",
+          "password": "string (required)"
+        }
+      },
+      {
+        "path": "/api/auth/oauth/connections",
+        "methods": ["GET"],
+        "description": "List user's OAuth provider connections",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/auth/oauth/credentials",
+        "methods": ["GET", "POST", "DELETE"],
+        "description": "Manage OAuth credentials and tokens",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/auth/oauth/token",
+        "methods": ["GET", "POST"],
+        "description": "OAuth token operations for API access",
+        "authentication": "api_key"
+      },
+      {
+        "path": "/api/auth/socket-token",
+        "methods": ["POST"],
+        "description": "Generate WebSocket authentication token",
+        "authentication": "session"
+      }
+    ]
+  },
+  "workflows": {
+    "base_path": "/api/workflows",
+    "description": "Workflow management and execution",
+    "endpoints": [
+      {
+        "path": "/api/workflows",
+        "methods": ["GET", "POST"],
+        "description": "List workflows with filtering, create new workflows",
+        "authentication": "session|api_key",
+        "get_parameters": {
+          "page": "number (pagination)",
+          "limit": "number (max 100)",
+          "workspaceId": "string (filter)",
+          "search": "string (text search)",
+          "status": "enum: deployed|draft|all",
+          "sortBy": "enum: name|createdAt|updatedAt|runCount",
+          "sortOrder": "enum: asc|desc"
+        },
+        "post_schema": {
+          "name": "string (required)",
+          "description": "string (optional)",
+          "color": "string (optional, default: #3972F6)",
+          "workspaceId": "string (optional)",
+          "folderId": "string (optional)"
+        }
+      },
+      {
+        "path": "/api/workflows/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual workflow operations",
+        "authentication": "session|api_key",
+        "path_parameters": {
+          "id": "string (workflow UUID)"
+        }
+      },
+      {
+        "path": "/api/workflows/[id]/execute",
+        "methods": ["POST"],
+        "description": "Execute workflow with input data",
+        "authentication": "session|api_key",
+        "request_schema": {
+          "input": "any (workflow input data)",
+          "variables": "object (execution variables)"
+        },
+        "rate_limiting": "per_user_per_plan",
+        "usage_tracking": "enabled"
+      },
+      {
+        "path": "/api/workflows/[id]/deploy",
+        "methods": ["POST"],
+        "description": "Deploy workflow to production",
+        "authentication": "session",
+        "features": ["state_snapshot", "rollback_capability"]
+      },
+      {
+        "path": "/api/workflows/[id]/collaborate",
+        "methods": ["GET", "POST"],
+        "description": "Real-time collaborative editing",
+        "authentication": "session",
+        "features": ["operational_transforms", "presence_awareness"]
+      },
+      {
+        "path": "/api/workflows/[id]/versions",
+        "methods": ["GET"],
+        "description": "Workflow version history",
+        "authentication": "session|api_key",
+        "features": ["change_tracking", "diff_comparison"]
+      },
+      {
+        "path": "/api/workflows/[id]/export",
+        "methods": ["GET"],
+        "description": "Export workflow definition",
+        "authentication": "session|api_key",
+        "query_parameters": {
+          "format": "enum: json|yaml"
+        }
+      },
+      {
+        "path": "/api/workflows/[id]/dry-run",
+        "methods": ["POST"],
+        "description": "Test workflow execution without side effects",
+        "authentication": "session|api_key",
+        "request_schema": {
+          "input": "any (test input data)"
+        }
+      },
+      {
+        "path": "/api/workflows/[id]/variables",
+        "methods": ["GET", "PUT"],
+        "description": "Workflow environment variables",
+        "authentication": "session|api_key"
+      }
+    ]
+  },
+  "copilot": {
+    "base_path": "/api/copilot",
+    "description": "AI-powered assistant and chat interface",
+    "endpoints": [
+      {
+        "path": "/api/copilot/chat",
+        "methods": ["GET", "POST"],
+        "description": "AI chat interface with streaming support",
+        "authentication": "session",
+        "post_schema": {
+          "message": "string (required)",
+          "workflowId": "string (required)",
+          "chatId": "string (optional)",
+          "mode": "enum: ask|agent (default: agent)",
+          "stream": "boolean (default: true)",
+          "fileAttachments": "array of file objects (optional)",
+          "contexts": "array of context objects (optional)"
+        },
+        "features": ["streaming_response", "file_attachments", "context_processing"]
+      },
+      {
+        "path": "/api/copilot/chats",
+        "methods": ["GET"],
+        "description": "List chat conversations for workflow",
+        "authentication": "session",
+        "query_parameters": {
+          "workflowId": "string (required)"
+        }
+      },
+      {
+        "path": "/api/copilot/tools/mark-complete",
+        "methods": ["POST"],
+        "description": "Mark tool execution as complete",
+        "authentication": "session",
+        "request_schema": {
+          "toolCallId": "string (required)",
+          "status": "enum: completed|rejected"
+        }
+      },
+      {
+        "path": "/api/copilot/checkpoints",
+        "methods": ["GET", "POST"],
+        "description": "Conversation state management",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/copilot/feedback",
+        "methods": ["POST"],
+        "description": "User feedback on AI responses",
+        "authentication": "session",
+        "request_schema": {
+          "messageId": "string (required)",
+          "rating": "number (1-5)",
+          "feedback": "string (optional)"
+        }
+      },
+      {
+        "path": "/api/copilot/api-keys",
+        "methods": ["GET", "POST"],
+        "description": "API key management for external copilot access",
+        "authentication": "session"
+      }
+    ]
+  },
+  "knowledge": {
+    "base_path": "/api/knowledge",
+    "description": "Knowledge base management and vector search",
+    "endpoints": [
+      {
+        "path": "/api/knowledge",
+        "methods": ["GET", "POST"],
+        "description": "Knowledge base CRUD operations",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/knowledge/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual knowledge base management",
+        "authentication": "session|api_key",
+        "path_parameters": {
+          "id": "string (knowledge base UUID)"
+        }
+      },
+      {
+        "path": "/api/knowledge/[id]/documents",
+        "methods": ["GET", "POST"],
+        "description": "Document management within knowledge base",
+        "authentication": "session|api_key",
+        "features": ["batch_operations", "content_processing"]
+      },
+      {
+        "path": "/api/knowledge/[id]/documents/[documentId]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual document operations",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/knowledge/[id]/tag-definitions",
+        "methods": ["GET", "POST"],
+        "description": "Manage structured metadata schemas",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/knowledge/search",
+        "methods": ["POST"],
+        "description": "Vector search with RAG capabilities",
+        "authentication": "session|api_key",
+        "request_schema": {
+          "knowledgeBaseIds": "string|array (required)",
+          "query": "string (optional)",
+          "topK": "number (default: 10, max: 100)",
+          "filters": "object (tag-based filters)"
+        },
+        "features": ["semantic_search", "tag_filtering", "relevance_scoring"]
+      }
+    ]
+  },
+  "files": {
+    "base_path": "/api/files",
+    "description": "File management and processing",
+    "endpoints": [
+      {
+        "path": "/api/files/upload",
+        "methods": ["POST"],
+        "description": "Multi-file upload with validation",
+        "authentication": "session",
+        "content_type": "multipart/form-data",
+        "supported_types": ["pdf", "doc", "docx", "txt", "md", "png", "jpg", "jpeg", "csv", "xlsx"],
+        "max_size": "50MB per file",
+        "features": ["virus_scanning", "content_extraction"]
+      },
+      {
+        "path": "/api/files/download",
+        "methods": ["GET"],
+        "description": "Secure file download with signed URLs",
+        "authentication": "session|api_key",
+        "query_parameters": {
+          "fileId": "string (required)",
+          "inline": "boolean (optional)"
+        }
+      },
+      {
+        "path": "/api/files/presigned",
+        "methods": ["POST"],
+        "description": "Generate presigned URLs for direct upload",
+        "authentication": "session",
+        "features": ["client_side_upload", "s3_compatible"]
+      },
+      {
+        "path": "/api/files/parse",
+        "methods": ["POST"],
+        "description": "Extract text content from files",
+        "authentication": "session",
+        "supported_formats": ["pdf", "docx", "xlsx", "csv", "txt", "md"]
+      },
+      {
+        "path": "/api/files/serve/[...path]",
+        "methods": ["GET"],
+        "description": "Static file serving with CDN support",
+        "authentication": "session|public",
+        "features": ["caching", "compression"]
+      }
+    ]
+  },
+  "tools": {
+    "base_path": "/api/tools",
+    "description": "Third-party service integrations",
+    "categories": {
+      "communication": {
+        "slack": ["/api/tools/slack/channels", "/api/tools/slack/message"],
+        "discord": ["/api/tools/discord/channels", "/api/tools/discord/servers"],
+        "teams": ["/api/tools/microsoft-teams/channels", "/api/tools/microsoft-teams/chats"]
+      },
+      "productivity": {
+        "notion": ["/api/tools/notion/pages", "/api/tools/notion/databases"],
+        "jira": ["/api/tools/jira/issues", "/api/tools/jira/projects"],
+        "linear": ["/api/tools/linear/issues", "/api/tools/linear/teams"]
+      },
+      "cloud_services": {
+        "google": ["/api/tools/google_*/*"],
+        "microsoft": ["/api/tools/microsoft_*/*"],
+        "aws": ["/api/tools/s3/*"]
+      },
+      "databases": {
+        "sql": ["/api/tools/mysql/*", "/api/tools/postgresql/*"],
+        "nosql": ["/api/tools/mongodb/*"]
+      },
+      "ai_services": {
+        "openai": ["/api/tools/openai/*"],
+        "anthropic": ["/api/tools/anthropic/*"]
+      }
+    },
+    "common_operations": {
+      "oauth_setup": "GET /api/tools/{service}/oauth",
+      "list_resources": "GET /api/tools/{service}/{resource}",
+      "create_resource": "POST /api/tools/{service}/{resource}",
+      "update_resource": "PUT /api/tools/{service}/{resource}/{id}",
+      "delete_resource": "DELETE /api/tools/{service}/{resource}/{id}"
+    },
+    "features": ["oauth_integration", "rate_limiting", "error_handling", "batch_operations"]
+  },
+  "registry": {
+    "base_path": "/api/registry",
+    "description": "Dynamic tool registration and management",
+    "endpoints": [
+      {
+        "path": "/api/registry/tools",
+        "methods": ["GET", "POST"],
+        "description": "Dynamic tool registration",
+        "authentication": "session",
+        "post_schema": {
+          "name": "string (required, alphanumeric with underscores)",
+          "displayName": "string (required)",
+          "description": "string (optional)",
+          "manifest": {
+            "configSchema": "JSONSchema object",
+            "inputSchema": "JSONSchema object (optional)",
+            "outputSchema": "JSONSchema object (optional)"
+          },
+          "webhookUrl": "string URL (required)",
+          "authentication": {
+            "type": "enum: none|bearer|api_key|oauth",
+            "requirements": "object (optional)"
+          }
+        },
+        "features": ["manifest_validation", "webhook_verification", "rate_limiting"]
+      },
+      {
+        "path": "/api/registry/tools/[toolId]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual registered tool management",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/registry/execute",
+        "methods": ["POST"],
+        "description": "Execute registered tool via webhook",
+        "authentication": "session|api_key",
+        "request_schema": {
+          "toolId": "string (required)",
+          "input": "any (tool-specific input)"
+        },
+        "features": ["webhook_execution", "timeout_handling", "retry_logic"]
+      },
+      {
+        "path": "/api/registry/webhooks/validate",
+        "methods": ["POST"],
+        "description": "Validate webhook endpoint",
+        "authentication": "session",
+        "features": ["security_checks", "response_validation"]
+      }
+    ]
+  },
+  "billing": {
+    "base_path": "/api/billing",
+    "description": "Subscription and usage management",
+    "endpoints": [
+      {
+        "path": "/api/billing",
+        "methods": ["GET"],
+        "description": "Billing summary and subscription status",
+        "authentication": "session",
+        "query_parameters": {
+          "context": "enum: user|organization",
+          "id": "string (optional, organization ID)"
+        }
+      },
+      {
+        "path": "/api/billing/portal",
+        "methods": ["GET"],
+        "description": "Stripe customer portal access",
+        "authentication": "session",
+        "response": {
+          "portal_url": "string (Stripe portal URL)"
+        }
+      },
+      {
+        "path": "/api/billing/update-cost",
+        "methods": ["POST"],
+        "description": "Real-time cost tracking",
+        "authentication": "internal",
+        "request_schema": {
+          "userId": "string (required)",
+          "cost": "number (required)",
+          "resource": "string (required)"
+        }
+      }
+    ]
+  },
+  "usage": {
+    "base_path": "/api/usage",
+    "description": "Usage monitoring and limits",
+    "endpoints": [
+      {
+        "path": "/api/usage/check",
+        "methods": ["GET"],
+        "description": "Check current usage against limits",
+        "authentication": "session|api_key",
+        "response": {
+          "within_limits": "boolean",
+          "current_usage": "object",
+          "limits": "object",
+          "reset_date": "string (ISO date)"
+        }
+      },
+      {
+        "path": "/api/usage-limits",
+        "methods": ["GET"],
+        "description": "Get plan-specific usage limits",
+        "authentication": "session"
+      }
+    ]
+  },
+  "organizations": {
+    "base_path": "/api/organizations",
+    "description": "Multi-tenant organization management",
+    "endpoints": [
+      {
+        "path": "/api/organizations",
+        "methods": ["GET", "POST"],
+        "description": "Organization CRUD operations",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/organizations/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual organization management",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/organizations/[id]/members",
+        "methods": ["GET", "POST"],
+        "description": "Organization member management",
+        "authentication": "session",
+        "features": ["role_management", "invitation_system"]
+      },
+      {
+        "path": "/api/organizations/[id]/workspaces",
+        "methods": ["GET"],
+        "description": "List organization workspaces",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/organizations/invitations/accept",
+        "methods": ["POST"],
+        "description": "Accept organization invitation",
+        "authentication": "session",
+        "request_schema": {
+          "token": "string (required)"
+        }
+      }
+    ]
+  },
+  "workspaces": {
+    "base_path": "/api/workspaces",
+    "description": "Team workspace management",
+    "endpoints": [
+      {
+        "path": "/api/workspaces",
+        "methods": ["GET", "POST"],
+        "description": "Workspace CRUD operations",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/workspaces/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual workspace management",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/workspaces/[id]/permissions",
+        "methods": ["GET"],
+        "description": "Workspace permission matrix",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/workspaces/members",
+        "methods": ["GET", "POST"],
+        "description": "Workspace member management",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/workspaces/invitations",
+        "methods": ["GET", "POST"],
+        "description": "Workspace invitation system",
+        "authentication": "session"
+      }
+    ]
+  },
+  "schedules": {
+    "base_path": "/api/schedules",
+    "description": "Scheduled workflow execution",
+    "endpoints": [
+      {
+        "path": "/api/schedules",
+        "methods": ["GET", "POST"],
+        "description": "Schedule management",
+        "authentication": "session|api_key",
+        "post_schema": {
+          "workflowId": "string (required)",
+          "cronExpression": "string (required)",
+          "timezone": "string (optional)",
+          "enabled": "boolean (default: true)"
+        }
+      },
+      {
+        "path": "/api/schedules/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual schedule management",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/schedules/[id]/status",
+        "methods": ["GET"],
+        "description": "Schedule execution status",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/schedules/execute",
+        "methods": ["POST"],
+        "description": "Manual schedule execution",
+        "authentication": "internal"
+      }
+    ]
+  },
+  "webhooks": {
+    "base_path": "/api/webhooks",
+    "description": "Webhook management and execution",
+    "endpoints": [
+      {
+        "path": "/api/webhooks",
+        "methods": ["GET", "POST"],
+        "description": "Webhook registration and management",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/webhooks/[id]",
+        "methods": ["GET", "PUT", "DELETE"],
+        "description": "Individual webhook management",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/webhooks/trigger/[path]",
+        "methods": ["POST", "GET", "PUT", "DELETE"],
+        "description": "Webhook trigger endpoint",
+        "authentication": "webhook_signature",
+        "features": ["signature_verification", "replay_protection"]
+      },
+      {
+        "path": "/api/webhooks/test",
+        "methods": ["POST"],
+        "description": "Test webhook configuration",
+        "authentication": "session"
+      }
+    ]
+  },
+  "logs": {
+    "base_path": "/api/logs",
+    "description": "Execution logging and monitoring",
+    "endpoints": [
+      {
+        "path": "/api/logs",
+        "methods": ["GET"],
+        "description": "List workflow execution logs",
+        "authentication": "session|api_key",
+        "query_parameters": {
+          "workflowId": "string (optional)",
+          "executionId": "string (optional)",
+          "level": "enum: debug|info|warn|error",
+          "limit": "number (max 1000)"
+        }
+      },
+      {
+        "path": "/api/logs/by-id/[id]",
+        "methods": ["GET"],
+        "description": "Get specific log entry",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/logs/[executionId]/frozen-canvas",
+        "methods": ["GET"],
+        "description": "Get execution state snapshot",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/logs/cleanup",
+        "methods": ["DELETE"],
+        "description": "Clean up old log entries",
+        "authentication": "internal"
+      }
+    ]
+  },
+  "providers": {
+    "base_path": "/api/providers",
+    "description": "AI and service provider management",
+    "endpoints": [
+      {
+        "path": "/api/providers",
+        "methods": ["GET"],
+        "description": "List available providers and models",
+        "authentication": "session|api_key"
+      },
+      {
+        "path": "/api/providers/ollama/models",
+        "methods": ["GET"],
+        "description": "List Ollama models",
+        "authentication": "session"
+      },
+      {
+        "path": "/api/providers/openrouter/models",
+        "methods": ["GET"],
+        "description": "List OpenRouter models",
+        "authentication": "session"
+      }
+    ]
+  },
+  "common_patterns": {
+    "authentication": {
+      "session": "Better Auth session cookies",
+      "api_key": "X-API-Key header",
+      "webhook": "Signature-based verification",
+      "internal": "JWT tokens for service-to-service"
+    },
+    "response_format": {
+      "success": {
+        "success": true,
+        "data": "any",
+        "metadata": "object (optional)"
+      },
+      "error": {
+        "error": "string (message)",
+        "code": "string (optional error code)",
+        "details": "any (optional additional info)"
+      }
+    },
+    "pagination": {
+      "query_parameters": {
+        "page": "number (1-based)",
+        "limit": "number (max varies by endpoint)",
+        "cursor": "string (cursor-based pagination)"
+      },
+      "response": {
+        "data": "array",
+        "pagination": {
+          "page": "number",
+          "totalPages": "number",
+          "totalItems": "number",
+          "hasNext": "boolean"
+        }
+      }
+    },
+    "filtering": {
+      "common_filters": {
+        "search": "Full-text search",
+        "createdAfter": "ISO date string",
+        "createdBefore": "ISO date string",
+        "userId": "Filter by user",
+        "workspaceId": "Filter by workspace"
+      }
+    },
+    "rate_limiting": {
+      "headers": {
+        "X-RateLimit-Limit": "Request limit per window",
+        "X-RateLimit-Remaining": "Remaining requests",
+        "X-RateLimit-Reset": "Window reset time"
+      },
+      "limits": {
+        "authenticated": "1000 requests/hour",
+        "api_key": "5000 requests/hour",
+        "premium": "10000 requests/hour"
+      }
+    },
+    "security": {
+      "input_validation": "Zod schema validation",
+      "output_sanitization": "XSS prevention",
+      "cors": "Configurable CORS policies",
+      "csrf": "CSRF token validation",
+      "encryption": "At-rest data encryption"
+    }
+  }
+}

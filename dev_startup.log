@@ -1,0 +1,69 @@
+
+> simstudio@0.0.0 dev
+> turbo run dev
+
+turbo 2.5.6
+
+ WARNING  Unable to calculate transitive closures: No lockfile entry found for '@emnapi/core'
+• Packages in scope: docs, sim, simstudio, simstudio-ts-sdk
+• Running dev in 4 packages
+• Remote caching disabled
+sim:dev: cache bypass, force executing 927e65a61daf719b
+docs:dev: cache bypass, force executing 5d8013ed0aee421a
+docs:dev: $ next dev --port 3001
+sim:dev: $ next dev --turbo --port 3000
+docs:dev:  ⚠ Warning: Found multiple lockfiles. Selecting /Users/jeremyparker/package-lock.json.
+docs:dev:    Consider removing the lockfiles at:
+docs:dev:    * /Users/jeremyparker/Desktop/Claude Coding Projects/sim/bun.lock
+docs:dev: 
+docs:dev: [MDX] updated map file in 7.722875000000045ms
+docs:dev: [MDX] started dev server
+docs:dev:  ⨯ Failed to start server
+docs:dev: Error: listen EADDRINUSE: address already in use :::3001
+docs:dev:     at <unknown> (Error: listen EADDRINUSE: address already in use :::3001)
+docs:dev:     at new Promise (<anonymous>) {
+docs:dev:   code: 'EADDRINUSE',
+docs:dev:   errno: -48,
+docs:dev:   syscall: 'listen',
+docs:dev:   address: '::',
+docs:dev:   port: 3001
+docs:dev: }
+docs:dev: [?25h
+docs:dev: [MDX] closing dev server
+sim:dev:  ⚠ Warning: Found multiple lockfiles. Selecting /Users/jeremyparker/package-lock.json.
+sim:dev:    Consider removing the lockfiles at:
+sim:dev:    * /Users/jeremyparker/Desktop/Claude Coding Projects/sim/bun.lock
+sim:dev: 
+sim:dev:    ▲ Next.js 15.4.1 (Turbopack)
+sim:dev:    - Local:        http://localhost:3000
+sim:dev:    - Network:      http://127.200.133.43:3000
+sim:dev:    - Environments: .env
+sim:dev:    - Experiments (use with caution):
+sim:dev:      ✓ optimizeCss
+sim:dev:      ⨯ turbopackSourceMaps
+sim:dev: 
+sim:dev:  ✓ Starting...
+sim:dev:  ○ Compiling instrumentation Node.js ...
+sim:dev:  ✓ Compiled instrumentation Node.js in 2.1s
+sim:dev:  ✓ Compiled instrumentation Edge in 131ms
+sim:dev:  ✓ Compiled middleware in 148ms
+sim:dev: [Main Instrumentation] register() called, environment: { NEXT_RUNTIME: 'nodejs', NODE_ENV: 'development' }
+sim:dev: [Main Instrumentation] Loading Node.js instrumentation...
+sim:dev: [Main Instrumentation] Calling Node.js register()...
+sim:dev: [2025-09-03T06:34:45.008Z] [INFO] [OtelInstrumentation] OpenTelemetry instrumentation initialized for server-side telemetry
+sim:dev:  ✓ Ready in 4.4s
+sim:dev: [Main Instrumentation] register() called, environment: { NEXT_RUNTIME: 'edge', NODE_ENV: 'development' }
+sim:dev: [Main Instrumentation] Loading Edge Runtime instrumentation...
+sim:dev: [Main Instrumentation] Calling Edge Runtime register()...
+sim:dev: [2025-09-03T06:34:53.768Z] [INFO] [EdgeInstrumentation] Edge Runtime instrumentation initialized
+sim:dev:  ○ Compiling /api/auth/[...all] ...
+sim:dev:  ✓ Compiled /api/auth/[...all] in 3s
+sim:dev: [2m2025-09-03T06:34:57.268Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim:dev: [2m2025-09-03T06:34:57.268Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim:dev: [2m2025-09-03T06:34:57.880Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim:dev: [2m2025-09-03T06:34:57.883Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim:dev:  POST /api/auth/sign-up/email 500 in 4131ms
+sim:dev: [2m2025-09-03T06:34:58.357Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim:dev: [2m2025-09-03T06:34:58.358Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim:dev: [?25h
+ ERROR  run failed: command  exited (1)

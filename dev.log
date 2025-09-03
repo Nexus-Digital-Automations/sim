@@ -1,0 +1,39 @@
+sim dev:  ⚠ Warning: Found multiple lockfiles. Selecting /Users/jeremyparker/package-lock.json.
+sim dev:    Consider removing the lockfiles at:
+sim dev:    * /Users/jeremyparker/Desktop/Claude Coding Projects/sim/bun.lock
+sim dev: 
+sim dev:    ▲ Next.js 15.4.1 (Turbopack)
+sim dev:    - Local:        http://localhost:3000
+sim dev:    - Network:      http://127.200.133.43:3000
+sim dev:    - Environments: .env
+sim dev:    - Experiments (use with caution):
+sim dev:      ✓ optimizeCss
+sim dev:      ⨯ turbopackSourceMaps
+sim dev: 
+sim dev:  ✓ Starting...
+sim dev:  ○ Compiling instrumentation Node.js ...
+sim dev:  ✓ Compiled instrumentation Node.js in 2.1s
+sim dev:  ✓ Compiled instrumentation Edge in 138ms
+sim dev:  ✓ Compiled middleware in 154ms
+sim dev: [Main Instrumentation] register() called, environment: { NEXT_RUNTIME: 'nodejs', NODE_ENV: 'development' }
+sim dev: [Main Instrumentation] Loading Node.js instrumentation...
+sim dev: [Main Instrumentation] Calling Node.js register()...
+sim dev: [2025-09-03T06:56:15.707Z] [INFO] [OtelInstrumentation] OpenTelemetry instrumentation initialized for server-side telemetry
+sim dev:  ✓ Ready in 4.1s
+sim dev: [Main Instrumentation] register() called, environment: { NEXT_RUNTIME: 'edge', NODE_ENV: 'development' }
+sim dev: [Main Instrumentation] Loading Edge Runtime instrumentation...
+sim dev: [Main Instrumentation] Calling Edge Runtime register()...
+sim dev: [2025-09-03T06:56:30.542Z] [INFO] [EdgeInstrumentation] Edge Runtime instrumentation initialized
+sim dev:  ○ Compiling /api/auth/[...all] ...
+sim dev:  ✓ Compiled /api/auth/[...all] in 2.2s
+sim dev: [2m2025-09-03T06:56:32.957Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim dev: [2m2025-09-03T06:56:32.957Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim dev: [2m2025-09-03T06:56:33.403Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim dev: [2m2025-09-03T06:56:33.405Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim dev:  POST /api/auth/sign-up/email 500 in 2870ms
+sim dev: [2m2025-09-03T06:56:33.860Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider github is missing clientId or clientSecret
+sim dev: [2m2025-09-03T06:56:33.861Z[0m [33mWARN[0m [1m[Better Auth]:[0m Social provider google is missing clientId or clientSecret
+sim dev:  ○ Compiling /api/copilot/chat ...
+sim dev:  ✓ Compiled /api/copilot/chat in 1556ms
+sim dev: [2025-09-03T07:26:04.078Z] [INFO] [CopilotChatAPI] Retrieved 0 chats for workflow a796b73a-a1ad-49d8-9f12-ba803ee68697
+sim dev:  GET /api/copilot/chat?workflowId=a796b73a-a1ad-49d8-9f12-ba803ee68697 200 in 1734ms

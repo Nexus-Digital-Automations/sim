@@ -122,6 +122,11 @@ vi.mock('@/lib/email/validation', () => ({
   quickValidateEmail: vi.fn(),
 }))
 
+vi.mock('@/lib/environment', () => ({
+  isProd: false,
+  isDev: true,
+}))
+
 vi.mock('@/lib/env', () => ({
   env: {
     STRIPE_SECRET_KEY: 'sk_test_fake_key',
@@ -210,6 +215,7 @@ import { quickValidateEmail } from '@/lib/email/validation'
 import { env, isTruthy } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
+import { auth, getSession, signIn, signUp } from './auth'
 
 const mockBetterAuth = betterAuth as any
 const mockDrizzleAdapter = drizzleAdapter as any
@@ -277,8 +283,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: Authentication system must be properly configured
      */
     it('should create Better Auth instance with correct configuration', () => {
-      // Import the auth module to trigger betterAuth call
-      require('./auth')
+      // Use the imported auth instance to trigger betterAuth call
+      expect(auth).toBeDefined()
 
       expect(mockBetterAuth).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -310,7 +316,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: Database integration must be properly configured
      */
     it('should configure database adapter correctly', () => {
-      require('./auth')
+      // Verify auth instance is configured with database adapter
+      expect(auth).toBeDefined()
 
       expect(mockDrizzleAdapter).toHaveBeenCalledWith(
         mockDb,
@@ -326,7 +333,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: All security plugins must be properly loaded
      */
     it('should configure all required plugins', () => {
-      require('./auth')
+      auth
 
       expect(mockNextCookies).toHaveBeenCalled()
       expect(mockOneTimeToken).toHaveBeenCalled()
@@ -340,7 +347,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: OAuth providers must be configured with proper scopes
      */
     it('should configure social providers with appropriate scopes', () => {
-      require('./auth')
+      auth
 
       expect(mockBetterAuth).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -380,8 +387,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       mockDb.select.mockReturnValue(membersChain)
 
       // Import and trigger session creation hook
-      const authModule = require('./auth')
-      const sessionHook = authModule.auth.__testHooks?.session?.create?.before
+      // Using imported auth instance
+      const sessionHook = auth.__testHooks?.session?.create?.before
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
@@ -414,8 +421,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       const membersChain = createMockDbChain([])
       mockDb.select.mockReturnValue(membersChain)
 
-      const authModule = require('./auth')
-      const sessionHook = authModule.auth.__testHooks?.session?.create?.before
+      // Using imported auth instance
+      const sessionHook = auth.__testHooks?.session?.create?.before
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
@@ -445,8 +452,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         throw new Error('Database connection failed')
       })
 
-      const authModule = require('./auth')
-      const sessionHook = authModule.auth.__testHooks?.session?.create?.before
+      // Using imported auth instance
+      const sessionHook = auth.__testHooks?.session?.create?.before
 
       if (sessionHook) {
         const result = await sessionHook(mockSessionData)
@@ -478,8 +485,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         checks: { format: false },
       })
 
-      const authModule = require('./auth')
-      const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
+      // Using imported auth instance
+      const otpHandler = auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
         await expect(
@@ -506,7 +513,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      */
     it('should send OTP emails in production environment', async () => {
       // Mock production environment
-      vi.mocked(require('@/lib/environment')).isProd = true
+      const envModule = await import('@/lib/environment')
+      vi.mocked(envModule).isProd = true
 
       mockQuickValidateEmail.mockReturnValue({
         isValid: true,
@@ -518,8 +526,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         messageId: 'msg-123',
       })
 
-      const authModule = require('./auth')
-      const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
+      // Using imported auth instance
+      const otpHandler = auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
         await otpHandler({
@@ -538,7 +546,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       }
 
       // Reset environment
-      vi.mocked(require('@/lib/environment')).isProd = false
+      const envModule = await import('@/lib/environment')
+      vi.mocked(envModule).isProd = false
     })
 
     /**
@@ -551,8 +560,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         checks: { format: true, mx: true },
       })
 
-      const authModule = require('./auth')
-      const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
+      // Using imported auth instance
+      const otpHandler = auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
         await otpHandler({
@@ -570,7 +579,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
      * SECURITY BOUNDARY: Email service failures should be properly handled
      */
     it('should handle email service failures gracefully', async () => {
-      vi.mocked(require('@/lib/environment')).isProd = true
+      const envModule = await import('@/lib/environment')
+      vi.mocked(envModule).isProd = true
 
       mockQuickValidateEmail.mockReturnValue({
         isValid: true,
@@ -582,8 +592,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         message: 'SMTP service unavailable',
       })
 
-      const authModule = require('./auth')
-      const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
+      // Using imported auth instance
+      const otpHandler = auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
         await expect(
@@ -595,7 +605,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         ).rejects.toThrow('Failed to send verification code: SMTP service unavailable')
       }
 
-      vi.mocked(require('@/lib/environment')).isProd = false
+      const envModule = await import('@/lib/environment')
+      vi.mocked(envModule).isProd = false
     })
 
     /**
@@ -608,8 +619,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         messageId: 'reset-msg-456',
       })
 
-      const authModule = require('./auth')
-      const resetHandler = authModule.auth.__testHooks?.emailAndPassword?.sendResetPassword
+      // Using imported auth instance
+      const resetHandler = auth.__testHooks?.emailAndPassword?.sendResetPassword
 
       if (resetHandler) {
         const mockUser = {
@@ -641,8 +652,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         messageId: 'reset-msg-789',
       })
 
-      const authModule = require('./auth')
-      const resetHandler = authModule.auth.__testHooks?.emailAndPassword?.sendResetPassword
+      // Using imported auth instance
+      const resetHandler = auth.__testHooks?.emailAndPassword?.sendResetPassword
 
       if (resetHandler) {
         const mockUser = {
@@ -669,8 +680,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         message: 'Email delivery failed',
       })
 
-      const authModule = require('./auth')
-      const resetHandler = authModule.auth.__testHooks?.emailAndPassword?.sendResetPassword
+      // Using imported auth instance
+      const resetHandler = auth.__testHooks?.emailAndPassword?.sendResetPassword
 
       if (resetHandler) {
         const mockUser = {
@@ -695,8 +706,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
     it('should block registration when disabled', async () => {
       mockIsTruthy.mockReturnValue(true)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const mockContext = {
@@ -719,8 +730,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = 'admin@company.com,user@company.com'
       mockIsTruthy.mockReturnValue(false) // Registration not disabled
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         // Test allowed email
@@ -752,8 +763,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_DOMAINS = 'company.com,partner.org'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         // Test allowed domain
@@ -785,8 +796,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_DOMAINS = 'company.com'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         // Test specifically allowed email (outside allowed domain)
@@ -826,8 +837,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_DOMAINS = 'Company.COM'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         // Test lowercase version of allowed email
@@ -857,8 +868,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = 'admin@company.com'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const apiContext = {
@@ -902,7 +913,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
 
       // Re-import to get fresh instance
       vi.resetModules()
-      const { getSession } = require('./auth')
+      // Using imported getSession function
 
       const result = await getSession()
 
@@ -929,7 +940,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       mockBetterAuth.mockReturnValue(mockAuthInstance)
 
       vi.resetModules()
-      const { getSession } = require('./auth')
+      // Using imported getSession function
 
       const result = await getSession()
 
@@ -951,7 +962,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       mockBetterAuth.mockReturnValue(mockAuthInstance)
 
       vi.resetModules()
-      const { getSession } = require('./auth')
+      // Using imported getSession function
 
       await expect(getSession()).rejects.toThrow('Headers not available')
     })
@@ -966,8 +977,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = 'admin@company.com'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const contextWithoutBody = {
@@ -997,8 +1008,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = 'admin@company.com'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const contextWithoutEmail = {
@@ -1022,8 +1033,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_DOMAINS = ',,company.com,,'
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const validEmailContext = {
@@ -1055,8 +1066,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = longEmail
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const longEmailContext = {
@@ -1079,8 +1090,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       vi.mocked(env).ALLOWED_LOGIN_EMAILS = unicodeEmail
       mockIsTruthy.mockReturnValue(false)
 
-      const authModule = require('./auth')
-      const middleware = authModule.auth.__testHooks?.hooks?.before
+      // Using imported auth instance
+      const middleware = auth.__testHooks?.hooks?.before
 
       if (middleware) {
         const unicodeContext = {
@@ -1112,8 +1123,8 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
         checks: { format: true },
       })
 
-      const authModule = require('./auth')
-      const otpHandler = authModule.auth.__testHooks?.emailOTP?.sendVerificationOTP
+      // Using imported auth instance
+      const otpHandler = auth.__testHooks?.emailOTP?.sendVerificationOTP
 
       if (otpHandler) {
         for (const email of specialEmails) {

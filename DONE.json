@@ -1177,9 +1177,57 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756879367702_p61udvux1",
+      "title": "Fix critical test infrastructure import errors and module resolution failures",
+      "description": "Critical test failures due to import errors (Cannot find module ./auth) and module resolution issues causing test suite to fail. Multiple auth test files cannot import required modules, breaking the entire testing infrastructure.",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "apps/sim/lib/auth.test.ts",
+        "apps/sim/lib/auth.ts",
+        "apps/sim/vitest.config.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-03T06:02:47.702Z",
+      "auto_research_created": false,
+      "assigned_agent": "development_session_1756879133510_1_general_72f2b05d",
+      "started_at": "2025-09-03T06:02:54.897Z",
+      "claimed_by": "development_session_1756879133510_1_general_72f2b05d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756879133510_1_general_72f2b05d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T06:02:54.897Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T06:06:16.474Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T06:06:16.475Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 27,
-  "last_completion": "2025-09-03T06:00:12.939Z",
+  "total_completed": 28,
+  "last_completion": "2025-09-03T06:06:16.475Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }
