@@ -702,42 +702,42 @@ export function HelpContentManager({
     const getTypeIcon = (type: string) => {
       switch (type) {
         case 'tutorial':
-          return <PlayCircleIcon className='w-4 h-4' />
+          return <PlayCircleIcon className='h-4 w-4' />
         case 'guide':
-          return <BookOpenIcon className='w-4 h-4' />
+          return <BookOpenIcon className='h-4 w-4' />
         case 'documentation':
-          return <FileTextIcon className='w-4 h-4' />
+          return <FileTextIcon className='h-4 w-4' />
         default:
-          return <FileTextIcon className='w-4 h-4' />
+          return <FileTextIcon className='h-4 w-4' />
       }
     }
 
     return (
-      <Card key={item.id} className='group hover:shadow-md transition-shadow'>
+      <Card key={item.id} className='group transition-shadow hover:shadow-md'>
         <CardHeader className='pb-3'>
           <div className='flex items-start justify-between'>
             <div className='flex-1'>
-              <CardTitle className='text-lg font-semibold mb-1'>{item.title}</CardTitle>
-              <p className='text-sm text-muted-foreground line-clamp-2 mb-2'>{item.description}</p>
+              <CardTitle className='mb-1 font-semibold text-lg'>{item.title}</CardTitle>
+              <p className='mb-2 line-clamp-2 text-muted-foreground text-sm'>{item.description}</p>
             </div>
 
             <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
           </div>
 
-          <div className='flex items-center space-x-4 text-sm text-muted-foreground'>
+          <div className='flex items-center space-x-4 text-muted-foreground text-sm'>
             <div className='flex items-center'>
               {getTypeIcon(item.type)}
               <span className='ml-1 capitalize'>{item.type}</span>
             </div>
 
             <div className='flex items-center'>
-              <EyeIcon className='w-4 h-4 mr-1' />
+              <EyeIcon className='mr-1 h-4 w-4' />
               {item.viewCount.toLocaleString()}
             </div>
 
             {showAnalytics && (
               <div className='flex items-center'>
-                <TrendingUpIcon className='w-4 h-4 mr-1' />
+                <TrendingUpIcon className='mr-1 h-4 w-4' />
                 {Math.round(item.completionRate * 100)}%
               </div>
             )}
@@ -746,10 +746,10 @@ export function HelpContentManager({
 
         <CardContent className='pt-0'>
           {/* Tags */}
-          <div className='flex flex-wrap gap-1 mb-3'>
+          <div className='mb-3 flex flex-wrap gap-1'>
             {item.tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant='outline' className='text-xs'>
-                <TagIcon className='w-2 h-2 mr-1' />
+                <TagIcon className='mr-1 h-2 w-2' />
                 {tag}
               </Badge>
             ))}
@@ -761,33 +761,33 @@ export function HelpContentManager({
           </div>
 
           {/* Metadata */}
-          <div className='text-xs text-muted-foreground space-y-1'>
+          <div className='space-y-1 text-muted-foreground text-xs'>
             <div>Author: {item.author}</div>
             <div>Last modified: {new Date(item.lastModifiedAt).toLocaleDateString()}</div>
             {enableLocalization && Object.keys(item.translations).length > 0 && (
               <div className='flex items-center'>
-                <GlobeIcon className='w-3 h-3 mr-1' />
+                <GlobeIcon className='mr-1 h-3 w-3' />
                 {Object.keys(item.translations).length + 1} languages
               </div>
             )}
           </div>
 
           {/* Actions */}
-          <div className='flex items-center justify-between mt-4 pt-3 border-t'>
+          <div className='mt-4 flex items-center justify-between border-t pt-3'>
             <div className='flex items-center space-x-2'>
               <Button variant='ghost' size='sm' onClick={() => setSelectedContent(item)}>
-                <EyeIcon className='w-4 h-4 mr-1' />
+                <EyeIcon className='mr-1 h-4 w-4' />
                 View
               </Button>
 
               <Button variant='ghost' size='sm'>
-                <EditIcon className='w-4 h-4 mr-1' />
+                <EditIcon className='mr-1 h-4 w-4' />
                 Edit
               </Button>
 
               {enableCollaboration && (
                 <Button variant='ghost' size='sm'>
-                  <UserCheckIcon className='w-4 h-4 mr-1' />
+                  <UserCheckIcon className='mr-1 h-4 w-4' />
                   Review
                 </Button>
               )}
@@ -816,7 +816,7 @@ export function HelpContentManager({
     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PlusIcon className='w-4 h-4 mr-2' />
+          <PlusIcon className='mr-2 h-4 w-4' />
           Create Content
         </Button>
       </DialogTrigger>
@@ -927,7 +927,7 @@ export function HelpContentManager({
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold'>Help Content Manager</h1>
+          <h1 className='font-bold text-2xl'>Help Content Manager</h1>
           <p className='text-muted-foreground'>Manage tutorials, guides, and documentation</p>
         </div>
 
@@ -946,10 +946,10 @@ export function HelpContentManager({
         {/* Content Tab */}
         <TabsContent value='content' className='space-y-6'>
           {/* Filters and Search */}
-          <div className='flex flex-col lg:flex-row gap-4'>
+          <div className='flex flex-col gap-4 lg:flex-row'>
             <div className='flex-1'>
               <div className='relative'>
-                <SearchIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4' />
+                <SearchIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground' />
                 <Input
                   placeholder='Search content...'
                   value={searchQuery}
@@ -1018,18 +1018,18 @@ export function HelpContentManager({
           {/* Content Grid */}
           {isLoading ? (
             <div className='flex items-center justify-center py-12'>
-              <div className='animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full' />
+              <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent' />
             </div>
           ) : (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
               {filteredContent().map(renderContentCard)}
             </div>
           )}
 
           {filteredContent().length === 0 && !isLoading && (
-            <div className='text-center py-12'>
-              <FolderIcon className='w-12 h-12 text-muted-foreground mx-auto mb-4' />
-              <h3 className='text-lg font-semibold text-muted-foreground'>No content found</h3>
+            <div className='py-12 text-center'>
+              <FolderIcon className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+              <h3 className='font-semibold text-lg text-muted-foreground'>No content found</h3>
               <p className='text-muted-foreground'>
                 {searchQuery || selectedCategory !== 'all' || selectedStatus !== 'all'
                   ? 'Try adjusting your filters'
@@ -1041,27 +1041,27 @@ export function HelpContentManager({
 
         {/* Categories Tab */}
         <TabsContent value='categories' className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
             {categories.map((category) => (
               <Card key={category.id}>
                 <CardHeader>
                   <CardTitle className='flex items-center text-lg'>
                     <div
-                      className={`w-8 h-8 rounded-md mr-3 flex items-center justify-center bg-${category.color}-100`}
+                      className={`mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-${category.color}-100`}
                     >
-                      <FolderIcon className={`w-4 h-4 text-${category.color}-600`} />
+                      <FolderIcon className={`h-4 w-4 text-${category.color}-600`} />
                     </div>
                     {category.name}
                   </CardTitle>
-                  <p className='text-sm text-muted-foreground'>{category.description}</p>
+                  <p className='text-muted-foreground text-sm'>{category.description}</p>
                 </CardHeader>
                 <CardContent>
                   <div className='flex items-center justify-between'>
-                    <span className='text-sm text-muted-foreground'>
+                    <span className='text-muted-foreground text-sm'>
                       {category.contentCount} items
                     </span>
                     <Button variant='ghost' size='sm'>
-                      <EditIcon className='w-4 h-4' />
+                      <EditIcon className='h-4 w-4' />
                     </Button>
                   </div>
                 </CardContent>
@@ -1073,35 +1073,35 @@ export function HelpContentManager({
         {/* Analytics Tab */}
         {showAnalytics && (
           <TabsContent value='analytics' className='space-y-6'>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
               <Card>
                 <CardHeader className='pb-2'>
-                  <CardTitle className='text-sm font-medium'>Total Content</CardTitle>
+                  <CardTitle className='font-medium text-sm'>Total Content</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>{content.length}</div>
-                  <p className='text-xs text-muted-foreground'>+2 from last week</p>
+                  <div className='font-bold text-2xl'>{content.length}</div>
+                  <p className='text-muted-foreground text-xs'>+2 from last week</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className='pb-2'>
-                  <CardTitle className='text-sm font-medium'>Total Views</CardTitle>
+                  <CardTitle className='font-medium text-sm'>Total Views</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>
+                  <div className='font-bold text-2xl'>
                     {content.reduce((sum, item) => sum + item.viewCount, 0).toLocaleString()}
                   </div>
-                  <p className='text-xs text-muted-foreground'>+15% from last week</p>
+                  <p className='text-muted-foreground text-xs'>+15% from last week</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className='pb-2'>
-                  <CardTitle className='text-sm font-medium'>Avg. Completion</CardTitle>
+                  <CardTitle className='font-medium text-sm'>Avg. Completion</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>
+                  <div className='font-bold text-2xl'>
                     {Math.round(
                       (content.reduce((sum, item) => sum + item.completionRate, 0) /
                         content.length) *
@@ -1109,21 +1109,21 @@ export function HelpContentManager({
                     )}
                     %
                   </div>
-                  <p className='text-xs text-muted-foreground'>+3% from last week</p>
+                  <p className='text-muted-foreground text-xs'>+3% from last week</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className='pb-2'>
-                  <CardTitle className='text-sm font-medium'>Avg. Rating</CardTitle>
+                  <CardTitle className='font-medium text-sm'>Avg. Rating</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>
+                  <div className='font-bold text-2xl'>
                     {(
                       content.reduce((sum, item) => sum + item.averageRating, 0) / content.length
                     ).toFixed(1)}
                   </div>
-                  <p className='text-xs text-muted-foreground'>+0.2 from last week</p>
+                  <p className='text-muted-foreground text-xs'>+0.2 from last week</p>
                 </CardContent>
               </Card>
             </div>
@@ -1132,12 +1132,12 @@ export function HelpContentManager({
 
         {/* Templates Tab */}
         <TabsContent value='templates' className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
             {templates.map((template) => (
               <Card key={template.id}>
                 <CardHeader>
                   <CardTitle className='text-lg'>{template.name}</CardTitle>
-                  <p className='text-sm text-muted-foreground'>{template.description}</p>
+                  <p className='text-muted-foreground text-sm'>{template.description}</p>
                 </CardHeader>
                 <CardContent>
                   <Badge className='mb-3'>{template.type}</Badge>

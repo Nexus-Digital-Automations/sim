@@ -35,27 +35,31 @@ const predictionRequestSchema = z.object({
   // User context
   userId: z.string().optional(),
   sessionId: z.string().optional(),
-  
+
   // Workflow context
   workflowId: z.string().optional(),
   workflowType: z.string().optional(),
   currentStep: z.string().optional(),
   blockType: z.string().optional(),
-  
+
   // User state
   timeInCurrentStep: z.number().min(0).optional(),
   errorsSinceLastProgress: z.number().min(0).optional(),
   previousErrors: z.array(z.string()).optional(),
   userExpertiseLevel: z.enum(['beginner', 'intermediate', 'expert']).optional(),
-  
+
   // Prediction parameters
-  predictionTypes: z.array(z.enum([
-    'abandonment_risk',
-    'help_need',
-    'error_prediction',
-    'learning_opportunity',
-    'optimization_suggestion'
-  ])).default(['help_need']),
+  predictionTypes: z
+    .array(
+      z.enum([
+        'abandonment_risk',
+        'help_need',
+        'error_prediction',
+        'learning_opportunity',
+        'optimization_suggestion',
+      ])
+    )
+    .default(['help_need']),
   maxSuggestions: z.number().min(1).max(10).default(3),
   minConfidence: z.number().min(0).max(1).default(0.6),
   includeExplanations: z.boolean().default(false),
@@ -66,31 +70,39 @@ const behaviorAnalysisSchema = z.object({
   sessionData: z.object({
     startTime: z.string(),
     currentTime: z.string(),
-    actionsPerformed: z.array(z.object({
-      type: z.string(),
-      timestamp: z.string(),
-      context: z.record(z.any()).optional()
-    })),
-    errorsEncountered: z.array(z.object({
-      type: z.string(),
-      message: z.string(),
-      timestamp: z.string(),
-      resolved: z.boolean().optional()
-    })),
-    helpRequestsMade: z.array(z.object({
-      type: z.string(),
-      query: z.string().optional(),
-      timestamp: z.string(),
-      resolved: z.boolean().optional()
-    }))
+    actionsPerformed: z.array(
+      z.object({
+        type: z.string(),
+        timestamp: z.string(),
+        context: z.record(z.any()).optional(),
+      })
+    ),
+    errorsEncountered: z.array(
+      z.object({
+        type: z.string(),
+        message: z.string(),
+        timestamp: z.string(),
+        resolved: z.boolean().optional(),
+      })
+    ),
+    helpRequestsMade: z.array(
+      z.object({
+        type: z.string(),
+        query: z.string().optional(),
+        timestamp: z.string(),
+        resolved: z.boolean().optional(),
+      })
+    ),
   }),
-  workflowContext: z.object({
-    workflowId: z.string().optional(),
-    workflowType: z.string().optional(),
-    currentStep: z.string().optional(),
-    completionPercentage: z.number().min(0).max(100).optional(),
-    timeSpent: z.number().min(0).optional()
-  }).optional()
+  workflowContext: z
+    .object({
+      workflowId: z.string().optional(),
+      workflowType: z.string().optional(),
+      currentStep: z.string().optional(),
+      completionPercentage: z.number().min(0).max(100).optional(),
+      timeSpent: z.number().min(0).optional(),
+    })
+    .optional(),
 })
 
 const feedbackSchema = z.object({
@@ -101,7 +113,7 @@ const feedbackSchema = z.object({
   userAction: z.enum(['accepted', 'dismissed', 'ignored']),
   actualOutcome: z.string().optional(),
   userComment: z.string().max(500).optional(),
-  timestamp: z.string()
+  timestamp: z.string(),
 })
 
 // ========================
@@ -110,7 +122,12 @@ const feedbackSchema = z.object({
 
 interface PredictionResult {
   id: string
-  type: 'abandonment_risk' | 'help_need' | 'error_prediction' | 'learning_opportunity' | 'optimization_suggestion'
+  type:
+    | 'abandonment_risk'
+    | 'help_need'
+    | 'error_prediction'
+    | 'learning_opportunity'
+    | 'optimization_suggestion'
   confidence: number
   priority: 'low' | 'medium' | 'high' | 'critical'
   trigger: string
@@ -172,19 +189,19 @@ class PredictiveHelpService {
         timeSpentInCurrentStep: context.timeInCurrentStep || 120,
         averageTimeForSimilarSteps: 60,
         errorFrequency: context.errorsSinceLastProgress || 0,
-        helpSeekingPattern: this.determineHelpSeekingPattern(context)
+        helpSeekingPattern: this.determineHelpSeekingPattern(context),
       },
       learningPattern: {
         preferredHelpType: 'interactive',
         responseToInterventions: 'positive',
-        learningVelocity: 'moderate'
+        learningVelocity: 'moderate',
       },
       contextualFactors: {
         timeOfDay: new Date().getHours() < 12 ? 'morning' : 'afternoon',
         workflowComplexity: context.workflowType === 'api_integration' ? 'high' : 'medium',
         sessionLength: 1800, // 30 minutes
-        multitasking: false
-      }
+        multitasking: false,
+      },
     }
 
     return mockInsights
@@ -205,7 +222,7 @@ class PredictiveHelpService {
         behaviorInsights,
         options
       )
-      
+
       if (prediction && prediction.confidence >= options.minConfidence) {
         predictions.push(prediction)
       }
@@ -229,23 +246,23 @@ class PredictiveHelpService {
     options: any
   ): Promise<PredictionResult | null> {
     const baseId = `pred_${Date.now()}_${Math.random().toString(36).slice(2)}`
-    
+
     switch (type) {
       case 'help_need':
         return this.generateHelpNeedPrediction(baseId, context, insights)
-      
+
       case 'abandonment_risk':
         return this.generateAbandonmentRiskPrediction(baseId, context, insights)
-      
+
       case 'error_prediction':
         return this.generateErrorPrediction(baseId, context, insights)
-      
+
       case 'learning_opportunity':
         return this.generateLearningOpportunity(baseId, context, insights)
-      
+
       case 'optimization_suggestion':
         return this.generateOptimizationSuggestion(baseId, context, insights)
-      
+
       default:
         return null
     }
@@ -256,15 +273,16 @@ class PredictiveHelpService {
     context: any,
     insights: UserBehaviorInsights
   ): PredictionResult {
-    const isStrugglingTime = insights.strugglingIndicators.timeSpentInCurrentStep > 
+    const isStrugglingTime =
+      insights.strugglingIndicators.timeSpentInCurrentStep >
       insights.strugglingIndicators.averageTimeForSimilarSteps * 1.5
-    
+
     const hasErrors = insights.strugglingIndicators.errorFrequency > 0
-    
+
     let confidence = 0.5
     if (isStrugglingTime) confidence += 0.3
     if (hasErrors) confidence += 0.2
-    
+
     const priority = confidence > 0.8 ? 'high' : confidence > 0.6 ? 'medium' : 'low'
 
     return {
@@ -275,25 +293,26 @@ class PredictiveHelpService {
       trigger: 'prolonged_time_in_step',
       suggestion: {
         title: 'Need some help with this step?',
-        description: "I noticed you've been working on this step for a while. Would you like some guidance?",
+        description:
+          "I noticed you've been working on this step for a while. Would you like some guidance?",
         actionType: 'offer_assistance',
         content: {
           helpArticleId: `help_${context.blockType || 'general'}_guide`,
-          customMessage: 'I can provide step-by-step guidance or show you common solutions.'
+          customMessage: 'I can provide step-by-step guidance or show you common solutions.',
         },
         timing: {
           suggestNow: confidence > 0.7,
           delaySeconds: confidence <= 0.7 ? 30 : 0,
-          conditions: []
-        }
+          conditions: [],
+        },
       },
       context: {
         workflowStep: context.currentStep,
         blockType: context.blockType,
-        userBehaviorPattern: insights.strugglingIndicators.helpSeekingPattern
+        userBehaviorPattern: insights.strugglingIndicators.helpSeekingPattern,
       },
       explanation: `Time spent (${Math.round(insights.strugglingIndicators.timeSpentInCurrentStep)}s) exceeds average (${insights.strugglingIndicators.averageTimeForSimilarSteps}s)`,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
     }
   }
 
@@ -305,7 +324,7 @@ class PredictiveHelpService {
     const longSession = insights.contextualFactors.sessionLength > 1800 // 30 minutes
     const multipleErrors = insights.strugglingIndicators.errorFrequency > 2
     const slowProgress = insights.strugglingIndicators.timeSpentInCurrentStep > 300 // 5 minutes
-    
+
     let confidence = 0.4
     if (longSession) confidence += 0.2
     if (multipleErrors) confidence += 0.3
@@ -322,19 +341,20 @@ class PredictiveHelpService {
         description: "You've been working hard! Sometimes a short break can help clarify things.",
         actionType: 'recommend_pause',
         content: {
-          customMessage: 'Consider taking a 5-minute break, or I can show you a different approach to this problem.'
+          customMessage:
+            'Consider taking a 5-minute break, or I can show you a different approach to this problem.',
         },
         timing: {
           suggestNow: confidence > 0.8,
-          delaySeconds: confidence <= 0.8 ? 60 : 0
-        }
+          delaySeconds: confidence <= 0.8 ? 60 : 0,
+        },
       },
       context: {
         workflowStep: context.currentStep,
-        userBehaviorPattern: 'extended_struggle_session'
+        userBehaviorPattern: 'extended_struggle_session',
       },
-      explanation: `High stress indicators: long session (${Math.round(insights.contextualFactors.sessionLength/60)}min), ${insights.strugglingIndicators.errorFrequency} errors, slow progress`,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+      explanation: `High stress indicators: long session (${Math.round(insights.contextualFactors.sessionLength / 60)}min), ${insights.strugglingIndicators.errorFrequency} errors, slow progress`,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     }
   }
 
@@ -345,7 +365,7 @@ class PredictiveHelpService {
   ): PredictionResult {
     const errorProne = context.blockType === 'api_call' || context.blockType === 'data_transform'
     const hasRecentErrors = insights.strugglingIndicators.errorFrequency > 0
-    
+
     let confidence = errorProne ? 0.6 : 0.4
     if (hasRecentErrors) confidence += 0.2
 
@@ -361,21 +381,21 @@ class PredictiveHelpService {
         actionType: 'show_help',
         content: {
           helpArticleId: `troubleshooting_${context.blockType}`,
-          customMessage: 'Here are the most common issues and their solutions.'
+          customMessage: 'Here are the most common issues and their solutions.',
         },
         timing: {
           suggestNow: false,
           delaySeconds: 10,
-          conditions: ['before_execution']
-        }
+          conditions: ['before_execution'],
+        },
       },
       context: {
         workflowStep: context.currentStep,
         blockType: context.blockType,
-        errorPattern: 'common_pitfalls'
+        errorPattern: 'common_pitfalls',
       },
       explanation: `Block type "${context.blockType}" has high error rate. Proactive guidance recommended.`,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     }
   }
 
@@ -384,7 +404,8 @@ class PredictiveHelpService {
     context: any,
     insights: UserBehaviorInsights
   ): PredictionResult {
-    const isLearningMoment = context.userExpertiseLevel === 'beginner' || 
+    const isLearningMoment =
+      context.userExpertiseLevel === 'beginner' ||
       insights.learningPattern.learningVelocity === 'fast'
 
     return {
@@ -399,21 +420,21 @@ class PredictiveHelpService {
         actionType: 'suggest_tutorial',
         content: {
           tutorialId: `advanced_${context.blockType}_tutorial`,
-          customMessage: 'This tutorial builds on what you just learned.'
+          customMessage: 'This tutorial builds on what you just learned.',
         },
         timing: {
           suggestNow: false,
           delaySeconds: 30,
-          conditions: ['after_successful_completion']
-        }
+          conditions: ['after_successful_completion'],
+        },
       },
       context: {
         workflowStep: context.currentStep,
         blockType: context.blockType,
-        userBehaviorPattern: insights.learningPattern.learningVelocity
+        userBehaviorPattern: insights.learningPattern.learningVelocity,
       },
       explanation: 'User shows strong learning pattern and would benefit from advanced content',
-      expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString()
+      expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
     }
   }
 
@@ -434,20 +455,20 @@ class PredictiveHelpService {
         actionType: 'show_help',
         content: {
           helpArticleId: 'workflow_optimization_tips',
-          customMessage: 'Here are some ways to streamline this process.'
+          customMessage: 'Here are some ways to streamline this process.',
         },
         timing: {
           suggestNow: false,
           delaySeconds: 120,
-          conditions: ['after_workflow_completion']
-        }
+          conditions: ['after_workflow_completion'],
+        },
       },
       context: {
         workflowStep: context.currentStep,
-        blockType: context.blockType
+        blockType: context.blockType,
       },
       explanation: 'Detected inefficient workflow pattern with optimization potential',
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     }
   }
 
@@ -521,36 +542,29 @@ export async function GET(request: NextRequest) {
     // Get user session
     const session = await getSession()
     const userId = params.userId || session?.user?.id
-    
+
     if (!userId) {
       logger.warn(`[${requestId}] No user ID provided for predictions`)
-      return NextResponse.json(
-        { error: 'User ID required for predictions' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'User ID required for predictions' }, { status: 400 })
     }
 
     // Analyze user behavior
     const behaviorInsights = await predictiveHelpService.analyzeUserBehavior(userId, params)
 
     // Generate predictions
-    const predictions = await predictiveHelpService.generatePredictions(
-      params,
-      behaviorInsights,
-      {
-        predictionTypes: params.predictionTypes,
-        maxSuggestions: params.maxSuggestions,
-        minConfidence: params.minConfidence
-      }
-    )
+    const predictions = await predictiveHelpService.generatePredictions(params, behaviorInsights, {
+      predictionTypes: params.predictionTypes,
+      maxSuggestions: params.maxSuggestions,
+      minConfidence: params.minConfidence,
+    })
 
     const processingTime = Date.now() - startTime
 
     logger.info(`[${requestId}] Predictions generated successfully`, {
-      userId: userId.substring(0, 8) + '...',
+      userId: `${userId.substring(0, 8)}...`,
       predictionsCount: predictions.length,
       processingTimeMs: processingTime,
-      highConfidencePredictions: predictions.filter(p => p.confidence > 0.8).length
+      highConfidencePredictions: predictions.filter((p) => p.confidence > 0.8).length,
     })
 
     const response = {
@@ -558,25 +572,24 @@ export async function GET(request: NextRequest) {
       behaviorInsights: params.includeExplanations ? behaviorInsights : undefined,
       metadata: {
         requestId,
-        userId: userId.substring(0, 8) + '...',
+        userId: `${userId.substring(0, 8)}...`,
         processingTime,
         context: {
           workflowType: params.workflowType,
           currentStep: params.currentStep,
-          blockType: params.blockType
+          blockType: params.blockType,
         },
-        generatedAt: new Date().toISOString()
-      }
+        generatedAt: new Date().toISOString(),
+      },
     }
 
     return NextResponse.json(response, {
       headers: {
         'X-Response-Time': `${processingTime}ms`,
         'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-        'X-Prediction-Count': predictions.length.toString()
-      }
+        'X-Prediction-Count': predictions.length.toString(),
+      },
     })
-
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Predictions request failed`, {
@@ -586,11 +599,11 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(
-      { 
+      {
         error: 'Predictions generation failed',
         requestId,
-        processingTime 
-      }, 
+        processingTime,
+      },
       { status: 500 }
     )
   }
@@ -604,7 +617,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { pathname } = new URL(request.url)
-    
+
     if (pathname.endsWith('/behavior-analysis')) {
       return handleBehaviorAnalysis(request, requestId)
     }
@@ -639,10 +652,13 @@ async function handleBehaviorAnalysis(request: NextRequest, requestId: string) {
     // Analyze behavior and generate real-time predictions
     const behaviorInsights = await predictiveHelpService.analyzeUserBehavior(userId, {
       ...workflowContext,
-      timeInCurrentStep: sessionData.currentTime ? 
-        (new Date(sessionData.currentTime).getTime() - new Date(sessionData.startTime).getTime()) / 1000 : 0,
-      errorsSinceLastProgress: sessionData.errorsEncountered.filter(e => !e.resolved).length,
-      previousErrors: sessionData.errorsEncountered.map(e => e.type)
+      timeInCurrentStep: sessionData.currentTime
+        ? (new Date(sessionData.currentTime).getTime() -
+            new Date(sessionData.startTime).getTime()) /
+          1000
+        : 0,
+      errorsSinceLastProgress: sessionData.errorsEncountered.filter((e) => !e.resolved).length,
+      previousErrors: sessionData.errorsEncountered.map((e) => e.type),
     })
 
     const predictions = await predictiveHelpService.generatePredictions(
@@ -651,7 +667,7 @@ async function handleBehaviorAnalysis(request: NextRequest, requestId: string) {
       {
         predictionTypes: ['help_need', 'abandonment_risk', 'error_prediction'],
         maxSuggestions: 5,
-        minConfidence: 0.5
+        minConfidence: 0.5,
       }
     )
 
@@ -662,19 +678,18 @@ async function handleBehaviorAnalysis(request: NextRequest, requestId: string) {
         insights: behaviorInsights,
         predictions,
         riskFactors: {
-          abandonmentRisk: predictions.find(p => p.type === 'abandonment_risk')?.confidence || 0,
-          helpNeeded: predictions.find(p => p.type === 'help_need')?.confidence || 0,
-          errorRisk: predictions.find(p => p.type === 'error_prediction')?.confidence || 0
-        }
+          abandonmentRisk: predictions.find((p) => p.type === 'abandonment_risk')?.confidence || 0,
+          helpNeeded: predictions.find((p) => p.type === 'help_need')?.confidence || 0,
+          errorRisk: predictions.find((p) => p.type === 'error_prediction')?.confidence || 0,
+        },
       },
-      recommendations: predictions.filter(p => p.suggestion.timing.suggestNow),
+      recommendations: predictions.filter((p) => p.suggestion.timing.suggestNow),
       metadata: {
         requestId,
         processingTime,
-        analysisTimestamp: new Date().toISOString()
-      }
+        analysisTimestamp: new Date().toISOString(),
+      },
     })
-
   } catch (error) {
     logger.error(`[${requestId}] Behavior analysis failed`, { error })
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 })
@@ -702,22 +717,21 @@ async function handlePredictionFeedback(request: NextRequest, requestId: string)
       predictionId: feedback.predictionId,
       wasHelpful: feedback.wasHelpful,
       wasAccurate: feedback.wasAccurate,
-      userAction: feedback.userAction
+      userAction: feedback.userAction,
     })
 
     return NextResponse.json({
       success: true,
       message: 'Feedback recorded successfully',
-      thanksMessage: feedback.wasHelpful ? 
-        'Thank you! Your feedback helps us improve our assistance.' :
-        'Thanks for the feedback. We\'ll work on providing better suggestions.',
+      thanksMessage: feedback.wasHelpful
+        ? 'Thank you! Your feedback helps us improve our assistance.'
+        : "Thanks for the feedback. We'll work on providing better suggestions.",
       metadata: {
         requestId,
         feedbackId: crypto.randomUUID().slice(0, 8),
-        processedAt: new Date().toISOString()
-      }
+        processedAt: new Date().toISOString(),
+      },
     })
-
   } catch (error) {
     logger.error(`[${requestId}] Prediction feedback failed`, { error })
     return NextResponse.json({ error: 'Feedback processing failed' }, { status: 500 })

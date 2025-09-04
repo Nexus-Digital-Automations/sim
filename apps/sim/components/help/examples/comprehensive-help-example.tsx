@@ -454,7 +454,7 @@ export function ComprehensiveHelpExample() {
     <div className='mx-auto max-w-6xl p-6'>
       <div className='mb-8'>
         <h1 className='mb-4 font-bold text-3xl'>Help System Integration Example</h1>
-        <p className='text-muted-foreground text-lg'>
+        <p className='text-lg text-muted-foreground'>
           A comprehensive demonstration of all help system components working together.
         </p>
       </div>

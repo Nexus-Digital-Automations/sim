@@ -376,52 +376,52 @@ export function VideoTutorialSystem({
     if (!showAnalytics || !systemMetrics) return null
 
     return (
-      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6'>
+      <div className='mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6'>
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium flex items-center'>
-              <UsersIcon className='w-4 h-4 mr-2' />
+            <CardTitle className='flex items-center font-medium text-sm'>
+              <UsersIcon className='mr-2 h-4 w-4' />
               Users
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{systemMetrics.totalUsers.toLocaleString()}</div>
+            <div className='font-bold text-2xl'>{systemMetrics.totalUsers.toLocaleString()}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium flex items-center'>
-              <PlayCircleIcon className='w-4 h-4 mr-2' />
+            <CardTitle className='flex items-center font-medium text-sm'>
+              <PlayCircleIcon className='mr-2 h-4 w-4' />
               Tutorials
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{systemMetrics.activeTutorials}</div>
+            <div className='font-bold text-2xl'>{systemMetrics.activeTutorials}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium flex items-center'>
-              <BookOpenIcon className='w-4 h-4 mr-2' />
+            <CardTitle className='flex items-center font-medium text-sm'>
+              <BookOpenIcon className='mr-2 h-4 w-4' />
               Guides
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{systemMetrics.activeGuides}</div>
+            <div className='font-bold text-2xl'>{systemMetrics.activeGuides}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium flex items-center'>
-              <TrendingUpIcon className='w-4 h-4 mr-2' />
+            <CardTitle className='flex items-center font-medium text-sm'>
+              <TrendingUpIcon className='mr-2 h-4 w-4' />
               Completion
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
+            <div className='font-bold text-2xl'>
               {Math.round(systemMetrics.completionRate * 100)}%
             </div>
           </CardContent>
@@ -429,19 +429,19 @@ export function VideoTutorialSystem({
 
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Engagement</CardTitle>
+            <CardTitle className='font-medium text-sm'>Engagement</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{systemMetrics.averageEngagement}/5</div>
+            <div className='font-bold text-2xl'>{systemMetrics.averageEngagement}/5</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium'>Content</CardTitle>
+            <CardTitle className='font-medium text-sm'>Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{systemMetrics.contentLibrarySize}</div>
+            <div className='font-bold text-2xl'>{systemMetrics.contentLibrarySize}</div>
           </CardContent>
         </Card>
       </div>
@@ -455,50 +455,50 @@ export function VideoTutorialSystem({
       <Card className='mb-6'>
         <CardHeader>
           <CardTitle className='flex items-center'>
-            <TrendingUpIcon className='w-5 h-5 mr-2' />
+            <TrendingUpIcon className='mr-2 h-5 w-5' />
             Your Learning Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-4'>
+          <div className='mb-4 grid grid-cols-2 gap-4 md:grid-cols-4'>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-blue-600'>
+              <div className='font-bold text-2xl text-blue-600'>
                 {userProgress.totalTutorialsCompleted}
               </div>
-              <div className='text-sm text-muted-foreground'>Tutorials Completed</div>
+              <div className='text-muted-foreground text-sm'>Tutorials Completed</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-green-600'>
+              <div className='font-bold text-2xl text-green-600'>
                 {userProgress.totalGuidesCompleted}
               </div>
-              <div className='text-sm text-muted-foreground'>Guides Completed</div>
+              <div className='text-muted-foreground text-sm'>Guides Completed</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-orange-600'>
+              <div className='font-bold text-2xl text-orange-600'>
                 {userProgress.achievements.length}
               </div>
-              <div className='text-sm text-muted-foreground'>Achievements</div>
+              <div className='text-muted-foreground text-sm'>Achievements</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-purple-600'>{userProgress.streakDays}</div>
-              <div className='text-sm text-muted-foreground'>Day Streak</div>
+              <div className='font-bold text-2xl text-purple-600'>{userProgress.streakDays}</div>
+              <div className='text-muted-foreground text-sm'>Day Streak</div>
             </div>
           </div>
 
           {personalizedLearningPaths &&
             Object.keys(userProgress.learningPathProgress).length > 0 && (
               <div>
-                <h4 className='font-semibold mb-2'>Learning Path Progress</h4>
+                <h4 className='mb-2 font-semibold'>Learning Path Progress</h4>
                 <div className='space-y-2'>
                   {Object.entries(userProgress.learningPathProgress).map(([pathId, progress]) => (
                     <div key={pathId}>
-                      <div className='flex justify-between text-sm mb-1'>
+                      <div className='mb-1 flex justify-between text-sm'>
                         <span className='capitalize'>{pathId.replace('-', ' ')}</span>
                         <span>{Math.round(progress * 100)}%</span>
                       </div>
-                      <div className='w-full bg-gray-200 rounded-full h-2'>
+                      <div className='h-2 w-full rounded-full bg-gray-200'>
                         <div
-                          className='bg-blue-600 h-2 rounded-full transition-all duration-300'
+                          className='h-2 rounded-full bg-blue-600 transition-all duration-300'
                           style={{ width: `${progress * 100}%` }}
                         />
                       </div>
@@ -520,11 +520,11 @@ export function VideoTutorialSystem({
       <Card className='mb-6'>
         <CardHeader>
           <CardTitle className='flex items-center'>
-            <HelpCircleIcon className='w-5 h-5 mr-2' />
+            <HelpCircleIcon className='mr-2 h-5 w-5' />
             Recommended for You
           </CardTitle>
           {workflowContext && (
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Based on your current workflow: {workflowContext.workflowState}
             </p>
           )}
@@ -532,16 +532,16 @@ export function VideoTutorialSystem({
         <CardContent>
           <div className='space-y-3'>
             {recommendedContent.slice(0, 3).map((rec) => (
-              <div key={rec.id} className='flex items-center justify-between p-3 border rounded-lg'>
+              <div key={rec.id} className='flex items-center justify-between rounded-lg border p-3'>
                 <div className='flex items-center space-x-3'>
                   {rec.type === 'tutorial' ? (
-                    <PlayCircleIcon className='w-5 h-5 text-blue-600' />
+                    <PlayCircleIcon className='h-5 w-5 text-blue-600' />
                   ) : (
-                    <BookOpenIcon className='w-5 h-5 text-green-600' />
+                    <BookOpenIcon className='h-5 w-5 text-green-600' />
                   )}
                   <div>
                     <h4 className='font-medium'>{rec.title}</h4>
-                    <p className='text-sm text-muted-foreground'>{rec.reason}</p>
+                    <p className='text-muted-foreground text-sm'>{rec.reason}</p>
                   </div>
                 </div>
                 <div className='flex items-center space-x-2'>
@@ -587,22 +587,22 @@ export function VideoTutorialSystem({
         <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
           <TabsList>
             <TabsTrigger value='tutorials' className='flex items-center'>
-              <PlayCircleIcon className='w-4 h-4 mr-2' />
+              <PlayCircleIcon className='mr-2 h-4 w-4' />
               Video Tutorials
             </TabsTrigger>
             <TabsTrigger value='guides' className='flex items-center'>
-              <BookOpenIcon className='w-4 h-4 mr-2' />
+              <BookOpenIcon className='mr-2 h-4 w-4' />
               Interactive Guides
             </TabsTrigger>
             {showAnalytics && (
               <TabsTrigger value='analytics' className='flex items-center'>
-                <TrendingUpIcon className='w-4 h-4 mr-2' />
+                <TrendingUpIcon className='mr-2 h-4 w-4' />
                 Analytics
               </TabsTrigger>
             )}
             {(adminMode || enableContentManagement) && (
               <TabsTrigger value='management' className='flex items-center'>
-                <SettingsIcon className='w-4 h-4 mr-2' />
+                <SettingsIcon className='mr-2 h-4 w-4' />
                 Content Management
               </TabsTrigger>
             )}
@@ -636,7 +636,7 @@ export function VideoTutorialSystem({
           {showAnalytics && (
             <TabsContent value='analytics'>
               <div className='space-y-6'>
-                <h2 className='text-xl font-semibold'>Learning Analytics</h2>
+                <h2 className='font-semibold text-xl'>Learning Analytics</h2>
                 <p className='text-muted-foreground'>
                   Comprehensive analytics and insights will be implemented here. This would include
                   detailed metrics on user engagement, content performance, learning outcomes, and
@@ -644,7 +644,7 @@ export function VideoTutorialSystem({
                 </p>
 
                 {/* Placeholder for analytics dashboard */}
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   <Card>
                     <CardHeader>
                       <CardTitle>Content Performance</CardTitle>
