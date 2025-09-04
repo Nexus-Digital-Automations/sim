@@ -727,6 +727,7 @@ class EntityExtractor {
  */
 class ResponseGenerator {
   private logger: Logger
+  private claudeApiClient: ClaudeAPIClient
 
   constructor(
     private config: ChatbotConfig,
@@ -734,6 +735,7 @@ class ResponseGenerator {
     logger: Logger
   ) {
     this.logger = logger.child({ service: 'ResponseGenerator' })
+    this.claudeApiClient = new ClaudeAPIClient(config.claudeApiKey, logger)
   }
 
   async generate(
@@ -741,32 +743,63 @@ class ResponseGenerator {
     context: ConversationContext,
     operationId: string
   ): Promise<ChatResponse> {
-    // Find relevant content using semantic search
-    const relatedContent = await this.findRelatedContent(message, context)
+    const startTime = Date.now()
+    
+    try {
+      // Find relevant content using semantic search
+      const relatedContent = await this.findRelatedContent(message, context)
 
-    // Generate response using Claude AI
-    const response = await this.generateClaudeResponse(
-      message,
-      context,
-      relatedContent,
-      operationId
-    )
+      // Build comprehensive context for Claude
+      const claudeContext = this.buildClaudeContext(message, context, relatedContent)
 
-    // Generate suggested actions based on intent
-    const suggestedActions = this.generateSuggestedActions(message.intent)
+      // Generate response using Claude AI with streaming support
+      const response = await this.generateClaudeResponse(
+        message.content,
+        claudeContext,
+        operationId
+      )
 
-    return {
-      message: response,
-      intent: message.intent,
-      suggestedActions,
-      relatedContent: relatedContent.map((result) => ({
-        id: result.id,
-        title: result.title,
-        type: 'article' as const,
-        url: `/help/${result.id}`,
-        relevanceScore: result.score,
-      })),
-      conversationState: this.determineConversationState(message, context),
+      // Generate suggested actions based on intent and context
+      const suggestedActions = await this.generateIntelligentSuggestedActions(
+        message.intent,
+        context,
+        response
+      )
+
+      const processingTime = Date.now() - startTime
+
+      this.logger.info(`[${operationId}] Response generation completed`, {
+        processingTimeMs: processingTime,
+        responseLength: response.length,
+        suggestedActionsCount: suggestedActions.length,
+        relatedContentCount: relatedContent.length
+      })
+
+      return {
+        message: response,
+        intent: message.intent,
+        suggestedActions,
+        relatedContent: relatedContent.map((result) => ({
+          id: result.id,
+          title: result.title,
+          type: 'article' as const,
+          url: `/help/${result.id}`,
+          relevanceScore: result.score,
+        })),
+        conversationState: this.determineConversationState(message, context, response),
+        metadata: {
+          processingTime,
+          operationId,
+          modelUsed: this.config.model,
+          contextSize: claudeContext.length
+        }
+      }
+    } catch (error) {
+      this.logger.error(`[${operationId}] Response generation failed`, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime: Date.now() - startTime
+      })
+      throw error
     }
   }
 
@@ -781,29 +814,211 @@ class ResponseGenerator {
     return await this.semanticSearch.search(message.content, searchContext, { maxResults: 5 })
   }
 
+  private buildClaudeContext(
+    message: ConversationMessage, 
+    context: ConversationContext, 
+    relatedContent: any[]
+  ): string {
+    const contextParts = []
+    
+    // Add conversation history for context
+    if (context.conversationHistory.length > 0) {
+      const recentHistory = context.conversationHistory.slice(-5) // Last 5 messages
+      contextParts.push(`Previous conversation:\n${recentHistory
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n')}`)
+    }
+    
+    // Add workflow context
+    if (context.workflowContext) {
+      contextParts.push(`Current workflow context:
+- Type: ${context.workflowContext.type}
+- Current step: ${context.workflowContext.currentStep}
+- Completed steps: ${context.workflowContext.completedSteps?.join(', ') || 'none'}
+- Recent errors: ${context.workflowContext.errors?.length || 0} errors
+- Time spent: ${Math.round((context.workflowContext.timeSpent || 0) / 1000)}s`)
+    }
+    
+    // Add user profile context
+    if (context.userProfile) {
+      contextParts.push(`User profile:
+- Expertise level: ${context.userProfile.expertiseLevel || 'unknown'}
+- Previous interactions: ${context.userProfile.previousInteractions || 0}
+- Common issues: ${context.userProfile.commonIssues?.join(', ') || 'none'}`)
+    }
+    
+    // Add related content context
+    if (relatedContent.length > 0) {
+      contextParts.push(`Relevant documentation:
+${relatedContent.slice(0, 3).map(content => `- ${content.title} (score: ${content.score})`).join('\n')}`)
+    }
+    
+    return contextParts.join('\n\n')
+  }
+
   private async generateClaudeResponse(
-    message: ConversationMessage,
-    context: ConversationContext,
-    relatedContent: any[],
+    message: string,
+    context: string,
     operationId: string
   ): Promise<string> {
-    // This would integrate with Claude API for sophisticated response generation
-    // For now, providing template-based responses
-
-    if (message.intent?.name === 'request_help') {
-      return "I'd be happy to help you! Based on your question, I can provide guidance on the topic you're asking about. Let me know if you need specific information or if you'd like me to walk you through any steps."
+    try {
+      const prompt = this.buildClaudePrompt(message, context)
+      
+      const response = await this.claudeApiClient.generateResponse({
+        model: this.config.model,
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+      
+      return response.content || this.getFallbackResponse(message)
+    } catch (error) {
+      this.logger.error(`[${operationId}] Claude API call failed`, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      return this.getFallbackResponse(message)
     }
+  }
+  
+  private buildClaudePrompt(message: string, context: string): string {
+    return `You are an AI assistant helping users with workflow automation, integrations, and troubleshooting. You have access to the following context:
 
-    if (message.intent?.name === 'report_issue') {
-      return "I understand you're experiencing an issue. Let me help you troubleshoot this. Can you provide more details about what happened and any error messages you saw? I'll guide you through the resolution steps."
+${context}
+
+Current user message: "${message}"
+
+Please provide a helpful, accurate, and contextually relevant response. Be concise but thorough. If you can provide specific steps or solutions, please do so. If you need more information, ask clarifying questions.
+
+Response:`
+  }
+  
+  private getFallbackResponse(message: string): string {
+    const normalizedMessage = message.toLowerCase()
+    
+    if (normalizedMessage.includes('error') || normalizedMessage.includes('problem')) {
+      return "I understand you're experiencing an issue. Can you provide more details about what happened and any error messages you saw? I'll help you troubleshoot this step by step."
     }
-
-    if (message.intent?.name === 'request_tutorial') {
-      return 'I can help you learn how to do that! Based on your question, I can provide step-by-step guidance. Would you like me to walk you through the process or would you prefer to see some related documentation first?'
+    
+    if (normalizedMessage.includes('how to') || normalizedMessage.includes('tutorial')) {
+      return "I'd be happy to guide you through that process! Can you tell me more specifically what you're trying to accomplish? I can provide step-by-step instructions."
     }
+    
+    return "I'm here to help with your workflow automation needs. Could you provide more details about what you're trying to accomplish? I can offer specific guidance based on your situation."
+  }
 
-    // Default response
-    return "I'm here to help with your workflow automation needs. Could you please provide more details about what you're trying to accomplish? I can offer specific guidance based on your situation."
+  private async generateIntelligentSuggestedActions(
+    intent: DetectedIntent | undefined,
+    context: ConversationContext,
+    response: string
+  ): Promise<SuggestedAction[]> {
+    const actions: SuggestedAction[] = []
+    
+    // Intent-based actions
+    if (intent) {
+      switch (intent.name) {
+        case 'request_help':
+          actions.push({
+            type: 'documentation',
+            title: 'Browse Help Center',
+            description: 'Explore comprehensive documentation',
+            action: '/help/docs',
+            priority: 1,
+          })
+          break
+          
+        case 'report_issue':
+          actions.push({
+            type: 'tutorial',
+            title: 'Troubleshooting Guide',
+            description: 'Step-by-step problem resolution',
+            action: '/help/troubleshooting',
+            priority: 1,
+          })
+          if (context.workflowContext?.errors && context.workflowContext.errors.length > 0) {
+            actions.push({
+              type: 'tutorial',
+              title: 'View Error Details',
+              description: 'Analyze specific error information',
+              action: 'show_error_details',
+              priority: 2,
+            })
+          }
+          break
+          
+        case 'request_tutorial':
+          actions.push({
+            type: 'tutorial',
+            title: 'Interactive Tutorial',
+            description: 'Learn with hands-on examples',
+            action: '/help/tutorials',
+            priority: 1,
+          })
+          break
+          
+        case 'configuration_help':
+          actions.push({
+            type: 'documentation',
+            title: 'Configuration Guide',
+            description: 'Setup and configuration instructions',
+            action: '/help/configuration',
+            priority: 1,
+          })
+          break
+      }
+    }
+    
+    // Context-based actions
+    if (context.workflowContext) {
+      const workflowType = context.workflowContext.type
+      
+      actions.push({
+        type: 'documentation',
+        title: `${workflowType} Documentation`,
+        description: `Specific help for ${workflowType} workflows`,
+        action: `/help/workflows/${workflowType}`,
+        priority: 2,
+      })
+      
+      // If user is stuck on a step
+      if (context.workflowContext.timeSpent && context.workflowContext.timeSpent > 300000) {
+        actions.push({
+          type: 'tutorial',
+          title: 'Video Tutorial',
+          description: 'Watch a step-by-step video guide',
+          action: `/help/videos/${workflowType}`,
+          priority: 1,
+        })
+      }
+    }
+    
+    // User profile-based actions
+    if (context.userProfile?.expertiseLevel === 'beginner') {
+      actions.push({
+        type: 'tutorial',
+        title: 'Getting Started Guide',
+        description: 'Beginner-friendly introduction',
+        action: '/help/getting-started',
+        priority: 3,
+      })
+    }
+    
+    // Always offer support contact for complex issues
+    if (intent?.name === 'report_issue' || (context.workflowContext?.errors?.length || 0) > 2) {
+      actions.push({
+        type: 'contact_support',
+        title: 'Contact Support',
+        description: 'Get help from our support team',
+        action: 'contact_support',
+        priority: 4,
+      })
+    }
+    
+    return actions.sort((a, b) => a.priority - b.priority)
   }
 
   private generateSuggestedActions(intent: DetectedIntent | undefined): SuggestedAction[] {
@@ -848,27 +1063,162 @@ class ResponseGenerator {
 
   private determineConversationState(
     message: ConversationMessage,
-    context: ConversationContext
+    context: ConversationContext,
+    response: string
   ): ConversationState {
-    // Simple state determination logic
-    // In production, this would be more sophisticated
-
-    if (message.intent?.name === 'report_issue') {
-      return {
-        phase: 'problem_identification',
-        confidence: 0.8,
-        needsEscalation: false,
-        resolvedIssues: [],
-        pendingActions: ['gather_details'],
+    const conversationLength = context.conversationHistory.length
+    const hasErrors = context.workflowContext?.errors?.length || 0 > 0
+    const timeSpent = context.workflowContext?.timeSpent || 0
+    
+    // Determine phase based on conversation flow and context
+    let phase: ConversationState['phase'] = 'greeting'
+    let confidence = 0.7
+    let needsEscalation = false
+    const resolvedIssues: string[] = []
+    const pendingActions: string[] = []
+    
+    // Phase determination logic
+    if (conversationLength <= 1) {
+      phase = 'greeting'
+      confidence = 0.9
+    } else if (message.intent?.name === 'report_issue' || hasErrors) {
+      phase = 'problem_identification'
+      confidence = 0.8
+      
+      if (hasErrors && timeSpent > 600000) { // 10 minutes
+        needsEscalation = true
+        pendingActions.push('consider_support_escalation')
+      }
+      
+      pendingActions.push('gather_error_details', 'analyze_root_cause')
+    } else if (message.intent?.name === 'request_tutorial' || 
+               message.intent?.name === 'configuration_help') {
+      phase = 'solution_exploration'
+      confidence = 0.85
+      pendingActions.push('provide_guidance', 'check_understanding')
+    } else if (response.includes('step') || response.includes('guide')) {
+      phase = 'implementation'
+      confidence = 0.75
+      pendingActions.push('monitor_progress', 'provide_assistance')
+    } else {
+      // Determine based on conversation context
+      const hasQuestions = response.includes('?')
+      const hasInstructions = response.includes('step') || response.includes('try')
+      
+      if (hasQuestions && conversationLength < 3) {
+        phase = 'problem_identification'
+        confidence = 0.7
+      } else if (hasInstructions) {
+        phase = 'implementation'
+        confidence = 0.8
+      } else {
+        phase = 'solution_exploration'
+        confidence = 0.75
       }
     }
-
+    
+    // Check for resolution indicators
+    if (response.toLowerCase().includes('solved') || 
+        response.toLowerCase().includes('resolved') ||
+        response.toLowerCase().includes('working now')) {
+      phase = 'resolution'
+      confidence = 0.9
+      if (message.intent?.name === 'report_issue') {
+        resolvedIssues.push('reported_issue')
+      }
+    }
+    
+    // Escalation triggers
+    if (conversationLength > 10 || 
+        (hasErrors && timeSpent > 1200000) || // 20 minutes
+        context.workflowContext?.errors?.filter(e => !e.resolved).length || 0 > 3) {
+      needsEscalation = true
+    }
+    
     return {
-      phase: 'solution_exploration',
-      confidence: 0.7,
-      needsEscalation: false,
-      resolvedIssues: [],
-      pendingActions: [],
+      phase,
+      confidence,
+      needsEscalation,
+      resolvedIssues,
+      pendingActions,
+    }
+  }
+}
+
+/**
+ * Claude API Client for generating sophisticated conversational responses
+ */
+class ClaudeAPIClient {
+  private logger: Logger
+
+  constructor(
+    private apiKey: string,
+    logger: Logger
+  ) {
+    this.logger = logger.child({ service: 'ClaudeAPIClient' })
+  }
+
+  async generateResponse(request: {
+    model: string
+    max_tokens: number
+    temperature: number
+    messages: Array<{
+      role: 'user' | 'assistant'
+      content: string
+    }>
+  }): Promise<{ content: string }> {
+    const operationId = Math.random().toString(36).substring(2, 15)
+    const startTime = Date.now()
+
+    this.logger.info(`[${operationId}] Generating Claude response`, {
+      model: request.model,
+      maxTokens: request.max_tokens,
+      temperature: request.temperature,
+      messageCount: request.messages.length,
+    })
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: request.model,
+          max_tokens: request.max_tokens,
+          temperature: request.temperature,
+          messages: request.messages,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Claude API error: ${response.status} - ${errorData.error?.message || response.statusText}`)
+      }
+
+      const data = await response.json()
+      const processingTime = Date.now() - startTime
+
+      this.logger.info(`[${operationId}] Claude response generated successfully`, {
+        responseLength: data.content?.[0]?.text?.length || 0,
+        usage: data.usage,
+        processingTimeMs: processingTime,
+      })
+
+      return {
+        content: data.content?.[0]?.text || '',
+      }
+    } catch (error) {
+      const processingTime = Date.now() - startTime
+
+      this.logger.error(`[${operationId}] Claude API call failed`, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTimeMs: processingTime,
+      })
+
+      throw error
     }
   }
 }

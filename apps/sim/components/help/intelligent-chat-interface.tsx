@@ -166,6 +166,9 @@ export function IntelligentChatInterface({
   const [suggestedActions, setSuggestedActions] = useState<SuggestedAction[]>([])
   const [relatedContent, setRelatedContent] = useState<RelatedContent[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [streamingMessage, setStreamingMessage] = useState('')
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connected')
 
   // Refs for DOM manipulation
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -206,27 +209,106 @@ export function IntelligentChatInterface({
   // ========================
 
   const sendChatMessage = async (message: string): Promise<ChatResponse> => {
-    const response = await fetch('/api/help/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        sessionId,
-        context: {
-          workflowContext,
-          userProfile,
+    setConnectionStatus('connecting')
+    
+    try {
+      const response = await fetch('/api/help/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      }),
-    })
+        body: JSON.stringify({
+          message,
+          sessionId,
+          context: {
+            workflowContext,
+            userProfile,
+          },
+          options: {
+            enableStreaming: true,
+            maxResponseTime: 2000,
+          }
+        }),
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Failed to send message')
+      if (!response.ok) {
+        setConnectionStatus('disconnected')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to send message')
+      }
+
+      setConnectionStatus('connected')
+      return await response.json()
+    } catch (error) {
+      setConnectionStatus('disconnected')
+      throw error
     }
+  }
 
-    return await response.json()
+  const sendChatMessageWithStreaming = async (message: string): Promise<void> => {
+    setIsStreaming(true)
+    setStreamingMessage('')
+    
+    try {
+      const response = await fetch('/api/help/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          sessionId,
+          context: {
+            workflowContext,
+            userProfile,
+          },
+          options: {
+            stream: true,
+          }
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to start streaming response')
+      }
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let streamedContent = ''
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value)
+          const lines = chunk.split('\n')
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                if (data.type === 'content') {
+                  streamedContent += data.content
+                  setStreamingMessage(streamedContent)
+                } else if (data.type === 'done') {
+                  // Handle completion
+                  break
+                }
+              } catch (e) {
+                // Skip malformed JSON
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming failed:', error)
+      // Fallback to regular message sending
+      throw error
+    } finally {
+      setIsStreaming(false)
+    }
   }
 
   const fetchProactiveSuggestions = async () => {
@@ -296,7 +378,7 @@ export function IntelligentChatInterface({
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!inputMessage.trim() || isLoading) return
+    if (!inputMessage.trim() || isLoading || isStreaming) return
 
     const userMessage: ChatMessage = {
       id: `msg_${Date.now()}_user`,
@@ -306,35 +388,96 @@ export function IntelligentChatInterface({
     }
 
     setMessages((prev) => [...prev, userMessage])
+    const messageContent = inputMessage.trim()
     setInputMessage('')
     setIsLoading(true)
-    setIsTyping(true)
     setError(null)
 
-    try {
-      const response = await sendChatMessage(userMessage.content)
-
-      if (response.success) {
-        const assistantMessage: ChatMessage = {
-          id: `msg_${Date.now()}_assistant`,
-          role: 'assistant',
-          content: response.message,
-          timestamp: new Date(),
-          intent: response.intent,
-          metadata: response.metadata,
-        }
-
-        setMessages((prev) => [...prev, assistantMessage])
-        setSessionId(response.sessionId)
-        setCurrentState(response.conversationState)
-        setSuggestedActions(response.suggestedActions)
-        setRelatedContent(response.relatedContent)
+    // Show typing indicator with realistic delay
+    const typingDelay = Math.min(messageContent.length * 20 + 500, 2000)
+    setTimeout(() => {
+      if (isLoading) {
+        setIsTyping(true)
       }
+    }, 300)
+
+    try {
+      // Try streaming first, fallback to regular if fails
+      let response: ChatResponse
+      let assistantMessage: ChatMessage
+
+      try {
+        // Attempt streaming response
+        await sendChatMessageWithStreaming(messageContent)
+        
+        if (streamingMessage) {
+          // Create message from streamed content
+          assistantMessage = {
+            id: `msg_${Date.now()}_assistant`,
+            role: 'assistant',
+            content: streamingMessage,
+            timestamp: new Date(),
+            metadata: { streamingUsed: true },
+          }
+          
+          // Get additional response data
+          response = await sendChatMessage(messageContent)
+          assistantMessage.intent = response.intent
+          assistantMessage.metadata = { ...assistantMessage.metadata, ...response.metadata }
+        } else {
+          throw new Error('Streaming failed')
+        }
+      } catch (streamError) {
+        console.warn('Streaming failed, falling back to regular API:', streamError)
+        
+        // Fallback to regular API
+        response = await sendChatMessage(messageContent)
+        
+        if (response.success) {
+          assistantMessage = {
+            id: `msg_${Date.now()}_assistant`,
+            role: 'assistant',
+            content: response.message,
+            timestamp: new Date(),
+            intent: response.intent,
+            metadata: { ...response.metadata, streamingUsed: false },
+          }
+        } else {
+          throw new Error(response.message || 'Failed to get response')
+        }
+      }
+
+      // Add assistant message to conversation
+      setMessages((prev) => [...prev, assistantMessage])
+      
+      // Update conversation state
+      if (response.sessionId) setSessionId(response.sessionId)
+      if (response.conversationState) setCurrentState(response.conversationState)
+      if (response.suggestedActions) setSuggestedActions(response.suggestedActions)
+      if (response.relatedContent) setRelatedContent(response.relatedContent)
+
+      // Show success indicator briefly
+      setConnectionStatus('connected')
+      
     } catch (error) {
+      console.error('Message sending failed:', error)
       setError(error instanceof Error ? error.message : 'Failed to send message')
+      setConnectionStatus('disconnected')
+      
+      // Add error message to conversation
+      const errorMessage: ChatMessage = {
+        id: `msg_${Date.now()}_error`,
+        role: 'assistant',
+        content: "I'm sorry, I encountered an issue processing your message. Please try again.",
+        timestamp: new Date(),
+        metadata: { error: true },
+      }
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
       setIsTyping(false)
+      setIsStreaming(false)
+      setStreamingMessage('')
     }
   }
 
@@ -489,6 +632,18 @@ export function IntelligentChatInterface({
                 {currentState.phase.replace('_', ' ')}
               </Badge>
             )}
+            {/* Connection status indicator */}
+            <div className='flex items-center gap-1 text-xs'>
+              <div
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  connectionStatus === 'connected' && 'bg-green-500',
+                  connectionStatus === 'connecting' && 'bg-yellow-500 animate-pulse',
+                  connectionStatus === 'disconnected' && 'bg-red-500'
+                )}
+              />
+              <span className='text-muted-foreground capitalize'>{connectionStatus}</span>
+            </div>
           </CardTitle>
 
           <div className='flex items-center gap-2'>
@@ -513,12 +668,39 @@ export function IntelligentChatInterface({
           <div className='space-y-4'>
             {messages.map(renderMessage)}
 
-            {isTyping && (
+            {/* Streaming message display */}
+            {isStreaming && streamingMessage && (
+              <div className='mr-8 flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50'>
+                <Bot className='h-6 w-6 text-purple-600' />
+                <div className='min-w-0 flex-1'>
+                  <div className='mb-1 flex items-center gap-2'>
+                    <span className='font-medium text-sm'>AI Assistant</span>
+                    <span className='text-muted-foreground text-xs'>streaming...</span>
+                    <div className='flex gap-1'>
+                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse'></div>
+                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse delay-150'></div>
+                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse delay-300'></div>
+                    </div>
+                  </div>
+                  <div className='prose prose-sm dark:prose-invert max-w-none'>
+                    {streamingMessage}
+                    <span className='animate-pulse'>|</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Typing indicator */}
+            {(isTyping || isLoading) && !isStreaming && (
               <div className='mr-8 flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50'>
                 <Bot className='h-6 w-6 text-purple-600' />
                 <div className='flex items-center gap-1'>
-                  <Loader2 className='h-4 w-4 animate-spin' />
-                  <span className='text-muted-foreground text-sm'>AI is typing...</span>
+                  <div className='flex gap-1'>
+                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce'></div>
+                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-150'></div>
+                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-300'></div>
+                  </div>
+                  <span className='text-muted-foreground text-sm ml-2'>AI is thinking...</span>
                 </div>
               </div>
             )}
@@ -545,22 +727,77 @@ export function IntelligentChatInterface({
       {/* Input Area */}
       <div className='border-t p-4'>
         <form onSubmit={handleSendMessage} className='flex gap-2'>
-          <Input
-            ref={inputRef}
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder='Ask me anything about workflows, integrations, or troubleshooting...'
-            disabled={isLoading}
-            className='flex-1'
-          />
-          <Button type='submit' disabled={isLoading || !inputMessage.trim()} size='icon'>
-            {isLoading ? (
+          <div className='relative flex-1'>
+            <Input
+              ref={inputRef}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder={
+                connectionStatus === 'disconnected'
+                  ? 'Reconnecting...'
+                  : isLoading || isStreaming
+                  ? 'Processing your message...'
+                  : 'Ask me anything about workflows, integrations, or troubleshooting...'
+              }
+              disabled={isLoading || isStreaming || connectionStatus === 'disconnected'}
+              className={cn(
+                'flex-1 pr-10',
+                connectionStatus === 'disconnected' && 'border-red-300 bg-red-50',
+                (isLoading || isStreaming) && 'border-yellow-300 bg-yellow-50'
+              )}
+              maxLength={2000}
+            />
+            {inputMessage.length > 0 && (
+              <div className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground'>
+                {inputMessage.length}/2000
+              </div>
+            )}
+          </div>
+          
+          <Button
+            type='submit'
+            disabled={
+              isLoading ||
+              isStreaming ||
+              !inputMessage.trim() ||
+              connectionStatus === 'disconnected'
+            }
+            size='icon'
+            className={cn(
+              'transition-all duration-200',
+              connectionStatus === 'connected' && 'bg-purple-600 hover:bg-purple-700',
+              connectionStatus === 'connecting' && 'bg-yellow-500',
+              connectionStatus === 'disconnected' && 'bg-gray-400 cursor-not-allowed'
+            )}
+          >
+            {isLoading || isStreaming ? (
               <Loader2 className='h-4 w-4 animate-spin' />
+            ) : connectionStatus === 'disconnected' ? (
+              <AlertCircle className='h-4 w-4' />
             ) : (
               <Send className='h-4 w-4' />
             )}
           </Button>
         </form>
+        
+        {/* Quick actions for faster interaction */}
+        {!isLoading && !isStreaming && suggestedActions.length === 0 && (
+          <div className='mt-2 flex flex-wrap gap-1'>
+            {[
+              { label: 'Need Help?', action: 'I need help with something' },
+              { label: 'Report Issue', action: 'I\'m experiencing an issue' },
+              { label: 'How to...', action: 'How do I...' },
+            ].map((quickAction, index) => (
+              <button
+                key={index}
+                onClick={() => setInputMessage(quickAction.action)}
+                className='rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 transition-colors'
+              >
+                {quickAction.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1357,6 +1357,459 @@ export const docsEmbeddings = pgTable(
   })
 )
 
+// ========================
+// HELP CONTENT EMBEDDINGS SYSTEM
+// ========================
+
+/**
+ * Help Content Categories - Hierarchical categorization system
+ *
+ * Provides structured categorization for help content to enable efficient filtering,
+ * organization, and contextual recommendations within the AI help system.
+ *
+ * FEATURES:
+ * - Hierarchical category structure (category/subcategory)
+ * - Customizable metadata for category-specific attributes
+ * - Display configuration for UI consistency
+ * - Usage analytics for optimization
+ *
+ * RELATIONSHIPS:
+ * - One-to-many: helpContentItems
+ * - Used for filtering and organizing help content embeddings
+ */
+export const helpContentCategories = pgTable(
+  'help_content_categories',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique category identifier
+    name: text('name').notNull(), // Category display name (e.g., "Workflow Setup", "API Integration")
+    slug: text('slug').notNull().unique(), // URL-friendly identifier for routing
+    description: text('description'), // Category description for context
+    parentId: uuid('parent_id').references(() => helpContentCategories.id, { onDelete: 'set null' }), // Parent category for hierarchy
+    
+    // Display configuration
+    icon: text('icon'), // Icon identifier for UI display
+    color: text('color'), // Theme color for consistent UI
+    displayOrder: integer('display_order').notNull().default(0), // Sort order for UI lists
+    
+    // Content organization
+    isActive: boolean('is_active').notNull().default(true), // Enable/disable category
+    metadata: jsonb('metadata').notNull().default('{}'), // Flexible category-specific attributes
+    
+    // Analytics and optimization
+    viewCount: integer('view_count').notNull().default(0), // Track category engagement
+    helpfulness: decimal('helpfulness', { precision: 3, scale: 2 }), // Average helpfulness rating (0.00-5.00)
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary access patterns
+    slugIdx: uniqueIndex('help_categories_slug_idx').on(table.slug),
+    parentIdIdx: index('help_categories_parent_id_idx').on(table.parentId),
+    
+    // Filtering and sorting
+    activeIdx: index('help_categories_active_idx').on(table.isActive),
+    displayOrderIdx: index('help_categories_display_order_idx').on(table.displayOrder),
+    
+    // Analytics queries
+    viewCountIdx: index('help_categories_view_count_idx').on(table.viewCount),
+    helpfulnessIdx: index('help_categories_helpfulness_idx').on(table.helpfulness),
+    
+    // GIN index for metadata queries
+    metadataGinIdx: index('help_categories_metadata_gin_idx').using('gin', table.metadata),
+    
+    // Constraints
+    helpfulnessRangeCheck: check('help_categories_helpfulness_range_check', 
+      sql`${table.helpfulness} IS NULL OR (${table.helpfulness} >= 0 AND ${table.helpfulness} <= 5)`
+    ),
+  })
+)
+
+/**
+ * Help Content Items - Core help content repository
+ *
+ * Central repository for all help content including articles, tutorials, guides,
+ * FAQs, and troubleshooting documentation. Optimized for semantic search and
+ * contextual recommendations through the AI help system.
+ *
+ * CONTENT TYPES:
+ * - 'article': Informational articles and guides
+ * - 'tutorial': Step-by-step tutorials
+ * - 'faq': Frequently asked questions
+ * - 'troubleshooting': Error resolution guides
+ * - 'api_docs': API documentation and examples
+ * - 'video': Video content with transcripts
+ *
+ * FEATURES:
+ * - Rich content with markdown support
+ * - Multi-level difficulty targeting
+ * - Comprehensive tagging and categorization
+ * - Usage analytics and effectiveness tracking
+ * - Version control and content lifecycle management
+ */
+export const helpContentItems = pgTable(
+  'help_content_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique content identifier
+    title: text('title').notNull(), // Content title for display and search
+    slug: text('slug').notNull().unique(), // URL-friendly identifier
+    contentType: text('content_type').notNull(), // Content type (article, tutorial, faq, etc.)
+    
+    // Content data
+    content: text('content').notNull(), // Main content in markdown format
+    excerpt: text('excerpt'), // Brief summary/description (auto-generated or manual)
+    contentLength: integer('content_length').notNull(), // Character count for analytics
+    estimatedReadTime: integer('estimated_read_time'), // Reading time in minutes
+    
+    // Categorization and targeting
+    categoryId: uuid('category_id').notNull().references(() => helpContentCategories.id, { onDelete: 'cascade' }),
+    difficulty: text('difficulty').notNull().default('beginner'), // beginner, intermediate, advanced
+    audience: text('audience').notNull().default('general'), // general, developer, admin, user
+    
+    // Flexible tagging system (normalized to individual columns for indexing performance)
+    tag1: text('tag1'), // Primary tag
+    tag2: text('tag2'), // Secondary tag
+    tag3: text('tag3'), // Tertiary tag
+    tag4: text('tag4'), // Quaternary tag
+    tag5: text('tag5'), // Additional tag
+    
+    // Content state and lifecycle
+    status: text('status').notNull().default('draft'), // draft, published, archived, deprecated
+    priority: integer('priority').notNull().default(0), // Content importance for ranking (higher = more important)
+    isPublic: boolean('is_public').notNull().default(true), // Public vs internal content
+    isFeatured: boolean('is_featured').notNull().default(false), // Featured content for promotion
+    
+    // Authoring and ownership
+    authorId: text('author_id').references(() => user.id, { onDelete: 'set null' }), // Content author
+    lastEditedBy: text('last_edited_by').references(() => user.id, { onDelete: 'set null' }), // Last editor
+    
+    // Content relationships
+    relatedContentIds: text('related_content_ids').array(), // Array of related content IDs for cross-references
+    prerequisiteIds: text('prerequisite_ids').array(), // Required content to understand this content
+    
+    // Analytics and effectiveness tracking
+    viewCount: integer('view_count').notNull().default(0), // Total views
+    helpfulVotes: integer('helpful_votes').notNull().default(0), // Positive feedback count
+    unhelpfulVotes: integer('unhelpful_votes').notNull().default(0), // Negative feedback count
+    averageRating: decimal('average_rating', { precision: 3, scale: 2 }), // User rating average (0.00-5.00)
+    completionRate: decimal('completion_rate', { precision: 3, scale: 2 }), // Tutorial completion rate (0.00-1.00)
+    
+    // SEO and discoverability
+    metaDescription: text('meta_description'), // SEO meta description
+    keywords: text('keywords').array(), // SEO keywords array
+    
+    // Content metadata
+    metadata: jsonb('metadata').notNull().default('{}'), // Flexible content-specific attributes
+    
+    // Full-text search support - generated tsvector column combining all searchable content
+    searchTsv: tsvector('search_tsv').generatedAlwaysAs(
+      (): SQL => sql`to_tsvector('english', ${helpContentItems.title} || ' ' || COALESCE(${helpContentItems.content}, '') || ' ' || COALESCE(array_to_string(${helpContentItems.keywords}, ' '), ''))`
+    ),
+    
+    // Timestamps
+    publishedAt: timestamp('published_at'), // Publication date
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary access patterns
+    slugIdx: uniqueIndex('help_content_slug_idx').on(table.slug),
+    categoryIdIdx: index('help_content_category_id_idx').on(table.categoryId),
+    statusIdx: index('help_content_status_idx').on(table.status),
+    
+    // Content type and difficulty filtering
+    contentTypeIdx: index('help_content_type_idx').on(table.contentType),
+    difficultyIdx: index('help_content_difficulty_idx').on(table.difficulty),
+    audienceIdx: index('help_content_audience_idx').on(table.audience),
+    
+    // Combined filtering indexes
+    statusPublicIdx: index('help_content_status_public_idx').on(table.status, table.isPublic),
+    categoryStatusIdx: index('help_content_category_status_idx').on(table.categoryId, table.status),
+    difficultyAudienceIdx: index('help_content_difficulty_audience_idx').on(table.difficulty, table.audience),
+    
+    // Tag indexes for efficient filtering
+    tag1Idx: index('help_content_tag1_idx').on(table.tag1),
+    tag2Idx: index('help_content_tag2_idx').on(table.tag2),
+    tag3Idx: index('help_content_tag3_idx').on(table.tag3),
+    tag4Idx: index('help_content_tag4_idx').on(table.tag4),
+    tag5Idx: index('help_content_tag5_idx').on(table.tag5),
+    
+    // Priority and featured content
+    priorityIdx: index('help_content_priority_idx').on(table.priority),
+    featuredIdx: index('help_content_featured_idx').on(table.isFeatured),
+    
+    // Analytics indexes
+    viewCountIdx: index('help_content_view_count_idx').on(table.viewCount),
+    ratingIdx: index('help_content_rating_idx').on(table.averageRating),
+    completionRateIdx: index('help_content_completion_rate_idx').on(table.completionRate),
+    
+    // Authoring indexes
+    authorIdx: index('help_content_author_idx').on(table.authorId),
+    lastEditedByIdx: index('help_content_last_edited_by_idx').on(table.lastEditedBy),
+    
+    // Timestamp indexes
+    publishedAtIdx: index('help_content_published_at_idx').on(table.publishedAt),
+    createdAtIdx: index('help_content_created_at_idx').on(table.createdAt),
+    updatedAtIdx: index('help_content_updated_at_idx').on(table.updatedAt),
+    
+    // Full-text search index
+    searchTsvIdx: index('help_content_search_tsv_idx').using('gin', table.searchTsv),
+    
+    // GIN indexes for array fields and JSONB
+    relatedContentGinIdx: index('help_content_related_content_gin_idx').using('gin', table.relatedContentIds),
+    prerequisiteGinIdx: index('help_content_prerequisite_gin_idx').using('gin', table.prerequisiteIds),
+    keywordsGinIdx: index('help_content_keywords_gin_idx').using('gin', table.keywords),
+    metadataGinIdx: index('help_content_metadata_gin_idx').using('gin', table.metadata),
+    
+    // Constraints
+    statusCheck: check('help_content_status_check', 
+      sql`${table.status} IN ('draft', 'published', 'archived', 'deprecated')`
+    ),
+    difficultyCheck: check('help_content_difficulty_check', 
+      sql`${table.difficulty} IN ('beginner', 'intermediate', 'advanced')`
+    ),
+    audienceCheck: check('help_content_audience_check', 
+      sql`${table.audience} IN ('general', 'developer', 'admin', 'user')`
+    ),
+    contentTypeCheck: check('help_content_type_check', 
+      sql`${table.contentType} IN ('article', 'tutorial', 'faq', 'troubleshooting', 'api_docs', 'video')`
+    ),
+    ratingRangeCheck: check('help_content_rating_range_check', 
+      sql`${table.averageRating} IS NULL OR (${table.averageRating} >= 0 AND ${table.averageRating} <= 5)`
+    ),
+    completionRateRangeCheck: check('help_content_completion_rate_range_check', 
+      sql`${table.completionRate} IS NULL OR (${table.completionRate} >= 0 AND ${table.completionRate} <= 1)`
+    ),
+  })
+)
+
+/**
+ * Help Content Embeddings - Vector embeddings for semantic search
+ *
+ * Stores vector embeddings for help content to enable sophisticated semantic search,
+ * similarity matching, and contextual recommendations. Optimized for the AI help system
+ * with support for multiple embedding strategies and real-time performance.
+ *
+ * EMBEDDING STRATEGIES:
+ * - Full content embeddings for comprehensive semantic matching
+ * - Chunked embeddings for long-form content (articles, tutorials)
+ * - Title and excerpt embeddings for quick similarity matching
+ * - Tag-based embeddings for categorical matching
+ *
+ * PERFORMANCE OPTIMIZATIONS:
+ * - HNSW indexes for sub-100ms vector similarity search
+ * - 1536-dimensional embeddings (text-embedding-3-large)
+ * - Strategic batching for embedding generation
+ * - Multi-tier caching for frequently accessed content
+ */
+export const helpContentEmbeddings = pgTable(
+  'help_content_embeddings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique embedding identifier
+    contentId: uuid('content_id').notNull().references(() => helpContentItems.id, { onDelete: 'cascade' }), // Source content
+    
+    // Embedding metadata
+    embeddingType: text('embedding_type').notNull(), // 'full', 'title', 'excerpt', 'chunk', 'tags'
+    chunkIndex: integer('chunk_index'), // For chunked content (null for non-chunked)
+    chunkText: text('chunk_text').notNull(), // Text that was embedded
+    tokenCount: integer('token_count').notNull(), // Token count for cost tracking
+    
+    // Vector embedding - optimized for text-embedding-3-large with HNSW support
+    embedding: vector('embedding', { dimensions: 1536 }).notNull(), // 1536-dimensional vector
+    embeddingModel: text('embedding_model').notNull().default('text-embedding-3-large'), // Model used
+    embeddingQuality: decimal('embedding_quality', { precision: 3, scale: 2 }), // Quality score (0.00-1.00)
+    
+    // Content context for enhanced matching
+    contentHash: text('content_hash').notNull(), // Hash of source content for change detection
+    contextTags: text('context_tags').array(), // Tags from source content for filtering
+    difficulty: text('difficulty').notNull(), // Inherited from content for filtering
+    audience: text('audience').notNull(), // Inherited from content for filtering
+    contentType: text('content_type').notNull(), // Inherited from content for filtering
+    
+    // Performance and analytics
+    searchCount: integer('search_count').notNull().default(0), // How often this embedding is matched
+    lastSearched: timestamp('last_searched'), // Most recent search match
+    averageRelevanceScore: decimal('average_relevance_score', { precision: 4, scale: 3 }), // Average relevance in searches
+    
+    // Full-text search support for hybrid search
+    chunkTextTsv: tsvector('chunk_text_tsv').generatedAlwaysAs(
+      (): SQL => sql`to_tsvector('english', ${helpContentEmbeddings.chunkText})`
+    ),
+    
+    // Embedding metadata
+    metadata: jsonb('metadata').notNull().default('{}'), // Flexible embedding-specific attributes
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary access patterns
+    contentIdIdx: index('help_embeddings_content_id_idx').on(table.contentId),
+    embeddingTypeIdx: index('help_embeddings_type_idx').on(table.embeddingType),
+    
+    // Chunk-specific indexes
+    contentChunkIdx: index('help_embeddings_content_chunk_idx').on(table.contentId, table.chunkIndex),
+    chunkIndexIdx: index('help_embeddings_chunk_index_idx').on(table.chunkIndex),
+    
+    // Filtering indexes for contextual search
+    difficultyIdx: index('help_embeddings_difficulty_idx').on(table.difficulty),
+    audienceIdx: index('help_embeddings_audience_idx').on(table.audience),
+    contentTypeIdx: index('help_embeddings_content_type_idx').on(table.contentType),
+    
+    // Combined filtering for efficient queries
+    typeDifficultyIdx: index('help_embeddings_type_difficulty_idx').on(table.embeddingType, table.difficulty),
+    typeAudienceIdx: index('help_embeddings_type_audience_idx').on(table.embeddingType, table.audience),
+    difficultyAudienceIdx: index('help_embeddings_difficulty_audience_idx').on(table.difficulty, table.audience),
+    
+    // Model and quality indexes
+    modelIdx: index('help_embeddings_model_idx').on(table.embeddingModel),
+    qualityIdx: index('help_embeddings_quality_idx').on(table.embeddingQuality),
+    
+    // Performance analytics indexes
+    searchCountIdx: index('help_embeddings_search_count_idx').on(table.searchCount),
+    lastSearchedIdx: index('help_embeddings_last_searched_idx').on(table.lastSearched),
+    relevanceScoreIdx: index('help_embeddings_relevance_score_idx').on(table.averageRelevanceScore),
+    
+    // Vector similarity search indexes (HNSW) - optimized for help content embeddings
+    embeddingVectorHnswIdx: index('help_embeddings_vector_hnsw_idx')
+      .using('hnsw', table.embedding.op('vector_cosine_ops'))
+      .with({
+        m: 16, // Optimal for help content similarity
+        ef_construction: 64, // Balance between build time and search quality
+      }),
+    
+    // Full-text search index for hybrid search
+    chunkTextFtsIdx: index('help_embeddings_chunk_text_fts_idx').using('gin', table.chunkTextTsv),
+    
+    // GIN indexes for array and JSONB queries
+    contextTagsGinIdx: index('help_embeddings_context_tags_gin_idx').using('gin', table.contextTags),
+    metadataGinIdx: index('help_embeddings_metadata_gin_idx').using('gin', table.metadata),
+    
+    // Constraints
+    embeddingTypeCheck: check('help_embeddings_type_check', 
+      sql`${table.embeddingType} IN ('full', 'title', 'excerpt', 'chunk', 'tags')`
+    ),
+    qualityRangeCheck: check('help_embeddings_quality_range_check', 
+      sql`${table.embeddingQuality} IS NULL OR (${table.embeddingQuality} >= 0 AND ${table.embeddingQuality} <= 1)`
+    ),
+    relevanceScoreRangeCheck: check('help_embeddings_relevance_score_range_check', 
+      sql`${table.averageRelevanceScore} IS NULL OR (${table.averageRelevanceScore} >= 0 AND ${table.averageRelevanceScore} <= 1)`
+    ),
+    chunkConsistencyCheck: check('help_embeddings_chunk_consistency_check', 
+      sql`(${table.embeddingType} = 'chunk' AND ${table.chunkIndex} IS NOT NULL) OR (${table.embeddingType} != 'chunk' AND ${table.chunkIndex} IS NULL)`
+    ),
+  })
+)
+
+/**
+ * Help Search Analytics - Search behavior and performance tracking
+ *
+ * Comprehensive analytics system for tracking help content search behavior,
+ * query performance, and user interaction patterns. Used to optimize search
+ * algorithms, content ranking, and recommendation systems.
+ *
+ * ANALYTICS CATEGORIES:
+ * - Query performance and result relevance
+ * - User interaction patterns and preferences
+ * - Content effectiveness and popularity
+ * - Search algorithm optimization metrics
+ */
+export const helpSearchAnalytics = pgTable(
+  'help_search_analytics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique analytics record identifier
+    
+    // Search context
+    sessionId: text('session_id'), // User session identifier
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }), // User (if authenticated)
+    queryHash: text('query_hash').notNull(), // Hash of search query for privacy
+    queryLength: integer('query_length').notNull(), // Query character count
+    
+    // Search configuration
+    searchType: text('search_type').notNull(), // 'semantic', 'keyword', 'hybrid'
+    embeddings_used: integer('embeddings_used'), // Number of embeddings searched
+    resultsReturned: integer('results_returned').notNull(), // Number of results returned
+    
+    // Performance metrics
+    totalSearchTime: integer('total_search_time_ms').notNull(), // Total search time in milliseconds
+    embeddingSearchTime: integer('embedding_search_time_ms'), // Vector search time
+    keywordSearchTime: integer('keyword_search_time_ms'), // Keyword search time
+    reranking_time: integer('reranking_time_ms'), // Re-ranking processing time
+    
+    // Result interaction tracking
+    clickedResults: integer('clicked_results').array(), // Indices of clicked results
+    clickedContentIds: uuid('clicked_content_ids').array(), // IDs of clicked content
+    timeToFirstClick: integer('time_to_first_click_ms'), // Time until first click
+    totalSessionTime: integer('total_session_time_ms'), // Total time spent in search session
+    
+    // Quality and relevance metrics
+    averageResultScore: decimal('average_result_score', { precision: 4, scale: 3 }), // Average similarity score
+    topResultScore: decimal('top_result_score', { precision: 4, scale: 3 }), // Highest similarity score
+    userFeedback: integer('user_feedback'), // User feedback (-1, 0, 1 for bad, neutral, good)
+    searchSatisfaction: decimal('search_satisfaction', { precision: 3, scale: 2 }), // Satisfaction rating (0.00-5.00)
+    
+    // Context and filtering
+    filtersApplied: jsonb('filters_applied').notNull().default('{}'), // Search filters used
+    contextData: jsonb('context_data').notNull().default('{}'), // Additional search context
+    
+    // Geographic and technical context
+    userAgent: text('user_agent'), // Browser/device information
+    ipCountry: text('ip_country'), // Country derived from IP (for localization insights)
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary access patterns
+    sessionIdIdx: index('help_analytics_session_id_idx').on(table.sessionId),
+    userIdIdx: index('help_analytics_user_id_idx').on(table.userId),
+    queryHashIdx: index('help_analytics_query_hash_idx').on(table.queryHash),
+    
+    // Search type and performance analysis
+    searchTypeIdx: index('help_analytics_search_type_idx').on(table.searchType),
+    searchTimeIdx: index('help_analytics_search_time_idx').on(table.totalSearchTime),
+    
+    // Result quality analysis
+    avgScoreIdx: index('help_analytics_avg_score_idx').on(table.averageResultScore),
+    topScoreIdx: index('help_analytics_top_score_idx').on(table.topResultScore),
+    satisfactionIdx: index('help_analytics_satisfaction_idx').on(table.searchSatisfaction),
+    
+    // User interaction analysis
+    userFeedbackIdx: index('help_analytics_user_feedback_idx').on(table.userFeedback),
+    timeToClickIdx: index('help_analytics_time_to_click_idx').on(table.timeToFirstClick),
+    
+    // Temporal analysis
+    createdAtIdx: index('help_analytics_created_at_idx').on(table.createdAt),
+    createdAtHourIdx: index('help_analytics_created_at_hour_idx').on(
+      sql`date_trunc('hour', ${table.createdAt})`
+    ),
+    
+    // Geographic analysis
+    countryIdx: index('help_analytics_country_idx').on(table.ipCountry),
+    
+    // GIN indexes for JSONB fields
+    filtersGinIdx: index('help_analytics_filters_gin_idx').using('gin', table.filtersApplied),
+    contextGinIdx: index('help_analytics_context_gin_idx').using('gin', table.contextData),
+    clickedContentGinIdx: index('help_analytics_clicked_content_gin_idx').using('gin', table.clickedContentIds),
+    
+    // Constraints
+    searchTypeCheck: check('help_analytics_search_type_check', 
+      sql`${table.searchType} IN ('semantic', 'keyword', 'hybrid')`
+    ),
+    userFeedbackCheck: check('help_analytics_user_feedback_check', 
+      sql`${table.userFeedback} IS NULL OR ${table.userFeedback} IN (-1, 0, 1)`
+    ),
+    satisfactionRangeCheck: check('help_analytics_satisfaction_range_check', 
+      sql`${table.searchSatisfaction} IS NULL OR (${table.searchSatisfaction} >= 0 AND ${table.searchSatisfaction} <= 5)`
+    ),
+    scoreRangeCheck: check('help_analytics_score_range_check', 
+      sql`${table.averageResultScore} IS NULL OR (${table.averageResultScore} >= 0 AND ${table.averageResultScore} <= 1)`
+    ),
+  })
+)
+
 export const copilotChats = pgTable(
   'copilot_chats',
   {
