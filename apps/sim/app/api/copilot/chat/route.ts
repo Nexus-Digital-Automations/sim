@@ -191,12 +191,14 @@ export async function POST(req: NextRequest) {
           const storageProvider = getStorageProvider()
           let fileBuffer: Buffer
 
-          if (storageProvider === 's3') {
+          // Since this is a local-only setup, storageProvider will always be 'local'
+          // The following conditional checks are kept for future cloud storage support
+          if ((storageProvider as string) === 's3') {
             fileBuffer = await downloadFile(attachment.key, {
               bucket: S3_COPILOT_CONFIG.bucket,
               region: S3_COPILOT_CONFIG.region,
             })
-          } else if (storageProvider === 'blob') {
+          } else if ((storageProvider as string) === 'blob') {
             const { BLOB_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
             fileBuffer = await downloadFile(attachment.key, {
               containerName: BLOB_COPILOT_CONFIG.containerName,
@@ -205,6 +207,7 @@ export async function POST(req: NextRequest) {
               connectionString: BLOB_COPILOT_CONFIG.connectionString,
             })
           } else {
+            // Default to local storage
             fileBuffer = await downloadFile(attachment.key)
           }
 
