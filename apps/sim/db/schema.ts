@@ -2915,10 +2915,10 @@ export const templateSearchQueries = pgTable(
  */
 export const wizardSessionStatusEnum = pgEnum('wizard_session_status', [
   'active',
-  'paused', 
+  'paused',
   'completed',
   'abandoned',
-  'expired'
+  'expired',
 ])
 
 /**
@@ -2928,17 +2928,13 @@ export const wizardTypeEnum = pgEnum('wizard_type', [
   'workflow_creation',
   'template_setup',
   'integration_config',
-  'automation_builder'
+  'automation_builder',
 ])
 
 /**
  * Device type enum - tracks device types for analytics and UX optimization
  */
-export const deviceTypeEnum = pgEnum('device_type', [
-  'desktop',
-  'mobile',
-  'tablet'
-])
+export const deviceTypeEnum = pgEnum('device_type', ['desktop', 'mobile', 'tablet'])
 
 /**
  * Wizard Sessions table - comprehensive wizard session tracking
@@ -2966,63 +2962,70 @@ export const wizardSessions = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     workspaceId: text('workspace_id')
-      .notNull()  
+      .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
-    
+
     // Session metadata
     wizardType: wizardTypeEnum('wizard_type').notNull(),
     flowVersion: text('flow_version').notNull().default('1.0'),
     source: text('source'),
     referrerUrl: text('referrer_url'),
-    
+
     // State management
     currentStepId: text('current_step_id').notNull(),
     totalSteps: integer('total_steps').notNull().default(0),
     completedSteps: integer('completed_steps').notNull().default(0),
     progressPercentage: decimal('progress_percentage', { precision: 5, scale: 2 })
-      .notNull().default('0'),
+      .notNull()
+      .default('0'),
     sessionData: jsonb('session_data').notNull().default('{}'),
     autoSaveEnabled: boolean('auto_save_enabled').notNull().default(true),
-    
+
     // Session lifecycle
     status: wizardSessionStatusEnum('status').notNull().default('active'),
     startedAt: timestamp('started_at').notNull().defaultNow(),
     lastActivityAt: timestamp('last_activity_at').notNull().defaultNow(),
     completedAt: timestamp('completed_at'),
     expiresAt: timestamp('expires_at').notNull().default(sql`NOW() + INTERVAL '7 days'`),
-    
+
     // Performance tracking
     estimatedCompletionTime: integer('estimated_completion_time'),
     actualDuration: integer('actual_duration'),
     stepDurations: jsonb('step_durations').default('{}'),
-    
+
     // User context
     userAgent: text('user_agent'),
     ipAddress: text('ip_address'),
     timezone: text('timezone'),
     locale: text('locale').default('en-US'),
     deviceType: deviceTypeEnum('device_type'),
-    
+
     // GDPR compliance
     dataConsentGiven: boolean('data_consent_given').notNull().default(false),
     analyticsConsent: boolean('analytics_consent').notNull().default(false),
     dataRetentionUntil: timestamp('data_retention_until')
-      .notNull().default(sql`NOW() + INTERVAL '2 years'`),
-    
+      .notNull()
+      .default(sql`NOW() + INTERVAL '2 years'`),
+
     // Audit fields
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
-    userWorkspaceIdx: index('wizard_sessions_user_workspace_idx').on(table.userId, table.workspaceId),
+    userWorkspaceIdx: index('wizard_sessions_user_workspace_idx').on(
+      table.userId,
+      table.workspaceId
+    ),
     statusActiveIdx: index('wizard_sessions_status_active_idx').on(table.status),
     expiresAtIdx: index('wizard_sessions_expires_at_idx').on(table.expiresAt),
     sessionIdIdx: index('wizard_sessions_session_id_idx').on(table.sessionId),
     lastActivityIdx: index('wizard_sessions_last_activity_idx').on(table.lastActivityAt),
     wizardTypeIdx: index('wizard_sessions_wizard_type_idx').on(table.wizardType),
     dataRetentionIdx: index('wizard_sessions_data_retention_idx').on(table.dataRetentionUntil),
-    progressPercentageCheck: check('progress_percentage_check', 
-      sql`${table.progressPercentage} >= 0 AND ${table.progressPercentage} <= 100`),
+    progressPercentageCheck: check(
+      'progress_percentage_check',
+      sql`${table.progressPercentage} >= 0 AND ${table.progressPercentage} <= 100`
+    ),
   })
 )
 
@@ -3034,7 +3037,7 @@ export const stepCompletionStatusEnum = pgEnum('step_completion_status', [
   'completed',
   'skipped',
   'error',
-  'abandoned'
+  'abandoned',
 ])
 
 /**
@@ -3060,35 +3063,39 @@ export const wizardStepAnalytics = pgTable(
     stepId: text('step_id').notNull(),
     stepName: text('step_name').notNull(),
     stepOrder: integer('step_order').notNull(),
-    
+
     // Step lifecycle
     enteredAt: timestamp('entered_at').notNull().defaultNow(),
     exitedAt: timestamp('exited_at'),
     durationSeconds: integer('duration_seconds'),
-    completionStatus: stepCompletionStatusEnum('completion_status').notNull().default('in_progress'),
-    
+    completionStatus: stepCompletionStatusEnum('completion_status')
+      .notNull()
+      .default('in_progress'),
+
     // Interaction tracking
     fieldInteractions: jsonb('field_interactions').default('{}'),
     validationErrors: jsonb('validation_errors').default('[]'),
     helpAccessed: boolean('help_accessed').default(false),
     retries: integer('retries').default(0),
-    
+
     // Data quality
     inputData: jsonb('input_data').default('{}'),
     outputData: jsonb('output_data').default('{}'),
     errorDetails: jsonb('error_details').default('{}'),
-    
+
     // Performance metrics
     renderTimeMs: integer('render_time_ms'),
     validationTimeMs: integer('validation_time_ms'),
     saveTimeMs: integer('save_time_ms'),
-    
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
     sessionIdx: index('wizard_step_analytics_session_idx').on(table.sessionId),
-    stepCompletionIdx: index('wizard_step_analytics_step_completion_idx')
-      .on(table.stepId, table.completionStatus),
+    stepCompletionIdx: index('wizard_step_analytics_step_completion_idx').on(
+      table.stepId,
+      table.completionStatus
+    ),
     durationIdx: index('wizard_step_analytics_duration_idx').on(table.durationSeconds),
     createdAtIdx: index('wizard_step_analytics_created_at_idx').on(table.createdAt),
   })
@@ -3099,9 +3106,9 @@ export const wizardStepAnalytics = pgTable(
  */
 export const recommendationTypeEnum = pgEnum('recommendation_type', [
   'primary',
-  'alternative', 
+  'alternative',
   'similar',
-  'fallback'
+  'fallback',
 ])
 
 /**
@@ -3130,26 +3137,31 @@ export const templateRecommendations = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    
+
     // Recommendation context
     goalContext: jsonb('goal_context').notNull(),
     userProfile: jsonb('user_profile').notNull(),
-    recommendationAlgorithm: text('recommendation_algorithm').notNull().default('collaborative_filtering'),
+    recommendationAlgorithm: text('recommendation_algorithm')
+      .notNull()
+      .default('collaborative_filtering'),
     algorithmVersion: text('algorithm_version').notNull().default('1.0'),
-    
+
     // Scoring system
     relevanceScore: decimal('relevance_score', { precision: 4, scale: 3 }).notNull(),
     popularityScore: decimal('popularity_score', { precision: 4, scale: 3 }).notNull(),
     successRateScore: decimal('success_rate_score', { precision: 4, scale: 3 }).notNull(),
     complexityMatchScore: decimal('complexity_match_score', { precision: 4, scale: 3 }).notNull(),
-    integrationCompatibilityScore: decimal('integration_compatibility_score', { precision: 4, scale: 3 }).notNull(),
+    integrationCompatibilityScore: decimal('integration_compatibility_score', {
+      precision: 4,
+      scale: 3,
+    }).notNull(),
     finalScore: decimal('final_score', { precision: 4, scale: 3 }).notNull(),
-    
+
     // Recommendation ranking
     recommendationRank: integer('recommendation_rank').notNull(),
     presentationPosition: integer('presentation_position'),
     recommendationType: recommendationTypeEnum('recommendation_type').notNull().default('primary'),
-    
+
     // User interaction
     viewed: boolean('viewed').notNull().default(false),
     viewedAt: timestamp('viewed_at'),
@@ -3160,45 +3172,66 @@ export const templateRecommendations = pgTable(
     dismissed: boolean('dismissed').notNull().default(false),
     dismissedAt: timestamp('dismissed_at'),
     dismissalReason: text('dismissal_reason'),
-    
+
     // A/B testing
     experimentId: text('experiment_id'),
     testVariant: text('test_variant'),
     controlGroup: boolean('control_group').default(false),
-    
+
     // Performance tracking
     recommendationGeneratedAt: timestamp('recommendation_generated_at').notNull().defaultNow(),
     recommendationServedAt: timestamp('recommendation_served_at'),
     timeToDecisionSeconds: integer('time_to_decision_seconds'),
-    
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
     sessionIdx: index('template_recommendations_session_idx').on(table.sessionId),
-    templateSelectedIdx: index('template_recommendations_template_selected_idx')
-      .on(table.templateId),
-    userInteractionsIdx: index('template_recommendations_user_interactions_idx')
-      .on(table.userId, table.selected, table.clicked, table.viewed),
+    templateSelectedIdx: index('template_recommendations_template_selected_idx').on(
+      table.templateId
+    ),
+    userInteractionsIdx: index('template_recommendations_user_interactions_idx').on(
+      table.userId,
+      table.selected,
+      table.clicked,
+      table.viewed
+    ),
     scoringIdx: index('template_recommendations_scoring_idx').on(table.finalScore),
-    abTestingIdx: index('template_recommendations_ab_testing_idx')
-      .on(table.experimentId, table.testVariant),
+    abTestingIdx: index('template_recommendations_ab_testing_idx').on(
+      table.experimentId,
+      table.testVariant
+    ),
     createdAtIdx: index('template_recommendations_created_at_idx').on(table.createdAt),
-    
+
     // Score constraints
-    relevanceScoreCheck: check('relevance_score_check', 
-      sql`${table.relevanceScore} >= 0 AND ${table.relevanceScore} <= 1`),
-    popularityScoreCheck: check('popularity_score_check',
-      sql`${table.popularityScore} >= 0 AND ${table.popularityScore} <= 1`),
-    successRateScoreCheck: check('success_rate_score_check',
-      sql`${table.successRateScore} >= 0 AND ${table.successRateScore} <= 1`),
-    complexityMatchScoreCheck: check('complexity_match_score_check',
-      sql`${table.complexityMatchScore} >= 0 AND ${table.complexityMatchScore} <= 1`),
-    integrationCompatibilityScoreCheck: check('integration_compatibility_score_check',
-      sql`${table.integrationCompatibilityScore} >= 0 AND ${table.integrationCompatibilityScore} <= 1`),
-    finalScoreCheck: check('final_score_check',
-      sql`${table.finalScore} >= 0 AND ${table.finalScore} <= 1`),
-    recommendationRankCheck: check('recommendation_rank_check',
-      sql`${table.recommendationRank} > 0`),
+    relevanceScoreCheck: check(
+      'relevance_score_check',
+      sql`${table.relevanceScore} >= 0 AND ${table.relevanceScore} <= 1`
+    ),
+    popularityScoreCheck: check(
+      'popularity_score_check',
+      sql`${table.popularityScore} >= 0 AND ${table.popularityScore} <= 1`
+    ),
+    successRateScoreCheck: check(
+      'success_rate_score_check',
+      sql`${table.successRateScore} >= 0 AND ${table.successRateScore} <= 1`
+    ),
+    complexityMatchScoreCheck: check(
+      'complexity_match_score_check',
+      sql`${table.complexityMatchScore} >= 0 AND ${table.complexityMatchScore} <= 1`
+    ),
+    integrationCompatibilityScoreCheck: check(
+      'integration_compatibility_score_check',
+      sql`${table.integrationCompatibilityScore} >= 0 AND ${table.integrationCompatibilityScore} <= 1`
+    ),
+    finalScoreCheck: check(
+      'final_score_check',
+      sql`${table.finalScore} >= 0 AND ${table.finalScore} <= 1`
+    ),
+    recommendationRankCheck: check(
+      'recommendation_rank_check',
+      sql`${table.recommendationRank} > 0`
+    ),
   })
 )
 
@@ -3209,7 +3242,7 @@ export const implementationStatusEnum = pgEnum('implementation_status', [
   'in_progress',
   'completed',
   'failed',
-  'abandoned'
+  'abandoned',
 ])
 
 /**
@@ -3217,9 +3250,9 @@ export const implementationStatusEnum = pgEnum('implementation_status', [
  */
 export const complexityLevelEnum = pgEnum('complexity_level', [
   'beginner',
-  'intermediate', 
+  'intermediate',
   'advanced',
-  'expert'
+  'expert',
 ])
 
 /**
@@ -3248,71 +3281,84 @@ export const templatePerformanceMetrics = pgTable(
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
-    workflowId: text('workflow_id')
-      .references(() => workflow.id, { onDelete: 'set null' }),
-    
+    workflowId: text('workflow_id').references(() => workflow.id, { onDelete: 'set null' }),
+
     // Usage context
     goalCategory: text('goal_category').notNull(),
     industry: text('industry'),
     useCase: text('use_case'),
     complexityLevel: complexityLevelEnum('complexity_level').notNull(),
-    
+
     // Implementation metrics
     setupDurationMinutes: integer('setup_duration_minutes'),
     configurationAttempts: integer('configuration_attempts').default(1),
     validationErrorsCount: integer('validation_errors_count').default(0),
     helpRequestsCount: integer('help_requests_count').default(0),
-    
+
     // Success tracking
     implementationStatus: implementationStatusEnum('implementation_status')
-      .notNull().default('in_progress'),
+      .notNull()
+      .default('in_progress'),
     implementationCompletedAt: timestamp('implementation_completed_at'),
     firstExecutionAt: timestamp('first_execution_at'),
     firstExecutionSuccess: boolean('first_execution_success'),
-    
+
     // Performance outcomes
     workflowSuccessRate: decimal('workflow_success_rate', { precision: 4, scale: 3 }),
-    averageExecutionTimeSeconds: decimal('average_execution_time_seconds', { precision: 10, scale: 2 }),
+    averageExecutionTimeSeconds: decimal('average_execution_time_seconds', {
+      precision: 10,
+      scale: 2,
+    }),
     errorRate: decimal('error_rate', { precision: 4, scale: 3 }),
     totalExecutions: integer('total_executions').default(0),
     successfulExecutions: integer('successful_executions').default(0),
-    
+
     // User satisfaction
     userRating: integer('user_rating'),
     userFeedback: text('user_feedback'),
     wouldRecommend: boolean('would_recommend'),
     satisfactionSurveyData: jsonb('satisfaction_survey_data'),
-    
+
     // Business impact
     estimatedTimeSavedHours: decimal('estimated_time_saved_hours', { precision: 8, scale: 2 }),
     estimatedCostSavingsUsd: decimal('estimated_cost_savings_usd', { precision: 12, scale: 2 }),
     roiPercentage: decimal('roi_percentage', { precision: 8, scale: 2 }),
-    
+
     // Quality metrics
     templateModificationsMade: integer('template_modifications_made').default(0),
     blocksAdded: integer('blocks_added').default(0),
     blocksRemoved: integer('blocks_removed').default(0),
     integrationsAdded: integer('integrations_added').default(0),
-    
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
-    templateSuccessIdx: index('template_performance_template_success_idx')
-      .on(table.templateId, table.implementationStatus),
+    templateSuccessIdx: index('template_performance_template_success_idx').on(
+      table.templateId,
+      table.implementationStatus
+    ),
     userRatingIdx: index('template_performance_user_rating_idx').on(table.userRating),
-    industryGoalIdx: index('template_performance_industry_goal_idx')
-      .on(table.industry, table.goalCategory),
+    industryGoalIdx: index('template_performance_industry_goal_idx').on(
+      table.industry,
+      table.goalCategory
+    ),
     successRateIdx: index('template_performance_success_rate_idx').on(table.workflowSuccessRate),
     createdAtIdx: index('template_performance_created_at_idx').on(table.createdAt),
-    
+
     // Constraints
-    userRatingCheck: check('user_rating_check',
-      sql`${table.userRating} >= 1 AND ${table.userRating} <= 5`),
-    workflowSuccessRateCheck: check('workflow_success_rate_check',
-      sql`${table.workflowSuccessRate} >= 0 AND ${table.workflowSuccessRate} <= 1`),
-    errorRateCheck: check('error_rate_check',
-      sql`${table.errorRate} >= 0 AND ${table.errorRate} <= 1`),
+    userRatingCheck: check(
+      'user_rating_check',
+      sql`${table.userRating} >= 1 AND ${table.userRating} <= 5`
+    ),
+    workflowSuccessRateCheck: check(
+      'workflow_success_rate_check',
+      sql`${table.workflowSuccessRate} >= 0 AND ${table.workflowSuccessRate} <= 1`
+    ),
+    errorRateCheck: check(
+      'error_rate_check',
+      sql`${table.errorRate} >= 0 AND ${table.errorRate} <= 1`
+    ),
   })
 )
 
@@ -3323,7 +3369,7 @@ export const themePreferenceEnum = pgEnum('theme_preference', [
   'light',
   'dark',
   'system',
-  'high-contrast'
+  'high-contrast',
 ])
 
 /**
@@ -3333,17 +3379,13 @@ export const animationPreferenceEnum = pgEnum('animation_preference', [
   'disabled',
   'reduced',
   'normal',
-  'enhanced'
+  'enhanced',
 ])
 
 /**
  * Navigation style enum
  */
-export const navigationStyleEnum = pgEnum('navigation_style', [
-  'progressive',
-  'tabs',
-  'sidebar'
-])
+export const navigationStyleEnum = pgEnum('navigation_style', ['progressive', 'tabs', 'sidebar'])
 
 /**
  * Auto-save frequency enum
@@ -3352,7 +3394,7 @@ export const autoSaveFrequencyEnum = pgEnum('auto_save_frequency', [
   'disabled',
   'onchange',
   'periodic_30s',
-  'periodic_60s'
+  'periodic_60s',
 ])
 
 /**
@@ -3362,7 +3404,7 @@ export const learningStyleEnum = pgEnum('learning_style', [
   'visual',
   'textual',
   'hands_on',
-  'guided'
+  'guided',
 ])
 
 /**
@@ -3387,15 +3429,19 @@ export const userWizardPreferences = pgTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: 'cascade' }),
-    
+
     // UI/UX Preferences
     preferredTheme: themePreferenceEnum('preferred_theme').notNull().default('system'),
-    animationPreferences: animationPreferenceEnum('animation_preferences').notNull().default('normal'),
-    stepNavigationStyle: navigationStyleEnum('step_navigation_style').notNull().default('progressive'),
+    animationPreferences: animationPreferenceEnum('animation_preferences')
+      .notNull()
+      .default('normal'),
+    stepNavigationStyle: navigationStyleEnum('step_navigation_style')
+      .notNull()
+      .default('progressive'),
     showProgressIndicator: boolean('show_progress_indicator').notNull().default(true),
     showEstimatedTime: boolean('show_estimated_time').notNull().default(true),
     showHelpTips: boolean('show_help_tips').notNull().default(true),
-    
+
     // Accessibility preferences
     screenReaderMode: boolean('screen_reader_mode').notNull().default(false),
     highContrastMode: boolean('high_contrast_mode').notNull().default(false),
@@ -3403,7 +3449,7 @@ export const userWizardPreferences = pgTable(
     keyboardNavigationOnly: boolean('keyboard_navigation_only').notNull().default(false),
     reducedMotion: boolean('reduced_motion').notNull().default(false),
     focusIndicatorsEnhanced: boolean('focus_indicators_enhanced').notNull().default(false),
-    
+
     // Wizard behavior preferences
     autoSaveFrequency: autoSaveFrequencyEnum('auto_save_frequency').notNull().default('onchange'),
     skipIntroScreens: boolean('skip_intro_screens').notNull().default(false),
@@ -3411,36 +3457,40 @@ export const userWizardPreferences = pgTable(
     showAdvancedOptions: boolean('show_advanced_options').notNull().default(false),
     enableKeyboardShortcuts: boolean('enable_keyboard_shortcuts').notNull().default(true),
     confirmNavigationAway: boolean('confirm_navigation_away').notNull().default(true),
-    
+
     // Template and recommendation preferences
     preferredComplexityLevel: complexityLevelEnum('preferred_complexity_level'),
-    favoriteTemplateCategories: text('favorite_template_categories').array().default(sql`ARRAY[]::text[]`),
-    excludedTemplateCategories: text('excluded_template_categories').array().default(sql`ARRAY[]::text[]`),
+    favoriteTemplateCategories: text('favorite_template_categories')
+      .array()
+      .default(sql`ARRAY[]::text[]`),
+    excludedTemplateCategories: text('excluded_template_categories')
+      .array()
+      .default(sql`ARRAY[]::text[]`),
     preferredIntegrations: text('preferred_integrations').array().default(sql`ARRAY[]::text[]`),
     recommendationAlgorithm: text('recommendation_algorithm').default('hybrid'),
-    
+
     // Learning and onboarding
     onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
     tutorialProgress: jsonb('tutorial_progress').default('{}'),
     skillLevelSelfReported: complexityLevelEnum('skill_level_self_reported'),
     preferredLearningStyle: learningStyleEnum('preferred_learning_style'),
-    
+
     // Notification preferences
     emailWizardTips: boolean('email_wizard_tips').notNull().default(false),
     emailNewTemplates: boolean('email_new_templates').notNull().default(false),
     emailCompletionReminders: boolean('email_completion_reminders').notNull().default(true),
     pushNotificationsEnabled: boolean('push_notifications_enabled').notNull().default(true),
-    
+
     // Analytics and privacy
     analyticsConsent: boolean('analytics_consent').notNull().default(false),
     performanceTrackingConsent: boolean('performance_tracking_consent').notNull().default(false),
     personalizationConsent: boolean('personalization_consent').notNull().default(true),
     dataSharingConsent: boolean('data_sharing_consent').notNull().default(false),
-    
+
     // Metadata
     preferencesVersion: text('preferences_version').notNull().default('1.0'),
     lastPreferencesImport: timestamp('last_preferences_import'),
-    
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
@@ -3457,7 +3507,7 @@ export const historyCompletionStatusEnum = pgEnum('history_completion_status', [
   'completed',
   'abandoned',
   'failed',
-  'expired'
+  'expired',
 ])
 
 /**
@@ -3467,7 +3517,7 @@ export const templateSourceEnum = pgEnum('template_source', [
   'recommendation',
   'search',
   'browse',
-  'favorite'
+  'favorite',
 ])
 
 /**
@@ -3493,60 +3543,75 @@ export const userWizardHistory = pgTable(
     sessionId: text('session_id')
       .notNull()
       .references(() => wizardSessions.id, { onDelete: 'cascade' }),
-    
+
     // Session summary
     wizardType: wizardTypeEnum('wizard_type').notNull(),
     completionStatus: historyCompletionStatusEnum('completion_status').notNull(),
     totalDurationMinutes: integer('total_duration_minutes').notNull(),
     stepsCompleted: integer('steps_completed').notNull(),
     stepsTotal: integer('steps_total').notNull(),
-    
+
     // Goal and outcome
     statedGoal: jsonb('stated_goal').notNull(),
-    selectedTemplateId: text('selected_template_id')
-      .references(() => templates.id, { onDelete: 'set null' }),
-    createdWorkflowId: text('created_workflow_id')
-      .references(() => workflow.id, { onDelete: 'set null' }),
+    selectedTemplateId: text('selected_template_id').references(() => templates.id, {
+      onDelete: 'set null',
+    }),
+    createdWorkflowId: text('created_workflow_id').references(() => workflow.id, {
+      onDelete: 'set null',
+    }),
     outcomeAchieved: boolean('outcome_achieved'),
     outcomeAssessmentDate: timestamp('outcome_assessment_date'),
-    
+
     // Behavioral patterns
     navigationPattern: text('navigation_pattern').array().default(sql`ARRAY[]::text[]`),
     timePerStep: jsonb('time_per_step').notNull().default('{}'),
     errorsEncountered: jsonb('errors_encountered').default('[]'),
     helpTopicsAccessed: text('help_topics_accessed').array().default(sql`ARRAY[]::text[]`),
-    
+
     // Template interaction
     templatesViewed: integer('templates_viewed').default(0),
     templatesCompared: integer('templates_compared').default(0),
     recommendationClickRate: decimal('recommendation_click_rate', { precision: 4, scale: 3 }),
     finalTemplateSource: templateSourceEnum('final_template_source'),
-    
+
     // Success metrics
     postWizardWorkflowExecutions: integer('post_wizard_workflow_executions').default(0),
-    postWizardWorkflowSuccessRate: decimal('post_wizard_workflow_success_rate', { precision: 4, scale: 3 }),
+    postWizardWorkflowSuccessRate: decimal('post_wizard_workflow_success_rate', {
+      precision: 4,
+      scale: 3,
+    }),
     userSatisfactionRating: integer('user_satisfaction_rating'),
-    
+
     // Learning indicators
     complexityProgression: text('complexity_progression'),
     skillDemonstration: text('skill_demonstration').array().default(sql`ARRAY[]::text[]`),
     improvementAreas: text('improvement_areas').array().default(sql`ARRAY[]::text[]`),
-    
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
-    userCompletionIdx: index('user_wizard_history_user_completion_idx')
-      .on(table.userId, table.completionStatus),
+    userCompletionIdx: index('user_wizard_history_user_completion_idx').on(
+      table.userId,
+      table.completionStatus
+    ),
     outcomeIdx: index('user_wizard_history_outcome_idx').on(table.outcomeAchieved),
     createdAtIdx: index('user_wizard_history_created_at_idx').on(table.createdAt),
-    templateSuccessIdx: index('user_wizard_history_template_success_idx').on(table.selectedTemplateId),
-    
+    templateSuccessIdx: index('user_wizard_history_template_success_idx').on(
+      table.selectedTemplateId
+    ),
+
     // Constraints
-    userSatisfactionRatingCheck: check('user_satisfaction_rating_check',
-      sql`${table.userSatisfactionRating} >= 1 AND ${table.userSatisfactionRating} <= 5`),
-    recommendationClickRateCheck: check('recommendation_click_rate_check',
-      sql`${table.recommendationClickRate} >= 0 AND ${table.recommendationClickRate} <= 1`),
-    postWizardSuccessRateCheck: check('post_wizard_success_rate_check',
-      sql`${table.postWizardWorkflowSuccessRate} >= 0 AND ${table.postWizardWorkflowSuccessRate} <= 1`),
+    userSatisfactionRatingCheck: check(
+      'user_satisfaction_rating_check',
+      sql`${table.userSatisfactionRating} >= 1 AND ${table.userSatisfactionRating} <= 5`
+    ),
+    recommendationClickRateCheck: check(
+      'recommendation_click_rate_check',
+      sql`${table.recommendationClickRate} >= 0 AND ${table.recommendationClickRate} <= 1`
+    ),
+    postWizardSuccessRateCheck: check(
+      'post_wizard_success_rate_check',
+      sql`${table.postWizardWorkflowSuccessRate} >= 0 AND ${table.postWizardWorkflowSuccessRate} <= 1`
+    ),
   })
 )

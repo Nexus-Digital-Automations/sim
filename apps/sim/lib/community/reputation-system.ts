@@ -1,31 +1,5 @@
-/**
- * Community Reputation System Service
- * 
- * Comprehensive point-based reputation system for Sim's community marketplace.
- * Manages user reputation calculation, badge awards, anti-gaming protection,
- * and community recognition features.
- * 
- * FEATURES:
- * - Point-based reputation with multiple contribution types
- * - Automated badge awards based on achievements
- * - Anti-gaming protection with fraud detection
- * - Reputation levels and milestone tracking
- * - Historical tracking for transparency
- * - GDPR compliant with privacy protection
- * 
- * PERFORMANCE OPTIMIZATIONS:
- * - Efficient batch reputation calculations
- * - Cached reputation queries with invalidation
- * - Optimized database queries with proper indexing
- * - Rate limiting for reputation-sensitive operations
- * 
- * @created 2025-09-04
- * @author Community Reputation System
- */
-
-import { db } from '@/db'
 import { sql } from 'drizzle-orm'
-import { eq, desc, and, gte, lte, isNull, inArray } from 'drizzle-orm'
+import { db } from '@/db'
 
 // ========================
 // TYPE DEFINITIONS
@@ -40,35 +14,35 @@ export const REPUTATION_POINT_VALUES = {
   TEMPLATE_FEATURED: 100,
   TEMPLATE_DOWNLOAD: 2,
   TEMPLATE_FAVORITED: 5,
-  
+
   // Rating and reviews
   FIVE_STAR_RATING_RECEIVED: 25,
   FOUR_STAR_RATING_RECEIVED: 15,
   THREE_STAR_RATING_RECEIVED: 5,
   RATING_GIVEN: 1,
-  
+
   // Community engagement
   HELPFUL_REVIEW_WRITTEN: 10,
   REVIEW_MARKED_HELPFUL: 5,
   ANSWER_ACCEPTED: 15,
   QUESTION_ANSWERED: 3,
-  
+
   // Social contributions
   USER_FOLLOWED: 1,
   TEMPLATE_SHARED: 2,
   COMMUNITY_CONTRIBUTION: 10,
   MENTORSHIP_ACTIVITY: 20,
-  
+
   // Quality bonuses
   CONSISTENCY_BONUS: 50,
   QUALITY_STREAK_BONUS: 30,
   VERIFIED_USER_BONUS: 100,
-  
+
   // Penalties
   VIOLATION_PENALTY: -20,
   SPAM_PENALTY: -50,
   QUALITY_ISSUE_PENALTY: -10,
-  
+
   // Decay
   MONTHLY_DECAY_RATE: 0.02, // 2% per month for inactive users
 } as const
@@ -80,11 +54,36 @@ export const REPUTATION_LEVELS = [
   { level: 1, minPoints: 0, name: 'Newcomer', benefits: ['Create templates', 'Write reviews'] },
   { level: 2, minPoints: 100, name: 'Contributor', benefits: ['Feature requests', 'Beta access'] },
   { level: 3, minPoints: 250, name: 'Active Member', benefits: ['Verified badge eligibility'] },
-  { level: 4, minPoints: 500, name: 'Trusted User', benefits: ['Moderate reviews', 'Priority support'] },
-  { level: 5, minPoints: 1000, name: 'Expert', benefits: ['Featured content', 'Community leadership'] },
-  { level: 6, minPoints: 2500, name: 'Master', benefits: ['Template verification', 'Mentor program'] },
-  { level: 7, minPoints: 5000, name: 'Legend', benefits: ['Platform advisory', 'Special recognition'] },
-  { level: 8, minPoints: 10000, name: 'Hall of Fame', benefits: ['Platform governance', 'Legacy status'] },
+  {
+    level: 4,
+    minPoints: 500,
+    name: 'Trusted User',
+    benefits: ['Moderate reviews', 'Priority support'],
+  },
+  {
+    level: 5,
+    minPoints: 1000,
+    name: 'Expert',
+    benefits: ['Featured content', 'Community leadership'],
+  },
+  {
+    level: 6,
+    minPoints: 2500,
+    name: 'Master',
+    benefits: ['Template verification', 'Mentor program'],
+  },
+  {
+    level: 7,
+    minPoints: 5000,
+    name: 'Legend',
+    benefits: ['Platform advisory', 'Special recognition'],
+  },
+  {
+    level: 8,
+    minPoints: 10000,
+    name: 'Hall of Fame',
+    benefits: ['Platform governance', 'Legacy status'],
+  },
 ] as const
 
 /**
@@ -137,7 +136,7 @@ interface AntiGamingCheck {
 
 export class CommunityReputationSystem {
   private static instance: CommunityReputationSystem
-  private reputationCache = new Map<string, { points: number, level: number, timestamp: number }>()
+  private reputationCache = new Map<string, { points: number; level: number; timestamp: number }>()
   private readonly CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
   public static getInstance(): CommunityReputationSystem {
@@ -149,12 +148,15 @@ export class CommunityReputationSystem {
 
   /**
    * Calculate reputation for a specific user
-   * 
+   *
    * @param userId - User ID to calculate reputation for
    * @param recalculateFromScratch - Whether to recalculate from scratch (default: false)
    * @returns Promise<ReputationCalculation>
    */
-  async calculateUserReputation(userId: string, recalculateFromScratch = false): Promise<ReputationCalculation> {
+  async calculateUserReputation(
+    userId: string,
+    recalculateFromScratch = false
+  ): Promise<ReputationCalculation> {
     try {
       console.log(`[ReputationSystem] Calculating reputation for user: ${userId}`)
 
@@ -165,14 +167,15 @@ export class CommunityReputationSystem {
 
       // Calculate new reputation points
       const calculationDetails = await this.calculateReputationComponents(userId)
-      
-      const newPoints = Math.max(0, 
-        calculationDetails.templatePoints + 
-        calculationDetails.ratingPoints + 
-        calculationDetails.communityPoints + 
-        calculationDetails.qualityBonus - 
-        calculationDetails.penalties - 
-        calculationDetails.decay
+
+      const newPoints = Math.max(
+        0,
+        calculationDetails.templatePoints +
+          calculationDetails.ratingPoints +
+          calculationDetails.communityPoints +
+          calculationDetails.qualityBonus -
+          calculationDetails.penalties -
+          calculationDetails.decay
       )
 
       const pointsChange = newPoints - previousPoints
@@ -183,7 +186,7 @@ export class CommunityReputationSystem {
       await this.updateReputationRecord(userId, {
         totalPoints: newPoints,
         level: newLevel,
-        ...calculationDetails
+        ...calculationDetails,
       })
 
       // Log reputation change
@@ -194,7 +197,7 @@ export class CommunityReputationSystem {
           newTotal: newPoints,
           source: 'system_calculation',
           reason: 'Automated reputation calculation',
-          details: calculationDetails
+          details: calculationDetails,
         })
       }
 
@@ -213,17 +216,20 @@ export class CommunityReputationSystem {
         newLevel,
         levelChanged,
         badgesAwarded,
-        calculationDetails
+        calculationDetails,
       }
 
-      console.log(`[ReputationSystem] Reputation calculated for ${userId}: ${previousPoints} → ${newPoints} points (${pointsChange >= 0 ? '+' : ''}${pointsChange})`)
-      
+      console.log(
+        `[ReputationSystem] Reputation calculated for ${userId}: ${previousPoints} → ${newPoints} points (${pointsChange >= 0 ? '+' : ''}${pointsChange})`
+      )
+
       if (levelChanged) {
-        console.log(`[ReputationSystem] Level changed for ${userId}: ${REPUTATION_LEVELS[previousLevel - 1]?.name} → ${REPUTATION_LEVELS[newLevel - 1]?.name}`)
+        console.log(
+          `[ReputationSystem] Level changed for ${userId}: ${REPUTATION_LEVELS[previousLevel - 1]?.name} → ${REPUTATION_LEVELS[newLevel - 1]?.name}`
+        )
       }
 
       return result
-
     } catch (error) {
       console.error(`[ReputationSystem] Error calculating reputation for user ${userId}:`, error)
       throw new Error(`Failed to calculate reputation: ${error.message}`)
@@ -240,7 +246,7 @@ export class CommunityReputationSystem {
       communityPoints: 0,
       qualityBonus: 0,
       penalties: 0,
-      decay: 0
+      decay: 0,
     }
 
     try {
@@ -259,10 +265,10 @@ export class CommunityReputationSystem {
 
       if (templateStats.rows[0]) {
         const stats = templateStats.rows[0] as any
-        components.templatePoints = 
-          (stats.template_count * REPUTATION_POINT_VALUES.TEMPLATE_CREATED) +
-          (stats.total_downloads * REPUTATION_POINT_VALUES.TEMPLATE_DOWNLOAD) +
-          (stats.total_favorites * REPUTATION_POINT_VALUES.TEMPLATE_FAVORITED)
+        components.templatePoints =
+          stats.template_count * REPUTATION_POINT_VALUES.TEMPLATE_CREATED +
+          stats.total_downloads * REPUTATION_POINT_VALUES.TEMPLATE_DOWNLOAD +
+          stats.total_favorites * REPUTATION_POINT_VALUES.TEMPLATE_FAVORITED
       }
 
       // Rating points from ratings received on templates
@@ -281,10 +287,10 @@ export class CommunityReputationSystem {
 
       if (ratingStats.rows[0]) {
         const stats = ratingStats.rows[0] as any
-        components.ratingPoints = 
-          (stats.five_star_count * REPUTATION_POINT_VALUES.FIVE_STAR_RATING_RECEIVED) +
-          (stats.four_star_count * REPUTATION_POINT_VALUES.FOUR_STAR_RATING_RECEIVED) +
-          (stats.three_star_count * REPUTATION_POINT_VALUES.THREE_STAR_RATING_RECEIVED)
+        components.ratingPoints =
+          stats.five_star_count * REPUTATION_POINT_VALUES.FIVE_STAR_RATING_RECEIVED +
+          stats.four_star_count * REPUTATION_POINT_VALUES.FOUR_STAR_RATING_RECEIVED +
+          stats.three_star_count * REPUTATION_POINT_VALUES.THREE_STAR_RATING_RECEIVED
       }
 
       // Community engagement points
@@ -300,9 +306,9 @@ export class CommunityReputationSystem {
 
       if (communityStats.rows[0]) {
         const stats = communityStats.rows[0] as any
-        components.communityPoints = 
-          (stats.reviews_given * REPUTATION_POINT_VALUES.RATING_GIVEN) +
-          (stats.helpful_reviews * REPUTATION_POINT_VALUES.HELPFUL_REVIEW_WRITTEN)
+        components.communityPoints =
+          stats.reviews_given * REPUTATION_POINT_VALUES.RATING_GIVEN +
+          stats.helpful_reviews * REPUTATION_POINT_VALUES.HELPFUL_REVIEW_WRITTEN
       }
 
       // Quality bonuses
@@ -327,16 +333,23 @@ export class CommunityReputationSystem {
 
       if (lastActivityResult.rows[0]?.last_activity) {
         const lastActivity = new Date(lastActivityResult.rows[0].last_activity as string)
-        const monthsSinceActivity = (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24 * 30)
-        
-        if (monthsSinceActivity > 3) { // Apply decay after 3 months of inactivity
-          const totalPoints = components.templatePoints + components.ratingPoints + components.communityPoints
-          components.decay = Math.floor(totalPoints * REPUTATION_POINT_VALUES.MONTHLY_DECAY_RATE * monthsSinceActivity)
+        const monthsSinceActivity =
+          (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24 * 30)
+
+        if (monthsSinceActivity > 3) {
+          // Apply decay after 3 months of inactivity
+          const totalPoints =
+            components.templatePoints + components.ratingPoints + components.communityPoints
+          components.decay = Math.floor(
+            totalPoints * REPUTATION_POINT_VALUES.MONTHLY_DECAY_RATE * monthsSinceActivity
+          )
         }
       }
-
     } catch (error) {
-      console.error(`[ReputationSystem] Error calculating reputation components for ${userId}:`, error)
+      console.error(
+        `[ReputationSystem] Error calculating reputation components for ${userId}:`,
+        error
+      )
     }
 
     return components
@@ -377,7 +390,7 @@ export class CommunityReputationSystem {
         this.reputationCache.set(userId, {
           points: rep.total_points,
           level: rep.reputation_level,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
         return { totalPoints: rep.total_points, level: rep.reputation_level }
       }
@@ -419,7 +432,6 @@ export class CommunityReputationSystem {
           last_calculation_at = EXCLUDED.last_calculation_at,
           updated_at = EXCLUDED.updated_at
       `)
-
     } catch (error) {
       console.error(`[ReputationSystem] Error updating reputation record for ${userId}:`, error)
       throw error
@@ -431,28 +443,31 @@ export class CommunityReputationSystem {
    */
   private calculateLevelProgress(points: number): number {
     const currentLevel = this.calculateLevel(points)
-    const nextLevel = REPUTATION_LEVELS.find(level => level.level > currentLevel)
-    
+    const nextLevel = REPUTATION_LEVELS.find((level) => level.level > currentLevel)
+
     if (!nextLevel) return 100 // Max level reached
-    
+
     const currentLevelMin = REPUTATION_LEVELS[currentLevel - 1].minPoints
     const nextLevelMin = nextLevel.minPoints
     const progress = ((points - currentLevelMin) / (nextLevelMin - currentLevelMin)) * 100
-    
+
     return Math.min(100, Math.max(0, progress))
   }
 
   /**
    * Log reputation change for transparency
    */
-  private async logReputationChange(userId: string, change: {
-    change: number
-    previousTotal: number
-    newTotal: number
-    source: string
-    reason: string
-    details?: any
-  }) {
+  private async logReputationChange(
+    userId: string,
+    change: {
+      change: number
+      previousTotal: number
+      newTotal: number
+      source: string
+      reason: string
+      details?: any
+    }
+  ) {
     try {
       await db.execute(sql`
         INSERT INTO user_reputation_history (
@@ -465,7 +480,6 @@ export class CommunityReputationSystem {
           ${change.reason}, 'system', NOW()
         )
       `)
-
     } catch (error) {
       console.error(`[ReputationSystem] Error logging reputation change for ${userId}:`, error)
     }
@@ -474,7 +488,11 @@ export class CommunityReputationSystem {
   /**
    * Check and award eligible badges
    */
-  private async checkAndAwardBadges(userId: string, reputationPoints: number, calculationDetails: any): Promise<string[]> {
+  private async checkAndAwardBadges(
+    userId: string,
+    reputationPoints: number,
+    calculationDetails: any
+  ): Promise<string[]> {
     const badgesAwarded: string[] = []
 
     try {
@@ -485,7 +503,7 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      const currentBadgeIds = new Set(currentBadges.rows.map(row => (row as any).badge_id))
+      const currentBadgeIds = new Set(currentBadges.rows.map((row) => (row as any).badge_id))
 
       // Get all available badges
       const availableBadges = await db.execute(sql`
@@ -496,19 +514,23 @@ export class CommunityReputationSystem {
 
       for (const badge of availableBadges.rows) {
         const badgeData = badge as any
-        
+
         // Skip if user already has this badge
         if (currentBadgeIds.has(badgeData.id)) continue
 
         const criteria = JSON.parse(badgeData.criteria_config)
-        const isEligible = await this.checkBadgeEligibility(userId, criteria, reputationPoints, calculationDetails)
+        const isEligible = await this.checkBadgeEligibility(
+          userId,
+          criteria,
+          reputationPoints,
+          calculationDetails
+        )
 
         if (isEligible) {
           await this.awardBadge(userId, badgeData.id, 'system', null)
           badgesAwarded.push(badgeData.name)
         }
       }
-
     } catch (error) {
       console.error(`[ReputationSystem] Error checking badges for ${userId}:`, error)
     }
@@ -519,7 +541,12 @@ export class CommunityReputationSystem {
   /**
    * Check if user is eligible for a specific badge
    */
-  private async checkBadgeEligibility(userId: string, criteria: any, reputationPoints: number, calculationDetails: any): Promise<boolean> {
+  private async checkBadgeEligibility(
+    userId: string,
+    criteria: any,
+    reputationPoints: number,
+    calculationDetails: any
+  ): Promise<boolean> {
     try {
       // Reputation-based badges
       if (criteria.min_reputation && reputationPoints < criteria.min_reputation) {
@@ -530,7 +557,7 @@ export class CommunityReputationSystem {
       if (criteria.action === 'template_created') {
         const templateCount = await this.getUserTemplateCount(userId)
         if (templateCount < criteria.count) return false
-        
+
         if (criteria.min_rating) {
           const avgRating = await this.getUserAverageRating(userId)
           if (avgRating < criteria.min_rating) return false
@@ -545,12 +572,15 @@ export class CommunityReputationSystem {
 
       // Rating-based badges
       if (criteria.min_rating && criteria.min_reviews) {
-        const hasQualityRating = await this.checkUserRatingQuality(userId, criteria.min_rating, criteria.min_reviews)
+        const hasQualityRating = await this.checkUserRatingQuality(
+          userId,
+          criteria.min_rating,
+          criteria.min_reviews
+        )
         if (!hasQualityRating) return false
       }
 
       return true
-
     } catch (error) {
       console.error(`[ReputationSystem] Error checking badge eligibility for ${userId}:`, error)
       return false
@@ -560,7 +590,12 @@ export class CommunityReputationSystem {
   /**
    * Award badge to user
    */
-  private async awardBadge(userId: string, badgeId: string, sourceType: string, sourceId: string | null) {
+  private async awardBadge(
+    userId: string,
+    badgeId: string,
+    sourceType: string,
+    sourceId: string | null
+  ) {
     try {
       await db.execute(sql`
         INSERT INTO community_user_badges (
@@ -579,7 +614,6 @@ export class CommunityReputationSystem {
           gen_random_uuid()::TEXT, ${userId}, 'badge_earned', 'badge', ${badgeId}, 'public', NOW()
         )
       `)
-
     } catch (error) {
       console.error(`[ReputationSystem] Error awarding badge to ${userId}:`, error)
     }
@@ -600,7 +634,7 @@ export class CommunityReputationSystem {
         AND status = 'approved' 
         AND visibility = 'public'
     `)
-    
+
     return (result.rows[0] as any)?.count || 0
   }
 
@@ -616,7 +650,7 @@ export class CommunityReputationSystem {
         AND visibility = 'public'
         AND rating_count > 0
     `)
-    
+
     return (result.rows[0] as any)?.avg_rating || 0
   }
 
@@ -631,14 +665,18 @@ export class CommunityReputationSystem {
         AND helpful_count > unhelpful_count
         AND is_approved = true
     `)
-    
+
     return (result.rows[0] as any)?.count || 0
   }
 
   /**
    * Check if user has templates with minimum rating quality
    */
-  private async checkUserRatingQuality(userId: string, minRating: number, minReviews: number): Promise<boolean> {
+  private async checkUserRatingQuality(
+    userId: string,
+    minRating: number,
+    minReviews: number
+  ): Promise<boolean> {
     const result = await db.execute(sql`
       SELECT COUNT(*) as count
       FROM templates 
@@ -647,7 +685,7 @@ export class CommunityReputationSystem {
         AND rating_count >= ${minReviews}
         AND status = 'approved'
     `)
-    
+
     return ((result.rows[0] as any)?.count || 0) > 0
   }
 
@@ -695,17 +733,16 @@ export class CommunityReputationSystem {
           ratingPoints: rep.template_rating_points,
           communityPoints: rep.community_contribution_points,
           qualityBonus: rep.quality_bonus_points,
-          penalties: rep.penalty_points
+          penalties: rep.penalty_points,
         },
         qualityMetrics: {
           averageTemplateRating: rep.average_template_rating,
           helpfulReviewPercentage: rep.helpful_review_percentage,
-          consistencyScore: rep.consistency_score
+          consistencyScore: rep.consistency_score,
         },
         lastCalculated: rep.last_calculation_at,
-        isVerified: rep.is_verified || false
+        isVerified: rep.is_verified || false,
       }
-
     } catch (error) {
       console.error(`[ReputationSystem] Error getting reputation summary for ${userId}:`, error)
       throw new Error('Failed to get reputation summary')
@@ -715,7 +752,7 @@ export class CommunityReputationSystem {
   /**
    * Get community leaderboard
    */
-  async getLeaderboard(limit: number = 50, offset: number = 0) {
+  async getLeaderboard(limit = 50, offset = 0) {
     try {
       const result = await db.execute(sql`
         SELECT * FROM community_leaderboard
@@ -738,12 +775,11 @@ export class CommunityReputationSystem {
           silver: row.silver_badges,
           gold: row.gold_badges,
           platinum: row.platinum_badges,
-          special: row.special_badges
+          special: row.special_badges,
         },
         templateCount: row.total_templates,
-        recentActivity: row.recent_activity_count
+        recentActivity: row.recent_activity_count,
       }))
-
     } catch (error) {
       console.error('[ReputationSystem] Error getting leaderboard:', error)
       throw new Error('Failed to get leaderboard')
@@ -755,7 +791,7 @@ export class CommunityReputationSystem {
    */
   async batchCalculateReputation(userIds: string[]) {
     const results = []
-    
+
     for (const userId of userIds) {
       try {
         const result = await this.calculateUserReputation(userId)
@@ -764,7 +800,7 @@ export class CommunityReputationSystem {
         console.error(`[ReputationSystem] Error in batch calculation for ${userId}:`, error)
         results.push({
           userId,
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -789,7 +825,7 @@ export class CommunityReputationSystem {
         ORDER BY created_at DESC
       `)
 
-      const rapidGains = recentHistory.rows.filter(row => (row as any).points_change > 100)
+      const rapidGains = recentHistory.rows.filter((row) => (row as any).points_change > 100)
       if (rapidGains.length > 5) {
         flags.push('rapid_point_gain')
         suspicionScore += 30
@@ -821,16 +857,15 @@ export class CommunityReputationSystem {
         isSuspicious: suspicionScore > 15,
         suspicionScore,
         flags,
-        recommendedAction
+        recommendedAction,
       }
-
     } catch (error) {
       console.error(`[ReputationSystem] Error in anti-gaming detection for ${userId}:`, error)
       return {
         isSuspicious: false,
         suspicionScore: 0,
         flags: ['detection_error'],
-        recommendedAction: 'none'
+        recommendedAction: 'none',
       }
     }
   }

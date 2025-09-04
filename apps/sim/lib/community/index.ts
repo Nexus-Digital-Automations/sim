@@ -1,13 +1,13 @@
 /**
  * Community User Management System - Main Export Module
- * 
+ *
  * Central export module for all community user management components including:
  * - Reputation system and calculations
  * - Badge definitions and award logic
  * - User profile management utilities
  * - Social features and relationship management
  * - Anti-gaming protection and monitoring
- * 
+ *
  * FEATURES:
  * - Complete reputation system with anti-gaming
  * - Comprehensive badge and achievement system
@@ -15,24 +15,24 @@
  * - Social following and activity tracking
  * - GDPR compliant data handling
  * - Production-ready error handling and logging
- * 
+ *
  * USAGE:
  * ```typescript
  * import { CommunityReputationSystem, REPUTATION_LEVELS } from '@/lib/community'
- * 
+ *
  * const reputationSystem = CommunityReputationSystem.getInstance()
  * const userReputation = await reputationSystem.getUserReputationSummary(userId)
  * ```
- * 
+ *
  * @created 2025-09-04
  * @author Community User Management System
  */
 
 // Export core reputation system
-export { 
+export {
   CommunityReputationSystem,
+  REPUTATION_LEVELS,
   REPUTATION_POINT_VALUES,
-  REPUTATION_LEVELS
 } from './reputation-system'
 
 // Export utility types and interfaces
@@ -114,7 +114,7 @@ export interface UserActivity {
 export const CommunityUserSearchSchema = {
   query: 'string',
   specialization: 'string',
-  skill: 'string', 
+  skill: 'string',
   industry: 'string',
   location: 'string',
   minReputation: 'number',
@@ -123,7 +123,7 @@ export const CommunityUserSearchSchema = {
   sortBy: ['reputation', 'activity', 'templates', 'joined'],
   sortOrder: ['asc', 'desc'],
   limit: 'number',
-  offset: 'number'
+  offset: 'number',
 } as const
 
 // Export utility functions
@@ -145,7 +145,7 @@ export class CommunityUtils {
    * Get level name from level number
    */
   static getLevelName(level: number): string {
-    const levelInfo = REPUTATION_LEVELS.find(l => l.level === level)
+    const levelInfo = REPUTATION_LEVELS.find((l) => l.level === level)
     return levelInfo?.name || 'Unknown'
   }
 
@@ -155,10 +155,10 @@ export class CommunityUtils {
   static getBadgeTierColor(tier: string): string {
     const colors = {
       bronze: 'from-amber-600 to-amber-800',
-      silver: 'from-gray-400 to-gray-600', 
+      silver: 'from-gray-400 to-gray-600',
       gold: 'from-yellow-400 to-yellow-600',
       platinum: 'from-purple-400 to-purple-600',
-      special: 'from-pink-400 to-purple-600'
+      special: 'from-pink-400 to-purple-600',
     }
     return colors[tier as keyof typeof colors] || colors.bronze
   }
@@ -170,12 +170,12 @@ export class CommunityUtils {
     const now = new Date()
     const then = new Date(date)
     const diffMs = now.getTime() - then.getTime()
-    
+
     const diffMinutes = Math.floor(diffMs / (1000 * 60))
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30))
-    
+
     if (diffMinutes < 1) return 'just now'
     if (diffMinutes < 60) return `${diffMinutes}m ago`
     if (diffHours < 24) return `${diffHours}h ago`
@@ -186,7 +186,7 @@ export class CommunityUtils {
   /**
    * Validate community profile data
    */
-  static validateProfileData(data: any): { isValid: boolean, errors: string[] } {
+  static validateProfileData(data: any): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
 
     if (data.displayName && (data.displayName.length > 50 || data.displayName.length < 1)) {
@@ -231,7 +231,7 @@ export class CommunityUtils {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -250,12 +250,12 @@ export class CommunityUtils {
    * Check if user has permission to view profile
    */
   static canViewProfile(
-    targetUserId: string, 
-    viewerUserId: string | null, 
+    targetUserId: string,
+    viewerUserId: string | null,
     profileVisibility: 'public' | 'community' | 'private'
   ): boolean {
     if (targetUserId === viewerUserId) return true // Own profile
-    
+
     switch (profileVisibility) {
       case 'public':
         return true
@@ -271,15 +271,29 @@ export class CommunityUtils {
   /**
    * Generate user avatar URL with fallback
    */
-  static getUserAvatarUrl(user: { image?: string, name: string }, size: number = 40): string {
+  static getUserAvatarUrl(user: { image?: string; name: string }, size = 40): string {
     if (user.image) return user.image
-    
+
     // Generate a deterministic avatar based on user name
-    const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F']
+    const initials = user.name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+    const colors = [
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7',
+      '#DDA0DD',
+      '#98D8C8',
+      '#F7DC6F',
+    ]
     const colorIndex = user.name.charCodeAt(0) % colors.length
     const backgroundColor = colors[colorIndex]
-    
+
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=${size}&background=${backgroundColor.slice(1)}&color=fff&format=png`
   }
 

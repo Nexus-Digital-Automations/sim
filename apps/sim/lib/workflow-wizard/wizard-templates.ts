@@ -27,12 +27,12 @@ import { templateManager } from '@/lib/templates/template-manager'
 import type { TemplateSearchQuery } from '@/lib/templates/types'
 import type {
   BusinessGoal,
+  TemplateBlock,
+  TemplateConfiguration,
+  TemplateConnection,
+  TemplateMetadata,
   TemplateRecommendation,
   WorkflowTemplate,
-  TemplateBlock,
-  TemplateConnection,
-  TemplateConfiguration,
-  TemplateMetadata,
 } from './wizard-engine'
 
 // Initialize structured logger with template context
@@ -93,7 +93,12 @@ export interface TemplateUsageHistory {
  * Template Customization Tracking
  */
 export interface TemplateCustomization {
-  type: 'block_added' | 'block_removed' | 'block_modified' | 'connection_changed' | 'variable_changed'
+  type:
+    | 'block_added'
+    | 'block_removed'
+    | 'block_modified'
+    | 'connection_changed'
+    | 'variable_changed'
   blockId?: string
   fieldId?: string
   originalValue?: any
@@ -388,7 +393,7 @@ export class WizardTemplates {
   async findSimilarTemplates(
     templateId: string,
     userContext?: UserTemplateContext,
-    limit: number = 10
+    limit = 10
   ): Promise<{
     similarTemplates: WorkflowTemplate[]
     similarityAnalyses: TemplateSimilarityAnalysis[]
@@ -415,7 +420,7 @@ export class WizardTemplates {
 
       // Calculate similarity scores
       const similarityAnalyses: TemplateSimilarityAnalysis[] = []
-      
+
       for (const candidate of candidateTemplates) {
         if (candidate.id === templateId) continue // Skip self
 
@@ -546,7 +551,7 @@ export class WizardTemplates {
   async getPersonalizedRecommendations(
     userContext: UserTemplateContext,
     goal?: BusinessGoal,
-    limit: number = 20
+    limit = 20
   ): Promise<{
     recommendations: TemplateRecommendation[]
     explanations: string[]
@@ -719,7 +724,7 @@ export class WizardTemplates {
 
     // Combine and deduplicate results
     const allTemplates = new Map<string, WorkflowTemplate>()
-    
+
     for (const result of searchResults) {
       for (const template of result.data) {
         if (!allTemplates.has(template.id)) {
@@ -742,7 +747,7 @@ export class WizardTemplates {
             requiredCredentials: this.extractRequiredCredentials(template),
             supportedIntegrations: this.extractSupportedIntegrations(template),
           }
-          
+
           allTemplates.set(template.id, workflowTemplate)
         }
       }
@@ -778,15 +783,25 @@ export class WizardTemplates {
   ): Promise<TemplateMatchingScore> {
     const scoreBreakdown = {
       goalAlignment: query.goal ? this.calculateGoalAlignment(template, query.goal) : 0.5,
-      skillLevelMatch: query.complexity ? this.calculateSkillLevelMatch(template, query.complexity) : 0.5,
-      industryRelevance: query.industry ? this.calculateIndustryRelevance(template, query.industry) : 0.5,
+      skillLevelMatch: query.complexity
+        ? this.calculateSkillLevelMatch(template, query.complexity)
+        : 0.5,
+      industryRelevance: query.industry
+        ? this.calculateIndustryRelevance(template, query.industry)
+        : 0.5,
       historicalSuccess: this.calculateHistoricalSuccess(template),
       templateQuality: this.calculateTemplateQuality(template),
-      setupComplexity: query.maxSetupTime ? this.calculateSetupComplexityMatch(template, query.maxSetupTime) : 0.5,
-      integrationMatch: query.requiredIntegrations ? this.calculateIntegrationMatch(template, query.requiredIntegrations) : 0.5,
+      setupComplexity: query.maxSetupTime
+        ? this.calculateSetupComplexityMatch(template, query.maxSetupTime)
+        : 0.5,
+      integrationMatch: query.requiredIntegrations
+        ? this.calculateIntegrationMatch(template, query.requiredIntegrations)
+        : 0.5,
       communityRating: this.calculateCommunityRating(template),
       recencyBoost: this.calculateRecencyBoost(template),
-      personalizedBoost: query.userContext ? await this.calculatePersonalizedBoost(template, query.userContext) : 0,
+      personalizedBoost: query.userContext
+        ? await this.calculatePersonalizedBoost(template, query.userContext)
+        : 0,
     }
 
     // Weighted scoring
@@ -837,32 +852,26 @@ export class WizardTemplates {
 
     // Apply success rate filter
     if (query.minSuccessRate) {
-      filtered = filtered.filter(
-        async (score) => {
-          const template = await this.getTemplateById(score.templateId)
-          return template && template.successRate >= query.minSuccessRate!
-        }
-      )
+      filtered = filtered.filter(async (score) => {
+        const template = await this.getTemplateById(score.templateId)
+        return template && template.successRate >= query.minSuccessRate!
+      })
     }
 
     // Apply setup time filter
     if (query.maxSetupTime) {
-      filtered = filtered.filter(
-        async (score) => {
-          const template = await this.getTemplateById(score.templateId)
-          return template && template.averageSetupTime <= query.maxSetupTime!
-        }
-      )
+      filtered = filtered.filter(async (score) => {
+        const template = await this.getTemplateById(score.templateId)
+        return template && template.averageSetupTime <= query.maxSetupTime!
+      })
     }
 
     // Filter out experimental templates if not requested
     if (!query.includeExperimental) {
-      filtered = filtered.filter(
-        async (score) => {
-          const template = await this.getTemplateById(score.templateId)
-          return template && template.metadata.version !== '0.1.0' // Simple heuristic
-        }
-      )
+      filtered = filtered.filter(async (score) => {
+        const template = await this.getTemplateById(score.templateId)
+        return template && template.metadata.version !== '0.1.0' // Simple heuristic
+      })
     }
 
     return filtered
@@ -879,7 +888,7 @@ export class WizardTemplates {
     const offset = query.offset || 0
 
     const sliced = templates.slice(offset, offset + limit)
-    
+
     const results = await Promise.all(
       sliced.map(async (score) => {
         const template = await this.getTemplateById(score.templateId)
@@ -903,7 +912,7 @@ export class WizardTemplates {
 
     for (const template of templates) {
       const score = template.aiRecommendationScore || 0.5
-      
+
       recommendations.push({
         template,
         score,
@@ -1013,23 +1022,23 @@ export class WizardTemplates {
     const baseTime = 5 // minutes
     const blockCount = template.state?.nodes?.length || 3
     const integrationCount = this.countIntegrations(template)
-    
-    return baseTime + (blockCount * 2) + (integrationCount * 3)
+
+    return baseTime + blockCount * 2 + integrationCount * 3
   }
 
   private extractTemplateTags(template: any): string[] {
     const tags: Set<string> = new Set()
-    
+
     // Add category as tag
     if (template.category) {
       tags.add(template.category)
     }
-    
+
     // Extract tags from metadata
     if (template.tags) {
       template.tags.forEach((tag: string) => tags.add(tag))
     }
-    
+
     // Add tags based on blocks
     if (template.state?.nodes) {
       template.state.nodes.forEach((node: any) => {
@@ -1038,13 +1047,13 @@ export class WizardTemplates {
         }
       })
     }
-    
+
     return Array.from(tags)
   }
 
   private extractRequiredCredentials(template: any): string[] {
     const credentials: Set<string> = new Set()
-    
+
     // Extract from blocks
     if (template.state?.nodes) {
       template.state.nodes.forEach((node: any) => {
@@ -1058,7 +1067,7 @@ export class WizardTemplates {
         // ... add more as needed
       })
     }
-    
+
     return Array.from(credentials)
   }
 
@@ -1078,40 +1087,48 @@ export class WizardTemplates {
       notification: 'communication',
       // Add more mappings as needed
     }
-    
+
     return categoryMap[blockType.toLowerCase()] || 'general'
   }
 
   private hasIntegration(template: any, integrationType: string): boolean {
     if (!template.state?.nodes) return false
-    
-    return template.state.nodes.some((node: any) => 
+
+    return template.state.nodes.some((node: any) =>
       node.type?.toLowerCase().includes(integrationType.toLowerCase())
     )
   }
 
   private countIntegrations(template: any): number {
     if (!template.state?.nodes) return 0
-    
+
     const integrationTypes = new Set<string>()
     template.state.nodes.forEach((node: any) => {
       if (node.type && this.isIntegrationType(node.type)) {
         integrationTypes.add(node.type)
       }
     })
-    
+
     return integrationTypes.size
   }
 
   private isIntegrationType(blockType: string): boolean {
     const integrationBlocks = [
-      'gmail', 'slack', 'hubspot', 'salesforce', 'notion', 'airtable',
-      'google_sheets', 'trello', 'asana', 'jira', 'github', 'api'
+      'gmail',
+      'slack',
+      'hubspot',
+      'salesforce',
+      'notion',
+      'airtable',
+      'google_sheets',
+      'trello',
+      'asana',
+      'jira',
+      'github',
+      'api',
     ]
-    
-    return integrationBlocks.some(integration => 
-      blockType.toLowerCase().includes(integration)
-    )
+
+    return integrationBlocks.some((integration) => blockType.toLowerCase().includes(integration))
   }
 
   // Additional scoring methods
@@ -1126,14 +1143,16 @@ export class WizardTemplates {
     // Tag overlap
     const templateTags = new Set(template.tags)
     const goalTags = new Set(goal.tags)
-    const tagOverlap = Array.from(templateTags).filter(tag => goalTags.has(tag)).length
+    const tagOverlap = Array.from(templateTags).filter((tag) => goalTags.has(tag)).length
     const tagScore = tagOverlap / Math.max(goalTags.size, 1)
     score += tagScore * 0.3
 
     // Use case match
     const templateUseCases = new Set(template.metadata.useCases)
     const goalUseCases = new Set(goal.useCases)
-    const useCaseOverlap = Array.from(templateUseCases).filter(useCase => goalUseCases.has(useCase)).length
+    const useCaseOverlap = Array.from(templateUseCases).filter((useCase) =>
+      goalUseCases.has(useCase)
+    ).length
     const useCaseScore = useCaseOverlap / Math.max(goalUseCases.size, 1)
     score += useCaseScore * 0.3
 
@@ -1162,7 +1181,7 @@ export class WizardTemplates {
   private calculateIndustryRelevance(template: WorkflowTemplate, industry?: string): number {
     if (!industry) return 0.5
 
-    const templateIndustries = template.metadata.industries.map(i => i.toLowerCase())
+    const templateIndustries = template.metadata.industries.map((i) => i.toLowerCase())
     const userIndustry = industry.toLowerCase()
 
     if (templateIndustries.includes(userIndustry)) {
@@ -1171,7 +1190,7 @@ export class WizardTemplates {
 
     // Check for related industries
     const relatedIndustries = this.getRelatedIndustries(userIndustry)
-    const hasRelatedIndustry = relatedIndustries.some(related =>
+    const hasRelatedIndustry = relatedIndustries.some((related) =>
       templateIndustries.includes(related.toLowerCase())
     )
 
@@ -1213,26 +1232,29 @@ export class WizardTemplates {
 
   private calculateSetupComplexityMatch(template: WorkflowTemplate, maxSetupTime: number): number {
     const setupTime = template.averageSetupTime
-    
+
     if (setupTime <= maxSetupTime) {
       return 1 - (setupTime / maxSetupTime) * 0.3 // Slight preference for faster setup
     }
-    
+
     // Penalty for exceeding max time
     const overage = setupTime - maxSetupTime
-    return Math.max(0, 1 - (overage / maxSetupTime))
+    return Math.max(0, 1 - overage / maxSetupTime)
   }
 
-  private calculateIntegrationMatch(template: WorkflowTemplate, requiredIntegrations: string[]): number {
+  private calculateIntegrationMatch(
+    template: WorkflowTemplate,
+    requiredIntegrations: string[]
+  ): number {
     const templateIntegrations = new Set([
       ...template.requiredCredentials,
-      ...template.supportedIntegrations
+      ...template.supportedIntegrations,
     ])
-    
-    const matches = requiredIntegrations.filter(integration => 
+
+    const matches = requiredIntegrations.filter((integration) =>
       templateIntegrations.has(integration)
     ).length
-    
+
     return matches / requiredIntegrations.length
   }
 
@@ -1243,21 +1265,21 @@ export class WizardTemplates {
   private calculateRecencyBoost(template: WorkflowTemplate): number {
     const updateAge = Date.now() - new Date(template.metadata.updatedAt).getTime()
     const daysOld = updateAge / (1000 * 60 * 60 * 24)
-    
+
     // Linear decay over 365 days
-    return Math.max(0, 1 - (daysOld / 365))
+    return Math.max(0, 1 - daysOld / 365)
   }
 
   private async calculatePersonalizedBoost(
-    template: WorkflowTemplate, 
+    template: WorkflowTemplate,
     userContext: UserTemplateContext
   ): Promise<number> {
     let boost = 0
 
     // Previous success with similar templates
     const successfulCategories = userContext.previousTemplateUsage
-      .filter(usage => usage.success)
-      .map(usage => this.getTemplateCategoryFromId(usage.templateId))
+      .filter((usage) => usage.success)
+      .map((usage) => this.getTemplateCategoryFromId(usage.templateId))
       .filter(Boolean)
 
     if (successfulCategories.includes(template.metadata.categories[0])) {
@@ -1270,10 +1292,11 @@ export class WizardTemplates {
     }
 
     // Integration availability
-    const availableIntegrations = template.requiredCredentials.filter(cred =>
+    const availableIntegrations = template.requiredCredentials.filter((cred) =>
       userContext.integrations.includes(cred)
     )
-    const integrationBoost = availableIntegrations.length / Math.max(template.requiredCredentials.length, 1)
+    const integrationBoost =
+      availableIntegrations.length / Math.max(template.requiredCredentials.length, 1)
     boost += integrationBoost * 0.2
 
     return Math.min(boost, 1)
@@ -1289,15 +1312,15 @@ export class WizardTemplates {
     if (scoreBreakdown.goalAlignment > 0.7) {
       reasons.push(`Strong alignment with ${query.goal?.title || 'your goals'}`)
     }
-    
+
     if (scoreBreakdown.skillLevelMatch > 0.8) {
       reasons.push('Perfect match for your skill level')
     }
-    
+
     if (scoreBreakdown.templateQuality > 0.8) {
       reasons.push('High-quality template with comprehensive documentation')
     }
-    
+
     if (scoreBreakdown.historicalSuccess > 0.8) {
       reasons.push(`${Math.round(template.successRate)}% success rate`)
     }
@@ -1313,8 +1336,8 @@ export class WizardTemplates {
     // Calculate confidence based on the consistency of scores
     const scores = Object.values(scoreBreakdown) as number[]
     const average = scores.reduce((sum, score) => sum + score, 0) / scores.length
-    const variance = scores.reduce((sum, score) => sum + Math.pow(score - average, 2), 0) / scores.length
-    
+    const variance = scores.reduce((sum, score) => sum + (score - average) ** 2, 0) / scores.length
+
     // Lower variance = higher confidence
     return Math.max(0.3, 1 - variance)
   }
@@ -1340,19 +1363,25 @@ export class WizardTemplates {
     return criteria
   }
 
-  private identifyPotentialIssues(template: WorkflowTemplate, query: TemplateDiscoveryQuery): string[] {
+  private identifyPotentialIssues(
+    template: WorkflowTemplate,
+    query: TemplateDiscoveryQuery
+  ): string[] {
     const issues: string[] = []
 
     // Setup time concerns
     if (query.maxSetupTime && template.averageSetupTime > query.maxSetupTime) {
-      issues.push(`Setup time (${template.averageSetupTime} min) exceeds preference (${query.maxSetupTime} min)`)
+      issues.push(
+        `Setup time (${template.averageSetupTime} min) exceeds preference (${query.maxSetupTime} min)`
+      )
     }
 
     // Missing integrations
     if (query.requiredIntegrations) {
-      const missing = query.requiredIntegrations.filter(req =>
-        !template.requiredCredentials.includes(req) &&
-        !template.supportedIntegrations.includes(req)
+      const missing = query.requiredIntegrations.filter(
+        (req) =>
+          !template.requiredCredentials.includes(req) &&
+          !template.supportedIntegrations.includes(req)
       )
       if (missing.length > 0) {
         issues.push(`May require additional integrations: ${missing.join(', ')}`)
@@ -1368,7 +1397,7 @@ export class WizardTemplates {
   }
 
   private generateCustomizationSuggestions(
-    template: WorkflowTemplate, 
+    template: WorkflowTemplate,
     query: TemplateDiscoveryQuery
   ): string[] {
     const suggestions: string[] = []
@@ -1385,8 +1414,8 @@ export class WizardTemplates {
 
     // Integration suggestions
     if (query.requiredIntegrations) {
-      const missing = query.requiredIntegrations.filter(req =>
-        !template.requiredCredentials.includes(req)
+      const missing = query.requiredIntegrations.filter(
+        (req) => !template.requiredCredentials.includes(req)
       )
       if (missing.length > 0) {
         suggestions.push(`Consider adding ${missing.join(', ')} integrations`)
@@ -1435,16 +1464,18 @@ export class WizardTemplates {
     // Generate alternative keywords using NLP/ML
     // For now, return simple variations
     const alternatives: string[] = []
-    
-    keywords.forEach(keyword => {
+
+    keywords.forEach((keyword) => {
       // Add simple variations
-      alternatives.push(keyword + 's', keyword.slice(0, -1))
+      alternatives.push(`${keyword}s`, keyword.slice(0, -1))
     })
 
-    return alternatives.filter(alt => alt.length > 2)
+    return alternatives.filter((alt) => alt.length > 2)
   }
 
-  private async generateSuggestedFilters(query: TemplateDiscoveryQuery): Promise<Record<string, string[]>> {
+  private async generateSuggestedFilters(
+    query: TemplateDiscoveryQuery
+  ): Promise<Record<string, string[]>> {
     return {
       categories: ['automation', 'integration', 'data-processing', 'communication'],
       industries: ['healthcare', 'finance', 'retail', 'technology'],
@@ -1455,7 +1486,7 @@ export class WizardTemplates {
 
   private async findRelatedCategories(category?: string): Promise<string[]> {
     if (!category) return []
-    
+
     const categoryRelationships: Record<string, string[]> = {
       automation: ['integration', 'workflow', 'scheduling'],
       integration: ['api', 'data-sync', 'automation'],
@@ -1478,13 +1509,15 @@ export class WizardTemplates {
   }
 
   // Additional method placeholders that would be fully implemented
-  private async findCandidateTemplates(baseTemplate: WorkflowTemplate): Promise<WorkflowTemplate[]> {
+  private async findCandidateTemplates(
+    baseTemplate: WorkflowTemplate
+  ): Promise<WorkflowTemplate[]> {
     // Implementation would find templates with similar characteristics
     return []
   }
 
   private async calculateTemplateSimilarity(
-    template1: WorkflowTemplate, 
+    template1: WorkflowTemplate,
     template2: WorkflowTemplate
   ): Promise<TemplateSimilarityAnalysis> {
     // Implementation would calculate detailed similarity metrics
@@ -1514,12 +1547,16 @@ export class WizardTemplates {
     return ['Consider templates with similar patterns for consistent workflow design']
   }
 
-  private async loadPerformanceMetrics(templateIds: string[]): Promise<Record<string, TemplatePerformanceMetrics>> {
+  private async loadPerformanceMetrics(
+    templateIds: string[]
+  ): Promise<Record<string, TemplatePerformanceMetrics>> {
     // Load performance metrics from analytics database
     return {}
   }
 
-  private async loadTemplatePerformanceMetrics(templateId: string): Promise<TemplatePerformanceMetrics> {
+  private async loadTemplatePerformanceMetrics(
+    templateId: string
+  ): Promise<TemplatePerformanceMetrics> {
     // Load detailed performance metrics for specific template
     return {
       templateId,
@@ -1619,7 +1656,7 @@ export class WizardTemplates {
   }
 
   private async getTrendingTemplates(
-    userContext: UserTemplateContext, 
+    userContext: UserTemplateContext,
     limit: number
   ): Promise<WorkflowTemplate[]> {
     // Get currently trending templates
@@ -1627,19 +1664,19 @@ export class WizardTemplates {
   }
 
   private generateRecommendationReasons(
-    template: WorkflowTemplate, 
+    template: WorkflowTemplate,
     query: TemplateDiscoveryQuery
   ): string[] {
     const reasons: string[] = []
-    
+
     if (query.goal && template.metadata.categories.includes(query.goal.category)) {
       reasons.push(`Perfect match for ${query.goal.title}`)
     }
-    
+
     if (template.userRating >= 4) {
       reasons.push(`Highly rated (${template.userRating}/5 stars)`)
     }
-    
+
     if (template.averageSetupTime <= 10) {
       reasons.push('Quick and easy setup')
     }
@@ -1648,14 +1685,14 @@ export class WizardTemplates {
   }
 
   private getTemplateMatchingCriteria(
-    template: WorkflowTemplate, 
+    template: WorkflowTemplate,
     query: TemplateDiscoveryQuery
   ): string[] {
     return this.getMatchingCriteria(template, query)
   }
 
   private generateTemplateCustomizationSuggestions(
-    template: WorkflowTemplate, 
+    template: WorkflowTemplate,
     query: TemplateDiscoveryQuery
   ): string[] {
     return this.generateCustomizationSuggestions(template, query)

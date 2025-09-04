@@ -13,84 +13,79 @@
  * @created 2025-09-04
  */
 
-// Core wizard engine
-export {
-  WizardEngine,
-  createWizardEngine,
-  type WizardStep,
-  type WizardState,
-  type WizardConfiguration,
-  type BusinessGoal,
-  type WorkflowTemplate,
-  type TemplateBlock,
-  type TemplateConnection,
-  type TemplateConfiguration,
-  type TemplateMetadata,
-  type TemplateCustomization,
-  type ValidationError,
-  type ValidationRule,
-  type WizardAnalyticsEvent,
-  type TemplateRecommendation,
-} from './wizard-engine'
-
-// Template system
-export {
-  WizardTemplates,
-  wizardTemplates,
-  type TemplateDiscoveryQuery,
-  type TemplateDiscoveryResult,
-  type UserTemplateContext,
-  type TemplateUsageHistory,
-  type TemplatePerformanceMetrics,
-  type TemplateMatchingScore,
-  type TemplateSimilarityAnalysis,
-} from './wizard-templates'
-
-// Template recommendation engine
-export {
-  TemplateRecommendationEngine,
-  templateRecommendationEngine,
-  type UserContext,
-  type ScoringFactors,
-  type RecommendationConfig,
-  type RecommendationContext,
-  type MatchingCriteria,
-} from './template-recommendation-engine'
-
 // Configuration assistant
 export {
   ConfigurationAssistant,
-  configurationAssistant,
-  type ConfigurationField,
   type ConfigurationContext,
-  type ConfigurationValidationResult,
+  type ConfigurationField,
   type ConfigurationSuggestion,
+  type ConfigurationValidationResult,
+  configurationAssistant,
   type OptimizationRecommendation,
 } from './configuration-assistant'
-
+// Template recommendation engine
+export {
+  type MatchingCriteria,
+  type RecommendationConfig,
+  type RecommendationContext,
+  type ScoringFactors,
+  TemplateRecommendationEngine,
+  templateRecommendationEngine,
+  type UserContext,
+} from './template-recommendation-engine'
 // Analytics system
 export {
-  WizardAnalytics,
-  wizardAnalytics,
-  type EnhancedAnalyticsEvent,
-  type AnalyticsEventType,
   type ABTest,
+  type AnalyticsEventType,
   type ConversionFunnel,
+  type EnhancedAnalyticsEvent,
   type PerformanceDashboard,
   type UserSegment,
+  WizardAnalytics,
+  wizardAnalytics,
 } from './wizard-analytics'
-
+// Core wizard engine
+export {
+  type BusinessGoal,
+  createWizardEngine,
+  type TemplateBlock,
+  type TemplateConfiguration,
+  type TemplateConnection,
+  type TemplateCustomization,
+  type TemplateMetadata,
+  type TemplateRecommendation,
+  type ValidationError,
+  type ValidationRule,
+  type WizardAnalyticsEvent,
+  type WizardConfiguration,
+  WizardEngine,
+  type WizardState,
+  type WizardStep,
+  type WorkflowTemplate,
+} from './wizard-engine'
+// Template system
+export {
+  type TemplateDiscoveryQuery,
+  type TemplateDiscoveryResult,
+  type TemplateMatchingScore,
+  type TemplatePerformanceMetrics,
+  type TemplateSimilarityAnalysis,
+  type TemplateUsageHistory,
+  type UserTemplateContext,
+  WizardTemplates,
+  wizardTemplates,
+} from './wizard-templates'
 // Validation system
 export {
-  WizardValidation,
-  wizardValidation,
+  type ComplianceStatus,
   type EnhancedValidationError,
+  type PerformanceAnalysis,
+  type QualityMetrics,
+  type SecurityAssessment,
+  type ValidationCategory,
   type ValidationResult,
   type ValidationSeverity,
-  type ValidationCategory,
   type ValidationSuggestion,
-  type SecurityAssessment,
-  type PerformanceAnalysis,
-  type ComplianceStatus,
-  type QualityMetrics,
+  WizardValidation,
+  wizardValidation,
 } from './wizard-validation'

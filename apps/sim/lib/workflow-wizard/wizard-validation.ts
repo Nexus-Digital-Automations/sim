@@ -23,15 +23,14 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
+import type { ConfigurationContext, ConfigurationField } from './configuration-assistant'
 import type {
   BusinessGoal,
   TemplateBlock,
   TemplateConnection,
-  ValidationError,
   ValidationRule,
   WorkflowTemplate,
 } from './wizard-engine'
-import type { ConfigurationField, ConfigurationContext } from './configuration-assistant'
 
 // Initialize structured logger with validation context
 const logger = createLogger('WizardValidation')
@@ -540,7 +539,16 @@ export class WizardValidation {
         includeWarnings: true,
         includeSuggestions: true,
         performanceMode: false,
-        categories: Object.values(['syntax', 'logic', 'security', 'performance', 'compatibility', 'accessibility', 'best_practice', 'integration'] as ValidationCategory[]),
+        categories: Object.values([
+          'syntax',
+          'logic',
+          'security',
+          'performance',
+          'compatibility',
+          'accessibility',
+          'best_practice',
+          'integration',
+        ] as ValidationCategory[]),
         skipRules: [],
         customRules: [],
         environment: 'development',
@@ -615,7 +623,12 @@ export class WizardValidation {
       const complianceStatus = await this.performComplianceChecks(template, defaultOptions)
 
       // Calculate quality metrics
-      const qualityMetrics = await this.calculateQualityMetrics(template, errors, warnings, suggestions)
+      const qualityMetrics = await this.calculateQualityMetrics(
+        template,
+        errors,
+        warnings,
+        suggestions
+      )
 
       // Generate recommendations
       const recommendations = await this.generateValidationRecommendations(
@@ -773,7 +786,7 @@ export class WizardValidation {
       // Process items in parallel batches
       const batchSize = request.options.performanceMode ? 10 : 5
       const batches: ValidationItem[][] = []
-      
+
       for (let i = 0; i < sortedItems.length; i += batchSize) {
         batches.push(sortedItems.slice(i, i + batchSize))
       }
@@ -848,7 +861,7 @@ export class WizardValidation {
         } catch (fixError) {
           failed.push({
             error,
-            reason: `Auto-fix failed: ${fixError instanceof Error ? fixError.message : 'Unknown error'}`
+            reason: `Auto-fix failed: ${fixError instanceof Error ? fixError.message : 'Unknown error'}`,
           })
         }
       }
@@ -939,46 +952,52 @@ export class WizardValidation {
 
     // Check required fields
     if (!template.title || template.title.trim().length === 0) {
-      errors.push(this.createValidationError({
-        id: 'template_missing_title',
-        category: 'syntax',
-        code: 'TEMPLATE_001',
-        title: 'Missing Template Title',
-        description: 'Template must have a non-empty title',
-        field: 'title',
-        message: 'Template title is required',
-        severity: 'error',
-        context: { templateId: template.id },
-      }))
+      errors.push(
+        this.createValidationError({
+          id: 'template_missing_title',
+          category: 'syntax',
+          code: 'TEMPLATE_001',
+          title: 'Missing Template Title',
+          description: 'Template must have a non-empty title',
+          field: 'title',
+          message: 'Template title is required',
+          severity: 'error',
+          context: { templateId: template.id },
+        })
+      )
     }
 
     if (!template.description || template.description.trim().length === 0) {
-      errors.push(this.createValidationError({
-        id: 'template_missing_description',
-        category: 'best_practice',
-        code: 'TEMPLATE_002',
-        title: 'Missing Template Description',
-        description: 'Template should have a meaningful description',
-        field: 'description',
-        message: 'Template description is recommended for better user experience',
-        severity: 'warning',
-        context: { templateId: template.id },
-      }))
+      errors.push(
+        this.createValidationError({
+          id: 'template_missing_description',
+          category: 'best_practice',
+          code: 'TEMPLATE_002',
+          title: 'Missing Template Description',
+          description: 'Template should have a meaningful description',
+          field: 'description',
+          message: 'Template description is recommended for better user experience',
+          severity: 'warning',
+          context: { templateId: template.id },
+        })
+      )
     }
 
     // Check blocks
     if (!template.blocks || template.blocks.length === 0) {
-      errors.push(this.createValidationError({
-        id: 'template_no_blocks',
-        category: 'logic',
-        code: 'TEMPLATE_003',
-        title: 'Template Has No Blocks',
-        description: 'Template must contain at least one block',
-        field: 'blocks',
-        message: 'Template must have at least one block to be functional',
-        severity: 'error',
-        context: { templateId: template.id },
-      }))
+      errors.push(
+        this.createValidationError({
+          id: 'template_no_blocks',
+          category: 'logic',
+          code: 'TEMPLATE_003',
+          title: 'Template Has No Blocks',
+          description: 'Template must contain at least one block',
+          field: 'blocks',
+          message: 'Template must have at least one block to be functional',
+          severity: 'error',
+          context: { templateId: template.id },
+        })
+      )
     }
 
     return errors
@@ -996,46 +1015,52 @@ export class WizardValidation {
     for (const block of blocks) {
       // Validate block structure
       if (!block.id || block.id.trim().length === 0) {
-        errors.push(this.createValidationError({
-          id: `block_missing_id_${Date.now()}`,
-          category: 'syntax',
-          code: 'BLOCK_001',
-          title: 'Missing Block ID',
-          description: 'Block must have a unique identifier',
-          field: 'id',
-          message: 'Block ID is required',
-          severity: 'error',
-          context: { blockId: block.id, blockType: block.type },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `block_missing_id_${Date.now()}`,
+            category: 'syntax',
+            code: 'BLOCK_001',
+            title: 'Missing Block ID',
+            description: 'Block must have a unique identifier',
+            field: 'id',
+            message: 'Block ID is required',
+            severity: 'error',
+            context: { blockId: block.id, blockType: block.type },
+          })
+        )
       }
 
       if (!block.type || block.type.trim().length === 0) {
-        errors.push(this.createValidationError({
-          id: `block_missing_type_${block.id}`,
-          category: 'syntax',
-          code: 'BLOCK_002',
-          title: 'Missing Block Type',
-          description: 'Block must have a valid type',
-          field: 'type',
-          message: 'Block type is required',
-          severity: 'error',
-          context: { blockId: block.id },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `block_missing_type_${block.id}`,
+            category: 'syntax',
+            code: 'BLOCK_002',
+            title: 'Missing Block Type',
+            description: 'Block must have a valid type',
+            field: 'type',
+            message: 'Block type is required',
+            severity: 'error',
+            context: { blockId: block.id },
+          })
+        )
       }
 
       // Validate block configuration
       if (block.required && (!block.config || Object.keys(block.config).length === 0)) {
-        errors.push(this.createValidationError({
-          id: `block_missing_config_${block.id}`,
-          category: 'logic',
-          code: 'BLOCK_003',
-          title: 'Missing Required Configuration',
-          description: 'Required block is missing configuration',
-          field: 'config',
-          message: 'Required blocks must have configuration',
-          severity: 'error',
-          context: { blockId: block.id, blockType: block.type },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `block_missing_config_${block.id}`,
+            category: 'logic',
+            code: 'BLOCK_003',
+            title: 'Missing Required Configuration',
+            description: 'Required block is missing configuration',
+            field: 'config',
+            message: 'Required blocks must have configuration',
+            severity: 'error',
+            context: { blockId: block.id, blockType: block.type },
+          })
+        )
       }
     }
 
@@ -1051,51 +1076,57 @@ export class WizardValidation {
     options: ValidationOptions
   ): Promise<EnhancedValidationError[]> {
     const errors: EnhancedValidationError[] = []
-    const blockIds = new Set(blocks.map(b => b.id))
+    const blockIds = new Set(blocks.map((b) => b.id))
 
     for (const connection of connections) {
       // Validate source and target exist
       if (!blockIds.has(connection.source)) {
-        errors.push(this.createValidationError({
-          id: `connection_invalid_source_${connection.id}`,
-          category: 'logic',
-          code: 'CONNECTION_001',
-          title: 'Invalid Connection Source',
-          description: 'Connection references non-existent source block',
-          field: 'source',
-          message: `Source block '${connection.source}' does not exist`,
-          severity: 'error',
-          context: { connectionId: connection.id, sourceId: connection.source },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `connection_invalid_source_${connection.id}`,
+            category: 'logic',
+            code: 'CONNECTION_001',
+            title: 'Invalid Connection Source',
+            description: 'Connection references non-existent source block',
+            field: 'source',
+            message: `Source block '${connection.source}' does not exist`,
+            severity: 'error',
+            context: { connectionId: connection.id, sourceId: connection.source },
+          })
+        )
       }
 
       if (!blockIds.has(connection.target)) {
-        errors.push(this.createValidationError({
-          id: `connection_invalid_target_${connection.id}`,
-          category: 'logic',
-          code: 'CONNECTION_002',
-          title: 'Invalid Connection Target',
-          description: 'Connection references non-existent target block',
-          field: 'target',
-          message: `Target block '${connection.target}' does not exist`,
-          severity: 'error',
-          context: { connectionId: connection.id, targetId: connection.target },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `connection_invalid_target_${connection.id}`,
+            category: 'logic',
+            code: 'CONNECTION_002',
+            title: 'Invalid Connection Target',
+            description: 'Connection references non-existent target block',
+            field: 'target',
+            message: `Target block '${connection.target}' does not exist`,
+            severity: 'error',
+            context: { connectionId: connection.id, targetId: connection.target },
+          })
+        )
       }
 
       // Check for circular references
       if (connection.source === connection.target) {
-        errors.push(this.createValidationError({
-          id: `connection_circular_${connection.id}`,
-          category: 'logic',
-          code: 'CONNECTION_003',
-          title: 'Circular Connection',
-          description: 'Block cannot connect to itself',
-          field: 'connection',
-          message: 'Blocks cannot connect to themselves',
-          severity: 'error',
-          context: { connectionId: connection.id, blockId: connection.source },
-        }))
+        errors.push(
+          this.createValidationError({
+            id: `connection_circular_${connection.id}`,
+            category: 'logic',
+            code: 'CONNECTION_003',
+            title: 'Circular Connection',
+            description: 'Block cannot connect to itself',
+            field: 'connection',
+            message: 'Blocks cannot connect to themselves',
+            severity: 'error',
+            context: { connectionId: connection.id, blockId: connection.source },
+          })
+        )
       }
     }
 
@@ -1171,7 +1202,7 @@ export class WizardValidation {
     warningList: EnhancedValidationError[],
     suggestionList: EnhancedValidationError[]
   ): void {
-    errors.forEach(error => {
+    errors.forEach((error) => {
       switch (error.severity) {
         case 'error':
           errorList.push(error)
@@ -1197,11 +1228,11 @@ export class WizardValidation {
     suggestions: EnhancedValidationError[]
   ): ValidationSummary {
     const allIssues = [...errors, ...warnings, ...suggestions]
-    
+
     const categoryCounts: Record<ValidationCategory, number> = {} as any
     const severityCounts: Record<ValidationSeverity, number> = {} as any
 
-    allIssues.forEach(issue => {
+    allIssues.forEach((issue) => {
       categoryCounts[issue.category] = (categoryCounts[issue.category] || 0) + 1
       severityCounts[issue.severity] = (severityCounts[issue.severity] || 0) + 1
     })
@@ -1209,7 +1240,7 @@ export class WizardValidation {
     return {
       categoryCounts,
       severityCounts,
-      autoFixableCount: allIssues.filter(issue => issue.autoFixAvailable).length,
+      autoFixableCount: allIssues.filter((issue) => issue.autoFixAvailable).length,
       blockerCount: errors.length,
       estimatedFixTime: this.estimateFixTime(allIssues),
       topIssueCategories: Object.entries(categoryCounts)
@@ -1235,41 +1266,107 @@ export class WizardValidation {
   }
 
   // Additional method placeholders that would be fully implemented
-  private addTemplateStructureRules(): void { /* Implementation */ }
-  private addBlockValidationRules(): void { /* Implementation */ }
-  private addConnectionValidationRules(): void { /* Implementation */ }
-  private addSecurityValidationRules(): void { /* Implementation */ }
-  private addPerformanceValidationRules(): void { /* Implementation */ }
-  private addAccessibilityValidationRules(): void { /* Implementation */ }
-  private addBestPracticeRules(): void { /* Implementation */ }
+  private addTemplateStructureRules(): void {
+    /* Implementation */
+  }
+  private addBlockValidationRules(): void {
+    /* Implementation */
+  }
+  private addConnectionValidationRules(): void {
+    /* Implementation */
+  }
+  private addSecurityValidationRules(): void {
+    /* Implementation */
+  }
+  private addPerformanceValidationRules(): void {
+    /* Implementation */
+  }
+  private addAccessibilityValidationRules(): void {
+    /* Implementation */
+  }
+  private addBestPracticeRules(): void {
+    /* Implementation */
+  }
 
-  private async validateTemplateConfiguration(config: any, options: ValidationOptions): Promise<EnhancedValidationError[]> { return [] }
-  private async validateTemplateMetadata(metadata: any, options: ValidationOptions): Promise<EnhancedValidationError[]> { return [] }
-  private async validateGoalAlignment(template: WorkflowTemplate, goal: BusinessGoal, options: ValidationOptions): Promise<EnhancedValidationError[]> { return [] }
-  
+  private async validateTemplateConfiguration(
+    config: any,
+    options: ValidationOptions
+  ): Promise<EnhancedValidationError[]> {
+    return []
+  }
+  private async validateTemplateMetadata(
+    metadata: any,
+    options: ValidationOptions
+  ): Promise<EnhancedValidationError[]> {
+    return []
+  }
+  private async validateGoalAlignment(
+    template: WorkflowTemplate,
+    goal: BusinessGoal,
+    options: ValidationOptions
+  ): Promise<EnhancedValidationError[]> {
+    return []
+  }
+
   private async performSecurityAssessment(template: WorkflowTemplate): Promise<SecurityAssessment> {
     return {
       overallSecurityScore: 85,
       vulnerabilities: [],
       securityBestPractices: [],
-      dataProtection: { sensitiveDataHandling: true, dataEncryption: true, dataRetention: true, dataMinimization: true, consentManagement: true, issues: [], recommendations: [] },
-      accessControl: { authentication: true, authorization: true, roleBasedAccess: true, principleOfLeastPrivilege: true, sessionManagement: true, issues: [], recommendations: [] },
-      encryptionStatus: { dataAtRest: true, dataInTransit: true, keyManagement: true, algorithms: [], compliance: true, issues: [], recommendations: [] },
+      dataProtection: {
+        sensitiveDataHandling: true,
+        dataEncryption: true,
+        dataRetention: true,
+        dataMinimization: true,
+        consentManagement: true,
+        issues: [],
+        recommendations: [],
+      },
+      accessControl: {
+        authentication: true,
+        authorization: true,
+        roleBasedAccess: true,
+        principleOfLeastPrivilege: true,
+        sessionManagement: true,
+        issues: [],
+        recommendations: [],
+      },
+      encryptionStatus: {
+        dataAtRest: true,
+        dataInTransit: true,
+        keyManagement: true,
+        algorithms: [],
+        compliance: true,
+        issues: [],
+        recommendations: [],
+      },
     }
   }
 
-  private async performPerformanceAnalysis(template: WorkflowTemplate): Promise<PerformanceAnalysis> {
+  private async performPerformanceAnalysis(
+    template: WorkflowTemplate
+  ): Promise<PerformanceAnalysis> {
     return {
       estimatedExecutionTime: 30,
       memoryUsage: 128,
       networkRequests: 5,
       bottlenecks: [],
       optimizationOpportunities: [],
-      scalabilityAssessment: { currentCapacity: '1000 executions/hour', scalabilityScore: 80, limitingFactors: [], recommendations: [], horizontalScaling: true, verticalScaling: true },
+      scalabilityAssessment: {
+        currentCapacity: '1000 executions/hour',
+        scalabilityScore: 80,
+        limitingFactors: [],
+        recommendations: [],
+        horizontalScaling: true,
+        verticalScaling: true,
+      },
     }
   }
 
-  private async performComplianceChecks(template: WorkflowTemplate, options: ValidationOptions): Promise<ComplianceStatus> {
+  private async performComplianceChecks(
+    template: WorkflowTemplate,
+    options: ValidationOptions
+  ): Promise<ComplianceStatus> {
     return {
       gdprCompliant: true,
       hipaaCompliant: false,
@@ -1281,7 +1378,12 @@ export class WizardValidation {
     }
   }
 
-  private async calculateQualityMetrics(template: WorkflowTemplate, errors: any[], warnings: any[], suggestions: any[]): Promise<QualityMetrics> {
+  private async calculateQualityMetrics(
+    template: WorkflowTemplate,
+    errors: any[],
+    warnings: any[],
+    suggestions: any[]
+  ): Promise<QualityMetrics> {
     return {
       overallQuality: 85,
       maintainability: 80,
@@ -1296,78 +1398,255 @@ export class WizardValidation {
     }
   }
 
-  private async generateValidationRecommendations(template: WorkflowTemplate, errors: any[], warnings: any[], suggestions: any[]): Promise<ValidationRecommendation[]> {
+  private async generateValidationRecommendations(
+    template: WorkflowTemplate,
+    errors: any[],
+    warnings: any[],
+    suggestions: any[]
+  ): Promise<ValidationRecommendation[]> {
     return []
   }
 
-  private async validateConfigurationField(field: ConfigurationField, value: any, context: ConfigurationContext): Promise<EnhancedValidationError[]> {
+  private async validateConfigurationField(
+    field: ConfigurationField,
+    value: any,
+    context: ConfigurationContext
+  ): Promise<EnhancedValidationError[]> {
     return []
   }
 
-  private async performCrossFieldValidation(fields: ConfigurationField[], values: Record<string, any>, context: ConfigurationContext): Promise<EnhancedValidationError[]> {
+  private async performCrossFieldValidation(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    context: ConfigurationContext
+  ): Promise<EnhancedValidationError[]> {
     return []
   }
 
-  private async validateFieldDependencies(fields: ConfigurationField[], values: Record<string, any>): Promise<EnhancedValidationError[]> {
+  private async validateFieldDependencies(
+    fields: ConfigurationField[],
+    values: Record<string, any>
+  ): Promise<EnhancedValidationError[]> {
     return []
   }
 
-  private async validateConfigurationSecurity(fields: ConfigurationField[], values: Record<string, any>, context: ConfigurationContext): Promise<EnhancedValidationError[]> {
+  private async validateConfigurationSecurity(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    context: ConfigurationContext
+  ): Promise<EnhancedValidationError[]> {
     return []
   }
 
-  private calculateConfigurationScore(fields: ConfigurationField[], values: Record<string, any>, errors: any[], warnings: any[]): number {
+  private calculateConfigurationScore(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    errors: any[],
+    warnings: any[]
+  ): number {
     return 85
   }
 
-  private async generateConfigurationRecommendations(fields: ConfigurationField[], values: Record<string, any>, errors: any[]): Promise<ValidationRecommendation[]> {
+  private async generateConfigurationRecommendations(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    errors: any[]
+  ): Promise<ValidationRecommendation[]> {
     return []
   }
 
-  private async calculateConfigurationQualityMetrics(fields: ConfigurationField[], values: Record<string, any>): Promise<QualityMetrics> {
+  private async calculateConfigurationQualityMetrics(
+    fields: ConfigurationField[],
+    values: Record<string, any>
+  ): Promise<QualityMetrics> {
     return {
-      overallQuality: 85, maintainability: 80, reliability: 90, usability: 85, performance: 85,
-      security: 90, accessibility: 80, bestPracticesScore: 85, codeComplexity: 3, testCoverage: 75,
+      overallQuality: 85,
+      maintainability: 80,
+      reliability: 90,
+      usability: 85,
+      performance: 85,
+      security: 90,
+      accessibility: 80,
+      bestPracticesScore: 85,
+      codeComplexity: 3,
+      testCoverage: 75,
     }
   }
 
-  private async checkConfigurationCompliance(fields: ConfigurationField[], values: Record<string, any>, context: ConfigurationContext): Promise<ComplianceStatus> {
+  private async checkConfigurationCompliance(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    context: ConfigurationContext
+  ): Promise<ComplianceStatus> {
     return {
-      gdprCompliant: true, hipaaCompliant: false, soxCompliant: false, wcagCompliant: true,
-      customCompliance: {}, nonComplianceIssues: [], recommendations: [],
+      gdprCompliant: true,
+      hipaaCompliant: false,
+      soxCompliant: false,
+      wcagCompliant: true,
+      customCompliance: {},
+      nonComplianceIssues: [],
+      recommendations: [],
     }
   }
 
-  private async analyzeConfigurationPerformance(fields: ConfigurationField[], values: Record<string, any>): Promise<PerformanceAnalysis> {
+  private async analyzeConfigurationPerformance(
+    fields: ConfigurationField[],
+    values: Record<string, any>
+  ): Promise<PerformanceAnalysis> {
     return {
-      estimatedExecutionTime: 30, memoryUsage: 128, networkRequests: 5, bottlenecks: [],
+      estimatedExecutionTime: 30,
+      memoryUsage: 128,
+      networkRequests: 5,
+      bottlenecks: [],
       optimizationOpportunities: [],
-      scalabilityAssessment: { currentCapacity: '1000/hour', scalabilityScore: 80, limitingFactors: [], recommendations: [], horizontalScaling: true, verticalScaling: true },
+      scalabilityAssessment: {
+        currentCapacity: '1000/hour',
+        scalabilityScore: 80,
+        limitingFactors: [],
+        recommendations: [],
+        horizontalScaling: true,
+        verticalScaling: true,
+      },
     }
   }
 
-  private async assessConfigurationSecurity(fields: ConfigurationField[], values: Record<string, any>, context: ConfigurationContext): Promise<SecurityAssessment> {
+  private async assessConfigurationSecurity(
+    fields: ConfigurationField[],
+    values: Record<string, any>,
+    context: ConfigurationContext
+  ): Promise<SecurityAssessment> {
     return {
-      overallSecurityScore: 85, vulnerabilities: [], securityBestPractices: [],
-      dataProtection: { sensitiveDataHandling: true, dataEncryption: true, dataRetention: true, dataMinimization: true, consentManagement: true, issues: [], recommendations: [] },
-      accessControl: { authentication: true, authorization: true, roleBasedAccess: true, principleOfLeastPrivilege: true, sessionManagement: true, issues: [], recommendations: [] },
-      encryptionStatus: { dataAtRest: true, dataInTransit: true, keyManagement: true, algorithms: [], compliance: true, issues: [], recommendations: [] },
+      overallSecurityScore: 85,
+      vulnerabilities: [],
+      securityBestPractices: [],
+      dataProtection: {
+        sensitiveDataHandling: true,
+        dataEncryption: true,
+        dataRetention: true,
+        dataMinimization: true,
+        consentManagement: true,
+        issues: [],
+        recommendations: [],
+      },
+      accessControl: {
+        authentication: true,
+        authorization: true,
+        roleBasedAccess: true,
+        principleOfLeastPrivilege: true,
+        sessionManagement: true,
+        issues: [],
+        recommendations: [],
+      },
+      encryptionStatus: {
+        dataAtRest: true,
+        dataInTransit: true,
+        keyManagement: true,
+        algorithms: [],
+        compliance: true,
+        issues: [],
+        recommendations: [],
+      },
     }
   }
 
-  private async validateItem(item: ValidationItem, options: ValidationOptions, context: ValidationExecutionContext): Promise<ValidationResult> {
+  private async validateItem(
+    item: ValidationItem,
+    options: ValidationOptions,
+    context: ValidationExecutionContext
+  ): Promise<ValidationResult> {
     // Validate individual batch item
     return {
-      isValid: true, overallScore: 85, totalIssues: 0, errors: [], warnings: [], suggestions: [],
-      summary: { categoryCounts: {} as any, severityCounts: {} as any, autoFixableCount: 0, blockerCount: 0, estimatedFixTime: 0, topIssueCategories: [], improvementPotential: 'Good' },
-      recommendations: [], qualityMetrics: { overallQuality: 85, maintainability: 80, reliability: 90, usability: 85, performance: 85, security: 90, accessibility: 80, bestPracticesScore: 85, codeComplexity: 3, testCoverage: 75 },
-      complianceStatus: { gdprCompliant: true, hipaaCompliant: false, soxCompliant: false, wcagCompliant: true, customCompliance: {}, nonComplianceIssues: [], recommendations: [] },
-      performanceAnalysis: { estimatedExecutionTime: 30, memoryUsage: 128, networkRequests: 5, bottlenecks: [], optimizationOpportunities: [], scalabilityAssessment: { currentCapacity: '1000/hour', scalabilityScore: 80, limitingFactors: [], recommendations: [], horizontalScaling: true, verticalScaling: true } },
-      securityAssessment: { overallSecurityScore: 85, vulnerabilities: [], securityBestPractices: [], dataProtection: { sensitiveDataHandling: true, dataEncryption: true, dataRetention: true, dataMinimization: true, consentManagement: true, issues: [], recommendations: [] }, accessControl: { authentication: true, authorization: true, roleBasedAccess: true, principleOfLeastPrivilege: true, sessionManagement: true, issues: [], recommendations: [] }, encryptionStatus: { dataAtRest: true, dataInTransit: true, keyManagement: true, algorithms: [], compliance: true, issues: [], recommendations: [] } },
+      isValid: true,
+      overallScore: 85,
+      totalIssues: 0,
+      errors: [],
+      warnings: [],
+      suggestions: [],
+      summary: {
+        categoryCounts: {} as any,
+        severityCounts: {} as any,
+        autoFixableCount: 0,
+        blockerCount: 0,
+        estimatedFixTime: 0,
+        topIssueCategories: [],
+        improvementPotential: 'Good',
+      },
+      recommendations: [],
+      qualityMetrics: {
+        overallQuality: 85,
+        maintainability: 80,
+        reliability: 90,
+        usability: 85,
+        performance: 85,
+        security: 90,
+        accessibility: 80,
+        bestPracticesScore: 85,
+        codeComplexity: 3,
+        testCoverage: 75,
+      },
+      complianceStatus: {
+        gdprCompliant: true,
+        hipaaCompliant: false,
+        soxCompliant: false,
+        wcagCompliant: true,
+        customCompliance: {},
+        nonComplianceIssues: [],
+        recommendations: [],
+      },
+      performanceAnalysis: {
+        estimatedExecutionTime: 30,
+        memoryUsage: 128,
+        networkRequests: 5,
+        bottlenecks: [],
+        optimizationOpportunities: [],
+        scalabilityAssessment: {
+          currentCapacity: '1000/hour',
+          scalabilityScore: 80,
+          limitingFactors: [],
+          recommendations: [],
+          horizontalScaling: true,
+          verticalScaling: true,
+        },
+      },
+      securityAssessment: {
+        overallSecurityScore: 85,
+        vulnerabilities: [],
+        securityBestPractices: [],
+        dataProtection: {
+          sensitiveDataHandling: true,
+          dataEncryption: true,
+          dataRetention: true,
+          dataMinimization: true,
+          consentManagement: true,
+          issues: [],
+          recommendations: [],
+        },
+        accessControl: {
+          authentication: true,
+          authorization: true,
+          roleBasedAccess: true,
+          principleOfLeastPrivilege: true,
+          sessionManagement: true,
+          issues: [],
+          recommendations: [],
+        },
+        encryptionStatus: {
+          dataAtRest: true,
+          dataInTransit: true,
+          keyManagement: true,
+          algorithms: [],
+          compliance: true,
+          issues: [],
+          recommendations: [],
+        },
+      },
     }
   }
 
-  private async applyAutoFix(error: EnhancedValidationError, context: any): Promise<{ success: boolean; reason: string; changes: AutoFixChange[] }> {
+  private async applyAutoFix(
+    error: EnhancedValidationError,
+    context: any
+  ): Promise<{ success: boolean; reason: string; changes: AutoFixChange[] }> {
     // Apply automatic fixes where possible
     return { success: false, reason: 'Auto-fix not implemented for this error', changes: [] }
   }
@@ -1378,7 +1657,7 @@ export class WizardValidation {
   }
 
   private calculateImprovementPotential(issues: EnhancedValidationError[]): string {
-    const errorCount = issues.filter(i => i.severity === 'error').length
+    const errorCount = issues.filter((i) => i.severity === 'error').length
     if (errorCount === 0) return 'Excellent'
     if (errorCount < 3) return 'Good'
     if (errorCount < 10) return 'Moderate'

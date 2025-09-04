@@ -1,6 +1,6 @@
 /**
  * Community User Management System Validation Script
- * 
+ *
  * Validates that all community system components have been created correctly
  * and provides a summary of the implementation.
  */
@@ -15,60 +15,60 @@ const expectedFiles = [
   {
     path: './db/community-schema-extensions.sql',
     name: 'Database Schema Extensions',
-    description: 'Community user tables and reputation system'
+    description: 'Community user tables and reputation system',
   },
   {
     path: './lib/community/reputation-system.ts',
     name: 'Reputation System Service',
-    description: 'Point-based reputation with anti-gaming protection'
+    description: 'Point-based reputation with anti-gaming protection',
   },
   {
     path: './lib/community/index.ts',
     name: 'Community System Exports',
-    description: 'Main export module with utilities'
+    description: 'Main export module with utilities',
   },
   {
     path: './lib/community/README.md',
     name: 'Documentation',
-    description: 'Comprehensive system documentation'
+    description: 'Comprehensive system documentation',
   },
   {
     path: './components/community/user-profile.tsx',
     name: 'User Profile Component',
-    description: 'Complete user profile with reputation and badges'
+    description: 'Complete user profile with reputation and badges',
   },
   {
     path: './app/api/community/users/route.ts',
     name: 'User Management API',
-    description: 'User search and profile management endpoints'
+    description: 'User search and profile management endpoints',
   },
   {
     path: './app/api/community/users/[userId]/route.ts',
     name: 'Individual User API',
-    description: 'Individual user profile operations'
+    description: 'Individual user profile operations',
   },
   {
     path: './app/api/community/users/[userId]/reputation/route.ts',
     name: 'Reputation API',
-    description: 'Reputation data and recalculation endpoints'
-  }
+    description: 'Reputation data and recalculation endpoints',
+  },
 ]
 
 let totalSize = 0
 let validFiles = 0
 
 console.log('📋 File Validation Results:')
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 
-expectedFiles.forEach(file => {
+expectedFiles.forEach((file) => {
   const filePath = path.join(__dirname, file.path)
-  
+
   if (fs.existsSync(filePath)) {
     const stats = fs.statSync(filePath)
     const sizeKB = (stats.size / 1024).toFixed(1)
     totalSize += stats.size
     validFiles++
-    
+
     console.log(`✅ ${file.name}`)
     console.log(`   📄 ${file.path} (${sizeKB} KB)`)
     console.log(`   📝 ${file.description}`)
@@ -81,7 +81,7 @@ expectedFiles.forEach(file => {
   }
 })
 
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 console.log(`📊 Summary: ${validFiles}/${expectedFiles.length} files created`)
 console.log(`💾 Total size: ${(totalSize / 1024).toFixed(1)} KB`)
 console.log('')

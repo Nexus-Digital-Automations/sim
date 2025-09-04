@@ -32,32 +32,19 @@ import {
   AlertCircle,
   ArrowRight,
   CheckCircle,
-  ChevronDown,
-  ChevronLeft,
   ChevronRight,
-  ChevronUp,
-  Copy,
   Database,
-  Edit,
-  ExternalLink,
   Eye,
   EyeOff,
   Globe,
   HelpCircle,
-  Info,
   Key,
-  Lightbulb,
-  Lock,
   Mail,
-  Play,
   Plus,
   RefreshCw,
-  Save,
   Settings,
   Shield,
   TestTube,
-  Trash2,
-  Unlock,
   Users,
   Webhook,
   Zap,
@@ -66,8 +53,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
@@ -78,7 +70,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -89,7 +80,6 @@ import type {
   TemplateBlock,
   UserContext,
   ValidationError,
-  ValidationRule,
   WizardState,
   WorkflowTemplate,
 } from '@/lib/workflow-wizard/wizard-engine'
@@ -175,7 +165,13 @@ const CREDENTIAL_TYPES = {
     name: 'HubSpot',
     fields: [
       { name: 'apiKey', label: 'API Key', type: 'password', required: true },
-      { name: 'domain', label: 'HubSpot Domain', type: 'text', required: true, placeholder: 'your-domain' },
+      {
+        name: 'domain',
+        label: 'HubSpot Domain',
+        type: 'text',
+        required: true,
+        placeholder: 'your-domain',
+      },
     ],
     testEndpoint: '/api/test/hubspot',
     icon: Database,
@@ -196,7 +192,13 @@ const CREDENTIAL_TYPES = {
     fields: [
       { name: 'url', label: 'Webhook URL', type: 'url', required: true },
       { name: 'secret', label: 'Secret Key', type: 'password', required: false },
-      { name: 'method', label: 'HTTP Method', type: 'select', required: true, options: ['POST', 'PUT', 'PATCH'] },
+      {
+        name: 'method',
+        label: 'HTTP Method',
+        type: 'select',
+        required: true,
+        options: ['POST', 'PUT', 'PATCH'],
+      },
     ],
     testEndpoint: '/api/test/webhook',
     icon: Webhook,
@@ -224,8 +226,11 @@ const generateSmartDefaults = (
 
     case 'email':
       defaults.subject = `Workflow: ${template?.title || 'Automated Message'}`
-      defaults.fromName = userContext?.organizationType === 'enterprise' ? 'Your Company' : 'Sim Workflow'
-      defaults.replyTo = userContext?.role?.includes('support') ? 'support@company.com' : 'noreply@company.com'
+      defaults.fromName =
+        userContext?.organizationType === 'enterprise' ? 'Your Company' : 'Sim Workflow'
+      defaults.replyTo = userContext?.role?.includes('support')
+        ? 'support@company.com'
+        : 'noreply@company.com'
       break
 
     case 'condition':
@@ -325,7 +330,7 @@ export function BlockConfiguration({
     const initialConfigs: BlockConfigState = {}
     templateBlocks.forEach((block) => {
       const smartDefaults = generateSmartDefaults(block, userContext, selectedTemplate)
-      
+
       initialConfigs[block.id] = {
         config: { ...block.config, ...smartDefaults },
         isValid: false,
@@ -345,7 +350,7 @@ export function BlockConfiguration({
     // Initialize required credentials
     const requiredCredentials = selectedTemplate?.requiredCredentials || []
     const initialCredentials: CredentialState = {}
-    
+
     requiredCredentials.forEach((credType) => {
       initialCredentials[credType] = {
         isConnected: false,
@@ -362,7 +367,7 @@ export function BlockConfiguration({
    */
   useEffect(() => {
     const totalBlocks = templateBlocks.length
-    const configuredBlocks = Object.values(blockConfigs).filter(config => config.isValid).length
+    const configuredBlocks = Object.values(blockConfigs).filter((config) => config.isValid).length
     const progress = totalBlocks > 0 ? Math.round((configuredBlocks / totalBlocks) * 100) : 0
     setConfigurationProgress(progress)
   }, [blockConfigs, templateBlocks])
@@ -388,12 +393,12 @@ export function BlockConfiguration({
               [field]: value,
             },
             hasChanges: true,
-            errors: prev[blockId]?.errors.filter(error => error.field !== field) || [],
+            errors: prev[blockId]?.errors.filter((error) => error.field !== field) || [],
           },
         }
 
         // Validate the updated configuration
-        const block = templateBlocks.find(b => b.id === blockId)
+        const block = templateBlocks.find((b) => b.id === blockId)
         if (block) {
           const validation = validateBlockConfiguration(block, updated[blockId].config)
           updated[blockId].isValid = validation.isValid
@@ -427,7 +432,7 @@ export function BlockConfiguration({
       if (block.validationRules) {
         block.validationRules.forEach((rule) => {
           const value = config[rule.type] // This would need proper field mapping
-          
+
           switch (rule.type) {
             case 'required':
               if (!value || (typeof value === 'string' && value.trim() === '')) {
@@ -438,7 +443,7 @@ export function BlockConfiguration({
                 })
               }
               break
-              
+
             case 'email':
               if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                 errors.push({
@@ -448,7 +453,7 @@ export function BlockConfiguration({
                 })
               }
               break
-              
+
             case 'url':
               if (value) {
                 try {
@@ -521,7 +526,7 @@ export function BlockConfiguration({
 
       try {
         // In production, this would make an API call to test the credentials
-        await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
 
         setCredentials((prev) => ({
           ...prev,
@@ -543,7 +548,7 @@ export function BlockConfiguration({
         })
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Connection failed'
-        
+
         setCredentials((prev) => ({
           ...prev,
           [credentialType]: {
@@ -588,11 +593,12 @@ export function BlockConfiguration({
 
       try {
         // Simulate API call to test block configuration
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 2000))
 
         const testResult: TestResult = {
           success: Math.random() > 0.3, // 70% success rate for demo
-          message: Math.random() > 0.3 ? 'Configuration test successful' : 'Test failed - check settings',
+          message:
+            Math.random() > 0.3 ? 'Configuration test successful' : 'Test failed - check settings',
           timestamp: new Date(),
         }
 
@@ -624,8 +630,10 @@ export function BlockConfiguration({
    * Handle next step
    */
   const handleNext = useCallback(() => {
-    const allValid = Object.values(blockConfigs).every(config => config.isValid)
-    const requiredCredentialsConnected = Object.values(credentials).every(cred => cred.isConnected)
+    const allValid = Object.values(blockConfigs).every((config) => config.isValid)
+    const requiredCredentialsConnected = Object.values(credentials).every(
+      (cred) => cred.isConnected
+    )
 
     if (!allValid) {
       if (onValidationError) {
@@ -661,28 +669,32 @@ export function BlockConfiguration({
    * Get current block
    */
   const currentBlock = useMemo(() => {
-    return templateBlocks.find(block => block.id === currentBlockId)
+    return templateBlocks.find((block) => block.id === currentBlockId)
   }, [templateBlocks, currentBlockId])
 
   /**
    * Get block progress
    */
-  const getBlockProgress = useCallback((blockId: string) => {
-    const config = blockConfigs[blockId]
-    if (!config) return 0
+  const getBlockProgress = useCallback(
+    (blockId: string) => {
+      const config = blockConfigs[blockId]
+      if (!config) return 0
 
-    const block = templateBlocks.find(b => b.id === blockId)
-    if (!block) return 0
+      const block = templateBlocks.find((b) => b.id === blockId)
+      if (!block) return 0
 
-    const requiredFields = block.validationRules?.filter(rule => rule.type === 'required').length || 1
-    const configuredFields = Object.keys(config.config).filter(key => config.config[key]).length
-    
-    return Math.min(100, Math.round((configuredFields / requiredFields) * 100))
-  }, [blockConfigs, templateBlocks])
+      const requiredFields =
+        block.validationRules?.filter((rule) => rule.type === 'required').length || 1
+      const configuredFields = Object.keys(config.config).filter((key) => config.config[key]).length
+
+      return Math.min(100, Math.round((configuredFields / requiredFields) * 100))
+    },
+    [blockConfigs, templateBlocks]
+  )
 
   if (templateBlocks.length === 0) {
     return (
-      <div className={cn('text-center py-12', className)}>
+      <div className={cn('py-12 text-center', className)}>
         <Settings className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
         <h3 className='mb-2 font-medium text-lg'>No Template Selected</h3>
         <p className='text-muted-foreground'>
@@ -702,8 +714,8 @@ export function BlockConfiguration({
             <h2 className='font-semibold text-2xl'>Configure Your Blocks</h2>
           </div>
           <p className='mx-auto max-w-2xl text-muted-foreground'>
-            Set up each workflow block with your specific requirements and credentials.
-            Smart defaults are pre-filled to get you started quickly.
+            Set up each workflow block with your specific requirements and credentials. Smart
+            defaults are pre-filled to get you started quickly.
           </p>
         </div>
 
@@ -714,7 +726,8 @@ export function BlockConfiguration({
               <div>
                 <CardTitle className='text-base'>Configuration Progress</CardTitle>
                 <CardDescription>
-                  {Object.values(blockConfigs).filter(config => config.isValid).length} of {templateBlocks.length} blocks configured
+                  {Object.values(blockConfigs).filter((config) => config.isValid).length} of{' '}
+                  {templateBlocks.length} blocks configured
                 </CardDescription>
               </div>
               <div className='text-right'>
@@ -743,7 +756,7 @@ export function BlockConfiguration({
                 {selectedTemplate.requiredCredentials.map((credType) => {
                   const credential = credentials[credType]
                   const credentialDef = CREDENTIAL_TYPES[credType as keyof typeof CREDENTIAL_TYPES]
-                  
+
                   if (!credentialDef) return null
 
                   return (
@@ -755,18 +768,24 @@ export function BlockConfiguration({
                       )}
                     >
                       <div className='flex items-center gap-3'>
-                        <div className={cn(
-                          'flex h-10 w-10 items-center justify-center rounded-lg',
-                          credential?.isConnected ? 'bg-green-100' : 'bg-muted'
-                        )}>
-                          <credentialDef.icon className={cn(
-                            'h-5 w-5',
-                            credential?.isConnected ? 'text-green-600' : 'text-muted-foreground'
-                          )} />
+                        <div
+                          className={cn(
+                            'flex h-10 w-10 items-center justify-center rounded-lg',
+                            credential?.isConnected ? 'bg-green-100' : 'bg-muted'
+                          )}
+                        >
+                          <credentialDef.icon
+                            className={cn(
+                              'h-5 w-5',
+                              credential?.isConnected ? 'text-green-600' : 'text-muted-foreground'
+                            )}
+                          />
                         </div>
                         <div>
                           <h4 className='font-medium text-sm'>{credentialDef.name}</h4>
-                          <p className='text-muted-foreground text-xs'>{credentialDef.description}</p>
+                          <p className='text-muted-foreground text-xs'>
+                            {credentialDef.description}
+                          </p>
                         </div>
                       </div>
 
@@ -805,15 +824,15 @@ export function BlockConfiguration({
             <Card>
               <CardHeader>
                 <CardTitle className='text-base'>Workflow Blocks</CardTitle>
-                <CardDescription>
-                  Click on a block to configure its settings
-                </CardDescription>
+                <CardDescription>Click on a block to configure its settings</CardDescription>
               </CardHeader>
               <CardContent className='space-y-2'>
                 {templateBlocks.map((block, index) => {
                   const config = blockConfigs[block.id]
                   const progress = getBlockProgress(block.id)
-                  const IconComponent = BLOCK_TYPE_ICONS[block.type as keyof typeof BLOCK_TYPE_ICONS] || BLOCK_TYPE_ICONS.default
+                  const IconComponent =
+                    BLOCK_TYPE_ICONS[block.type as keyof typeof BLOCK_TYPE_ICONS] ||
+                    BLOCK_TYPE_ICONS.default
 
                   return (
                     <button
@@ -822,21 +841,23 @@ export function BlockConfiguration({
                       className={cn(
                         'w-full rounded-lg border p-3 text-left transition-colors',
                         'hover:bg-muted/50 focus:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary',
-                        currentBlockId === block.id && 'bg-primary/10 border-primary',
+                        currentBlockId === block.id && 'border-primary bg-primary/10',
                         config?.isValid && 'border-green-200'
                       )}
                     >
                       <div className='flex items-start gap-3'>
-                        <div className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-md',
-                          currentBlockId === block.id ? 'bg-primary/20' : 'bg-muted'
-                        )}>
+                        <div
+                          className={cn(
+                            'flex h-8 w-8 items-center justify-center rounded-md',
+                            currentBlockId === block.id ? 'bg-primary/20' : 'bg-muted'
+                          )}
+                        >
                           <IconComponent className='h-4 w-4' />
                         </div>
 
                         <div className='min-w-0 flex-1'>
                           <div className='flex items-center justify-between'>
-                            <h4 className='font-medium text-sm truncate'>{block.name}</h4>
+                            <h4 className='truncate font-medium text-sm'>{block.name}</h4>
                             <div className='flex items-center gap-1'>
                               {block.required && (
                                 <Badge variant='destructive' className='text-xs'>
@@ -848,14 +869,14 @@ export function BlockConfiguration({
                               )}
                             </div>
                           </div>
-                          
-                          <p className='text-muted-foreground text-xs truncate mt-1'>
+
+                          <p className='mt-1 truncate text-muted-foreground text-xs'>
                             {block.description}
                           </p>
-                          
+
                           <div className='mt-2'>
                             <Progress value={progress} className='h-1' />
-                            <span className='text-muted-foreground text-xs mt-1'>
+                            <span className='mt-1 text-muted-foreground text-xs'>
                               {progress}% configured
                             </span>
                           </div>
@@ -875,7 +896,9 @@ export function BlockConfiguration({
                 block={currentBlock}
                 config={blockConfigs[currentBlock.id]}
                 credentials={credentials}
-                onConfigUpdate={(field, value) => handleBlockConfigUpdate(currentBlock.id, field, value)}
+                onConfigUpdate={(field, value) =>
+                  handleBlockConfigUpdate(currentBlock.id, field, value)
+                }
                 onTest={() => handleTestBlock(currentBlock.id)}
                 showAdvanced={showAdvancedSettings}
                 enableTesting={enableTesting}
@@ -911,17 +934,14 @@ export function BlockConfiguration({
           </div>
 
           <div className='text-muted-foreground text-sm'>
-            {Object.values(blockConfigs).filter(config => config.isValid).length} of {templateBlocks.length} blocks ready
+            {Object.values(blockConfigs).filter((config) => config.isValid).length} of{' '}
+            {templateBlocks.length} blocks ready
           </div>
         </div>
 
         {/* Next Button */}
         <div className='flex justify-end'>
-          <Button
-            onClick={handleNext}
-            disabled={configurationProgress < 100}
-            className='gap-2'
-          >
+          <Button onClick={handleNext} disabled={configurationProgress < 100} className='gap-2'>
             Continue to Connections
             <ArrowRight className='h-4 w-4' />
           </Button>
@@ -933,7 +953,8 @@ export function BlockConfiguration({
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <Key className='h-5 w-5' />
-                Connect {CREDENTIAL_TYPES[selectedCredentialType as keyof typeof CREDENTIAL_TYPES]?.name}
+                Connect{' '}
+                {CREDENTIAL_TYPES[selectedCredentialType as keyof typeof CREDENTIAL_TYPES]?.name}
               </DialogTitle>
               <DialogDescription>
                 Enter your credentials to connect to this service
@@ -979,17 +1000,21 @@ function BlockConfigurationForm({
   enableTesting,
   isLoading,
 }: BlockConfigurationFormProps) {
-  const IconComponent = BLOCK_TYPE_ICONS[block.type as keyof typeof BLOCK_TYPE_ICONS] || BLOCK_TYPE_ICONS.default
+  const IconComponent =
+    BLOCK_TYPE_ICONS[block.type as keyof typeof BLOCK_TYPE_ICONS] || BLOCK_TYPE_ICONS.default
 
-  const renderFieldInput = (field: string, value: any, label: string, type: string = 'text') => {
-    const error = config?.errors.find(e => e.field === field)
+  const renderFieldInput = (field: string, value: any, label: string, type = 'text') => {
+    const error = config?.errors.find((e) => e.field === field)
 
     switch (type) {
       case 'select':
         return (
           <div className='space-y-2'>
             <Label htmlFor={field}>{label}</Label>
-            <Select value={value || ''} onValueChange={(newValue) => onConfigUpdate(field, newValue)}>
+            <Select
+              value={value || ''}
+              onValueChange={(newValue) => onConfigUpdate(field, newValue)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
@@ -1000,9 +1025,7 @@ function BlockConfigurationForm({
                 <SelectItem value='DELETE'>DELETE</SelectItem>
               </SelectContent>
             </Select>
-            {error && (
-              <p className='text-destructive text-sm'>{error.message}</p>
-            )}
+            {error && <p className='text-destructive text-sm'>{error.message}</p>}
           </div>
         )
 
@@ -1016,9 +1039,7 @@ function BlockConfigurationForm({
               onChange={(e) => onConfigUpdate(field, e.target.value)}
               className={cn(error && 'border-destructive')}
             />
-            {error && (
-              <p className='text-destructive text-sm'>{error.message}</p>
-            )}
+            {error && <p className='text-destructive text-sm'>{error.message}</p>}
           </div>
         )
 
@@ -1030,12 +1051,10 @@ function BlockConfigurationForm({
               id={field}
               type='number'
               value={value || ''}
-              onChange={(e) => onConfigUpdate(field, parseInt(e.target.value) || 0)}
+              onChange={(e) => onConfigUpdate(field, Number.parseInt(e.target.value) || 0)}
               className={cn(error && 'border-destructive')}
             />
-            {error && (
-              <p className='text-destructive text-sm'>{error.message}</p>
-            )}
+            {error && <p className='text-destructive text-sm'>{error.message}</p>}
           </div>
         )
 
@@ -1062,9 +1081,7 @@ function BlockConfigurationForm({
               onChange={(e) => onConfigUpdate(field, e.target.value)}
               className={cn(error && 'border-destructive')}
             />
-            {error && (
-              <p className='text-destructive text-sm'>{error.message}</p>
-            )}
+            {error && <p className='text-destructive text-sm'>{error.message}</p>}
           </div>
         )
     }
@@ -1138,9 +1155,7 @@ function BlockConfigurationForm({
         <Tabs defaultValue='basic' className='space-y-4'>
           <TabsList>
             <TabsTrigger value='basic'>Basic Settings</TabsTrigger>
-            {showAdvanced && (
-              <TabsTrigger value='advanced'>Advanced</TabsTrigger>
-            )}
+            {showAdvanced && <TabsTrigger value='advanced'>Advanced</TabsTrigger>}
             <TabsTrigger value='help'>Help</TabsTrigger>
           </TabsList>
 
@@ -1150,7 +1165,12 @@ function BlockConfigurationForm({
               <>
                 {renderFieldInput('url', config?.config.url, 'Webhook URL', 'url')}
                 {renderFieldInput('method', config?.config.method, 'HTTP Method', 'select')}
-                {renderFieldInput('secret', config?.config.secret, 'Secret Key (Optional)', 'password')}
+                {renderFieldInput(
+                  'secret',
+                  config?.config.secret,
+                  'Secret Key (Optional)',
+                  'password'
+                )}
               </>
             )}
 
@@ -1158,7 +1178,12 @@ function BlockConfigurationForm({
               <>
                 {renderFieldInput('recipients', config?.config.recipients, 'Recipients', 'text')}
                 {renderFieldInput('subject', config?.config.subject, 'Email Subject', 'text')}
-                {renderFieldInput('template', config?.config.template, 'Email Template', 'textarea')}
+                {renderFieldInput(
+                  'template',
+                  config?.config.template,
+                  'Email Template',
+                  'textarea'
+                )}
                 {renderFieldInput('fromName', config?.config.fromName, 'From Name', 'text')}
               </>
             )}
@@ -1168,7 +1193,12 @@ function BlockConfigurationForm({
                 {renderFieldInput('field', config?.config.field, 'Field to Check', 'text')}
                 {renderFieldInput('operator', config?.config.operator, 'Operator', 'select')}
                 {renderFieldInput('value', config?.config.value, 'Comparison Value', 'text')}
-                {renderFieldInput('caseSensitive', config?.config.caseSensitive, 'Case Sensitive', 'switch')}
+                {renderFieldInput(
+                  'caseSensitive',
+                  config?.config.caseSensitive,
+                  'Case Sensitive',
+                  'switch'
+                )}
               </>
             )}
 
@@ -1197,12 +1227,32 @@ function BlockConfigurationForm({
                   <Settings className='h-4 w-4' />
                   Advanced Configuration
                 </h4>
-                
+
                 <div className='space-y-4'>
-                  {renderFieldInput('monitoring', config?.config.monitoring, 'Enable Monitoring', 'switch')}
-                  {renderFieldInput('logging', config?.config.logging, 'Enable Detailed Logging', 'switch')}
-                  {renderFieldInput('priority', config?.config.priority, 'Execution Priority', 'select')}
-                  {renderFieldInput('customConfig', config?.config.customConfig, 'Custom Configuration (JSON)', 'textarea')}
+                  {renderFieldInput(
+                    'monitoring',
+                    config?.config.monitoring,
+                    'Enable Monitoring',
+                    'switch'
+                  )}
+                  {renderFieldInput(
+                    'logging',
+                    config?.config.logging,
+                    'Enable Detailed Logging',
+                    'switch'
+                  )}
+                  {renderFieldInput(
+                    'priority',
+                    config?.config.priority,
+                    'Execution Priority',
+                    'select'
+                  )}
+                  {renderFieldInput(
+                    'customConfig',
+                    config?.config.customConfig,
+                    'Custom Configuration (JSON)',
+                    'textarea'
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -1215,7 +1265,9 @@ function BlockConfigurationForm({
                   <HelpCircle className='h-4 w-4' />
                   Block Information
                 </h4>
-                <p className='text-muted-foreground text-sm'>{block.helpText || block.description}</p>
+                <p className='text-muted-foreground text-sm'>
+                  {block.helpText || block.description}
+                </p>
               </div>
 
               {block.category && (
@@ -1287,7 +1339,7 @@ function CredentialForm({ credentialType, onConnect, onCancel, isLoading }: Cred
   const [showPassword, setShowPassword] = useState(false)
 
   const credentialDef = CREDENTIAL_TYPES[credentialType as keyof typeof CREDENTIAL_TYPES]
-  
+
   if (!credentialDef) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1311,18 +1363,20 @@ function CredentialForm({ credentialType, onConnect, onCancel, isLoading }: Cred
             {field.label}
             {field.required && <span className='text-destructive'>*</span>}
           </Label>
-          
+
           {field.type === 'select' ? (
             <Select
               value={formData[field.name] || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, [field.name]: value }))}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, [field.name]: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${field.label}`} />
               </SelectTrigger>
               <SelectContent>
                 {field.options?.map((option) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -1332,7 +1386,7 @@ function CredentialForm({ credentialType, onConnect, onCancel, isLoading }: Cred
                 id={field.name}
                 type={field.type === 'password' && !showPassword ? 'password' : 'text'}
                 value={formData[field.name] || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))}
                 placeholder={field.placeholder}
                 required={field.required}
               />
@@ -1341,7 +1395,7 @@ function CredentialForm({ credentialType, onConnect, onCancel, isLoading }: Cred
                   type='button'
                   variant='ghost'
                   size='sm'
-                  className='absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 p-0'
+                  className='-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6 p-0'
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className='h-3 w-3' /> : <Eye className='h-3 w-3' />}
@@ -1352,7 +1406,7 @@ function CredentialForm({ credentialType, onConnect, onCancel, isLoading }: Cred
         </div>
       ))}
 
-      <div className='flex gap-2 justify-end'>
+      <div className='flex justify-end gap-2'>
         <Button type='button' variant='outline' onClick={onCancel}>
           Cancel
         </Button>

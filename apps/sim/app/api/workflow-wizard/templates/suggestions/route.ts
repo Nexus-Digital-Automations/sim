@@ -7,7 +7,7 @@
  * - User skill level and experience assessment
  * - Available integrations and requirements
  * - Industry-specific optimizations
- * 
+ *
  * Features:
  * - Real-time template analysis and scoring
  * - Contextual recommendations with explanations
@@ -27,16 +27,13 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { templateRecommendationEngine } from '@/lib/workflow-wizard/template-recommendation-engine'
-import type { 
-  BusinessGoal, 
-  UserContext 
-} from '@/lib/workflow-wizard/wizard-engine'
+import type { BusinessGoal, UserContext } from '@/lib/workflow-wizard/wizard-engine'
 
 // Initialize structured logger with comprehensive context tracking
 const logger = createLogger('TemplateSuggestionsAPI', {
   service: 'workflow-wizard',
   component: 'template-suggestions-api',
-  version: '2.0.0'
+  version: '2.0.0',
 })
 
 /**
@@ -47,7 +44,16 @@ const TemplateSuggestionsRequestSchema = z.object({
     id: z.string(),
     title: z.string(),
     description: z.string(),
-    category: z.enum(['automation', 'integration', 'data-processing', 'communication', 'monitoring', 'analytics', 'security', 'devops']),
+    category: z.enum([
+      'automation',
+      'integration',
+      'data-processing',
+      'communication',
+      'monitoring',
+      'analytics',
+      'security',
+      'devops',
+    ]),
     complexity: z.enum(['beginner', 'intermediate', 'advanced', 'expert']),
     estimatedTime: z.number().min(1).max(240),
     requiredIntegrations: z.array(z.string()),
@@ -75,32 +81,38 @@ const TemplateSuggestionsRequestSchema = z.object({
     language: z.string().optional(),
     accessibilityNeeds: z.array(z.string()).optional(),
   }),
-  criteria: z.object({
-    maxSetupTime: z.number().optional(),
-    minSuccessRate: z.number().min(0).max(1).optional(),
-    maxComplexity: z.number().min(1).max(5).optional(),
-    categories: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-    industries: z.array(z.string()).optional(),
-    useCases: z.array(z.string()).optional(),
-    requiredIntegrations: z.array(z.string()).optional(),
-    forbiddenIntegrations: z.array(z.string()).optional(),
-  }).optional(),
-  context: z.object({
-    searchPhase: z.enum(['initial', 'refinement', 'alternative']).default('initial'),
-    timeConstraint: z.number().optional(),
-    teamCollaboration: z.boolean().default(false),
-    budgetConstraint: z.enum(['low', 'medium', 'high']).optional(),
-    securityRequirements: z.array(z.string()).optional(),
-    complianceNeeds: z.array(z.string()).optional(),
-    performanceRequirements: z.array(z.string()).optional(),
-  }).optional(),
-  options: z.object({
-    maxRecommendations: z.number().min(1).max(20).default(8),
-    includeExperimental: z.boolean().default(false),
-    enableDiversityFiltering: z.boolean().default(true),
-    personalizedWeight: z.number().min(0).max(1).default(0.6),
-  }).optional(),
+  criteria: z
+    .object({
+      maxSetupTime: z.number().optional(),
+      minSuccessRate: z.number().min(0).max(1).optional(),
+      maxComplexity: z.number().min(1).max(5).optional(),
+      categories: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
+      industries: z.array(z.string()).optional(),
+      useCases: z.array(z.string()).optional(),
+      requiredIntegrations: z.array(z.string()).optional(),
+      forbiddenIntegrations: z.array(z.string()).optional(),
+    })
+    .optional(),
+  context: z
+    .object({
+      searchPhase: z.enum(['initial', 'refinement', 'alternative']).default('initial'),
+      timeConstraint: z.number().optional(),
+      teamCollaboration: z.boolean().default(false),
+      budgetConstraint: z.enum(['low', 'medium', 'high']).optional(),
+      securityRequirements: z.array(z.string()).optional(),
+      complianceNeeds: z.array(z.string()).optional(),
+      performanceRequirements: z.array(z.string()).optional(),
+    })
+    .optional(),
+  options: z
+    .object({
+      maxRecommendations: z.number().min(1).max(20).default(8),
+      includeExperimental: z.boolean().default(false),
+      enableDiversityFiltering: z.boolean().default(true),
+      personalizedWeight: z.number().min(0).max(1).default(0.6),
+    })
+    .optional(),
 })
 
 /**
@@ -109,31 +121,33 @@ const TemplateSuggestionsRequestSchema = z.object({
 const TemplateSuggestionsResponseSchema = z.object({
   success: z.boolean(),
   data: z.object({
-    recommendations: z.array(z.object({
-      template: z.object({
-        id: z.string(),
-        title: z.string(),
-        description: z.string(),
-        longDescription: z.string().optional(),
-        blocks: z.array(z.any()),
-        connections: z.array(z.any()),
-        configuration: z.any(),
-        metadata: z.any(),
-        difficulty: z.number().min(1).max(5),
-        popularity: z.number(),
-        successRate: z.number().min(0).max(100),
-        averageSetupTime: z.number(),
-        userRating: z.number().min(0).max(5),
-        tags: z.array(z.string()),
-        requiredCredentials: z.array(z.string()),
-        supportedIntegrations: z.array(z.string()),
-        aiRecommendationScore: z.number().optional(),
-      }),
-      score: z.number().min(0).max(1),
-      reasons: z.array(z.string()),
-      matchingCriteria: z.array(z.string()),
-      customizationSuggestions: z.array(z.string()),
-    })),
+    recommendations: z.array(
+      z.object({
+        template: z.object({
+          id: z.string(),
+          title: z.string(),
+          description: z.string(),
+          longDescription: z.string().optional(),
+          blocks: z.array(z.any()),
+          connections: z.array(z.any()),
+          configuration: z.any(),
+          metadata: z.any(),
+          difficulty: z.number().min(1).max(5),
+          popularity: z.number(),
+          successRate: z.number().min(0).max(100),
+          averageSetupTime: z.number(),
+          userRating: z.number().min(0).max(5),
+          tags: z.array(z.string()),
+          requiredCredentials: z.array(z.string()),
+          supportedIntegrations: z.array(z.string()),
+          aiRecommendationScore: z.number().optional(),
+        }),
+        score: z.number().min(0).max(1),
+        reasons: z.array(z.string()),
+        matchingCriteria: z.array(z.string()),
+        customizationSuggestions: z.array(z.string()),
+      })
+    ),
     analytics: z.object({
       searchTime: z.number(),
       totalCandidates: z.number(),
@@ -180,14 +194,14 @@ class RateLimiter {
   isRateLimited(key: string, config: { windowMs: number; maxRequests: number }): boolean {
     const now = Date.now()
     const userRequests = this.requests.get(key) || []
-    
+
     // Clean up old requests outside the window
-    const recentRequests = userRequests.filter(time => now - time < config.windowMs)
-    
+    const recentRequests = userRequests.filter((time) => now - time < config.windowMs)
+
     if (recentRequests.length >= config.maxRequests) {
       return true
     }
-    
+
     recentRequests.push(now)
     this.requests.set(key, recentRequests)
     return false
@@ -205,7 +219,7 @@ class SimpleCache {
   set(key: string, data: any, ttl: number = CACHE_CONFIG.defaultTTL): void {
     const expires = Date.now() + ttl
     this.cache.set(key, { data, expires })
-    
+
     // Simple cleanup - remove expired entries
     if (this.cache.size > CACHE_CONFIG.maxSize) {
       this.cleanup()
@@ -215,26 +229,26 @@ class SimpleCache {
   get(key: string): any | null {
     const entry = this.cache.get(key)
     if (!entry) return null
-    
+
     if (Date.now() > entry.expires) {
       this.cache.delete(key)
       return null
     }
-    
+
     return entry.data
   }
 
   private cleanup(): void {
     const now = Date.now()
     const expiredKeys: string[] = []
-    
+
     this.cache.forEach((entry, key) => {
       if (now > entry.expires) {
         expiredKeys.push(key)
       }
     })
-    
-    expiredKeys.forEach(key => this.cache.delete(key))
+
+    expiredKeys.forEach((key) => this.cache.delete(key))
   }
 }
 
@@ -257,7 +271,7 @@ function generateCacheKey(
     maxRecommendations: options.maxRecommendations,
     criteria: JSON.stringify(criteria),
   }
-  
+
   return `template-suggestions:${Buffer.from(JSON.stringify(keyData)).toString('base64')}`
 }
 
@@ -292,18 +306,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Rate limiting check
-    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const clientIP =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rateLimitKey = `template-suggestions:${userId || clientIP}`
-    
+
     if (rateLimiter.isRateLimited(rateLimitKey, RATE_LIMIT_CONFIG)) {
-      logger.warn(`[${requestId}] Rate limit exceeded for template suggestions`, { userId, clientIP })
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'RATE_LIMIT_EXCEEDED',
-          message: 'Too many suggestion requests'
+      logger.warn(`[${requestId}] Rate limit exceeded for template suggestions`, {
+        userId,
+        clientIP,
+      })
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'Too many suggestion requests',
+          },
         },
-      }, { status: 429 })
+        { status: 429 }
+      )
     }
     // Parse and validate request body
     const body = await request.json()
@@ -314,11 +335,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         errors: validationResult.error.errors,
       })
 
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid request data',
-        details: validationResult.error.errors,
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid request data',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      )
     }
 
     const { goal, userContext, criteria = {}, context = {}, options = {} } = validationResult.data
@@ -326,7 +350,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check cache first
     const cacheKey = generateCacheKey(goal, userContext, criteria, options)
     const cachedResult = cache.get(cacheKey)
-    
+
     if (cachedResult) {
       logger.info(`[${requestId}] Serving cached template suggestions`, {
         cacheKey: `${cacheKey.slice(0, 20)}...`,
@@ -379,9 +403,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Calculate analytics
     const totalCandidates = 50 // This would come from the actual search
-    const averageScore = recommendations.length > 0 
-      ? recommendations.reduce((sum, r) => sum + r.score, 0) / recommendations.length
-      : 0
+    const averageScore =
+      recommendations.length > 0
+        ? recommendations.reduce((sum, r) => sum + r.score, 0) / recommendations.length
+        : 0
 
     const processingTime = Date.now() - startTime
 
@@ -414,10 +439,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         errors: responseValidation.error.errors,
       })
 
-      return NextResponse.json({
-        success: false,
-        error: 'Internal server error - invalid response format',
-      }, { status: 500 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Internal server error - invalid response format',
+        },
+        { status: 500 }
+      )
     }
 
     // Cache the result
@@ -430,7 +458,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     })
 
     return NextResponse.json(responseData)
-
   } catch (error: any) {
     const processingTime = Date.now() - startTime
 
@@ -439,43 +466,49 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         errors: error.errors,
         processingTime,
       })
-      
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'INVALID_REQUEST_DATA',
-          message: 'Invalid request data',
-          details: error.errors,
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_REQUEST_DATA',
+            message: 'Invalid request data',
+            details: error.errors,
+          },
+          meta: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            processingTime,
+          },
         },
-        meta: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          processingTime,
-        },
-      }, { status: 400 })
+        { status: 400 }
+      )
     }
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    
+
     logger.error(`[${requestId}] Template suggestions request failed`, {
       error: errorMessage,
       stack: error instanceof Error ? error.stack : undefined,
       processingTime,
     })
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'SUGGESTIONS_FAILED',
-        message: 'Failed to generate template suggestions',
-        details: errorMessage,
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUGGESTIONS_FAILED',
+          message: 'Failed to generate template suggestions',
+          details: errorMessage,
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          processingTime,
+        },
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-        processingTime,
-      },
-    }, { status: 500 })
+      { status: 500 }
+    )
   }
 }
 

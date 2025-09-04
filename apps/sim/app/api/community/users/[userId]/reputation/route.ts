@@ -1,43 +1,43 @@
 /**
  * User Reputation API Endpoint
- * 
+ *
  * API for retrieving and managing user reputation data including:
  * - Detailed reputation breakdown and history
  * - Level progression and benefits
  * - Reputation calculation triggers
  * - Anti-gaming detection and monitoring
- * 
+ *
  * FEATURES:
  * - Complete reputation summary with metrics
  * - Historical reputation changes and audit trail
  * - Reputation recalculation for administrators
  * - Anti-gaming analysis and suspicious activity detection
  * - Level progression tracking and benefits
- * 
+ *
  * SECURITY:
  * - Privacy-aware reputation display
  * - Rate limiting for reputation calculations
  * - Admin-only sensitive operations
  * - Comprehensive audit logging
- * 
+ *
  * @created 2025-09-04
  * @author User Reputation API
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
 import { sql } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
-import { ratelimit } from '@/lib/ratelimit'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { auth } from '@/lib/auth'
 import { CommunityReputationSystem, REPUTATION_LEVELS } from '@/lib/community/reputation-system'
+import { ratelimit } from '@/lib/ratelimit'
+import { db } from '@/db'
 
 // ========================
 // VALIDATION SCHEMAS
 // ========================
 
 const UserIdParamSchema = z.object({
-  userId: z.string().min(1)
+  userId: z.string().min(1),
 })
 
 const ReputationHistoryQuerySchema = z.object({
@@ -45,7 +45,7 @@ const ReputationHistoryQuerySchema = z.object({
   offset: z.number().min(0).default(0),
   changeType: z.string().optional(),
   startDate: z.string().optional(),
-  endDate: z.string().optional()
+  endDate: z.string().optional(),
 })
 
 // ========================
@@ -55,29 +55,26 @@ const ReputationHistoryQuerySchema = z.object({
 /**
  * GET /api/community/users/[userId]/reputation - Get user reputation summary
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
   const startTime = Date.now()
-  
+
   try {
     console.log(`[ReputationAPI] Processing GET request for user reputation: ${params.userId}`)
-    
+
     // Validate user ID parameter
     const { userId } = UserIdParamSchema.parse(params)
-    
+
     // Get viewer's authentication status
     const session = await auth()
     const viewerId = session?.user?.id
     const isOwnReputation = userId === viewerId
-    
+
     console.log(`[ReputationAPI] Reputation request from viewer: ${viewerId || 'anonymous'}`)
-    
+
     // Rate limiting
     const clientId = request.headers.get('x-forwarded-for') || viewerId || 'anonymous'
     const rateLimitResult = await ratelimit(20, '1m').limit(`reputation_view:${clientId}`)
-    
+
     if (!rateLimitResult.success) {
       console.warn(`[ReputationAPI] Rate limit exceeded for ${clientId}`)
       return NextResponse.json(
@@ -85,7 +82,7 @@ export async function GET(
         { status: 429 }
       )
     }
-    
+
     // Check if user exists and get their profile privacy settings
     const userCheck = await db.execute(sql`
       SELECT 
@@ -97,38 +94,34 @@ export async function GET(
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       WHERE u.id = ${userId}
     `)
-    
+
     if (!userCheck.rows[0]) {
       console.warn(`[ReputationAPI] User not found: ${userId}`)
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-    
+
     const userData = userCheck.rows[0] as any
-    
+
     // Check privacy settings
     const profileVisibility = userData.profile_visibility || 'public'
     if (!isOwnReputation && profileVisibility === 'private') {
-      console.warn(`[ReputationAPI] Private profile reputation access denied for ${userId} by ${viewerId}`)
-      return NextResponse.json(
-        { error: 'This user\'s reputation is private' },
-        { status: 403 }
+      console.warn(
+        `[ReputationAPI] Private profile reputation access denied for ${userId} by ${viewerId}`
       )
+      return NextResponse.json({ error: "This user's reputation is private" }, { status: 403 })
     }
-    
+
     // Get reputation system instance
     const reputationSystem = CommunityReputationSystem.getInstance()
-    
+
     // Get comprehensive reputation summary
     const reputationSummary = await reputationSystem.getUserReputationSummary(userId)
-    
+
     // Get detailed breakdown with history if user has access
     let detailedBreakdown = null
     let recentHistory = null
     let antiGamingData = null
-    
+
     if (isOwnReputation || profileVisibility === 'public') {
       // Get recent reputation history
       const historyResult = await db.execute(sql`
@@ -148,7 +141,7 @@ export async function GET(
         ORDER BY created_at DESC
         LIMIT 10
       `)
-      
+
       recentHistory = historyResult.rows.map((row: any) => ({
         id: row.id,
         changeType: row.change_type,
@@ -157,13 +150,13 @@ export async function GET(
         newTotal: row.new_total,
         source: {
           type: row.source_type,
-          id: row.source_id
+          id: row.source_id,
         },
         reason: row.reason,
         triggeredBy: row.triggered_by,
-        date: row.created_at
+        date: row.created_at,
       }))
-      
+
       // Get detailed statistics
       const statsResult = await db.execute(sql`
         SELECT 
@@ -186,26 +179,29 @@ export async function GET(
         WHERE u.id = ${userId}
         GROUP BY u.id
       `)
-      
+
       const stats = statsResult.rows[0] as any
       detailedBreakdown = {
         templates: {
           count: stats?.template_count || 0,
           avgRating: stats?.avg_template_rating || 0,
-          totalDownloads: stats?.total_downloads || 0
+          totalDownloads: stats?.total_downloads || 0,
         },
         reviews: {
           written: stats?.reviews_written || 0,
           helpful: stats?.helpful_reviews || 0,
-          helpfulPercentage: stats?.reviews_written > 0 ? (stats?.helpful_reviews / stats?.reviews_written * 100) : 0
+          helpfulPercentage:
+            stats?.reviews_written > 0
+              ? (stats?.helpful_reviews / stats?.reviews_written) * 100
+              : 0,
         },
         badges: {
           total: stats?.total_badges || 0,
-          featured: stats?.featured_badges || 0
-        }
+          featured: stats?.featured_badges || 0,
+        },
       }
     }
-    
+
     // Get anti-gaming analysis for own profile or admins
     if (isOwnReputation) {
       try {
@@ -215,32 +211,36 @@ export async function GET(
         // Don't fail the whole request for anti-gaming analysis errors
       }
     }
-    
+
     // Get level information and benefits
-    const currentLevel = REPUTATION_LEVELS.find(level => level.level === reputationSummary.level)
-    const nextLevel = REPUTATION_LEVELS.find(level => level.level > reputationSummary.level)
-    
+    const currentLevel = REPUTATION_LEVELS.find((level) => level.level === reputationSummary.level)
+    const nextLevel = REPUTATION_LEVELS.find((level) => level.level > reputationSummary.level)
+
     const response = {
       userId,
       reputation: reputationSummary,
       level: {
-        current: currentLevel ? {
-          level: currentLevel.level,
-          name: currentLevel.name,
-          minPoints: currentLevel.minPoints,
-          benefits: currentLevel.benefits
-        } : null,
-        next: nextLevel ? {
-          level: nextLevel.level,
-          name: nextLevel.name,
-          minPoints: nextLevel.minPoints,
-          pointsRequired: nextLevel.minPoints - reputationSummary.totalPoints,
-          benefits: nextLevel.benefits
-        } : null,
+        current: currentLevel
+          ? {
+              level: currentLevel.level,
+              name: currentLevel.name,
+              minPoints: currentLevel.minPoints,
+              benefits: currentLevel.benefits,
+            }
+          : null,
+        next: nextLevel
+          ? {
+              level: nextLevel.level,
+              name: nextLevel.name,
+              minPoints: nextLevel.minPoints,
+              pointsRequired: nextLevel.minPoints - reputationSummary.totalPoints,
+              benefits: nextLevel.benefits,
+            }
+          : null,
         progress: {
           current: reputationSummary.levelProgress,
-          percentage: Math.min(100, Math.max(0, reputationSummary.levelProgress))
-        }
+          percentage: Math.min(100, Math.max(0, reputationSummary.levelProgress)),
+        },
       },
       statistics: detailedBreakdown,
       history: recentHistory,
@@ -249,39 +249,41 @@ export async function GET(
         isOwnReputation,
         hasFullAccess: isOwnReputation || profileVisibility === 'public',
         lastCalculated: reputationSummary.lastCalculated,
-        calculationAge: reputationSummary.lastCalculated ? 
-          Date.now() - new Date(reputationSummary.lastCalculated).getTime() : null
-      }
+        calculationAge: reputationSummary.lastCalculated
+          ? Date.now() - new Date(reputationSummary.lastCalculated).getTime()
+          : null,
+      },
     }
-    
+
     const executionTime = Date.now() - startTime
-    console.log(`[ReputationAPI] Reputation data retrieved successfully for user ${userId} in ${executionTime}ms`)
-    
+    console.log(
+      `[ReputationAPI] Reputation data retrieved successfully for user ${userId} in ${executionTime}ms`
+    )
+
     return NextResponse.json({
       ...response,
-      executionTime
+      executionTime,
     })
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[ReputationAPI] Error in GET request:', error)
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid user ID',
           details: error.errors,
-          executionTime
+          executionTime,
         },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to retrieve reputation data',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )
@@ -291,78 +293,79 @@ export async function GET(
 /**
  * POST /api/community/users/[userId]/reputation - Recalculate user reputation
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
   const startTime = Date.now()
-  
+
   try {
-    console.log(`[ReputationAPI] Processing POST request for reputation recalculation: ${params.userId}`)
-    
+    console.log(
+      `[ReputationAPI] Processing POST request for reputation recalculation: ${params.userId}`
+    )
+
     // Validate user ID parameter
     const { userId } = UserIdParamSchema.parse(params)
-    
+
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
       console.warn('[ReputationAPI] Unauthorized reputation recalculation request')
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
-    
+
     const requesterId = session.user.id
-    
+
     // Check authorization - user can recalculate own reputation or admin can recalculate any
     const isOwnReputation = userId === requesterId
     const isAdmin = false // TODO: Implement admin role check when role system is ready
-    
+
     if (!isOwnReputation && !isAdmin) {
-      console.warn(`[ReputationAPI] User ${requesterId} attempted to recalculate reputation for ${userId}`)
+      console.warn(
+        `[ReputationAPI] User ${requesterId} attempted to recalculate reputation for ${userId}`
+      )
       return NextResponse.json(
         { error: 'You can only recalculate your own reputation' },
         { status: 403 }
       )
     }
-    
+
     // Rate limiting for reputation recalculation
-    const rateLimitKey = isAdmin ? `admin_reputation_recalc:${requesterId}` : `reputation_recalc:${userId}`
+    const rateLimitKey = isAdmin
+      ? `admin_reputation_recalc:${requesterId}`
+      : `reputation_recalc:${userId}`
     const rateLimit = isAdmin ? ratelimit(10, '1h') : ratelimit(3, '1h') // More lenient for admins
     const rateLimitResult = await rateLimit.limit(rateLimitKey)
-    
+
     if (!rateLimitResult.success) {
-      console.warn(`[ReputationAPI] Rate limit exceeded for reputation recalculation: ${rateLimitKey}`)
+      console.warn(
+        `[ReputationAPI] Rate limit exceeded for reputation recalculation: ${rateLimitKey}`
+      )
       return NextResponse.json(
         { error: 'Rate limit exceeded. Reputation can only be recalculated a few times per hour.' },
         { status: 429 }
       )
     }
-    
+
     // Parse request body for options
     const body = await request.json().catch(() => ({}))
     const forceRecalculation = body.force === true
     const fromScratch = body.fromScratch === true
-    
-    console.log(`[ReputationAPI] Recalculation options - force: ${forceRecalculation}, fromScratch: ${fromScratch}`)
-    
+
+    console.log(
+      `[ReputationAPI] Recalculation options - force: ${forceRecalculation}, fromScratch: ${fromScratch}`
+    )
+
     // Check if user exists
     const userExists = await db.execute(sql`
       SELECT id FROM "user" WHERE id = ${userId}
     `)
-    
+
     if (!userExists.rows[0]) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-    
+
     // Get reputation system instance and recalculate
     const reputationSystem = CommunityReputationSystem.getInstance()
     const calculationResult = await reputationSystem.calculateUserReputation(userId, fromScratch)
-    
+
     // Log the recalculation activity
     await db.execute(sql`
       INSERT INTO community_user_activities (
@@ -376,15 +379,17 @@ export async function POST(
           oldPoints: calculationResult.previousPoints,
           newPoints: calculationResult.newPoints,
           pointsChange: calculationResult.pointsChange,
-          levelChange: calculationResult.levelChanged
+          levelChange: calculationResult.levelChanged,
         })}::jsonb,
         ${isOwnReputation ? 'public' : 'private'}, NOW()
       )
     `)
-    
+
     const executionTime = Date.now() - startTime
-    console.log(`[ReputationAPI] Reputation recalculated successfully for user ${userId} in ${executionTime}ms`)
-    
+    console.log(
+      `[ReputationAPI] Reputation recalculated successfully for user ${userId} in ${executionTime}ms`
+    )
+
     return NextResponse.json({
       success: true,
       message: 'Reputation recalculated successfully',
@@ -397,37 +402,36 @@ export async function POST(
         newLevel: calculationResult.newLevel,
         levelChanged: calculationResult.levelChanged,
         badgesAwarded: calculationResult.badgesAwarded,
-        breakdown: calculationResult.calculationDetails
+        breakdown: calculationResult.calculationDetails,
       },
       meta: {
         executionTime,
         requestedBy: requesterId,
         isOwnRequest: isOwnReputation,
         fromScratch,
-        calculatedAt: new Date().toISOString()
-      }
+        calculatedAt: new Date().toISOString(),
+      },
     })
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[ReputationAPI] Error in POST request:', error)
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid request parameters',
           details: error.errors,
-          executionTime
+          executionTime,
         },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to recalculate reputation',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )
@@ -442,28 +446,28 @@ export async function GET_HISTORY(
   { params }: { params: { userId: string } }
 ) {
   const startTime = Date.now()
-  
+
   try {
     console.log(`[ReputationAPI] Processing reputation history request for user: ${params.userId}`)
-    
+
     // Validate user ID parameter
     const { userId } = UserIdParamSchema.parse(params)
-    
+
     // Parse query parameters
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
-    
+
     // Convert string numbers to actual numbers for validation
-    if (queryParams.limit) queryParams.limit = parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = parseInt(queryParams.offset)
-    
+    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
+    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
+
     const historyParams = ReputationHistoryQuerySchema.parse(queryParams)
-    
+
     // Get viewer's authentication status
     const session = await auth()
     const viewerId = session?.user?.id
     const isOwnReputation = userId === viewerId
-    
+
     // Check user privacy settings
     const userCheck = await db.execute(sql`
       SELECT 
@@ -474,18 +478,15 @@ export async function GET_HISTORY(
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       WHERE u.id = ${userId}
     `)
-    
+
     if (!userCheck.rows[0]) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-    
+
     const userData = userCheck.rows[0] as any
     const profileVisibility = userData.profile_visibility || 'public'
     const showActivity = userData.show_activity !== false
-    
+
     // Check access permissions
     if (!isOwnReputation && (profileVisibility === 'private' || !showActivity)) {
       return NextResponse.json(
@@ -493,26 +494,26 @@ export async function GET_HISTORY(
         { status: 403 }
       )
     }
-    
+
     // Build history query
     const whereConditions = ['user_id = $1']
     const queryParamsList = [userId]
-    
+
     if (historyParams.changeType) {
       whereConditions.push(`change_type = $${queryParamsList.length + 1}`)
       queryParamsList.push(historyParams.changeType)
     }
-    
+
     if (historyParams.startDate) {
       whereConditions.push(`created_at >= $${queryParamsList.length + 1}`)
       queryParamsList.push(historyParams.startDate)
     }
-    
+
     if (historyParams.endDate) {
       whereConditions.push(`created_at <= $${queryParamsList.length + 1}`)
       queryParamsList.push(historyParams.endDate)
     }
-    
+
     // Get history records
     const historyQuery = `
       SELECT 
@@ -535,21 +536,21 @@ export async function GET_HISTORY(
       ORDER BY created_at DESC
       LIMIT $${queryParamsList.length + 1} OFFSET $${queryParamsList.length + 2}
     `
-    
+
     queryParamsList.push(historyParams.limit, historyParams.offset)
-    
+
     const historyResult = await db.execute(sql.raw(historyQuery, queryParamsList))
-    
+
     // Get total count
     const countQuery = `
       SELECT COUNT(*) as total
       FROM user_reputation_history
       WHERE ${whereConditions.join(' AND ')}
     `
-    
+
     const countResult = await db.execute(sql.raw(countQuery, queryParamsList.slice(0, -2)))
     const totalRecords = (countResult.rows[0] as any)?.total || 0
-    
+
     // Format history records
     const history = historyResult.rows.map((row: any) => ({
       id: row.id,
@@ -560,19 +561,21 @@ export async function GET_HISTORY(
       source: {
         type: row.source_type,
         id: row.source_id,
-        context: row.source_context
+        context: row.source_context,
       },
       reason: row.reason,
       triggeredBy: row.triggered_by,
       algorithmVersion: row.algorithm_version,
       isValidated: row.is_validated,
       moderatorId: row.moderator_id,
-      date: row.created_at
+      date: row.created_at,
     }))
-    
+
     const executionTime = Date.now() - startTime
-    console.log(`[ReputationAPI] Reputation history retrieved successfully for user ${userId} in ${executionTime}ms`)
-    
+    console.log(
+      `[ReputationAPI] Reputation history retrieved successfully for user ${userId} in ${executionTime}ms`
+    )
+
     return NextResponse.json({
       userId,
       history,
@@ -580,25 +583,24 @@ export async function GET_HISTORY(
         total: totalRecords,
         limit: historyParams.limit,
         offset: historyParams.offset,
-        hasMore: historyParams.offset + historyParams.limit < totalRecords
+        hasMore: historyParams.offset + historyParams.limit < totalRecords,
       },
       filters: historyParams,
       meta: {
         executionTime,
         isOwnReputation,
-        recordCount: history.length
-      }
+        recordCount: history.length,
+      },
     })
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[ReputationAPI] Error in reputation history request:', error)
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to retrieve reputation history',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )

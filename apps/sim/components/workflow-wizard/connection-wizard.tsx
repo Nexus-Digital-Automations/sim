@@ -31,27 +31,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   ArrowRight,
-  ChevronDown,
-  ChevronRight,
-  Copy,
   Database,
   Edit,
-  Eye,
   Globe,
-  HelpCircle,
-  Info,
   Link,
   Mail,
   Maximize2,
-  Minimize2,
   Move,
-  Play,
-  Plus,
   RefreshCw,
-  RotateCcw,
-  Save,
   Settings,
-  Share,
   Shield,
   Trash2,
   Users,
@@ -64,7 +52,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -74,10 +68,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
 import { cn } from '@/lib/utils'
@@ -239,7 +229,10 @@ export function ConnectionWizard({
   const [showConnectionDialog, setShowConnectionDialog] = useState(false)
   const [editingConnection, setEditingConnection] = useState<VisualConnection | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(true)
-  const [validationResults, setValidationResults] = useState<{ isValid: boolean; errors: ValidationError[] }>({
+  const [validationResults, setValidationResults] = useState<{
+    isValid: boolean
+    errors: ValidationError[]
+  }>({
     isValid: false,
     errors: [],
   })
@@ -315,11 +308,15 @@ export function ConnectionWizard({
     let isValid = true
 
     // Check for disconnected required blocks
-    const requiredBlocks = visualBlocks.filter(vb => vb.block.required)
+    const requiredBlocks = visualBlocks.filter((vb) => vb.block.required)
     for (const block of requiredBlocks) {
-      const hasIncomingConnection = visualConnections.some(vc => vc.connection.target === block.id)
-      const hasOutgoingConnection = visualConnections.some(vc => vc.connection.source === block.id)
-      
+      const hasIncomingConnection = visualConnections.some(
+        (vc) => vc.connection.target === block.id
+      )
+      const hasOutgoingConnection = visualConnections.some(
+        (vc) => vc.connection.source === block.id
+      )
+
       if (!hasIncomingConnection && !hasOutgoingConnection && visualBlocks.length > 1) {
         errors.push({
           field: `block_${block.id}`,
@@ -332,8 +329,8 @@ export function ConnectionWizard({
 
     // Check for invalid connection logic
     for (const connection of visualConnections) {
-      const sourceBlock = visualBlocks.find(vb => vb.id === connection.connection.source)
-      const targetBlock = visualBlocks.find(vb => vb.id === connection.connection.target)
+      const sourceBlock = visualBlocks.find((vb) => vb.id === connection.connection.source)
+      const targetBlock = visualBlocks.find((vb) => vb.id === connection.connection.target)
 
       if (!sourceBlock || !targetBlock) {
         errors.push({
@@ -360,119 +357,122 @@ export function ConnectionWizard({
 
     // Report errors to parent
     if (onValidationError && errors.length > 0) {
-      errors.forEach(error => onValidationError(error))
+      errors.forEach((error) => onValidationError(error))
     }
   }, [visualBlocks, visualConnections, onValidationError])
 
   /**
    * Generate connection ports for a block
    */
-  const generateConnectionPorts = useCallback((block: TemplateBlock): { inputs: ConnectionPort[]; outputs: ConnectionPort[] } => {
-    const inputs: ConnectionPort[] = []
-    const outputs: ConnectionPort[] = []
+  const generateConnectionPorts = useCallback(
+    (block: TemplateBlock): { inputs: ConnectionPort[]; outputs: ConnectionPort[] } => {
+      const inputs: ConnectionPort[] = []
+      const outputs: ConnectionPort[] = []
 
-    // Generate ports based on block type
-    switch (block.type) {
-      case 'webhook':
-        outputs.push({
-          id: `${block.id}_output`,
-          type: 'output',
-          dataType: 'object',
-          position: { x: 180, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        break
+      // Generate ports based on block type
+      switch (block.type) {
+        case 'webhook':
+          outputs.push({
+            id: `${block.id}_output`,
+            type: 'output',
+            dataType: 'object',
+            position: { x: 180, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          break
 
-      case 'condition':
-        inputs.push({
-          id: `${block.id}_input`,
-          type: 'input',
-          dataType: 'any',
-          position: { x: 0, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['any', 'object', 'string', 'number', 'boolean'],
-        })
-        outputs.push({
-          id: `${block.id}_true`,
-          type: 'output',
-          dataType: 'object',
-          position: { x: 180, y: 40 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        outputs.push({
-          id: `${block.id}_false`,
-          type: 'output',
-          dataType: 'object',
-          position: { x: 180, y: 80 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        break
+        case 'condition':
+          inputs.push({
+            id: `${block.id}_input`,
+            type: 'input',
+            dataType: 'any',
+            position: { x: 0, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['any', 'object', 'string', 'number', 'boolean'],
+          })
+          outputs.push({
+            id: `${block.id}_true`,
+            type: 'output',
+            dataType: 'object',
+            position: { x: 180, y: 40 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          outputs.push({
+            id: `${block.id}_false`,
+            type: 'output',
+            dataType: 'object',
+            position: { x: 180, y: 80 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          break
 
-      case 'email':
-      case 'api':
-      case 'database':
-        inputs.push({
-          id: `${block.id}_input`,
-          type: 'input',
-          dataType: 'object',
-          position: { x: 0, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        outputs.push({
-          id: `${block.id}_output`,
-          type: 'output',
-          dataType: 'object',
-          position: { x: 180, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        break
+        case 'email':
+        case 'api':
+        case 'database':
+          inputs.push({
+            id: `${block.id}_input`,
+            type: 'input',
+            dataType: 'object',
+            position: { x: 0, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          outputs.push({
+            id: `${block.id}_output`,
+            type: 'output',
+            dataType: 'object',
+            position: { x: 180, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          break
 
-      case 'schedule':
-        outputs.push({
-          id: `${block.id}_trigger`,
-          type: 'output',
-          dataType: 'object',
-          position: { x: 180, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['object', 'any'],
-        })
-        break
+        case 'schedule':
+          outputs.push({
+            id: `${block.id}_trigger`,
+            type: 'output',
+            dataType: 'object',
+            position: { x: 180, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['object', 'any'],
+          })
+          break
 
-      default:
-        // Generic input/output for unknown types
-        inputs.push({
-          id: `${block.id}_input`,
-          type: 'input',
-          dataType: 'any',
-          position: { x: 0, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['any'],
-        })
-        outputs.push({
-          id: `${block.id}_output`,
-          type: 'output',
-          dataType: 'any',
-          position: { x: 180, y: 60 },
-          isConnected: false,
-          compatibleTypes: ['any'],
-        })
-    }
+        default:
+          // Generic input/output for unknown types
+          inputs.push({
+            id: `${block.id}_input`,
+            type: 'input',
+            dataType: 'any',
+            position: { x: 0, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['any'],
+          })
+          outputs.push({
+            id: `${block.id}_output`,
+            type: 'output',
+            dataType: 'any',
+            position: { x: 180, y: 60 },
+            isConnected: false,
+            compatibleTypes: ['any'],
+          })
+      }
 
-    return { inputs, outputs }
-  }, [])
+      return { inputs, outputs }
+    },
+    []
+  )
 
   /**
    * Generate SVG path for connection
    */
   const generateConnectionPath = useCallback(
     (connection: TemplateConnection, blocks: VisualBlock[]): string => {
-      const sourceBlock = blocks.find(b => b.id === connection.source)
-      const targetBlock = blocks.find(b => b.id === connection.target)
+      const sourceBlock = blocks.find((b) => b.id === connection.source)
+      const targetBlock = blocks.find((b) => b.id === connection.target)
 
       if (!sourceBlock || !targetBlock) return ''
 
@@ -505,7 +505,7 @@ export function ConnectionWizard({
     (blocks: VisualBlock[], existingConnections: VisualConnection[]): ConnectionSuggestion[] => {
       const suggestions: ConnectionSuggestion[] = []
       const existingConnectionPairs = new Set(
-        existingConnections.map(c => `${c.connection.source}_${c.connection.target}`)
+        existingConnections.map((c) => `${c.connection.source}_${c.connection.target}`)
       )
 
       for (let i = 0; i < blocks.length; i++) {
@@ -601,52 +601,58 @@ export function ConnectionWizard({
   /**
    * Auto-layout blocks for better visualization
    */
-  const autoLayoutBlocks = useCallback((blocks: VisualBlock[]) => {
-    logger.info(`[${operationId}] Auto-layouting blocks`, { blockCount: blocks.length })
+  const autoLayoutBlocks = useCallback(
+    (blocks: VisualBlock[]) => {
+      logger.info(`[${operationId}] Auto-layouting blocks`, { blockCount: blocks.length })
 
-    // Simple horizontal layout with vertical spacing for different types
-    const typeGroups: Record<string, VisualBlock[]> = {}
-    
-    blocks.forEach(block => {
-      if (!typeGroups[block.block.type]) {
-        typeGroups[block.block.type] = []
-      }
-      typeGroups[block.block.type].push(block)
-    })
+      // Simple horizontal layout with vertical spacing for different types
+      const typeGroups: Record<string, VisualBlock[]> = {}
 
-    let yOffset = 50
-    const groupSpacing = 200
-    const blockSpacing = 220
-
-    Object.entries(typeGroups).forEach(([type, groupBlocks]) => {
-      groupBlocks.forEach((block, index) => {
-        block.position = {
-          x: 50 + index * blockSpacing,
-          y: yOffset
+      blocks.forEach((block) => {
+        if (!typeGroups[block.block.type]) {
+          typeGroups[block.block.type] = []
         }
+        typeGroups[block.block.type].push(block)
       })
-      yOffset += groupSpacing
-    })
 
-    setVisualBlocks([...blocks])
-  }, [operationId])
+      let yOffset = 50
+      const groupSpacing = 200
+      const blockSpacing = 220
+
+      Object.entries(typeGroups).forEach(([type, groupBlocks]) => {
+        groupBlocks.forEach((block, index) => {
+          block.position = {
+            x: 50 + index * blockSpacing,
+            y: yOffset,
+          }
+        })
+        yOffset += groupSpacing
+      })
+
+      setVisualBlocks([...blocks])
+    },
+    [operationId]
+  )
 
   /**
    * Handle block drag
    */
-  const handleBlockDrag = useCallback((blockId: string, newPosition: { x: number; y: number }) => {
-    setVisualBlocks(prev => prev.map(block => 
-      block.id === blockId 
-        ? { ...block, position: newPosition }
-        : block
-    ))
+  const handleBlockDrag = useCallback(
+    (blockId: string, newPosition: { x: number; y: number }) => {
+      setVisualBlocks((prev) =>
+        prev.map((block) => (block.id === blockId ? { ...block, position: newPosition } : block))
+      )
 
-    // Update connection paths
-    setVisualConnections(prev => prev.map(connection => ({
-      ...connection,
-      path: generateConnectionPath(connection.connection, visualBlocks)
-    })))
-  }, [visualBlocks, generateConnectionPath])
+      // Update connection paths
+      setVisualConnections((prev) =>
+        prev.map((connection) => ({
+          ...connection,
+          path: generateConnectionPath(connection.connection, visualBlocks),
+        }))
+      )
+    },
+    [visualBlocks, generateConnectionPath]
+  )
 
   /**
    * Handle connection creation
@@ -670,7 +676,7 @@ export function ConnectionWizard({
         isValid: true,
       }
 
-      setVisualConnections(prev => [...prev, visualConnection])
+      setVisualConnections((prev) => [...prev, visualConnection])
 
       if (onConnectionAdd) {
         onConnectionAdd(newConnection)
@@ -686,7 +692,14 @@ export function ConnectionWizard({
         target: targetBlockId,
       })
     },
-    [visualBlocks, visualConnections, generateConnectionPath, onConnectionAdd, onDataUpdate, operationId]
+    [
+      visualBlocks,
+      visualConnections,
+      generateConnectionPath,
+      onConnectionAdd,
+      onDataUpdate,
+      operationId,
+    ]
   )
 
   /**
@@ -694,7 +707,7 @@ export function ConnectionWizard({
    */
   const handleRemoveConnection = useCallback(
     (connectionId: string) => {
-      setVisualConnections(prev => prev.filter(c => c.id !== connectionId))
+      setVisualConnections((prev) => prev.filter((c) => c.id !== connectionId))
 
       if (onConnectionRemove) {
         onConnectionRemove(connectionId)
@@ -717,7 +730,7 @@ export function ConnectionWizard({
       )
 
       // Remove accepted suggestion
-      setConnectionSuggestions(prev => prev.filter(s => s.id !== suggestion.id))
+      setConnectionSuggestions((prev) => prev.filter((s) => s.id !== suggestion.id))
     },
     [handleCreateConnection]
   )
@@ -756,11 +769,19 @@ export function ConnectionWizard({
     })
 
     onNext?.()
-  }, [validationResults, visualConnections, visualBlocks, connectionSuggestions, onValidationError, onNext, operationId])
+  }, [
+    validationResults,
+    visualConnections,
+    visualBlocks,
+    connectionSuggestions,
+    onValidationError,
+    onNext,
+    operationId,
+  ])
 
   if (!selectedTemplate?.blocks || selectedTemplate.blocks.length === 0) {
     return (
-      <div className={cn('text-center py-12', className)}>
+      <div className={cn('py-12 text-center', className)}>
         <Zap className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
         <h3 className='mb-2 font-medium text-lg'>No Blocks to Connect</h3>
         <p className='text-muted-foreground'>
@@ -780,8 +801,8 @@ export function ConnectionWizard({
             <h2 className='font-semibold text-2xl'>Connect Your Blocks</h2>
           </div>
           <p className='mx-auto max-w-2xl text-muted-foreground'>
-            Define how your workflow blocks work together by creating logical connections between them.
-            Drag to connect blocks or use our smart suggestions.
+            Define how your workflow blocks work together by creating logical connections between
+            them. Drag to connect blocks or use our smart suggestions.
           </p>
         </div>
 
@@ -792,8 +813,10 @@ export function ConnectionWizard({
               <div>
                 <CardTitle className='text-base'>Connection Overview</CardTitle>
                 <CardDescription>
-                  {visualConnections.length} connection{visualConnections.length !== 1 ? 's' : ''} created
-                  {connectionSuggestions.length > 0 && ` • ${connectionSuggestions.length} suggestion${connectionSuggestions.length !== 1 ? 's' : ''} available`}
+                  {visualConnections.length} connection{visualConnections.length !== 1 ? 's' : ''}{' '}
+                  created
+                  {connectionSuggestions.length > 0 &&
+                    ` • ${connectionSuggestions.length} suggestion${connectionSuggestions.length !== 1 ? 's' : ''} available`}
                 </CardDescription>
               </div>
 
@@ -823,7 +846,9 @@ export function ConnectionWizard({
                     <Button
                       variant='outline'
                       size='sm'
-                      onClick={() => setCanvasState(prev => ({ ...prev, zoom: Math.min(prev.zoom * 1.2, 3) }))}
+                      onClick={() =>
+                        setCanvasState((prev) => ({ ...prev, zoom: Math.min(prev.zoom * 1.2, 3) }))
+                      }
                       className='gap-2'
                     >
                       <ZoomIn className='h-4 w-4' />
@@ -837,7 +862,12 @@ export function ConnectionWizard({
                     <Button
                       variant='outline'
                       size='sm'
-                      onClick={() => setCanvasState(prev => ({ ...prev, zoom: Math.max(prev.zoom / 1.2, 0.3) }))}
+                      onClick={() =>
+                        setCanvasState((prev) => ({
+                          ...prev,
+                          zoom: Math.max(prev.zoom / 1.2, 0.3),
+                        }))
+                      }
                       className='gap-2'
                     >
                       <ZoomOut className='h-4 w-4' />
@@ -879,15 +909,13 @@ export function ConnectionWizard({
                     <Lightbulb className='h-4 w-4 text-yellow-500' />
                     Smart Suggestions
                   </CardTitle>
-                  <CardDescription>
-                    AI-powered connection recommendations
-                  </CardDescription>
+                  <CardDescription>AI-powered connection recommendations</CardDescription>
                 </CardHeader>
                 <CardContent className='space-y-3'>
                   {connectionSuggestions.map((suggestion) => {
-                    const sourceBlock = visualBlocks.find(b => b.id === suggestion.sourceBlockId)
-                    const targetBlock = visualBlocks.find(b => b.id === suggestion.targetBlockId)
-                    
+                    const sourceBlock = visualBlocks.find((b) => b.id === suggestion.sourceBlockId)
+                    const targetBlock = visualBlocks.find((b) => b.id === suggestion.targetBlockId)
+
                     if (!sourceBlock || !targetBlock) return null
 
                     return (
@@ -895,7 +923,7 @@ export function ConnectionWizard({
                         key={suggestion.id}
                         className='rounded-lg border p-3 transition-colors hover:bg-muted/50'
                       >
-                        <div className='flex items-center justify-between mb-2'>
+                        <div className='mb-2 flex items-center justify-between'>
                           <Badge
                             variant='outline'
                             className={cn(
@@ -907,7 +935,7 @@ export function ConnectionWizard({
                           >
                             {Math.round(suggestion.confidence * 100)}% match
                           </Badge>
-                          
+
                           <Button
                             size='sm'
                             onClick={() => handleAcceptSuggestion(suggestion)}
@@ -923,7 +951,7 @@ export function ConnectionWizard({
                           </div>
                           <p className='text-muted-foreground'>{suggestion.reason}</p>
                           {suggestion.suggestedCondition && (
-                            <p className='text-blue-600 font-mono'>
+                            <p className='font-mono text-blue-600'>
                               when: {suggestion.suggestedCondition}
                             </p>
                           )}
@@ -937,28 +965,27 @@ export function ConnectionWizard({
           )}
 
           {/* Visual Canvas */}
-          <div className={cn(
-            'min-h-[600px]',
-            showSuggestions && connectionSuggestions.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'
-          )}>
+          <div
+            className={cn(
+              'min-h-[600px]',
+              showSuggestions && connectionSuggestions.length > 0
+                ? 'lg:col-span-3'
+                : 'lg:col-span-4'
+            )}
+          >
             <Card className='h-full'>
-              <CardContent className='p-0 h-full'>
-                <div className='relative w-full h-full overflow-hidden rounded-lg bg-muted/10'>
+              <CardContent className='h-full p-0'>
+                <div className='relative h-full w-full overflow-hidden rounded-lg bg-muted/10'>
                   {/* Canvas SVG */}
                   <svg
-                    className='absolute inset-0 w-full h-full'
+                    className='absolute inset-0 h-full w-full'
                     style={{
                       transform: `scale(${canvasState.zoom}) translate(${canvasState.pan.x}px, ${canvasState.pan.y}px)`,
                     }}
                   >
                     {/* Grid pattern */}
                     <defs>
-                      <pattern
-                        id='grid'
-                        width='20'
-                        height='20'
-                        patternUnits='userSpaceOnUse'
-                      >
+                      <pattern id='grid' width='20' height='20' patternUnits='userSpaceOnUse'>
                         <path
                           d='M 20 0 L 0 0 0 20'
                           fill='none'
@@ -978,10 +1005,10 @@ export function ConnectionWizard({
                           stroke={connection.isValid ? '#3b82f6' : '#ef4444'}
                           strokeWidth={connection.isSelected ? 3 : 2}
                           strokeDasharray={connection.isValid ? 'none' : '5,5'}
-                          className='transition-colors cursor-pointer hover:stroke-primary'
+                          className='cursor-pointer transition-colors hover:stroke-primary'
                           onClick={() => setEditingConnection(connection)}
                         />
-                        
+
                         {/* Connection arrowhead */}
                         <defs>
                           <marker
@@ -1011,7 +1038,7 @@ export function ConnectionWizard({
                           <text
                             x='50%' // This would need proper calculation
                             y='50%'
-                            className='text-xs fill-current'
+                            className='fill-current text-xs'
                             textAnchor='middle'
                           >
                             {connection.connection.condition}
@@ -1023,15 +1050,19 @@ export function ConnectionWizard({
 
                   {/* Visual blocks */}
                   {visualBlocks.map((visualBlock) => {
-                    const IconComponent = BLOCK_TYPE_ICONS[visualBlock.block.type as keyof typeof BLOCK_TYPE_ICONS] || BLOCK_TYPE_ICONS.default
+                    const IconComponent =
+                      BLOCK_TYPE_ICONS[visualBlock.block.type as keyof typeof BLOCK_TYPE_ICONS] ||
+                      BLOCK_TYPE_ICONS.default
 
                     return (
                       <div
                         key={visualBlock.id}
                         className={cn(
-                          'absolute rounded-lg border-2 bg-white shadow-sm transition-all cursor-move',
-                          visualBlock.isSelected ? 'border-primary shadow-md' : 'border-muted hover:border-muted-foreground',
-                          visualBlock.isDragging && 'shadow-lg scale-105'
+                          'absolute cursor-move rounded-lg border-2 bg-white shadow-sm transition-all',
+                          visualBlock.isSelected
+                            ? 'border-primary shadow-md'
+                            : 'border-muted hover:border-muted-foreground',
+                          visualBlock.isDragging && 'scale-105 shadow-lg'
                         )}
                         style={{
                           left: visualBlock.position.x * canvasState.zoom + canvasState.pan.x,
@@ -1046,12 +1077,12 @@ export function ConnectionWizard({
                           // Handle drag start
                         }}
                       >
-                        <div className='flex flex-col h-full p-3'>
-                          <div className='flex items-center gap-2 mb-2'>
+                        <div className='flex h-full flex-col p-3'>
+                          <div className='mb-2 flex items-center gap-2'>
                             <div className='flex h-6 w-6 items-center justify-center rounded bg-primary/10'>
                               <IconComponent className='h-3 w-3 text-primary' />
                             </div>
-                            <h4 className='font-medium text-sm truncate'>
+                            <h4 className='truncate font-medium text-sm'>
                               {visualBlock.block.name}
                             </h4>
                             {visualBlock.block.required && (
@@ -1061,7 +1092,7 @@ export function ConnectionWizard({
                             )}
                           </div>
 
-                          <p className='flex-1 text-muted-foreground text-xs line-clamp-2'>
+                          <p className='line-clamp-2 flex-1 text-muted-foreground text-xs'>
                             {visualBlock.block.description}
                           </p>
 
@@ -1069,7 +1100,7 @@ export function ConnectionWizard({
                             <Badge variant='outline' className='text-xs'>
                               {visualBlock.block.type}
                             </Badge>
-                            
+
                             {visualBlock.block.estimatedExecutionTime && (
                               <span className='text-muted-foreground text-xs'>
                                 ~{visualBlock.block.estimatedExecutionTime}s
@@ -1083,14 +1114,16 @@ export function ConnectionWizard({
                           <div
                             key={port.id}
                             className={cn(
-                              'absolute w-3 h-3 rounded-full border-2 bg-white cursor-crosshair',
-                              'hover:scale-125 transition-transform',
+                              'absolute h-3 w-3 cursor-crosshair rounded-full border-2 bg-white',
+                              'transition-transform hover:scale-125',
                               port.isConnected ? 'border-primary' : 'border-muted-foreground'
                             )}
                             style={{
                               left: port.position.x - 6,
                               top: port.position.y - 6,
-                              borderColor: DATA_TYPE_COLORS[port.dataType as keyof typeof DATA_TYPE_COLORS] || DATA_TYPE_COLORS.any,
+                              borderColor:
+                                DATA_TYPE_COLORS[port.dataType as keyof typeof DATA_TYPE_COLORS] ||
+                                DATA_TYPE_COLORS.any,
                             }}
                             title={`Input: ${port.dataType}`}
                           />
@@ -1100,14 +1133,16 @@ export function ConnectionWizard({
                           <div
                             key={port.id}
                             className={cn(
-                              'absolute w-3 h-3 rounded-full border-2 bg-white cursor-crosshair',
-                              'hover:scale-125 transition-transform',
+                              'absolute h-3 w-3 cursor-crosshair rounded-full border-2 bg-white',
+                              'transition-transform hover:scale-125',
                               port.isConnected ? 'border-primary' : 'border-muted-foreground'
                             )}
                             style={{
                               left: port.position.x - 6,
                               top: port.position.y - 6,
-                              borderColor: DATA_TYPE_COLORS[port.dataType as keyof typeof DATA_TYPE_COLORS] || DATA_TYPE_COLORS.any,
+                              borderColor:
+                                DATA_TYPE_COLORS[port.dataType as keyof typeof DATA_TYPE_COLORS] ||
+                                DATA_TYPE_COLORS.any,
                             }}
                             title={`Output: ${port.dataType}`}
                           />
@@ -1117,11 +1152,13 @@ export function ConnectionWizard({
                   })}
 
                   {/* Canvas controls overlay */}
-                  <div className='absolute bottom-4 right-4 flex gap-2'>
+                  <div className='absolute right-4 bottom-4 flex gap-2'>
                     <Button
                       variant='secondary'
                       size='sm'
-                      onClick={() => setCanvasState(prev => ({ ...prev, zoom: 1, pan: { x: 0, y: 0 } }))}
+                      onClick={() =>
+                        setCanvasState((prev) => ({ ...prev, zoom: 1, pan: { x: 0, y: 0 } }))
+                      }
                       className='gap-2'
                     >
                       <Maximize2 className='h-3 w-3' />
@@ -1142,16 +1179,18 @@ export function ConnectionWizard({
                 <Link className='h-4 w-4' />
                 Connection Summary
               </CardTitle>
-              <CardDescription>
-                Review all connections in your workflow
-              </CardDescription>
+              <CardDescription>Review all connections in your workflow</CardDescription>
             </CardHeader>
             <CardContent>
               <div className='space-y-2'>
                 {visualConnections.map((connection) => {
-                  const sourceBlock = visualBlocks.find(b => b.id === connection.connection.source)
-                  const targetBlock = visualBlocks.find(b => b.id === connection.connection.target)
-                  
+                  const sourceBlock = visualBlocks.find(
+                    (b) => b.id === connection.connection.source
+                  )
+                  const targetBlock = visualBlocks.find(
+                    (b) => b.id === connection.connection.target
+                  )
+
                   if (!sourceBlock || !targetBlock) return null
 
                   return (
@@ -1160,20 +1199,18 @@ export function ConnectionWizard({
                       className='flex items-center justify-between rounded-lg border p-3'
                     >
                       <div className='flex items-center gap-3'>
-                        <div className={cn(
-                          'w-3 h-3 rounded-full',
-                          connection.isValid ? 'bg-green-500' : 'bg-red-500'
-                        )} />
-                        
-                        <span className='font-medium text-sm'>
-                          {sourceBlock.block.name}
-                        </span>
-                        
+                        <div
+                          className={cn(
+                            'h-3 w-3 rounded-full',
+                            connection.isValid ? 'bg-green-500' : 'bg-red-500'
+                          )}
+                        />
+
+                        <span className='font-medium text-sm'>{sourceBlock.block.name}</span>
+
                         <ArrowRight className='h-4 w-4 text-muted-foreground' />
-                        
-                        <span className='font-medium text-sm'>
-                          {targetBlock.block.name}
-                        </span>
+
+                        <span className='font-medium text-sm'>{targetBlock.block.name}</span>
 
                         {connection.connection.condition && (
                           <Badge variant='outline' className='text-xs'>
@@ -1191,7 +1228,7 @@ export function ConnectionWizard({
                         >
                           <Edit className='h-3 w-3' />
                         </Button>
-                        
+
                         <Button
                           variant='ghost'
                           size='sm'
@@ -1211,27 +1248,24 @@ export function ConnectionWizard({
 
         {/* Next Button */}
         <div className='flex justify-end'>
-          <Button
-            onClick={handleNext}
-            disabled={!validationResults.isValid}
-            className='gap-2'
-          >
+          <Button onClick={handleNext} disabled={!validationResults.isValid} className='gap-2'>
             Continue to Preview
             <ArrowRight className='h-4 w-4' />
           </Button>
         </div>
 
         {/* Connection Edit Dialog */}
-        <Dialog open={!!editingConnection} onOpenChange={(open) => !open && setEditingConnection(null)}>
+        <Dialog
+          open={!!editingConnection}
+          onOpenChange={(open) => !open && setEditingConnection(null)}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <Edit className='h-5 w-5' />
                 Edit Connection
               </DialogTitle>
-              <DialogDescription>
-                Modify connection properties and conditions
-              </DialogDescription>
+              <DialogDescription>Modify connection properties and conditions</DialogDescription>
             </DialogHeader>
 
             {editingConnection && (
@@ -1239,9 +1273,9 @@ export function ConnectionWizard({
                 connection={editingConnection}
                 visualBlocks={visualBlocks}
                 onUpdate={(updatedConnection) => {
-                  setVisualConnections(prev => prev.map(c => 
-                    c.id === updatedConnection.id ? updatedConnection : c
-                  ))
+                  setVisualConnections((prev) =>
+                    prev.map((c) => (c.id === updatedConnection.id ? updatedConnection : c))
+                  )
                   setEditingConnection(null)
                 }}
                 onCancel={() => setEditingConnection(null)}
@@ -1264,18 +1298,23 @@ interface ConnectionEditFormProps {
   onCancel: () => void
 }
 
-function ConnectionEditForm({ connection, visualBlocks, onUpdate, onCancel }: ConnectionEditFormProps) {
+function ConnectionEditForm({
+  connection,
+  visualBlocks,
+  onUpdate,
+  onCancel,
+}: ConnectionEditFormProps) {
   const [description, setDescription] = useState(connection.connection.description || '')
   const [condition, setCondition] = useState(connection.connection.condition || '')
   const [sourceHandle, setSourceHandle] = useState(connection.connection.sourceHandle || '')
   const [targetHandle, setTargetHandle] = useState(connection.connection.targetHandle || '')
 
-  const sourceBlock = visualBlocks.find(b => b.id === connection.connection.source)
-  const targetBlock = visualBlocks.find(b => b.id === connection.connection.target)
+  const sourceBlock = visualBlocks.find((b) => b.id === connection.connection.source)
+  const targetBlock = visualBlocks.find((b) => b.id === connection.connection.target)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const updatedConnection: VisualConnection = {
       ...connection,
       connection: {
@@ -1284,7 +1323,7 @@ function ConnectionEditForm({ connection, visualBlocks, onUpdate, onCancel }: Co
         condition: condition || undefined,
         sourceHandle: sourceHandle || undefined,
         targetHandle: targetHandle || undefined,
-      }
+      },
     }
 
     onUpdate(updatedConnection)
@@ -1324,7 +1363,7 @@ function ConnectionEditForm({ connection, visualBlocks, onUpdate, onCancel }: Co
         </p>
       </div>
 
-      <div className='grid gap-4 grid-cols-2'>
+      <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
           <Label htmlFor='sourceHandle'>Source Output</Label>
           <Select value={sourceHandle} onValueChange={setSourceHandle}>
@@ -1360,13 +1399,11 @@ function ConnectionEditForm({ connection, visualBlocks, onUpdate, onCancel }: Co
         </div>
       </div>
 
-      <div className='flex gap-2 justify-end'>
+      <div className='flex justify-end gap-2'>
         <Button type='button' variant='outline' onClick={onCancel}>
           Cancel
         </Button>
-        <Button type='submit'>
-          Update Connection
-        </Button>
+        <Button type='submit'>Update Connection</Button>
       </div>
     </form>
   )

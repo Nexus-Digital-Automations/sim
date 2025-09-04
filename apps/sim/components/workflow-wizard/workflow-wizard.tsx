@@ -31,19 +31,15 @@ import type React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
-  ArrowLeft,
-  ArrowRight,
   BookOpen,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
   Clock,
   HelpCircle,
-  Home,
   Loader2,
   Save,
   Settings,
-  Shield,
   Sparkles,
   Target,
   X,
@@ -53,10 +49,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
 import { cn } from '@/lib/utils'
@@ -70,13 +78,12 @@ import type {
   WorkflowTemplate,
 } from '@/lib/workflow-wizard/wizard-engine'
 import { createWizardEngine } from '@/lib/workflow-wizard/wizard-engine'
-
-// Component Imports - comprehensive wizard components
-import { GoalSelection } from './goal-selection'
-import { TemplateRecommendation } from './template-recommendation'
 import { BlockConfiguration } from './block-configuration'
 import { ConnectionWizard } from './connection-wizard'
+// Component Imports - comprehensive wizard components
+import { GoalSelection } from './goal-selection'
 import { PreviewValidation } from './preview-validation'
+import { TemplateRecommendation } from './template-recommendation'
 
 // Initialize structured logger
 const logger = createLogger('WorkflowWizard')
@@ -662,7 +669,8 @@ export function WorkflowWizard({
                   <div>
                     <h1 className='font-semibold text-lg'>Workflow Wizard</h1>
                     <p className='text-muted-foreground text-sm'>
-                      {currentStepConfig.title} • Step {wizardState.currentStepIndex + 1} of {WIZARD_STEPS.length}
+                      {currentStepConfig.title} • Step {wizardState.currentStepIndex + 1} of{' '}
+                      {WIZARD_STEPS.length}
                     </p>
                   </div>
                 </div>
@@ -912,11 +920,12 @@ export function WorkflowWizard({
             <DialogHeader>
               <DialogTitle>Exit Workflow Wizard?</DialogTitle>
               <DialogDescription>
-                You have unsaved progress. Are you sure you want to exit? Your progress will be lost.
+                You have unsaved progress. Are you sure you want to exit? Your progress will be
+                lost.
               </DialogDescription>
             </DialogHeader>
 
-            <div className='flex gap-2 justify-end'>
+            <div className='flex justify-end gap-2'>
               <Button variant='outline' onClick={() => setShowExitDialog(false)}>
                 Continue Working
               </Button>

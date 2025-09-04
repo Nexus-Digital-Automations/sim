@@ -1,6 +1,285 @@
 -- Sim Workflow Monitoring Database Schema Extensions
 -- These tables extend the existing database schema to support comprehensive monitoring
 
+-- ========================
+-- COMMUNITY MARKETPLACE DATABASE SCHEMA EXTENSIONS
+-- ========================
+
+-- Community user activities (already exists but may need extensions)
+CREATE TABLE IF NOT EXISTS community_user_activities (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  activity_type VARCHAR(50) NOT NULL,
+  activity_data JSONB DEFAULT '{}',
+  target_type VARCHAR(50),
+  target_id TEXT,
+  target_title TEXT,
+  visibility VARCHAR(20) DEFAULT 'public' CHECK (visibility IN ('public', 'followers', 'private')),
+  is_featured BOOLEAN DEFAULT false,
+  is_hidden BOOLEAN DEFAULT false,
+  hide_reason TEXT,
+  like_count INTEGER DEFAULT 0,
+  comment_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Community user follows
+CREATE TABLE IF NOT EXISTS community_user_follows (
+  id TEXT PRIMARY KEY,
+  follower_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  following_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(follower_id, following_id),
+  CONSTRAINT no_self_follow CHECK (follower_id != following_id)
+);
+
+-- Community activity engagement (likes, shares, bookmarks)
+CREATE TABLE IF NOT EXISTS community_activity_engagement (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  target_id TEXT NOT NULL,
+  target_type VARCHAR(50) NOT NULL,
+  engagement_type VARCHAR(20) NOT NULL CHECK (engagement_type IN ('like', 'share', 'bookmark')),
+  engagement_data JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, target_id, target_type, engagement_type)
+);
+
+-- Template collections
+CREATE TABLE IF NOT EXISTS template_collections (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  visibility VARCHAR(20) DEFAULT 'public' CHECK (visibility IN ('private', 'unlisted', 'public')),
+  tags JSONB DEFAULT '[]',
+  cover_image TEXT,
+  is_featured BOOLEAN DEFAULT false,
+  is_collaborative BOOLEAN DEFAULT false,
+  template_count INTEGER DEFAULT 0,
+  follower_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Template collection items
+CREATE TABLE IF NOT EXISTS template_collection_items (
+  collection_id TEXT NOT NULL REFERENCES template_collections(id) ON DELETE CASCADE,
+  template_id TEXT NOT NULL,
+  added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  sort_order INTEGER DEFAULT 0,
+  PRIMARY KEY (collection_id, template_id)
+);
+
+-- Collection collaborators
+CREATE TABLE IF NOT EXISTS collection_collaborators (
+  collection_id TEXT NOT NULL REFERENCES template_collections(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  role VARCHAR(20) DEFAULT 'editor' CHECK (role IN ('viewer', 'editor', 'admin')),
+  added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (collection_id, user_id)
+);
+
+-- Collection followers
+CREATE TABLE IF NOT EXISTS collection_followers (
+  collection_id TEXT NOT NULL REFERENCES template_collections(id) ON DELETE CASCADE,
+  follower_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  followed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (collection_id, follower_id)
+);
+
+-- Community comments
+CREATE TABLE IF NOT EXISTS community_comments (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  target_id TEXT NOT NULL,
+  target_type VARCHAR(50) NOT NULL,
+  parent_id TEXT REFERENCES community_comments(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  like_count INTEGER DEFAULT 0,
+  reply_count INTEGER DEFAULT 0,
+  is_pinned BOOLEAN DEFAULT false,
+  is_edited BOOLEAN DEFAULT false,
+  is_deleted BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Comment mentions
+CREATE TABLE IF NOT EXISTS comment_mentions (
+  comment_id TEXT NOT NULL REFERENCES community_comments(id) ON DELETE CASCADE,
+  mentioned_user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (comment_id, mentioned_user_id)
+);
+
+-- Community connectors (custom integrations)
+CREATE TABLE IF NOT EXISTS community_connectors (
+  id TEXT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  author_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  category VARCHAR(100),
+  tags JSONB DEFAULT '[]',
+  integration_type VARCHAR(50),
+  compatibility JSONB DEFAULT '{}',
+  installation_package JSONB DEFAULT '{}',
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'suspended')),
+  security_scan JSONB DEFAULT '{}',
+  download_count INTEGER DEFAULT 0,
+  rating_average DECIMAL(3,2) DEFAULT 0,
+  rating_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User integrations (installed integrations)
+CREATE TABLE IF NOT EXISTS user_integrations (
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  integration_id TEXT NOT NULL,
+  integration_type VARCHAR(50) NOT NULL,
+  installed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'error')),
+  configuration JSONB DEFAULT '{}',
+  PRIMARY KEY (user_id, integration_id, integration_type)
+);
+
+-- User integration favorites
+CREATE TABLE IF NOT EXISTS user_integration_favorites (
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  integration_id TEXT NOT NULL,
+  favorited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id, integration_id)
+);
+
+-- Community user profiles (extended user information)
+CREATE TABLE IF NOT EXISTS community_user_profiles (
+  user_id TEXT PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
+  display_name VARCHAR(100),
+  bio TEXT,
+  website_url TEXT,
+  twitter_handle VARCHAR(50),
+  github_handle VARCHAR(50),
+  is_verified BOOLEAN DEFAULT false,
+  followers_count INTEGER DEFAULT 0,
+  following_count INTEGER DEFAULT 0,
+  total_contributions INTEGER DEFAULT 0,
+  last_active_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User reputation system
+CREATE TABLE IF NOT EXISTS user_reputation (
+  user_id TEXT PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
+  total_points INTEGER DEFAULT 0,
+  template_creation_points INTEGER DEFAULT 0,
+  template_rating_points INTEGER DEFAULT 0,
+  community_contribution_points INTEGER DEFAULT 0,
+  community_interaction_points INTEGER DEFAULT 0,
+  social_proof_points INTEGER DEFAULT 0,
+  reputation_level INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User reputation history
+CREATE TABLE IF NOT EXISTS user_reputation_history (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  change_type VARCHAR(20) NOT NULL CHECK (change_type IN ('earned', 'penalty', 'bonus', 'reset')),
+  points_change INTEGER NOT NULL,
+  previous_total INTEGER NOT NULL,
+  new_total INTEGER NOT NULL,
+  source_type VARCHAR(50),
+  source_id TEXT,
+  reason TEXT,
+  triggered_by VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Analytics tracking tables
+CREATE TABLE IF NOT EXISTS collection_views (
+  collection_id TEXT NOT NULL,
+  user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+  ip_address INET,
+  user_agent TEXT,
+  referrer TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS template_downloads (
+  template_id TEXT NOT NULL,
+  user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+  ip_address INET,
+  user_agent TEXT,
+  referrer TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS template_views (
+  template_id TEXT NOT NULL,
+  user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+  ip_address INET,
+  user_agent TEXT,
+  referrer TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Template reviews
+CREATE TABLE IF NOT EXISTS template_reviews (
+  id TEXT PRIMARY KEY,
+  template_id TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review_text TEXT,
+  is_verified_purchase BOOLEAN DEFAULT false,
+  helpful_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(template_id, user_id)
+);
+
+-- Community indexes for performance
+CREATE INDEX IF NOT EXISTS idx_community_activities_user_id ON community_user_activities(user_id);
+CREATE INDEX IF NOT EXISTS idx_community_activities_type ON community_user_activities(activity_type);
+CREATE INDEX IF NOT EXISTS idx_community_activities_target ON community_user_activities(target_type, target_id);
+CREATE INDEX IF NOT EXISTS idx_community_activities_visibility ON community_user_activities(visibility);
+CREATE INDEX IF NOT EXISTS idx_community_activities_created ON community_user_activities(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_activities_featured ON community_user_activities(is_featured, created_at DESC) WHERE is_featured = true;
+
+CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON community_user_follows(follower_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_follows_following ON community_user_follows(following_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_activity_engagement_target ON community_activity_engagement(target_type, target_id, engagement_type);
+CREATE INDEX IF NOT EXISTS idx_activity_engagement_user ON community_activity_engagement(user_id, engagement_type);
+CREATE INDEX IF NOT EXISTS idx_activity_engagement_created ON community_activity_engagement(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_template_collections_user ON template_collections(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_template_collections_visibility ON template_collections(visibility, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_template_collections_featured ON template_collections(is_featured, updated_at DESC) WHERE is_featured = true;
+
+CREATE INDEX IF NOT EXISTS idx_collection_items_template ON template_collection_items(template_id);
+CREATE INDEX IF NOT EXISTS idx_collection_items_order ON template_collection_items(collection_id, sort_order);
+
+CREATE INDEX IF NOT EXISTS idx_community_comments_target ON community_comments(target_type, target_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_comments_user ON community_comments(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_comments_parent ON community_comments(parent_id, created_at ASC) WHERE parent_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_community_connectors_author ON community_connectors(author_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_connectors_category ON community_connectors(category, rating_average DESC);
+CREATE INDEX IF NOT EXISTS idx_community_connectors_status ON community_connectors(status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_connectors_rating ON community_connectors(rating_average DESC, download_count DESC);
+CREATE INDEX IF NOT EXISTS idx_community_connectors_search ON community_connectors USING GIN(to_tsvector('english', name || ' ' || description || ' ' || array_to_string(ARRAY(SELECT jsonb_array_elements_text(tags)), ' ')));
+
+CREATE INDEX IF NOT EXISTS idx_reputation_history_user ON user_reputation_history(user_id, created_at DESC);
+
+-- ========================
+-- MONITORING SCHEMA EXTENSIONS
+-- ========================
+
 -- Alert Rules table - stores configurable alert rules
 CREATE TABLE IF NOT EXISTS alert_rules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

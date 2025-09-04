@@ -28,7 +28,6 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
-import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import type { ConfigurationField } from '@/lib/workflow-wizard/configuration-assistant'
 import { configurationAssistant } from '@/lib/workflow-wizard/configuration-assistant'
 import type { BusinessGoal, WorkflowTemplate } from '@/lib/workflow-wizard/wizard-engine'
@@ -37,7 +36,7 @@ import type { BusinessGoal, WorkflowTemplate } from '@/lib/workflow-wizard/wizar
 const logger = createLogger('ConfigurationValidationAPI', {
   service: 'workflow-wizard',
   component: 'validation-api',
-  version: '2.0.0'
+  version: '2.0.0',
 })
 
 /**
@@ -57,14 +56,14 @@ class RateLimiter {
   isRateLimited(key: string, config: { windowMs: number; maxRequests: number }): boolean {
     const now = Date.now()
     const userRequests = this.requests.get(key) || []
-    
+
     // Clean up old requests outside the window
-    const recentRequests = userRequests.filter(time => now - time < config.windowMs)
-    
+    const recentRequests = userRequests.filter((time) => now - time < config.windowMs)
+
     if (recentRequests.length >= config.maxRequests) {
       return true
     }
-    
+
     recentRequests.push(now)
     this.requests.set(key, recentRequests)
     return false
@@ -327,13 +326,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const session = await getSession()
       if (!session?.user?.id) {
         logger.warn(`[${requestId}] Unauthorized validation request`)
-        return NextResponse.json({
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required for configuration validation'
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Authentication required for configuration validation',
+            },
           },
-        }, { status: 401 })
+          { status: 401 }
+        )
       }
 
       userId = session.user.id
@@ -344,18 +346,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Rate limiting check
-    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const clientIP =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     const rateLimitKey = `validation:${userId || clientIP}`
-    
+
     if (rateLimiter.isRateLimited(rateLimitKey, RATE_LIMIT_CONFIG)) {
       logger.warn(`[${requestId}] Rate limit exceeded for validation request`, { userId, clientIP })
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'RATE_LIMIT_EXCEEDED',
-          message: 'Too many validation requests'
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'Too many validation requests',
+          },
         },
-      }, { status: 429 })
+        { status: 429 }
+      )
     }
     // Parse and validate request body
     const body = await request.json()
@@ -516,20 +522,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         errors: error.errors,
         processingTime,
       })
-      
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: 'INVALID_REQUEST_DATA',
-          message: 'Invalid request data',
-          details: error.errors,
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_REQUEST_DATA',
+            message: 'Invalid request data',
+            details: error.errors,
+          },
+          meta: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            processingTime,
+          },
         },
-        meta: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          processingTime,
-        },
-      }, { status: 400 })
+        { status: 400 }
+      )
     }
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -540,19 +549,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       processingTime,
     })
 
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: 'VALIDATION_FAILED',
-        message: 'Failed to validate configuration',
-        details: errorMessage,
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'VALIDATION_FAILED',
+          message: 'Failed to validate configuration',
+          details: errorMessage,
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          processingTime,
+        },
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-        processingTime,
-      },
-    }, { status: 500 })
+      { status: 500 }
+    )
   }
 }
 

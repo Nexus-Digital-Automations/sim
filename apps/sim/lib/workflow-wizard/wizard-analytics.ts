@@ -23,13 +23,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  BusinessGoal,
-  TemplateRecommendation,
-  UserContext,
-  WizardAnalyticsEvent,
-  WorkflowTemplate,
-} from './wizard-engine'
+import type { TemplateRecommendation, UserContext, WorkflowTemplate } from './wizard-engine'
 
 // Initialize structured logger with analytics context
 const logger = createLogger('WizardAnalytics')
@@ -92,16 +86,16 @@ export interface EnhancedAnalyticsEvent {
   loadTime?: number
   renderTime?: number
   interactionTime?: number
-  
+
   // Custom event data
   properties: Record<string, any>
-  
+
   // A/B testing
   experiments?: ExperimentAssignment[]
-  
+
   // Error context
   errorInfo?: ErrorContext
-  
+
   // User behavior
   mouseEvents?: MouseEvent[]
   keyboardEvents?: KeyboardEvent[]
@@ -443,7 +437,12 @@ export interface SegmentPerformance {
  */
 export interface OptimizationRecommendation {
   id: string
-  type: 'ui_improvement' | 'content_optimization' | 'flow_simplification' | 'personalization' | 'technical_fix'
+  type:
+    | 'ui_improvement'
+    | 'content_optimization'
+    | 'flow_simplification'
+    | 'personalization'
+    | 'technical_fix'
   priority: 'critical' | 'high' | 'medium' | 'low'
   title: string
   description: string
@@ -602,7 +601,7 @@ export class WizardAnalytics {
         properties,
         experiments: context?.experiments || [],
         duration: properties.duration || Date.now() - this.startTime.getTime(),
-        
+
         // Capture browser/device context
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
         deviceType: this.detectDeviceType(),
@@ -660,23 +659,30 @@ export class WizardAnalytics {
       userSatisfaction?: number
     }
   ): Promise<void> {
-    const eventType: AnalyticsEventType = 
-      sessionType === 'started' ? 'wizard_started' :
-      sessionType === 'completed' ? 'wizard_completed' : 'wizard_abandoned'
+    const eventType: AnalyticsEventType =
+      sessionType === 'started'
+        ? 'wizard_started'
+        : sessionType === 'completed'
+          ? 'wizard_completed'
+          : 'wizard_abandoned'
 
-    await this.trackEvent(eventType, {
-      goalId: context.goalId,
-      templateId: context.templateId,
-      stepProgress: context.stepProgress,
-      totalSteps: context.totalSteps,
-      completionTime: context.completionTime,
-      abandonmentReason: context.abandonmentReason,
-      userSatisfaction: context.userSatisfaction,
-    }, {
-      userId: context.userId,
-      goalId: context.goalId,
-      templateId: context.templateId,
-    })
+    await this.trackEvent(
+      eventType,
+      {
+        goalId: context.goalId,
+        templateId: context.templateId,
+        stepProgress: context.stepProgress,
+        totalSteps: context.totalSteps,
+        completionTime: context.completionTime,
+        abandonmentReason: context.abandonmentReason,
+        userSatisfaction: context.userSatisfaction,
+      },
+      {
+        userId: context.userId,
+        goalId: context.goalId,
+        templateId: context.templateId,
+      }
+    )
   }
 
   /**
@@ -695,23 +701,30 @@ export class WizardAnalytics {
     }
   ): Promise<void> {
     const eventType: AnalyticsEventType =
-      interactionType === 'viewed' ? 'template_viewed' :
-      interactionType === 'selected' ? 'template_selected' : 'template_rejected'
+      interactionType === 'viewed'
+        ? 'template_viewed'
+        : interactionType === 'selected'
+          ? 'template_selected'
+          : 'template_rejected'
 
-    await this.trackEvent(eventType, {
-      templateId: template.id,
-      templateTitle: template.title,
-      templateCategory: template.metadata.categories[0],
-      templateDifficulty: template.difficulty,
-      recommendationScore: recommendation?.score,
-      recommendationRank: context?.recommendationRank,
-      selectionTime: context?.selectionTime,
-      rejectionReason: context?.rejectionReason,
-    }, {
-      userId: context?.userId,
-      goalId: context?.goalId,
-      templateId: template.id,
-    })
+    await this.trackEvent(
+      eventType,
+      {
+        templateId: template.id,
+        templateTitle: template.title,
+        templateCategory: template.metadata.categories[0],
+        templateDifficulty: template.difficulty,
+        recommendationScore: recommendation?.score,
+        recommendationRank: context?.recommendationRank,
+        selectionTime: context?.selectionTime,
+        rejectionReason: context?.rejectionReason,
+      },
+      {
+        userId: context?.userId,
+        goalId: context?.goalId,
+        templateId: template.id,
+      }
+    )
   }
 
   /**
@@ -902,7 +915,8 @@ export class WizardAnalytics {
       const results: ABTestResults = {
         testId,
         totalParticipants: Object.values(variantResults).reduce(
-          (sum, result) => sum + result.participants, 0
+          (sum, result) => sum + result.participants,
+          0
         ),
         variantResults,
         winningVariant: winningVariant?.variantId,
@@ -998,9 +1012,10 @@ export class WizardAnalytics {
   /**
    * Get performance dashboard data
    */
-  async getPerformanceDashboard(
-    timeRange: { start: Date; end: Date }
-  ): Promise<PerformanceDashboard> {
+  async getPerformanceDashboard(timeRange: {
+    start: Date
+    end: Date
+  }): Promise<PerformanceDashboard> {
     const operationId = `dashboard_${Date.now()}`
 
     logger.info(`[${this.sessionId}] Generating performance dashboard`, {
@@ -1017,7 +1032,7 @@ export class WizardAnalytics {
 
       // Get funnel analysis
       const funnelAnalysis = await Promise.all(
-        [...this.conversionFunnels.keys()].map(funnelId =>
+        [...this.conversionFunnels.keys()].map((funnelId) =>
           this.generateFunnelAnalysis(funnelId, timeRange)
         )
       )
@@ -1086,7 +1101,7 @@ export class WizardAnalytics {
       // Here you would send events to your analytics service
       // For now, we'll log them
       logger.info(`[${this.sessionId}] Flushing ${eventsToFlush.length} analytics events`, {
-        eventTypes: eventsToFlush.map(e => e.eventType),
+        eventTypes: eventsToFlush.map((e) => e.eventType),
         timeRange: {
           start: eventsToFlush[0].timestamp,
           end: eventsToFlush[eventsToFlush.length - 1].timestamp,
@@ -1146,7 +1161,7 @@ export class WizardAnalytics {
    */
   private detectDeviceType(): 'desktop' | 'tablet' | 'mobile' {
     if (typeof navigator === 'undefined') return 'desktop'
-    
+
     const ua = navigator.userAgent.toLowerCase()
     if (ua.includes('mobile')) return 'mobile'
     if (ua.includes('tablet') || ua.includes('ipad')) return 'tablet'
@@ -1158,7 +1173,7 @@ export class WizardAnalytics {
    */
   private detectBrowser(): string {
     if (typeof navigator === 'undefined') return 'unknown'
-    
+
     const ua = navigator.userAgent.toLowerCase()
     if (ua.includes('chrome')) return 'chrome'
     if (ua.includes('firefox')) return 'firefox'
@@ -1172,7 +1187,7 @@ export class WizardAnalytics {
    */
   private detectOS(): string {
     if (typeof navigator === 'undefined') return 'unknown'
-    
+
     const ua = navigator.userAgent.toLowerCase()
     if (ua.includes('windows')) return 'windows'
     if (ua.includes('mac')) return 'macos'
@@ -1203,7 +1218,7 @@ export class WizardAnalytics {
       throw new Error('Traffic allocation must sum to 100%')
     }
 
-    const hasControl = test.variants.some(v => v.isControl)
+    const hasControl = test.variants.some((v) => v.isControl)
     if (!hasControl) {
       throw new Error('A/B test must have exactly one control variant')
     }
@@ -1218,7 +1233,7 @@ export class WizardAnalytics {
     }
 
     // Check if user belongs to any target segment
-    return test.targetSegments.some(segmentId => {
+    return test.targetSegments.some((segmentId) => {
       const segment = this.segments.get(segmentId)
       return segment && this.userMatchesSegment(userContext, segment)
     })
@@ -1234,13 +1249,18 @@ export class WizardAnalytics {
 
     // Check demographic criteria
     if (criteria.demographics) {
-      if (criteria.demographics.skillLevel && 
-          !criteria.demographics.skillLevel.includes(userContext.skillLevel)) {
+      if (
+        criteria.demographics.skillLevel &&
+        !criteria.demographics.skillLevel.includes(userContext.skillLevel)
+      ) {
         return false
       }
-      
-      if (criteria.demographics.industry && userContext.industry &&
-          !criteria.demographics.industry.includes(userContext.industry)) {
+
+      if (
+        criteria.demographics.industry &&
+        userContext.industry &&
+        !criteria.demographics.industry.includes(userContext.industry)
+      ) {
         return false
       }
     }
@@ -1265,7 +1285,7 @@ export class WizardAnalytics {
     }
 
     // Fallback to control
-    return test.variants.find(v => v.isControl) || test.variants[0]
+    return test.variants.find((v) => v.isControl) || test.variants[0]
   }
 
   /**
@@ -1275,7 +1295,7 @@ export class WizardAnalytics {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash)
@@ -1292,7 +1312,7 @@ export class WizardAnalytics {
   }
 
   private async calculateVariantResults(
-    test: ABTest, 
+    test: ABTest,
     events: EnhancedAnalyticsEvent[]
   ): Promise<Record<string, VariantResults>> {
     // Calculate results for each test variant
@@ -1357,37 +1377,35 @@ export class WizardAnalytics {
   }
 
   private async updateExperimentMetrics(
-    experimentId: string, 
+    experimentId: string,
     event: EnhancedAnalyticsEvent
   ): Promise<void> {
     // Update experiment metrics based on event
   }
 
-  private eventMatchesCriteria(
-    event: EnhancedAnalyticsEvent, 
-    criteria: EventCriteria
-  ): boolean {
+  private eventMatchesCriteria(event: EnhancedAnalyticsEvent, criteria: EventCriteria): boolean {
     // Check if event matches funnel step criteria
     return event.eventType === criteria.eventType
   }
 
   private async updateFunnelStepMetrics(
-    funnelId: string, 
-    stepId: string, 
+    funnelId: string,
+    stepId: string,
     event: EnhancedAnalyticsEvent
   ): Promise<void> {
     // Update funnel step metrics
   }
 
-  private async getEventsForTimeRange(
-    timeRange: { start: Date; end: Date }
-  ): Promise<EnhancedAnalyticsEvent[]> {
+  private async getEventsForTimeRange(timeRange: {
+    start: Date
+    end: Date
+  }): Promise<EnhancedAnalyticsEvent[]> {
     // Get events from storage for time range
     return []
   }
 
   private async calculateFunnelMetrics(
-    funnel: ConversionFunnel, 
+    funnel: ConversionFunnel,
     events: EnhancedAnalyticsEvent[]
   ): Promise<ConversionFunnel> {
     // Calculate updated funnel metrics
@@ -1395,7 +1413,7 @@ export class WizardAnalytics {
   }
 
   private async performDropoffAnalysis(
-    funnel: ConversionFunnel, 
+    funnel: ConversionFunnel,
     events: EnhancedAnalyticsEvent[]
   ): Promise<DropoffAnalysis[]> {
     // Analyze dropoff points in funnel
@@ -1403,7 +1421,7 @@ export class WizardAnalytics {
   }
 
   private async analyzeFunnelBySegment(
-    funnel: ConversionFunnel, 
+    funnel: ConversionFunnel,
     events: EnhancedAnalyticsEvent[]
   ): Promise<Record<string, FunnelPerformance>> {
     // Analyze funnel performance by user segment
@@ -1418,7 +1436,7 @@ export class WizardAnalytics {
   }
 
   private async calculateOverviewMetrics(
-    events: EnhancedAnalyticsEvent[], 
+    events: EnhancedAnalyticsEvent[],
     timeRange: { start: Date; end: Date }
   ): Promise<any> {
     // Calculate overview dashboard metrics
@@ -1437,9 +1455,7 @@ export class WizardAnalytics {
     }
   }
 
-  private async performSegmentAnalysis(
-    events: EnhancedAnalyticsEvent[]
-  ): Promise<UserSegment[]> {
+  private async performSegmentAnalysis(events: EnhancedAnalyticsEvent[]): Promise<UserSegment[]> {
     // Perform user segmentation analysis
     return []
   }

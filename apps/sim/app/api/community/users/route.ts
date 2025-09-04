@@ -1,10 +1,10 @@
 /**
  * Community User Management API
- * 
+ *
  * Comprehensive API for managing community user profiles, reputation, and settings.
  * Supports CRUD operations for user profiles with authentication, privacy controls,
  * and GDPR compliance.
- * 
+ *
  * FEATURES:
  * - User profile management with extended community data
  * - Privacy and visibility controls
@@ -13,25 +13,25 @@
  * - Profile search and discovery
  * - Social feature management
  * - Comprehensive error handling and validation
- * 
+ *
  * SECURITY:
  * - Authentication required for profile modifications
  * - Privacy settings enforcement
  * - Rate limiting for search and discovery
  * - Input validation and sanitization
  * - SQL injection protection
- * 
+ *
  * @created 2025-09-04
  * @author Community User Management API
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
 import { sql } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
-import { ratelimit } from '@/lib/ratelimit'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { auth } from '@/lib/auth'
 import { CommunityReputationSystem } from '@/lib/community/reputation-system'
+import { ratelimit } from '@/lib/ratelimit'
+import { db } from '@/db'
 
 // ========================
 // VALIDATION SCHEMAS
@@ -47,28 +47,34 @@ const CreateCommunityProfileSchema = z.object({
   specializations: z.array(z.string()).max(10).default([]),
   skills: z.array(z.string()).max(20).default([]),
   industries: z.array(z.string()).max(10).default([]),
-  socialLinks: z.object({
-    website: z.string().url().optional().or(z.literal('')),
-    github: z.string().max(50).optional(),
-    linkedin: z.string().max(50).optional(),
-    twitter: z.string().max(50).optional(),
-    discord: z.string().max(50).optional()
-  }).default({}),
-  profileSettings: z.object({
-    profileVisibility: z.enum(['public', 'community', 'private']).default('public'),
-    showEmail: z.boolean().default(false),
-    showRealName: z.boolean().default(true),
-    showLocation: z.boolean().default(true),
-    showCompany: z.boolean().default(true),
-    allowDirectMessages: z.boolean().default(true),
-    showActivity: z.boolean().default(true)
-  }).default({}),
-  notificationSettings: z.object({
-    emailNotifications: z.boolean().default(true),
-    pushNotifications: z.boolean().default(false),
-    weeklyDigest: z.boolean().default(true),
-    marketingEmails: z.boolean().default(false)
-  }).default({})
+  socialLinks: z
+    .object({
+      website: z.string().url().optional().or(z.literal('')),
+      github: z.string().max(50).optional(),
+      linkedin: z.string().max(50).optional(),
+      twitter: z.string().max(50).optional(),
+      discord: z.string().max(50).optional(),
+    })
+    .default({}),
+  profileSettings: z
+    .object({
+      profileVisibility: z.enum(['public', 'community', 'private']).default('public'),
+      showEmail: z.boolean().default(false),
+      showRealName: z.boolean().default(true),
+      showLocation: z.boolean().default(true),
+      showCompany: z.boolean().default(true),
+      allowDirectMessages: z.boolean().default(true),
+      showActivity: z.boolean().default(true),
+    })
+    .default({}),
+  notificationSettings: z
+    .object({
+      emailNotifications: z.boolean().default(true),
+      pushNotifications: z.boolean().default(false),
+      weeklyDigest: z.boolean().default(true),
+      marketingEmails: z.boolean().default(false),
+    })
+    .default({}),
 })
 
 const UpdateCommunityProfileSchema = CreateCommunityProfileSchema.partial()
@@ -85,7 +91,7 @@ const SearchUsersSchema = z.object({
   sortBy: z.enum(['reputation', 'activity', 'templates', 'joined']).default('reputation'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   limit: z.number().min(1).max(50).default(20),
-  offset: z.number().min(0).default(0)
+  offset: z.number().min(0).default(0),
 })
 
 // ========================
@@ -97,28 +103,30 @@ const SearchUsersSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
-  
+
   try {
     console.log('[CommunityUsersAPI] Processing GET request for user discovery')
-    
+
     // Parse search parameters
     const url = new URL(request.url)
     const searchParams = Object.fromEntries(url.searchParams.entries())
-    
+
     // Convert string numbers to actual numbers for validation
-    if (searchParams.minReputation) searchParams.minReputation = parseInt(searchParams.minReputation)
-    if (searchParams.maxReputation) searchParams.maxReputation = parseInt(searchParams.maxReputation)
-    if (searchParams.limit) searchParams.limit = parseInt(searchParams.limit)
-    if (searchParams.offset) searchParams.offset = parseInt(searchParams.offset)
+    if (searchParams.minReputation)
+      searchParams.minReputation = Number.parseInt(searchParams.minReputation)
+    if (searchParams.maxReputation)
+      searchParams.maxReputation = Number.parseInt(searchParams.maxReputation)
+    if (searchParams.limit) searchParams.limit = Number.parseInt(searchParams.limit)
+    if (searchParams.offset) searchParams.offset = Number.parseInt(searchParams.offset)
     if (searchParams.verified) searchParams.verified = searchParams.verified === 'true'
-    
+
     const params = SearchUsersSchema.parse(searchParams)
     console.log('[CommunityUsersAPI] Search parameters validated:', params)
-    
+
     // Rate limiting for search requests
     const clientId = request.headers.get('x-forwarded-for') || 'anonymous'
     const rateLimitResult = await ratelimit(10, '1m').limit(`community_user_search:${clientId}`)
-    
+
     if (!rateLimitResult.success) {
       console.warn(`[CommunityUsersAPI] Rate limit exceeded for ${clientId}`)
       return NextResponse.json(
@@ -126,14 +134,14 @@ export async function GET(request: NextRequest) {
         { status: 429 }
       )
     }
-    
+
     // Build search query
     const whereConditions: string[] = [
       "cup.profile_visibility = 'public'", // Only show public profiles
-      "ur.total_points IS NOT NULL" // Ensure reputation exists
+      'ur.total_points IS NOT NULL', // Ensure reputation exists
     ]
     const queryParams: any[] = []
-    
+
     // Add search filters
     if (params.query) {
       whereConditions.push(`(
@@ -145,52 +153,52 @@ export async function GET(request: NextRequest) {
       )`)
       queryParams.push(`%${params.query}%`)
     }
-    
+
     if (params.specialization) {
       whereConditions.push(`cup.specializations ? $${queryParams.length + 1}`)
       queryParams.push(params.specialization)
     }
-    
+
     if (params.skill) {
       whereConditions.push(`cup.skills ? $${queryParams.length + 1}`)
       queryParams.push(params.skill)
     }
-    
+
     if (params.industry) {
       whereConditions.push(`cup.industries ? $${queryParams.length + 1}`)
       queryParams.push(params.industry)
     }
-    
+
     if (params.location) {
       whereConditions.push(`LOWER(cup.location) LIKE LOWER($${queryParams.length + 1})`)
       queryParams.push(`%${params.location}%`)
     }
-    
+
     if (params.minReputation !== undefined) {
       whereConditions.push(`ur.total_points >= $${queryParams.length + 1}`)
       queryParams.push(params.minReputation)
     }
-    
+
     if (params.maxReputation !== undefined) {
       whereConditions.push(`ur.total_points <= $${queryParams.length + 1}`)
       queryParams.push(params.maxReputation)
     }
-    
+
     if (params.verified !== undefined) {
       whereConditions.push(`cup.is_verified = $${queryParams.length + 1}`)
       queryParams.push(params.verified)
     }
-    
+
     // Build sort clause
     const sortMapping = {
       reputation: 'ur.total_points',
       activity: 'cup.last_active_at',
       templates: 'template_count.total_templates',
-      joined: 'u.created_at'
+      joined: 'u.created_at',
     }
     const sortColumn = sortMapping[params.sortBy] || 'ur.total_points'
     const sortDirection = params.sortOrder.toUpperCase()
-    
+
     // Execute search query
     const searchQuery = `
       SELECT 
@@ -269,12 +277,12 @@ export async function GET(request: NextRequest) {
       ORDER BY ${sortColumn} ${sortDirection} NULLS LAST
       LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
     `
-    
+
     queryParams.push(params.limit, params.offset)
-    
+
     console.log('[CommunityUsersAPI] Executing search query with parameters:', queryParams.length)
     const result = await db.execute(sql.raw(searchQuery, queryParams))
-    
+
     // Get total count for pagination
     const countQuery = `
       SELECT COUNT(*) as total
@@ -283,10 +291,10 @@ export async function GET(request: NextRequest) {
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
       WHERE ${whereConditions.join(' AND ')}
     `
-    
+
     const countResult = await db.execute(sql.raw(countQuery, queryParams.slice(0, -2)))
     const totalUsers = (countResult.rows[0] as any)?.total || 0
-    
+
     // Format results
     const users = result.rows.map((row: any) => ({
       id: row.id,
@@ -307,12 +315,12 @@ export async function GET(request: NextRequest) {
       reputation: {
         totalPoints: row.total_points || 0,
         level: row.reputation_level || 1,
-        averageRating: row.average_template_rating || 0
+        averageRating: row.average_template_rating || 0,
       },
       stats: {
         templates: row.total_templates,
         followers: row.follower_count,
-        following: row.following_count
+        following: row.following_count,
       },
       badges: {
         bronze: row.bronze_badges,
@@ -320,48 +328,54 @@ export async function GET(request: NextRequest) {
         gold: row.gold_badges,
         platinum: row.platinum_badges,
         special: row.special_badges,
-        total: (row.bronze_badges || 0) + (row.silver_badges || 0) + (row.gold_badges || 0) + (row.platinum_badges || 0) + (row.special_badges || 0)
-      }
+        total:
+          (row.bronze_badges || 0) +
+          (row.silver_badges || 0) +
+          (row.gold_badges || 0) +
+          (row.platinum_badges || 0) +
+          (row.special_badges || 0),
+      },
     }))
-    
+
     const executionTime = Date.now() - startTime
-    console.log(`[CommunityUsersAPI] Search completed successfully. Found ${users.length} users in ${executionTime}ms`)
-    
+    console.log(
+      `[CommunityUsersAPI] Search completed successfully. Found ${users.length} users in ${executionTime}ms`
+    )
+
     return NextResponse.json({
       users,
       pagination: {
         total: totalUsers,
         limit: params.limit,
         offset: params.offset,
-        hasMore: params.offset + params.limit < totalUsers
+        hasMore: params.offset + params.limit < totalUsers,
       },
       filters: params,
       meta: {
         executionTime,
-        userCount: users.length
-      }
+        userCount: users.length,
+      },
     })
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[CommunityUsersAPI] Error in GET request:', error)
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid search parameters',
           details: error.errors,
-          executionTime
+          executionTime,
         },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to search users',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )
@@ -373,23 +387,20 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  
+
   try {
     console.log('[CommunityUsersAPI] Processing POST request for profile creation/update')
-    
+
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
       console.warn('[CommunityUsersAPI] Unauthorized request - no valid session')
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
-    
+
     const userId = session.user.id
     console.log(`[CommunityUsersAPI] Authenticated request for user: ${userId}`)
-    
+
     // Rate limiting for profile updates
     const rateLimitResult = await ratelimit(5, '1m').limit(`community_profile_update:${userId}`)
     if (!rateLimitResult.success) {
@@ -399,20 +410,22 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
-    
+
     // Parse and validate request body
     const body = await request.json()
     const profileData = CreateCommunityProfileSchema.parse(body)
     console.log('[CommunityUsersAPI] Profile data validated successfully')
-    
+
     // Check if profile exists
     const existingProfile = await db.execute(sql`
       SELECT id, user_id FROM community_user_profiles WHERE user_id = ${userId}
     `)
-    
+
     const isUpdate = existingProfile.rows.length > 0
-    console.log(`[CommunityUsersAPI] Profile ${isUpdate ? 'exists - updating' : 'does not exist - creating'}`)
-    
+    console.log(
+      `[CommunityUsersAPI] Profile ${isUpdate ? 'exists - updating' : 'does not exist - creating'}`
+    )
+
     // Prepare profile data for database
     const profileFields = {
       userId,
@@ -441,11 +454,11 @@ export async function POST(request: NextRequest) {
       pushNotifications: profileData.notificationSettings.pushNotifications,
       weeklyDigest: profileData.notificationSettings.weeklyDigest,
       marketingEmails: profileData.notificationSettings.marketingEmails,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
-    
+
     let result
-    
+
     if (isUpdate) {
       // Update existing profile
       result = await db.execute(sql`
@@ -506,17 +519,17 @@ export async function POST(request: NextRequest) {
         )
         RETURNING id
       `)
-      
+
       // Initialize reputation for new community member
       const reputationSystem = CommunityReputationSystem.getInstance()
       await reputationSystem.calculateUserReputation(userId, true)
       console.log(`[CommunityUsersAPI] Initialized reputation for new user: ${userId}`)
     }
-    
+
     if (!result.rows[0]) {
       throw new Error('Failed to create/update profile')
     }
-    
+
     // Log activity
     await db.execute(sql`
       INSERT INTO community_user_activities (
@@ -528,10 +541,12 @@ export async function POST(request: NextRequest) {
         'public', NOW()
       )
     `)
-    
+
     const executionTime = Date.now() - startTime
-    console.log(`[CommunityUsersAPI] Profile ${isUpdate ? 'updated' : 'created'} successfully for user ${userId} in ${executionTime}ms`)
-    
+    console.log(
+      `[CommunityUsersAPI] Profile ${isUpdate ? 'updated' : 'created'} successfully for user ${userId} in ${executionTime}ms`
+    )
+
     return NextResponse.json({
       success: true,
       profileId: result.rows[0].id,
@@ -539,30 +554,29 @@ export async function POST(request: NextRequest) {
       message: `Community profile ${isUpdate ? 'updated' : 'created'} successfully`,
       meta: {
         executionTime,
-        userId
-      }
+        userId,
+      },
     })
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[CommunityUsersAPI] Error in POST request:', error)
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid profile data',
           details: error.errors,
-          executionTime
+          executionTime,
         },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create/update profile',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )
@@ -574,98 +588,92 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const startTime = Date.now()
-  
+
   try {
     console.log('[CommunityUsersAPI] Processing DELETE request for profile deletion')
-    
+
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
       console.warn('[CommunityUsersAPI] Unauthorized DELETE request')
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
-    
+
     const userId = session.user.id
     console.log(`[CommunityUsersAPI] Processing profile deletion for user: ${userId}`)
-    
+
     // Check if profile exists
     const existingProfile = await db.execute(sql`
       SELECT id FROM community_user_profiles WHERE user_id = ${userId}
     `)
-    
+
     if (existingProfile.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Community profile not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Community profile not found' }, { status: 404 })
     }
-    
+
     // Begin transaction for profile deletion
     await db.execute(sql`BEGIN`)
-    
+
     try {
       // Delete user activities
       await db.execute(sql`
         DELETE FROM community_user_activities WHERE user_id = ${userId}
       `)
-      
+
       // Delete user follows (both as follower and following)
       await db.execute(sql`
         DELETE FROM community_user_follows 
         WHERE follower_id = ${userId} OR following_id = ${userId}
       `)
-      
+
       // Delete user badges
       await db.execute(sql`
         DELETE FROM community_user_badges WHERE user_id = ${userId}
       `)
-      
+
       // Delete reputation history
       await db.execute(sql`
         DELETE FROM user_reputation_history WHERE user_id = ${userId}
       `)
-      
+
       // Delete reputation record
       await db.execute(sql`
         DELETE FROM user_reputation WHERE user_id = ${userId}
       `)
-      
+
       // Delete community profile
       await db.execute(sql`
         DELETE FROM community_user_profiles WHERE user_id = ${userId}
       `)
-      
+
       await db.execute(sql`COMMIT`)
-      
+
       const executionTime = Date.now() - startTime
-      console.log(`[CommunityUsersAPI] Profile deleted successfully for user ${userId} in ${executionTime}ms`)
-      
+      console.log(
+        `[CommunityUsersAPI] Profile deleted successfully for user ${userId} in ${executionTime}ms`
+      )
+
       return NextResponse.json({
         success: true,
         message: 'Community profile deleted successfully',
         meta: {
           executionTime,
-          userId
-        }
+          userId,
+        },
       })
-      
     } catch (error) {
       await db.execute(sql`ROLLBACK`)
       throw error
     }
-    
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('[CommunityUsersAPI] Error in DELETE request:', error)
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to delete profile',
         message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-        executionTime
+        executionTime,
       },
       { status: 500 }
     )

@@ -26,53 +26,39 @@
  * @created 2025-09-04
  */
 
-import type React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
-  ArrowRight,
   CheckCircle,
   ChevronDown,
-  ChevronRight,
-  Clock,
-  Copy,
   Database,
-  Download,
-  Edit,
-  ExternalLink,
-  Eye,
-  FileText,
   Globe,
-  HelpCircle,
   Info,
-  Lightbulb,
   Loader2,
   Mail,
-  Maximize2,
-  Minimize2,
-  MonitorSpeaker,
-  Pause,
   Play,
   RefreshCw,
   Rocket,
-  Save,
   Settings,
   Share,
   Shield,
   TestTube,
-  Trash2,
   TrendingUp,
   Users,
   Webhook,
-  X,
   Zap,
 } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
@@ -87,11 +73,10 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { createLogger } from '@/lib/logs/console/logger'
 import { cn } from '@/lib/utils'
 import type {
-  TemplateBlock,
   TemplateConnection,
   UserContext,
   ValidationError,
@@ -321,7 +306,7 @@ export function PreviewValidation({
       if (selectedTemplate?.blocks) {
         for (const block of selectedTemplate.blocks) {
           const config = blockConfigs[block.id]
-          
+
           if (block.required && (!config || Object.keys(config).length === 0)) {
             results.push({
               category: 'configuration',
@@ -338,7 +323,11 @@ export function PreviewValidation({
 
       // Connection validation
       setValidationProgress(40)
-      if (selectedTemplate?.blocks && selectedTemplate.blocks.length > 1 && connections.length === 0) {
+      if (
+        selectedTemplate?.blocks &&
+        selectedTemplate.blocks.length > 1 &&
+        connections.length === 0
+      ) {
         results.push({
           category: 'connections',
           level: 'warning',
@@ -353,7 +342,7 @@ export function PreviewValidation({
       setValidationProgress(60)
       const requiredCredentials = selectedTemplate?.requiredCredentials || []
       const connectedCredentials = wizardState.data?.credentials || []
-      
+
       for (const credType of requiredCredentials) {
         if (!connectedCredentials.includes(credType)) {
           results.push({
@@ -387,10 +376,11 @@ export function PreviewValidation({
 
       // Performance validation
       setValidationProgress(90)
-      const totalEstimatedTime = selectedTemplate?.blocks?.reduce(
-        (total, block) => total + (block.estimatedExecutionTime || 1),
-        0
-      ) || 0
+      const totalEstimatedTime =
+        selectedTemplate?.blocks?.reduce(
+          (total, block) => total + (block.estimatedExecutionTime || 1),
+          0
+        ) || 0
 
       if (totalEstimatedTime > 30) {
         results.push({
@@ -406,7 +396,7 @@ export function PreviewValidation({
       setValidationProgress(100)
 
       // Add success message if no errors
-      if (results.filter(r => r.level === 'error').length === 0) {
+      if (results.filter((r) => r.level === 'error').length === 0) {
         results.unshift({
           category: 'configuration',
           level: 'success',
@@ -415,7 +405,6 @@ export function PreviewValidation({
           canAutoFix: false,
         })
       }
-
     } catch (error) {
       logger.error(`[${operationId}] Validation failed`, {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -451,7 +440,7 @@ export function PreviewValidation({
     // Complexity score (0-100)
     const complexity = Math.min(
       100,
-      (blockCount * 10) + (connectionCount * 5) + (requiredCredentials * 15)
+      blockCount * 10 + connectionCount * 5 + requiredCredentials * 15
     )
 
     // Estimated execution time
@@ -465,31 +454,34 @@ export function PreviewValidation({
 
     // Reliability score (based on block types and configurations)
     let reliabilityScore = 85 // Base score
-    
+
     if (selectedTemplate.configuration?.errorHandling) reliabilityScore += 10
     if (selectedTemplate.configuration?.retryLogic) reliabilityScore += 5
-    if (validationResults.filter(r => r.level === 'error').length === 0) reliabilityScore += 5
+    if (validationResults.filter((r) => r.level === 'error').length === 0) reliabilityScore += 5
 
     // Security score
     let securityScore = 70 // Base score
-    
-    if (selectedTemplate.configuration?.securityRequirements?.includes('ENCRYPTION')) securityScore += 15
-    if (selectedTemplate.configuration?.securityRequirements?.includes('OAUTH2')) securityScore += 10
-    if (selectedTemplate.configuration?.securityRequirements?.includes('API_KEY')) securityScore += 5
+
+    if (selectedTemplate.configuration?.securityRequirements?.includes('ENCRYPTION'))
+      securityScore += 15
+    if (selectedTemplate.configuration?.securityRequirements?.includes('OAUTH2'))
+      securityScore += 10
+    if (selectedTemplate.configuration?.securityRequirements?.includes('API_KEY'))
+      securityScore += 5
 
     // Performance score
     let performanceScore = 80 // Base score
-    
+
     if (estimatedExecutionTime < 10) performanceScore += 15
     else if (estimatedExecutionTime > 30) performanceScore -= 20
-    
+
     if (selectedTemplate.configuration?.performanceProfile === 'lightweight') performanceScore += 10
 
     // Scalability score
     let scalabilityScore = 75 // Base score
-    
+
     if (selectedTemplate.configuration?.monitoring) scalabilityScore += 10
-    if (blocks.some(b => b.type === 'database')) scalabilityScore += 5
+    if (blocks.some((b) => b.type === 'database')) scalabilityScore += 5
     if (complexity < 50) scalabilityScore += 10
 
     setWorkflowMetrics({
@@ -506,95 +498,101 @@ export function PreviewValidation({
   /**
    * Run test scenario
    */
-  const runTestScenario = useCallback(async (scenarioId: string) => {
-    const scenario = testScenarios.find(s => s.id === scenarioId)
-    if (!scenario) return
+  const runTestScenario = useCallback(
+    async (scenarioId: string) => {
+      const scenario = testScenarios.find((s) => s.id === scenarioId)
+      if (!scenario) return
 
-    logger.info(`[${operationId}] Running test scenario`, { scenarioId, scenarioName: scenario.name })
+      logger.info(`[${operationId}] Running test scenario`, {
+        scenarioId,
+        scenarioName: scenario.name,
+      })
 
-    setTestScenarios(prev => prev.map(s => 
-      s.id === scenarioId ? { ...s, isRunning: true } : s
-    ))
+      setTestScenarios((prev) =>
+        prev.map((s) => (s.id === scenarioId ? { ...s, isRunning: true } : s))
+      )
 
-    try {
-      // Simulate test execution
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000))
+      try {
+        // Simulate test execution
+        await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000))
 
-      // Generate mock results
-      const steps: TestStepResult[] = selectedTemplate?.blocks?.map((block, index) => ({
-        blockId: block.id,
-        blockName: block.name,
-        status: Math.random() > 0.1 ? 'success' : 'error',
-        executionTime: Math.random() * 1000 + 100,
-        input: scenario.mockData,
-        output: { result: 'processed', timestamp: new Date().toISOString() },
-        error: Math.random() > 0.9 ? 'Simulated error for testing' : undefined,
-        logs: [
-          `Step ${index + 1}: Processing ${block.name}`,
-          `Input validated: ${JSON.stringify(scenario.mockData).substring(0, 50)}...`,
-          `Execution completed in ${Math.round(Math.random() * 1000)}ms`,
-        ],
-      })) || []
+        // Generate mock results
+        const steps: TestStepResult[] =
+          selectedTemplate?.blocks?.map((block, index) => ({
+            blockId: block.id,
+            blockName: block.name,
+            status: Math.random() > 0.1 ? 'success' : 'error',
+            executionTime: Math.random() * 1000 + 100,
+            input: scenario.mockData,
+            output: { result: 'processed', timestamp: new Date().toISOString() },
+            error: Math.random() > 0.9 ? 'Simulated error for testing' : undefined,
+            logs: [
+              `Step ${index + 1}: Processing ${block.name}`,
+              `Input validated: ${JSON.stringify(scenario.mockData).substring(0, 50)}...`,
+              `Execution completed in ${Math.round(Math.random() * 1000)}ms`,
+            ],
+          })) || []
 
-      const totalTime = steps.reduce((sum, step) => sum + step.executionTime, 0)
-      const hasErrors = steps.some(step => step.status === 'error')
+        const totalTime = steps.reduce((sum, step) => sum + step.executionTime, 0)
+        const hasErrors = steps.some((step) => step.status === 'error')
 
-      const results: TestResult = {
-        success: !hasErrors,
-        executionTime: totalTime,
-        steps,
-        errors: hasErrors ? ['Simulated test error'] : [],
-        warnings: Math.random() > 0.5 ? ['Performance optimization recommended'] : [],
-        performance: {
-          totalTime,
-          bottlenecks: totalTime > 2000 ? ['Database query optimization needed'] : [],
-          optimizationSuggestions: [
-            'Consider caching frequently accessed data',
-            'Optimize API call batching',
-          ],
-        },
+        const results: TestResult = {
+          success: !hasErrors,
+          executionTime: totalTime,
+          steps,
+          errors: hasErrors ? ['Simulated test error'] : [],
+          warnings: Math.random() > 0.5 ? ['Performance optimization recommended'] : [],
+          performance: {
+            totalTime,
+            bottlenecks: totalTime > 2000 ? ['Database query optimization needed'] : [],
+            optimizationSuggestions: [
+              'Consider caching frequently accessed data',
+              'Optimize API call batching',
+            ],
+          },
+        }
+
+        setTestScenarios((prev) =>
+          prev.map((s) => (s.id === scenarioId ? { ...s, isRunning: false, results } : s))
+        )
+
+        logger.info(`[${operationId}] Test scenario completed`, {
+          scenarioId,
+          success: results.success,
+          executionTime: results.executionTime,
+        })
+      } catch (error) {
+        logger.error(`[${operationId}] Test scenario failed`, {
+          scenarioId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+
+        setTestScenarios((prev) =>
+          prev.map((s) =>
+            s.id === scenarioId
+              ? {
+                  ...s,
+                  isRunning: false,
+                  results: {
+                    success: false,
+                    executionTime: 0,
+                    steps: [],
+                    errors: ['Test execution failed'],
+                    warnings: [],
+                    performance: {
+                      totalTime: 0,
+                      bottlenecks: [],
+                      optimizationSuggestions: [],
+                    },
+                  },
+                }
+              : s
+          )
+        )
       }
-
-      setTestScenarios(prev => prev.map(s => 
-        s.id === scenarioId 
-          ? { ...s, isRunning: false, results }
-          : s
-      ))
-
-      logger.info(`[${operationId}] Test scenario completed`, {
-        scenarioId,
-        success: results.success,
-        executionTime: results.executionTime,
-      })
-
-    } catch (error) {
-      logger.error(`[${operationId}] Test scenario failed`, {
-        scenarioId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
-
-      setTestScenarios(prev => prev.map(s => 
-        s.id === scenarioId 
-          ? { 
-              ...s, 
-              isRunning: false, 
-              results: {
-                success: false,
-                executionTime: 0,
-                steps: [],
-                errors: ['Test execution failed'],
-                warnings: [],
-                performance: {
-                  totalTime: 0,
-                  bottlenecks: [],
-                  optimizationSuggestions: [],
-                },
-              }
-            }
-          : s
-      ))
-    }
-  }, [testScenarios, selectedTemplate, operationId])
+    },
+    [testScenarios, selectedTemplate, operationId]
+  )
 
   /**
    * Handle workflow creation
@@ -633,8 +631,8 @@ export function PreviewValidation({
           createdAt: new Date().toISOString(),
           wizardVersion: '2.0.0',
           metrics: workflowMetrics,
-          validationResults: validationResults.filter(r => r.level !== 'success'),
-          testResults: testScenarios.map(s => s.results).filter(Boolean),
+          validationResults: validationResults.filter((r) => r.level !== 'success'),
+          testResults: testScenarios.map((s) => s.results).filter(Boolean),
         },
       }
 
@@ -650,10 +648,9 @@ export function PreviewValidation({
         workflowName,
         environment: deploymentEnvironment,
       })
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create workflow'
-      
+
       logger.error(`[${operationId}] Workflow creation failed`, {
         error: errorMessage,
       })
@@ -711,7 +708,7 @@ export function PreviewValidation({
 
   if (!selectedTemplate) {
     return (
-      <div className={cn('text-center py-12', className)}>
+      <div className={cn('py-12 text-center', className)}>
         <CheckCircle className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
         <h3 className='mb-2 font-medium text-lg'>No Template Selected</h3>
         <p className='text-muted-foreground'>
@@ -721,8 +718,8 @@ export function PreviewValidation({
     )
   }
 
-  const hasErrors = validationResults.some(r => r.level === 'error')
-  const hasWarnings = validationResults.some(r => r.level === 'warning')
+  const hasErrors = validationResults.some((r) => r.level === 'error')
+  const hasWarnings = validationResults.some((r) => r.level === 'warning')
 
   return (
     <TooltipProvider>
@@ -734,7 +731,8 @@ export function PreviewValidation({
             <h2 className='font-semibold text-2xl'>Preview & Validate</h2>
           </div>
           <p className='mx-auto max-w-2xl text-muted-foreground'>
-            Review your complete workflow, run tests, and validate everything is ready for deployment.
+            Review your complete workflow, run tests, and validate everything is ready for
+            deployment.
           </p>
         </div>
 
@@ -749,7 +747,7 @@ export function PreviewValidation({
                 </CardTitle>
                 <CardDescription>{selectedTemplate.description}</CardDescription>
               </div>
-              
+
               <div className='flex items-center gap-2'>
                 {showAdvancedMetrics && (
                   <Button variant='outline' size='sm' className='gap-2'>
@@ -757,7 +755,7 @@ export function PreviewValidation({
                     Metrics
                   </Button>
                 )}
-                
+
                 <Button variant='outline' size='sm' className='gap-2'>
                   <Share className='h-4 w-4' />
                   Export
@@ -765,7 +763,7 @@ export function PreviewValidation({
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent>
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
               <div className='text-center'>
@@ -777,7 +775,9 @@ export function PreviewValidation({
                 <div className='text-muted-foreground text-sm'>Connections</div>
               </div>
               <div className='text-center'>
-                <div className='font-semibold text-2xl'>{workflowMetrics.estimatedExecutionTime}s</div>
+                <div className='font-semibold text-2xl'>
+                  {workflowMetrics.estimatedExecutionTime}s
+                </div>
                 <div className='text-muted-foreground text-sm'>Est. Runtime</div>
               </div>
               <div className='text-center'>
@@ -810,7 +810,7 @@ export function PreviewValidation({
                     <Progress value={validationProgress} className='w-20' />
                   </div>
                 )}
-                
+
                 <Button
                   variant='outline'
                   size='sm'
@@ -824,7 +824,7 @@ export function PreviewValidation({
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent>
             <div className='space-y-3'>
               {validationResults.map((result, index) => (
@@ -840,20 +840,24 @@ export function PreviewValidation({
                 >
                   <div className='mt-0.5'>
                     {result.level === 'error' && <AlertCircle className='h-4 w-4 text-red-600' />}
-                    {result.level === 'warning' && <AlertCircle className='h-4 w-4 text-yellow-600' />}
+                    {result.level === 'warning' && (
+                      <AlertCircle className='h-4 w-4 text-yellow-600' />
+                    )}
                     {result.level === 'info' && <Info className='h-4 w-4 text-blue-600' />}
-                    {result.level === 'success' && <CheckCircle className='h-4 w-4 text-green-600' />}
+                    {result.level === 'success' && (
+                      <CheckCircle className='h-4 w-4 text-green-600' />
+                    )}
                   </div>
 
-                  <div className='flex-1 min-w-0'>
-                    <div className='flex items-center justify-between mb-1'>
+                  <div className='min-w-0 flex-1'>
+                    <div className='mb-1 flex items-center justify-between'>
                       <h4 className='font-medium text-sm'>{result.title}</h4>
-                      
+
                       <div className='flex items-center gap-2'>
                         <Badge variant='outline' className='text-xs'>
                           {result.category}
                         </Badge>
-                        
+
                         {result.canAutoFix && (
                           <Button size='sm' variant='ghost' className='h-6 px-2 text-xs'>
                             Auto-fix
@@ -861,22 +865,22 @@ export function PreviewValidation({
                         )}
                       </div>
                     </div>
-                    
+
                     <p className='text-muted-foreground text-sm'>{result.message}</p>
-                    
+
                     {result.suggestion && (
-                      <p className='mt-1 text-blue-600 text-sm'>
-                        💡 {result.suggestion}
-                      </p>
+                      <p className='mt-1 text-blue-600 text-sm'>💡 {result.suggestion}</p>
                     )}
                   </div>
                 </div>
               ))}
 
               {validationResults.length === 0 && !isValidating && (
-                <div className='text-center py-6'>
+                <div className='py-6 text-center'>
                   <CheckCircle className='mx-auto mb-2 h-8 w-8 text-muted-foreground' />
-                  <p className='text-muted-foreground'>No validation results yet. Click "Re-validate" to run checks.</p>
+                  <p className='text-muted-foreground'>
+                    No validation results yet. Click "Re-validate" to run checks.
+                  </p>
                 </div>
               )}
             </div>
@@ -895,7 +899,7 @@ export function PreviewValidation({
                 Run test scenarios to validate your workflow behavior
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <Tabs defaultValue='scenarios' className='space-y-4'>
                 <TabsList>
@@ -910,7 +914,7 @@ export function PreviewValidation({
                         <CardHeader className='pb-3'>
                           <div className='flex items-center justify-between'>
                             <CardTitle className='text-base'>{scenario.name}</CardTitle>
-                            
+
                             {scenario.results && (
                               <Badge
                                 variant={scenario.results.success ? 'default' : 'destructive'}
@@ -929,7 +933,7 @@ export function PreviewValidation({
                           <div className='space-y-3'>
                             <div>
                               <h5 className='mb-1 font-medium text-sm'>Mock Data</h5>
-                              <pre className='rounded bg-muted p-2 text-xs overflow-x-auto'>
+                              <pre className='overflow-x-auto rounded bg-muted p-2 text-xs'>
                                 {JSON.stringify(scenario.mockData, null, 2)}
                               </pre>
                             </div>
@@ -959,15 +963,17 @@ export function PreviewValidation({
                                   <span>Execution Time:</span>
                                   <span>{Math.round(scenario.results.executionTime)}ms</span>
                                 </div>
-                                
+
                                 <div className='flex justify-between'>
                                   <span>Steps:</span>
                                   <span>{scenario.results.steps.length}</span>
                                 </div>
-                                
+
                                 {scenario.results.errors.length > 0 && (
                                   <div>
-                                    <span className='text-red-600'>Errors: {scenario.results.errors.length}</span>
+                                    <span className='text-red-600'>
+                                      Errors: {scenario.results.errors.length}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -980,68 +986,74 @@ export function PreviewValidation({
                 </TabsContent>
 
                 <TabsContent value='results' className='space-y-4'>
-                  {testScenarios.filter(s => s.results).map((scenario) => (
-                    <Collapsible key={scenario.id}>
-                      <div className='flex items-center justify-between rounded-lg border p-3'>
-                        <div className='flex items-center gap-3'>
-                          {scenario.results?.success ? (
-                            <CheckCircle className='h-5 w-5 text-green-600' />
-                          ) : (
-                            <AlertCircle className='h-5 w-5 text-red-600' />
-                          )}
-                          
-                          <div>
-                            <h4 className='font-medium'>{scenario.name}</h4>
-                            <p className='text-muted-foreground text-sm'>
-                              {Math.round(scenario.results?.executionTime || 0)}ms execution time
-                            </p>
+                  {testScenarios
+                    .filter((s) => s.results)
+                    .map((scenario) => (
+                      <Collapsible key={scenario.id}>
+                        <div className='flex items-center justify-between rounded-lg border p-3'>
+                          <div className='flex items-center gap-3'>
+                            {scenario.results?.success ? (
+                              <CheckCircle className='h-5 w-5 text-green-600' />
+                            ) : (
+                              <AlertCircle className='h-5 w-5 text-red-600' />
+                            )}
+
+                            <div>
+                              <h4 className='font-medium'>{scenario.name}</h4>
+                              <p className='text-muted-foreground text-sm'>
+                                {Math.round(scenario.results?.executionTime || 0)}ms execution time
+                              </p>
+                            </div>
                           </div>
+
+                          <CollapsibleContent>
+                            <Button variant='ghost' size='sm' className='gap-2'>
+                              <ChevronDown className='h-4 w-4' />
+                              Details
+                            </Button>
+                          </CollapsibleContent>
                         </div>
 
-                        <CollapsibleContent>
-                          <Button variant='ghost' size='sm' className='gap-2'>
-                            <ChevronDown className='h-4 w-4' />
-                            Details
-                          </Button>
-                        </CollapsibleContent>
-                      </div>
+                        <CollapsibleContent className='space-y-2'>
+                          {scenario.results?.steps.map((step, stepIndex) => (
+                            <div key={stepIndex} className='ml-8 rounded-lg border p-3'>
+                              <div className='mb-2 flex items-center justify-between'>
+                                <span className='font-medium text-sm'>{step.blockName}</span>
+                                <Badge
+                                  variant={step.status === 'success' ? 'default' : 'destructive'}
+                                  className='text-xs'
+                                >
+                                  {step.status}
+                                </Badge>
+                              </div>
 
-                      <CollapsibleContent className='space-y-2'>
-                        {scenario.results?.steps.map((step, stepIndex) => (
-                          <div key={stepIndex} className='ml-8 rounded-lg border p-3'>
-                            <div className='flex items-center justify-between mb-2'>
-                              <span className='font-medium text-sm'>{step.blockName}</span>
-                              <Badge
-                                variant={step.status === 'success' ? 'default' : 'destructive'}
-                                className='text-xs'
-                              >
-                                {step.status}
-                              </Badge>
+                              <div className='space-y-1 text-xs'>
+                                <div>Execution Time: {Math.round(step.executionTime)}ms</div>
+                                {step.error && (
+                                  <div className='text-red-600'>Error: {step.error}</div>
+                                )}
+
+                                <details className='mt-2'>
+                                  <summary className='cursor-pointer text-blue-600'>
+                                    View Logs
+                                  </summary>
+                                  <pre className='mt-1 rounded bg-muted p-2'>
+                                    {step.logs.join('\n')}
+                                  </pre>
+                                </details>
+                              </div>
                             </div>
-                            
-                            <div className='space-y-1 text-xs'>
-                              <div>Execution Time: {Math.round(step.executionTime)}ms</div>
-                              {step.error && (
-                                <div className='text-red-600'>Error: {step.error}</div>
-                              )}
-                              
-                              <details className='mt-2'>
-                                <summary className='cursor-pointer text-blue-600'>View Logs</summary>
-                                <pre className='mt-1 rounded bg-muted p-2'>
-                                  {step.logs.join('\n')}
-                                </pre>
-                              </details>
-                            </div>
-                          </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
-                  
-                  {testScenarios.filter(s => s.results).length === 0 && (
-                    <div className='text-center py-6'>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+
+                  {testScenarios.filter((s) => s.results).length === 0 && (
+                    <div className='py-6 text-center'>
                       <TestTube className='mx-auto mb-2 h-8 w-8 text-muted-foreground' />
-                      <p className='text-muted-foreground'>No test results yet. Run test scenarios to see results.</p>
+                      <p className='text-muted-foreground'>
+                        No test results yet. Run test scenarios to see results.
+                      </p>
                     </div>
                   )}
                 </TabsContent>
@@ -1058,11 +1070,9 @@ export function PreviewValidation({
                 <TrendingUp className='h-5 w-5' />
                 Workflow Metrics
               </CardTitle>
-              <CardDescription>
-                Performance, security, and reliability analysis
-              </CardDescription>
+              <CardDescription>Performance, security, and reliability analysis</CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 <div className='space-y-2'>
@@ -1117,10 +1127,12 @@ export function PreviewValidation({
         )}
 
         {/* Create Workflow */}
-        <Card className={cn(
-          'border-2',
-          hasErrors ? 'border-red-200' : hasWarnings ? 'border-yellow-200' : 'border-green-200'
-        )}>
+        <Card
+          className={cn(
+            'border-2',
+            hasErrors ? 'border-red-200' : hasWarnings ? 'border-yellow-200' : 'border-green-200'
+          )}
+        >
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Rocket className='h-5 w-5' />
@@ -1130,11 +1142,11 @@ export function PreviewValidation({
               {hasErrors
                 ? 'Please fix validation errors before deploying your workflow'
                 : hasWarnings
-                ? 'Your workflow is ready with some warnings - review before deploying'
-                : 'Your workflow is fully validated and ready for deployment'}
+                  ? 'Your workflow is ready with some warnings - review before deploying'
+                  : 'Your workflow is fully validated and ready for deployment'}
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <div className='flex items-center justify-between'>
               <div className='space-y-1'>
@@ -1146,15 +1158,19 @@ export function PreviewValidation({
                   ) : (
                     <CheckCircle className='h-4 w-4 text-green-600' />
                   )}
-                  
+
                   <span className='font-medium'>
-                    {hasErrors ? 'Validation Failed' : hasWarnings ? 'Ready with Warnings' : 'Validation Passed'}
+                    {hasErrors
+                      ? 'Validation Failed'
+                      : hasWarnings
+                        ? 'Ready with Warnings'
+                        : 'Validation Passed'}
                   </span>
                 </div>
-                
+
                 <p className='text-muted-foreground text-sm'>
-                  {validationResults.filter(r => r.level === 'error').length} errors, 
-                  {' '}{validationResults.filter(r => r.level === 'warning').length} warnings
+                  {validationResults.filter((r) => r.level === 'error').length} errors,{' '}
+                  {validationResults.filter((r) => r.level === 'warning').length} warnings
                 </p>
               </div>
 
@@ -1188,9 +1204,7 @@ export function PreviewValidation({
                 <Rocket className='h-5 w-5' />
                 Create Workflow
               </DialogTitle>
-              <DialogDescription>
-                Configure your workflow deployment settings
-              </DialogDescription>
+              <DialogDescription>Configure your workflow deployment settings</DialogDescription>
             </DialogHeader>
 
             <div className='space-y-4'>
@@ -1240,7 +1254,7 @@ export function PreviewValidation({
 
               <Separator />
 
-              <div className='flex gap-2 justify-end'>
+              <div className='flex justify-end gap-2'>
                 <Button variant='outline' onClick={() => setShowCreateDialog(false)}>
                   Cancel
                 </Button>

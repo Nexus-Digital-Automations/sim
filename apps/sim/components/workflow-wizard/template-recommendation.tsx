@@ -6,7 +6,7 @@
  * This component provides intelligent template recommendations with:
  * - AI-powered matching algorithm based on user goals and context
  * - Interactive template preview with detailed visualization
- * - Comparison view for evaluating multiple templates side-by-side  
+ * - Comparison view for evaluating multiple templates side-by-side
  * - Advanced customization options with real-time preview
  * - Seamless integration with template library and marketplace
  * - Full WCAG 2.1/2.2 accessibility compliance and keyboard navigation
@@ -27,7 +27,6 @@
  * @created 2025-09-04
  */
 
-import type React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
@@ -36,18 +35,11 @@ import {
   BookOpen,
   CheckCircle,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronUp,
   Clock,
-  Copy,
-  ExternalLink,
   Eye,
   Filter,
-  Globe,
-  Heart,
   Info,
-  Lightbulb,
   Play,
   Search,
   Settings,
@@ -55,20 +47,22 @@ import {
   Sparkles,
   Star,
   Target,
-  ThumbsUp,
   TrendingUp,
-  Users,
   Zap,
 } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -135,8 +129,10 @@ const MOCK_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'lead-capture-nurture',
     title: 'Lead Capture & Nurturing Automation',
-    description: 'Automatically capture leads from multiple sources and nurture them with personalized email sequences',
-    longDescription: 'This comprehensive lead management workflow captures leads from web forms, social media, and referrals, then automatically scores them based on behavior and demographics. It sends personalized email sequences, updates your CRM, and alerts sales reps when leads are ready to convert.',
+    description:
+      'Automatically capture leads from multiple sources and nurture them with personalized email sequences',
+    longDescription:
+      'This comprehensive lead management workflow captures leads from web forms, social media, and referrals, then automatically scores them based on behavior and demographics. It sends personalized email sequences, updates your CRM, and alerts sales reps when leads are ready to convert.',
     blocks: [
       {
         id: 'webhook-trigger',
@@ -264,8 +260,10 @@ const MOCK_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'social-media-automation',
     title: 'Social Media Publishing & Analytics',
-    description: 'Schedule posts across multiple social platforms and track performance metrics automatically',
-    longDescription: 'This workflow helps you maintain a consistent social media presence by scheduling posts across Facebook, Twitter, LinkedIn, and Instagram. It automatically tracks engagement metrics, generates performance reports, and suggests optimal posting times based on your audience behavior.',
+    description:
+      'Schedule posts across multiple social platforms and track performance metrics automatically',
+    longDescription:
+      'This workflow helps you maintain a consistent social media presence by scheduling posts across Facebook, Twitter, LinkedIn, and Instagram. It automatically tracks engagement metrics, generates performance reports, and suggests optimal posting times based on your audience behavior.',
     blocks: [
       {
         id: 'content-scheduler',
@@ -364,8 +362,10 @@ const MOCK_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'financial-reporting',
     title: 'Automated Financial Reporting',
-    description: 'Generate comprehensive financial reports and analytics with automated data collection from multiple sources',
-    longDescription: 'This advanced workflow collects financial data from your accounting software, banking APIs, and expense tracking tools to generate comprehensive monthly and quarterly reports. It includes P&L statements, cash flow analysis, budget variance reports, and automated distribution to stakeholders.',
+    description:
+      'Generate comprehensive financial reports and analytics with automated data collection from multiple sources',
+    longDescription:
+      'This advanced workflow collects financial data from your accounting software, banking APIs, and expense tracking tools to generate comprehensive monthly and quarterly reports. It includes P&L statements, cash flow analysis, budget variance reports, and automated distribution to stakeholders.',
     blocks: [
       {
         id: 'data-collection',
@@ -539,9 +539,9 @@ export function TemplateRecommendation({
     isOpen: false,
     selectedFeatures: [],
   })
-  const [sortBy, setSortBy] = useState<'relevance' | 'popularity' | 'rating' | 'difficulty' | 'time'>(
-    'relevance'
-  )
+  const [sortBy, setSortBy] = useState<
+    'relevance' | 'popularity' | 'rating' | 'difficulty' | 'time'
+  >('relevance')
 
   const operationId = useMemo(() => `template_recommendation_${Date.now()}`, [])
 
@@ -582,7 +582,9 @@ export function TemplateRecommendation({
         score += Math.min(overlap.length * 0.1, 0.2)
 
         // Required integrations match
-        const goalIntegrations = new Set(selectedGoal.requiredIntegrations.map((i) => i.toLowerCase()))
+        const goalIntegrations = new Set(
+          selectedGoal.requiredIntegrations.map((i) => i.toLowerCase())
+        )
         const templateIntegrations = new Set(
           template.supportedIntegrations.map((i) => i.toLowerCase())
         )
@@ -689,9 +691,7 @@ export function TemplateRecommendation({
     })
 
     // Sort by score and take top recommendations
-    return recommendations
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxRecommendations)
+    return recommendations.sort((a, b) => b.score - a.score).slice(0, maxRecommendations)
   }, [selectedGoal, userContext, operationId, maxRecommendations])
 
   /**
@@ -715,7 +715,8 @@ export function TemplateRecommendation({
     // Difficulty filter
     if (filters.difficulty !== 'all') {
       const difficultyMap = { easy: [1, 2], medium: [3], hard: [4, 5] }
-      const allowedDifficulties = difficultyMap[filters.difficulty as keyof typeof difficultyMap] || []
+      const allowedDifficulties =
+        difficultyMap[filters.difficulty as keyof typeof difficultyMap] || []
       filtered = filtered.filter(({ template }) =>
         allowedDifficulties.includes(template.difficulty)
       )
@@ -973,7 +974,9 @@ export function TemplateRecommendation({
                   <Label htmlFor='difficulty-filter'>Difficulty</Label>
                   <Select
                     value={filters.difficulty}
-                    onValueChange={(value) => setFilters((prev) => ({ ...prev, difficulty: value }))}
+                    onValueChange={(value) =>
+                      setFilters((prev) => ({ ...prev, difficulty: value }))
+                    }
                   >
                     <SelectTrigger id='difficulty-filter'>
                       <SelectValue />
@@ -1050,7 +1053,8 @@ export function TemplateRecommendation({
                   Clear all filters
                 </Button>
                 <span className='text-muted-foreground text-sm'>
-                  {filteredRecommendations.length} template{filteredRecommendations.length !== 1 ? 's' : ''} found
+                  {filteredRecommendations.length} template
+                  {filteredRecommendations.length !== 1 ? 's' : ''} found
                 </span>
               </div>
             </CollapsibleContent>
@@ -1078,11 +1082,15 @@ export function TemplateRecommendation({
                   recommendation={recommendation}
                   index={index}
                   isSelected={selectedTemplate?.id === recommendation.template.id}
-                  inComparison={comparison.templates.some((t) => t.id === recommendation.template.id)}
+                  inComparison={comparison.templates.some(
+                    (t) => t.id === recommendation.template.id
+                  )}
                   onSelect={() => handleTemplateSelect(recommendation.template)}
                   onPreview={() => handleTemplatePreview(recommendation.template)}
                   onAddToComparison={() => handleAddToComparison(recommendation.template)}
-                  onRemoveFromComparison={() => handleRemoveFromComparison(recommendation.template.id)}
+                  onRemoveFromComparison={() =>
+                    handleRemoveFromComparison(recommendation.template.id)
+                  }
                   userContext={userContext}
                   showComparison={showComparison}
                 />
@@ -1128,7 +1136,10 @@ export function TemplateRecommendation({
         )}
 
         {/* Template Preview Dialog */}
-        <Dialog open={previewTemplate !== null} onOpenChange={(open) => !open && setPreviewTemplate(null)}>
+        <Dialog
+          open={previewTemplate !== null}
+          onOpenChange={(open) => !open && setPreviewTemplate(null)}
+        >
           <DialogContent className='max-w-4xl'>
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
@@ -1154,7 +1165,10 @@ export function TemplateRecommendation({
         </Dialog>
 
         {/* Template Comparison Panel */}
-        <Dialog open={comparison.isOpen} onOpenChange={(open) => setComparison(prev => ({ ...prev, isOpen: open }))}>
+        <Dialog
+          open={comparison.isOpen}
+          onOpenChange={(open) => setComparison((prev) => ({ ...prev, isOpen: open }))}
+        >
           <DialogContent className='max-w-6xl'>
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
@@ -1171,7 +1185,7 @@ export function TemplateRecommendation({
                 templates={comparison.templates}
                 onSelect={handleTemplateSelect}
                 onRemove={handleRemoveFromComparison}
-                onClose={() => setComparison(prev => ({ ...prev, isOpen: false }))}
+                onClose={() => setComparison((prev) => ({ ...prev, isOpen: false }))}
               />
             )}
           </DialogContent>
@@ -1247,7 +1261,7 @@ function TemplateCard({
             <div className='min-w-0 flex-1'>
               <div className='mb-2 flex flex-wrap items-center gap-2'>
                 <CardTitle className='text-lg'>{template.title}</CardTitle>
-                
+
                 {/* AI Score indicator */}
                 <Tooltip>
                   <TooltipTrigger>
@@ -1273,14 +1287,11 @@ function TemplateCard({
                     className={cn('h-2 w-2 rounded-full', getDifficultyColor(template.difficulty))}
                     aria-label={`Difficulty ${template.difficulty} out of 5`}
                   />
-                  <span className='text-muted-foreground'>
-                    Difficulty {template.difficulty}/5
-                  </span>
+                  <span className='text-muted-foreground'>Difficulty {template.difficulty}/5</span>
                 </div>
 
                 <span className='flex items-center gap-1 text-muted-foreground'>
-                  <Clock className='h-3 w-3' />
-                  ~{template.averageSetupTime}min
+                  <Clock className='h-3 w-3' />~{template.averageSetupTime}min
                 </span>
 
                 <span className='flex items-center gap-1 text-muted-foreground'>
@@ -1322,12 +1333,7 @@ function TemplateCard({
             <div className='flex items-center gap-1'>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={onPreview}
-                    className='h-8 w-8 p-0'
-                  >
+                  <Button variant='ghost' size='sm' onClick={onPreview} className='h-8 w-8 p-0'>
                     <Eye className='h-4 w-4' />
                   </Button>
                 </TooltipTrigger>
@@ -1358,7 +1364,11 @@ function TemplateCard({
                 onClick={() => setIsExpanded(!isExpanded)}
                 className='h-8 w-8 p-0'
               >
-                {isExpanded ? <ChevronUp className='h-4 w-4' /> : <ChevronDown className='h-4 w-4' />}
+                {isExpanded ? (
+                  <ChevronUp className='h-4 w-4' />
+                ) : (
+                  <ChevronDown className='h-4 w-4' />
+                )}
               </Button>
             </div>
           </div>
@@ -1374,7 +1384,7 @@ function TemplateCard({
             {/* AI Recommendation details */}
             <div className='space-y-3'>
               <h4 className='font-medium text-sm'>Why this template is recommended:</h4>
-              
+
               <div className='grid gap-3 sm:grid-cols-2'>
                 {reasons.length > 0 && (
                   <div>
@@ -1423,7 +1433,7 @@ function TemplateCard({
                 <p className='text-muted-foreground text-sm'>
                   {template.longDescription || template.description}
                 </p>
-                
+
                 <div className='grid gap-3 sm:grid-cols-2'>
                   <div>
                     <h5 className='mb-2 font-medium text-sm'>Industries</h5>
@@ -1461,7 +1471,9 @@ function TemplateCard({
                         <p className='text-muted-foreground text-xs'>{block.description}</p>
                       </div>
                       {block.required && (
-                        <Badge variant='destructive' className='text-xs'>Required</Badge>
+                        <Badge variant='destructive' className='text-xs'>
+                          Required
+                        </Badge>
                       )}
                     </div>
                   ))}
@@ -1480,7 +1492,11 @@ function TemplateCard({
                           variant={isAvailable ? 'default' : 'outline'}
                           className={cn('gap-1 text-xs', !isAvailable && 'text-muted-foreground')}
                         >
-                          {isAvailable ? <CheckCircle className='h-3 w-3' /> : <AlertCircle className='h-3 w-3' />}
+                          {isAvailable ? (
+                            <CheckCircle className='h-3 w-3' />
+                          ) : (
+                            <AlertCircle className='h-3 w-3' />
+                          )}
                           {cred}
                         </Badge>
                       )
@@ -1559,7 +1575,7 @@ function TemplateCard({
                   </>
                 )}
               </Button>
-              
+
               <Button variant='outline' onClick={onPreview} className='gap-2'>
                 <Eye className='h-4 w-4' />
                 Preview
@@ -1588,9 +1604,11 @@ function TemplatePreview({ template, onSelect, onClose }: TemplatePreviewProps) 
       <div className='flex items-start justify-between'>
         <div>
           <h3 className='mb-2 font-semibold text-xl'>{template.title}</h3>
-          <p className='text-muted-foreground'>{template.longDescription || template.description}</p>
+          <p className='text-muted-foreground'>
+            {template.longDescription || template.description}
+          </p>
         </div>
-        
+
         <div className='flex flex-col items-end gap-2 text-right'>
           <div className='flex gap-4 text-sm'>
             <div className='text-center'>
@@ -1616,11 +1634,13 @@ function TemplatePreview({ template, onSelect, onClose }: TemplatePreviewProps) 
             <Zap className='h-5 w-5' />
             Workflow Overview
           </CardTitle>
-          <CardDescription>Visual representation of the workflow blocks and connections</CardDescription>
+          <CardDescription>
+            Visual representation of the workflow blocks and connections
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* This would be replaced with actual workflow diagram */}
-          <div className='flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25'>
+          <div className='flex min-h-[200px] items-center justify-center rounded-lg border-2 border-muted-foreground/25 border-dashed'>
             <div className='text-center'>
               <Target className='mx-auto mb-2 h-8 w-8 text-muted-foreground' />
               <p className='text-muted-foreground'>Workflow diagram would appear here</p>
@@ -1633,7 +1653,7 @@ function TemplatePreview({ template, onSelect, onClose }: TemplatePreviewProps) 
       </Card>
 
       {/* Action buttons */}
-      <div className='flex gap-2 justify-end'>
+      <div className='flex justify-end gap-2'>
         <Button variant='outline' onClick={onClose}>
           Close
         </Button>
@@ -1647,7 +1667,7 @@ function TemplatePreview({ template, onSelect, onClose }: TemplatePreviewProps) 
 }
 
 /**
- * Template Comparison Component  
+ * Template Comparison Component
  */
 interface TemplateComparisonProps {
   templates: WorkflowTemplate[]
@@ -1675,9 +1695,9 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
         <table className='w-full'>
           <thead>
             <tr className='border-b'>
-              <th className='text-left p-2'>Feature</th>
+              <th className='p-2 text-left'>Feature</th>
               {templates.map((template) => (
-                <th key={template.id} className='text-center p-2 min-w-[200px]'>
+                <th key={template.id} className='min-w-[200px] p-2 text-center'>
                   <div className='space-y-1'>
                     <h4 className='font-medium text-sm'>{template.title}</h4>
                     <Button
@@ -1697,7 +1717,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
             <tr className='border-b'>
               <td className='p-2 font-medium'>Difficulty</td>
               {templates.map((template) => (
-                <td key={template.id} className='text-center p-2'>
+                <td key={template.id} className='p-2 text-center'>
                   {template.difficulty}/5
                 </td>
               ))}
@@ -1705,7 +1725,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
             <tr className='border-b'>
               <td className='p-2 font-medium'>Setup Time</td>
               {templates.map((template) => (
-                <td key={template.id} className='text-center p-2'>
+                <td key={template.id} className='p-2 text-center'>
                   ~{template.averageSetupTime}min
                 </td>
               ))}
@@ -1713,7 +1733,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
             <tr className='border-b'>
               <td className='p-2 font-medium'>User Rating</td>
               {templates.map((template) => (
-                <td key={template.id} className='text-center p-2'>
+                <td key={template.id} className='p-2 text-center'>
                   <div className='flex items-center justify-center gap-1'>
                     <Star className='h-3 w-3 text-yellow-500' />
                     {template.userRating}/5
@@ -1724,7 +1744,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
             <tr className='border-b'>
               <td className='p-2 font-medium'>Success Rate</td>
               {templates.map((template) => (
-                <td key={template.id} className='text-center p-2'>
+                <td key={template.id} className='p-2 text-center'>
                   {Math.round(template.successRate * 100)}%
                 </td>
               ))}
@@ -1732,7 +1752,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
             <tr className='border-b'>
               <td className='p-2 font-medium'>Blocks</td>
               {templates.map((template) => (
-                <td key={template.id} className='text-center p-2'>
+                <td key={template.id} className='p-2 text-center'>
                   {template.blocks.length}
                 </td>
               ))}
@@ -1741,7 +1761,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
               <td className='p-2 font-medium'>Required Credentials</td>
               {templates.map((template) => (
                 <td key={template.id} className='p-2'>
-                  <div className='flex flex-wrap gap-1 justify-center'>
+                  <div className='flex flex-wrap justify-center gap-1'>
                     {template.requiredCredentials.slice(0, 2).map((cred) => (
                       <Badge key={cred} variant='outline' className='text-xs'>
                         {cred}
@@ -1765,7 +1785,7 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
         <Button variant='outline' onClick={onClose}>
           Close Comparison
         </Button>
-        
+
         <div className='flex gap-2'>
           {templates.map((template) => (
             <Button
