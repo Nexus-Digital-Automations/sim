@@ -1,14 +1,14 @@
 {
   "execution": {
-    "timestamp": "2025-09-04T14:30:39.163Z",
+    "timestamp": "2025-09-04T14:53:22.039Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 40831,
-    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
-    "endTimestamp": "2025-09-04T14:30:39.167Z",
+    "pid": 60641,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+    "endTimestamp": "2025-09-04T14:53:22.043Z",
     "durationMs": 4
   },
   "input": {
@@ -18,7 +18,7 @@
     "rawInput": {
       "session_id": "8a00aa98-ff7b-483e-94b8-6ffc43860fbb",
       "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl",
-      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
+      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
       "hook_event_name": "Stop",
       "stop_hook_active": true
     }
@@ -27,49 +27,61 @@
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-04T14:30:39.164Z",
-      "message": "Raw input data: \"{\"session_id\":\"8a00aa98-ff7b-483e-94b8-6ffc43860fbb\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
+      "timestamp": "2025-09-04T14:53:22.040Z",
+      "message": "Raw input data: \"{\"session_id\":\"8a00aa98-ff7b-483e-94b8-6ffc43860fbb\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
     },
     {
-      "timestamp": "2025-09-04T14:30:39.164Z",
-      "message": "Input data length: 329"
+      "timestamp": "2025-09-04T14:53:22.040Z",
+      "message": "Input data length: 320"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.164Z",
+      "timestamp": "2025-09-04T14:53:22.040Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.164Z",
+      "timestamp": "2025-09-04T14:53:22.040Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.166Z",
-      "message": "Found 1 total agents in TODO.json"
+      "timestamp": "2025-09-04T14:53:22.041Z",
+      "message": "Found 2 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.166Z",
-      "message": "Agent development_session_1756996151722_1_general_96124a2c: heartbeat=2025-09-04T14:29:11.723Z, timeSince=87s, isActive=true"
+      "timestamp": "2025-09-04T14:53:22.041Z",
+      "message": "Agent development_session_1756996151722_1_general_96124a2c: heartbeat=2025-09-04T14:29:11.723Z, timeSince=1450s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.166Z",
-      "message": "Active agents found: 1, Stale agents removed: 0, Stale tasks reset: 0"
+      "timestamp": "2025-09-04T14:53:22.041Z",
+      "message": "Agent development_session_1756996261538_1_general_f60ca20b: heartbeat=2025-09-04T14:31:01.539Z, timeSince=1341s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.167Z",
-      "message": "Task status: 26 pending, 0 in_progress, 0 completed"
+      "timestamp": "2025-09-04T14:53:22.041Z",
+      "message": "Removed stale agent: development_session_1756996151722_1_general_96124a2c"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.167Z",
-      "message": "Never-stop mode: Providing instructive task management guidance"
+      "timestamp": "2025-09-04T14:53:22.041Z",
+      "message": "Removed stale agent: development_session_1756996261538_1_general_f60ca20b"
     },
     {
-      "timestamp": "2025-09-04T14:30:39.167Z",
-      "message": "Exiting with code 2: Infinite continue mode - providing task guidance"
+      "timestamp": "2025-09-04T14:53:22.043Z",
+      "message": "Removed 2 stale agents from TODO.json"
+    },
+    {
+      "timestamp": "2025-09-04T14:53:22.043Z",
+      "message": "Active agents found: 0, Stale agents removed: 2, Stale tasks reset: 0"
+    },
+    {
+      "timestamp": "2025-09-04T14:53:22.043Z",
+      "message": "No active agents detected - need agent initialization"
+    },
+    {
+      "timestamp": "2025-09-04T14:53:22.043Z",
+      "message": "Exiting with code 2: No active agents - providing initialization guidance"
     }
   ],
   "output": {
     "exitCode": 2,
-    "exitReason": "Infinite continue mode - providing task guidance"
+    "exitReason": "No active agents - providing initialization guidance"
   },
   "errors": []
 }

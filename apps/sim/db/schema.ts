@@ -3769,3 +3769,1165 @@ export const userWizardHistory = pgTable(
     ),
   })
 )
+
+// ========================================================================
+// COMMUNITY MARKETPLACE & SOCIAL FEATURES EXTENSIONS
+// ========================================================================
+
+/**
+ * User Following System - Social networking foundation
+ *
+ * Enables users to follow other users and creators, forming the basis
+ * for personalized content discovery and social engagement features.
+ *
+ * FEATURES:
+ * - User-to-user following relationships
+ * - Bi-directional relationship tracking
+ * - Following strength scoring for recommendation algorithms
+ * - Interaction frequency tracking for engagement metrics
+ *
+ * PERFORMANCE:
+ * - Primary key on (follower_id, following_id) for fast relationship queries
+ * - Indexes on follower_id and following_id for feed generation
+ * - Check constraint prevents users from following themselves
+ *
+ * RELATIONSHIPS:
+ * - follower_id: References user(id) - the user who follows
+ * - following_id: References user(id) - the user being followed
+ */
+export const userFollows = pgTable(
+  'user_follows',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique identifier for the relationship
+    followerId: text('follower_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User initiating the follow
+    followingId: text('following_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User being followed
+    
+    // Relationship metadata for advanced social features
+    relationshipStrength: decimal('relationship_strength', { precision: 3, scale: 2 }).default('1.0'), // 0.0-1.0 strength score
+    interactionFrequency: decimal('interaction_frequency', { precision: 5, scale: 2 }).default('0'), // Weekly interaction rate
+    lastInteractionAt: timestamp('last_interaction_at'), // Most recent interaction timestamp
+    
+    // Follow context and source tracking
+    followSource: text('follow_source').default('direct'), // 'direct', 'recommendation', 'discovery'
+    followContext: jsonb('follow_context').default('{}'), // Additional context data
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary relationship index for fast lookups
+    followerFollowingUnique: uniqueIndex('user_follows_follower_following_unique').on(
+      table.followerId,
+      table.followingId
+    ),
+    
+    // Performance indexes
+    followerIdx: index('user_follows_follower_idx').on(table.followerId, table.createdAt.desc()),
+    followingIdx: index('user_follows_following_idx').on(table.followingId, table.createdAt.desc()),
+    strengthIdx: index('user_follows_strength_idx').on(table.relationshipStrength.desc()),
+    
+    // Prevent self-following constraint
+    noSelfFollowCheck: check(
+      'user_follows_no_self_follow',
+      sql`${table.followerId} != ${table.followingId}`
+    ),
+    
+    // Relationship strength validation
+    strengthCheck: check(
+      'user_follows_strength_check',
+      sql`${table.relationshipStrength} >= 0 AND ${table.relationshipStrength} <= 1`
+    ),
+  })
+)
+
+/**
+ * Activity Feed System - Comprehensive social activity tracking
+ *
+ * Central system for tracking and distributing user activities across the platform.
+ * Powers personalized activity feeds, notifications, and social engagement features.
+ *
+ * FEATURES:
+ * - Multi-type activity tracking (templates, follows, likes, shares)
+ * - Engagement scoring for feed ranking algorithms
+ * - Activity aggregation support for reducing feed noise
+ * - Relevance scoring for personalized content delivery
+ *
+ * ACTIVITY TYPES:
+ * - 'template_created': User publishes new template
+ * - 'template_liked': User likes a template
+ * - 'template_shared': User shares a template
+ * - 'user_followed': User follows another user
+ * - 'collection_created': User creates template collection
+ * - 'template_rated': User rates a template
+ * - 'workflow_executed': User successfully executes workflow
+ *
+ * OBJECT TYPES:
+ * - 'template': Activity involves a template
+ * - 'user': Activity involves a user profile
+ * - 'collection': Activity involves a template collection
+ * - 'workflow': Activity involves a workflow execution
+ *
+ * PERFORMANCE:
+ * - Composite indexes for efficient feed generation
+ * - Engagement scoring for algorithmic ranking
+ * - Aggregation keys for grouping similar activities
+ */
+export const activityFeed = pgTable(
+  'activity_feed',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique activity identifier
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User who will see this activity in their feed
+    actorId: text('actor_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User who performed the activity
+    
+    // Activity classification
+    activityType: text('activity_type').notNull(), // Type of activity performed
+    objectType: text('object_type').notNull(), // Type of object the activity was performed on
+    objectId: uuid('object_id').notNull(), // ID of the object (template, user, etc.)
+    
+    // Feed optimization and ranking
+    engagementScore: decimal('engagement_score', { precision: 5, scale: 2 }).default('1.0'), // 0.0-100.0 engagement prediction
+    relevanceScore: decimal('relevance_score', { precision: 5, scale: 2 }).default('1.0'), // 0.0-1.0 relevance to user
+    feedWeight: decimal('feed_weight', { precision: 5, scale: 2 }).default('1.0'), // Weight for feed ranking
+    
+    // Activity aggregation support
+    aggregationKey: text('aggregation_key'), // Key for grouping similar activities
+    participantCount: integer('participant_count').default(1), // Number of users involved in aggregated activity
+    participants: jsonb('participants').default('[]'), // Array of participant user IDs
+    
+    // Activity metadata
+    activityData: jsonb('activity_data').default('{}'), // Additional activity-specific data
+    contextData: jsonb('context_data').default('{}'), // Context about when/how activity occurred
+    
+    // Visibility and moderation
+    isVisible: boolean('is_visible').default(true), // Whether activity should be shown in feeds
+    moderationStatus: text('moderation_status').default('approved'), // 'pending', 'approved', 'hidden'
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Core indexes for feed generation
+    userFeedIdx: index('activity_feed_user_feed_idx').on(
+      table.userId,
+      table.createdAt.desc(),
+      table.isVisible
+    ),
+    actorActivityIdx: index('activity_feed_actor_activity_idx').on(
+      table.actorId,
+      table.activityType,
+      table.createdAt.desc()
+    ),
+    
+    // Object-based indexes
+    objectIdx: index('activity_feed_object_idx').on(
+      table.objectType,
+      table.objectId,
+      table.createdAt.desc()
+    ),
+    
+    // Engagement and ranking indexes
+    engagementIdx: index('activity_feed_engagement_idx').on(
+      table.engagementScore.desc(),
+      table.createdAt.desc()
+    ),
+    relevanceIdx: index('activity_feed_relevance_idx').on(
+      table.userId,
+      table.relevanceScore.desc()
+    ),
+    
+    // Aggregation indexes
+    aggregationIdx: index('activity_feed_aggregation_idx').on(
+      table.aggregationKey,
+      table.createdAt.desc()
+    ),
+    
+    // Moderation indexes
+    moderationIdx: index('activity_feed_moderation_idx').on(
+      table.moderationStatus,
+      table.createdAt.desc()
+    ),
+    
+    // Activity type indexes
+    typeIdx: index('activity_feed_type_idx').on(
+      table.activityType,
+      table.createdAt.desc()
+    ),
+    
+    // Constraints
+    engagementScoreCheck: check(
+      'activity_feed_engagement_score_check',
+      sql`${table.engagementScore} >= 0 AND ${table.engagementScore} <= 100`
+    ),
+    relevanceScoreCheck: check(
+      'activity_feed_relevance_score_check',
+      sql`${table.relevanceScore} >= 0 AND ${table.relevanceScore} <= 1`
+    ),
+    participantCountCheck: check(
+      'activity_feed_participant_count_check',
+      sql`${table.participantCount} >= 1`
+    ),
+  })
+)
+
+/**
+ * Social Interactions System - Comprehensive user engagement tracking
+ *
+ * Tracks all user interactions with content and other users across the platform.
+ * Provides data for recommendation algorithms, engagement analytics, and social features.
+ *
+ * INTERACTION TYPES:
+ * - 'view': User views content (template, profile, collection)
+ * - 'like': User likes/favorites content
+ * - 'share': User shares content externally or with others
+ * - 'comment': User comments on content
+ * - 'download': User downloads/uses a template
+ * - 'follow': User follows another user
+ * - 'rate': User rates content (separate from detailed rating system)
+ * - 'bookmark': User bookmarks content for later
+ * - 'search': User searches for specific content
+ * - 'click': User clicks on recommended content
+ *
+ * TARGET TYPES:
+ * - 'template': Interaction with a template
+ * - 'user': Interaction with a user profile
+ * - 'collection': Interaction with a template collection
+ * - 'workflow': Interaction with a workflow
+ * - 'comment': Interaction with a comment (like/reply)
+ * - 'tag': Interaction with a tag (search/filter)
+ * - 'category': Interaction with a category
+ *
+ * ANALYTICS USE CASES:
+ * - Recommendation algorithm training data
+ * - User behavior pattern analysis
+ * - Content popularity metrics
+ * - Engagement rate calculations
+ * - A/B testing and optimization
+ */
+export const socialInteractions = pgTable(
+  'social_interactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique interaction identifier
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User performing the interaction
+    targetId: uuid('target_id').notNull(), // ID of the target object
+    targetType: text('target_type').notNull(), // Type of target object
+    interactionType: text('interaction_type').notNull(), // Type of interaction
+    
+    // Interaction context and analytics
+    sessionId: text('session_id'), // User session identifier for session analysis
+    durationSeconds: integer('duration_seconds'), // Time spent on content (for views)
+    interactionValue: decimal('interaction_value', { precision: 10, scale: 4 }), // Numeric value (rating, price, etc.)
+    
+    // Context and metadata
+    sourceContext: text('source_context'), // Where the interaction came from ('feed', 'search', 'recommendation')
+    deviceType: text('device_type'), // 'desktop', 'mobile', 'tablet'
+    userAgent: text('user_agent'), // User agent string for device/browser analysis
+    referrer: text('referrer'), // HTTP referrer for traffic source analysis
+    
+    // Geographic and temporal context
+    ipAddress: text('ip_address'), // IP address for geographic analysis (anonymized)
+    timezone: text('timezone'), // User's timezone for temporal analysis
+    
+    // Interaction metadata
+    metadata: jsonb('metadata').default('{}'), // Additional interaction-specific data
+    tags: text('tags').array().default(sql`ARRAY[]::text[]`), // Tags associated with interaction
+    
+    // A/B testing and experiments
+    experimentId: text('experiment_id'), // A/B test or experiment identifier
+    variantId: text('variant_id'), // A/B test variant identifier
+    
+    // Quality and validation
+    isValidated: boolean('is_validated').default(false), // Whether interaction has been validated
+    qualityScore: decimal('quality_score', { precision: 3, scale: 2 }), // 0.0-1.0 interaction quality score
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Core user interaction indexes
+    userInteractionIdx: index('social_interactions_user_interaction_idx').on(
+      table.userId,
+      table.createdAt.desc()
+    ),
+    userTypeIdx: index('social_interactions_user_type_idx').on(
+      table.userId,
+      table.interactionType,
+      table.createdAt.desc()
+    ),
+    
+    // Target-based indexes
+    targetIdx: index('social_interactions_target_idx').on(
+      table.targetType,
+      table.targetId,
+      table.createdAt.desc()
+    ),
+    targetInteractionIdx: index('social_interactions_target_interaction_idx').on(
+      table.targetId,
+      table.interactionType,
+      table.createdAt.desc()
+    ),
+    
+    // Session and analytics indexes
+    sessionIdx: index('social_interactions_session_idx').on(
+      table.sessionId,
+      table.createdAt
+    ),
+    sourceContextIdx: index('social_interactions_source_context_idx').on(
+      table.sourceContext,
+      table.interactionType,
+      table.createdAt.desc()
+    ),
+    
+    // A/B testing indexes
+    experimentIdx: index('social_interactions_experiment_idx').on(
+      table.experimentId,
+      table.variantId,
+      table.createdAt
+    ),
+    
+    // Quality and validation indexes
+    qualityIdx: index('social_interactions_quality_idx').on(
+      table.qualityScore.desc(),
+      table.isValidated
+    ),
+    
+    // Temporal analysis indexes
+    timeAnalysisIdx: index('social_interactions_time_analysis_idx').on(
+      table.createdAt,
+      table.timezone
+    ),
+    
+    // Constraints
+    qualityScoreCheck: check(
+      'social_interactions_quality_score_check',
+      sql`${table.qualityScore} IS NULL OR (${table.qualityScore} >= 0 AND ${table.qualityScore} <= 1)`
+    ),
+    durationCheck: check(
+      'social_interactions_duration_check',
+      sql`${table.durationSeconds} IS NULL OR ${table.durationSeconds} >= 0`
+    ),
+  })
+)
+
+/**
+ * Enhanced User Preferences System - AI-powered personalization
+ *
+ * Comprehensive user preference learning system that combines explicit preferences
+ * with implicit behavior analysis to power advanced recommendation algorithms.
+ *
+ * FEATURES:
+ * - Explicit user preferences (categories, tags, difficulty)
+ * - Implicit behavioral learning from interactions
+ * - Machine learning feature vectors for similarity matching
+ * - User behavior clustering for group-based recommendations
+ * - Temporal preference tracking for evolving interests
+ *
+ * ML INTEGRATION:
+ * - embeddingVector: 128-dimensional user preference embedding
+ * - clusterAssignment: K-means cluster ID for user behavior grouping
+ * - Preference scores: Learned weights for categories, tags, creators
+ *
+ * RECOMMENDATION USAGE:
+ * - Content-based filtering using preference scores
+ * - Collaborative filtering using user clusters
+ * - Hybrid recommendations combining multiple signals
+ * - Cold-start problem mitigation for new users
+ */
+export const enhancedUserPreferences = pgTable(
+  'enhanced_user_preferences',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique preference record identifier
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' })
+      .unique(), // One preference record per user
+    
+    // Explicit preferences set by user
+    preferredCategories: text('preferred_categories').array().default(sql`ARRAY[]::text[]`), // User-selected categories
+    preferredTags: text('preferred_tags').array().default(sql`ARRAY[]::text[]`), // User-selected tags
+    difficultyPreference: text('difficulty_preference').default('intermediate'), // 'beginner', 'intermediate', 'advanced', 'expert'
+    contentTypePreferences: jsonb('content_type_preferences').default('{}'), // Preferences for different content types
+    
+    // Implicit behavioral learning
+    categoryScores: jsonb('category_scores').default('{}'), // Learned category preferences from behavior
+    tagScores: jsonb('tag_scores').default('{}'), // Learned tag preferences from behavior
+    creatorScores: jsonb('creator_scores').default('{}'), // Preferences for specific creators
+    
+    // Usage pattern analysis
+    usagePatterns: jsonb('usage_patterns').default('{}'), // Time of day, frequency, duration patterns
+    successRates: jsonb('success_rates').default('{}'), // Success rates with different template types
+    failurePatterns: jsonb('failure_patterns').default('{}'), // Common failure points and patterns
+    
+    // Advanced ML features
+    embeddingVector: vector('embedding_vector', { dimensions: 128 }), // User preference embedding for similarity
+    clusterAssignment: integer('cluster_assignment'), // Behavior cluster ID from K-means
+    clusterConfidence: decimal('cluster_confidence', { precision: 3, scale: 2 }), // Confidence in cluster assignment
+    
+    // Temporal preference tracking
+    preferenceStability: decimal('preference_stability', { precision: 3, scale: 2 }), // How stable user preferences are
+    trendingInterests: jsonb('trending_interests').default('{}'), // Recently increasing interests
+    decliningInterests: jsonb('declining_interests').default('{}'), // Recently decreasing interests
+    
+    // Learning metadata
+    totalInteractions: integer('total_interactions').default(0), // Total interactions used for learning
+    lastLearningUpdate: timestamp('last_learning_update'), // When preferences were last updated by ML
+    learningConfidence: decimal('learning_confidence', { precision: 3, scale: 2 }), // Confidence in learned preferences
+    
+    // Cold-start and onboarding
+    onboardingCompleted: boolean('onboarding_completed').default(false), // Whether user completed preference onboarding
+    coldStartPhase: boolean('cold_start_phase').default(true), // Whether user is in cold-start phase
+    explicitFeedbackCount: integer('explicit_feedback_count').default(0), // Number of explicit ratings/feedback
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Core user lookup index
+    userIdx: index('enhanced_user_preferences_user_idx').on(table.userId),
+    
+    // ML feature indexes
+    clusterIdx: index('enhanced_user_preferences_cluster_idx').on(
+      table.clusterAssignment,
+      table.clusterConfidence.desc()
+    ),
+    
+    // Learning confidence indexes
+    confidenceIdx: index('enhanced_user_preferences_confidence_idx').on(
+      table.learningConfidence.desc(),
+      table.totalInteractions.desc()
+    ),
+    
+    // Cold-start indexes
+    coldStartIdx: index('enhanced_user_preferences_cold_start_idx').on(
+      table.coldStartPhase,
+      table.explicitFeedbackCount.desc()
+    ),
+    
+    // Update tracking indexes
+    lastUpdateIdx: index('enhanced_user_preferences_last_update_idx').on(
+      table.lastLearningUpdate.desc()
+    ),
+    
+    // HNSW index for user similarity
+    embeddingHnswIdx: index('enhanced_user_preferences_embedding_hnsw_idx')
+      .using('hnsw', table.embeddingVector.op('vector_cosine_ops')),
+    
+    // Constraints
+    clusterConfidenceCheck: check(
+      'enhanced_user_preferences_cluster_confidence_check',
+      sql`${table.clusterConfidence} IS NULL OR (${table.clusterConfidence} >= 0 AND ${table.clusterConfidence} <= 1)`
+    ),
+    learningConfidenceCheck: check(
+      'enhanced_user_preferences_learning_confidence_check',
+      sql`${table.learningConfidence} IS NULL OR (${table.learningConfidence} >= 0 AND ${table.learningConfidence} <= 1)`
+    ),
+    stabilityCheck: check(
+      'enhanced_user_preferences_stability_check',
+      sql`${table.preferenceStability} IS NULL OR (${table.preferenceStability} >= 0 AND ${table.preferenceStability} <= 1)`
+    ),
+    interactionsCheck: check(
+      'enhanced_user_preferences_interactions_check',
+      sql`${table.totalInteractions} >= 0`
+    ),
+  })
+)
+
+/**
+ * Template Embeddings System - Advanced semantic search and recommendations
+ *
+ * Stores vector embeddings for templates to enable semantic search, similarity matching,
+ * and advanced recommendation algorithms based on content and usage patterns.
+ *
+ * EMBEDDING TYPES:
+ * - contentEmbedding: Generated from template description, documentation, and metadata
+ * - usageEmbedding: Generated from usage patterns, user interactions, and success rates
+ * - metadataEmbedding: Generated from tags, categories, and structured metadata
+ *
+ * CLUSTER ASSIGNMENTS:
+ * - contentCluster: Semantic clustering based on template content similarity
+ * - usageCluster: Behavioral clustering based on how templates are used
+ * - Combined clustering enables multi-dimensional similarity matching
+ *
+ * USE CASES:
+ * - Semantic search: Find templates by meaning, not just keywords
+ * - Similar template recommendations: Based on content and usage similarity
+ * - Template discovery: Help users find relevant templates they might not search for
+ * - Quality assessment: Templates with similar embeddings should have similar quality
+ * - A/B testing: Compare embedding-based vs. traditional recommendations
+ */
+export const templateEmbeddings = pgTable(
+  'template_embeddings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique embedding record identifier
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' })
+      .unique(), // One embedding record per template
+    
+    // Multi-dimensional embeddings
+    contentEmbedding: vector('content_embedding', { dimensions: 256 }), // Semantic content embedding
+    usageEmbedding: vector('usage_embedding', { dimensions: 128 }), // Usage pattern embedding
+    metadataEmbedding: vector('metadata_embedding', { dimensions: 64 }), // Structured metadata embedding
+    
+    // Embedding generation metadata
+    embeddingModel: text('embedding_model').notNull(), // Model used to generate embeddings
+    modelVersion: text('model_version').notNull(), // Version of the model used
+    embeddingSource: text('embedding_source').notNull(), // Source data used for embedding
+    
+    // Cluster assignments for grouping similar templates
+    contentCluster: integer('content_cluster'), // Content-based cluster ID
+    usageCluster: integer('usage_cluster'), // Usage-based cluster ID
+    metadataCluster: integer('metadata_cluster'), // Metadata-based cluster ID
+    
+    // Cluster confidence scores
+    contentClusterConfidence: decimal('content_cluster_confidence', { precision: 3, scale: 2 }), // 0.0-1.0
+    usageClusterConfidence: decimal('usage_cluster_confidence', { precision: 3, scale: 2 }), // 0.0-1.0
+    metadataClusterConfidence: decimal('metadata_cluster_confidence', { precision: 3, scale: 2 }), // 0.0-1.0
+    
+    // Embedding quality metrics
+    embeddingQuality: decimal('embedding_quality', { precision: 3, scale: 2 }), // 0.0-1.0 quality score
+    dimensionalityReduction: decimal('dimensionality_reduction', { precision: 5, scale: 2 }), // Compression ratio
+    
+    // Template context for embedding
+    contextData: jsonb('context_data').default('{}'), // Additional context used for embedding
+    processingStats: jsonb('processing_stats').default('{}'), // Statistics from embedding process
+    
+    // Embedding lifecycle
+    isStale: boolean('is_stale').default(false), // Whether embedding needs regeneration
+    regenerationReason: text('regeneration_reason'), // Why embedding was marked stale
+    lastValidated: timestamp('last_validated'), // When embedding quality was last validated
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Template lookup index
+    templateIdx: index('template_embeddings_template_idx').on(table.templateId),
+    
+    // Cluster indexes for similarity queries
+    contentClusterIdx: index('template_embeddings_content_cluster_idx').on(
+      table.contentCluster,
+      table.contentClusterConfidence.desc()
+    ),
+    usageClusterIdx: index('template_embeddings_usage_cluster_idx').on(
+      table.usageCluster,
+      table.usageClusterConfidence.desc()
+    ),
+    metadataClusterIdx: index('template_embeddings_metadata_cluster_idx').on(
+      table.metadataCluster,
+      table.metadataClusterConfidence.desc()
+    ),
+    
+    // Quality and freshness indexes
+    qualityIdx: index('template_embeddings_quality_idx').on(
+      table.embeddingQuality.desc(),
+      table.createdAt.desc()
+    ),
+    staleIdx: index('template_embeddings_stale_idx').on(
+      table.isStale,
+      table.updatedAt.desc()
+    ),
+    
+    // Model tracking indexes
+    modelIdx: index('template_embeddings_model_idx').on(
+      table.embeddingModel,
+      table.modelVersion,
+      table.createdAt.desc()
+    ),
+    
+    // Validation indexes
+    validationIdx: index('template_embeddings_validation_idx').on(
+      table.lastValidated.desc()
+    ),
+    
+    // HNSW indexes for vector similarity search
+    contentEmbeddingHnswIdx: index('template_embeddings_content_hnsw_idx')
+      .using('hnsw', table.contentEmbedding.op('vector_cosine_ops')),
+    usageEmbeddingHnswIdx: index('template_embeddings_usage_hnsw_idx')
+      .using('hnsw', table.usageEmbedding.op('vector_cosine_ops')),
+    
+    // Constraints
+    embeddingQualityCheck: check(
+      'template_embeddings_quality_check',
+      sql`${table.embeddingQuality} IS NULL OR (${table.embeddingQuality} >= 0 AND ${table.embeddingQuality} <= 1)`
+    ),
+    contentClusterConfidenceCheck: check(
+      'template_embeddings_content_cluster_confidence_check',
+      sql`${table.contentClusterConfidence} IS NULL OR (${table.contentClusterConfidence} >= 0 AND ${table.contentClusterConfidence} <= 1)`
+    ),
+    usageClusterConfidenceCheck: check(
+      'template_embeddings_usage_cluster_confidence_check',
+      sql`${table.usageClusterConfidence} IS NULL OR (${table.usageClusterConfidence} >= 0 AND ${table.usageClusterConfidence} <= 1)`
+    ),
+    metadataClusterConfidenceCheck: check(
+      'template_embeddings_metadata_cluster_confidence_check',
+      sql`${table.metadataClusterConfidence} IS NULL OR (${table.metadataClusterConfidence} >= 0 AND ${table.metadataClusterConfidence} <= 1)`
+    ),
+  })
+)
+
+/**
+ * Enhanced Template Pricing System - Comprehensive marketplace monetization
+ *
+ * Advanced pricing and monetization system for the template marketplace,
+ * supporting multiple pricing models, dynamic pricing, and revenue sharing.
+ *
+ * PRICING MODELS:
+ * - 'free': No cost, publicly available
+ * - 'paid': One-time purchase price
+ * - 'freemium': Basic free version with premium features
+ * - 'subscription': Recurring subscription model
+ * - 'usage_based': Pay per execution or usage
+ * - 'enterprise': Custom enterprise pricing
+ *
+ * FEATURES:
+ * - Dynamic pricing based on demand and quality
+ * - Tier-based pricing for different user levels
+ * - Volume discounts for bulk purchases
+ * - Promotional pricing and coupon support
+ * - Revenue sharing with creators
+ * - Enterprise licensing and custom deals
+ */
+export const enhancedTemplatePricing = pgTable(
+  'enhanced_template_pricing',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique pricing record identifier
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' })
+      .unique(), // One pricing record per template
+    
+    // Core pricing configuration
+    pricingModel: text('pricing_model').notNull().default('free'), // Primary pricing model
+    basePrice: decimal('base_price', { precision: 10, scale: 2 }).default('0.00'), // Base price in USD
+    currency: text('currency').notNull().default('USD'), // Currency code (ISO 4217)
+    
+    // Tier-based pricing
+    tierPricing: jsonb('tier_pricing').default('{}'), // Different prices for user tiers
+    volumeDiscounts: jsonb('volume_discounts').default('{}'), // Bulk purchase discounts
+    subscriptionPricing: jsonb('subscription_pricing').default('{}'), // Recurring pricing options
+    
+    // Dynamic and promotional pricing
+    dynamicPricingEnabled: boolean('dynamic_pricing_enabled').default(false), // Enable demand-based pricing
+    currentDynamicPrice: decimal('current_dynamic_price', { precision: 10, scale: 2 }), // Current calculated price
+    promotionalPricing: jsonb('promotional_pricing').default('{}'), // Active promotions and coupons
+    
+    // Revenue sharing configuration
+    creatorSharePercentage: decimal('creator_share_percentage', { precision: 5, scale: 2 }).default('70.00'), // Creator's share (0-100%)
+    platformFeePercentage: decimal('platform_fee_percentage', { precision: 5, scale: 2 }).default('30.00'), // Platform fee (0-100%)
+    minimumPayout: decimal('minimum_payout', { precision: 10, scale: 2 }).default('10.00'), // Minimum payout threshold
+    
+    // Enterprise and custom pricing
+    enterprisePricingAvailable: boolean('enterprise_pricing_available').default(false), // Custom enterprise deals available
+    customLicensingTerms: jsonb('custom_licensing_terms').default('{}'), // Custom licensing options
+    bulkLicensingDiscount: decimal('bulk_licensing_discount', { precision: 5, scale: 2 }), // Volume licensing discount
+    
+    // Pricing analytics and optimization
+    priceElasticity: decimal('price_elasticity', { precision: 5, scale: 4 }), // Demand sensitivity to price changes
+    optimalPriceRange: jsonb('optimal_price_range').default('{}'), // ML-calculated optimal pricing range
+    conversionRate: decimal('conversion_rate', { precision: 5, scale: 4 }), // View-to-purchase conversion rate
+    
+    // Market positioning
+    competitivePricing: jsonb('competitive_pricing').default('{}'), // Competitor price analysis
+    marketPosition: text('market_position'), // 'premium', 'competitive', 'budget'
+    valuePropositioning: jsonb('value_positioning').default('{}'), // Value proposition metadata
+    
+    // Pricing lifecycle management
+    isActive: boolean('is_active').default(true), // Whether pricing is currently active
+    effectiveDate: timestamp('effective_date').notNull().defaultNow(), // When pricing becomes effective
+    expirationDate: timestamp('expiration_date'), // When pricing expires (if applicable)
+    lastPriceUpdate: timestamp('last_price_update').defaultNow(), // Last price modification
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Template lookup index
+    templateIdx: index('enhanced_template_pricing_template_idx').on(table.templateId),
+    
+    // Pricing model and active status indexes
+    modelActiveIdx: index('enhanced_template_pricing_model_active_idx').on(
+      table.pricingModel,
+      table.isActive,
+      table.effectiveDate
+    ),
+    
+    // Price range indexes for filtering
+    priceRangeIdx: index('enhanced_template_pricing_range_idx').on(
+      table.basePrice,
+      table.currency,
+      table.isActive
+    ),
+    dynamicPriceIdx: index('enhanced_template_pricing_dynamic_idx').on(
+      table.currentDynamicPrice,
+      table.dynamicPricingEnabled
+    ),
+    
+    // Revenue sharing indexes
+    revenueShareIdx: index('enhanced_template_pricing_revenue_share_idx').on(
+      table.creatorSharePercentage,
+      table.platformFeePercentage
+    ),
+    
+    // Market positioning indexes
+    marketPositionIdx: index('enhanced_template_pricing_market_position_idx').on(
+      table.marketPosition,
+      table.basePrice.desc()
+    ),
+    
+    // Analytics indexes
+    conversionRateIdx: index('enhanced_template_pricing_conversion_rate_idx').on(
+      table.conversionRate.desc()
+    ),
+    elasticityIdx: index('enhanced_template_pricing_elasticity_idx').on(
+      table.priceElasticity
+    ),
+    
+    // Lifecycle indexes
+    effectiveDateIdx: index('enhanced_template_pricing_effective_date_idx').on(
+      table.effectiveDate,
+      table.isActive
+    ),
+    updateTrackingIdx: index('enhanced_template_pricing_update_tracking_idx').on(
+      table.lastPriceUpdate.desc()
+    ),
+    
+    // Constraints
+    basePriceCheck: check(
+      'enhanced_template_pricing_base_price_check',
+      sql`${table.basePrice} >= 0`
+    ),
+    creatorShareCheck: check(
+      'enhanced_template_pricing_creator_share_check',
+      sql`${table.creatorSharePercentage} >= 0 AND ${table.creatorSharePercentage} <= 100`
+    ),
+    platformFeeCheck: check(
+      'enhanced_template_pricing_platform_fee_check',
+      sql`${table.platformFeePercentage} >= 0 AND ${table.platformFeePercentage} <= 100`
+    ),
+    sharesSumCheck: check(
+      'enhanced_template_pricing_shares_sum_check',
+      sql`${table.creatorSharePercentage} + ${table.platformFeePercentage} = 100`
+    ),
+    conversionRateCheck: check(
+      'enhanced_template_pricing_conversion_rate_check',
+      sql`${table.conversionRate} IS NULL OR (${table.conversionRate} >= 0 AND ${table.conversionRate} <= 1)`
+    ),
+    minimumPayoutCheck: check(
+      'enhanced_template_pricing_minimum_payout_check',
+      sql`${table.minimumPayout} >= 0`
+    ),
+  })
+)
+
+/**
+ * Template Purchase History - Comprehensive transaction tracking
+ *
+ * Complete transaction history and purchase analytics for the marketplace,
+ * including payment processing, refunds, and revenue analytics.
+ *
+ * FEATURES:
+ * - Complete purchase transaction records
+ * - Payment method and gateway tracking
+ * - Refund and chargeback management
+ * - Revenue analytics and reporting
+ * - Customer purchase behavior analysis
+ * - Enterprise procurement tracking
+ */
+export const templatePurchases = pgTable(
+  'template_purchases',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique purchase identifier
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }), // Template being purchased
+    purchaserId: text('purchaser_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }), // User making the purchase
+    
+    // Transaction details
+    purchasePrice: decimal('purchase_price', { precision: 10, scale: 2 }).notNull(), // Final price paid
+    originalPrice: decimal('original_price', { precision: 10, scale: 2 }).notNull(), // Price before discounts
+    currency: text('currency').notNull().default('USD'), // Transaction currency
+    discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).default('0.00'), // Total discount applied
+    taxAmount: decimal('tax_amount', { precision: 10, scale: 2 }).default('0.00'), // Tax amount charged
+    totalAmount: decimal('total_amount', { precision: 10, scale: 2 }).notNull(), // Total amount charged
+    
+    // Payment processing
+    paymentMethod: text('payment_method').notNull(), // 'card', 'paypal', 'stripe', 'enterprise_billing'
+    paymentGateway: text('payment_gateway').notNull(), // Payment processor used
+    transactionId: text('transaction_id').notNull().unique(), // External transaction ID
+    gatewayTransactionId: text('gateway_transaction_id'), // Gateway-specific transaction ID
+    paymentStatus: text('payment_status').notNull().default('pending'), // 'pending', 'completed', 'failed', 'refunded'
+    
+    // Purchase context and attribution
+    purchaseSource: text('purchase_source'), // 'direct', 'recommendation', 'search', 'collection'
+    referralCode: text('referral_code'), // Referral or affiliate code used
+    campaignId: text('campaign_id'), // Marketing campaign identifier
+    discountCode: text('discount_code'), // Coupon or discount code used
+    
+    // Customer and billing information
+    billingAddress: jsonb('billing_address').default('{}'), // Customer billing address
+    billingEmail: text('billing_email'), // Email used for billing
+    customerIpAddress: text('customer_ip_address'), // Customer IP for fraud detection
+    customerUserAgent: text('customer_user_agent'), // Customer browser info
+    
+    // Enterprise and licensing
+    organizationId: text('organization_id').references(() => organization.id), // Organization purchase (if applicable)
+    licenseType: text('license_type').default('standard'), // 'standard', 'enterprise', 'team', 'site'
+    licenseQuantity: integer('license_quantity').default(1), // Number of licenses purchased
+    licenseTerms: jsonb('license_terms').default('{}'), // License terms and restrictions
+    
+    // Revenue tracking
+    creatorRevenue: decimal('creator_revenue', { precision: 10, scale: 2 }).notNull(), // Amount paid to creator
+    platformRevenue: decimal('platform_revenue', { precision: 10, scale: 2 }).notNull(), // Platform's share
+    affiliateRevenue: decimal('affiliate_revenue', { precision: 10, scale: 2 }).default('0.00'), // Affiliate commission
+    
+    // Fulfillment and delivery
+    fulfillmentStatus: text('fulfillment_status').default('pending'), // 'pending', 'delivered', 'failed'
+    deliveryMethod: text('delivery_method').default('instant'), // 'instant', 'email', 'manual'
+    deliveredAt: timestamp('delivered_at'), // When purchase was delivered to customer
+    accessGrantedAt: timestamp('access_granted_at'), // When customer gained access
+    
+    // Refund and dispute management
+    refundStatus: text('refund_status').default('none'), // 'none', 'requested', 'approved', 'denied', 'completed'
+    refundAmount: decimal('refund_amount', { precision: 10, scale: 2 }).default('0.00'), // Amount refunded
+    refundReason: text('refund_reason'), // Reason for refund request
+    refundProcessedAt: timestamp('refund_processed_at'), // When refund was processed
+    disputeStatus: text('dispute_status').default('none'), // Chargeback/dispute status
+    
+    // Analytics and insights
+    customerLifetimeValue: decimal('customer_lifetime_value', { precision: 10, scale: 2 }), // Customer CLV at time of purchase
+    purchaseSequence: integer('purchase_sequence'), // Purchase number for this customer
+    timeSinceLastPurchase: integer('time_since_last_purchase'), // Days since customer's last purchase
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Core lookup indexes
+    templatePurchaserIdx: index('template_purchases_template_purchaser_idx').on(
+      table.templateId,
+      table.purchaserId,
+      table.createdAt.desc()
+    ),
+    purchaserIdx: index('template_purchases_purchaser_idx').on(
+      table.purchaserId,
+      table.createdAt.desc()
+    ),
+    templateIdx: index('template_purchases_template_idx').on(
+      table.templateId,
+      table.paymentStatus,
+      table.createdAt.desc()
+    ),
+    
+    // Transaction and payment indexes
+    transactionIdx: index('template_purchases_transaction_idx').on(
+      table.transactionId,
+      table.paymentStatus
+    ),
+    paymentStatusIdx: index('template_purchases_payment_status_idx').on(
+      table.paymentStatus,
+      table.createdAt.desc()
+    ),
+    paymentMethodIdx: index('template_purchases_payment_method_idx').on(
+      table.paymentMethod,
+      table.paymentGateway
+    ),
+    
+    // Revenue and analytics indexes
+    revenueIdx: index('template_purchases_revenue_idx').on(
+      table.totalAmount.desc(),
+      table.createdAt.desc()
+    ),
+    creatorRevenueIdx: index('template_purchases_creator_revenue_idx').on(
+      table.creatorRevenue.desc(),
+      table.createdAt.desc()
+    ),
+    
+    // Enterprise and organization indexes
+    organizationIdx: index('template_purchases_organization_idx').on(
+      table.organizationId,
+      table.licenseType,
+      table.createdAt.desc()
+    ),
+    licenseIdx: index('template_purchases_license_idx').on(
+      table.licenseType,
+      table.licenseQuantity,
+      table.createdAt.desc()
+    ),
+    
+    // Refund and dispute indexes
+    refundIdx: index('template_purchases_refund_idx').on(
+      table.refundStatus,
+      table.refundProcessedAt.desc()
+    ),
+    disputeIdx: index('template_purchases_dispute_idx').on(
+      table.disputeStatus,
+      table.createdAt.desc()
+    ),
+    
+    // Attribution and marketing indexes
+    sourceIdx: index('template_purchases_source_idx').on(
+      table.purchaseSource,
+      table.campaignId,
+      table.createdAt.desc()
+    ),
+    referralIdx: index('template_purchases_referral_idx').on(
+      table.referralCode,
+      table.createdAt.desc()
+    ),
+    
+    // Customer analytics indexes
+    customerSequenceIdx: index('template_purchases_customer_sequence_idx').on(
+      table.purchaserId,
+      table.purchaseSequence
+    ),
+    clvIdx: index('template_purchases_clv_idx').on(
+      table.customerLifetimeValue.desc()
+    ),
+    
+    // Fulfillment indexes
+    fulfillmentIdx: index('template_purchases_fulfillment_idx').on(
+      table.fulfillmentStatus,
+      table.deliveredAt.desc()
+    ),
+    
+    // Constraints
+    purchasePriceCheck: check(
+      'template_purchases_purchase_price_check',
+      sql`${table.purchasePrice} >= 0`
+    ),
+    originalPriceCheck: check(
+      'template_purchases_original_price_check',
+      sql`${table.originalPrice} >= 0`
+    ),
+    totalAmountCheck: check(
+      'template_purchases_total_amount_check',
+      sql`${table.totalAmount} >= 0`
+    ),
+    discountAmountCheck: check(
+      'template_purchases_discount_amount_check',
+      sql`${table.discountAmount} >= 0`
+    ),
+    creatorRevenueCheck: check(
+      'template_purchases_creator_revenue_check',
+      sql`${table.creatorRevenue} >= 0`
+    ),
+    platformRevenueCheck: check(
+      'template_purchases_platform_revenue_check',
+      sql`${table.platformRevenue} >= 0`
+    ),
+    licenseQuantityCheck: check(
+      'template_purchases_license_quantity_check',
+      sql`${table.licenseQuantity} >= 1`
+    ),
+    refundAmountCheck: check(
+      'template_purchases_refund_amount_check',
+      sql`${table.refundAmount} >= 0 AND ${table.refundAmount} <= ${table.totalAmount}`
+    ),
+  })
+)
+
+/**
+ * Community Metrics and Health System - Platform analytics and insights
+ *
+ * Comprehensive community health tracking and analytics system for monitoring
+ * platform growth, engagement, and community dynamics.
+ *
+ * METRICS CATEGORIES:
+ * - User engagement and activity levels
+ * - Content creation and quality trends
+ * - Social interaction patterns
+ * - Marketplace transaction analytics
+ * - Creator success and retention metrics
+ * - Platform health indicators
+ */
+export const communityMetrics = pgTable(
+  'community_metrics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(), // Unique metrics record identifier
+    metricDate: timestamp('metric_date').notNull(), // Date for this metrics snapshot
+    metricType: text('metric_type').notNull(), // Type of metric being recorded
+    
+    // User engagement metrics
+    totalActiveUsers: integer('total_active_users').default(0), // Total active users for period
+    dailyActiveUsers: integer('daily_active_users').default(0), // Daily active users
+    weeklyActiveUsers: integer('weekly_active_users').default(0), // Weekly active users
+    monthlyActiveUsers: integer('monthly_active_users').default(0), // Monthly active users
+    newUserSignups: integer('new_user_signups').default(0), // New users registered
+    userRetentionRate: decimal('user_retention_rate', { precision: 5, scale: 2 }), // User retention percentage
+    averageSessionDuration: decimal('average_session_duration', { precision: 8, scale: 2 }), // Avg session length in minutes
+    
+    // Content creation metrics
+    templatesCreated: integer('templates_created').default(0), // New templates published
+    templatesUpdated: integer('templates_updated').default(0), // Templates updated
+    totalTemplateViews: integer('total_template_views').default(0), // Template page views
+    totalTemplateDownloads: integer('total_template_downloads').default(0), // Template downloads
+    averageTemplateRating: decimal('average_template_rating', { precision: 3, scale: 2 }), // Avg template rating
+    templateQualityScore: decimal('template_quality_score', { precision: 5, scale: 2 }), // Overall quality metric
+    
+    // Social interaction metrics
+    totalSocialInteractions: integer('total_social_interactions').default(0), // All social interactions
+    followersGained: integer('followers_gained').default(0), // New follower relationships
+    likesGiven: integer('likes_given').default(0), // Likes on templates/content
+    sharesPerformed: integer('shares_performed').default(0), // Content shares
+    commentsCreated: integer('comments_created').default(0), // Comments on templates
+    collectionsCreated: integer('collections_created').default(0), // New collections
+    socialEngagementRate: decimal('social_engagement_rate', { precision: 5, scale: 2 }), // Overall engagement rate
+    
+    // Marketplace transaction metrics
+    totalPurchases: integer('total_purchases').default(0), // Number of purchases
+    totalRevenue: decimal('total_revenue', { precision: 12, scale: 2 }).default('0.00'), // Total revenue generated
+    averageTransactionValue: decimal('average_transaction_value', { precision: 10, scale: 2 }), // Avg purchase amount
+    conversionRate: decimal('conversion_rate', { precision: 5, scale: 4 }), // View-to-purchase conversion
+    refundRate: decimal('refund_rate', { precision: 5, scale: 4 }), // Refund percentage
+    creatorEarnings: decimal('creator_earnings', { precision: 12, scale: 2 }).default('0.00'), // Total paid to creators
+    
+    // Creator ecosystem metrics
+    activeCreators: integer('active_creators').default(0), // Creators who published content
+    newCreators: integer('new_creators').default(0), // New creators joined
+    creatorRetentionRate: decimal('creator_retention_rate', { precision: 5, scale: 2 }), // Creator retention
+    averageCreatorEarnings: decimal('average_creator_earnings', { precision: 10, scale: 2 }), // Avg creator revenue
+    topCreatorEarnings: decimal('top_creator_earnings', { precision: 10, scale: 2 }), // Top 10% creator earnings
+    creatorSatisfactionScore: decimal('creator_satisfaction_score', { precision: 3, scale: 2 }), // Creator NPS/satisfaction
+    
+    // Platform health indicators
+    searchSuccessRate: decimal('search_success_rate', { precision: 5, scale: 4 }), // Successful search rate
+    recommendationClickRate: decimal('recommendation_click_rate', { precision: 5, scale: 4 }), // Recommendation CTR
+    errorRate: decimal('error_rate', { precision: 5, scale: 4 }), // Platform error rate
+    averageLoadTime: decimal('average_load_time', { precision: 6, scale: 2 }), // Avg page load time
+    supportTicketsCreated: integer('support_tickets_created').default(0), // New support requests
+    platformSatisfactionScore: decimal('platform_satisfaction_score', { precision: 3, scale: 2 }), // User satisfaction
+    
+    // Growth and trend indicators
+    growthRate: decimal('growth_rate', { precision: 5, scale: 2 }), // Period-over-period growth
+    churnRate: decimal('churn_rate', { precision: 5, scale: 4 }), // User churn rate
+    viralCoefficient: decimal('viral_coefficient', { precision: 5, scale: 4 }), // Viral growth metric
+    netPromoterScore: decimal('net_promoter_score', { precision: 3, scale: 2 }), // NPS score
+    competitiveMetrics: jsonb('competitive_metrics').default('{}'), // Competitive intelligence data
+    
+    // Detailed breakdowns and metadata
+    categoryBreakdown: jsonb('category_breakdown').default('{}'), // Metrics by template category
+    geographicBreakdown: jsonb('geographic_breakdown').default('{}'), // Metrics by region
+    deviceBreakdown: jsonb('device_breakdown').default('{}'), // Metrics by device type
+    cohortAnalysis: jsonb('cohort_analysis').default('{}'), // User cohort data
+    
+    // Data quality and validation
+    dataCompleteness: decimal('data_completeness', { precision: 3, scale: 2 }), // Data completeness score
+    calculationMethod: text('calculation_method'), // How metrics were calculated
+    dataSource: text('data_source'), // Source of the data
+    confidenceLevel: decimal('confidence_level', { precision: 3, scale: 2 }), // Statistical confidence
+    
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Date and type indexes for time-series queries
+    dateTypeIdx: index('community_metrics_date_type_idx').on(
+      table.metricDate,
+      table.metricType
+    ),
+    metricDateIdx: index('community_metrics_date_idx').on(
+      table.metricDate.desc()
+    ),
+    metricTypeIdx: index('community_metrics_type_idx').on(
+      table.metricType,
+      table.metricDate.desc()
+    ),
+    
+    // Key performance indicator indexes
+    kpiIdx: index('community_metrics_kpi_idx').on(
+      table.monthlyActiveUsers.desc(),
+      table.totalRevenue.desc(),
+      table.metricDate.desc()
+    ),
+    
+    // Growth tracking indexes
+    growthIdx: index('community_metrics_growth_idx').on(
+      table.growthRate.desc(),
+      table.metricDate.desc()
+    ),
+    retentionIdx: index('community_metrics_retention_idx').on(
+      table.userRetentionRate.desc(),
+      table.creatorRetentionRate.desc()
+    ),
+    
+    // Engagement indexes
+    engagementIdx: index('community_metrics_engagement_idx').on(
+      table.socialEngagementRate.desc(),
+      table.averageSessionDuration.desc()
+    ),
+    
+    // Revenue and transaction indexes
+    revenueIdx: index('community_metrics_revenue_idx').on(
+      table.totalRevenue.desc(),
+      table.averageTransactionValue.desc(),
+      table.metricDate.desc()
+    ),
+    
+    // Platform health indexes
+    healthIdx: index('community_metrics_health_idx').on(
+      table.errorRate,
+      table.averageLoadTime,
+      table.metricDate.desc()
+    ),
+    
+    // Satisfaction and quality indexes
+    satisfactionIdx: index('community_metrics_satisfaction_idx').on(
+      table.platformSatisfactionScore.desc(),
+      table.netPromoterScore.desc()
+    ),
+    
+    // Data quality indexes
+    qualityIdx: index('community_metrics_quality_idx').on(
+      table.dataCompleteness.desc(),
+      table.confidenceLevel.desc()
+    ),
+    
+    // Constraints
+    activeUsersCheck: check(
+      'community_metrics_active_users_check',
+      sql`${table.totalActiveUsers} >= 0 AND ${table.dailyActiveUsers} >= 0 AND ${table.weeklyActiveUsers} >= 0 AND ${table.monthlyActiveUsers} >= 0`
+    ),
+    retentionRateCheck: check(
+      'community_metrics_retention_rate_check',
+      sql`${table.userRetentionRate} IS NULL OR (${table.userRetentionRate} >= 0 AND ${table.userRetentionRate} <= 100)`
+    ),
+    ratingCheck: check(
+      'community_metrics_rating_check',
+      sql`${table.averageTemplateRating} IS NULL OR (${table.averageTemplateRating} >= 0 AND ${table.averageTemplateRating} <= 5)`
+    ),
+    conversionRateCheck: check(
+      'community_metrics_conversion_rate_check',
+      sql`${table.conversionRate} IS NULL OR (${table.conversionRate} >= 0 AND ${table.conversionRate} <= 1)`
+    ),
+    revenueCheck: check(
+      'community_metrics_revenue_check',
+      sql`${table.totalRevenue} >= 0 AND ${table.creatorEarnings} >= 0`
+    ),
+    dataCompletenessCheck: check(
+      'community_metrics_data_completeness_check',
+      sql`${table.dataCompleteness} IS NULL OR (${table.dataCompleteness} >= 0 AND ${table.dataCompleteness} <= 1)`
+    ),
+    confidenceLevelCheck: check(
+      'community_metrics_confidence_level_check',
+      sql`${table.confidenceLevel} IS NULL OR (${table.confidenceLevel} >= 0 AND ${table.confidenceLevel} <= 1)`
+    ),
+  })
+)

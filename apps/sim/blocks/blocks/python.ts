@@ -259,7 +259,7 @@ Generate clean, well-documented Python code without explanatory text.`,
         code: params.code,
         packages: params.packages || [],
         customPackages: params.customPackages
-          ? params.customPackages.split('\n').filter((p) => p.trim())
+          ? params.customPackages.split('\n').filter((p: string) => p.trim())
           : [],
         timeout: (params.timeout || 60) * 1000, // Convert to milliseconds
         memoryLimit: params.memoryLimit || 512,
