@@ -42,8 +42,14 @@
               "burst_size": 100
             },
             "response": {
-              "success": { "status": 200, "body": { "status": "accepted", "message": "Event received" } },
-              "error": { "status": 400, "body": { "status": "error", "message": "Invalid payload" } }
+              "success": {
+                "status": 200,
+                "body": { "status": "accepted", "message": "Event received" }
+              },
+              "error": {
+                "status": 400,
+                "body": { "status": "error", "message": "Invalid payload" }
+              }
             }
           },
           "position": { "x": 100, "y": 100 }

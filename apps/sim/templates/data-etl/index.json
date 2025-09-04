@@ -18,7 +18,7 @@
         "features": ["SCD Type 2", "Conflict detection", "Performance monitoring"]
       },
       {
-        "id": "api-data-aggregation-pipeline-v1.0", 
+        "id": "api-data-aggregation-pipeline-v1.0",
         "file": "api-data-aggregation-pipeline.json",
         "name": "Multi-Source API Data Aggregation Pipeline",
         "description": "Collect and combine data from multiple REST APIs with rate limiting and caching",
@@ -29,7 +29,7 @@
       },
       {
         "id": "csv-batch-processor-v1.0",
-        "file": "csv-batch-processor.json", 
+        "file": "csv-batch-processor.json",
         "name": "Enterprise CSV Batch Processing Pipeline",
         "description": "High-performance CSV processing with validation and quality reporting",
         "difficulty": "intermediate",
@@ -40,7 +40,7 @@
       {
         "id": "real-time-data-streaming-v1.0",
         "file": "real-time-data-streaming.json",
-        "name": "Real-Time Data Streaming & Processing Pipeline", 
+        "name": "Real-Time Data Streaming & Processing Pipeline",
         "description": "High-throughput streaming pipeline with Apache Kafka and real-time analytics",
         "difficulty": "advanced",
         "use_cases": ["IoT data processing", "Financial monitoring", "Real-time analytics"],
@@ -52,7 +52,7 @@
         "file": "data-warehouse-etl.json",
         "name": "Enterprise Data Warehouse ETL Pipeline",
         "description": "Comprehensive ETL with dimensional modeling and slowly changing dimensions",
-        "difficulty": "advanced", 
+        "difficulty": "advanced",
         "use_cases": ["Data warehouse loading", "Business intelligence", "Analytics pipelines"],
         "integrations": ["postgresql", "mysql", "snowflake", "redshift", "airflow", "dbt"],
         "features": ["SCD processing", "Data lineage", "Quality validation"]
@@ -69,7 +69,7 @@
       },
       {
         "id": "data-quality-monitoring-v1.0",
-        "file": "data-quality-monitoring.json", 
+        "file": "data-quality-monitoring.json",
         "name": "Comprehensive Data Quality Monitoring & Alerting",
         "description": "Enterprise data quality monitoring with anomaly detection and intelligent alerting",
         "difficulty": "advanced",
@@ -80,7 +80,7 @@
       {
         "id": "webhook-data-processor-v1.0",
         "file": "webhook-data-processor.json",
-        "name": "Real-Time Webhook Data Processing Pipeline", 
+        "name": "Real-Time Webhook Data Processing Pipeline",
         "description": "High-performance webhook processing with validation and intelligent routing",
         "difficulty": "intermediate",
         "use_cases": ["Payment webhooks", "User events", "System monitoring"],
@@ -95,7 +95,7 @@
         "description": "Database synchronization, replication, and ETL operations"
       },
       "api_integration": {
-        "name": "API Data Integration", 
+        "name": "API Data Integration",
         "templates": ["api-data-aggregation-pipeline-v1.0", "webhook-data-processor-v1.0"],
         "description": "REST API data collection and webhook processing"
       },
@@ -110,7 +110,7 @@
         "description": "High-throughput real-time data processing"
       },
       "data_quality": {
-        "name": "Data Quality & Monitoring", 
+        "name": "Data Quality & Monitoring",
         "templates": ["data-quality-monitoring-v1.0"],
         "description": "Data quality assurance and monitoring systems"
       }
@@ -118,29 +118,51 @@
     "technical_features": {
       "error_handling": {
         "description": "Comprehensive error recovery and retry mechanisms",
-        "templates": ["database-cross-sync-replication-v1.0", "api-data-aggregation-pipeline-v1.0", "csv-batch-processor-v1.0", "webhook-data-processor-v1.0"]
+        "templates": [
+          "database-cross-sync-replication-v1.0",
+          "api-data-aggregation-pipeline-v1.0",
+          "csv-batch-processor-v1.0",
+          "webhook-data-processor-v1.0"
+        ]
       },
       "performance_monitoring": {
         "description": "Built-in performance metrics and optimization",
-        "templates": ["real-time-data-streaming-v1.0", "data-warehouse-etl-v1.0", "data-quality-monitoring-v1.0"]
+        "templates": [
+          "real-time-data-streaming-v1.0",
+          "data-warehouse-etl-v1.0",
+          "data-quality-monitoring-v1.0"
+        ]
       },
       "scalable_architecture": {
         "description": "Designed for high-volume data processing",
-        "templates": ["real-time-data-streaming-v1.0", "api-data-aggregation-pipeline-v1.0", "webhook-data-processor-v1.0"]
+        "templates": [
+          "real-time-data-streaming-v1.0",
+          "api-data-aggregation-pipeline-v1.0",
+          "webhook-data-processor-v1.0"
+        ]
       },
       "data_validation": {
-        "description": "Input validation and quality checks", 
-        "templates": ["csv-batch-processor-v1.0", "json-data-processor-v1.0", "data-quality-monitoring-v1.0", "webhook-data-processor-v1.0"]
+        "description": "Input validation and quality checks",
+        "templates": [
+          "csv-batch-processor-v1.0",
+          "json-data-processor-v1.0",
+          "data-quality-monitoring-v1.0",
+          "webhook-data-processor-v1.0"
+        ]
       },
       "logging_auditing": {
         "description": "Detailed execution logs and audit trails",
-        "templates": ["data-warehouse-etl-v1.0", "database-cross-sync-replication-v1.0", "data-quality-monitoring-v1.0"]
+        "templates": [
+          "data-warehouse-etl-v1.0",
+          "database-cross-sync-replication-v1.0",
+          "data-quality-monitoring-v1.0"
+        ]
       }
     },
     "installation_guide": {
       "prerequisites": [
         "Configure required database connections",
-        "Set up messaging systems (Kafka, Redis) if needed", 
+        "Set up messaging systems (Kafka, Redis) if needed",
         "Configure notification channels (Slack, Email)",
         "Prepare input data sources and access credentials"
       ],

@@ -20,90 +20,54 @@
  * @version 2.0.0
  */
 
-import { createLogger } from "@/lib/logs/console/logger";
-import { db } from "@/db/connection";
-import {
-  templateCollections,
-  templateCollectionItems,
-  templatesV2,
-  users,
-} from "@/db/schema";
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth";
-import { eq, desc, asc, and, inArray, sql } from "drizzle-orm";
-import { z } from "zod";
-import crypto from "crypto";
+import crypto from 'crypto'
+import { and, asc, eq, sql } from 'drizzle-orm'
+import { type NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createLogger } from '@/lib/logs/console/logger'
+import { auth } from '@/app/api/auth'
+import { db } from '@/db/connection'
+import { templateCollectionItems, templateCollections, templatesV2, users } from '@/db/schema'
 
 // Initialize structured logger with request tracking
-const logger = createLogger("IndividualCollectionAPI");
+const logger = createLogger('IndividualCollectionAPI')
 
 // Request validation schemas
 const UpdateCollectionSchema = z.object({
-  name: z.string().min(1).max(200).optional().describe("Collection name"),
-  description: z
-    .string()
-    .max(2000)
-    .optional()
-    .describe("Collection description"),
+  name: z.string().min(1).max(200).optional().describe('Collection name'),
+  description: z.string().max(2000).optional().describe('Collection description'),
   slug: z
     .string()
     .min(1)
     .max(100)
     .regex(/^[a-z0-9-]+$/)
     .optional()
-    .describe("URL-friendly slug"),
-  isPublic: z.boolean().optional().describe("Public visibility"),
+    .describe('URL-friendly slug'),
+  isPublic: z.boolean().optional().describe('Public visibility'),
   color: z
     .string()
     .regex(/^#[0-9A-F]{6}$/i)
     .optional()
-    .describe("Collection color theme"),
-  tags: z
-    .array(z.string().max(50))
-    .max(20)
-    .optional()
-    .describe("Collection tags"),
-});
+    .describe('Collection color theme'),
+  tags: z.array(z.string().max(50)).max(20).optional().describe('Collection tags'),
+})
 
 const AddTemplateSchema = z.object({
-  templateId: z.string().uuid().describe("Template ID to add"),
-  sortOrder: z
-    .number()
-    .int()
-    .min(0)
-    .optional()
-    .describe("Sort position in collection"),
-  notes: z
-    .string()
-    .max(500)
-    .optional()
-    .describe("Notes about template in collection"),
-});
+  templateId: z.string().uuid().describe('Template ID to add'),
+  sortOrder: z.number().int().min(0).optional().describe('Sort position in collection'),
+  notes: z.string().max(500).optional().describe('Notes about template in collection'),
+})
 
 const UpdateTemplateSchema = z.object({
-  sortOrder: z
-    .number()
-    .int()
-    .min(0)
-    .optional()
-    .describe("Updated sort position"),
-  notes: z.string().max(500).optional().describe("Updated notes"),
-});
+  sortOrder: z.number().int().min(0).optional().describe('Updated sort position'),
+  notes: z.string().max(500).optional().describe('Updated notes'),
+})
 
 const CollectionQuerySchema = z.object({
-  includeTemplates: z.coerce
-    .boolean()
-    .default(false)
-    .describe("Include template details"),
-  includeStats: z.coerce
-    .boolean()
-    .default(false)
-    .describe("Include collection statistics"),
-  includeCreator: z.coerce
-    .boolean()
-    .default(true)
-    .describe("Include creator details"),
-});
+  includeTemplates: z.coerce.boolean().default(false).describe('Include template details'),
+  includeStats: z.coerce.boolean().default(false).describe('Include collection statistics'),
+  includeCreator: z.coerce.boolean().default(true).describe('Include creator details'),
+})
 
 /**
  * GET /api/templates/v2/collections/[collectionId] - Get specific collection details
@@ -116,40 +80,34 @@ const CollectionQuerySchema = z.object({
  * - Permission-based access control for private collections
  * - Analytics tracking for collection views
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { collectionId: string } },
-) {
-  const requestId = crypto.randomUUID().slice(0, 8);
-  const collectionId = params.collectionId;
+export async function GET(request: NextRequest, { params }: { params: { collectionId: string } }) {
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const collectionId = params.collectionId
 
-  logger.info(
-    `[${requestId}] GET /collections/${collectionId} - Collection detail request`,
-    {
-      collectionId,
-      userAgent: request.headers.get("user-agent")?.substring(0, 100),
-    },
-  );
+  logger.info(`[${requestId}] GET /collections/${collectionId} - Collection detail request`, {
+    collectionId,
+    userAgent: request.headers.get('user-agent')?.substring(0, 100),
+  })
 
   try {
     // Parse and validate query parameters
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = request.nextUrl.searchParams
     const queryParams = {
-      includeTemplates: searchParams.get("includeTemplates"),
-      includeStats: searchParams.get("includeStats"),
-      includeCreator: searchParams.get("includeCreator"),
-    };
+      includeTemplates: searchParams.get('includeTemplates'),
+      includeStats: searchParams.get('includeStats'),
+      includeCreator: searchParams.get('includeCreator'),
+    }
 
-    const validatedParams = CollectionQuerySchema.parse(queryParams);
+    const validatedParams = CollectionQuerySchema.parse(queryParams)
 
     // Get authenticated user context
-    const session = await auth(request);
-    const currentUserId = session?.user?.id;
+    const session = await auth(request)
+    const currentUserId = session?.user?.id
 
     logger.debug(`[${requestId}] Parsed query parameters`, {
       validatedParams,
       currentUserId,
-    });
+    })
 
     // Fetch collection with creator information
     const [collectionData] = await db
@@ -178,24 +136,15 @@ export async function GET(
       })
       .from(templateCollections)
       .leftJoin(users, eq(templateCollections.createdByUserId, users.id))
-      .where(eq(templateCollections.id, collectionId));
+      .where(eq(templateCollections.id, collectionId))
 
     if (!collectionData) {
-      return NextResponse.json(
-        { error: "Collection not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 })
     }
 
     // Check access permissions for private collections
-    if (
-      !collectionData.isPublic &&
-      collectionData.createdByUserId !== currentUserId
-    ) {
-      return NextResponse.json(
-        { error: "Collection not accessible" },
-        { status: 403 },
-      );
+    if (!collectionData.isPublic && collectionData.createdByUserId !== currentUserId) {
+      return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 })
     }
 
     logger.debug(`[${requestId}] Collection found`, {
@@ -203,14 +152,14 @@ export async function GET(
       isPublic: collectionData.isPublic,
       templateCount: collectionData.templateCount,
       creator: collectionData.createdByUserId,
-    });
+    })
 
     // Prepare response object
-    let responseData = {
+    const responseData = {
       ...collectionData,
       templates: [] as any[],
       stats: {} as any,
-    };
+    }
 
     // Fetch template details if requested
     if (validatedParams.includeTemplates) {
@@ -235,20 +184,17 @@ export async function GET(
           },
         })
         .from(templateCollectionItems)
-        .leftJoin(
-          templatesV2,
-          eq(templateCollectionItems.templateId, templatesV2.id),
-        )
+        .leftJoin(templatesV2, eq(templateCollectionItems.templateId, templatesV2.id))
         .where(eq(templateCollectionItems.collectionId, collectionId))
-        .orderBy(asc(templateCollectionItems.sortOrder));
+        .orderBy(asc(templateCollectionItems.sortOrder))
 
       // Filter templates based on visibility permissions
       const accessibleTemplates = templateDetails.filter(
         (item) =>
           item.template?.isPublic ||
           item.template?.createdByUserId === currentUserId ||
-          currentUserId, // Authenticated users see all templates in accessible collections
-      );
+          currentUserId // Authenticated users see all templates in accessible collections
+      )
 
       responseData.templates = accessibleTemplates.map((item) => ({
         templateId: item.templateId,
@@ -256,7 +202,7 @@ export async function GET(
         notes: item.notes,
         addedAt: item.addedAt,
         template: item.template,
-      }));
+      }))
     }
 
     // Fetch collection statistics if requested
@@ -268,7 +214,7 @@ export async function GET(
         shares: 0, // Placeholder - would fetch from sharing analytics
         comments: 0, // Placeholder - would fetch from collection_comments table
         lastActivity: collectionData.updatedAt,
-      };
+      }
     }
 
     // Record analytics for collection view
@@ -278,14 +224,11 @@ export async function GET(
         viewerId: currentUserId,
         isOwner: collectionData.createdByUserId === currentUserId,
         templatesIncluded: validatedParams.includeTemplates,
-      });
+      })
     } catch (analyticsError) {
       logger.warn(`[${requestId}] Analytics recording failed`, {
-        error:
-          analyticsError instanceof Error
-            ? analyticsError.message
-            : String(analyticsError),
-      });
+        error: analyticsError instanceof Error ? analyticsError.message : String(analyticsError),
+      })
     }
 
     const response = {
@@ -294,36 +237,33 @@ export async function GET(
       meta: {
         requestId,
         timestamp: new Date().toISOString(),
-        processingTime: Date.now() - parseInt(requestId, 16),
+        processingTime: Date.now() - Number.parseInt(requestId, 16),
         isOwner: collectionData.createdByUserId === currentUserId,
       },
-    };
+    }
 
     logger.info(`[${requestId}] Collection detail retrieval completed`, {
       collectionId,
       templatesIncluded: responseData.templates.length,
-      processingTime: Date.now() - parseInt(requestId, 16),
-    });
+      processingTime: Date.now() - Number.parseInt(requestId, 16),
+    })
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { status: 200 })
   } catch (error) {
     logger.error(`[${requestId}] Collection detail retrieval failed`, {
       collectionId,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid query parameters", details: error.errors },
-        { status: 400 },
-      );
+        { error: 'Invalid query parameters', details: error.errors },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json(
-      { error: "Failed to fetch collection" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to fetch collection' }, { status: 500 })
   }
 }
 
@@ -337,41 +277,32 @@ export async function GET(
  * - Slug uniqueness validation within user scope
  * - Analytics tracking for collection updates
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { collectionId: string } },
-) {
-  const requestId = crypto.randomUUID().slice(0, 8);
-  const collectionId = params.collectionId;
+export async function PUT(request: NextRequest, { params }: { params: { collectionId: string } }) {
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const collectionId = params.collectionId
 
-  logger.info(
-    `[${requestId}] PUT /collections/${collectionId} - Collection update request`,
-    {
-      collectionId,
-      userAgent: request.headers.get("user-agent")?.substring(0, 100),
-    },
-  );
+  logger.info(`[${requestId}] PUT /collections/${collectionId} - Collection update request`, {
+    collectionId,
+    userAgent: request.headers.get('user-agent')?.substring(0, 100),
+  })
 
   try {
     // Authenticate user
-    const session = await auth(request);
+    const session = await auth(request)
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id
 
     // Parse and validate request body
-    const body = await request.json();
-    const validatedData = UpdateCollectionSchema.parse(body);
+    const body = await request.json()
+    const validatedData = UpdateCollectionSchema.parse(body)
 
     logger.debug(`[${requestId}] Validated update data`, {
       updateFields: Object.keys(validatedData),
       userId,
-    });
+    })
 
     // Check collection ownership
     const [existingCollection] = await db
@@ -381,20 +312,17 @@ export async function PUT(
         name: templateCollections.name,
       })
       .from(templateCollections)
-      .where(eq(templateCollections.id, collectionId));
+      .where(eq(templateCollections.id, collectionId))
 
     if (!existingCollection) {
-      return NextResponse.json(
-        { error: "Collection not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 })
     }
 
     if (existingCollection.createdByUserId !== userId) {
       return NextResponse.json(
-        { error: "Permission denied: not collection owner" },
-        { status: 403 },
-      );
+        { error: 'Permission denied: not collection owner' },
+        { status: 403 }
+      )
     }
 
     // Validate slug uniqueness if updating slug
@@ -405,40 +333,34 @@ export async function PUT(
         .where(
           and(
             eq(templateCollections.slug, validatedData.slug),
-            eq(templateCollections.createdByUserId, userId),
-          ),
+            eq(templateCollections.createdByUserId, userId)
+          )
         )
-        .limit(1);
+        .limit(1)
 
       if (slugConflict) {
-        return NextResponse.json(
-          { error: "Slug already exists for this user" },
-          { status: 409 },
-        );
+        return NextResponse.json({ error: 'Slug already exists for this user' }, { status: 409 })
       }
     }
 
     // Prepare update data
     const updateData: any = {
       updatedAt: new Date(),
-    };
+    }
 
-    if (validatedData.name !== undefined) updateData.name = validatedData.name;
-    if (validatedData.description !== undefined)
-      updateData.description = validatedData.description;
-    if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
-    if (validatedData.isPublic !== undefined)
-      updateData.isPublic = validatedData.isPublic;
-    if (validatedData.color !== undefined)
-      updateData.color = validatedData.color;
-    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags;
+    if (validatedData.name !== undefined) updateData.name = validatedData.name
+    if (validatedData.description !== undefined) updateData.description = validatedData.description
+    if (validatedData.slug !== undefined) updateData.slug = validatedData.slug
+    if (validatedData.isPublic !== undefined) updateData.isPublic = validatedData.isPublic
+    if (validatedData.color !== undefined) updateData.color = validatedData.color
+    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags
 
     // Update collection
     const [updatedCollection] = await db
       .update(templateCollections)
       .set(updateData)
       .where(eq(templateCollections.id, collectionId))
-      .returning();
+      .returning()
 
     // Fetch updated collection with creator details
     const [collectionWithCreator] = await db
@@ -465,7 +387,7 @@ export async function PUT(
       })
       .from(templateCollections)
       .leftJoin(users, eq(templateCollections.createdByUserId, users.id))
-      .where(eq(templateCollections.id, collectionId));
+      .where(eq(templateCollections.id, collectionId))
 
     // Record analytics for collection update
     try {
@@ -474,14 +396,11 @@ export async function PUT(
         updatedFields: Object.keys(updateData),
         name: updatedCollection.name,
         isPublic: updatedCollection.isPublic,
-      });
+      })
     } catch (analyticsError) {
       logger.warn(`[${requestId}] Analytics recording failed`, {
-        error:
-          analyticsError instanceof Error
-            ? analyticsError.message
-            : String(analyticsError),
-      });
+        error: analyticsError instanceof Error ? analyticsError.message : String(analyticsError),
+      })
     }
 
     const response = {
@@ -492,34 +411,31 @@ export async function PUT(
         timestamp: new Date().toISOString(),
         updatedFields: Object.keys(updateData),
       },
-    };
+    }
 
     logger.info(`[${requestId}] Collection update completed`, {
       collectionId,
       name: updatedCollection.name,
       updatedFields: Object.keys(updateData).length,
-      processingTime: Date.now() - parseInt(requestId, 16),
-    });
+      processingTime: Date.now() - Number.parseInt(requestId, 16),
+    })
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { status: 200 })
   } catch (error) {
     logger.error(`[${requestId}] Collection update failed`, {
       collectionId,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid request data", details: error.errors },
-        { status: 400 },
-      );
+        { error: 'Invalid request data', details: error.errors },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json(
-      { error: "Failed to update collection" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to update collection' }, { status: 500 })
   }
 }
 
@@ -534,30 +450,24 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { collectionId: string } },
+  { params }: { params: { collectionId: string } }
 ) {
-  const requestId = crypto.randomUUID().slice(0, 8);
-  const collectionId = params.collectionId;
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const collectionId = params.collectionId
 
-  logger.info(
-    `[${requestId}] DELETE /collections/${collectionId} - Collection deletion request`,
-    {
-      collectionId,
-      userAgent: request.headers.get("user-agent")?.substring(0, 100),
-    },
-  );
+  logger.info(`[${requestId}] DELETE /collections/${collectionId} - Collection deletion request`, {
+    collectionId,
+    userAgent: request.headers.get('user-agent')?.substring(0, 100),
+  })
 
   try {
     // Authenticate user
-    const session = await auth(request);
+    const session = await auth(request)
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id
 
     // Check collection ownership
     const [existingCollection] = await db
@@ -567,39 +477,34 @@ export async function DELETE(
         templateCount: templateCollections.templateCount,
       })
       .from(templateCollections)
-      .where(eq(templateCollections.id, collectionId));
+      .where(eq(templateCollections.id, collectionId))
 
     if (!existingCollection) {
-      return NextResponse.json(
-        { error: "Collection not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 })
     }
 
     if (existingCollection.createdByUserId !== userId) {
       return NextResponse.json(
-        { error: "Permission denied: not collection owner" },
-        { status: 403 },
-      );
+        { error: 'Permission denied: not collection owner' },
+        { status: 403 }
+      )
     }
 
     logger.debug(`[${requestId}] Collection ownership verified`, {
       name: existingCollection.name,
       templateCount: existingCollection.templateCount,
-    });
+    })
 
     // Delete collection and associated items using transaction
     await db.transaction(async (tx) => {
       // Delete collection items first (foreign key constraint)
       await tx
         .delete(templateCollectionItems)
-        .where(eq(templateCollectionItems.collectionId, collectionId));
+        .where(eq(templateCollectionItems.collectionId, collectionId))
 
       // Delete the collection
-      await tx
-        .delete(templateCollections)
-        .where(eq(templateCollections.id, collectionId));
-    });
+      await tx.delete(templateCollections).where(eq(templateCollections.id, collectionId))
+    })
 
     // Record analytics for collection deletion
     try {
@@ -607,46 +512,40 @@ export async function DELETE(
         collectionId,
         name: existingCollection.name,
         templatesRemoved: existingCollection.templateCount,
-      });
+      })
     } catch (analyticsError) {
       logger.warn(`[${requestId}] Analytics recording failed`, {
-        error:
-          analyticsError instanceof Error
-            ? analyticsError.message
-            : String(analyticsError),
-      });
+        error: analyticsError instanceof Error ? analyticsError.message : String(analyticsError),
+      })
     }
 
     const response = {
       success: true,
-      message: "Collection deleted successfully",
+      message: 'Collection deleted successfully',
       meta: {
         requestId,
         timestamp: new Date().toISOString(),
         deletedCollectionId: collectionId,
         templatesRemoved: existingCollection.templateCount,
       },
-    };
+    }
 
     logger.info(`[${requestId}] Collection deletion completed`, {
       collectionId,
       name: existingCollection.name,
       templatesRemoved: existingCollection.templateCount,
-      processingTime: Date.now() - parseInt(requestId, 16),
-    });
+      processingTime: Date.now() - Number.parseInt(requestId, 16),
+    })
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { status: 200 })
   } catch (error) {
     logger.error(`[${requestId}] Collection deletion failed`, {
       collectionId,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
-    return NextResponse.json(
-      { error: "Failed to delete collection" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 })
   }
 }
 
@@ -660,42 +559,33 @@ export async function DELETE(
  * - Update collection template count automatically
  * - Analytics tracking for template additions
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { collectionId: string } },
-) {
-  const requestId = crypto.randomUUID().slice(0, 8);
-  const collectionId = params.collectionId;
+export async function POST(request: NextRequest, { params }: { params: { collectionId: string } }) {
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const collectionId = params.collectionId
 
-  logger.info(
-    `[${requestId}] POST /collections/${collectionId} - Add template to collection`,
-    {
-      collectionId,
-      userAgent: request.headers.get("user-agent")?.substring(0, 100),
-    },
-  );
+  logger.info(`[${requestId}] POST /collections/${collectionId} - Add template to collection`, {
+    collectionId,
+    userAgent: request.headers.get('user-agent')?.substring(0, 100),
+  })
 
   try {
     // Authenticate user
-    const session = await auth(request);
+    const session = await auth(request)
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id
 
     // Parse and validate request body
-    const body = await request.json();
-    const validatedData = AddTemplateSchema.parse(body);
+    const body = await request.json()
+    const validatedData = AddTemplateSchema.parse(body)
 
     logger.debug(`[${requestId}] Validated template addition data`, {
       templateId: validatedData.templateId,
       sortOrder: validatedData.sortOrder,
       userId,
-    });
+    })
 
     // Check collection ownership
     const [existingCollection] = await db
@@ -705,20 +595,17 @@ export async function POST(
         templateCount: templateCollections.templateCount,
       })
       .from(templateCollections)
-      .where(eq(templateCollections.id, collectionId));
+      .where(eq(templateCollections.id, collectionId))
 
     if (!existingCollection) {
-      return NextResponse.json(
-        { error: "Collection not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 })
     }
 
     if (existingCollection.createdByUserId !== userId) {
       return NextResponse.json(
-        { error: "Permission denied: not collection owner" },
-        { status: 403 },
-      );
+        { error: 'Permission denied: not collection owner' },
+        { status: 403 }
+      )
     }
 
     // Validate template exists and is accessible
@@ -729,21 +616,15 @@ export async function POST(
         createdByUserId: templatesV2.createdByUserId,
       })
       .from(templatesV2)
-      .where(eq(templatesV2.id, validatedData.templateId));
+      .where(eq(templatesV2.id, validatedData.templateId))
 
     if (!templateData) {
-      return NextResponse.json(
-        { error: "Template not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
     // Check if user can access template (public or owned)
     if (!templateData.isPublic && templateData.createdByUserId !== userId) {
-      return NextResponse.json(
-        { error: "Template not accessible" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Template not accessible' }, { status: 403 })
     }
 
     // Check if template already exists in collection
@@ -753,28 +634,25 @@ export async function POST(
       .where(
         and(
           eq(templateCollectionItems.collectionId, collectionId),
-          eq(templateCollectionItems.templateId, validatedData.templateId),
-        ),
-      );
+          eq(templateCollectionItems.templateId, validatedData.templateId)
+        )
+      )
 
     if (existingItem) {
-      return NextResponse.json(
-        { error: "Template already exists in collection" },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: 'Template already exists in collection' }, { status: 409 })
     }
 
     // Determine sort order if not provided
-    let sortOrder = validatedData.sortOrder;
+    let sortOrder = validatedData.sortOrder
     if (sortOrder === undefined) {
       const [maxOrderResult] = await db
         .select({
           maxOrder: sql<number>`COALESCE(MAX(${templateCollectionItems.sortOrder}), -1)`,
         })
         .from(templateCollectionItems)
-        .where(eq(templateCollectionItems.collectionId, collectionId));
+        .where(eq(templateCollectionItems.collectionId, collectionId))
 
-      sortOrder = (maxOrderResult.maxOrder || 0) + 1;
+      sortOrder = (maxOrderResult.maxOrder || 0) + 1
     }
 
     // Add template to collection using transaction
@@ -786,7 +664,7 @@ export async function POST(
         sortOrder,
         notes: validatedData.notes,
         addedAt: new Date(),
-      });
+      })
 
       // Update collection template count
       await tx
@@ -795,8 +673,8 @@ export async function POST(
           templateCount: existingCollection.templateCount + 1,
           updatedAt: new Date(),
         })
-        .where(eq(templateCollections.id, collectionId));
-    });
+        .where(eq(templateCollections.id, collectionId))
+    })
 
     // Record analytics for template addition
     try {
@@ -805,19 +683,16 @@ export async function POST(
         templateId: validatedData.templateId,
         sortOrder,
         newTemplateCount: existingCollection.templateCount + 1,
-      });
+      })
     } catch (analyticsError) {
       logger.warn(`[${requestId}] Analytics recording failed`, {
-        error:
-          analyticsError instanceof Error
-            ? analyticsError.message
-            : String(analyticsError),
-      });
+        error: analyticsError instanceof Error ? analyticsError.message : String(analyticsError),
+      })
     }
 
     const response = {
       success: true,
-      message: "Template added to collection successfully",
+      message: 'Template added to collection successfully',
       data: {
         collectionId,
         templateId: validatedData.templateId,
@@ -830,33 +705,30 @@ export async function POST(
         timestamp: new Date().toISOString(),
         newTemplateCount: existingCollection.templateCount + 1,
       },
-    };
+    }
 
     logger.info(`[${requestId}] Template addition completed`, {
       collectionId,
       templateId: validatedData.templateId,
       sortOrder,
-      processingTime: Date.now() - parseInt(requestId, 16),
-    });
+      processingTime: Date.now() - Number.parseInt(requestId, 16),
+    })
 
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(response, { status: 201 })
   } catch (error) {
     logger.error(`[${requestId}] Template addition failed`, {
       collectionId,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid request data", details: error.errors },
-        { status: 400 },
-      );
+        { error: 'Invalid request data', details: error.errors },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json(
-      { error: "Failed to add template to collection" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to add template to collection' }, { status: 500 })
   }
 }
