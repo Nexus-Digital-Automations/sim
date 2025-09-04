@@ -2,38 +2,21 @@
   "project": "sim",
   "tasks": [
     {
-      "id": "task_1756965794701_ln5mazx4n",
-      "title": "Implement foundational context-sensitive help and documentation system infrastructure",
-      "description": "Create comprehensive help system with core architecture (help-context-provider, help-content-manager, contextual-triggers, help-analytics), UI components (tooltips, panels, spotlight, search, content renderer), content structure, API endpoints, database extensions, and workflow editor integration. Focus on TypeScript, accessibility, performance, and production-ready implementation.",
+      "id": "task_1756973133620_ik7b05agw",
+      "title": "Implement community user management system with profiles, reputation, and badges",
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/research-report-task_1756933819991_emwz3lkkn.md",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/lib",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api"
-      ],
+      "important_files": [],
       "success_criteria": [],
       "estimate": "",
-      "requires_research": true,
+      "requires_research": false,
       "subtasks": [],
-      "created_at": "2025-09-04T06:03:14.703Z",
-      "auto_research_created": true,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T06:06:55.736Z",
-      "claimed_by": "--agent-id",
-      "agent_assignment_history": [
-        {
-          "agentId": "--agent-id",
-          "role": "primary",
-          "assignedAt": "2025-09-04T06:06:55.736Z",
-          "reassignReason": null,
-          "claimPriority": "development_session_1756965784575_1_general_d3a4a4f5"
-        }
-      ]
+      "created_at": "2025-09-04T08:05:33.621Z",
+      "auto_research_created": false,
+      "description": "No description provided"
     },
     {
       "id": "task_1756933962200_ogk8oj5dg",
@@ -54,9 +37,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:12:42.204Z",
       "auto_research_created": true,
-      "started_at": "2025-09-04T05:39:31.487Z",
-      "claimed_by": "development_session_1756964336908_1_general_3e8ec071",
-      "assigned_agent": "development_session_1756964336908_1_general_3e8ec071",
+      "started_at": "2025-09-04T07:55:22.211Z",
+      "claimed_by": "--agent-id",
+      "assigned_agent": "--agent-id",
       "agent_assignment_history": [
         {
           "agent": "agent_1756944559372",
@@ -75,6 +58,19 @@
           "assignedAt": "2025-09-04T05:39:31.487Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 135 minutes"
+        },
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T07:55:22.211Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756972480818_1_general_68bde9e2"
         }
       ]
     },
@@ -85,7 +81,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
@@ -97,9 +93,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:12:26.750Z",
       "auto_research_created": true,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T05:53:10.906Z",
-      "claimed_by": "--agent-id",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756944532359_1_general_ead55683",
@@ -120,6 +116,12 @@
           "assignedAt": "2025-09-04T05:53:10.906Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 121 minutes"
         }
       ]
     },
@@ -130,7 +132,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [],
       "success_criteria": [],
@@ -139,9 +141,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:10:51.199Z",
       "auto_research_created": true,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T05:53:25.303Z",
-      "claimed_by": "--agent-id",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "--agent-id",
@@ -149,6 +151,12 @@
           "assignedAt": "2025-09-04T05:53:25.303Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 121 minutes"
         }
       ]
     },
@@ -159,7 +167,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [],
       "success_criteria": [],
@@ -168,9 +176,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:10:44.946Z",
       "auto_research_created": false,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T06:37:46.193Z",
-      "claimed_by": "--agent-id",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "--agent-id",
@@ -178,6 +186,12 @@
           "assignedAt": "2025-09-04T06:37:46.193Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 77 minutes"
         }
       ]
     },
@@ -711,13 +725,13 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756964336908_1_general_3e8ec071": {
+    "development_session_1756972480818_1_general_68bde9e2": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T05:38:56.909Z",
+      "lastHeartbeat": "2025-09-04T07:54:40.819Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -728,17 +742,17 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T05:38:56.909Z",
-      "sessionId": "session_1756964336908",
+      "createdAt": "2025-09-04T07:54:40.819Z",
+      "sessionId": "session_1756972480818",
       "metadata": {}
     },
-    "development_session_1756965225189_1_general_92f14364": {
+    "development_session_1756972541458_1_general_9ac7e7c2": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T05:53:45.190Z",
+      "lastHeartbeat": "2025-09-04T07:55:41.458Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -749,17 +763,17 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T05:53:45.190Z",
-      "sessionId": "session_1756965225189",
+      "createdAt": "2025-09-04T07:55:41.458Z",
+      "sessionId": "session_1756972541458",
       "metadata": {}
     },
-    "development_session_1756965784575_1_general_d3a4a4f5": {
+    "development_session_1756973127483_1_general_79e3047a": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T06:03:04.576Z",
+      "lastHeartbeat": "2025-09-04T08:05:27.484Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -770,36 +784,9 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T06:03:04.576Z",
-      "sessionId": "session_1756965784575",
+      "createdAt": "2025-09-04T08:05:27.484Z",
+      "sessionId": "session_1756973127483",
       "metadata": {}
-    },
-    "development_session_1756967899042_1_general_63eed25f": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T06:38:19.042Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T06:38:19.042Z",
-      "sessionId": "session_1756967899042",
-      "metadata": {
-        "renewedAt": "2025-09-04T06:38:25.218Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T06:38:25.218Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1756967899042_1_general_63eed25f"
     }
   },
   "settings": {

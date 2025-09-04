@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -2463,9 +2479,96 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756965794701_ln5mazx4n",
+      "title": "Implement foundational context-sensitive help and documentation system infrastructure",
+      "description": "Create comprehensive help system with core architecture (help-context-provider, help-content-manager, contextual-triggers, help-analytics), UI components (tooltips, panels, spotlight, search, content renderer), content structure, API endpoints, database extensions, and workflow editor integration. Focus on TypeScript, accessibility, performance, and production-ready implementation.",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/research-report-task_1756933819991_emwz3lkkn.md",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/lib",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T06:03:14.703Z",
+      "auto_research_created": true,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T06:06:55.736Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756965784575_1_general_d3a4a4f5"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 108 minutes"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T07:55:15.612Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T07:55:15.613Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756972547748_lloc6u12f",
+      "title": "Comprehensive research for community integration marketplace with template sharing and rating system",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T07:55:47.748Z",
+      "auto_research_created": false,
+      "description": "No description provided",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T08:04:56.623Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T08:04:56.623Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 52,
-  "last_completion": "2025-09-04T06:06:50.270Z",
+  "total_completed": 54,
+  "last_completion": "2025-09-04T08:04:56.623Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }
