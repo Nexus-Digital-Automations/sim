@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3387,9 +3403,136 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756933851195_oq2mw7g4c",
+      "title": "Build context-sensitive help and documentation system",
+      "description": "Implement context-sensitive help system, embedded documentation, video tutorials integration, community support features, and smart help suggestions based on user actions.",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:10:51.199Z",
+      "auto_research_created": true,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T05:53:25.303Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 121 minutes"
+        },
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:06:45.204Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1757009193252_1_general_0bbdd531"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T18:44:27.601Z",
+          "reason": "Task stale for 38 minutes"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:49:49.140Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T18:49:49.141Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757012143808_35f84xq4e",
+      "title": "Research AI help engine security patterns and best practices",
+      "description": "Comprehensive research on AI security threats, architecture patterns, privacy protection, and operational security for enterprise AI help systems. Focus areas: 1) AI security threats (prompt injection, data poisoning, model extraction, adversarial attacks, privacy leakage, bias), 2) Security architecture patterns (input sanitization, output filtering, secure model serving, zero-trust, encryption, multi-tenancy), 3) Privacy protection (differential privacy, federated learning, anonymization, consent management, GDPR compliance, data retention), 4) Operational security (model versioning, monitoring, incident response, security testing, access control, audit logging). Deliverables: threat model, architecture recommendations, implementation guidelines, privacy frameworks, monitoring procedures, secure development practices.",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:43.808Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T19:00:37.205Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T19:00:37.206Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757012142064_3ycth08ra",
+      "title": "Research ML personalization architectures for AI help engines",
+      "description": "Research personalization algorithms, user modeling, adaptive features, and implementation architectures for AI help systems",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": 1,
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:42.064Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T19:00:49.912Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T19:00:49.912Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 70,
-  "last_completion": "2025-09-04T18:22:45.663Z",
+  "total_completed": 73,
+  "last_completion": "2025-09-04T19:00:49.912Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

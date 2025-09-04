@@ -46,7 +46,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "critical",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757009940262_hhzetmwoo.md"
@@ -63,7 +63,19 @@
       "subtasks": [],
       "created_at": "2025-09-04T18:19:00.262Z",
       "created_by": "auto-research-system",
-      "auto_created_for": "task_1757009940261_eyzruv2ai"
+      "auto_created_for": "task_1757009940261_eyzruv2ai",
+      "assigned_agent": "development_session_1757011830437_1_general_be0631bc",
+      "started_at": "2025-09-04T18:51:48.423Z",
+      "claimed_by": "development_session_1757011830437_1_general_be0631bc",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757011830437_1_general_be0631bc",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:51:48.423Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ]
     },
     {
       "id": "task_1757009930108_e9not29py",
@@ -72,7 +84,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "critical",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757009930108_e9not29py.md"
@@ -89,7 +101,19 @@
       "subtasks": [],
       "created_at": "2025-09-04T18:18:50.108Z",
       "created_by": "auto-research-system",
-      "auto_created_for": "task_1757009930107_flncrd9el"
+      "auto_created_for": "task_1757009930107_flncrd9el",
+      "assigned_agent": "development_session_1757012003406_1_general_58a55811",
+      "started_at": "2025-09-04T18:53:57.784Z",
+      "claimed_by": "development_session_1757012003406_1_general_58a55811",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757012003406_1_general_58a55811",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:53:57.784Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ]
     },
     {
       "id": "task_1757011765846_6wri25dfy",
@@ -430,54 +454,6 @@
       "created_at": "2025-09-04T18:16:14.873Z",
       "auto_research_created": false,
       "description": "No description provided"
-    },
-    {
-      "id": "task_1756933851195_oq2mw7g4c",
-      "title": "Build context-sensitive help and documentation system",
-      "description": "Implement context-sensitive help system, embedded documentation, video tutorials integration, community support features, and smart help suggestions based on user actions.",
-      "mode": "DEVELOPMENT",
-      "category": "missing-feature",
-      "priority": "critical",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": true,
-      "subtasks": [],
-      "created_at": "2025-09-03T21:10:51.199Z",
-      "auto_research_created": true,
-      "assigned_agent": null,
-      "started_at": null,
-      "claimed_by": null,
-      "agent_assignment_history": [
-        {
-          "agentId": "--agent-id",
-          "role": "primary",
-          "assignedAt": "2025-09-04T05:53:25.303Z",
-          "reassignReason": null,
-          "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
-        },
-        {
-          "agent": "system",
-          "action": "auto_reset_stale",
-          "timestamp": "2025-09-04T07:54:36.158Z",
-          "reason": "Task stale for 121 minutes"
-        },
-        {
-          "agentId": "--agent-id",
-          "role": "primary",
-          "assignedAt": "2025-09-04T18:06:45.204Z",
-          "reassignReason": null,
-          "claimPriority": "development_session_1757009193252_1_general_0bbdd531"
-        },
-        {
-          "agent": "system",
-          "action": "auto_reset_stale",
-          "timestamp": "2025-09-04T18:44:27.601Z",
-          "reason": "Task stale for 38 minutes"
-        }
-      ]
     },
     {
       "id": "task_1756933844945_fjv65lfzb",
@@ -876,6 +852,40 @@
       "auto_research_created": false
     },
     {
+      "id": "task_1757012289023_12tkp5kwi",
+      "title": "Research ML personalization models for AI help systems in workflow automation",
+      "description": "Comprehensive research on personalization algorithms, user profiling, dynamic learning systems, feature engineering, ML models, technical architecture, and workflow platform applications with implementation guidance",
+      "category": "research",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:58:09.024Z",
+      "auto_research_created": false,
+      "mode": "DEVELOPMENT"
+    },
+    {
+      "id": "task_1757012148017_pgkjtmqyz",
+      "title": "Research real-time response generation and caching strategies for AI help engines",
+      "description": "Comprehensive research on real-time response generation, multi-level caching, performance optimization, and system architecture for AI help engines targeting sub-second response times",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:48.017Z",
+      "auto_research_created": false
+    },
+    {
       "id": "task_1757011763322_4hsexmbyr",
       "title": "Research: Design wizard framework architecture with multi-step workflow support",
       "description": "Research and analysis required for implementing: \"Design wizard framework architecture with multi-step workflow support\"\n\n**Implementation Task Details:**\nCreate TypeScript interfaces for wizard steps, branching logic, validation schemas, and completion criteria with React component architecture\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757011763318_1d7acgkqj\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
@@ -976,6 +986,205 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:10:41.142Z",
       "auto_research_created": false
+    },
+    {
+      "id": "task_1757012417257_t2opwzdsi",
+      "title": "Research contextual intent recognition systems and ML approaches for AI help engines",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T19:00:17.257Z",
+      "auto_research_created": false,
+      "description": "No description provided"
+    },
+    {
+      "id": "task_1757012402475_i0oitlx4y",
+      "title": "Research comprehensive NLP frameworks and implementation patterns for AI help engines",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "development/research-reports/",
+        "development/reports/"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T19:00:02.475Z",
+      "auto_research_created": false,
+      "description": "No description provided"
+    },
+    {
+      "id": "task_1757012397836_g6lerb4e7",
+      "title": "Comprehensive AI Technology Stack Research for Production Help Engines",
+      "description": "Research comprehensive AI technology stack recommendations for building production-ready AI help engines in workflow automation platforms including core frameworks, deployment options, data processing, MLOps, monitoring, security, and cost optimization",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:59:57.836Z",
+      "auto_research_created": false
+    },
+    {
+      "id": "task_1757012396147_eo0a6td8g",
+      "title": "Research Real-Time Response Generation Architectures for AI Help Engines",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:59:56.147Z",
+      "auto_research_created": false,
+      "description": "No description provided"
+    },
+    {
+      "id": "task_1757012368189_y55q9clmp",
+      "title": "Research vector embedding approaches for contextual help matching",
+      "description": "Comprehensive research on vector embedding techniques, database technologies, semantic search architectures, optimization strategies, and implementation patterns for AI-powered workflow automation platforms",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:59:28.189Z",
+      "auto_research_created": false
+    },
+    {
+      "id": "task_1757012299074_3jdxa8kt0",
+      "title": "Research predictive help and user behavior analysis techniques for workflow automation platforms",
+      "description": "Comprehensive research on predictive analytics, user behavior analysis, behavioral indicators, proactive assistance strategies, technical implementation, and workflow-specific applications for intelligent help systems",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/contextual-help.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/monitoring/real-time/websocket-handler.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/components/monitoring/workflow-monitoring-panel.tsx"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:58:19.074Z",
+      "auto_research_created": false
+    },
+    {
+      "id": "task_1757012153130_xb2gw8kxg",
+      "title": "Research NLP frameworks and implementation patterns for AI help engines",
+      "description": "Comprehensive research and analysis of natural language processing frameworks, libraries, and implementation patterns specifically for AI help engine systems",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": 1,
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:53.130Z",
+      "auto_research_created": false
+    },
+    {
+      "id": "task_1757012142924_095sfzmhi",
+      "title": "Research enterprise AI help deployment and monitoring strategies",
+      "description": "Comprehensive research on enterprise deployment patterns, governance frameworks, monitoring strategies, and integration requirements for AI help systems",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:42.925Z",
+      "auto_research_created": false
+    },
+    {
+      "id": "task_1757012141200_56baj8mmb",
+      "title": "Research integration patterns with existing help systems for AI help engines",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "in_progress",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:41.200Z",
+      "auto_research_created": false,
+      "description": "No description provided",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:59:30.550Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "in_progress"
+          }
+        }
+      ]
+    },
+    {
+      "id": "task_1757012140425_c858ua6kf",
+      "title": "Research contextual intent recognition systems and ML models for AI help engines",
+      "description": "Comprehensive research covering intent recognition models, contextual understanding, ML architectures, training optimization, and integration patterns for AI help systems",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "in_progress",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:55:40.426Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:55:46.737Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "in_progress"
+          }
+        }
+      ]
     },
     {
       "id": "task_1757011763314_3pidx6ti5",
@@ -1669,6 +1878,324 @@
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T18:47:17.772Z",
       "sessionId": "session_1757011637771",
+      "metadata": {}
+    },
+    "development_session_1757011830437_1_general_be0631bc": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:50:30.440Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:50:30.440Z",
+      "sessionId": "session_1757011830437",
+      "metadata": {
+        "renewedAt": "2025-09-04T18:50:36.021Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-04T18:50:36.021Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1757011830437_1_general_be0631bc"
+    },
+    "development_session_1757012003406_1_general_58a55811": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:53:23.407Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:53:23.407Z",
+      "sessionId": "session_1757012003406",
+      "metadata": {
+        "renewedAt": "2025-09-04T18:53:41.904Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-04T18:53:28.174Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1757012003406_1_general_58a55811"
+    },
+    "development_session_1757012133081_1_general_8b33757d": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:33.083Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:33.083Z",
+      "sessionId": "session_1757012133081",
+      "metadata": {
+        "renewedAt": "2025-09-04T18:55:44.195Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-04T18:55:44.195Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1757012133081_1_general_8b33757d"
+    },
+    "development_session_1757012133119_1_general_4be83f28": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:33.120Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:33.120Z",
+      "sessionId": "session_1757012133119",
+      "metadata": {}
+    },
+    "development_session_1757012134383_1_general_a885677a": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:34.385Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:34.385Z",
+      "sessionId": "session_1757012134383",
+      "metadata": {}
+    },
+    "development_session_1757012134388_1_general_a72e470c": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:34.389Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:34.389Z",
+      "sessionId": "session_1757012134388",
+      "metadata": {}
+    },
+    "development_session_1757012134422_1_general_5c72d20b": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:34.424Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:34.424Z",
+      "sessionId": "session_1757012134422",
+      "metadata": {}
+    },
+    "development_session_1757012134429_1_general_c1bddaa6": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:34.430Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:34.430Z",
+      "sessionId": "session_1757012134429",
+      "metadata": {}
+    },
+    "development_session_1757012158283_1_general_33807d9f": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:55:58.284Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:55:58.284Z",
+      "sessionId": "session_1757012158283",
+      "metadata": {}
+    },
+    "development_session_1757012198025_1_general_e31ac634": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:56:38.027Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:56:38.027Z",
+      "sessionId": "session_1757012198025",
+      "metadata": {
+        "renewedAt": "2025-09-04T18:58:29.489Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-04T18:58:29.489Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1757012198025_1_general_e31ac634"
+    },
+    "development_session_1757012198028_1_general_2d814adf": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:56:38.031Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:56:38.031Z",
+      "sessionId": "session_1757012198028",
+      "metadata": {}
+    },
+    "development_session_1757012198032_1_general_21f6a724": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:56:38.034Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:56:38.034Z",
+      "sessionId": "session_1757012198032",
+      "metadata": {}
+    },
+    "development_session_1757012198035_1_general_aa316d3e": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:56:38.036Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:56:38.036Z",
+      "sessionId": "session_1757012198035",
+      "metadata": {}
+    },
+    "development_session_1757012394004_1_general_01ffc5ca": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T18:59:54.005Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T18:59:54.005Z",
+      "sessionId": "session_1757012394004",
       "metadata": {}
     }
   },
