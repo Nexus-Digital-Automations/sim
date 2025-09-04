@@ -1,4 +1,4 @@
-import type { ToolResponse } from '@/tools/types'
+import type { ToolResponse } from '../types'
 
 export interface ScrapeParams {
   apiKey: string

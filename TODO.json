@@ -17,9 +17,9 @@
       "subtasks": [],
       "created_at": "2025-09-04T12:26:56.474Z",
       "auto_research_created": false,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T14:53:58.628Z",
-      "claimed_by": "--agent-id",
+      "assigned_agent": "development_session_1757004393268_1_general_a8e1a9e4",
+      "started_at": "2025-09-04T16:46:39.834Z",
+      "claimed_by": "development_session_1757004393268_1_general_a8e1a9e4",
       "agent_assignment_history": [
         {
           "agentId": "--agent-id",
@@ -27,6 +27,19 @@
           "assignedAt": "2025-09-04T14:53:58.628Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756997607268_1_general_d28532af"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T16:46:27.549Z",
+          "reason": "Task stale for 112 minutes"
+        },
+        {
+          "agentId": "development_session_1757004393268_1_general_a8e1a9e4",
+          "role": "primary",
+          "assignedAt": "2025-09-04T16:46:39.834Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
         }
       ]
     },
@@ -36,7 +49,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/research-complete-community-marketplace-with-social-features-and-integration-discovery-1757002072081.md"
@@ -48,9 +61,9 @@
       "created_at": "2025-09-04T16:17:36.335Z",
       "auto_research_created": true,
       "description": "No description provided",
-      "assigned_agent": "development_session_1757002646149_1_general_90011497",
-      "started_at": "2025-09-04T16:22:34.707Z",
-      "claimed_by": "development_session_1757002646149_1_general_90011497",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1757002646149_1_general_90011497",
@@ -58,6 +71,12 @@
           "assignedAt": "2025-09-04T16:22:34.707Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T16:46:27.549Z",
+          "reason": "Task stale for 24 minutes"
         }
       ]
     },
@@ -79,48 +98,6 @@
       "subtasks": [],
       "created_at": "2025-09-04T16:17:34.369Z",
       "auto_research_created": false
-    },
-    {
-      "id": "task_1756975070972_ixzcdn5xi",
-      "title": "Complete community marketplace with social features and integration discovery",
-      "description": "Implement comprehensive community marketplace ecosystem with social features platform, integration discovery system, advanced analytics dashboard, and API integration. Includes activity feeds, template collections, following/followers system, community-contributed connectors marketplace, community health metrics, and social interaction APIs.",
-      "mode": "DEVELOPMENT",
-      "category": "missing-feature",
-      "priority": "critical",
-      "status": "in_progress",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": true,
-      "subtasks": [],
-      "created_at": "2025-09-04T08:37:50.977Z",
-      "auto_research_created": true,
-      "assigned_agent": "--agent-id",
-      "started_at": "2025-09-04T16:07:52.078Z",
-      "claimed_by": "--agent-id",
-      "agent_assignment_history": [
-        {
-          "agentId": "--agent",
-          "role": "primary",
-          "assignedAt": "2025-09-04T08:40:34.976Z",
-          "reassignReason": null,
-          "claimPriority": "development_session_1756975063484_1_general_fc6f8c26"
-        },
-        {
-          "agent": "system",
-          "action": "auto_reset_stale",
-          "timestamp": "2025-09-04T09:30:25.402Z",
-          "reason": "Task stale for 50 minutes"
-        },
-        {
-          "agentId": "--agent-id",
-          "role": "primary",
-          "assignedAt": "2025-09-04T16:07:52.078Z",
-          "reassignReason": null,
-          "claimPriority": "development_session_1757002065930_1_general_66bcede5"
-        }
-      ]
     },
     {
       "id": "task_1756933946746_egbh0ooez",
@@ -535,7 +512,10 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/reports/", "development/research-reports/"],
+      "important_files": [
+        "development/reports/",
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -712,7 +692,10 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -822,100 +805,25 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756997607268_1_general_d28532af": {
+    "development_session_1757004393268_1_general_a8e1a9e4": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T14:53:27.272Z",
+      "lastHeartbeat": "2025-09-04T16:46:33.269Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T14:53:27.272Z",
-      "sessionId": "session_1756997607268",
-      "metadata": {}
-    },
-    "development_session_1757002065930_1_general_66bcede5": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T16:07:45.931Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T16:07:45.931Z",
-      "sessionId": "session_1757002065930",
-      "metadata": {}
-    },
-    "development_session_1757002087478_1_general_ae4b8a2b": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T16:08:07.479Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T16:08:07.479Z",
-      "sessionId": "session_1757002087478",
-      "metadata": {
-        "renewedAt": "2025-09-04T16:08:12.656Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T16:08:12.656Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757002087478_1_general_ae4b8a2b"
-    },
-    "development_session_1757002646149_1_general_90011497": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T16:17:26.150Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T16:17:26.150Z",
-      "sessionId": "session_1757002646149",
-      "metadata": {}
-    },
-    "development_session_1757002653525_1_general_7aeee533": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T16:17:33.526Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T16:17:33.526Z",
-      "sessionId": "session_1757002653525",
-      "metadata": {}
-    },
-    "development_session_1757002671667_1_general_a5027fb0": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T16:17:51.668Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T16:17:51.668Z",
-      "sessionId": "session_1757002671667",
+      "createdAt": "2025-09-04T16:46:33.269Z",
+      "sessionId": "session_1757004393268",
       "metadata": {}
     }
   },

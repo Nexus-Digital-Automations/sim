@@ -15,7 +15,8 @@
  * @author Claude Development System
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import * as React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { CheckCircle, Move, Target } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -31,7 +32,7 @@ export interface DragItem {
   preview?: {
     title: string
     description?: string
-    icon?: React.ComponentType<any>
+    icon?: React.ComponentType<React.PropsWithChildren<any>>
     category?: string
   }
 }
@@ -147,7 +148,7 @@ export function EnhancedDragDropProvider({
 
   const dropZones = useRef(new Map<string, DropZone>())
   const dragStateRef = useRef(dragState)
-  const animationFrame = useRef<number>()
+  const animationFrame = useRef<number | undefined>(undefined)
   const touchContext = useRef<{ startPos: { x: number; y: number } | null }>({ startPos: null })
 
   // Update ref when state changes
@@ -710,7 +711,7 @@ export function EnhancedDragDropProvider({
         )}
 
         {/* Global drag styles */}
-        <style jsx global>{`
+        <style>{`
           .dragging * {
             cursor: grabbing !important;
           }
@@ -973,7 +974,7 @@ interface BlockLibraryItemProps {
     name: string
     description: string
     category: string
-    icon?: React.ComponentType<any>
+    icon?: React.ComponentType<React.PropsWithChildren<any>>
   }
   onDragStart?: () => void
 }

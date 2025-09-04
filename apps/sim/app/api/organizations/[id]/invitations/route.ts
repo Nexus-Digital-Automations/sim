@@ -30,7 +30,7 @@ interface WorkspaceInvitation {
  * GET /api/organizations/[id]/invitations
  * Get all pending invitations for an organization
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  * - ?validate=true - Only validate, don't send invitations
  * - ?batch=true - Include workspace invitations
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const session = await getSession()
 

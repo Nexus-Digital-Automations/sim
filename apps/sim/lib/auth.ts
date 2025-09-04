@@ -1210,7 +1210,7 @@ export const auth = betterAuth({
               }: {
                 event: Stripe.Event
                 stripeSubscription: Stripe.Subscription
-                subscription: any
+                subscription: typeof schema.subscription.$inferSelect
               }) => {
                 logger.info('[onSubscriptionComplete] Subscription created', {
                   subscriptionId: subscription.id,
@@ -1234,7 +1234,7 @@ export const auth = betterAuth({
                 subscription,
               }: {
                 event: Stripe.Event
-                subscription: any
+                subscription: typeof schema.subscription.$inferSelect
               }) => {
                 logger.info('[onSubscriptionUpdate] Subscription updated', {
                   subscriptionId: subscription.id,
@@ -1257,7 +1257,7 @@ export const auth = betterAuth({
               }: {
                 event: Stripe.Event
                 stripeSubscription: Stripe.Subscription
-                subscription: any
+                subscription: typeof schema.subscription.$inferSelect
               }) => {
                 logger.info('[onSubscriptionDeleted] Subscription deleted', {
                   subscriptionId: subscription.id,

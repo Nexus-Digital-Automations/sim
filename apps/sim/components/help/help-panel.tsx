@@ -154,7 +154,7 @@ export function HelpPanel({
   const [isLoading, setIsLoading] = useState(false)
 
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const searchTimeoutRef = useRef<NodeJS.Timeout>()
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // ========================
   // SEARCH FUNCTIONALITY

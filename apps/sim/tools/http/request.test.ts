@@ -150,8 +150,10 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the Referer header was set
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      expect(fetchCall[1].headers.Referer).toBe('https://app.simstudio.dev')
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      const headers = fetchCall[1]?.headers as Record<string, string> | undefined
+      expect(headers?.Referer).toBe('https://app.simstudio.dev')
 
       // Reset window
       global.window = originalWindow
@@ -168,8 +170,9 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the Host header was set
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      expect(fetchCall[1].headers.Host).toBe('api.example.com')
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      expect(fetchCall[1]?.headers?.Host).toBe('api.example.com')
 
       // Test user-provided Host takes precedence
       await tester.execute({
@@ -179,8 +182,9 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the user's Host was used
-      const userHeaderCall = (global.fetch as any).mock.calls[1]
-      expect(userHeaderCall[1].headers.Host).toBe('custom-host.com')
+      const mockFetch = vi.mocked(global.fetch)
+      const userHeaderCall = mockFetch.mock.calls[1]
+      expect(userHeaderCall[1]?.headers?.Host).toBe('custom-host.com')
     })
   })
 
@@ -231,8 +235,9 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify fetch was called with expected headers
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      const headers = fetchCall[1].headers
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      const headers = fetchCall[1]?.headers
 
       // Check specific header values
       expect(headers.Host).toBe('api.example.com')
@@ -292,8 +297,9 @@ describe('HTTP Request Tool', () => {
       )
 
       // Verify the stringified body matches our original data
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      const bodyArg = JSON.parse(fetchCall[1].body)
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      const bodyArg = JSON.parse(fetchCall[1]?.body as string)
       expect(bodyArg).toEqual(body)
     })
 
@@ -313,13 +319,14 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the request was made with correct headers
-      const fetchCall = (global.fetch as any).mock.calls[0]
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
       expect(fetchCall[0]).toBe('https://api.example.com/oauth/token')
-      expect(fetchCall[1].method).toBe('POST')
-      expect(fetchCall[1].headers['Content-Type']).toBe('application/x-www-form-urlencoded')
+      expect(fetchCall[1]?.method).toBe('POST')
+      expect(fetchCall[1]?.headers?.['Content-Type']).toBe('application/x-www-form-urlencoded')
 
       // Verify the body is URL-encoded (should not be JSON stringified)
-      expect(fetchCall[1].body).toBe(
+      expect(fetchCall[1]?.body).toBe(
         'username=testuser123&password=testpass456&email=test%40example.com'
       )
     })
@@ -340,14 +347,15 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the OAuth request was properly formatted
-      const fetchCall = (global.fetch as any).mock.calls[0]
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
       expect(fetchCall[0]).toBe('https://oauth.example.com/token')
-      expect(fetchCall[1].method).toBe('POST')
-      expect(fetchCall[1].headers['Content-Type']).toBe('application/x-www-form-urlencoded')
-      expect(fetchCall[1].headers.Authorization).toBe('Basic Y2xpZW50OnNlY3JldA==')
+      expect(fetchCall[1]?.method).toBe('POST')
+      expect(fetchCall[1]?.headers?.['Content-Type']).toBe('application/x-www-form-urlencoded')
+      expect(fetchCall[1]?.headers?.Authorization).toBe('Basic Y2xpZW50OnNlY3JldA==')
 
       // Verify the body is URL-encoded
-      expect(fetchCall[1].body).toBe('grant_type=client_credentials&scope=read+write')
+      expect(fetchCall[1]?.body).toBe('grant_type=client_credentials&scope=read+write')
     })
 
     it('should handle errors correctly', async () => {
@@ -479,8 +487,9 @@ describe('HTTP Request Tool', () => {
       })
 
       // Get the headers from the fetch call
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      const headers = fetchCall[1].headers
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      const headers = fetchCall[1]?.headers
 
       // Check all default headers exist with expected values
       expect(headers['User-Agent']).toMatch(/Mozilla\/5\.0.*Chrome.*Safari/)
@@ -513,8 +522,9 @@ describe('HTTP Request Tool', () => {
       })
 
       // Get the headers from the fetch call
-      const fetchCall = (global.fetch as any).mock.calls[0]
-      const headers = fetchCall[1].headers
+      const mockFetch = vi.mocked(global.fetch)
+      const fetchCall = mockFetch.mock.calls[0]
+      const headers = fetchCall[1]?.headers
 
       // Verify overridden headers
       expect(headers['User-Agent']).toBe('Custom Agent')

@@ -1,5 +1,5 @@
 // Common types for Wikipedia tools
-import type { ToolResponse } from '@/tools/types'
+import type { ToolResponse } from '../types'
 
 // Page Summary tool types
 export interface WikipediaPageSummaryParams {

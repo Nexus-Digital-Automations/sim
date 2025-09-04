@@ -1546,7 +1546,7 @@ export const copilotFeedback = pgTable(
 )
 
 // Workflow Versioning System Tables - Comprehensive version management with semantic versioning
-export const workflowVersions: any = pgTable(
+export const workflowVersions = pgTable(
   'workflow_versions',
   {
     id: text('id').primaryKey(),
@@ -1883,7 +1883,7 @@ export const workflowElementLocks = pgTable(
   })
 )
 
-export const workflowComments: any = pgTable(
+export const workflowComments = pgTable(
   'workflow_comments',
   {
     id: uuid('id').primaryKey().defaultRandom(),

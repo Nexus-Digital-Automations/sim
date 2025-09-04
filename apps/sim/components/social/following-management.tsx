@@ -25,7 +25,7 @@
 
 'use client'
 
-import type React from 'react'
+import * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Check,
@@ -159,7 +159,7 @@ export const FollowingManagement: React.FC<FollowingManagementProps> = ({
   const [isBulkProcessing, setBulkProcessing] = useState(false)
 
   // Refs for performance
-  const searchTimeoutRef = useRef<NodeJS.Timeout>()
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const followingLoadedRef = useRef(false)
   const followersLoadedRef = useRef(false)
 

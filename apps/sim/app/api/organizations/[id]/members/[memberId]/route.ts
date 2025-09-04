@@ -15,7 +15,7 @@ const logger = createLogger('OrganizationMemberAPI')
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -131,7 +131,7 @@ export async function GET(
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -240,7 +240,7 @@ export async function PUT(
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 

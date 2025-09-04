@@ -8,10 +8,10 @@ import { SUBFLOW_TYPES } from '@/stores/workflows/workflow/types'
 const logger = createLogger('WorkflowDBHelpers')
 
 export interface NormalizedWorkflowData {
-  blocks: Record<string, any>
-  edges: any[]
-  loops: Record<string, any>
-  parallels: Record<string, any>
+  blocks: Record<string, unknown>
+  edges: unknown[]
+  loops: Record<string, unknown>
+  parallels: Record<string, unknown>
   isFromNormalizedTables: boolean // Flag to indicate source (true = normalized tables, false = deployed state)
 }
 
@@ -41,7 +41,7 @@ export async function loadDeployedWorkflowState(
       throw new Error(`Workflow ${workflowId} is not deployed or has no deployed state`)
     }
 
-    const deployedState = workflowResult.deployedState as any
+    const deployedState = workflowResult.deployedState as WorkflowState
 
     // Convert deployed state to normalized format
     return {

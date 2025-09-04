@@ -25,7 +25,7 @@
 
 'use client'
 
-import type React from 'react'
+import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { format, subDays } from 'date-fns'
 import { Activity, Download, RefreshCw, Star, TrendingDown, TrendingUp } from 'lucide-react'

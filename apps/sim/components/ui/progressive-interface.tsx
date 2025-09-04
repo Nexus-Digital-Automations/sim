@@ -14,7 +14,7 @@
  * @author Claude Development System
  */
 
-import type React from 'react'
+import * as React from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,
@@ -78,7 +78,7 @@ export interface FeatureConfig {
   }
   dependencies?: string[]
   tutorialId?: string
-  component: React.ComponentType<any>
+  component: React.ComponentType<React.PropsWithChildren<any>>
   defaultVisible: boolean
   canToggle: boolean
   position: 'toolbar' | 'sidebar' | 'contextual' | 'modal'

@@ -250,7 +250,7 @@ export function HelpSpotlight({
 
   const overlayRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
-  const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout>()
+  const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const currentStepData = useMemo(() => {
     return steps[currentStep] || null

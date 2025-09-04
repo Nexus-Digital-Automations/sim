@@ -1,4 +1,4 @@
-import type React from 'react'
+import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { BlockPathCalculator } from '@/lib/block-path-calculator'

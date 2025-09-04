@@ -49,7 +49,7 @@ export interface UserSubscriptionState {
   isTeam: boolean
   isEnterprise: boolean
   isFree: boolean
-  highestPrioritySubscription: any | null
+  highestPrioritySubscription: unknown | null
   hasExceededLimit: boolean
   planName: string
 }
@@ -66,7 +66,7 @@ export interface BillingEntity {
   id: string
   type: 'user' | 'organization'
   referenceId: string
-  metadata?: { stripeCustomerId?: string; [key: string]: any } | null
+  metadata?: { stripeCustomerId?: string; [key: string]: unknown } | null
   createdAt: Date
   updatedAt: Date
 }
@@ -138,7 +138,7 @@ export interface SubscriptionAPIResponse {
   plan: string
   status: string | null
   seats: number | null
-  metadata: any | null
+  metadata: Record<string, unknown> | null
   usage: UsageData
 }
 
@@ -170,7 +170,7 @@ export type BillingStatusType = 'ok' | 'warning' | 'exceeded'
 export interface BillingError {
   code: string
   message: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 export interface UpdateUsageLimitResult {
@@ -189,7 +189,7 @@ export interface UseSubscriptionStateReturn {
     plan: string
     status?: string
     seats?: number
-    metadata?: any
+    metadata?: Record<string, unknown>
   }
   usage: UsageData
   isLoading: boolean

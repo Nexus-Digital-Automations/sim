@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -2988,9 +3004,66 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756975070972_ixzcdn5xi",
+      "title": "Complete community marketplace with social features and integration discovery",
+      "description": "Implement comprehensive community marketplace ecosystem with social features platform, integration discovery system, advanced analytics dashboard, and API integration. Includes activity feeds, template collections, following/followers system, community-contributed connectors marketplace, community health metrics, and social interaction APIs.",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T08:37:50.977Z",
+      "auto_research_created": true,
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-04T16:07:52.078Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent",
+          "role": "primary",
+          "assignedAt": "2025-09-04T08:40:34.976Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756975063484_1_general_fc6f8c26"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T09:30:25.402Z",
+          "reason": "Task stale for 50 minutes"
+        },
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T16:07:52.078Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1757002065930_1_general_66bcede5"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T16:45:43.714Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T16:45:43.714Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 63,
-  "last_completion": "2025-09-04T16:32:16.504Z",
+  "total_completed": 64,
+  "last_completion": "2025-09-04T16:45:43.714Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

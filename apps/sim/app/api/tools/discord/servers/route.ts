@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 
 interface DiscordServer {
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 const logger = createLogger('DiscordServersAPI')
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { botToken, serverId } = await request.json()
 

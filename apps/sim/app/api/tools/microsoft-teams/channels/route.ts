@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { authorizeCredentialUse } from '@/lib/auth/credential-access'
 import { createLogger } from '@/lib/logs/console/logger'
 import { refreshAccessTokenIfNeeded } from '@/app/api/auth/oauth/utils'
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 const logger = createLogger('TeamsChannelsAPI')
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json()
 
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      const authz = await authorizeCredentialUse(request as any, {
+      const authz = await authorizeCredentialUse(request, {
         credentialId: credential,
         workflowId,
       })

@@ -251,8 +251,9 @@ export async function decryptSecret(encryptedValue: string): Promise<{ decrypted
     decrypted += decipher.final('utf8')
 
     return { decrypted }
-  } catch (error: any) {
-    logger.error('Decryption error:', { error: error.message })
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    logger.error('Decryption error:', { error: errorMessage })
     throw error
   }
 }
@@ -814,7 +815,7 @@ export function getRotatingApiKey(provider: string): string {
  *   logger.error('API call failed', redactApiKeys({ request: requestData, error }))
  * }
  */
-export const redactApiKeys = (obj: any): any => {
+export const redactApiKeys = (obj: unknown): unknown => {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
@@ -971,7 +972,7 @@ export function isValidName(name: string): boolean {
  */
 export function getInvalidCharacters(name: string): string[] {
   const invalidChars = name.match(/[^a-zA-Z0-9_\s]/g)
-  return invalidChars ? [...new Set(invalidChars)] : []
+  return invalidChars ? Array.from(new Set(invalidChars)) : []
 }
 
 /**

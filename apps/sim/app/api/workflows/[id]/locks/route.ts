@@ -433,7 +433,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await cleanupExpiredLocks(workflowId)
 
     // Check for conflicts
-    const conflicts = await checkLockConflicts(workflowId, elements, userId)
+    const conflicts = await checkLockConflicts(
+      workflowId, 
+      elements.map(({ elementType, elementId }) => ({ elementType, elementId })), 
+      userId
+    )
 
     // Calculate expiration time
     const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000)

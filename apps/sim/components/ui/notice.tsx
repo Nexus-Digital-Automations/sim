@@ -1,4 +1,4 @@
-import type React from 'react'
+import * as React from 'react'
 import { AlertCircle, AlertTriangle, Check, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

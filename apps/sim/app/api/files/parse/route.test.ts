@@ -251,7 +251,7 @@ describe('File Parse API Route - Bun-Compatible', () => {
     await testMocks.cleanup()
     vi.clearAllMocks()
     // Clean up global mocks
-    (globalThis as any).__mockFileParsing = undefined
+    (globalThis as any).__mockFileParsing = undefined;;
   })
 
   // ================================
@@ -454,7 +454,7 @@ describe('Files Parse API - Path Traversal Security', () => {
   afterEach(async () => {
     await testMocks.cleanup()
     // Clean up global mocks
-    (globalThis as any).__mockFileParsing = undefined
+    ;(globalThis as any).__mockFileParsing = undefined
   })
 
   describe('Path Traversal Prevention', () => {

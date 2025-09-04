@@ -1,6 +1,6 @@
-import { WikipediaIcon } from '@/components/icons'
-import type { BlockConfig } from '@/blocks/types'
-import type { WikipediaResponse } from '@/tools/wikipedia/types'
+import { WikipediaIcon } from '../../components/icons'
+import type { BlockConfig } from '../types'
+import type { WikipediaResponse } from '../../tools/wikipedia/types'
 
 export const WikipediaBlock: BlockConfig<WikipediaResponse> = {
   type: 'wikipedia',

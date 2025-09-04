@@ -1,4 +1,8 @@
-import type { OAuthService } from '@/lib/oauth/oauth'
+// Avoiding circular dependency - define OAuthService locally if needed
+export interface OAuthService {
+  name: string
+  config?: Record<string, any>
+}
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD'
 

@@ -1,4 +1,4 @@
-import type React from 'react'
+import * as React from 'react'
 import { CopyButton } from '@/components/ui/copy-button'
 import { cn } from '@/lib/utils'
 

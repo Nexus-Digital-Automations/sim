@@ -10,7 +10,7 @@ import { invitation, member, permissions, user, workspaceInvitation } from '@/db
 const logger = createLogger('OrganizationInvitationAcceptanceAPI')
 
 // Accept an organization invitation and any associated workspace invitations
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   const invitationId = req.nextUrl.searchParams.get('id')
 
   if (!invitationId) {
@@ -222,7 +222,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST endpoint for programmatic acceptance (for API use)
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await getSession()
 
   if (!session?.user?.id) {

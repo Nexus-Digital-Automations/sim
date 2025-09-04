@@ -1,6 +1,6 @@
-import { CodeIcon } from '@/components/icons'
-import type { BlockConfig } from '@/blocks/types'
-import type { CodeExecutionOutput } from '@/tools/function/types'
+import { CodeIcon } from '../../components/icons'
+import type { BlockConfig } from '../types'
+import type { CodeExecutionOutput } from '../../tools/function/types'
 
 export const FunctionBlock: BlockConfig<CodeExecutionOutput> = {
   type: 'function',

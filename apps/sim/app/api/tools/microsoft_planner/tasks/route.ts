@@ -10,7 +10,7 @@ import type { PlannerTask } from '@/tools/microsoft_planner/types'
 
 const logger = createLogger('MicrosoftPlannerTasksAPI')
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID().slice(0, 8)
 
   try {

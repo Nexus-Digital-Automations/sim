@@ -7,9 +7,9 @@ import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
 
 describe('InputResolver', () => {
   let sampleWorkflow: SerializedWorkflow
-  let mockContext: any
+  let mockContext: ExecutionContext
   let mockEnvironmentVars: Record<string, string>
-  let mockWorkflowVars: Record<string, any>
+  let mockWorkflowVars: Record<string, unknown>
   let resolver: InputResolver
 
   beforeEach(() => {

@@ -36,7 +36,7 @@ const UpdateSchema = z.object({
   where: z.string().min(1, 'WHERE clause is required'),
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = randomUUID().slice(0, 8)
 
   try {

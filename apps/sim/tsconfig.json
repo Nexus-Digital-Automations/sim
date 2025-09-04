@@ -23,8 +23,8 @@
     "target": "es2022",
     // ESNext modules for tree-shaking and modern bundling
     "module": "esnext",
-    // Bundler-aware module resolution for Vite/Next.js compatibility
-    "moduleResolution": "bundler",
+    // Node16 module resolution for better compatibility
+    "moduleResolution": "node",
     // Standard library support for ES2022 + DOM APIs + Vitest globals
     "lib": ["es2022", "dom", "dom.iterable"],
     // Include Vitest globals for test files
@@ -38,10 +38,13 @@
     "skipLibCheck": true,
     // Ensure consistent file name casing across platforms
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
+    // Enable downlevel iteration for Set/Map operations
+    "downlevelIteration": true,
+    "baseUrl": "./",
     "paths": {
       "@/*": ["./*"],
-      "@/components/*": ["components/*"],
+      "@/components/*": ["./components/*"],
+      "@/components": ["./components"],
       "@/lib/*": ["./lib/*"],
       "@/stores": ["./stores"],
       "@/stores/*": ["./stores/*"],
@@ -64,7 +67,6 @@
     "incremental": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "plugins": [
       {

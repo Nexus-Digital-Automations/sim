@@ -17,7 +17,7 @@
 
 'use client'
 
-import type React from 'react'
+import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BookOpenIcon,
@@ -519,7 +519,7 @@ export function HelpContentRenderer({
   const [isExpanded, setIsExpanded] = useState(false)
 
   const contentRef = useRef<HTMLDivElement>(null)
-  const observerRef = useRef<IntersectionObserver>()
+  const observerRef = useRef<IntersectionObserver | undefined>(undefined)
 
   // Parse content
   const parsedContent = useMemo(() => {

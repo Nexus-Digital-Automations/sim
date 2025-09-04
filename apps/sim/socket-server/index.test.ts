@@ -3,9 +3,11 @@
  *
  * @vitest-environment node
  */
+import type { Server as HttpServer } from 'http'
+import type { Server as SocketIOServer } from 'socket.io'
 import { createServer } from 'http'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createLogger } from '@/lib/logs/console/logger'
+import { createLogger, type Logger } from '@/lib/logs/console/logger'
 import { createSocketIOServer } from '@/socket-server/config/socket'
 import { RoomManager } from '@/socket-server/rooms/manager'
 import { createHttpHandler } from '@/socket-server/routes/http'
@@ -57,10 +59,10 @@ vi.mock('@/socket-server/database/operations', () => ({
 }))
 
 describe('Socket Server Index Integration', () => {
-  let httpServer: any
-  let io: any
+  let httpServer: HttpServer
+  let io: SocketIOServer
   let roomManager: RoomManager
-  let logger: any
+  let logger: Logger
   let PORT: number
 
   beforeAll(() => {
@@ -95,7 +97,7 @@ describe('Socket Server Index Integration', () => {
         resolve()
       })
 
-      httpServer.on('error', (err: any) => {
+      httpServer.on('error', (err: NodeJS.ErrnoException) => {
         clearTimeout(timeout)
         if (err.code === 'EADDRINUSE') {
           // Try a different port

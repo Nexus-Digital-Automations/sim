@@ -20,7 +20,7 @@ interface CalendarListItem {
 /**
  * Get calendars from Google Calendar
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID().slice(0, 8) // Generate a short request ID for correlation
   logger.info(`[${requestId}] Google Calendar calendars request received`)
 

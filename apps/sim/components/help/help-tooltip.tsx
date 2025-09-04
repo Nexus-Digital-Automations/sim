@@ -15,7 +15,7 @@
 
 'use client'
 
-import type React from 'react'
+import * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AlertTriangleIcon,
@@ -157,8 +157,8 @@ export function HelpTooltip({
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout>()
-  const interactionStartTime = useRef<number>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const interactionStartTime = useRef<number | undefined>(undefined)
 
   // Generate unique help ID if not provided
   const effectiveHelpId = helpId || `help-tooltip-${component}-${Date.now()}`
