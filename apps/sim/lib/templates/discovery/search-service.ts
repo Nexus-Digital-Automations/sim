@@ -10,7 +10,7 @@
  *
  * Architecture:
  * - PostgreSQL full-text search for content matching
- * - Multi-dimensional filtering with complex query combinations  
+ * - Multi-dimensional filtering with complex query combinations
  * - Relevance scoring algorithm with user behavior signals
  * - Search result caching and performance optimization
  * - Real-time search suggestion engine
@@ -19,17 +19,29 @@
  * @version 1.0.0
  */
 
-import { and, asc, desc, eq, gte, ilike, isNotNull, lte, or, sql, count, inArray } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, templateStars } from '@/db/schema'
+import { templateStars, templates } from '@/db/schema'
 import type {
+  Template,
+  TemplateSearchAnalytics,
   TemplateSearchQuery,
   TemplateSearchResults,
   TemplateSearchSuggestion,
-  TemplateSearchFilters,
-  Template,
-  TemplateSearchAnalytics,
 } from '../types'
 
 // Initialize structured logger with search context
@@ -89,10 +101,10 @@ export class TemplateSearchService {
     try {
       // Build search conditions for main query
       const searchConditions = await this.buildSearchConditions(query)
-      
+
       // Build sorting configuration
       const sortConfig = this.buildSortConfiguration(query)
-      
+
       // Calculate pagination parameters
       const paginationConfig = this.calculatePagination(query)
 
@@ -108,7 +120,9 @@ export class TemplateSearchService {
       const totalCount = await this.getTotalSearchCount(searchConditions)
 
       // Build faceted search data if requested
-      const facets = query.includeFacets ? await this.buildSearchFacets(searchConditions) : undefined
+      const facets = query.includeFacets
+        ? await this.buildSearchFacets(searchConditions)
+        : undefined
 
       // Get search analytics if requested
       const analytics = query.includeAnalytics ? await this.getSearchAnalytics(query) : undefined
@@ -131,7 +145,7 @@ export class TemplateSearchService {
           limit: paginationConfig.limit,
           total: totalCount,
           totalPages: Math.ceil(totalCount / paginationConfig.limit),
-          hasNext: ((query.page || 1) * paginationConfig.limit) < totalCount,
+          hasNext: (query.page || 1) * paginationConfig.limit < totalCount,
           hasPrev: (query.page || 1) > 1,
         },
         facets,
@@ -168,7 +182,7 @@ export class TemplateSearchService {
    * @param limit - Maximum number of suggestions to return (default: 10)
    * @returns Promise<TemplateSearchSuggestion[]> - Ranked search suggestions
    */
-  async getSearchSuggestions(query: string, limit: number = 10): Promise<TemplateSearchSuggestion[]> {
+  async getSearchSuggestions(query: string, limit = 10): Promise<TemplateSearchSuggestion[]> {
     const operationId = `suggestions_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting search suggestions`, {
@@ -198,7 +212,7 @@ export class TemplateSearchService {
         .orderBy(desc(templates.views))
         .limit(Math.floor(limit * 0.4)) // 40% of suggestions
 
-      templateSuggestions.forEach(template => {
+      templateSuggestions.forEach((template) => {
         suggestions.push({
           type: 'template',
           value: template.name,
@@ -220,7 +234,7 @@ export class TemplateSearchService {
         .orderBy(desc(count(templates.id)))
         .limit(Math.floor(limit * 0.2)) // 20% of suggestions
 
-      categoryQuery.forEach(cat => {
+      categoryQuery.forEach((cat) => {
         suggestions.push({
           type: 'category',
           value: cat.category,
@@ -230,7 +244,7 @@ export class TemplateSearchService {
         })
       })
 
-      // Get author suggestions  
+      // Get author suggestions
       const authorQuery = await db
         .select({
           author: templates.author,
@@ -242,7 +256,7 @@ export class TemplateSearchService {
         .orderBy(desc(count(templates.id)))
         .limit(Math.floor(limit * 0.2)) // 20% of suggestions
 
-      authorQuery.forEach(author => {
+      authorQuery.forEach((author) => {
         suggestions.push({
           type: 'author',
           value: author.author,
@@ -270,10 +284,10 @@ export class TemplateSearchService {
 
       // Extract unique tags from results
       const foundTags = new Set<string>()
-      tagSuggestions.forEach(result => {
+      tagSuggestions.forEach((result) => {
         const metadata = result.state?.metadata
         const tags = [...(metadata?.tags || []), ...(metadata?.autoTags || [])]
-        tags.forEach(tag => {
+        tags.forEach((tag) => {
           if (typeof tag === 'string' && tag.toLowerCase().includes(searchTerm)) {
             foundTags.add(tag)
           }
@@ -281,15 +295,17 @@ export class TemplateSearchService {
       })
 
       // Add tag suggestions
-      Array.from(foundTags).slice(0, Math.floor(limit * 0.2)).forEach(tag => {
-        suggestions.push({
-          type: 'tag',
-          value: tag,
-          label: `Tag: ${tag}`,
-          count: 1, // Would need separate analytics to get real counts
-          icon: 'Tag',
+      Array.from(foundTags)
+        .slice(0, Math.floor(limit * 0.2))
+        .forEach((tag) => {
+          suggestions.push({
+            type: 'tag',
+            value: tag,
+            label: `Tag: ${tag}`,
+            count: 1, // Would need separate analytics to get real counts
+            icon: 'Tag',
+          })
         })
-      })
 
       // Sort all suggestions by relevance (exact matches first, then by popularity)
       const sortedSuggestions = suggestions
@@ -339,7 +355,7 @@ export class TemplateSearchService {
    */
   async getTrendingSearchTerms(
     period: 'day' | 'week' | 'month' = 'week',
-    limit: number = 10
+    limit = 10
   ): Promise<string[]> {
     const operationId = `trending_${Date.now()}`
 
@@ -373,8 +389,8 @@ export class TemplateSearchService {
         .limit(Math.floor(limit * 0.4))
 
       const trendingTerms = [
-        ...popularCategories.map(cat => cat.category),
-        ...popularTemplates.map(template => template.name),
+        ...popularCategories.map((cat) => cat.category),
+        ...popularTemplates.map((template) => template.name),
       ].slice(0, limit)
 
       const processingTime = Date.now() - this.startTime
@@ -405,7 +421,7 @@ export class TemplateSearchService {
     const conditions = []
 
     // Full-text search across multiple fields
-    if (query.search && query.search.trim()) {
+    if (query.search?.trim()) {
       const searchTerm = `%${query.search.trim()}%`
       conditions.push(
         or(
@@ -413,21 +429,21 @@ export class TemplateSearchService {
           ilike(templates.name, searchTerm),
           ilike(templates.description, searchTerm),
           ilike(templates.author, searchTerm),
-          
+
           // Metadata search (tags, categories, block types)
           sql`${templates.state}->'metadata'->>'category' ILIKE ${searchTerm}`,
           sql`${templates.state}->'metadata'->'tags' @> ${JSON.stringify([query.search])}`,
           sql`${templates.state}->'metadata'->'autoTags' @> ${JSON.stringify([query.search])}`,
           sql`${templates.state}->'metadata'->'blockTypes' @> ${JSON.stringify([query.search])}`,
-          
+
           // Advanced content search in workflow state
-          sql`${templates.state}::text ILIKE ${searchTerm}`,
+          sql`${templates.state}::text ILIKE ${searchTerm}`
         )
       )
     }
 
     // Category filtering
-    if (query.category && query.category.trim()) {
+    if (query.category?.trim()) {
       conditions.push(eq(templates.category, query.category))
     }
 
@@ -455,7 +471,7 @@ export class TemplateSearchService {
       if (filters.tags && filters.tags.length > 0) {
         conditions.push(
           or(
-            ...filters.tags.map(tag => 
+            ...filters.tags.map((tag) =>
               or(
                 sql`${templates.state}->'metadata'->'tags' ? ${tag}`,
                 sql`${templates.state}->'metadata'->'autoTags' ? ${tag}`
@@ -468,10 +484,7 @@ export class TemplateSearchService {
       // Difficulty filtering
       if (filters.difficulty && filters.difficulty.length > 0) {
         conditions.push(
-          inArray(
-            sql`${templates.state}->'metadata'->>'difficulty'`,
-            filters.difficulty
-          )
+          inArray(sql`${templates.state}->'metadata'->>'difficulty'`, filters.difficulty)
         )
       }
 
@@ -493,16 +506,12 @@ export class TemplateSearchService {
         conditions.push(eq(templates.userId, filters.authorId))
       }
       if (filters.excludeAuthors && filters.excludeAuthors.length > 0) {
-        conditions.push(
-          sql`${templates.userId} NOT IN ${filters.excludeAuthors}`
-        )
+        conditions.push(sql`${templates.userId} NOT IN ${filters.excludeAuthors}`)
       }
 
       // Technical filters
       if (filters.blockTypes && filters.blockTypes.length > 0) {
-        conditions.push(
-          sql`${templates.state}->'metadata'->'blockTypes' ?| ${filters.blockTypes}`
-        )
+        conditions.push(sql`${templates.state}->'metadata'->'blockTypes' ?| ${filters.blockTypes}`)
       }
     }
 
@@ -534,7 +543,6 @@ export class TemplateSearchService {
         case 'trending':
           // Trending algorithm: recent activity + popularity
           return sql`(${templates.views} * 0.7 + ${templates.stars} * 0.3 + EXTRACT(EPOCH FROM NOW() - ${templates.createdAt}) / 86400 * 0.1)`
-        case 'relevance':
         default:
           // Relevance scoring algorithm
           if (query.search) {
@@ -549,10 +557,9 @@ export class TemplateSearchService {
               + ${templates.stars} * 10
               + CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '30 days' THEN 50 ELSE 0 END
             )`
-          } else {
-            // Default to popularity when no search term
-            return sql`(${templates.views} * 0.6 + ${templates.stars} * 0.4)`
           }
+          // Default to popularity when no search term
+          return sql`(${templates.views} * 0.6 + ${templates.stars} * 0.4)`
       }
     }
 
@@ -624,7 +631,7 @@ export class TemplateSearchService {
       .limit(paginationConfig.limit)
       .offset(paginationConfig.offset)
 
-    return results.map(result => ({
+    return results.map((result) => ({
       ...result,
       metadata: query.includeState ? result.state?.metadata : undefined,
     })) as Template[]
@@ -732,7 +739,7 @@ export class TemplateSearchService {
       .orderBy(desc(count(templates.id)))
 
     const categoryDist: Record<string, number> = {}
-    categoryDistribution.forEach(cat => {
+    categoryDistribution.forEach((cat) => {
       categoryDist[cat.category] = cat.count
     })
 

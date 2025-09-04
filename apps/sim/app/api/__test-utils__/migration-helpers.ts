@@ -135,7 +135,9 @@ export function setupTestEnvironment(config: TestEnvironmentConfig = {}) {
   if (database.selectResults) {
     mockControls.setDatabaseResults(database.selectResults)
     if (logging) {
-      console.log(`🗄️ Database select results configured: ${database.selectResults.length} result sets`)
+      console.log(
+        `🗄️ Database select results configured: ${database.selectResults.length} result sets`
+      )
     }
   }
 
@@ -170,13 +172,7 @@ export function setupTestEnvironment(config: TestEnvironmentConfig = {}) {
  */
 export function createRequestBuilder(baseUrl: string) {
   return function buildRequest(config: RequestBuilderConfig = {}): NextRequest {
-    const {
-      method = 'GET',
-      body,
-      headers = {},
-      params = {},
-      query = {},
-    } = config
+    const { method = 'GET', body, headers = {}, params = {}, query = {} } = config
 
     let url = baseUrl
 
@@ -219,9 +215,17 @@ export async function validateResponse(
   config: ValidationConfig,
   operationName = 'API operation'
 ): Promise<any> {
-  const { expectedStatus, requiredFields = [], forbiddenFields = [], typeChecks = {}, customValidations = [] } = config
+  const {
+    expectedStatus,
+    requiredFields = [],
+    forbiddenFields = [],
+    typeChecks = {},
+    customValidations = [],
+  } = config
 
-  console.log(`✅ Validating ${operationName} response (expected: ${expectedStatus}, actual: ${response.status})`)
+  console.log(
+    `✅ Validating ${operationName} response (expected: ${expectedStatus}, actual: ${response.status})`
+  )
 
   // Validate status code
   expect(response.status).toBe(expectedStatus)
@@ -231,13 +235,13 @@ export async function validateResponse(
   console.log(`📊 Response data keys: [${Object.keys(data).join(', ')}]`)
 
   // Validate required fields
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     expect(data[field]).toBeDefined()
     console.log(`✅ Required field present: ${field}`)
   })
 
   // Validate forbidden fields
-  forbiddenFields.forEach(field => {
+  forbiddenFields.forEach((field) => {
     expect(data[field]).toBeUndefined()
     console.log(`✅ Forbidden field absent: ${field}`)
   })
@@ -255,7 +259,8 @@ export async function validateResponse(
     const result = validation(data)
     if (typeof result === 'string') {
       throw new Error(`Custom validation ${index + 1} failed: ${result}`)
-    } else if (!result) {
+    }
+    if (!result) {
       throw new Error(`Custom validation ${index + 1} failed`)
     }
     console.log(`✅ Custom validation ${index + 1} passed`)
@@ -291,7 +296,7 @@ export function createPerformanceTracker() {
       requestTimes.push(responseTime)
       metrics.requestCount++
       metrics.responseTime = responseTime
-      
+
       console.log(`⏱️ Request completed in ${responseTime}ms`)
       return responseTime
     },
@@ -304,7 +309,7 @@ export function createPerformanceTracker() {
     getMetrics(): PerformanceMetrics {
       const totalTime = requestTimes.reduce((sum, time) => sum + time, 0)
       const averageTime = requestTimes.length > 0 ? totalTime / requestTimes.length : 0
-      
+
       return {
         ...metrics,
         responseTime: averageTime,
@@ -348,7 +353,7 @@ export function createErrorSimulator() {
       const originalFetch = global.fetch
       global.fetch = vi.fn().mockRejectedValue(new Error('Network timeout'))
       console.log('💥 Network timeout simulated')
-      
+
       return () => {
         global.fetch = originalFetch
         console.log('🔧 Network timeout simulation restored')
@@ -365,7 +370,7 @@ export function createErrorSimulator() {
         headers: new Headers({ 'Retry-After': '60' }),
       })
       console.log('💥 Rate limiting simulated')
-      
+
       return () => {
         global.fetch = originalFetch
         console.log('🔧 Rate limiting simulation restored')
@@ -397,104 +402,118 @@ export function createAuthTestScenarios(requestBuilder: ReturnType<typeof create
   return {
     async testUnauthenticated(handler: any, expectedStatus = 401) {
       console.log('🔐 Testing unauthenticated access')
-      
+
       setupTestEnvironment({ auth: { user: null } })
-      
+
       const request = requestBuilder()
       const response = await handler(request)
-      
-      await validateResponse(response, {
-        expectedStatus,
-        requiredFields: ['error'],
-        customValidations: [
-          (data) => data.error === 'Unauthorized' || data.error.includes('unauthorized'),
-        ],
-      }, 'unauthenticated access')
+
+      await validateResponse(
+        response,
+        {
+          expectedStatus,
+          requiredFields: ['error'],
+          customValidations: [
+            (data) => data.error === 'Unauthorized' || data.error.includes('unauthorized'),
+          ],
+        },
+        'unauthenticated access'
+      )
     },
 
     async testSessionAuth(handler: any, user?: TestUser) {
       console.log('🔐 Testing session authentication')
-      
+
       const testUser = user || createDefaultTestUser()
       setupTestEnvironment({
         auth: { user: testUser },
         database: { selectResults: [[testUser], [{ count: 1 }]] },
       })
-      
+
       const request = requestBuilder()
       const response = await handler(request)
-      
-      await validateResponse(response, {
-        expectedStatus: 200,
-        customValidations: [
-          (data) => response.status < 400,
-        ],
-      }, 'session authentication')
+
+      await validateResponse(
+        response,
+        {
+          expectedStatus: 200,
+          customValidations: [(data) => response.status < 400],
+        },
+        'session authentication'
+      )
     },
 
     async testApiKeyAuth(handler: any, apiKey = 'test-api-key-123') {
       console.log('🔐 Testing API key authentication')
-      
+
       setupTestEnvironment({
         auth: { user: null },
         database: { selectResults: [[{ userId: 'user-123' }], [createDefaultTestUser()]] },
       })
-      
+
       const request = requestBuilder({
         headers: { 'x-api-key': apiKey },
       })
       const response = await handler(request)
-      
-      await validateResponse(response, {
-        expectedStatus: 200,
-        customValidations: [
-          (data) => response.status < 400,
-        ],
-      }, 'API key authentication')
+
+      await validateResponse(
+        response,
+        {
+          expectedStatus: 200,
+          customValidations: [(data) => response.status < 400],
+        },
+        'API key authentication'
+      )
     },
 
     async testJwtAuth(handler: any, token = 'internal-jwt-token-123') {
       console.log('🔐 Testing JWT token authentication')
-      
+
       setupTestEnvironment({
         auth: { user: null, internalTokenValid: true },
         database: { selectResults: [[createDefaultTestUser()]] },
       })
-      
+
       const request = requestBuilder({
         headers: { authorization: `Bearer ${token}` },
       })
       const response = await handler(request)
-      
-      await validateResponse(response, {
-        expectedStatus: 200,
-        customValidations: [
-          (data) => response.status < 400,
-        ],
-      }, 'JWT token authentication')
+
+      await validateResponse(
+        response,
+        {
+          expectedStatus: 200,
+          customValidations: [(data) => response.status < 400],
+        },
+        'JWT token authentication'
+      )
     },
 
     async testInvalidCredentials(handler: any) {
       console.log('🔐 Testing invalid credentials')
-      
+
       setupTestEnvironment({
         auth: { user: null },
         database: { selectResults: [[]] }, // No matching user
       })
-      
+
       const request = requestBuilder({
         method: 'POST',
         body: { email: 'invalid@example.com', password: 'wrongpassword' },
       })
       const response = await handler(request)
-      
-      await validateResponse(response, {
-        expectedStatus: 401,
-        requiredFields: ['error'],
-        customValidations: [
-          (data) => data.error.includes('credentials') || data.error.includes('invalid'),
-        ],
-      }, 'invalid credentials')
+
+      await validateResponse(
+        response,
+        {
+          expectedStatus: 401,
+          requiredFields: ['error'],
+          customValidations: [
+            (data) => data.error.includes('credentials') || data.error.includes('invalid'),
+          ],
+        },
+        'invalid credentials'
+      )
     },
   }
 }
@@ -510,7 +529,7 @@ export function createDatabaseTestScenarios() {
   return {
     setupCrudScenario(operation: 'create' | 'read' | 'update' | 'delete', data?: any) {
       console.log(`🗄️ Setting up ${operation} database scenario`)
-      
+
       const sampleData = data || {
         id: 'test-record-123',
         name: 'Test Record',
@@ -545,47 +564,50 @@ export function createDatabaseTestScenarios() {
       return sampleData
     },
 
-    setupPaginationScenario(totalItems: number, page: number, limit: number, itemFactory?: (index: number) => any) {
-      console.log(`🗄️ Setting up pagination scenario: ${totalItems} total, page ${page}, limit ${limit}`)
-      
+    setupPaginationScenario(
+      totalItems: number,
+      page: number,
+      limit: number,
+      itemFactory?: (index: number) => any
+    ) {
+      console.log(
+        `🗄️ Setting up pagination scenario: ${totalItems} total, page ${page}, limit ${limit}`
+      )
+
       const startIndex = (page - 1) * limit
       const pageItems = Array.from({ length: Math.min(limit, totalItems - startIndex) }, (_, i) => {
         const index = startIndex + i
-        return itemFactory ? itemFactory(index) : {
-          id: `item-${index}`,
-          name: `Item ${index}`,
-          index,
-        }
+        return itemFactory
+          ? itemFactory(index)
+          : {
+              id: `item-${index}`,
+              name: `Item ${index}`,
+              index,
+            }
       })
 
-      mockControls.setDatabaseResults([
-        pageItems,
-        [{ count: totalItems }],
-      ])
+      mockControls.setDatabaseResults([pageItems, [{ count: totalItems }]])
 
       return { pageItems, totalPages: Math.ceil(totalItems / limit) }
     },
 
     setupFilteringScenario(allItems: any[], filter: Record<string, any>) {
       console.log(`🗄️ Setting up filtering scenario:`, filter)
-      
-      const filteredItems = allItems.filter(item => {
+
+      const filteredItems = allItems.filter((item) => {
         return Object.entries(filter).every(([key, value]) => {
           return item[key] === value
         })
       })
 
-      mockControls.setDatabaseResults([
-        filteredItems,
-        [{ count: filteredItems.length }],
-      ])
+      mockControls.setDatabaseResults([filteredItems, [{ count: filteredItems.length }]])
 
       return filteredItems
     },
 
     setupErrorScenario(errorType: 'connection' | 'constraint' | 'timeout' | 'transaction') {
       console.log(`🗄️ Setting up database error scenario: ${errorType}`)
-      
+
       const errorMessages = {
         connection: 'Database connection failed',
         constraint: 'Foreign key constraint violation',
@@ -610,25 +632,25 @@ export function createValidationHelpers() {
   return {
     validatePaginationResponse(data: any, expectedPage: number, expectedLimit: number) {
       console.log('📄 Validating pagination response')
-      
+
       expect(data.pagination).toBeDefined()
       expect(data.pagination.page).toBe(expectedPage)
       expect(data.pagination.limit).toBe(expectedLimit)
       expect(data.pagination.total).toBeDefined()
       expect(typeof data.pagination.total).toBe('number')
-      
+
       if (data.data) {
         expect(Array.isArray(data.data)).toBe(true)
         expect(data.data.length).toBeLessThanOrEqual(expectedLimit)
       }
-      
+
       console.log('✅ Pagination validation passed')
     },
 
     validateTimestamps(data: any, fields = ['createdAt', 'updatedAt']) {
       console.log('🕒 Validating timestamp fields')
-      
-      fields.forEach(field => {
+
+      fields.forEach((field) => {
         if (data[field]) {
           expect(typeof data[field]).toBe('string')
           expect(() => new Date(data[field])).not.toThrow()
@@ -640,15 +662,15 @@ export function createValidationHelpers() {
 
     validateUuidFields(data: any, fields = ['id']) {
       console.log('🔢 Validating UUID fields')
-      
+
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      
-      fields.forEach(field => {
+
+      fields.forEach((field) => {
         if (data[field]) {
           // Allow either UUID format or custom ID format (like 'user-123')
           const isUuid = uuidRegex.test(data[field])
           const isCustomId = typeof data[field] === 'string' && data[field].length > 0
-          
+
           expect(isUuid || isCustomId).toBe(true)
           console.log(`✅ Valid ID format: ${field}`)
         }
@@ -657,7 +679,7 @@ export function createValidationHelpers() {
 
     validateSortOrder(items: any[], field: string, order: 'asc' | 'desc' = 'asc') {
       console.log(`🔄 Validating sort order: ${field} (${order})`)
-      
+
       if (items.length < 2) {
         console.log('✅ Sort validation skipped (insufficient items)')
         return
@@ -666,29 +688,29 @@ export function createValidationHelpers() {
       for (let i = 1; i < items.length; i++) {
         const prev = items[i - 1][field]
         const current = items[i][field]
-        
+
         if (order === 'asc') {
           expect(prev <= current).toBe(true)
         } else {
           expect(prev >= current).toBe(true)
         }
       }
-      
+
       console.log('✅ Sort order validation passed')
     },
 
     validateErrorResponse(data: any, expectedErrorType?: string) {
       console.log('❌ Validating error response')
-      
+
       expect(data.error).toBeDefined()
       expect(typeof data.error).toBe('string')
       expect(data.error.length).toBeGreaterThan(0)
-      
+
       if (expectedErrorType) {
         expect(data.error.toLowerCase()).toContain(expectedErrorType.toLowerCase())
         console.log(`✅ Error type matches: ${expectedErrorType}`)
       }
-      
+
       // Optional fields that might be present in error responses
       if (data.code) {
         expect(typeof data.code).toBe('string')
@@ -696,7 +718,7 @@ export function createValidationHelpers() {
       if (data.details) {
         expect(typeof data.details).toBe('object')
       }
-      
+
       console.log('✅ Error response validation passed')
     },
   }
@@ -717,17 +739,19 @@ export function createPerformanceHelpers() {
       operationName = 'API operation'
     ): Promise<number> {
       console.log(`⏱️ Testing response time for ${operationName} (max: ${maxResponseTime}ms)`)
-      
+
       const startTime = Date.now()
       const response = await operation()
       const endTime = Date.now()
-      
+
       const responseTime = endTime - startTime
-      
+
       expect(responseTime).toBeLessThan(maxResponseTime)
       expect(response.status).toBeLessThan(500) // Should not fail due to performance
-      
-      console.log(`✅ ${operationName} completed in ${responseTime}ms (under ${maxResponseTime}ms limit)`)
+
+      console.log(
+        `✅ ${operationName} completed in ${responseTime}ms (under ${maxResponseTime}ms limit)`
+      )
       return responseTime
     },
 
@@ -737,23 +761,25 @@ export function createPerformanceHelpers() {
       operationName = 'API operation'
     ): Promise<Response[]> {
       console.log(`🚀 Testing concurrent requests: ${concurrencyLevel} ${operationName}s`)
-      
+
       const operations = Array.from({ length: concurrencyLevel }, (_, i) => operationFactory(i))
-      
+
       const startTime = Date.now()
       const responses = await Promise.all(operations)
       const endTime = Date.now()
-      
+
       const totalTime = endTime - startTime
       const averageTime = totalTime / concurrencyLevel
-      
+
       // Validate all responses
       responses.forEach((response, i) => {
         expect(response.status).toBeLessThan(500)
         console.log(`📊 Concurrent request ${i + 1} status: ${response.status}`)
       })
-      
-      console.log(`✅ ${concurrencyLevel} concurrent ${operationName}s completed in ${totalTime}ms (avg: ${averageTime}ms)`)
+
+      console.log(
+        `✅ ${concurrencyLevel} concurrent ${operationName}s completed in ${totalTime}ms (avg: ${averageTime}ms)`
+      )
       return responses
     },
 
@@ -763,20 +789,20 @@ export function createPerformanceHelpers() {
       operationName = 'API operation'
     ) {
       console.log(`📊 Benchmarking ${operationName} over ${iterations} iterations`)
-      
+
       const responseTimes: number[] = []
       const results = { success: 0, error: 0, total: iterations }
-      
+
       for (let i = 0; i < iterations; i++) {
         const startTime = Date.now()
-        
+
         try {
           const response = await operation()
           const endTime = Date.now()
           const responseTime = endTime - startTime
-          
+
           responseTimes.push(responseTime)
-          
+
           if (response.status < 400) {
             results.success++
           } else {
@@ -787,14 +813,14 @@ export function createPerformanceHelpers() {
           console.warn(`⚠️ Benchmark iteration ${i + 1} failed:`, error)
         }
       }
-      
+
       // Calculate statistics
       const totalTime = responseTimes.reduce((sum, time) => sum + time, 0)
       const averageTime = totalTime / responseTimes.length
       const minTime = Math.min(...responseTimes)
       const maxTime = Math.max(...responseTimes)
       const successRate = (results.success / results.total) * 100
-      
+
       const benchmark = {
         iterations,
         totalTime,
@@ -804,13 +830,13 @@ export function createPerformanceHelpers() {
         successRate: Math.round(successRate * 100) / 100,
         ...results,
       }
-      
+
       console.log(`📈 Benchmark results for ${operationName}:`)
       console.log(`   Total time: ${totalTime}ms`)
       console.log(`   Average: ${benchmark.averageTime}ms`)
       console.log(`   Min: ${minTime}ms, Max: ${maxTime}ms`)
       console.log(`   Success rate: ${benchmark.successRate}%`)
-      
+
       return benchmark
     },
   }
@@ -860,22 +886,22 @@ export function createMigrationWorkflow(endpointPath: string, handlers: Record<s
       return {
         async runAuthenticationTests() {
           if (!authentication || !handlers.GET) return
-          
+
           console.log('🔐 Running authentication test suite')
-          
+
           await authScenarios.testUnauthenticated(handlers.GET)
           await authScenarios.testSessionAuth(handlers.GET)
           await authScenarios.testApiKeyAuth(handlers.GET)
           await authScenarios.testJwtAuth(handlers.GET)
-          
+
           console.log('✅ Authentication tests completed')
         },
 
         async runCrudTests() {
           if (!crud) return
-          
+
           console.log('📊 Running CRUD test suite')
-          
+
           if (handlers.POST) {
             const createData = dbScenarios.setupCrudScenario('create')
             const request = requestBuilder({ method: 'POST', body: createData })
@@ -903,15 +929,15 @@ export function createMigrationWorkflow(endpointPath: string, handlers: Record<s
             const response = await handlers.DELETE(request)
             await validateResponse(response, { expectedStatus: 200 })
           }
-          
+
           console.log('✅ CRUD tests completed')
         },
 
         async runPerformanceTests() {
           if (!performance || !handlers.GET) return
-          
+
           console.log('⏱️ Running performance test suite')
-          
+
           // Response time test
           await performanceHelpers.testResponseTime(
             async () => {
@@ -931,15 +957,15 @@ export function createMigrationWorkflow(endpointPath: string, handlers: Record<s
             5,
             'GET endpoint'
           )
-          
+
           console.log('✅ Performance tests completed')
         },
 
         async runErrorHandlingTests() {
           if (!errorHandling || !handlers.GET) return
-          
+
           console.log('❌ Running error handling test suite')
-          
+
           // Database error
           setupTestEnvironment({ database: { errorToThrow: 'Database connection failed' } })
           const dbErrorRequest = requestBuilder()
@@ -950,7 +976,7 @@ export function createMigrationWorkflow(endpointPath: string, handlers: Record<s
           const restoreNetwork = errorSimulator.simulateNetworkTimeout()
           // Test timeout handling if endpoint makes external calls
           restoreNetwork()
-          
+
           console.log('✅ Error handling tests completed')
         },
       }
@@ -980,17 +1006,24 @@ export const migrationHelpers = {
 
   // Utility functions
   generateSampleData: (count: number, factory?: (index: number) => any) => {
-    return Array.from({ length: count }, (_, i) => factory ? factory(i) : {
-      id: `sample-${i}`,
-      name: `Sample Item ${i}`,
-      index: i,
-      createdAt: new Date(),
-    })
+    return Array.from({ length: count }, (_, i) =>
+      factory
+        ? factory(i)
+        : {
+            id: `sample-${i}`,
+            name: `Sample Item ${i}`,
+            index: i,
+            createdAt: new Date(),
+          }
+    )
   },
 
-  sleep: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
+  sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
 
-  randomString: (length = 8) => Math.random().toString(36).substring(2, length + 2),
+  randomString: (length = 8) =>
+    Math.random()
+      .toString(36)
+      .substring(2, length + 2),
 
   randomEmail: () => `test-${Math.random().toString(36).substring(2, 8)}@example.com`,
 }

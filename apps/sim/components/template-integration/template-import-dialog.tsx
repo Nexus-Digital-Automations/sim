@@ -25,27 +25,25 @@
 
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import {
   AlertTriangle,
   Check,
   CheckCircle,
-  ChevronDown,
   ChevronRight,
   Download,
   Eye,
   FileText,
-  Filter,
   Loader2,
   Search,
   Star,
-  User,
-  X,
   Zap,
 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -65,6 +63,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -73,15 +73,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Progress } from '@/components/ui/progress'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { Template } from '@/lib/templates/types'
 import { cn } from '@/lib/utils'
-import type { Template, TemplateCustomization } from '@/lib/templates/types'
 
 const logger = createLogger('TemplateImportDialog')
 
@@ -151,36 +145,39 @@ export function TemplateImportDialog({
   })
 
   // Import steps configuration
-  const importSteps: ImportStep[] = useMemo(() => [
-    {
-      id: 'browse',
-      title: 'Browse Templates',
-      description: 'Search and select a template to import',
-      completed: !!selectedTemplate,
-      current: currentStep === 'browse',
-    },
-    {
-      id: 'customize',
-      title: 'Customize Template',
-      description: 'Configure template settings and variables',
-      completed: currentStep === 'preview' || currentStep === 'import',
-      current: currentStep === 'customize',
-    },
-    {
-      id: 'preview',
-      title: 'Preview & Validate',
-      description: 'Review changes and resolve conflicts',
-      completed: currentStep === 'import',
-      current: currentStep === 'preview',
-    },
-    {
-      id: 'import',
-      title: 'Import Template',
-      description: 'Apply template to your workflow',
-      completed: false,
-      current: currentStep === 'import',
-    },
-  ], [currentStep, selectedTemplate])
+  const importSteps: ImportStep[] = useMemo(
+    () => [
+      {
+        id: 'browse',
+        title: 'Browse Templates',
+        description: 'Search and select a template to import',
+        completed: !!selectedTemplate,
+        current: currentStep === 'browse',
+      },
+      {
+        id: 'customize',
+        title: 'Customize Template',
+        description: 'Configure template settings and variables',
+        completed: currentStep === 'preview' || currentStep === 'import',
+        current: currentStep === 'customize',
+      },
+      {
+        id: 'preview',
+        title: 'Preview & Validate',
+        description: 'Review changes and resolve conflicts',
+        completed: currentStep === 'import',
+        current: currentStep === 'preview',
+      },
+      {
+        id: 'import',
+        title: 'Import Template',
+        description: 'Apply template to your workflow',
+        completed: false,
+        current: currentStep === 'import',
+      },
+    ],
+    [currentStep, selectedTemplate]
+  )
 
   // Load templates when dialog opens
   useEffect(() => {
@@ -192,8 +189,9 @@ export function TemplateImportDialog({
 
   // Filter templates based on search and category
   const filteredTemplates = useMemo(() => {
-    return templates.filter(template => {
-      const matchesSearch = !searchQuery || 
+    return templates.filter((template) => {
+      const matchesSearch =
+        !searchQuery ||
         template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.author.toLowerCase().includes(searchQuery.toLowerCase())
@@ -206,7 +204,7 @@ export function TemplateImportDialog({
 
   // Get unique categories for filtering
   const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(templates.map(t => t.category))]
+    const uniqueCategories = [...new Set(templates.map((t) => t.category))]
     return uniqueCategories.sort()
   }, [templates])
 
@@ -221,7 +219,7 @@ export function TemplateImportDialog({
       logger.info('Loading templates for import dialog')
 
       const response = await fetch('/api/templates?limit=50&includeStats=true&sortBy=views')
-      
+
       if (!response.ok) {
         throw new Error(`Failed to load templates: ${response.statusText}`)
       }
@@ -232,7 +230,6 @@ export function TemplateImportDialog({
       logger.info('Templates loaded successfully', {
         templateCount: result.data?.length || 0,
       })
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load templates'
       setError(errorMessage)
@@ -245,20 +242,23 @@ export function TemplateImportDialog({
   /**
    * Select template and move to customization step
    */
-  const selectTemplate = useCallback((template: Template) => {
-    logger.info('Template selected for import', {
-      templateId: template.id,
-      templateName: template.name,
-    })
+  const selectTemplate = useCallback(
+    (template: Template) => {
+      logger.info('Template selected for import', {
+        templateId: template.id,
+        templateName: template.name,
+      })
 
-    setSelectedTemplate(template)
-    setCurrentStep('customize')
+      setSelectedTemplate(template)
+      setCurrentStep('customize')
 
-    // Pre-fill form with template data
-    form.setValue('templateId', template.id)
-    form.setValue('workflowName', `${template.name} (Imported)`)
-    form.setValue('description', template.description || '')
-  }, [form])
+      // Pre-fill form with template data
+      form.setValue('templateId', template.id)
+      form.setValue('workflowName', `${template.name} (Imported)`)
+      form.setValue('description', template.description || '')
+    },
+    [form]
+  )
 
   /**
    * Generate template preview with customizations
@@ -300,7 +300,7 @@ export function TemplateImportDialog({
       }
 
       const result = await response.json()
-      
+
       if (!result.success) {
         throw new Error(result.error?.message || 'Preview generation failed')
       }
@@ -314,7 +314,6 @@ export function TemplateImportDialog({
         conflictCount: result.data.conflicts?.length || 0,
         dependencyCount: result.data.dependencies?.length || 0,
       })
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate preview'
       setError(errorMessage)
@@ -344,7 +343,7 @@ export function TemplateImportDialog({
 
       // Simulate progress updates
       const progressInterval = setInterval(() => {
-        setImportProgress(prev => Math.min(prev + 10, 90))
+        setImportProgress((prev) => Math.min(prev + 10, 90))
       }, 200)
 
       const response = await fetch('/api/templates/integration/import', {
@@ -377,7 +376,7 @@ export function TemplateImportDialog({
       }
 
       const result = await response.json()
-      
+
       if (!result.success) {
         throw new Error(result.error?.message || 'Import failed')
       }
@@ -389,12 +388,11 @@ export function TemplateImportDialog({
 
       // Notify parent component
       onImportComplete?.(result.data)
-      
+
       // Close dialog after successful import
       setTimeout(() => {
         onOpenChange(false)
       }, 1000)
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Import failed'
       setError(errorMessage)
@@ -447,59 +445,49 @@ export function TemplateImportDialog({
       )}
       onClick={() => selectTemplate(template)}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+      <CardHeader className='pb-3'>
+        <div className='flex items-start justify-between'>
+          <div className='flex items-center gap-3'>
+            <div
+              className='flex h-10 w-10 items-center justify-center rounded-lg text-white'
               style={{ backgroundColor: template.color }}
             >
-              <FileText className="w-5 h-5" />
+              <FileText className='h-5 w-5' />
             </div>
             <div>
-              <CardTitle className="text-base font-medium line-clamp-1">
-                {template.name}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                by {template.author}
-              </p>
+              <CardTitle className='line-clamp-1 font-medium text-base'>{template.name}</CardTitle>
+              <p className='text-muted-foreground text-sm'>by {template.author}</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs text-muted-foreground">
-                {template.stars}
-              </span>
+          <div className='flex flex-col items-end gap-1'>
+            <div className='flex items-center gap-1'>
+              <Star className='h-3 w-3 fill-yellow-400 text-yellow-400' />
+              <span className='text-muted-foreground text-xs'>{template.stars}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Eye className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                {template.views}
-              </span>
+            <div className='flex items-center gap-1'>
+              <Eye className='h-3 w-3 text-muted-foreground' />
+              <span className='text-muted-foreground text-xs'>{template.views}</span>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-          {template.description}
-        </p>
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-xs">
+      <CardContent className='pt-0'>
+        <p className='mb-3 line-clamp-2 text-muted-foreground text-sm'>{template.description}</p>
+        <div className='flex items-center justify-between'>
+          <Badge variant='secondary' className='text-xs'>
             {template.category}
           </Badge>
           <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2 text-xs"
+            size='sm'
+            variant='ghost'
+            className='h-7 px-2 text-xs'
             onClick={(e) => {
               e.stopPropagation()
               selectTemplate(template)
             }}
           >
             Select
-            <ChevronRight className="w-3 h-3 ml-1" />
+            <ChevronRight className='ml-1 h-3 w-3' />
           </Button>
         </div>
       </CardContent>
@@ -508,52 +496,46 @@ export function TemplateImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-xl font-semibold">
-            Import Template
-          </DialogTitle>
+      <DialogContent className='flex h-[80vh] max-w-4xl flex-col p-0'>
+        <DialogHeader className='border-b px-6 py-4'>
+          <DialogTitle className='font-semibold text-xl'>Import Template</DialogTitle>
           <DialogDescription>
             Import an existing template into your workflow with guided customization
           </DialogDescription>
         </DialogHeader>
 
         {/* Progress Steps */}
-        <div className="px-6 py-4 border-b bg-muted/30">
-          <div className="flex items-center space-x-4">
+        <div className='border-b bg-muted/30 px-6 py-4'>
+          <div className='flex items-center space-x-4'>
             {importSteps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className="flex items-center">
+              <div key={step.id} className='flex items-center'>
+                <div className='flex items-center'>
                   <div
                     className={cn(
-                      'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
+                      'flex h-8 w-8 items-center justify-center rounded-full font-medium text-sm',
                       step.completed
                         ? 'bg-primary text-primary-foreground'
                         : step.current
-                        ? 'bg-primary/20 text-primary border-2 border-primary'
-                        : 'bg-muted text-muted-foreground'
+                          ? 'border-2 border-primary bg-primary/20 text-primary'
+                          : 'bg-muted text-muted-foreground'
                     )}
                   >
-                    {step.completed ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      index + 1
-                    )}
+                    {step.completed ? <Check className='h-4 w-4' /> : index + 1}
                   </div>
-                  <div className="ml-3">
-                    <p className={cn(
-                      'text-sm font-medium',
-                      step.current ? 'text-foreground' : 'text-muted-foreground'
-                    )}>
+                  <div className='ml-3'>
+                    <p
+                      className={cn(
+                        'font-medium text-sm',
+                        step.current ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
                       {step.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {step.description}
-                    </p>
+                    <p className='text-muted-foreground text-xs'>{step.description}</p>
                   </div>
                 </div>
                 {index < importSteps.length - 1 && (
-                  <ChevronRight className="w-4 h-4 mx-4 text-muted-foreground" />
+                  <ChevronRight className='mx-4 h-4 w-4 text-muted-foreground' />
                 )}
               </div>
             ))}
@@ -562,40 +544,37 @@ export function TemplateImportDialog({
 
         {/* Error Alert */}
         {error && (
-          <div className="px-6">
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
+          <div className='px-6'>
+            <Alert variant='destructive'>
+              <AlertTriangle className='h-4 w-4' />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </div>
         )}
 
         {/* Step Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className='flex-1 overflow-hidden'>
           {currentStep === 'browse' && (
-            <div className="h-full flex flex-col">
+            <div className='flex h-full flex-col'>
               {/* Search and Filter */}
-              <div className="px-6 py-4 border-b bg-background">
-                <div className="flex items-center gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className='border-b bg-background px-6 py-4'>
+                <div className='flex items-center gap-4'>
+                  <div className='relative flex-1'>
+                    <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground' />
                     <Input
-                      placeholder="Search templates..."
+                      placeholder='Search templates...'
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className='pl-10'
                     />
                   </div>
-                  <Select
-                    value={categoryFilter}
-                    onValueChange={setCategoryFilter}
-                  >
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Category" />
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className='w-48'>
+                      <SelectValue placeholder='Category' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(category => (
+                      <SelectItem value='all'>All Categories</SelectItem>
+                      {categories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
@@ -606,23 +585,22 @@ export function TemplateImportDialog({
               </div>
 
               {/* Templates Grid */}
-              <ScrollArea className="flex-1 px-6 py-4">
+              <ScrollArea className='flex-1 px-6 py-4'>
                 {isLoading ? (
-                  <div className="flex items-center justify-center h-32">
-                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  <div className='flex h-32 items-center justify-center'>
+                    <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
                   </div>
                 ) : filteredTemplates.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-32 text-center">
-                    <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      {searchQuery || categoryFilter !== 'all' 
+                  <div className='flex h-32 flex-col items-center justify-center text-center'>
+                    <FileText className='mb-4 h-12 w-12 text-muted-foreground' />
+                    <p className='text-muted-foreground'>
+                      {searchQuery || categoryFilter !== 'all'
                         ? 'No templates found matching your criteria'
-                        : 'No templates available'
-                      }
+                        : 'No templates available'}
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                     {filteredTemplates.map(renderTemplateCard)}
                   </div>
                 )}
@@ -631,42 +609,42 @@ export function TemplateImportDialog({
           )}
 
           {currentStep === 'customize' && selectedTemplate && (
-            <div className="h-full overflow-auto">
+            <div className='h-full overflow-auto'>
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(handleFormSubmit)}
-                  className="px-6 py-4 space-y-6"
+                  className='space-y-6 px-6 py-4'
                 >
                   {/* Template Info */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">Selected Template</CardTitle>
+                      <CardTitle className='text-base'>Selected Template</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-start gap-4">
-                        <div 
-                          className="w-12 h-12 rounded-lg flex items-center justify-center text-white"
+                      <div className='flex items-start gap-4'>
+                        <div
+                          className='flex h-12 w-12 items-center justify-center rounded-lg text-white'
                           style={{ backgroundColor: selectedTemplate.color }}
                         >
-                          <FileText className="w-6 h-6" />
+                          <FileText className='h-6 w-6' />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">{selectedTemplate.name}</h3>
-                          <p className="text-sm text-muted-foreground mb-2">
+                        <div className='flex-1'>
+                          <h3 className='font-medium'>{selectedTemplate.name}</h3>
+                          <p className='mb-2 text-muted-foreground text-sm'>
                             by {selectedTemplate.author}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className='text-muted-foreground text-sm'>
                             {selectedTemplate.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm">{selectedTemplate.stars}</span>
+                        <div className='flex items-center gap-4'>
+                          <div className='flex items-center gap-1'>
+                            <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
+                            <span className='text-sm'>{selectedTemplate.stars}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Eye className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">{selectedTemplate.views}</span>
+                          <div className='flex items-center gap-1'>
+                            <Eye className='h-4 w-4 text-muted-foreground' />
+                            <span className='text-sm'>{selectedTemplate.views}</span>
                           </div>
                         </div>
                       </div>
@@ -674,15 +652,15 @@ export function TemplateImportDialog({
                   </Card>
 
                   {/* Customization Fields */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                     <FormField
                       control={form.control}
-                      name="workflowName"
+                      name='workflowName'
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Workflow Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter workflow name" {...field} />
+                            <Input placeholder='Enter workflow name' {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -691,24 +669,24 @@ export function TemplateImportDialog({
 
                     <FormField
                       control={form.control}
-                      name="mergeStrategy"
+                      name='mergeStrategy'
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Import Strategy</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select strategy" />
+                                <SelectValue placeholder='Select strategy' />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="replace">
+                              <SelectItem value='replace'>
                                 Replace - Replace existing workflow
                               </SelectItem>
-                              <SelectItem value="merge">
+                              <SelectItem value='merge'>
                                 Merge - Combine with existing blocks
                               </SelectItem>
-                              <SelectItem value="append">
+                              <SelectItem value='append'>
                                 Append - Add to end of workflow
                               </SelectItem>
                             </SelectContent>
@@ -721,14 +699,14 @@ export function TemplateImportDialog({
 
                   <FormField
                     control={form.control}
-                    name="description"
+                    name='description'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Description (Optional)</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe your customization..."
-                            className="resize-none"
+                            placeholder='Describe your customization...'
+                            className='resize-none'
                             rows={3}
                             {...field}
                           />
@@ -741,28 +719,28 @@ export function TemplateImportDialog({
                   {/* Advanced Options */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">Advanced Options</CardTitle>
+                      <CardTitle className='text-base'>Advanced Options</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center space-x-2">
+                    <CardContent className='space-y-4'>
+                      <div className='flex items-center space-x-2'>
                         <input
-                          type="checkbox"
-                          id="preserveExisting"
+                          type='checkbox'
+                          id='preserveExisting'
                           {...form.register('preserveExisting')}
-                          className="h-4 w-4"
+                          className='h-4 w-4'
                         />
-                        <Label htmlFor="preserveExisting" className="text-sm">
+                        <Label htmlFor='preserveExisting' className='text-sm'>
                           Preserve existing workflow elements
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className='flex items-center space-x-2'>
                         <input
-                          type="checkbox"
-                          id="validateCompatibility"
+                          type='checkbox'
+                          id='validateCompatibility'
                           {...form.register('validateCompatibility')}
-                          className="h-4 w-4"
+                          className='h-4 w-4'
                         />
-                        <Label htmlFor="validateCompatibility" className="text-sm">
+                        <Label htmlFor='validateCompatibility' className='text-sm'>
                           Validate template compatibility
                         </Label>
                       </div>
@@ -770,28 +748,24 @@ export function TemplateImportDialog({
                   </Card>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between pt-6 border-t">
+                  <div className='flex items-center justify-between border-t pt-6'>
                     <Button
-                      type="button"
-                      variant="outline"
+                      type='button'
+                      variant='outline'
                       onClick={() => setCurrentStep('browse')}
                     >
                       Back
                     </Button>
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="min-w-32"
-                    >
+                    <Button type='submit' disabled={isLoading} className='min-w-32'>
                       {isLoading ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                           Generating Preview...
                         </>
                       ) : (
                         <>
                           Generate Preview
-                          <ChevronRight className="w-4 h-4 ml-2" />
+                          <ChevronRight className='ml-2 h-4 w-4' />
                         </>
                       )}
                     </Button>
@@ -802,34 +776,32 @@ export function TemplateImportDialog({
           )}
 
           {currentStep === 'preview' && (
-            <div className="h-full overflow-auto px-6 py-4">
-              <div className="space-y-6">
+            <div className='h-full overflow-auto px-6 py-4'>
+              <div className='space-y-6'>
                 {/* Import Summary */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Import Summary</CardTitle>
+                    <CardTitle className='text-base'>Import Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className='grid grid-cols-2 gap-4 text-sm'>
                       <div>
-                        <Label className="font-medium">Template:</Label>
-                        <p className="text-muted-foreground">{selectedTemplate?.name}</p>
+                        <Label className='font-medium'>Template:</Label>
+                        <p className='text-muted-foreground'>{selectedTemplate?.name}</p>
                       </div>
                       <div>
-                        <Label className="font-medium">Strategy:</Label>
-                        <p className="text-muted-foreground capitalize">
+                        <Label className='font-medium'>Strategy:</Label>
+                        <p className='text-muted-foreground capitalize'>
                           {form.getValues('mergeStrategy')}
                         </p>
                       </div>
                       <div>
-                        <Label className="font-medium">New Name:</Label>
-                        <p className="text-muted-foreground">
-                          {form.getValues('workflowName')}
-                        </p>
+                        <Label className='font-medium'>New Name:</Label>
+                        <p className='text-muted-foreground'>{form.getValues('workflowName')}</p>
                       </div>
                       <div>
-                        <Label className="font-medium">Blocks:</Label>
-                        <p className="text-muted-foreground">
+                        <Label className='font-medium'>Blocks:</Label>
+                        <p className='text-muted-foreground'>
                           {previewData ? Object.keys(previewData.blocks || {}).length : 0} blocks
                         </p>
                       </div>
@@ -841,17 +813,20 @@ export function TemplateImportDialog({
                 {conflicts.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center">
-                        <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />
+                      <CardTitle className='flex items-center text-base'>
+                        <AlertTriangle className='mr-2 h-4 w-4 text-yellow-500' />
                         Conflicts Detected ({conflicts.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      <div className='space-y-3'>
                         {conflicts.map((conflict, index) => (
-                          <div key={index} className="p-3 rounded-lg border bg-yellow-50 dark:bg-yellow-900/20">
-                            <p className="font-medium text-sm">{conflict.description}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                          <div
+                            key={index}
+                            className='rounded-lg border bg-yellow-50 p-3 dark:bg-yellow-900/20'
+                          >
+                            <p className='font-medium text-sm'>{conflict.description}</p>
+                            <p className='mt-1 text-muted-foreground text-xs'>
                               Resolution: {conflict.resolution}
                             </p>
                           </div>
@@ -865,21 +840,24 @@ export function TemplateImportDialog({
                 {dependencies.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base flex items-center">
-                        <Zap className="w-4 h-4 mr-2 text-blue-500" />
+                      <CardTitle className='flex items-center text-base'>
+                        <Zap className='mr-2 h-4 w-4 text-blue-500' />
                         Dependencies ({dependencies.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
+                      <div className='space-y-2'>
                         {dependencies.map((dep, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 rounded border">
-                            <span className="text-sm">{dep.name}</span>
-                            <div className="flex items-center">
+                          <div
+                            key={index}
+                            className='flex items-center justify-between rounded border p-2'
+                          >
+                            <span className='text-sm'>{dep.name}</span>
+                            <div className='flex items-center'>
                               {dep.satisfied ? (
-                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                <CheckCircle className='h-4 w-4 text-green-500' />
                               ) : (
-                                <AlertTriangle className="w-4 h-4 text-red-500" />
+                                <AlertTriangle className='h-4 w-4 text-red-500' />
                               )}
                             </div>
                           </div>
@@ -890,26 +868,23 @@ export function TemplateImportDialog({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep('customize')}
-                  >
+                <div className='flex items-center justify-between border-t pt-6'>
+                  <Button variant='outline' onClick={() => setCurrentStep('customize')}>
                     Back to Customize
                   </Button>
                   <Button
                     onClick={() => form.handleSubmit(handleFormSubmit)()}
                     disabled={isImporting}
-                    className="min-w-32"
+                    className='min-w-32'
                   >
                     {isImporting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         Importing...
                       </>
                     ) : (
                       <>
-                        <Download className="w-4 h-4 mr-2" />
+                        <Download className='mr-2 h-4 w-4' />
                         Import Template
                       </>
                     )}
@@ -920,39 +895,32 @@ export function TemplateImportDialog({
           )}
 
           {currentStep === 'import' && (
-            <div className="h-full flex items-center justify-center px-6">
-              <div className="text-center space-y-4 max-w-md">
-                <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+            <div className='flex h-full items-center justify-center px-6'>
+              <div className='max-w-md space-y-4 text-center'>
+                <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/20'>
                   {isImporting ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <Loader2 className='h-8 w-8 animate-spin text-primary' />
                   ) : (
-                    <CheckCircle className="w-8 h-8 text-green-500" />
+                    <CheckCircle className='h-8 w-8 text-green-500' />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">
+                  <h3 className='mb-2 font-semibold text-lg'>
                     {isImporting ? 'Importing Template...' : 'Import Complete!'}
                   </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {isImporting 
+                  <p className='text-muted-foreground text-sm'>
+                    {isImporting
                       ? 'Applying template to your workflow. This may take a moment.'
-                      : 'Template has been successfully imported into your workflow.'
-                    }
+                      : 'Template has been successfully imported into your workflow.'}
                   </p>
                 </div>
                 {isImporting && (
-                  <div className="space-y-2">
-                    <Progress value={importProgress} className="w-full" />
-                    <p className="text-xs text-muted-foreground">
-                      {importProgress}% complete
-                    </p>
+                  <div className='space-y-2'>
+                    <Progress value={importProgress} className='w-full' />
+                    <p className='text-muted-foreground text-xs'>{importProgress}% complete</p>
                   </div>
                 )}
-                {!isImporting && (
-                  <Button onClick={() => onOpenChange(false)}>
-                    Close
-                  </Button>
-                )}
+                {!isImporting && <Button onClick={() => onOpenChange(false)}>Close</Button>}
               </div>
             </div>
           )}

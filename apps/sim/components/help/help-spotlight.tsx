@@ -16,27 +16,25 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  PauseIcon,
+  PlayIcon,
+  SkipForwardIcon,
+  XIcon,
+} from 'lucide-react'
 import { createPortal } from 'react-dom'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import { useHelp, type TourStep } from '@/lib/help/help-context-provider'
 import { helpAnalytics } from '@/lib/help/help-analytics'
-import {
-  XIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  SkipForwardIcon,
-  PlayIcon,
-  PauseIcon,
-  RotateCcwIcon,
-  InfoIcon,
-  CheckCircleIcon
-} from 'lucide-react'
+import { type TourStep, useHelp } from '@/lib/help/help-context-provider'
+import { cn } from '@/lib/utils'
 
 // ========================
 // TYPE DEFINITIONS
@@ -51,30 +49,30 @@ export interface HelpSpotlightProps {
   onComplete?: () => void
   onSkip?: () => void
   onClose?: () => void
-  
+
   // Customization
   className?: string
   overlayClassName?: string
   spotlightRadius?: number
   spotlightPadding?: number
   animationDuration?: number
-  
+
   // Accessibility
   enableKeyboardNavigation?: boolean
   announceSteps?: boolean
   focusTarget?: boolean
-  
+
   // Behavior
   allowSkipping?: boolean
   allowClosing?: boolean
   pauseOnHover?: boolean
   autoAdvance?: boolean
   autoAdvanceDelay?: number
-  
+
   // Analytics
   tourId?: string
   trackProgress?: boolean
-  
+
   // Events
   onStepChange?: (step: number, stepData: TourStep) => void
   onInteraction?: (interaction: string, data?: any) => void
@@ -249,7 +247,7 @@ export function HelpSpotlight({
   const [isAnimating, setIsAnimating] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  
+
   const overlayRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout>()
@@ -272,7 +270,7 @@ export function HelpSpotlight({
 
     const targetRect = getElementPosition(currentStepData.target)
     const spotlight = calculateSpotlightPosition(targetRect, spotlightRadius, spotlightPadding)
-    
+
     setSpotlightPosition(spotlight)
 
     // Calculate tooltip position after a short delay to ensure tooltip dimensions are available
@@ -303,7 +301,7 @@ export function HelpSpotlight({
     setIsAnimating(true)
     onNext?.()
     onStepChange?.(currentStep + 1, steps[currentStep + 1])
-    
+
     if (trackProgress && tourId) {
       helpAnalytics.trackTourProgress(tourId, helpState.sessionId, currentStep + 1, 'step')
     }
@@ -311,7 +309,18 @@ export function HelpSpotlight({
     onInteraction?.('next', { step: currentStep + 1 })
 
     setTimeout(() => setIsAnimating(false), animationDuration)
-  }, [isLastStep, onNext, onStepChange, currentStep, steps, trackProgress, tourId, helpState.sessionId, onInteraction, animationDuration])
+  }, [
+    isLastStep,
+    onNext,
+    onStepChange,
+    currentStep,
+    steps,
+    trackProgress,
+    tourId,
+    helpState.sessionId,
+    onInteraction,
+    animationDuration,
+  ])
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) return
@@ -319,7 +328,7 @@ export function HelpSpotlight({
     setIsAnimating(true)
     onPrevious?.()
     onStepChange?.(currentStep - 1, steps[currentStep - 1])
-    
+
     if (trackProgress && tourId) {
       helpAnalytics.trackTourProgress(tourId, helpState.sessionId, currentStep - 1, 'step')
     }
@@ -327,11 +336,22 @@ export function HelpSpotlight({
     onInteraction?.('previous', { step: currentStep - 1 })
 
     setTimeout(() => setIsAnimating(false), animationDuration)
-  }, [isFirstStep, onPrevious, onStepChange, currentStep, steps, trackProgress, tourId, helpState.sessionId, onInteraction, animationDuration])
+  }, [
+    isFirstStep,
+    onPrevious,
+    onStepChange,
+    currentStep,
+    steps,
+    trackProgress,
+    tourId,
+    helpState.sessionId,
+    onInteraction,
+    animationDuration,
+  ])
 
   const handleComplete = useCallback(() => {
     onComplete?.()
-    
+
     if (trackProgress && tourId) {
       helpAnalytics.trackTourProgress(tourId, helpState.sessionId, currentStep, 'complete')
     }
@@ -341,7 +361,7 @@ export function HelpSpotlight({
 
   const handleSkip = useCallback(() => {
     onSkip?.()
-    
+
     if (trackProgress && tourId) {
       helpAnalytics.trackTourProgress(tourId, helpState.sessionId, currentStep, 'skip')
     }
@@ -356,7 +376,7 @@ export function HelpSpotlight({
 
   const handlePause = useCallback(() => {
     setIsPaused(!isPaused)
-    
+
     if (autoAdvanceTimeoutRef.current) {
       clearTimeout(autoAdvanceTimeoutRef.current)
       autoAdvanceTimeoutRef.current = undefined
@@ -374,7 +394,7 @@ export function HelpSpotlight({
     if (isActive) {
       setIsVisible(true)
       updatePositions()
-      
+
       if (trackProgress && tourId && currentStep === 0) {
         helpAnalytics.trackTourProgress(tourId, helpState.sessionId, 0, 'start')
       }
@@ -465,7 +485,7 @@ export function HelpSpotlight({
   useEffect(() => {
     if (focusTarget && currentStepData && isActive) {
       const targetElement = document.querySelector(currentStepData.target) as HTMLElement
-      if (targetElement && targetElement.focus) {
+      if (targetElement?.focus) {
         setTimeout(() => targetElement.focus(), animationDuration + 100)
       }
     }
@@ -505,23 +525,23 @@ export function HelpSpotlight({
         style={{ transitionDuration: `${animationDuration}ms` }}
       >
         <svg
-          width="100%"
-          height="100%"
-          className="absolute inset-0"
+          width='100%'
+          height='100%'
+          className='absolute inset-0'
           style={{ pointerEvents: 'none' }}
         >
           <defs>
-            <mask id="spotlight-mask">
-              <rect width="100%" height="100%" fill="white" />
-              <path d={maskPath} fill="black" fillRule="evenodd" />
+            <mask id='spotlight-mask'>
+              <rect width='100%' height='100%' fill='white' />
+              <path d={maskPath} fill='black' fillRule='evenodd' />
             </mask>
           </defs>
           <rect
-            width="100%"
-            height="100%"
-            fill="black"
+            width='100%'
+            height='100%'
+            fill='black'
             fillOpacity={0.8}
-            mask="url(#spotlight-mask)"
+            mask='url(#spotlight-mask)'
           />
         </svg>
       </div>
@@ -536,7 +556,7 @@ export function HelpSpotlight({
         ref={tooltipRef}
         className={cn(
           'fixed z-[101] max-w-sm transition-all',
-          isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
           isAnimating && 'transition-transform',
           className
         )}
@@ -545,79 +565,74 @@ export function HelpSpotlight({
           top: tooltipPosition.y,
           transitionDuration: `${animationDuration}ms`,
         }}
-        role="dialog"
-        aria-labelledby="tour-title"
-        aria-describedby="tour-description"
+        role='dialog'
+        aria-labelledby='tour-title'
+        aria-describedby='tour-description'
       >
-        <Card className="shadow-lg border-0 bg-white dark:bg-black">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle id="tour-title" className="text-lg font-semibold">
+        <Card className='border-0 bg-white shadow-lg dark:bg-black'>
+          <CardHeader className='pb-3'>
+            <div className='flex items-start justify-between'>
+              <div className='flex-1'>
+                <CardTitle id='tour-title' className='font-semibold text-lg'>
                   {currentStepData.title}
                 </CardTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" size="sm">
+                <div className='mt-1 flex items-center gap-2'>
+                  <Badge variant='secondary' size='sm'>
                     {currentStep + 1} of {totalSteps}
                   </Badge>
                   {autoAdvance && !isPaused && (
-                    <Badge variant="outline" size="sm" className="text-xs">
+                    <Badge variant='outline' size='sm' className='text-xs'>
                       Auto
                     </Badge>
                   )}
                 </div>
               </div>
-              
-              <div className="flex items-center gap-1 ml-2">
+
+              <div className='ml-2 flex items-center gap-1'>
                 {autoAdvance && (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={handlePause}
-                    className="h-6 w-6 p-0"
+                    className='h-6 w-6 p-0'
                     title={isPaused ? 'Resume tour' : 'Pause tour'}
                   >
                     {isPaused ? (
-                      <PlayIcon className="h-3 w-3" />
+                      <PlayIcon className='h-3 w-3' />
                     ) : (
-                      <PauseIcon className="h-3 w-3" />
+                      <PauseIcon className='h-3 w-3' />
                     )}
                   </Button>
                 )}
-                
+
                 {allowClosing && (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={handleClose}
-                    className="h-6 w-6 p-0"
-                    title="Close tour"
+                    className='h-6 w-6 p-0'
+                    title='Close tour'
                   >
-                    <XIcon className="h-3 w-3" />
+                    <XIcon className='h-3 w-3' />
                   </Button>
                 )}
               </div>
             </div>
-            
-            <Progress value={progress} className="mt-2" />
+
+            <Progress value={progress} className='mt-2' />
           </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div id="tour-description" className="text-sm text-muted-foreground">
+          <CardContent className='space-y-4'>
+            <div id='tour-description' className='text-muted-foreground text-sm'>
               {currentStepData.description}
             </div>
 
             {currentStepData.actions && currentStepData.actions.length > 0 && (
               <>
                 <Separator />
-                <div className="flex flex-wrap gap-2">
+                <div className='flex flex-wrap gap-2'>
                   {currentStepData.actions.map((action) => (
-                    <Button
-                      key={action.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={action.action}
-                    >
+                    <Button key={action.id} variant='outline' size='sm' onClick={action.action}>
                       {action.label}
                     </Button>
                   ))}
@@ -626,50 +641,50 @@ export function HelpSpotlight({
             )}
 
             <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
                 {currentStepData.showPrevious && !isFirstStep && (
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant='outline'
+                    size='sm'
                     onClick={handlePrevious}
-                    className="flex items-center gap-1"
+                    className='flex items-center gap-1'
                   >
-                    <ArrowLeftIcon className="h-3 w-3" />
+                    <ArrowLeftIcon className='h-3 w-3' />
                     Previous
                   </Button>
                 )}
               </div>
-              
-              <div className="flex items-center gap-2">
+
+              <div className='flex items-center gap-2'>
                 {allowSkipping && currentStepData.showSkip && (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant='ghost'
+                    size='sm'
                     onClick={handleSkip}
-                    className="flex items-center gap-1 text-muted-foreground"
+                    className='flex items-center gap-1 text-muted-foreground'
                   >
-                    <SkipForwardIcon className="h-3 w-3" />
+                    <SkipForwardIcon className='h-3 w-3' />
                     Skip Tour
                   </Button>
                 )}
-                
+
                 <Button
-                  variant="default"
-                  size="sm"
+                  variant='default'
+                  size='sm'
                   onClick={handleNext}
-                  className="flex items-center gap-1"
+                  className='flex items-center gap-1'
                 >
                   {isLastStep ? (
                     <>
-                      <CheckCircleIcon className="h-3 w-3" />
+                      <CheckCircleIcon className='h-3 w-3' />
                       Complete
                     </>
                   ) : (
                     <>
                       Next
-                      <ArrowRightIcon className="h-3 w-3" />
+                      <ArrowRightIcon className='h-3 w-3' />
                     </>
                   )}
                 </Button>
@@ -690,23 +705,13 @@ export function HelpSpotlight({
   }
 
   return createPortal(
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-[100]"
-      role="presentation"
-      aria-hidden="false"
-    >
+    <div ref={overlayRef} className='fixed inset-0 z-[100]' role='presentation' aria-hidden='false'>
       {renderOverlay()}
       {renderTooltip()}
-      
+
       {/* Screen reader announcements */}
       {announceSteps && (
-        <div
-          className="sr-only"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        <div className='sr-only' role='status' aria-live='polite' aria-atomic='true'>
           Step {currentStep + 1} of {totalSteps}: {currentStepData.title}
         </div>
       )}

@@ -121,9 +121,7 @@
       "category": "refactor",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1756944793177_461ty2ijp"
-      ],
+      "dependencies": ["task_1756944793177_461ty2ijp"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -140,9 +138,7 @@
       "category": "refactor",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1756944597049_8hz0s7kxg"
-      ],
+      "dependencies": ["task_1756944597049_8hz0s7kxg"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -161,13 +157,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T09:50:39.799Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T09:50:39.799Z",
@@ -182,13 +172,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T18:39:59.081Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T18:39:59.081Z",
@@ -209,13 +193,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T19:05:35.113Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T19:05:35.113Z",
@@ -230,13 +208,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:23.587Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:23.587Z",
@@ -251,13 +223,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:31.772Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:31.772Z",
@@ -272,13 +238,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:36.373Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:36.373Z",
@@ -293,13 +253,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T00:09:44.502Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T00:09:44.502Z",
@@ -314,13 +268,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T00:10:17.144Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T00:10:17.144Z",

@@ -29,12 +29,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // ================================
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls } from '@/app/api/__test-utils__/module-mocks'
-
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
 // Replace with your actual CRUD route handlers
-import { GET, POST, PUT, PATCH, DELETE } from './route' // TODO: Import actual CRUD handlers
+import { DELETE, GET, PATCH, POST, PUT } from './route' // TODO: Import actual CRUD handlers
 
 // ================================
 // CRUD TEST DATA DEFINITIONS
@@ -173,7 +172,7 @@ function createCrudRequest(
  * Validate CRUD response structure and common patterns
  */
 async function validateCrudResponse(
-  response: Response, 
+  response: Response,
   expectedStatus: number,
   operation: 'create' | 'read' | 'update' | 'delete' | 'list' = 'read'
 ) {
@@ -271,14 +270,14 @@ function setupCrudDatabase(
 describe('[RESOURCE_NAME] CRUD API Tests', () => {
   beforeEach(() => {
     console.log('\\n📊 Setting up CRUD test environment')
-    
+
     // Reset all mocks
     mockControls.reset()
     vi.clearAllMocks()
-    
+
     // Setup authenticated user for CRUD operations
     mockControls.setAuthUser(testUser)
-    
+
     console.log('✅ CRUD test environment setup completed')
   })
 
@@ -448,7 +447,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
       const data = await validateCrudResponse(response, 200, 'list')
       expect(Array.isArray(data.data || data)).toBe(true)
       expect((data.data || data).length).toBe(sampleResourceList.length)
-      
+
       if (data.pagination) {
         expect(data.pagination.total).toBe(sampleResourceList.length)
         expect(data.pagination.page).toBe(1)
@@ -462,7 +461,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
     it('should filter resources by status', async () => {
       console.log('[CRUD_TEST] Testing resource filtering')
 
-      const activeResources = sampleResourceList.filter(r => r.status === 'active')
+      const activeResources = sampleResourceList.filter((r) => r.status === 'active')
       setupCrudDatabase('list', activeResources)
 
       const request = createCrudRequest('GET', undefined, {}, { status: 'active' })
@@ -479,7 +478,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
     it('should search resources by name', async () => {
       console.log('[CRUD_TEST] Testing resource search')
 
-      const searchResults = sampleResourceList.filter(r => 
+      const searchResults = sampleResourceList.filter((r) =>
         r.name.toLowerCase().includes('sample')
       )
       setupCrudDatabase('list', searchResults)
@@ -498,15 +497,20 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
     it('should sort resources by creation date', async () => {
       console.log('[CRUD_TEST] Testing resource sorting')
 
-      const sortedResources = [...sampleResourceList].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const sortedResources = [...sampleResourceList].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       setupCrudDatabase('list', sortedResources)
 
-      const request = createCrudRequest('GET', undefined, {}, { 
-        sortBy: 'createdAt', 
-        sortOrder: 'desc' 
-      })
+      const request = createCrudRequest(
+        'GET',
+        undefined,
+        {},
+        {
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        }
+      )
       const response = await GET(request) // TODO: Replace with actual handler
 
       await validateCrudResponse(response, 200, 'list')
@@ -600,7 +604,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
       // Simulate outdated version
       const outdatedResource = { ...sampleResource, version: 1 }
       const currentResource = { ...sampleResource, version: 2 }
-      
+
       mockControls.setDatabaseResults([[currentResource]]) // Current version is newer
 
       const updateData = { ...validUpdateData, version: 1 } // Outdated version
@@ -628,7 +632,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
       const response = await DELETE(request) // TODO: Replace with actual handler
 
       expect([200, 204].includes(response.status)).toBe(true)
-      
+
       if (response.status === 200) {
         const data = await response.json()
         expect(data.message || data.id).toBeDefined()
@@ -739,7 +743,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
         { id: 'resource-124', name: 'Updated Resource 2' },
       ]
 
-      const updatedResources = bulkUpdates.map(update => ({
+      const updatedResources = bulkUpdates.map((update) => ({
         ...sampleResource,
         ...update,
         updatedAt: new Date(),
@@ -768,7 +772,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
 
       mockControls.setDatabaseResults([
         sampleResourceList, // Existing resources
-        idsToDelete.map(id => ({ id })), // Deletion confirmations
+        idsToDelete.map((id) => ({ id })), // Deletion confirmations
       ])
 
       const request = createCrudRequest('DELETE', { ids: idsToDelete })
@@ -880,7 +884,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
       const endTime = Date.now()
 
       await validateCrudResponse(response, 200, 'list')
-      
+
       const responseTime = endTime - startTime
       expect(responseTime).toBeLessThan(2000) // Should respond within 2 seconds
       console.log(`⏱️ Large dataset response time: ${responseTime}ms`)
@@ -900,15 +904,17 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
         id: `paginated-resource-${(page - 1) * limit + i}`,
       }))
 
-      mockControls.setDatabaseResults([
-        paginatedData,
-        [{ count: totalItems }],
-      ])
+      mockControls.setDatabaseResults([paginatedData, [{ count: totalItems }]])
 
-      const request = createCrudRequest('GET', undefined, {}, { 
-        page: page.toString(), 
-        limit: limit.toString() 
-      })
+      const request = createCrudRequest(
+        'GET',
+        undefined,
+        {},
+        {
+          page: page.toString(),
+          limit: limit.toString(),
+        }
+      )
       const response = await GET(request) // TODO: Replace with actual handler
 
       const data = await validateCrudResponse(response, 200, 'list')
@@ -934,8 +940,8 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
         include: ['category', 'user', 'dependencies'],
       }
 
-      const optimizedResults = sampleResourceList.filter(r => 
-        r.status === 'active' && r.categoryId === 'category-456'
+      const optimizedResults = sampleResourceList.filter(
+        (r) => r.status === 'active' && r.categoryId === 'category-456'
       )
 
       mockControls.setDatabaseResults([optimizedResults, [{ count: optimizedResults.length }]])
@@ -946,7 +952,7 @@ describe('[RESOURCE_NAME] CRUD API Tests', () => {
       const endTime = Date.now()
 
       await validateCrudResponse(response, 200, 'list')
-      
+
       const responseTime = endTime - startTime
       expect(responseTime).toBeLessThan(1000) // Complex query should still be fast
       console.log(`⏱️ Complex query response time: ${responseTime}ms`)
@@ -965,7 +971,7 @@ export function testPaginationFlow(
   endpoint: string,
   handler: any, // TODO: Type this properly
   totalItems: number,
-  pageSize: number = 10
+  pageSize = 10
 ) {
   return async () => {
     console.log(`[CRUD_HELPER] Testing pagination flow for ${endpoint}`)
@@ -982,10 +988,15 @@ export function testPaginationFlow(
 
       mockControls.setDatabaseResults([pageData, [{ count: totalItems }]])
 
-      const request = createCrudRequest('GET', undefined, {}, { 
-        page: page.toString(), 
-        limit: pageSize.toString() 
-      })
+      const request = createCrudRequest(
+        'GET',
+        undefined,
+        {},
+        {
+          page: page.toString(),
+          limit: pageSize.toString(),
+        }
+      )
       const response = await handler(request)
 
       const data = await validateCrudResponse(response, 200, 'list')
@@ -1010,13 +1021,13 @@ export function testFilterCombinations(
     console.log(`[CRUD_HELPER] Testing filter combinations for ${endpoint}`)
 
     const filterKeys = Object.keys(filters)
-    
+
     for (const key of filterKeys) {
       for (const value of filters[key]) {
-        const filteredData = sampleResourceList.filter(item => 
-          item[key as keyof typeof item] === value
+        const filteredData = sampleResourceList.filter(
+          (item) => item[key as keyof typeof item] === value
         )
-        
+
         mockControls.setDatabaseResults([filteredData, [{ count: filteredData.length }]])
 
         const request = createCrudRequest('GET', undefined, {}, { [key]: value })
@@ -1034,13 +1045,13 @@ export function testFilterCombinations(
  */
 export function testConcurrentOperations(
   operations: Array<() => Promise<Response>>,
-  expectAllSuccess: boolean = true
+  expectAllSuccess = true
 ) {
   return async () => {
     console.log('[CRUD_HELPER] Testing concurrent operations')
 
     const startTime = Date.now()
-    const responses = await Promise.all(operations.map(op => op()))
+    const responses = await Promise.all(operations.map((op) => op()))
     const endTime = Date.now()
 
     if (expectAllSuccess) {
@@ -1052,7 +1063,7 @@ export function testConcurrentOperations(
 
     const totalTime = endTime - startTime
     console.log(`⏱️ ${operations.length} concurrent operations completed in ${totalTime}ms`)
-    
+
     return responses
   }
 }

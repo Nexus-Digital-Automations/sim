@@ -1,10 +1,10 @@
 /**
  * Template Review API v2 - Review Process Management
- * 
+ *
  * This API handles the template review process including reviewer assignment,
  * review submission, approval decisions, and status tracking throughout the
  * approval workflow pipeline.
- * 
+ *
  * Features:
  * - Multi-stage review workflow management
  * - Reviewer assignment and workload balancing
@@ -12,26 +12,25 @@
  * - Collaborative review with discussion threads
  * - Automated workflow progression
  * - Comprehensive audit trails and notifications
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Review Team
  * @created 2025-09-04
  */
 
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templateSubmissions,
-  templateReviews,
   templateApprovals,
-  user,
+  templateReviews,
+  templateSubmissions,
   templates,
+  user,
 } from '@/db/schema'
 
 const logger = createLogger('TemplateReviewAPI')
@@ -46,19 +45,19 @@ const ReviewQuerySchema = z.object({
   reviewerId: z.string().optional(),
   status: z.enum(['pending', 'in_progress', 'completed']).optional(),
   decision: z.enum(['approve', 'reject', 'request_changes']).optional(),
-  
+
   // Date filtering
   createdAfter: z.string().datetime().optional(),
   createdBefore: z.string().datetime().optional(),
-  
+
   // Sorting
   sortBy: z.enum(['created', 'updated', 'priority', 'deadline']).optional().default('created'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  
+
   // Pagination
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(50).optional().default(20),
-  
+
   // Response options
   includeSubmission: z.coerce.boolean().optional().default(true),
   includeTemplate: z.coerce.boolean().optional().default(false),
@@ -68,7 +67,7 @@ const CreateReviewSchema = z.object({
   submissionId: z.string().min(1, 'Submission ID is required'),
   decision: z.enum(['approve', 'reject', 'request_changes']),
   reviewNotes: z.string().min(10, 'Review notes are required').max(2000),
-  
+
   // Detailed review criteria (1-5 scale)
   reviewCriteria: z.object({
     functionality: z.number().min(1).max(5),
@@ -79,16 +78,16 @@ const CreateReviewSchema = z.object({
     performance: z.number().min(1).max(5).optional(),
     accessibility: z.number().min(1).max(5).optional(),
   }),
-  
+
   // Additional review data
   timeSpentMinutes: z.number().min(1).max(600).optional(),
   actionItems: z.array(z.string()).max(20).optional().default([]),
   suggestedPriority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
-  
+
   // Reviewer recommendations
   recommendedNextReviewers: z.array(z.string()).max(5).optional().default([]),
   escalateToSenior: z.boolean().optional().default(false),
-  
+
   // Internal review notes (private)
   internalNotes: z.string().max(1000).optional(),
 })
@@ -118,8 +117,8 @@ function calculateReviewScore(criteria: any): number {
     criteria.usability,
     criteria.performance || 0,
     criteria.accessibility || 0,
-  ].filter(score => score > 0)
-  
+  ].filter((score) => score > 0)
+
   const average = scores.reduce((sum, score) => sum + score, 0) / scores.length
   return Math.round((average / 5) * 100)
 }
@@ -133,7 +132,6 @@ function determineNextStage(
   approvalWorkflow: any[],
   isBreakingChange: boolean
 ): { nextStage: number; status: string; requiresApproval: boolean } {
-  
   if (decision === 'reject') {
     return {
       nextStage: currentStage,
@@ -141,7 +139,7 @@ function determineNextStage(
       requiresApproval: false,
     }
   }
-  
+
   if (decision === 'request_changes') {
     return {
       nextStage: currentStage,
@@ -149,10 +147,10 @@ function determineNextStage(
       requiresApproval: false,
     }
   }
-  
+
   // Approval path
-  const nextStageIndex = approvalWorkflow.findIndex(stage => stage.stageNumber > currentStage)
-  
+  const nextStageIndex = approvalWorkflow.findIndex((stage) => stage.stageNumber > currentStage)
+
   if (nextStageIndex === -1) {
     // All stages completed
     return {
@@ -161,9 +159,9 @@ function determineNextStage(
       requiresApproval: false,
     }
   }
-  
+
   const nextStage = approvalWorkflow[nextStageIndex]
-  
+
   return {
     nextStage: nextStage.stageNumber,
     status: 'under_review',
@@ -207,10 +205,7 @@ async function checkReviewPermission(
       .select({ id: templateReviews.id })
       .from(templateReviews)
       .where(
-        and(
-          eq(templateReviews.submissionId, submissionId),
-          eq(templateReviews.reviewerId, userId)
-        )
+        and(eq(templateReviews.submissionId, submissionId), eq(templateReviews.reviewerId, userId))
       )
       .limit(1)
 
@@ -226,7 +221,6 @@ async function checkReviewPermission(
     // Check if user is a qualified reviewer (in real implementation, would check user roles/permissions)
     // For now, assume all users can be reviewers
     return { canReview: true, role: 'qualified_reviewer' }
-
   } catch (error) {
     logger.error('Error checking review permission', { submissionId, userId, error })
     return { canReview: false, role: 'error', reason: 'Permission check failed' }
@@ -247,14 +241,13 @@ async function sendReviewNotification(
     // - In-app notifications
     // - Slack/Teams integration for team notifications
     // - Webhook calls to external systems
-    
+
     logger.info('Review notification sent', {
       submissionId,
       notificationType,
       decision: reviewData.decision,
       reviewerId: reviewData.reviewerId,
     })
-    
   } catch (error) {
     logger.warn('Failed to send review notification', {
       submissionId,
@@ -289,7 +282,7 @@ async function updateSubmissionStatus(
     }
 
     const currentSubmission = submission[0]
-    
+
     // Determine next stage and status
     const nextStageInfo = determineNextStage(
       currentSubmission.currentStage,
@@ -327,7 +320,6 @@ async function updateSubmissionStatus(
       nextStage: nextStageInfo.nextStage,
       status: nextStageInfo.status,
     })
-
   } catch (error) {
     logger.error('Failed to update submission status', {
       submissionId,
@@ -425,25 +417,32 @@ export async function GET(request: NextRequest) {
         actionItems: templateReviews.actionItems,
         createdAt: templateReviews.createdAt,
         updatedAt: templateReviews.updatedAt,
-        
+
         // Optional submission data
-        ...(params.includeSubmission ? {
-          submissionTitle: templateSubmissions.title,
-          submissionStatus: templateSubmissions.status,
-          submissionPriority: templateSubmissions.priority,
-        } : {}),
-        
+        ...(params.includeSubmission
+          ? {
+              submissionTitle: templateSubmissions.title,
+              submissionStatus: templateSubmissions.status,
+              submissionPriority: templateSubmissions.priority,
+            }
+          : {}),
+
         // Optional template data
-        ...(params.includeTemplate ? {
-          templateName: templates.name,
-          templateDescription: templates.description,
-        } : {}),
+        ...(params.includeTemplate
+          ? {
+              templateName: templates.name,
+              templateDescription: templates.description,
+            }
+          : {}),
       })
       .from(templateReviews)
       .leftJoin(user, eq(templateReviews.reviewerId, user.id))
 
     if (params.includeSubmission) {
-      query = query.leftJoin(templateSubmissions, eq(templateReviews.submissionId, templateSubmissions.id))
+      query = query.leftJoin(
+        templateSubmissions,
+        eq(templateReviews.submissionId, templateSubmissions.id)
+      )
     }
 
     if (params.includeTemplate) {
@@ -492,10 +491,9 @@ export async function GET(request: NextRequest) {
         userId,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
       return NextResponse.json(
@@ -530,7 +528,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getSession()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
@@ -550,11 +548,11 @@ export async function POST(request: NextRequest) {
 
     // Check review permissions
     const permission = await checkReviewPermission(data.submissionId, userId)
-    
+
     if (!permission.canReview) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Review permission denied',
           reason: permission.reason,
         },
@@ -600,28 +598,31 @@ export async function POST(request: NextRequest) {
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template review created successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        reviewId,
-        decision: data.decision,
-        qualityScore,
-        submissionId: data.submissionId,
-        nextSteps: data.decision === 'approve' 
-          ? 'Submission moved to next approval stage'
-          : data.decision === 'request_changes'
-          ? 'Changes requested - submitter will be notified'
-          : 'Submission rejected - submitter will be notified',
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          reviewId,
+          decision: data.decision,
+          qualityScore,
+          submissionId: data.submissionId,
+          nextSteps:
+            data.decision === 'approve'
+              ? 'Submission moved to next approval stage'
+              : data.decision === 'request_changes'
+                ? 'Changes requested - submitter will be notified'
+                : 'Submission rejected - submitter will be notified',
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
-
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid review data:`, error.errors)
       return NextResponse.json(

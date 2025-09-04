@@ -71,20 +71,20 @@ export interface ContentConfiguration {
   // Primary content
   text: string
   media: MediaAsset[]
-  
+
   // Engagement elements
   hashtags: string[]
   mentions: string[]
   links: LinkPreview[]
-  
+
   // Platform-specific adaptations
   platformCustomizations: Record<string, PlatformContent>
-  
+
   // Content metadata
   contentType: 'text' | 'image' | 'video' | 'carousel' | 'story' | 'reel'
   mood: 'professional' | 'casual' | 'promotional' | 'educational' | 'entertaining'
   targetAudience: string[]
-  
+
   // AI optimization settings
   aiOptimization: {
     enableHashtagGeneration: boolean
@@ -104,11 +104,11 @@ export interface MediaAsset {
   url: string
   altText?: string
   caption?: string
-  
+
   // Optimization settings
   autoOptimize: boolean
   platformOptimizations: Record<string, MediaOptimization>
-  
+
   // Metadata
   dimensions: {
     width: number
@@ -148,7 +148,7 @@ export interface SchedulingConfiguration {
   // Basic scheduling
   publishTime?: Date
   timezone: string
-  
+
   // Smart scheduling
   useOptimalTiming: boolean
   platformStaggering: {
@@ -156,7 +156,7 @@ export interface SchedulingConfiguration {
     interval: number // minutes between platform posts
     strategy: 'sequential' | 'simultaneous' | 'custom'
   }
-  
+
   // Recurring posts
   recurrence?: {
     pattern: 'daily' | 'weekly' | 'monthly' | 'custom'
@@ -164,7 +164,7 @@ export interface SchedulingConfiguration {
     endDate?: Date
     customCron?: string
   }
-  
+
   // Conditional scheduling
   conditions: {
     quietHours: TimeRange[]
@@ -190,11 +190,11 @@ export interface EngagementConfiguration {
   // Real-time tracking
   realTimeTracking: boolean
   trackingMetrics: EngagementMetric[]
-  
+
   // Analytics integration
   analyticsProviders: AnalyticsProvider[]
   reportingSchedule: ReportingConfig
-  
+
   // Alert configuration
   alerts: {
     viralThreshold: number
@@ -202,7 +202,7 @@ export interface EngagementConfiguration {
     engagementDropThreshold: number
     crisisKeywords: string[]
   }
-  
+
   // Performance optimization
   autoOptimization: {
     hashtags: boolean
@@ -260,11 +260,11 @@ export interface CollaborationConfiguration {
   // Approval workflow
   requiresApproval: boolean
   approvalWorkflow: ApprovalStep[]
-  
+
   // Team management
   teamMembers: TeamMember[]
   rolePermissions: Record<string, string[]>
-  
+
   // Content review
   contentReview: {
     grammarCheck: boolean
@@ -272,7 +272,7 @@ export interface CollaborationConfiguration {
     complianceCheck: boolean
     aiReview: boolean
   }
-  
+
   // Collaboration features
   comments: boolean
   versions: boolean
@@ -323,7 +323,7 @@ export interface CrisisManagementConfiguration {
     volumeThreshold: number
     influencerMentions: boolean
   }
-  
+
   // Automatic responses
   autoResponse: {
     pauseScheduledPosts: boolean
@@ -331,7 +331,7 @@ export interface CrisisManagementConfiguration {
     notifyTeam: boolean
     customActions: CrisisAction[]
   }
-  
+
   // Recovery workflow
   recovery: {
     responseTemplates: ResponseTemplate[]
@@ -379,12 +379,12 @@ export interface SocialMediaPublisherConfig {
   platforms: SocialMediaPlatform[]
   content: ContentConfiguration
   scheduling: SchedulingConfiguration
-  
+
   // Advanced features
   engagement: EngagementConfiguration
   collaboration: CollaborationConfiguration
   crisisManagement: CrisisManagementConfiguration
-  
+
   // System settings
   system: {
     unifiedApiProvider?: 'ayrshare' | 'late' | 'native'
@@ -412,13 +412,13 @@ export const socialMediaPublisher: Block = {
   name: 'Social Media Cross-Platform Publisher',
   description:
     'Publish content across multiple social media platforms with AI optimization, scheduling, and engagement tracking',
-  
+
   // Block metadata
   category: 'social-media',
   subcategory: 'content-publishing',
   icon: 'share-2',
   color: '#ec4899',
-  
+
   // Input/Output configuration
   inputs: [
     {
@@ -443,7 +443,7 @@ export const socialMediaPublisher: Block = {
       required: false,
     },
   ],
-  
+
   outputs: [
     {
       id: 'publishResults',
@@ -464,7 +464,7 @@ export const socialMediaPublisher: Block = {
       description: 'Any errors encountered during publishing',
     },
   ],
-  
+
   // Configuration schema
   configSchema: {
     type: 'object',
@@ -573,35 +573,43 @@ export const socialMediaPublisher: Block = {
       },
     },
   },
-  
+
   // Block execution function
   async execute(context) {
     const { inputs, config, requestId } = context
     const executionId = crypto.randomUUID().slice(0, 8)
-    
+
     // Initialize execution logger with context
     const executionLogger = createLogger('SocialMediaPublisher:Execute')
-    executionLogger.info(`[${requestId}:${executionId}] Starting social media publishing execution`, {
-      inputContent: inputs.content ? 'provided' : 'missing',
-      targetPlatforms: inputs.platforms?.length || 0,
-      hasScheduling: !!inputs.schedule,
-      executionId,
-    })
-    
+    executionLogger.info(
+      `[${requestId}:${executionId}] Starting social media publishing execution`,
+      {
+        inputContent: inputs.content ? 'provided' : 'missing',
+        targetPlatforms: inputs.platforms?.length || 0,
+        hasScheduling: !!inputs.schedule,
+        executionId,
+      }
+    )
+
     try {
       const startTime = Date.now()
-      
+
       // Validate and process inputs
       const contentData = await validateContentData(inputs.content, executionLogger, requestId)
-      const targetPlatforms = await validatePlatforms(inputs.platforms, config.platforms, executionLogger, requestId)
+      const targetPlatforms = await validatePlatforms(
+        inputs.platforms,
+        config.platforms,
+        executionLogger,
+        requestId
+      )
       const scheduleData = inputs.schedule || {}
-      
+
       executionLogger.info(`[${requestId}:${executionId}] Input validation completed`, {
         validatedPlatforms: targetPlatforms.length,
         contentType: contentData.contentType,
         schedulingMode: scheduleData.publishTime ? 'scheduled' : 'immediate',
       })
-      
+
       // Initialize platform clients based on configuration
       const platformClients = await initializePlatformClients(
         targetPlatforms,
@@ -609,7 +617,7 @@ export const socialMediaPublisher: Block = {
         executionLogger,
         requestId
       )
-      
+
       // Process content with AI optimization if enabled
       const optimizedContent = await processContentOptimization(
         contentData,
@@ -618,17 +626,17 @@ export const socialMediaPublisher: Block = {
         executionLogger,
         requestId
       )
-      
+
       executionLogger.info(`[${requestId}:${executionId}] Content optimization completed`, {
         originalHashtags: contentData.hashtags?.length || 0,
         optimizedHashtags: optimizedContent.hashtags?.length || 0,
         aiOptimizationEnabled: config.content?.aiOptimization?.enableContentOptimization || false,
       })
-      
+
       // Handle scheduling logic
       let publishResults: any[] = []
       let errors: any[] = []
-      
+
       if (scheduleData.publishTime) {
         // Schedule posts for future publication
         const scheduleResults = await scheduleContent(
@@ -639,10 +647,10 @@ export const socialMediaPublisher: Block = {
           executionLogger,
           requestId
         )
-        
+
         publishResults = scheduleResults.success
         errors = scheduleResults.errors
-        
+
         executionLogger.info(`[${requestId}:${executionId}] Content scheduled for publication`, {
           scheduledPosts: publishResults.length,
           schedulingErrors: errors.length,
@@ -657,16 +665,16 @@ export const socialMediaPublisher: Block = {
           executionLogger,
           requestId
         )
-        
+
         publishResults = publishingResults.success
         errors = publishingResults.errors
-        
+
         executionLogger.info(`[${requestId}:${executionId}] Immediate publishing completed`, {
           successfulPublications: publishResults.length,
           publishingErrors: errors.length,
         })
       }
-      
+
       // Initialize engagement tracking if enabled
       let analyticsData = {}
       if (config.engagement?.realTimeTracking) {
@@ -676,24 +684,27 @@ export const socialMediaPublisher: Block = {
           executionLogger,
           requestId
         )
-        
+
         executionLogger.info(`[${requestId}:${executionId}] Engagement tracking initialized`, {
           trackedPosts: publishResults.length,
           trackingMetrics: config.engagement.trackingMetrics?.length || 0,
         })
       }
-      
+
       const executionTime = Date.now() - startTime
-      
+
       // Log successful execution completion
-      executionLogger.info(`[${requestId}:${executionId}] Social media publishing execution completed successfully`, {
-        executionTimeMs: executionTime,
-        totalPlatforms: targetPlatforms.length,
-        successfulPublications: publishResults.length,
-        errors: errors.length,
-        analyticsEnabled: !!analyticsData,
-      })
-      
+      executionLogger.info(
+        `[${requestId}:${executionId}] Social media publishing execution completed successfully`,
+        {
+          executionTimeMs: executionTime,
+          totalPlatforms: targetPlatforms.length,
+          successfulPublications: publishResults.length,
+          errors: errors.length,
+          analyticsEnabled: !!analyticsData,
+        }
+      )
+
       // Return comprehensive results
       return {
         publishResults: {
@@ -709,12 +720,15 @@ export const socialMediaPublisher: Block = {
       }
     } catch (error) {
       // Handle and log execution errors
-      executionLogger.error(`[${requestId}:${executionId}] Social media publishing execution failed`, {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        executionId,
-      })
-      
+      executionLogger.error(
+        `[${requestId}:${executionId}] Social media publishing execution failed`,
+        {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          executionId,
+        }
+      )
+
       throw new Error(
         `Social media publishing failed: ${error instanceof Error ? error.message : String(error)}`
       )
@@ -726,21 +740,25 @@ export const socialMediaPublisher: Block = {
  * Validates content data structure and requirements
  * Ensures all required fields are present and properly formatted
  */
-async function validateContentData(contentInput: any, logger: any, requestId: string): Promise<ContentConfiguration> {
+async function validateContentData(
+  contentInput: any,
+  logger: any,
+  requestId: string
+): Promise<ContentConfiguration> {
   logger.info(`[${requestId}] Validating content data structure`, {
     hasText: !!contentInput?.text,
     hasMedia: !!contentInput?.media?.length,
     hasHashtags: !!contentInput?.hashtags?.length,
   })
-  
+
   if (!contentInput) {
     throw new Error('Content data is required for social media publishing')
   }
-  
+
   if (!contentInput.text && (!contentInput.media || contentInput.media.length === 0)) {
     throw new Error('Content must include either text or media assets')
   }
-  
+
   // Construct validated content configuration
   const validatedContent: ContentConfiguration = {
     text: contentInput.text || '',
@@ -758,7 +776,7 @@ async function validateContentData(contentInput: any, logger: any, requestId: st
       enablePlatformAdaptation: false,
     },
   }
-  
+
   logger.info(`[${requestId}] Content validation completed successfully`, {
     contentType: validatedContent.contentType,
     mood: validatedContent.mood,
@@ -766,7 +784,7 @@ async function validateContentData(contentInput: any, logger: any, requestId: st
     mediaCount: validatedContent.media.length,
     hashtagCount: validatedContent.hashtags.length,
   })
-  
+
   return validatedContent
 }
 
@@ -782,31 +800,31 @@ async function validatePlatforms(
 ): Promise<SocialMediaPlatform[]> {
   logger.info(`[${requestId}] Validating target platforms`, {
     requestedPlatforms: targetPlatforms,
-    configuredPlatforms: configuredPlatforms?.map(p => p.id) || [],
+    configuredPlatforms: configuredPlatforms?.map((p) => p.id) || [],
   })
-  
+
   if (!targetPlatforms || targetPlatforms.length === 0) {
     throw new Error('At least one target platform must be specified')
   }
-  
+
   if (!configuredPlatforms || configuredPlatforms.length === 0) {
     throw new Error('No social media platforms are configured')
   }
-  
+
   // Filter to only include enabled platforms that are requested
-  const validPlatforms = configuredPlatforms.filter(platform => 
-    platform.enabled && targetPlatforms.includes(platform.id)
+  const validPlatforms = configuredPlatforms.filter(
+    (platform) => platform.enabled && targetPlatforms.includes(platform.id)
   )
-  
+
   if (validPlatforms.length === 0) {
     throw new Error('No valid enabled platforms found in the request')
   }
-  
+
   logger.info(`[${requestId}] Platform validation completed`, {
-    validPlatforms: validPlatforms.map(p => p.id),
+    validPlatforms: validPlatforms.map((p) => p.id),
     filteredCount: validPlatforms.length,
   })
-  
+
   return validPlatforms
 }
 
@@ -824,9 +842,9 @@ async function initializePlatformClients(
     platformCount: platforms.length,
     unifiedProvider: config.system?.unifiedApiProvider,
   })
-  
+
   const clients: Record<string, any> = {}
-  
+
   // Initialize clients for each platform
   for (const platform of platforms) {
     try {
@@ -840,25 +858,29 @@ async function initializePlatformClients(
         initialized: true,
         initializeAt: new Date().toISOString(),
       }
-      
+
       logger.info(`[${requestId}] Platform client initialized successfully`, {
         platform: platform.id,
-        features: Object.keys(platform.features).filter(key => platform.features[key as keyof typeof platform.features]),
+        features: Object.keys(platform.features).filter(
+          (key) => platform.features[key as keyof typeof platform.features]
+        ),
       })
     } catch (error) {
       logger.error(`[${requestId}] Failed to initialize platform client`, {
         platform: platform.id,
         error: error instanceof Error ? error.message : String(error),
       })
-      
-      throw new Error(`Failed to initialize ${platform.name} client: ${error instanceof Error ? error.message : String(error)}`)
+
+      throw new Error(
+        `Failed to initialize ${platform.name} client: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
-  
+
   logger.info(`[${requestId}] All platform clients initialized successfully`, {
     initializedClients: Object.keys(clients),
   })
-  
+
   return clients
 }
 
@@ -878,15 +900,20 @@ async function processContentOptimization(
     enableContentOptimization: aiConfig.enableContentOptimization,
     enablePlatformAdaptation: aiConfig.enablePlatformAdaptation,
   })
-  
-  let optimizedContent = { ...content }
-  
+
+  const optimizedContent = { ...content }
+
   // AI hashtag generation if enabled
   if (aiConfig.enableHashtagGeneration) {
     try {
-      const generatedHashtags = await generateOptimalHashtags(content.text, content.contentType, logger, requestId)
+      const generatedHashtags = await generateOptimalHashtags(
+        content.text,
+        content.contentType,
+        logger,
+        requestId
+      )
       optimizedContent.hashtags = [...(content.hashtags || []), ...generatedHashtags]
-      
+
       logger.info(`[${requestId}] Hashtag generation completed`, {
         originalCount: content.hashtags?.length || 0,
         generatedCount: generatedHashtags.length,
@@ -898,7 +925,7 @@ async function processContentOptimization(
       })
     }
   }
-  
+
   // Content optimization for engagement
   if (aiConfig.enableContentOptimization) {
     try {
@@ -909,7 +936,7 @@ async function processContentOptimization(
         logger,
         requestId
       )
-      
+
       logger.info(`[${requestId}] Content optimization completed`, {
         originalLength: content.text.length,
         optimizedLength: optimizedContent.text.length,
@@ -921,7 +948,7 @@ async function processContentOptimization(
       })
     }
   }
-  
+
   // Platform-specific adaptations
   if (aiConfig.enablePlatformAdaptation) {
     optimizedContent.platformCustomizations = await generatePlatformAdaptations(
@@ -930,12 +957,12 @@ async function processContentOptimization(
       logger,
       requestId
     )
-    
+
     logger.info(`[${requestId}] Platform adaptations generated`, {
       adaptedPlatforms: Object.keys(optimizedContent.platformCustomizations),
     })
   }
-  
+
   return optimizedContent
 }
 
@@ -953,7 +980,7 @@ async function generateOptimalHashtags(
     textLength: text.length,
     contentType,
   })
-  
+
   // This would integrate with AI services like OpenAI, Claude, or specialized hashtag APIs
   // For template purposes, we'll return simulated hashtag suggestions
   const baseHashtags = [
@@ -966,7 +993,7 @@ async function generateOptimalHashtags(
     '#automation',
     '#workflow',
   ]
-  
+
   // Simulate content-specific hashtag generation
   const contentSpecific = []
   if (text.toLowerCase().includes('business')) {
@@ -978,14 +1005,14 @@ async function generateOptimalHashtags(
   if (contentType === 'video') {
     contentSpecific.push('#video', '#visual', '#multimedia')
   }
-  
+
   const generatedHashtags = [...baseHashtags.slice(0, 3), ...contentSpecific]
-  
+
   logger.info(`[${requestId}] Hashtag generation completed`, {
     generatedCount: generatedHashtags.length,
     hashtags: generatedHashtags,
   })
-  
+
   return generatedHashtags
 }
 
@@ -1005,25 +1032,25 @@ async function optimizeContentForEngagement(
     mood,
     targetAudience,
   })
-  
+
   // This would integrate with AI content optimization services
   // For template purposes, we'll apply basic optimizations
   let optimizedText = text
-  
+
   // Add engagement elements based on mood
   if (mood === 'professional') {
-    optimizedText = text + ' 💼'
+    optimizedText = `${text} 💼`
   } else if (mood === 'casual') {
-    optimizedText = text + ' 😊'
+    optimizedText = `${text} 😊`
   } else if (mood === 'promotional') {
-    optimizedText = text + ' 🚀'
+    optimizedText = `${text} 🚀`
   }
-  
+
   logger.info(`[${requestId}] Content engagement optimization completed`, {
     optimizedLength: optimizedText.length,
     addedElements: optimizedText !== text,
   })
-  
+
   return optimizedText
 }
 
@@ -1041,17 +1068,17 @@ async function generatePlatformAdaptations(
     platformCount: platforms.length,
     baseContentLength: content.text.length,
   })
-  
+
   const adaptations: Record<string, PlatformContent> = {}
-  
+
   for (const platform of platforms) {
     const adaptation: PlatformContent = {}
-    
+
     // Platform-specific text adaptations
     if (platform.limits.characterLimit) {
       if (content.text.length > platform.limits.characterLimit) {
-        adaptation.text = content.text.substring(0, platform.limits.characterLimit - 3) + '...'
-        
+        adaptation.text = `${content.text.substring(0, platform.limits.characterLimit - 3)}...`
+
         logger.info(`[${requestId}] Text truncated for platform`, {
           platform: platform.id,
           originalLength: content.text.length,
@@ -1060,11 +1087,11 @@ async function generatePlatformAdaptations(
         })
       }
     }
-    
+
     // Platform-specific hashtag adaptations
     if (platform.limits.hashtagLimit && content.hashtags.length > platform.limits.hashtagLimit) {
       adaptation.hashtags = content.hashtags.slice(0, platform.limits.hashtagLimit)
-      
+
       logger.info(`[${requestId}] Hashtags limited for platform`, {
         platform: platform.id,
         originalCount: content.hashtags.length,
@@ -1072,14 +1099,14 @@ async function generatePlatformAdaptations(
         hashtagLimit: platform.limits.hashtagLimit,
       })
     }
-    
+
     adaptations[platform.id] = adaptation
   }
-  
+
   logger.info(`[${requestId}] Platform adaptations completed`, {
     adaptedPlatforms: Object.keys(adaptations),
   })
-  
+
   return adaptations
 }
 
@@ -1100,22 +1127,27 @@ async function scheduleContent(
     platformCount: platforms.length,
     platformStaggering: schedulingConfig.platformStaggering?.enabled,
   })
-  
+
   const success: any[] = []
   const errors: any[] = []
-  
+
   // Calculate publish times for each platform
-  let basePublishTime = new Date(scheduleData.publishTime)
-  
+  const basePublishTime = new Date(scheduleData.publishTime)
+
   for (let i = 0; i < platforms.length; i++) {
     const platform = platforms[i]
     let publishTime = basePublishTime
-    
+
     // Apply platform staggering if enabled
-    if (schedulingConfig.platformStaggering?.enabled && schedulingConfig.platformStaggering.strategy === 'sequential') {
-      publishTime = new Date(basePublishTime.getTime() + (i * (schedulingConfig.platformStaggering.interval || 5) * 60000))
+    if (
+      schedulingConfig.platformStaggering?.enabled &&
+      schedulingConfig.platformStaggering.strategy === 'sequential'
+    ) {
+      publishTime = new Date(
+        basePublishTime.getTime() + i * (schedulingConfig.platformStaggering.interval || 5) * 60000
+      )
     }
-    
+
     try {
       // Create scheduled post record
       const scheduledPost = {
@@ -1126,9 +1158,9 @@ async function scheduleContent(
         status: 'scheduled',
         createdAt: new Date().toISOString(),
       }
-      
+
       success.push(scheduledPost)
-      
+
       logger.info(`[${requestId}] Content scheduled successfully for platform`, {
         platform: platform.id,
         publishTime: publishTime.toISOString(),
@@ -1140,21 +1172,21 @@ async function scheduleContent(
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
       }
-      
+
       errors.push(errorRecord)
-      
+
       logger.error(`[${requestId}] Failed to schedule content for platform`, {
         platform: platform.id,
         error: error instanceof Error ? error.message : String(error),
       })
     }
   }
-  
+
   logger.info(`[${requestId}] Content scheduling completed`, {
     successfulSchedules: success.length,
     schedulingErrors: errors.length,
   })
-  
+
   return { success, errors }
 }
 
@@ -1173,15 +1205,15 @@ async function publishContent(
     platformCount: Object.keys(platformClients).length,
     retryPolicy: config.system?.retryPolicy,
   })
-  
+
   const success: any[] = []
   const errors: any[] = []
-  
+
   // Publish to each platform
   for (const [platformId, client] of Object.entries(platformClients)) {
     try {
       const platformContent = content.platformCustomizations[platformId] || content
-      
+
       // Simulate publishing with retry logic
       const publishResult = await publishToPlatform(
         platformId,
@@ -1191,9 +1223,9 @@ async function publishContent(
         logger,
         requestId
       )
-      
+
       success.push(publishResult)
-      
+
       logger.info(`[${requestId}] Content published successfully to platform`, {
         platform: platformId,
         postId: publishResult.id,
@@ -1205,21 +1237,21 @@ async function publishContent(
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
       }
-      
+
       errors.push(errorRecord)
-      
+
       logger.error(`[${requestId}] Failed to publish content to platform`, {
         platform: platformId,
         error: error instanceof Error ? error.message : String(error),
       })
     }
   }
-  
+
   logger.info(`[${requestId}] Content publishing completed`, {
     successfulPublications: success.length,
     publishingErrors: errors.length,
   })
-  
+
   return { success, errors }
 }
 
@@ -1237,7 +1269,7 @@ async function publishToPlatform(
 ): Promise<any> {
   const maxRetries = retryPolicy?.maxRetries || 3
   let attempt = 0
-  
+
   while (attempt < maxRetries) {
     try {
       // This would contain actual platform API calls
@@ -1249,7 +1281,8 @@ async function publishToPlatform(
         publishedAt: new Date().toISOString(),
         content: {
           text: (content as ContentConfiguration).text || (content as PlatformContent).text,
-          hashtags: (content as ContentConfiguration).hashtags || (content as PlatformContent).hashtags,
+          hashtags:
+            (content as ContentConfiguration).hashtags || (content as PlatformContent).hashtags,
         },
         initialEngagement: {
           likes: 0,
@@ -1257,34 +1290,34 @@ async function publishToPlatform(
           shares: 0,
         },
       }
-      
+
       logger.info(`[${requestId}] Platform publish attempt successful`, {
         platform: platformId,
         attempt: attempt + 1,
         postId: publishResult.id,
       })
-      
+
       return publishResult
     } catch (error) {
       attempt++
-      
+
       logger.warn(`[${requestId}] Platform publish attempt failed`, {
         platform: platformId,
         attempt,
         maxRetries,
         error: error instanceof Error ? error.message : String(error),
       })
-      
+
       if (attempt >= maxRetries) {
         throw error
       }
-      
+
       // Wait before retry based on backoff strategy
       const delay = calculateRetryDelay(attempt, retryPolicy)
-      await new Promise(resolve => setTimeout(resolve, delay))
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
-  
+
   throw new Error(`Failed to publish to ${platformId} after ${maxRetries} attempts`)
 }
 
@@ -1294,13 +1327,12 @@ async function publishToPlatform(
  */
 function calculateRetryDelay(attempt: number, retryPolicy: any): number {
   const baseDelay = retryPolicy?.retryDelay || 1000
-  
+
   switch (retryPolicy?.backoffStrategy || 'exponential') {
     case 'exponential':
-      return baseDelay * Math.pow(2, attempt - 1)
+      return baseDelay * 2 ** (attempt - 1)
     case 'linear':
       return baseDelay * attempt
-    case 'fixed':
     default:
       return baseDelay
   }
@@ -1321,9 +1353,9 @@ async function initializeEngagementTracking(
     realTimeTracking: engagementConfig.realTimeTracking,
     trackingMetrics: engagementConfig.trackingMetrics?.length || 0,
   })
-  
+
   const trackingData = {
-    posts: publishResults.map(result => ({
+    posts: publishResults.map((result) => ({
       postId: result.id,
       platform: result.platform,
       url: result.url,
@@ -1340,13 +1372,13 @@ async function initializeEngagementTracking(
       reporting: engagementConfig.reportingSchedule || {},
     },
   }
-  
+
   logger.info(`[${requestId}] Engagement tracking initialized successfully`, {
     trackedPosts: trackingData.posts.length,
     configuredMetrics: trackingData.configuration.metrics.length,
     analyticsProviders: trackingData.analytics.providers.length,
   })
-  
+
   return trackingData
 }
 

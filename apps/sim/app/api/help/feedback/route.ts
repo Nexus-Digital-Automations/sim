@@ -16,10 +16,9 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getSession } from '@/lib/auth'
-import { helpContentManager } from '@/lib/help/help-content-manager'
 import { helpAnalytics } from '@/lib/help/help-analytics'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('HelpFeedbackAPI')
 
@@ -36,66 +35,72 @@ const feedbackSubmissionSchema = z.object({
     'suggestion',
     'error_report',
     'content_request',
-    'general_feedback'
+    'general_feedback',
   ]),
   data: z.object({
     // Rating feedback (1-5 stars)
     rating: z.number().min(1).max(5).optional(),
-    
+
     // Helpful/not helpful feedback
     helpful: z.boolean().optional(),
-    
+
     // Text feedback
     comment: z.string().max(2000).optional(),
     suggestion: z.string().max(1000).optional(),
-    
+
     // Error reporting
     errorDescription: z.string().max(1000).optional(),
     expectedBehavior: z.string().max(500).optional(),
     actualBehavior: z.string().max(500).optional(),
-    
+
     // Content request
     requestedTopic: z.string().max(200).optional(),
     useCase: z.string().max(500).optional(),
-    
+
     // Context information
     userLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
     difficulty: z.enum(['too_easy', 'just_right', 'too_difficult']).optional(),
     completionTime: z.number().optional(), // seconds
     followedInstructions: z.boolean().optional(),
-    
+
     // Metadata
     tags: z.array(z.string()).optional(),
     category: z.string().optional(),
     priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
   }),
-  context: z.object({
-    component: z.string().optional(),
-    page: z.string().optional(),
-    userAgent: z.string().optional(),
-    timestamp: z.string().optional(),
-    referrer: z.string().optional(),
-  }).optional(),
+  context: z
+    .object({
+      component: z.string().optional(),
+      page: z.string().optional(),
+      userAgent: z.string().optional(),
+      timestamp: z.string().optional(),
+      referrer: z.string().optional(),
+    })
+    .optional(),
 })
 
 const feedbackQuerySchema = z.object({
   contentId: z.string().optional(),
   category: z.string().optional(),
-  feedbackType: z.enum([
-    'rating',
-    'helpful', 
-    'suggestion',
-    'error_report',
-    'content_request',
-    'general_feedback',
-    'all'
-  ]).default('all'),
+  feedbackType: z
+    .enum([
+      'rating',
+      'helpful',
+      'suggestion',
+      'error_report',
+      'content_request',
+      'general_feedback',
+      'all',
+    ])
+    .default('all'),
   status: z.enum(['pending', 'reviewed', 'resolved', 'dismissed']).optional(),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
-  timeRange: z.object({
-    start: z.string(),
-    end: z.string(),
-  }).optional(),
+  timeRange: z
+    .object({
+      start: z.string(),
+      end: z.string(),
+    })
+    .optional(),
   includeAnalytics: z.boolean().default(false),
   groupBy: z.enum(['day', 'week', 'month', 'content', 'type']).default('day'),
   sortBy: z.enum(['date', 'priority', 'rating', 'helpful']).default('date'),
@@ -110,11 +115,13 @@ const feedbackUpdateSchema = z.object({
   response: z.string().max(1000).optional(),
   assignedTo: z.string().optional(),
   internalNotes: z.string().max(2000).optional(),
-  resolution: z.object({
-    action: z.enum(['content_updated', 'bug_fixed', 'feature_added', 'no_action_needed']),
-    description: z.string().max(500),
-    relatedChanges: z.array(z.string()).optional(),
-  }).optional(),
+  resolution: z
+    .object({
+      action: z.enum(['content_updated', 'bug_fixed', 'feature_added', 'no_action_needed']),
+      description: z.string().max(500),
+      relatedChanges: z.array(z.string()).optional(),
+    })
+    .optional(),
 })
 
 // ========================
@@ -243,45 +250,45 @@ class FeedbackManager {
 
     // Apply filters
     if (query.contentId) {
-      filteredFeedback = filteredFeedback.filter(f => f.contentId === query.contentId)
+      filteredFeedback = filteredFeedback.filter((f) => f.contentId === query.contentId)
     }
 
     if (query.feedbackType && query.feedbackType !== 'all') {
-      filteredFeedback = filteredFeedback.filter(f => f.feedbackType === query.feedbackType)
+      filteredFeedback = filteredFeedback.filter((f) => f.feedbackType === query.feedbackType)
     }
 
     if (query.status) {
-      filteredFeedback = filteredFeedback.filter(f => f.status === query.status)
+      filteredFeedback = filteredFeedback.filter((f) => f.status === query.status)
     }
 
     if (query.priority) {
-      filteredFeedback = filteredFeedback.filter(f => f.data.priority === query.priority)
+      filteredFeedback = filteredFeedback.filter((f) => f.data.priority === query.priority)
     }
 
     if (query.timeRange) {
       const start = new Date(query.timeRange.start)
       const end = new Date(query.timeRange.end)
-      filteredFeedback = filteredFeedback.filter(f => 
-        f.createdAt >= start && f.createdAt <= end
-      )
+      filteredFeedback = filteredFeedback.filter((f) => f.createdAt >= start && f.createdAt <= end)
     }
 
     // Sort results
     filteredFeedback.sort((a, b) => {
       switch (query.sortBy) {
         case 'date':
-          return query.sortOrder === 'desc' 
+          return query.sortOrder === 'desc'
             ? b.createdAt.getTime() - a.createdAt.getTime()
             : a.createdAt.getTime() - b.createdAt.getTime()
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
           const aPriority = priorityOrder[a.data.priority as keyof typeof priorityOrder] || 1
           const bPriority = priorityOrder[b.data.priority as keyof typeof priorityOrder] || 1
           return query.sortOrder === 'desc' ? bPriority - aPriority : aPriority - bPriority
-        case 'rating':
+        }
+        case 'rating': {
           const aRating = a.data.rating || 0
           const bRating = b.data.rating || 0
           return query.sortOrder === 'desc' ? bRating - aRating : aRating - bRating
+        }
         default:
           return 0
       }
@@ -395,7 +402,7 @@ class FeedbackManager {
 
       // Feedback type distribution
       if (f.feedbackType in summary.feedbackDistribution) {
-        (summary.feedbackDistribution as any)[f.feedbackType]++
+        ;(summary.feedbackDistribution as any)[f.feedbackType]++
       }
 
       // Sentiment analysis
@@ -418,8 +425,8 @@ class FeedbackManager {
     }
 
     summary.averageRating = ratingCount > 0 ? totalRating / ratingCount : 0
-    summary.helpfulPercentage = (helpfulCount + notHelpfulCount) > 0 
-      ? helpfulCount / (helpfulCount + notHelpfulCount) : 0
+    summary.helpfulPercentage =
+      helpfulCount + notHelpfulCount > 0 ? helpfulCount / (helpfulCount + notHelpfulCount) : 0
     summary.sentimentScore = sentimentCount > 0 ? sentimentSum / sentimentCount : 0
     summary.commonThemes = Array.from(themes.entries())
       .sort((a, b) => b[1] - a[1])
@@ -441,7 +448,10 @@ class FeedbackManager {
 }
 
 class SpamDetector {
-  async checkForSpam(feedbackData: any, userId?: string): Promise<{ isSpam: boolean; reason?: string }> {
+  async checkForSpam(
+    feedbackData: any,
+    userId?: string
+  ): Promise<{ isSpam: boolean; reason?: string }> {
     // Rate limiting check
     if (userId) {
       const recentFeedback = this.getRecentFeedbackCount(userId)
@@ -482,7 +492,7 @@ class SpamDetector {
   private containsSpamKeywords(text: string): boolean {
     const spamKeywords = ['buy now', 'click here', 'free money', 'guaranteed', 'no risk']
     const lowerText = text.toLowerCase()
-    return spamKeywords.some(keyword => lowerText.includes(keyword))
+    return spamKeywords.some((keyword) => lowerText.includes(keyword))
   }
 }
 
@@ -490,21 +500,29 @@ class SentimentAnalyzer {
   async analyze(text: string): Promise<{ score: number; label: string; confidence: number }> {
     // Simplified sentiment analysis
     const positiveWords = ['good', 'great', 'excellent', 'helpful', 'useful', 'clear', 'easy']
-    const negativeWords = ['bad', 'terrible', 'confusing', 'difficult', 'unclear', 'hard', 'useless']
-    
+    const negativeWords = [
+      'bad',
+      'terrible',
+      'confusing',
+      'difficult',
+      'unclear',
+      'hard',
+      'useless',
+    ]
+
     const words = text.toLowerCase().split(/\s+/)
     let score = 0
-    
+
     for (const word of words) {
       if (positiveWords.includes(word)) score += 1
       if (negativeWords.includes(word)) score -= 1
     }
-    
-    const normalizedScore = Math.max(-1, Math.min(1, score / words.length * 10))
+
+    const normalizedScore = Math.max(-1, Math.min(1, (score / words.length) * 10))
     let label = 'neutral'
     if (normalizedScore > 0.2) label = 'positive'
     if (normalizedScore < -0.2) label = 'negative'
-    
+
     return {
       score: normalizedScore,
       label,
@@ -545,10 +563,7 @@ export async function POST(request: NextRequest) {
     const session = await getSession()
     const userId = session?.user?.email
 
-    const result = await feedbackManager.submitFeedback(
-      validationResult.data,
-      userId
-    )
+    const result = await feedbackManager.submitFeedback(validationResult.data, userId)
 
     const processingTime = Date.now() - startTime
     logger.info(`[${requestId}] Feedback submission completed`, {
@@ -558,20 +573,22 @@ export async function POST(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json({
-      success: true,
-      feedbackId: result.id,
-      status: result.status,
-      meta: {
-        requestId,
-        processingTime,
+    return NextResponse.json(
+      {
+        success: true,
+        feedbackId: result.id,
+        status: result.status,
+        meta: {
+          requestId,
+          processingTime,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Feedback submission failed`, {
@@ -580,10 +597,7 @@ export async function POST(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Feedback submission failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Feedback submission failed' }, { status: 500 })
   }
 }
 
@@ -605,9 +619,9 @@ export async function GET(request: NextRequest) {
       params.includeAnalytics = params.includeAnalytics === 'true'
     }
 
-    // Parse number parameters  
-    if (params.page) params.page = parseInt(params.page, 10)
-    if (params.pageSize) params.pageSize = parseInt(params.pageSize, 10)
+    // Parse number parameters
+    if (params.page) params.page = Number.parseInt(params.page, 10)
+    if (params.pageSize) params.pageSize = Number.parseInt(params.pageSize, 10)
 
     // Parse time range
     if (params.start && params.end) {
@@ -632,10 +646,7 @@ export async function GET(request: NextRequest) {
     // Authorization check for feedback access
     const session = await getSession()
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const result = await feedbackManager.getFeedback(validationResult.data)
@@ -647,20 +658,22 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json({
-      ...result,
-      meta: {
-        requestId,
-        processingTime,
-        query: validationResult.data,
+    return NextResponse.json(
+      {
+        ...result,
+        meta: {
+          requestId,
+          processingTime,
+          query: validationResult.data,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-        'Cache-Control': 'private, max-age=60', // 1 minute cache
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+          'Cache-Control': 'private, max-age=60', // 1 minute cache
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Feedback retrieval failed`, {
@@ -669,10 +682,7 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Feedback retrieval failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Feedback retrieval failed' }, { status: 500 })
   }
 }
 
@@ -702,24 +712,14 @@ export async function PATCH(request: NextRequest) {
     // Authorization check for feedback updates
     const session = await getSession()
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const { feedbackId, ...updates } = validationResult.data
-    const result = await feedbackManager.updateFeedback(
-      feedbackId,
-      updates,
-      session.user.email
-    )
+    const result = await feedbackManager.updateFeedback(feedbackId, updates, session.user.email)
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Feedback not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Feedback not found' }, { status: 404 })
     }
 
     const processingTime = Date.now() - startTime
@@ -729,19 +729,21 @@ export async function PATCH(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json({
-      success: true,
-      feedback: result,
-      meta: {
-        requestId,
-        processingTime,
+    return NextResponse.json(
+      {
+        success: true,
+        feedback: result,
+        meta: {
+          requestId,
+          processingTime,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Feedback update failed`, {
@@ -750,9 +752,6 @@ export async function PATCH(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Feedback update failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Feedback update failed' }, { status: 500 })
   }
 }

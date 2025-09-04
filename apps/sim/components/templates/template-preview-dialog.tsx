@@ -26,34 +26,31 @@
 
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
+  AlertTriangle,
   Calendar,
+  CheckCircle,
+  ChevronRight,
   Clock,
+  Code,
   Download,
-  Eye,
   ExternalLink,
+  Eye,
   Heart,
+  Info,
   MessageCircle,
-  Play,
+  Settings,
   Share2,
   Star,
   Tag,
   TrendingUp,
   User,
   Users,
-  Zap,
-  CheckCircle,
-  AlertTriangle,
-  Info,
   X,
-  ChevronRight,
-  BookOpen,
-  Settings,
-  Code,
+  Zap,
 } from 'lucide-react'
-import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,12 +62,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import type { Template, TemplateComment, TemplateRating } from '@/lib/templates/types'
 import { cn } from '@/lib/utils'
-import type { Template, TemplateRating, TemplateComment } from '@/lib/templates/types'
 
 /**
  * Template Preview Dialog Props Interface
@@ -121,8 +116,8 @@ const TemplateRatingDisplay: React.FC<TemplateRatingDisplayProps> = ({
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-center">
+    <div className='flex items-center gap-1'>
+      <div className='flex items-center'>
         {Array.from({ length: 5 }).map((_, index) => (
           <Star
             key={index}
@@ -132,13 +127,13 @@ const TemplateRatingDisplay: React.FC<TemplateRatingDisplayProps> = ({
                 ? 'fill-yellow-400 text-yellow-400'
                 : index < rating
                   ? 'fill-yellow-200 text-yellow-200'
-                  : 'fill-gray-200 text-gray-200',
+                  : 'fill-gray-200 text-gray-200'
             )}
           />
         ))}
       </div>
-      <span className="text-sm font-medium">{rating.toFixed(1)}</span>
-      {showCount && <span className="text-xs text-muted-foreground">({count})</span>}
+      <span className='font-medium text-sm'>{rating.toFixed(1)}</span>
+      {showCount && <span className='text-muted-foreground text-xs'>({count})</span>}
     </div>
   )
 }
@@ -173,44 +168,44 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Basic Information */}
-      <div className="space-y-4">
-        <div className="flex items-start gap-4">
+      <div className='space-y-4'>
+        <div className='flex items-start gap-4'>
           <div
-            className="h-16 w-16 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
+            className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg font-bold text-2xl text-white'
             style={{ backgroundColor: template.color }}
           >
             {template.icon || '📄'}
           </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold">{template.name}</h2>
+          <div className='flex-1 space-y-2'>
+            <div className='flex items-center gap-2'>
+              <h2 className='font-bold text-2xl'>{template.name}</h2>
               {template.featured && (
-                <Badge className="bg-yellow-400 text-yellow-900">
-                  <Star className="h-3 w-3 mr-1" />
+                <Badge className='bg-yellow-400 text-yellow-900'>
+                  <Star className='mr-1 h-3 w-3' />
                   Featured
                 </Badge>
               )}
               {template.verified && (
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  <CheckCircle className="h-3 w-3 mr-1" />
+                <Badge variant='outline' className='border-green-600 text-green-600'>
+                  <CheckCircle className='mr-1 h-3 w-3' />
                   Verified
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
+            <div className='flex items-center gap-4 text-muted-foreground text-sm'>
+              <div className='flex items-center gap-1'>
+                <User className='h-4 w-4' />
                 <span>{template.author}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+              <div className='flex items-center gap-1'>
+                <Calendar className='h-4 w-4' />
                 <span>{new Date(template.createdAt).toLocaleDateString()}</span>
               </div>
               {template.metadata?.difficulty && (
                 <Badge
-                  variant="outline"
+                  variant='outline'
                   className={getDifficultyColor(template.metadata.difficulty)}
                 >
                   {template.metadata.difficulty}
@@ -222,52 +217,50 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
 
         {/* Description */}
         {template.description && (
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Description</h3>
-            <p className="text-muted-foreground leading-relaxed">{template.description}</p>
+          <div className='space-y-2'>
+            <h3 className='font-semibold text-lg'>Description</h3>
+            <p className='text-muted-foreground leading-relaxed'>{template.description}</p>
           </div>
         )}
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-3">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-blue-500" />
+      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+        <Card className='p-3'>
+          <div className='flex items-center gap-2'>
+            <Eye className='h-4 w-4 text-blue-500' />
             <div>
-              <div className="text-lg font-semibold">{formatNumber(template.views)}</div>
-              <div className="text-xs text-muted-foreground">Views</div>
+              <div className='font-semibold text-lg'>{formatNumber(template.views)}</div>
+              <div className='text-muted-foreground text-xs'>Views</div>
             </div>
           </div>
         </Card>
-        <Card className="p-3">
-          <div className="flex items-center gap-2">
-            <Download className="h-4 w-4 text-green-500" />
+        <Card className='p-3'>
+          <div className='flex items-center gap-2'>
+            <Download className='h-4 w-4 text-green-500' />
             <div>
-              <div className="text-lg font-semibold">
+              <div className='font-semibold text-lg'>
                 {formatNumber(template.downloadCount || 0)}
               </div>
-              <div className="text-xs text-muted-foreground">Downloads</div>
+              <div className='text-muted-foreground text-xs'>Downloads</div>
             </div>
           </div>
         </Card>
-        <Card className="p-3">
-          <div className="flex items-center gap-2">
-            <Heart className="h-4 w-4 text-red-500" />
+        <Card className='p-3'>
+          <div className='flex items-center gap-2'>
+            <Heart className='h-4 w-4 text-red-500' />
             <div>
-              <div className="text-lg font-semibold">{formatNumber(template.stars)}</div>
-              <div className="text-xs text-muted-foreground">Stars</div>
+              <div className='font-semibold text-lg'>{formatNumber(template.stars)}</div>
+              <div className='text-muted-foreground text-xs'>Stars</div>
             </div>
           </div>
         </Card>
-        <Card className="p-3">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-purple-500" />
+        <Card className='p-3'>
+          <div className='flex items-center gap-2'>
+            <Users className='h-4 w-4 text-purple-500' />
             <div>
-              <div className="text-lg font-semibold">
-                {formatNumber(template.forkCount || 0)}
-              </div>
-              <div className="text-xs text-muted-foreground">Forks</div>
+              <div className='font-semibold text-lg'>{formatNumber(template.forkCount || 0)}</div>
+              <div className='text-muted-foreground text-xs'>Forks</div>
             </div>
           </div>
         </Card>
@@ -275,12 +268,12 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
 
       {/* Tags */}
       {template.metadata?.tags && template.metadata.tags.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Tags</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className='space-y-2'>
+          <h3 className='font-semibold text-lg'>Tags</h3>
+          <div className='flex flex-wrap gap-2'>
             {template.metadata.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                <Tag className="h-3 w-3" />
+              <Badge key={tag} variant='secondary' className='flex items-center gap-1'>
+                <Tag className='h-3 w-3' />
                 {tag}
               </Badge>
             ))}
@@ -289,17 +282,17 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
       )}
 
       {/* Requirements & Use Cases */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className='grid gap-6 md:grid-cols-2'>
         {template.metadata?.requirements && template.metadata.requirements.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+          <div className='space-y-2'>
+            <h3 className='flex items-center gap-2 font-semibold text-lg'>
+              <AlertTriangle className='h-4 w-4' />
               Requirements
             </h3>
-            <ul className="space-y-1 text-sm text-muted-foreground">
+            <ul className='space-y-1 text-muted-foreground text-sm'>
               {template.metadata.requirements.map((req, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <li key={index} className='flex items-start gap-2'>
+                  <CheckCircle className='mt-0.5 h-4 w-4 flex-shrink-0 text-green-500' />
                   {req}
                 </li>
               ))}
@@ -308,15 +301,15 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
         )}
 
         {template.metadata?.useCases && template.metadata.useCases.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <Info className="h-4 w-4" />
+          <div className='space-y-2'>
+            <h3 className='flex items-center gap-2 font-semibold text-lg'>
+              <Info className='h-4 w-4' />
               Use Cases
             </h3>
-            <ul className="space-y-1 text-sm text-muted-foreground">
+            <ul className='space-y-1 text-muted-foreground text-sm'>
               {template.metadata.useCases.map((useCase, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <ChevronRight className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <li key={index} className='flex items-start gap-2'>
+                  <ChevronRight className='mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500' />
                   {useCase}
                 </li>
               ))}
@@ -327,22 +320,22 @@ const TemplateMetadataSection: React.FC<TemplateMetadataSectionProps> = ({ templ
 
       {/* Time Estimates */}
       {(template.metadata?.estimatedTime || template.metadata?.estimatedExecutionTime) && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+        <div className='space-y-2'>
+          <h3 className='flex items-center gap-2 font-semibold text-lg'>
+            <Clock className='h-4 w-4' />
             Time Estimates
           </h3>
-          <div className="flex gap-4 text-sm">
+          <div className='flex gap-4 text-sm'>
             {template.metadata.estimatedTime && (
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">Setup:</span>
-                <span className="font-medium">{template.metadata.estimatedTime}</span>
+              <div className='flex items-center gap-1'>
+                <span className='text-muted-foreground'>Setup:</span>
+                <span className='font-medium'>{template.metadata.estimatedTime}</span>
               </div>
             )}
             {template.metadata.estimatedExecutionTime && (
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">Execution:</span>
-                <span className="font-medium">{template.metadata.estimatedExecutionTime}</span>
+              <div className='flex items-center gap-1'>
+                <span className='text-muted-foreground'>Execution:</span>
+                <span className='font-medium'>{template.metadata.estimatedExecutionTime}</span>
               </div>
             )}
           </div>
@@ -419,60 +412,60 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn('max-w-4xl max-h-[90vh] p-0', className)}>
-        <div className="flex flex-col h-full">
+      <DialogContent className={cn('max-h-[90vh] max-w-4xl p-0', className)}>
+        <div className='flex h-full flex-col'>
           {/* Header */}
-          <DialogHeader className="p-6 pb-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <DialogTitle className="text-2xl">{template.name}</DialogTitle>
-                <DialogDescription className="text-base">
+          <DialogHeader className='p-6 pb-4'>
+            <div className='flex items-start justify-between'>
+              <div className='space-y-1'>
+                <DialogTitle className='text-2xl'>{template.name}</DialogTitle>
+                <DialogDescription className='text-base'>
                   by {template.author} • {template.category}
                 </DialogDescription>
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => onOpenChange(false)}
-                className="h-8 w-8 p-0"
+                className='h-8 w-8 p-0'
               >
-                <X className="h-4 w-4" />
+                <X className='h-4 w-4' />
               </Button>
             </div>
 
             {/* Rating and Actions Bar */}
-            <div className="flex items-center justify-between pt-4">
-              <div className="flex items-center gap-4">
+            <div className='flex items-center justify-between pt-4'>
+              <div className='flex items-center gap-4'>
                 {template.ratingAverage && (
                   <TemplateRatingDisplay
                     rating={template.ratingAverage}
                     count={template.ratingCount || 0}
-                    size="lg"
+                    size='lg'
                   />
                 )}
                 {template.trending && (
-                  <Badge variant="outline" className="text-orange-600 border-orange-600">
-                    <TrendingUp className="h-3 w-3 mr-1" />
+                  <Badge variant='outline' className='border-orange-600 text-orange-600'>
+                    <TrendingUp className='mr-1 h-3 w-3' />
                     Trending
                   </Badge>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant='outline'
+                        size='sm'
                         onClick={handleToggleStar}
                         disabled={isStarring}
-                        className="h-9 w-9 p-0"
+                        className='h-9 w-9 p-0'
                       >
                         <Heart
                           className={cn(
                             'h-4 w-4',
-                            template.isStarred && 'fill-red-500 text-red-500',
+                            template.isStarred && 'fill-red-500 text-red-500'
                           )}
                         />
                       </Button>
@@ -484,24 +477,24 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
                 </TooltipProvider>
 
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={() => onShare?.(template)}
-                  className="flex items-center gap-2"
+                  className='flex items-center gap-2'
                 >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className='h-4 w-4' />
                   Share
                 </Button>
 
                 <Button
                   onClick={handleInstantiate}
                   disabled={isInstantiating}
-                  className="flex items-center gap-2"
+                  className='flex items-center gap-2'
                 >
                   {isInstantiating ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
                   ) : (
-                    <Zap className="h-4 w-4" />
+                    <Zap className='h-4 w-4' />
                   )}
                   {isInstantiating ? 'Creating...' : 'Use Template'}
                 </Button>
@@ -510,64 +503,64 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
           </DialogHeader>
 
           {/* Content Tabs */}
-          <div className="flex-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <div className="px-6">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="overview" className="flex items-center gap-2">
-                    <Info className="h-4 w-4" />
+          <div className='flex-1 overflow-hidden'>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className='flex h-full flex-col'>
+              <div className='px-6'>
+                <TabsList className='grid w-full grid-cols-4'>
+                  <TabsTrigger value='overview' className='flex items-center gap-2'>
+                    <Info className='h-4 w-4' />
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger value="workflow" className="flex items-center gap-2">
-                    <Code className="h-4 w-4" />
+                  <TabsTrigger value='workflow' className='flex items-center gap-2'>
+                    <Code className='h-4 w-4' />
                     Workflow
                   </TabsTrigger>
-                  <TabsTrigger value="reviews" className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
+                  <TabsTrigger value='reviews' className='flex items-center gap-2'>
+                    <MessageCircle className='h-4 w-4' />
                     Reviews ({template.ratingCount || 0})
                   </TabsTrigger>
-                  <TabsTrigger value="details" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
+                  <TabsTrigger value='details' className='flex items-center gap-2'>
+                    <Settings className='h-4 w-4' />
                     Details
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <div className="flex-1 overflow-hidden">
-                <TabsContent value="overview" className="h-full mt-0">
-                  <ScrollArea className="h-full">
-                    <div className="p-6">
+              <div className='flex-1 overflow-hidden'>
+                <TabsContent value='overview' className='mt-0 h-full'>
+                  <ScrollArea className='h-full'>
+                    <div className='p-6'>
                       <TemplateMetadataSection template={template} />
                     </div>
                   </ScrollArea>
                 </TabsContent>
 
-                <TabsContent value="workflow" className="h-full mt-0">
-                  <ScrollArea className="h-full">
-                    <div className="p-6">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-lg">Workflow Preview</h3>
-                        <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-                          <Code className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                          <p className="text-muted-foreground mb-4">
+                <TabsContent value='workflow' className='mt-0 h-full'>
+                  <ScrollArea className='h-full'>
+                    <div className='p-6'>
+                      <div className='space-y-4'>
+                        <h3 className='font-semibold text-lg'>Workflow Preview</h3>
+                        <div className='rounded-lg border-2 border-gray-300 border-dashed p-8 text-center'>
+                          <Code className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+                          <p className='mb-4 text-muted-foreground'>
                             Interactive workflow visualization would be displayed here
                           </p>
                           <Button
-                            variant="outline"
+                            variant='outline'
                             onClick={() => onViewFullTemplate?.(template.id)}
                           >
-                            <ExternalLink className="h-4 w-4 mr-2" />
+                            <ExternalLink className='mr-2 h-4 w-4' />
                             View Full Workflow
                           </Button>
                         </div>
-                        
+
                         {/* Block Types */}
                         {template.metadata?.blockTypes && (
-                          <div className="space-y-2">
-                            <h4 className="font-medium">Block Types Used</h4>
-                            <div className="flex flex-wrap gap-2">
+                          <div className='space-y-2'>
+                            <h4 className='font-medium'>Block Types Used</h4>
+                            <div className='flex flex-wrap gap-2'>
                               {template.metadata.blockTypes.map((blockType) => (
-                                <Badge key={blockType} variant="outline">
+                                <Badge key={blockType} variant='outline'>
                                   {blockType}
                                 </Badge>
                               ))}
@@ -579,17 +572,17 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
                   </ScrollArea>
                 </TabsContent>
 
-                <TabsContent value="reviews" className="h-full mt-0">
-                  <ScrollArea className="h-full">
-                    <div className="p-6">
-                      <div className="space-y-6">
+                <TabsContent value='reviews' className='mt-0 h-full'>
+                  <ScrollArea className='h-full'>
+                    <div className='p-6'>
+                      <div className='space-y-6'>
                         {/* Rating Summary */}
                         {template.ratingAverage && (
                           <Card>
-                            <CardContent className="p-6">
-                              <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                  <div className="text-3xl font-bold">
+                            <CardContent className='p-6'>
+                              <div className='flex items-center justify-between'>
+                                <div className='space-y-1'>
+                                  <div className='font-bold text-3xl'>
                                     {template.ratingAverage.toFixed(1)}
                                   </div>
                                   <TemplateRatingDisplay
@@ -597,7 +590,7 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
                                     count={template.ratingCount || 0}
                                   />
                                 </div>
-                                <div className="text-right text-sm text-muted-foreground">
+                                <div className='text-right text-muted-foreground text-sm'>
                                   Based on {template.ratingCount || 0} review
                                   {(template.ratingCount || 0) !== 1 ? 's' : ''}
                                 </div>
@@ -607,49 +600,47 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
                         )}
 
                         {/* Reviews List */}
-                        <div className="space-y-4">
+                        <div className='space-y-4'>
                           {ratings.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
+                            <div className='py-8 text-center text-muted-foreground'>
                               No reviews yet. Be the first to review this template!
                             </div>
                           ) : (
                             ratings.map((rating) => (
                               <Card key={rating.id}>
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-4">
-                                    <div className="flex-1 space-y-2">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-medium">
+                                <CardContent className='p-4'>
+                                  <div className='flex items-start gap-4'>
+                                    <div className='flex-1 space-y-2'>
+                                      <div className='flex items-center justify-between'>
+                                        <div className='flex items-center gap-2'>
+                                          <span className='font-medium'>
                                             {rating.userDisplayName || 'Anonymous'}
                                           </span>
                                           {rating.isVerifiedUser && (
-                                            <CheckCircle className="h-4 w-4 text-green-500" />
+                                            <CheckCircle className='h-4 w-4 text-green-500' />
                                           )}
                                         </div>
                                         <TemplateRatingDisplay
                                           rating={rating.rating}
                                           count={0}
                                           showCount={false}
-                                          size="sm"
+                                          size='sm'
                                         />
                                       </div>
                                       {rating.title && (
-                                        <h4 className="font-medium">{rating.title}</h4>
+                                        <h4 className='font-medium'>{rating.title}</h4>
                                       )}
                                       {rating.review && (
-                                        <p className="text-muted-foreground text-sm">
+                                        <p className='text-muted-foreground text-sm'>
                                           {rating.review}
                                         </p>
                                       )}
-                                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                      <div className='flex items-center gap-4 text-muted-foreground text-xs'>
                                         <span>
                                           {new Date(rating.createdAt).toLocaleDateString()}
                                         </span>
                                         {rating.helpful > 0 && (
-                                          <span>
-                                            {rating.helpful} people found this helpful
-                                          </span>
+                                          <span>{rating.helpful} people found this helpful</span>
                                         )}
                                       </div>
                                     </div>
@@ -664,33 +655,33 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
                   </ScrollArea>
                 </TabsContent>
 
-                <TabsContent value="details" className="h-full mt-0">
-                  <ScrollArea className="h-full">
-                    <div className="p-6">
-                      <div className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
+                <TabsContent value='details' className='mt-0 h-full'>
+                  <ScrollArea className='h-full'>
+                    <div className='p-6'>
+                      <div className='space-y-6'>
+                        <div className='grid gap-6 md:grid-cols-2'>
                           <Card>
                             <CardHeader>
-                              <CardTitle className="text-lg">Technical Details</CardTitle>
+                              <CardTitle className='text-lg'>Technical Details</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Template ID:</span>
-                                <code className="text-sm bg-muted px-2 py-1 rounded">
+                            <CardContent className='space-y-3'>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Template ID:</span>
+                                <code className='rounded bg-muted px-2 py-1 text-sm'>
                                   {template.id}
                                 </code>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Category:</span>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Category:</span>
                                 <span>{template.category}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Version:</span>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Version:</span>
                                 <span>{template.metadata?.version || '1.0.0'}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Visibility:</span>
-                                <Badge variant="outline">
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Visibility:</span>
+                                <Badge variant='outline'>
                                   {template.metadata?.visibility || 'Public'}
                                 </Badge>
                               </div>
@@ -699,23 +690,23 @@ export const TemplatePreviewDialog: React.FC<TemplatePreviewDialogProps> = ({
 
                           <Card>
                             <CardHeader>
-                              <CardTitle className="text-lg">Usage Statistics</CardTitle>
+                              <CardTitle className='text-lg'>Usage Statistics</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Total Views:</span>
+                            <CardContent className='space-y-3'>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Total Views:</span>
                                 <span>{template.views.toLocaleString()}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Downloads:</span>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Downloads:</span>
                                 <span>{(template.downloadCount || 0).toLocaleString()}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Stars:</span>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Stars:</span>
                                 <span>{template.stars.toLocaleString()}</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Last Updated:</span>
+                              <div className='flex justify-between'>
+                                <span className='text-muted-foreground'>Last Updated:</span>
                                 <span>{new Date(template.updatedAt).toLocaleDateString()}</span>
                               </div>
                             </CardContent>

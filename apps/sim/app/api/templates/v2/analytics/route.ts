@@ -1,6 +1,6 @@
 /**
  * Template Analytics API v2 - Comprehensive usage analytics and insights
- * 
+ *
  * Features:
  * - Real-time usage metrics and trends
  * - Business impact measurement (ROI, time savings)
@@ -9,7 +9,7 @@
  * - Search analytics and discovery optimization
  * - Community engagement metrics
  * - Predictive analytics for template success
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Library Team
  * @created 2025-09-04
@@ -18,19 +18,16 @@
 import { and, avg, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templates,
   templateCategories,
-  templateUsageAnalytics,
-  templateRatings,
-  templateSearchQueries,
   templateFavorites,
-  user,
+  templateRatings,
+  templates,
+  templateUsageAnalytics,
 } from '@/db/schema'
 
 const logger = createLogger('TemplateAnalyticsAPI')
@@ -45,7 +42,7 @@ const AnalyticsQuerySchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
 
-  // Scope filters  
+  // Scope filters
   templateId: z.string().optional(), // Single template analytics
   categoryId: z.string().optional(), // Category-specific analytics
   userId: z.string().optional(), // User's template analytics
@@ -78,7 +75,7 @@ const AnalyticsQuerySchema = z.object({
 function getTimeRangeDates(timeRange: string, startDate?: string, endDate?: string) {
   const now = new Date()
   let start: Date
-  let end = endDate ? new Date(endDate) : now
+  const end = endDate ? new Date(endDate) : now
 
   if (startDate) {
     start = new Date(startDate)
@@ -99,7 +96,6 @@ function getTimeRangeDates(timeRange: string, startDate?: string, endDate?: stri
       case '1y':
         start = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
         break
-      case 'all':
       default:
         start = new Date('2024-01-01') // System launch date
         break
@@ -143,9 +139,11 @@ function calculateSuccessScore(metrics: any): number {
   const engagementScore = Math.min(Math.log(viewCount + 1) * 5, 15)
   const qualityScore = (ratingAverage / 5) * (Math.min(ratingCount, 20) / 20) * 25
   const reliabilityScore = (successRate / 100) * 20
-  const usabilityScore = avgSetupTime > 0 ? Math.max(15 - (avgSetupTime / 10), 5) : 10
+  const usabilityScore = avgSetupTime > 0 ? Math.max(15 - avgSetupTime / 10, 5) : 10
 
-  return Math.round(popularityScore + engagementScore + qualityScore + reliabilityScore + usabilityScore)
+  return Math.round(
+    popularityScore + engagementScore + qualityScore + reliabilityScore + usabilityScore
+  )
 }
 
 // ========================
@@ -180,7 +178,7 @@ export async function GET(request: NextRequest) {
     if (!isInternalCall) {
       const session = await getSession()
       userId = session?.user?.id || null
-      
+
       if (!userId) {
         return NextResponse.json(
           { success: false, error: 'Authentication required' },
@@ -322,7 +320,7 @@ export async function GET(request: NextRequest) {
         avgRating: Math.round((Number(engagement.avgRating) || 0) * 10) / 10,
         totalRatings: Number(engagement.totalRatings) || 0,
         totalFavorites: Number(engagement.totalFavorites) || 0,
-        verificationRate: Number(engagement.totalRatings) 
+        verificationRate: Number(engagement.totalRatings)
           ? Math.round((Number(engagement.verifiedRatings) / Number(engagement.totalRatings)) * 100)
           : 0,
       }
@@ -356,7 +354,7 @@ export async function GET(request: NextRequest) {
         totalTimeSaved: Math.round((Number(impact.totalTimeSaved) || 0) / 60), // Convert to minutes
         avgSatisfactionScore: Math.round((Number(impact.avgSatisfactionScore) || 0) * 10) / 10,
         totalExecutions: Number(impact.totalExecutions) || 0,
-        avgCostSavingsPerExecution: Number(impact.totalExecutions) 
+        avgCostSavingsPerExecution: Number(impact.totalExecutions)
           ? Math.round((Number(impact.totalCostSaved) / Number(impact.totalExecutions)) * 100) / 100
           : 0,
       }
@@ -367,7 +365,7 @@ export async function GET(request: NextRequest) {
     // ========================
     if (params.includeTrends) {
       const dateTrunc = getDateTrunc(params.groupBy, templateUsageAnalytics.usageTimestamp)
-      
+
       const trendsQuery = db
         .select({
           period: dateTrunc,
@@ -384,7 +382,7 @@ export async function GET(request: NextRequest) {
 
       const trends = await trendsQuery
 
-      analytics.trends = trends.map(trend => ({
+      analytics.trends = trends.map((trend) => ({
         period: trend.period,
         views: Number(trend.views) || 0,
         downloads: Number(trend.downloads) || 0,
@@ -428,7 +426,7 @@ export async function GET(request: NextRequest) {
 
     const topTemplates = await topTemplatesQuery
 
-    analytics.topTemplates = topTemplates.map(template => {
+    analytics.topTemplates = topTemplates.map((template) => {
       const metrics = {
         downloadCount: Number(template.totalDownloads),
         viewCount: Number(template.totalViews),
@@ -472,16 +470,12 @@ export async function GET(request: NextRequest) {
       .innerJoin(templates, eq(templateUsageAnalytics.templateId, templates.id))
       .innerJoin(templateCategories, eq(templates.categoryId, templateCategories.id))
       .where(and(...conditions))
-      .groupBy(
-        templates.categoryId,
-        templateCategories.name,
-        templateCategories.color
-      )
+      .groupBy(templates.categoryId, templateCategories.name, templateCategories.color)
       .orderBy(desc(count(templateUsageAnalytics.id)))
 
     const categories = await categoryQuery
 
-    analytics.categoryBreakdown = categories.map(category => ({
+    analytics.categoryBreakdown = categories.map((category) => ({
       categoryId: category.categoryId,
       categoryName: category.categoryName,
       categoryColor: category.categoryColor,
@@ -491,7 +485,7 @@ export async function GET(request: NextRequest) {
         uniqueTemplates: Number(category.uniqueTemplates),
         avgRating: Math.round((Number(category.avgRating) || 0) * 10) / 10,
       },
-      share: analytics.summary.usage?.totalEvents 
+      share: analytics.summary.usage?.totalEvents
         ? Math.round((Number(category.totalEvents) / analytics.summary.usage.totalEvents) * 100)
         : 0,
     }))
@@ -513,10 +507,9 @@ export async function GET(request: NextRequest) {
         },
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid analytics parameters:`, error.errors)
       return NextResponse.json(

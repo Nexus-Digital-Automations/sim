@@ -1,6 +1,6 @@
 /**
  * Template Ratings API v2 - Comprehensive rating and review system
- * 
+ *
  * Features:
  * - 5-star rating system with detailed feedback
  * - Multi-dimensional rating (ease of use, documentation, performance, value)
@@ -8,9 +8,9 @@
  * - Verified usage tracking
  * - Moderation and quality control
  * - Advanced analytics for template improvement
- * 
+ *
  * @version 2.0.0
- * @author Sim Template Library Team  
+ * @author Sim Template Library Team
  * @created 2025-09-04
  */
 
@@ -18,16 +18,10 @@ import { and, avg, count, desc, eq, gte, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import {
-  templates,
-  templateRatings,
-  templateRatingVotes,
-  user,
-} from '@/db/schema'
+import { templateRatings, templateRatingVotes, templates, user } from '@/db/schema'
 
 const logger = createLogger('TemplateRatingsAPI')
 
@@ -59,21 +53,24 @@ const RatingQuerySchema = z.object({
 const CreateRatingSchema = z.object({
   // Core rating (required)
   rating: z.number().int().min(1).max(5),
-  
+
   // Review content (optional)
   reviewTitle: z.string().max(200).optional(),
   reviewContent: z.string().max(2000).optional(),
-  
+
   // Context information
   usageContext: z.string().max(500).optional(),
-  userExpertiseLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional().default('intermediate'),
-  
+  userExpertiseLevel: z
+    .enum(['beginner', 'intermediate', 'advanced'])
+    .optional()
+    .default('intermediate'),
+
   // Multi-dimensional ratings (optional)
   easeOfUseRating: z.number().int().min(1).max(5).optional(),
   documentationRating: z.number().int().min(1).max(5).optional(),
   performanceRating: z.number().int().min(1).max(5).optional(),
   valueRating: z.number().int().min(1).max(5).optional(),
-  
+
   // Usage verification
   isVerifiedUsage: z.boolean().optional().default(false),
 })
@@ -98,12 +95,7 @@ async function updateTemplateRatingAggregates(templateId: string) {
         ratingCount: count(templateRatings.id),
       })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.isApproved, true)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.isApproved, true)))
 
     const avgRating = aggregates[0]?.avgRating || 0
     const ratingCount = aggregates[0]?.ratingCount || 0
@@ -117,7 +109,6 @@ async function updateTemplateRatingAggregates(templateId: string) {
         updatedAt: new Date(),
       })
       .where(eq(templates.id, templateId))
-
   } catch (error) {
     logger.warn('Failed to update template rating aggregates', { templateId, error })
   }
@@ -137,12 +128,7 @@ async function calculateCommunityScore(templateId: string): Promise<number> {
         detailedReviews: sql<number>`count(*) filter (where length(${templateRatings.reviewContent}) > 100)`,
       })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.isApproved, true)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.isApproved, true)))
 
     const {
       avgRating = 0,
@@ -159,7 +145,9 @@ async function calculateCommunityScore(templateId: string): Promise<number> {
     const engagementScore = Math.min(Number(avgHelpfulVotes) / 2, 5) // Max 5 points
     const qualityScore = (Number(detailedReviews) / Math.max(Number(totalRatings), 1)) * 5 // Max 5 points
 
-    const communityScore = Math.round(ratingScore + volumeScore + verificationScore + engagementScore + qualityScore)
+    const communityScore = Math.round(
+      ratingScore + volumeScore + verificationScore + engagementScore + qualityScore
+    )
 
     // Update template with new community score
     await db
@@ -171,7 +159,6 @@ async function calculateCommunityScore(templateId: string): Promise<number> {
       .where(eq(templates.id, templateId))
 
     return communityScore
-
   } catch (error) {
     logger.warn('Failed to calculate community score', { templateId, error })
     return 0
@@ -185,10 +172,7 @@ async function calculateCommunityScore(templateId: string): Promise<number> {
 /**
  * GET /api/templates/v2/[templateId]/ratings - Get template ratings and reviews
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { templateId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { templateId: string } }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
@@ -207,10 +191,7 @@ export async function GET(
       .limit(1)
 
     if (templateExists.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     // Get current user for personalized data
@@ -274,34 +255,38 @@ export async function GET(
         reviewContent: templateRatings.reviewContent,
         usageContext: templateRatings.usageContext,
         userExpertiseLevel: templateRatings.userExpertiseLevel,
-        
+
         // Multi-dimensional ratings
         easeOfUseRating: templateRatings.easeOfUseRating,
         documentationRating: templateRatings.documentationRating,
         performanceRating: templateRatings.performanceRating,
         valueRating: templateRatings.valueRating,
-        
+
         // Engagement metrics
         helpfulCount: templateRatings.helpfulCount,
         unhelpfulCount: templateRatings.unhelpfulCount,
         isVerifiedUsage: templateRatings.isVerifiedUsage,
         isFeatured: templateRatings.isFeatured,
-        
+
         // Timestamps
         createdAt: templateRatings.createdAt,
         updatedAt: templateRatings.updatedAt,
-        
+
         // Author info (if requested)
-        ...(queryParams.includeAuthor ? {
-          authorId: templateRatings.userId,
-          authorName: user.name,
-          authorImage: user.image,
-        } : {}),
-        
+        ...(queryParams.includeAuthor
+          ? {
+              authorId: templateRatings.userId,
+              authorName: user.name,
+              authorImage: user.image,
+            }
+          : {}),
+
         // User's vote on this rating (if authenticated)
-        ...(userId ? {
-          userVote: templateRatingVotes.isHelpful,
-        } : {}),
+        ...(userId
+          ? {
+              userVote: templateRatingVotes.isHelpful,
+            }
+          : {}),
       })
       .from(templateRatings)
 
@@ -341,12 +326,7 @@ export async function GET(
         count: sql<number>`count(*)`,
       })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.isApproved, true)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.isApproved, true)))
       .groupBy(templateRatings.rating)
       .orderBy(templateRatings.rating)
 
@@ -362,12 +342,7 @@ export async function GET(
         averageValue: avg(templateRatings.valueRating),
       })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.isApproved, true)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.isApproved, true)))
 
     const stats = overallStats[0] || {}
 
@@ -394,14 +369,16 @@ export async function GET(
         totalRatings: Number(stats.totalRatings) || 0,
         averageRating: Math.round((Number(stats.averageRating) || 0) * 10) / 10,
         verifiedCount: Number(stats.verifiedCount) || 0,
-        verificationRate: Number(stats.totalRatings) ? Math.round((Number(stats.verifiedCount) / Number(stats.totalRatings)) * 100) : 0,
+        verificationRate: Number(stats.totalRatings)
+          ? Math.round((Number(stats.verifiedCount) / Number(stats.totalRatings)) * 100)
+          : 0,
         dimensionalAverages: {
           easeOfUse: Math.round((Number(stats.averageEaseOfUse) || 0) * 10) / 10,
           documentation: Math.round((Number(stats.averageDocumentation) || 0) * 10) / 10,
           performance: Math.round((Number(stats.averagePerformance) || 0) * 10) / 10,
           value: Math.round((Number(stats.averageValue) || 0) * 10) / 10,
         },
-        distribution: ratingDistribution.map(d => ({
+        distribution: ratingDistribution.map((d) => ({
           rating: d.rating,
           count: Number(d.count),
           percentage: Math.round((Number(d.count) / Number(stats.totalRatings || 1)) * 100),
@@ -414,10 +391,9 @@ export async function GET(
         templateId,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
       return NextResponse.json(
@@ -446,17 +422,14 @@ export async function GET(
 /**
  * POST /api/templates/v2/[templateId]/ratings - Create or update template rating
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { templateId: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { templateId: string } }) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
     const { templateId } = params
     const session = await getSession()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
@@ -483,10 +456,7 @@ export async function POST(
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
@@ -503,12 +473,7 @@ export async function POST(
     const existingRating = await db
       .select({ id: templateRatings.id })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.userId, userId)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.userId, userId)))
       .limit(1)
 
     const now = new Date()
@@ -534,28 +499,30 @@ export async function POST(
         .returning()
 
       logger.info(`[${requestId}] Updated existing rating: ${existingRating[0].id}`)
-
     } else {
       // Create new rating
       const ratingId = uuidv4()
-      
-      const newRating = await db.insert(templateRatings).values({
-        id: ratingId,
-        templateId,
-        userId,
-        rating: data.rating,
-        reviewTitle: data.reviewTitle,
-        reviewContent: data.reviewContent,
-        usageContext: data.usageContext,
-        userExpertiseLevel: data.userExpertiseLevel,
-        easeOfUseRating: data.easeOfUseRating,
-        documentationRating: data.documentationRating,
-        performanceRating: data.performanceRating,
-        valueRating: data.valueRating,
-        isVerifiedUsage: data.isVerifiedUsage,
-        createdAt: now,
-        updatedAt: now,
-      }).returning()
+
+      const newRating = await db
+        .insert(templateRatings)
+        .values({
+          id: ratingId,
+          templateId,
+          userId,
+          rating: data.rating,
+          reviewTitle: data.reviewTitle,
+          reviewContent: data.reviewContent,
+          usageContext: data.usageContext,
+          userExpertiseLevel: data.userExpertiseLevel,
+          easeOfUseRating: data.easeOfUseRating,
+          documentationRating: data.documentationRating,
+          performanceRating: data.performanceRating,
+          valueRating: data.valueRating,
+          isVerifiedUsage: data.isVerifiedUsage,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
 
       logger.info(`[${requestId}] Created new rating: ${ratingId}`)
     }
@@ -576,17 +543,17 @@ export async function POST(
         rating: data.rating,
         isUpdate: existingRating.length > 0,
         communityScore,
-        message: existingRating.length > 0 ? 'Rating updated successfully' : 'Rating created successfully',
+        message:
+          existingRating.length > 0 ? 'Rating updated successfully' : 'Rating created successfully',
       },
       meta: {
         requestId,
         processingTime: elapsed,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid rating data:`, error.errors)
       return NextResponse.json(

@@ -15,27 +15,24 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { createPortal } from 'react-dom'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import { useHelp } from '@/lib/help/help-context-provider'
-import { helpAnalytics } from '@/lib/help/help-analytics'
-import type { HelpContent } from '@/lib/help/contextual-help'
-import { 
-  HelpCircleIcon, 
-  InfoIcon, 
-  AlertTriangleIcon, 
-  CheckCircleIcon, 
-  XIcon,
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  AlertTriangleIcon,
+  BookOpenIcon,
+  CheckCircleIcon,
   ExternalLinkIcon,
+  InfoIcon,
   PlayCircleIcon,
-  BookOpenIcon
+  XIcon,
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { helpAnalytics } from '@/lib/help/help-analytics'
+import { useHelp } from '@/lib/help/help-context-provider'
+import { cn } from '@/lib/utils'
 
 // ========================
 // TYPE DEFINITIONS
@@ -55,21 +52,21 @@ export interface HelpTooltipProps {
   className?: string
   contentClassName?: string
   disabled?: boolean
-  
+
   // Progressive disclosure
   expandable?: boolean
   expandedContent?: string | React.ReactNode
-  
+
   // Help-specific props
   helpType?: 'tip' | 'warning' | 'info' | 'success' | 'tutorial' | 'best-practice'
   priority?: 'low' | 'medium' | 'high' | 'critical'
   userLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  
+
   // Actions
   actions?: HelpTooltipAction[]
   onInteraction?: (type: string, data?: any) => void
   onDismiss?: () => void
-  
+
   // Analytics
   trackInteractions?: boolean
   analyticsContext?: Record<string, any>
@@ -94,16 +91,15 @@ export interface HelpTooltipAction {
 const getHelpIcon = (type: HelpTooltipProps['helpType']) => {
   switch (type) {
     case 'warning':
-      return <AlertTriangleIcon className="h-4 w-4 text-amber-500" />
+      return <AlertTriangleIcon className='h-4 w-4 text-amber-500' />
     case 'success':
-      return <CheckCircleIcon className="h-4 w-4 text-green-500" />
+      return <CheckCircleIcon className='h-4 w-4 text-green-500' />
     case 'tutorial':
-      return <PlayCircleIcon className="h-4 w-4 text-blue-500" />
+      return <PlayCircleIcon className='h-4 w-4 text-blue-500' />
     case 'best-practice':
-      return <BookOpenIcon className="h-4 w-4 text-purple-500" />
-    case 'info':
+      return <BookOpenIcon className='h-4 w-4 text-purple-500' />
     default:
-      return <InfoIcon className="h-4 w-4 text-blue-500" />
+      return <InfoIcon className='h-4 w-4 text-blue-500' />
   }
 }
 
@@ -115,7 +111,6 @@ const getPriorityBadgeVariant = (priority: HelpTooltipProps['priority']) => {
       return 'default'
     case 'medium':
       return 'secondary'
-    case 'low':
     default:
       return 'outline'
   }
@@ -169,8 +164,9 @@ export function HelpTooltip({
   const effectiveHelpId = helpId || `help-tooltip-${component}-${Date.now()}`
 
   // Check if help should be shown based on user preferences
-  const shouldShow = !disabled && 
-    helpState.userPreferences.enableTooltips && 
+  const shouldShow =
+    !disabled &&
+    helpState.userPreferences.enableTooltips &&
     !helpState.userPreferences.dismissedHelp.includes(effectiveHelpId)
 
   // ========================
@@ -186,19 +182,25 @@ export function HelpTooltip({
     // Track help view
     if (trackInteractions) {
       trackInteraction('hover', `help-tooltip-${effectiveHelpId}`, analyticsContext)
-      helpAnalytics.trackHelpView(
-        effectiveHelpId,
-        helpState.sessionId,
-        {
-          component,
-          page: window.location.pathname,
-          userLevel: userLevel || helpState.userLevel,
-        }
-      )
+      helpAnalytics.trackHelpView(effectiveHelpId, helpState.sessionId, {
+        component,
+        page: window.location.pathname,
+        userLevel: userLevel || helpState.userLevel,
+      })
     }
 
     onInteraction?.('open')
-  }, [shouldShow, effectiveHelpId, component, userLevel, helpState, trackInteractions, trackInteraction, analyticsContext, onInteraction])
+  }, [
+    shouldShow,
+    effectiveHelpId,
+    component,
+    userLevel,
+    helpState,
+    trackInteractions,
+    trackInteraction,
+    analyticsContext,
+    onInteraction,
+  ])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -207,13 +209,9 @@ export function HelpTooltip({
     // Track engagement duration
     if (trackInteractions && interactionStartTime.current) {
       const duration = Date.now() - interactionStartTime.current
-      helpAnalytics.trackHelpInteraction(
-        effectiveHelpId,
-        helpState.sessionId,
-        'close',
-        'tooltip',
-        { duration }
-      )
+      helpAnalytics.trackHelpInteraction(effectiveHelpId, helpState.sessionId, 'close', 'tooltip', {
+        duration,
+      })
     }
 
     onInteraction?.('close')
@@ -234,35 +232,33 @@ export function HelpTooltip({
     onInteraction?.(isExpanded ? 'collapse' : 'expand')
   }, [isExpanded, effectiveHelpId, helpState.sessionId, trackInteractions, onInteraction])
 
-  const handleActionClick = useCallback(async (action: HelpTooltipAction) => {
-    try {
-      if (trackInteractions) {
-        helpAnalytics.trackHelpInteraction(
-          effectiveHelpId,
-          helpState.sessionId,
-          'action_click',
-          action.id
-        )
-      }
+  const handleActionClick = useCallback(
+    async (action: HelpTooltipAction) => {
+      try {
+        if (trackInteractions) {
+          helpAnalytics.trackHelpInteraction(
+            effectiveHelpId,
+            helpState.sessionId,
+            'action_click',
+            action.id
+          )
+        }
 
-      await action.onClick()
-      onInteraction?.('action', { actionId: action.id })
-    } catch (error) {
-      console.error('Error executing help tooltip action:', error)
-    }
-  }, [effectiveHelpId, helpState.sessionId, trackInteractions, onInteraction])
+        await action.onClick()
+        onInteraction?.('action', { actionId: action.id })
+      } catch (error) {
+        console.error('Error executing help tooltip action:', error)
+      }
+    },
+    [effectiveHelpId, helpState.sessionId, trackInteractions, onInteraction]
+  )
 
   const handleDismiss = useCallback(() => {
     handleClose()
     onDismiss?.()
 
     if (trackInteractions) {
-      helpAnalytics.trackHelpInteraction(
-        effectiveHelpId,
-        helpState.sessionId,
-        'dismiss',
-        'tooltip'
-      )
+      helpAnalytics.trackHelpInteraction(effectiveHelpId, helpState.sessionId, 'dismiss', 'tooltip')
     }
   }, [handleClose, onDismiss, effectiveHelpId, helpState.sessionId, trackInteractions])
 
@@ -364,35 +360,35 @@ export function HelpTooltip({
     if (!content && !expandedContent) return null
 
     return (
-      <div className="space-y-3">
+      <div className='space-y-3'>
         {/* Header with icon and priority */}
         {(helpType !== 'info' || priority !== 'medium') && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
               {getHelpIcon(helpType)}
               {priority !== 'medium' && (
-                <Badge variant={getPriorityBadgeVariant(priority)} size="sm">
+                <Badge variant={getPriorityBadgeVariant(priority)} size='sm'>
                   {priority}
                 </Badge>
               )}
             </div>
-            
+
             {onDismiss && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleDismiss}
-                className="h-auto p-1 hover:bg-black/10 dark:hover:bg-white/10"
-                aria-label="Dismiss help"
+                className='h-auto p-1 hover:bg-black/10 dark:hover:bg-white/10'
+                aria-label='Dismiss help'
               >
-                <XIcon className="h-3 w-3" />
+                <XIcon className='h-3 w-3' />
               </Button>
             )}
           </div>
         )}
 
         {/* Main content */}
-        <div className="text-sm">
+        <div className='text-sm'>
           {typeof content === 'string' ? (
             <div dangerouslySetInnerHTML={{ __html: content }} />
           ) : (
@@ -403,8 +399,8 @@ export function HelpTooltip({
         {/* Expanded content */}
         {expandable && isExpanded && expandedContent && (
           <>
-            <Separator className="bg-white/20 dark:bg-black/20" />
-            <div className="text-sm">
+            <Separator className='bg-white/20 dark:bg-black/20' />
+            <div className='text-sm'>
               {typeof expandedContent === 'string' ? (
                 <div dangerouslySetInnerHTML={{ __html: expandedContent }} />
               ) : (
@@ -417,35 +413,35 @@ export function HelpTooltip({
         {/* Actions */}
         {(actions.length > 0 || expandable) && (
           <>
-            <Separator className="bg-white/20 dark:bg-black/20" />
-            <div className="flex items-center gap-2 flex-wrap">
+            <Separator className='bg-white/20 dark:bg-black/20' />
+            <div className='flex flex-wrap items-center gap-2'>
               {expandable && (
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={handleExpand}
-                  className="h-auto py-1 px-2 text-xs hover:bg-white/10 dark:hover:bg-black/10"
+                  className='h-auto px-2 py-1 text-xs hover:bg-white/10 dark:hover:bg-black/10'
                 >
                   {isExpanded ? 'Show Less' : 'Learn More'}
                 </Button>
               )}
-              
+
               {actions.map((action) => (
                 <Button
                   key={action.id}
                   variant={action.variant || 'ghost'}
-                  size="sm"
+                  size='sm'
                   onClick={() => handleActionClick(action)}
                   disabled={action.disabled || action.loading}
-                  className="h-auto py-1 px-2 text-xs hover:bg-white/10 dark:hover:bg-black/10"
+                  className='h-auto px-2 py-1 text-xs hover:bg-white/10 dark:hover:bg-black/10'
                 >
                   {action.loading ? (
-                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <div className='h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent' />
                   ) : (
                     <>
-                      {action.icon && <span className="mr-1">{action.icon}</span>}
+                      {action.icon && <span className='mr-1'>{action.icon}</span>}
                       {action.label}
-                      {action.external && <ExternalLinkIcon className="ml-1 h-3 w-3" />}
+                      {action.external && <ExternalLinkIcon className='ml-1 h-3 w-3' />}
                     </>
                   )}
                 </Button>
@@ -469,11 +465,11 @@ export function HelpTooltip({
             {children}
           </div>
         </TooltipTrigger>
-        
+
         <TooltipContent
           side={placement === 'auto' ? 'top' : placement}
           className={cn(
-            'max-w-sm p-4 bg-black text-white dark:bg-white dark:text-black shadow-lg border-0',
+            'max-w-sm border-0 bg-black p-4 text-white shadow-lg dark:bg-white dark:text-black',
             interactive && 'cursor-auto',
             contentClassName
           )}
@@ -503,13 +499,7 @@ export function QuickHelpTooltip({
   text: string
 } & Omit<HelpTooltipProps, 'content'>) {
   return (
-    <HelpTooltip
-      content={text}
-      helpType="info"
-      priority="low"
-      trigger="hover"
-      {...props}
-    >
+    <HelpTooltip content={text} helpType='info' priority='low' trigger='hover' {...props}>
       {children}
     </HelpTooltip>
   )
@@ -527,13 +517,7 @@ export function WarningHelpTooltip({
   message: string
 } & Omit<HelpTooltipProps, 'content' | 'helpType'>) {
   return (
-    <HelpTooltip
-      content={message}
-      helpType="warning"
-      priority="high"
-      interactive
-      {...props}
-    >
+    <HelpTooltip content={message} helpType='warning' priority='high' interactive {...props}>
       {children}
     </HelpTooltip>
   )
@@ -590,9 +574,9 @@ export function TutorialHelpTooltip({
   }
 
   const fullContent = (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Badge variant="secondary" size="sm">
+    <div className='space-y-2'>
+      <div className='flex items-center justify-between'>
+        <Badge variant='secondary' size='sm'>
           Step {step} of {totalSteps}
         </Badge>
       </div>
@@ -603,11 +587,11 @@ export function TutorialHelpTooltip({
   return (
     <HelpTooltip
       content={fullContent}
-      helpType="tutorial"
-      priority="high"
+      helpType='tutorial'
+      priority='high'
       interactive
       actions={actions}
-      trigger="manual"
+      trigger='manual'
       {...props}
     >
       {children}

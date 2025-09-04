@@ -1,10 +1,10 @@
 /**
  * Template Integration Import API - Workflow Editor Integration
- * 
+ *
  * This endpoint handles the actual import and instantiation of templates into
  * existing workflows. It provides comprehensive import options including merge
  * strategies, conflict resolution, and custom variable substitution.
- * 
+ *
  * Features:
  * - Multiple merge strategies (replace, merge, append)
  * - Real-time variable substitution and customization
@@ -12,22 +12,21 @@
  * - Dependency validation and requirement checking
  * - Usage tracking and analytics integration
  * - Transaction-based import with rollback capability
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Integration Team
  * @created 2025-09-04
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import { eq } from 'drizzle-orm'
+import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-
+import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, workflow, templateUsageAnalytics } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { templates, templateUsageAnalytics, workflow } from '@/db/schema'
 
 const logger = createLogger('TemplateIntegrationImportAPI')
 
@@ -43,13 +42,16 @@ const ImportRequestSchema = z.object({
     description: z.string().max(1000).optional(),
     variables: z.record(z.any()).optional().default({}),
   }),
-  options: z.object({
-    mergeStrategy: z.enum(['replace', 'merge', 'append']).optional().default('replace'),
-    preserveExisting: z.boolean().optional().default(false),
-    validateCompatibility: z.boolean().optional().default(true),
-    generatePreview: z.boolean().optional().default(false),
-    trackUsage: z.boolean().optional().default(true),
-  }).optional().default({}),
+  options: z
+    .object({
+      mergeStrategy: z.enum(['replace', 'merge', 'append']).optional().default('replace'),
+      preserveExisting: z.boolean().optional().default(false),
+      validateCompatibility: z.boolean().optional().default(true),
+      generatePreview: z.boolean().optional().default(false),
+      trackUsage: z.boolean().optional().default(true),
+    })
+    .optional()
+    .default({}),
 })
 
 // ========================
@@ -68,7 +70,7 @@ async function importTemplateToWorkflow(
 ) {
   const startTime = Date.now()
   const importId = uuidv4()
-  
+
   try {
     logger.info('Starting template import process', {
       importId,
@@ -112,10 +114,7 @@ async function importTemplateToWorkflow(
     }
 
     // Update workflow in database
-    await db
-      .update(workflow)
-      .set(updatedWorkflow)
-      .where(eq(workflow.id, targetWorkflowId))
+    await db.update(workflow).set(updatedWorkflow).where(eq(workflow.id, targetWorkflowId))
 
     // Track usage analytics if enabled
     if (options.trackUsage) {
@@ -151,10 +150,9 @@ async function importTemplateToWorkflow(
       warnings: [],
       customizations: customizations,
     }
-
   } catch (error) {
     const processingTime = Date.now() - startTime
-    
+
     logger.error('Template import failed', {
       importId,
       templateId: templateData.id,
@@ -168,9 +166,9 @@ async function importTemplateToWorkflow(
       await rollbackImport(targetWorkflowId, importId)
       logger.info('Import rollback completed successfully', { importId })
     } catch (rollbackError) {
-      logger.error('Import rollback failed', { 
-        importId, 
-        rollbackError: rollbackError.message 
+      logger.error('Import rollback failed', {
+        importId,
+        rollbackError: rollbackError.message,
       })
     }
 
@@ -222,8 +220,8 @@ async function validateTemplateCompatibility(templateData: any, targetWorkflow: 
   const workflowBlockTypes = getBlockTypes(workflowState.blocks || {})
 
   // Validate no conflicting block types (could be enhanced with actual compatibility rules)
-  const incompatibleTypes = templateBlockTypes.filter(type => 
-    type.includes('deprecated') || type.includes('experimental')
+  const incompatibleTypes = templateBlockTypes.filter(
+    (type) => type.includes('deprecated') || type.includes('experimental')
   )
 
   if (incompatibleTypes.length > 0) {
@@ -250,24 +248,22 @@ async function validateTemplateCompatibility(templateData: any, targetWorkflow: 
  */
 function processTemplateState(templateState: any, variables: Record<string, any>) {
   const processed = JSON.parse(JSON.stringify(templateState)) // Deep clone
-  
+
   // Apply variable substitutions
   const variablePattern = /\{\{([^}]+)\}\}/g
-  
+
   function substituteInObject(obj: any): any {
     if (typeof obj === 'string') {
       return obj.replace(variablePattern, (match, varName) => {
         const trimmedVarName = varName.trim()
-        return variables[trimmedVarName] !== undefined 
-          ? variables[trimmedVarName] 
-          : match
+        return variables[trimmedVarName] !== undefined ? variables[trimmedVarName] : match
       })
     }
-    
+
     if (Array.isArray(obj)) {
       return obj.map(substituteInObject)
     }
-    
+
     if (obj && typeof obj === 'object') {
       const result: any = {}
       for (const [key, value] of Object.entries(obj)) {
@@ -275,7 +271,7 @@ function processTemplateState(templateState: any, variables: Record<string, any>
       }
       return result
     }
-    
+
     return obj
   }
 
@@ -283,7 +279,7 @@ function processTemplateState(templateState: any, variables: Record<string, any>
   if (processed.blocks) {
     const newBlocks: any = {}
     const idMapping: Record<string, string> = {}
-    
+
     Object.entries(processed.blocks).forEach(([oldId, block]: [string, any]) => {
       const newId = `imported_${uuidv4().slice(0, 8)}`
       idMapping[oldId] = newId
@@ -295,9 +291,9 @@ function processTemplateState(templateState: any, variables: Record<string, any>
         importedAt: new Date().toISOString(),
       }
     })
-    
+
     processed.blocks = newBlocks
-    
+
     // Update edge references
     if (processed.edges) {
       processed.edges = processed.edges.map((edge: any) => ({
@@ -342,10 +338,7 @@ async function applyMergeStrategy(
             ...workflow.blocks,
             ...template.blocks,
           },
-          edges: [
-            ...(workflow.edges || []),
-            ...(template.edges || []),
-          ],
+          edges: [...(workflow.edges || []), ...(template.edges || [])],
           metadata: {
             ...workflow.metadata,
             ...template.metadata,
@@ -353,15 +346,14 @@ async function applyMergeStrategy(
             mergedAt: new Date().toISOString(),
           },
         }
-      } else {
-        return {
-          ...template,
-          metadata: {
-            ...template.metadata,
-            mergeStrategy: 'replace',
-            replacedAt: new Date().toISOString(),
-          },
-        }
+      }
+      return {
+        ...template,
+        metadata: {
+          ...template.metadata,
+          mergeStrategy: 'replace',
+          replacedAt: new Date().toISOString(),
+        },
       }
 
     case 'merge':
@@ -371,10 +363,7 @@ async function applyMergeStrategy(
           ...workflow.blocks,
           ...template.blocks,
         },
-        edges: [
-          ...(workflow.edges || []),
-          ...(template.edges || []),
-        ],
+        edges: [...(workflow.edges || []), ...(template.edges || [])],
         loops: {
           ...workflow.loops,
           ...template.loops,
@@ -391,19 +380,19 @@ async function applyMergeStrategy(
         },
       }
 
-    case 'append':
+    case 'append': {
       // Append template blocks to end of workflow
       const appendedBlocks = { ...workflow.blocks }
       const appendedEdges = [...(workflow.edges || [])]
-      
+
       // Add template blocks
       Object.entries(template.blocks || {}).forEach(([id, block]) => {
         appendedBlocks[id] = block
       })
-      
+
       // Add template edges
       appendedEdges.push(...(template.edges || []))
-      
+
       return {
         ...workflow,
         blocks: appendedBlocks,
@@ -419,6 +408,7 @@ async function applyMergeStrategy(
           },
         },
       }
+    }
 
     default:
       throw new Error(`Unknown merge strategy: ${strategy}`)
@@ -457,7 +447,6 @@ async function trackTemplateUsage(
       userId,
       eventType,
     })
-
   } catch (error) {
     logger.warn('Failed to track template usage', {
       templateId,
@@ -489,12 +478,12 @@ async function rollbackImport(workflowId: string, importId: string) {
   // In a real implementation, this would restore the workflow to its previous state
   // For now, we'll just log the rollback attempt
   logger.info('Import rollback initiated', { workflowId, importId })
-  
+
   // TODO: Implement actual rollback logic
   // - Restore previous workflow state from backup
   // - Remove imported blocks and edges
   // - Update workflow metadata
-  
+
   return true
 }
 
@@ -534,7 +523,7 @@ export async function POST(request: NextRequest) {
     if (!isInternalCall) {
       const session = await getSession()
       userId = session?.user?.id || null
-      
+
       if (!userId) {
         return NextResponse.json(
           {
@@ -605,10 +594,9 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid import request parameters:`, error.errors)
       return NextResponse.json(

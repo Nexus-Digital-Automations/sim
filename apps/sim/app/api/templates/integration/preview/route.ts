@@ -1,33 +1,32 @@
 /**
  * Template Integration Preview API - Workflow Editor Integration
- * 
+ *
  * This endpoint provides template preview functionality for the workflow editor,
  * allowing users to see how a template will integrate with their current workflow
  * before actual import. Includes conflict detection, dependency validation,
  * and customization preview.
- * 
+ *
  * Features:
  * - Real-time template preview generation
- * - Conflict detection with existing workflow elements  
+ * - Conflict detection with existing workflow elements
  * - Dependency validation and requirement checking
  * - Variable substitution preview
  * - Merge strategy visualization
  * - Performance impact analysis
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Integration Team
  * @created 2025-09-04
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { eq } from 'drizzle-orm'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, workflow } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { templates } from '@/db/schema'
 
 const logger = createLogger('TemplateIntegrationPreviewAPI')
 
@@ -42,12 +41,15 @@ const PreviewRequestSchema = z.object({
     description: z.string().max(1000).optional(),
     variables: z.record(z.any()).optional().default({}),
   }),
-  options: z.object({
-    includeMetrics: z.boolean().optional().default(false),
-    validateDependencies: z.boolean().optional().default(true),
-    showConflicts: z.boolean().optional().default(true),
-    mergeStrategy: z.enum(['replace', 'merge', 'append']).optional().default('replace'),
-  }).optional().default({}),
+  options: z
+    .object({
+      includeMetrics: z.boolean().optional().default(false),
+      validateDependencies: z.boolean().optional().default(true),
+      showConflicts: z.boolean().optional().default(true),
+      mergeStrategy: z.enum(['replace', 'merge', 'append']).optional().default('replace'),
+    })
+    .optional()
+    .default({}),
 })
 
 // ========================
@@ -57,25 +59,21 @@ const PreviewRequestSchema = z.object({
 /**
  * Generate template preview with conflict detection
  */
-async function generateTemplatePreview(
-  templateData: any,
-  customizations: any,
-  options: any
-) {
+async function generateTemplatePreview(templateData: any, customizations: any, options: any) {
   const startTime = Date.now()
-  
+
   try {
     // Parse template state
     const templateState = templateData.state || {}
     const templateBlocks = templateState.blocks || {}
     const templateEdges = templateState.edges || []
-    
+
     // Apply variable substitutions
     const processedBlocks = applyVariableSubstitutions(
       templateBlocks,
       customizations.variables || {}
     )
-    
+
     // Generate preview state
     const previewState = {
       blocks: processedBlocks,
@@ -91,27 +89,27 @@ async function generateTemplatePreview(
         },
       },
     }
-    
+
     // Generate metrics if requested
     let metrics = null
     if (options.includeMetrics) {
       metrics = generatePreviewMetrics(previewState, templateData)
     }
-    
+
     // Detect conflicts if requested
     let conflicts = []
     if (options.showConflicts) {
       conflicts = detectPotentialConflicts(previewState, options.mergeStrategy)
     }
-    
+
     // Validate dependencies if requested
     let dependencies = []
     if (options.validateDependencies) {
       dependencies = await validateTemplateDependencies(previewState)
     }
-    
+
     const processingTime = Date.now() - startTime
-    
+
     logger.info('Template preview generated successfully', {
       templateId: templateData.id,
       processingTime,
@@ -119,7 +117,7 @@ async function generateTemplatePreview(
       conflictCount: conflicts.length,
       dependencyCount: dependencies.length,
     })
-    
+
     return {
       previewState,
       metrics,
@@ -127,7 +125,6 @@ async function generateTemplatePreview(
       dependencies,
       processingTime,
     }
-    
   } catch (error) {
     logger.error('Failed to generate template preview', {
       templateId: templateData.id,
@@ -143,24 +140,22 @@ async function generateTemplatePreview(
  */
 function applyVariableSubstitutions(blocks: any, variables: Record<string, any>) {
   const processedBlocks = JSON.parse(JSON.stringify(blocks)) // Deep clone
-  
+
   // Variable substitution patterns
   const variablePattern = /\{\{([^}]+)\}\}/g
-  
+
   function substituteVariables(obj: any): any {
     if (typeof obj === 'string') {
       return obj.replace(variablePattern, (match, varName) => {
         const trimmedVarName = varName.trim()
-        return variables[trimmedVarName] !== undefined 
-          ? variables[trimmedVarName] 
-          : match
+        return variables[trimmedVarName] !== undefined ? variables[trimmedVarName] : match
       })
     }
-    
+
     if (Array.isArray(obj)) {
       return obj.map(substituteVariables)
     }
-    
+
     if (obj && typeof obj === 'object') {
       const result: any = {}
       for (const [key, value] of Object.entries(obj)) {
@@ -168,15 +163,15 @@ function applyVariableSubstitutions(blocks: any, variables: Record<string, any>)
       }
       return result
     }
-    
+
     return obj
   }
-  
+
   // Apply substitutions to all blocks
-  Object.keys(processedBlocks).forEach(blockId => {
+  Object.keys(processedBlocks).forEach((blockId) => {
     processedBlocks[blockId] = substituteVariables(processedBlocks[blockId])
   })
-  
+
   return processedBlocks
 }
 
@@ -186,7 +181,7 @@ function applyVariableSubstitutions(blocks: any, variables: Record<string, any>)
 function generatePreviewMetrics(previewState: any, templateData: any) {
   const blocks = previewState.blocks || {}
   const edges = previewState.edges || []
-  
+
   return {
     blockCount: Object.keys(blocks).length,
     edgeCount: edges.length,
@@ -209,13 +204,13 @@ function generatePreviewMetrics(previewState: any, templateData: any) {
 function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
   const conflicts = []
   const blocks = previewState.blocks || {}
-  
+
   // Simulate conflict detection (in real implementation, would compare with target workflow)
-  Object.keys(blocks).forEach(blockId => {
+  Object.keys(blocks).forEach((blockId) => {
     const block = blocks[blockId]
-    
+
     // Check for naming conflicts
-    if (block.name && block.name.includes('TODO')) {
+    if (block.name?.includes('TODO')) {
       conflicts.push({
         type: 'naming_conflict',
         blockId,
@@ -225,7 +220,7 @@ function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
         autoResolvable: false,
       })
     }
-    
+
     // Check for credential conflicts
     if (block.type === 'api' && !block.credentials) {
       conflicts.push({
@@ -237,10 +232,10 @@ function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
         autoResolvable: false,
       })
     }
-    
+
     // Check for environment variable conflicts
-    if (block.config && block.config.environment) {
-      Object.keys(block.config.environment).forEach(envVar => {
+    if (block.config?.environment) {
+      Object.keys(block.config.environment).forEach((envVar) => {
         if (envVar.startsWith('TEMPLATE_')) {
           conflicts.push({
             type: 'environment_variable',
@@ -254,7 +249,7 @@ function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
       })
     }
   })
-  
+
   return conflicts
 }
 
@@ -264,11 +259,11 @@ function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
 async function validateTemplateDependencies(previewState: any) {
   const dependencies = []
   const blocks = previewState.blocks || {}
-  
+
   // Analyze block dependencies
-  Object.keys(blocks).forEach(blockId => {
+  Object.keys(blocks).forEach((blockId) => {
     const block = blocks[blockId]
-    
+
     // Check for integration dependencies
     if (block.type === 'integration') {
       dependencies.push({
@@ -280,7 +275,7 @@ async function validateTemplateDependencies(previewState: any) {
         description: `Requires ${block.integration} integration to be configured`,
       })
     }
-    
+
     // Check for API dependencies
     if (block.type === 'api' && block.apiUrl) {
       dependencies.push({
@@ -292,7 +287,7 @@ async function validateTemplateDependencies(previewState: any) {
         description: `Requires access to external API: ${block.apiUrl}`,
       })
     }
-    
+
     // Check for file system dependencies
     if (block.type === 'file' && block.filePath) {
       dependencies.push({
@@ -304,10 +299,10 @@ async function validateTemplateDependencies(previewState: any) {
         description: `Requires file system access to: ${block.filePath}`,
       })
     }
-    
+
     // Check for environment variable dependencies
-    if (block.config && block.config.environment) {
-      Object.keys(block.config.environment).forEach(envVar => {
+    if (block.config?.environment) {
+      Object.keys(block.config.environment).forEach((envVar) => {
         dependencies.push({
           type: 'environment_variable',
           name: envVar,
@@ -319,7 +314,7 @@ async function validateTemplateDependencies(previewState: any) {
       })
     }
   })
-  
+
   return dependencies
 }
 
@@ -330,12 +325,12 @@ function calculateComplexityScore(blocks: any, edges: any[]) {
   const blockCount = Object.keys(blocks).length
   const edgeCount = edges.length
   const branchingFactor = edgeCount > 0 ? edgeCount / blockCount : 0
-  
+
   let complexityScore = 0
   complexityScore += Math.min(blockCount * 2, 50) // Block complexity (max 50)
   complexityScore += Math.min(branchingFactor * 20, 30) // Branching complexity (max 30)
   complexityScore += Math.min(getUniqueBlockTypes(blocks).length * 5, 20) // Type diversity (max 20)
-  
+
   return Math.round(complexityScore)
 }
 
@@ -344,7 +339,7 @@ function calculateComplexityScore(blocks: any, edges: any[]) {
  */
 function estimateExecutionTime(blocks: any) {
   let totalTime = 0
-  
+
   Object.values(blocks).forEach((block: any) => {
     // Estimate based on block type
     switch (block.type) {
@@ -364,7 +359,7 @@ function estimateExecutionTime(blocks: any) {
         totalTime += 100 // 0.1 seconds for basic operations
     }
   })
-  
+
   return Math.round(totalTime)
 }
 
@@ -378,7 +373,7 @@ function analyzeResourceRequirements(blocks: any) {
     storage: 0,
     network: 0,
   }
-  
+
   Object.values(blocks).forEach((block: any) => {
     switch (block.type) {
       case 'database':
@@ -400,7 +395,7 @@ function analyzeResourceRequirements(blocks: any) {
         requirements.cpu += 5
     }
   })
-  
+
   return {
     estimatedMemoryMB: Math.round(requirements.memory),
     estimatedCpuPercent: Math.round(requirements.cpu),
@@ -414,12 +409,12 @@ function analyzeResourceRequirements(blocks: any) {
  */
 function getBlockTypesDistribution(blocks: any) {
   const distribution: Record<string, number> = {}
-  
+
   Object.values(blocks).forEach((block: any) => {
     const type = block.type || 'unknown'
     distribution[type] = (distribution[type] || 0) + 1
   })
-  
+
   return distribution
 }
 
@@ -469,7 +464,7 @@ export async function POST(request: NextRequest) {
     if (!isInternalCall) {
       const session = await getSession()
       userId = session?.user?.id || null
-      
+
       if (!userId) {
         return NextResponse.json(
           {
@@ -539,10 +534,9 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid preview request parameters:`, error.errors)
       return NextResponse.json(

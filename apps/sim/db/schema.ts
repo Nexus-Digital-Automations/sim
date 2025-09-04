@@ -2415,7 +2415,10 @@ export const templateCategories = pgTable(
     parentIdIdx: index('template_categories_parent_id_idx').on(table.parentId),
     pathIdx: index('template_categories_path_idx').on(table.path),
     depthIdx: index('template_categories_depth_idx').on(table.depth),
-    featuredActiveIdx: index('template_categories_featured_active_idx').on(table.isFeatured, table.isActive),
+    featuredActiveIdx: index('template_categories_featured_active_idx').on(
+      table.isFeatured,
+      table.isActive
+    ),
     slugIdx: index('template_categories_slug_idx').on(table.slug),
   })
 )
@@ -2533,12 +2536,18 @@ export const templates = pgTable(
     createdByUserId: text('created_by_user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    approvedByUserId: text('approved_by_user_id').references(() => user.id, { onDelete: 'set null' }),
+    approvedByUserId: text('approved_by_user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
     approvedAt: timestamp('approved_at'),
 
     // Versioning and history
-    parentTemplateId: text('parent_template_id').references(() => templates.id, { onDelete: 'set null' }), // For template forks/variants
-    originalTemplateId: text('original_template_id').references(() => templates.id, { onDelete: 'set null' }), // Track original for forks
+    parentTemplateId: text('parent_template_id').references(() => templates.id, {
+      onDelete: 'set null',
+    }), // For template forks/variants
+    originalTemplateId: text('original_template_id').references(() => templates.id, {
+      onDelete: 'set null',
+    }), // Track original for forks
 
     // Audit and timestamps
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -2552,16 +2561,31 @@ export const templates = pgTable(
   (table) => ({
     categoryIdIdx: index('templates_category_id_idx').on(table.categoryId),
     createdByIdx: index('templates_created_by_idx').on(table.createdByUserId),
-    statusVisibilityIdx: index('templates_status_visibility_idx').on(table.status, table.visibility),
-    featuredIdx: index('templates_featured_idx').on(table.isFeatured, table.status, table.visibility),
-    communityIdx: index('templates_community_idx').on(table.isCommunityTemplate, table.status, table.visibility),
+    statusVisibilityIdx: index('templates_status_visibility_idx').on(
+      table.status,
+      table.visibility
+    ),
+    featuredIdx: index('templates_featured_idx').on(
+      table.isFeatured,
+      table.status,
+      table.visibility
+    ),
+    communityIdx: index('templates_community_idx').on(
+      table.isCommunityTemplate,
+      table.status,
+      table.visibility
+    ),
     ratingIdx: index('templates_rating_idx').on(table.ratingAverage, table.ratingCount),
     popularityIdx: index('templates_popularity_idx').on(table.downloadCount, table.viewCount),
     difficultyIdx: index('templates_difficulty_idx').on(table.difficultyLevel),
     publishedIdx: index('templates_published_idx').on(table.publishedAt),
     searchIdx: index('templates_search_idx').using('gin', table.searchVector),
     workflowGinIdx: index('templates_workflow_gin_idx').using('gin', table.workflowTemplate),
-    integrationsGinIdx: index('templates_integrations_gin_idx').using('gin', table.requiredIntegrations, table.supportedIntegrations),
+    integrationsGinIdx: index('templates_integrations_gin_idx').using(
+      'gin',
+      table.requiredIntegrations,
+      table.supportedIntegrations
+    ),
   })
 )
 
@@ -2639,17 +2663,35 @@ export const templateRatings = pgTable(
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
-    templateUserUnique: uniqueIndex('template_ratings_template_user_unique').on(table.templateId, table.userId),
+    templateUserUnique: uniqueIndex('template_ratings_template_user_unique').on(
+      table.templateId,
+      table.userId
+    ),
     templateIdx: index('template_ratings_template_idx').on(table.templateId, table.rating),
     userIdx: index('template_ratings_user_idx').on(table.userId),
     approvedIdx: index('template_ratings_approved_idx').on(table.isApproved, table.createdAt),
     helpfulIdx: index('template_ratings_helpful_idx').on(table.helpfulCount),
     verifiedIdx: index('template_ratings_verified_idx').on(table.isVerifiedUsage, table.rating),
-    ratingCheck: check('template_ratings_rating_check', sql`${table.rating} >= 1 AND ${table.rating} <= 5`),
-    easeRatingCheck: check('template_ratings_ease_rating_check', sql`${table.easeOfUseRating} IS NULL OR (${table.easeOfUseRating} >= 1 AND ${table.easeOfUseRating} <= 5)`),
-    docRatingCheck: check('template_ratings_doc_rating_check', sql`${table.documentationRating} IS NULL OR (${table.documentationRating} >= 1 AND ${table.documentationRating} <= 5)`),
-    perfRatingCheck: check('template_ratings_perf_rating_check', sql`${table.performanceRating} IS NULL OR (${table.performanceRating} >= 1 AND ${table.performanceRating} <= 5)`),
-    valueRatingCheck: check('template_ratings_value_rating_check', sql`${table.valueRating} IS NULL OR (${table.valueRating} >= 1 AND ${table.valueRating} <= 5)`),
+    ratingCheck: check(
+      'template_ratings_rating_check',
+      sql`${table.rating} >= 1 AND ${table.rating} <= 5`
+    ),
+    easeRatingCheck: check(
+      'template_ratings_ease_rating_check',
+      sql`${table.easeOfUseRating} IS NULL OR (${table.easeOfUseRating} >= 1 AND ${table.easeOfUseRating} <= 5)`
+    ),
+    docRatingCheck: check(
+      'template_ratings_doc_rating_check',
+      sql`${table.documentationRating} IS NULL OR (${table.documentationRating} >= 1 AND ${table.documentationRating} <= 5)`
+    ),
+    perfRatingCheck: check(
+      'template_ratings_perf_rating_check',
+      sql`${table.performanceRating} IS NULL OR (${table.performanceRating} >= 1 AND ${table.performanceRating} <= 5)`
+    ),
+    valueRatingCheck: check(
+      'template_ratings_value_rating_check',
+      sql`${table.valueRating} IS NULL OR (${table.valueRating} >= 1 AND ${table.valueRating} <= 5)`
+    ),
   })
 )
 
@@ -2772,7 +2814,10 @@ export const templateCollections = pgTable(
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
-    userSlugUnique: uniqueIndex('template_collections_user_slug_unique').on(table.createdByUserId, table.slug),
+    userSlugUnique: uniqueIndex('template_collections_user_slug_unique').on(
+      table.createdByUserId,
+      table.slug
+    ),
     userIdx: index('template_collections_user_idx').on(table.createdByUserId),
     publicIdx: index('template_collections_public_idx').on(table.isPublic, table.isFeatured),
     slugIdx: index('template_collections_slug_idx').on(table.slug),
@@ -2796,7 +2841,10 @@ export const templateCollectionItems = pgTable(
     notes: text('notes'), // User notes about why template is in collection
   },
   (table) => ({
-    collectionTemplatePk: uniqueIndex('template_collection_items_pk').on(table.collectionId, table.templateId),
+    collectionTemplatePk: uniqueIndex('template_collection_items_pk').on(
+      table.collectionId,
+      table.templateId
+    ),
     collectionIdx: index('collection_items_collection_idx').on(table.collectionId, table.sortOrder),
     templateIdx: index('collection_items_template_idx').on(table.templateId),
   })

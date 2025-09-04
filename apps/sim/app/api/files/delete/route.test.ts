@@ -23,9 +23,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // ================================
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls, mockUploadsControls } from '@/app/api/__test-utils__/module-mocks'
-
 // Import route handlers AFTER mocks are set up
-import { POST, OPTIONS } from './route'
+import { OPTIONS, POST } from './route'
 
 // ================================
 // TEST DATA DEFINITIONS
@@ -100,12 +99,13 @@ function createMockRequest(
 function setupMockFileOperations(provider: 'local' | 's3' | 'blob' = 'local', shouldFail = false) {
   // Configure cloud storage setting
   mockUploadsControls.setCloudStorage(provider !== 'local')
-  
+
   // Configure error behavior
   if (shouldFail) {
-    const errorMessage = provider === 'local' 
-      ? 'ENOENT: no such file or directory' 
-      : `${provider.charAt(0).toUpperCase() + provider.slice(1)} storage error`
+    const errorMessage =
+      provider === 'local'
+        ? 'ENOENT: no such file or directory'
+        : `${provider.charAt(0).toUpperCase() + provider.slice(1)} storage error`
     mockUploadsControls.setDeleteFileError(new Error(errorMessage))
   } else {
     mockUploadsControls.setDeleteFileError(null)
@@ -179,8 +179,10 @@ describe('File Delete API Route', () => {
       console.log(`[TEST] Response status: ${response.status}`)
       expect(response.status).toBe(400)
       expect(data.error).toBeDefined()
-      expect(['InvalidRequestError', 'No file path provided'].includes(data.error) || 
-             ['No file path provided', 'Invalid request data'].includes(data.message)).toBe(true)
+      expect(
+        ['InvalidRequestError', 'No file path provided'].includes(data.error) ||
+          ['No file path provided', 'Invalid request data'].includes(data.message)
+      ).toBe(true)
     })
 
     /**
@@ -425,16 +427,7 @@ describe('File Delete API Route', () => {
     it('should handle various file extensions correctly', async () => {
       console.log('[TEST] Testing file extension handling')
 
-      const testExtensions = [
-        '.txt',
-        '.pdf',
-        '.png',
-        '.jpg',
-        '.doc',
-        '.xlsx',
-        '.json',
-        '.xml',
-      ]
+      const testExtensions = ['.txt', '.pdf', '.png', '.jpg', '.doc', '.xlsx', '.json', '.xml']
 
       for (const ext of testExtensions) {
         setupMockFileOperations('local', false)
@@ -470,9 +463,7 @@ describe('File Delete API Route', () => {
         })
       )
 
-      const responses = await Promise.all(
-        concurrentRequests.map(req => POST(req))
-      )
+      const responses = await Promise.all(concurrentRequests.map((req) => POST(req)))
 
       // All requests should complete
       responses.forEach((response, index) => {
@@ -487,7 +478,7 @@ describe('File Delete API Route', () => {
     it('should handle very long file paths', async () => {
       console.log('[TEST] Testing very long file path handling')
 
-      const longFileName = 'a'.repeat(200) + '.txt'
+      const longFileName = `${'a'.repeat(200)}.txt`
       const longPath = `/api/files/serve/${longFileName}`
 
       setupMockFileOperations('local', false)

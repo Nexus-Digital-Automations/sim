@@ -13,62 +13,54 @@
 // CORE COMPONENTS
 // ================================================================================================
 
-// Context and State Management
-export { HelpProvider, useHelpContext } from './help-context-provider'
-export type {
-  HelpState,
-  HelpContext,
-  HelpUserPreferences,
-  HelpTourStep,
-  HelpTooltipProps,
-  HelpPanelProps,
-  HelpSpotlightProps,
-  HelpSearchResult,
-  HelpContentItem,
-} from './help-context-provider'
-
-// Content Management
-export { HelpContentManager } from './help-content-manager'
-export type {
-  HelpContentDocument,
-  ContentSearchFilter,
-  ContentSearchResult,
-  ContentPerformanceMetrics,
-} from './help-content-manager'
-
-// Analytics and Tracking
-export { HelpAnalyticsService } from './help-analytics'
 export type {
   HelpAnalyticsEvent,
   HelpInteractionMetrics,
   UserEngagementMetrics,
 } from './help-analytics'
+// Analytics and Tracking
+export { HelpAnalyticsService } from './help-analytics'
+export type {
+  ContentPerformanceMetrics,
+  ContentSearchFilter,
+  ContentSearchResult,
+  HelpContentDocument,
+} from './help-content-manager'
+// Content Management
+export { HelpContentManager } from './help-content-manager'
+export type {
+  HelpContentItem,
+  HelpContext,
+  HelpPanelProps,
+  HelpSearchResult,
+  HelpSpotlightProps,
+  HelpState,
+  HelpTooltipProps,
+  HelpTourStep,
+  HelpUserPreferences,
+} from './help-context-provider'
+// Context and State Management
+export { HelpProvider, useHelpContext } from './help-context-provider'
 
 // ================================================================================================
 // UI COMPONENTS
 // ================================================================================================
 
+export { HelpContentRenderer } from '@/components/help/help-content-renderer'
+export { HelpPanel } from '@/components/help/help-panel'
+export { HelpSearchBar } from '@/components/help/help-search-bar'
+export { HelpSpotlight } from '@/components/help/help-spotlight'
 // Interactive Help Components
 export { HelpTooltip } from '@/components/help/help-tooltip'
-export { HelpPanel } from '@/components/help/help-panel'
-export { HelpSpotlight } from '@/components/help/help-spotlight'
-export { HelpSearchBar } from '@/components/help/help-search-bar'
-export { HelpContentRenderer } from '@/components/help/help-content-renderer'
-
 // Workflow Integration
 export { HelpWorkflowIntegration } from '@/components/help/help-workflow-integration'
-
-// ================================================================================================
-// CONTENT SYSTEM
-// ================================================================================================
-
 // Content Organization
-export { helpContentLoader } from '@/help/content/index'
-export {
+export { 
+  createHelpContent,
   HELP_CATEGORIES,
   HELP_CONTENT_TEMPLATES,
-  createHelpContent,
-  validateHelpContent,
+  helpContentLoader, 
+  validateHelpContent
 } from '@/help/content/index'
 
 // ================================================================================================

@@ -16,37 +16,39 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
-import { useHelp } from '@/lib/help/help-context-provider'
-import { helpContentManager } from '@/lib/help/help-content-manager'
-import { helpAnalytics } from '@/lib/help/help-analytics'
-import type { HelpContentDocument, ContentSearchResult } from '@/lib/help/help-content-manager'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  SearchIcon,
-  XIcon,
   BookOpenIcon,
+  ChevronRightIcon,
   ClockIcon,
+  FilterIcon,
+  HelpCircleIcon,
+  SearchIcon,
   StarIcon,
   TagIcon,
-  TrendingUpIcon,
-  HelpCircleIcon,
-  ChevronRightIcon,
-  ExternalLinkIcon,
-  ThumbsUpIcon,
   ThumbsDownIcon,
-  FilterIcon,
-  SortAscIcon
+  ThumbsUpIcon,
+  XIcon,
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { helpAnalytics } from '@/lib/help/help-analytics'
+import type { ContentSearchResult, HelpContentDocument } from '@/lib/help/help-content-manager'
+import { helpContentManager } from '@/lib/help/help-content-manager'
+import { useHelp } from '@/lib/help/help-context-provider'
+import { cn } from '@/lib/utils'
 
 // ========================
 // TYPE DEFINITIONS
@@ -57,27 +59,27 @@ export interface HelpPanelProps {
   onClose: () => void
   initialTab?: 'search' | 'browse' | 'recent' | 'bookmarks'
   className?: string
-  
+
   // Search configuration
   enableSearch?: boolean
   enableAutoComplete?: boolean
   searchPlaceholder?: string
-  
+
   // Content filtering
   enableFilters?: boolean
   availableCategories?: string[]
   availableComponents?: string[]
-  
+
   // Features
   enableBookmarks?: boolean
   enableRatings?: boolean
   enableHistory?: boolean
   enableContextualSuggestions?: boolean
-  
+
   // Customization
   maxContentItems?: number
   showContentPreviews?: boolean
-  
+
   // Events
   onContentSelect?: (content: HelpContentDocument) => void
   onSearchQuery?: (query: string) => void
@@ -150,7 +152,7 @@ export function HelpPanel({
   const [bookmarkedContent, setBookmarkedContent] = useState<HelpContentDocument[]>([])
   const [contextualContent, setContextualContent] = useState<HelpContentDocument[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout>()
 
@@ -158,55 +160,65 @@ export function HelpPanel({
   // SEARCH FUNCTIONALITY
   // ========================
 
-  const performSearch = useCallback(async (query: string, filters?: Partial<FilterState>) => {
-    if (!query.trim()) {
-      setSearchState(prev => ({ ...prev, results: null, isSearching: false }))
-      return
-    }
-
-    setSearchState(prev => ({ ...prev, isSearching: true }))
-
-    try {
-      const searchFilters = {
-        categories: filters?.categories || filterState.categories,
-        components: filters?.components || filterState.components,
-        contentTypes: filters?.contentTypes || filterState.contentTypes,
-        userLevels: filters?.userLevels || filterState.userLevels,
-        isPublished: true,
+  const performSearch = useCallback(
+    async (query: string, filters?: Partial<FilterState>) => {
+      if (!query.trim()) {
+        setSearchState((prev) => ({ ...prev, results: null, isSearching: false }))
+        return
       }
 
-      const results = await helpContentManager.searchContent(query, searchFilters, 1, maxContentItems)
+      setSearchState((prev) => ({ ...prev, isSearching: true }))
 
-      setSearchState(prev => ({
-        ...prev,
-        results,
-        isSearching: false,
-        recentSearches: [query, ...prev.recentSearches.filter(s => s !== query)].slice(0, 5),
-      }))
+      try {
+        const searchFilters = {
+          categories: filters?.categories || filterState.categories,
+          components: filters?.components || filterState.components,
+          contentTypes: filters?.contentTypes || filterState.contentTypes,
+          userLevels: filters?.userLevels || filterState.userLevels,
+          isPublished: true,
+        }
 
-      // Track search query
-      helpAnalytics.trackSearchQuery(query, helpState.sessionId, results.total)
-      onSearchQuery?.(query)
+        const results = await helpContentManager.searchContent(
+          query,
+          searchFilters,
+          1,
+          maxContentItems
+        )
 
-    } catch (error) {
-      console.error('Search error:', error)
-      setSearchState(prev => ({ ...prev, isSearching: false }))
-    }
-  }, [filterState, maxContentItems, helpState.sessionId, onSearchQuery])
+        setSearchState((prev) => ({
+          ...prev,
+          results,
+          isSearching: false,
+          recentSearches: [query, ...prev.recentSearches.filter((s) => s !== query)].slice(0, 5),
+        }))
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchState(prev => ({ ...prev, query: value }))
+        // Track search query
+        helpAnalytics.trackSearchQuery(query, helpState.sessionId, results.total)
+        onSearchQuery?.(query)
+      } catch (error) {
+        console.error('Search error:', error)
+        setSearchState((prev) => ({ ...prev, isSearching: false }))
+      }
+    },
+    [filterState, maxContentItems, helpState.sessionId, onSearchQuery]
+  )
 
-    // Clear existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchState((prev) => ({ ...prev, query: value }))
 
-    // Debounced search
-    searchTimeoutRef.current = setTimeout(() => {
-      performSearch(value)
-    }, 300)
-  }, [performSearch])
+      // Clear existing timeout
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+
+      // Debounced search
+      searchTimeoutRef.current = setTimeout(() => {
+        performSearch(value)
+      }, 300)
+    },
+    [performSearch]
+  )
 
   const handleSearchSubmit = useCallback(() => {
     if (searchTimeoutRef.current) {
@@ -252,7 +264,7 @@ export function HelpPanel({
         page: window.location.pathname,
         userLevel: helpState.userLevel,
       }
-      
+
       const content = await helpContentManager.getContextualContent(context)
       setContextualContent(content)
     } catch (error) {
@@ -266,57 +278,59 @@ export function HelpPanel({
   // EVENT HANDLERS
   // ========================
 
-  const handleContentClick = useCallback((content: HelpContentDocument) => {
-    trackInteraction('click', `help-content-${content.id}`)
-    
-    helpAnalytics.trackHelpInteraction(
-      content.id,
-      helpState.sessionId,
-      'click',
-      'panel_content'
-    )
+  const handleContentClick = useCallback(
+    (content: HelpContentDocument) => {
+      trackInteraction('click', `help-content-${content.id}`)
 
-    onContentSelect?.(content)
-  }, [trackInteraction, helpState.sessionId, onContentSelect])
+      helpAnalytics.trackHelpInteraction(content.id, helpState.sessionId, 'click', 'panel_content')
 
-  const handleBookmark = useCallback(async (contentId: string) => {
-    // TODO: Implement bookmark functionality
-    trackInteraction('click', `bookmark-${contentId}`)
-    
-    helpAnalytics.trackHelpInteraction(
-      contentId,
-      helpState.sessionId,
-      'bookmark',
-      'panel_action'
-    )
-  }, [trackInteraction, helpState.sessionId])
+      onContentSelect?.(content)
+    },
+    [trackInteraction, helpState.sessionId, onContentSelect]
+  )
 
-  const handleRating = useCallback(async (contentId: string, rating: number) => {
-    try {
-      // TODO: Submit rating to feedback system
-      onFeedback?.(contentId, rating)
-      
-      helpAnalytics.trackHelpInteraction(
-        contentId,
-        helpState.sessionId,
-        'rating',
-        'panel_feedback',
-        { rating }
-      )
-    } catch (error) {
-      console.error('Error submitting rating:', error)
-    }
-  }, [onFeedback, helpState.sessionId])
+  const handleBookmark = useCallback(
+    async (contentId: string) => {
+      // TODO: Implement bookmark functionality
+      trackInteraction('click', `bookmark-${contentId}`)
 
-  const handleFilterChange = useCallback((filterType: keyof FilterState, value: any) => {
-    const newFilters = { ...filterState, [filterType]: value }
-    setFilterState(newFilters)
-    
-    // Re-search if there's a query
-    if (searchState.query) {
-      performSearch(searchState.query, newFilters)
-    }
-  }, [filterState, searchState.query, performSearch])
+      helpAnalytics.trackHelpInteraction(contentId, helpState.sessionId, 'bookmark', 'panel_action')
+    },
+    [trackInteraction, helpState.sessionId]
+  )
+
+  const handleRating = useCallback(
+    async (contentId: string, rating: number) => {
+      try {
+        // TODO: Submit rating to feedback system
+        onFeedback?.(contentId, rating)
+
+        helpAnalytics.trackHelpInteraction(
+          contentId,
+          helpState.sessionId,
+          'rating',
+          'panel_feedback',
+          { rating }
+        )
+      } catch (error) {
+        console.error('Error submitting rating:', error)
+      }
+    },
+    [onFeedback, helpState.sessionId]
+  )
+
+  const handleFilterChange = useCallback(
+    (filterType: keyof FilterState, value: any) => {
+      const newFilters = { ...filterState, [filterType]: value }
+      setFilterState(newFilters)
+
+      // Re-search if there's a query
+      if (searchState.query) {
+        performSearch(searchState.query, newFilters)
+      }
+    },
+    [filterState, searchState.query, performSearch]
+  )
 
   // ========================
   // EFFECTS
@@ -342,7 +356,15 @@ export function HelpPanel({
         setTimeout(() => searchInputRef.current?.focus(), 100)
       }
     }
-  }, [isOpen, activeTab, enableHistory, enableBookmarks, loadRecentContent, loadBookmarkedContent, loadContextualContent])
+  }, [
+    isOpen,
+    activeTab,
+    enableHistory,
+    enableBookmarks,
+    loadRecentContent,
+    loadBookmarkedContent,
+    loadContextualContent,
+  ])
 
   // ========================
   // RENDER HELPERS
@@ -352,29 +374,33 @@ export function HelpPanel({
     if (!enableFilters) return null
 
     return (
-      <div className="flex items-center gap-2 p-4 border-b">
-        <FilterIcon className="h-4 w-4 text-muted-foreground" />
-        <div className="flex items-center gap-2 overflow-x-auto">
+      <div className='flex items-center gap-2 border-b p-4'>
+        <FilterIcon className='h-4 w-4 text-muted-foreground' />
+        <div className='flex items-center gap-2 overflow-x-auto'>
           <select
             value={filterState.sortBy}
             onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-            className="px-2 py-1 text-sm border rounded"
+            className='rounded border px-2 py-1 text-sm'
           >
-            <option value="relevance">Relevance</option>
-            <option value="recent">Most Recent</option>
-            <option value="popular">Most Popular</option>
-            <option value="rating">Highest Rated</option>
+            <option value='relevance'>Relevance</option>
+            <option value='recent'>Most Recent</option>
+            <option value='popular'>Most Popular</option>
+            <option value='rating'>Highest Rated</option>
           </select>
-          
+
           {availableCategories.length > 0 && (
             <select
               value={filterState.categories[0] || ''}
-              onChange={(e) => handleFilterChange('categories', e.target.value ? [e.target.value] : [])}
-              className="px-2 py-1 text-sm border rounded"
+              onChange={(e) =>
+                handleFilterChange('categories', e.target.value ? [e.target.value] : [])
+              }
+              className='rounded border px-2 py-1 text-sm'
             >
-              <option value="">All Categories</option>
-              {availableCategories.map(category => (
-                <option key={category} value={category}>{category}</option>
+              <option value=''>All Categories</option>
+              {availableCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
           )}
@@ -387,97 +413,93 @@ export function HelpPanel({
     return (
       <Card
         key={content.id}
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
+        className='cursor-pointer transition-colors hover:bg-muted/50'
         onClick={() => handleContentClick(content)}
       >
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between">
-            <CardTitle className="text-sm font-medium line-clamp-2">
-              {content.title}
-            </CardTitle>
-            <div className="flex items-center gap-1 ml-2">
+        <CardHeader className='pb-2'>
+          <div className='flex items-start justify-between'>
+            <CardTitle className='line-clamp-2 font-medium text-sm'>{content.title}</CardTitle>
+            <div className='ml-2 flex items-center gap-1'>
               {enableBookmarks && (
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={(e) => {
                     e.stopPropagation()
                     handleBookmark(content.id)
                   }}
-                  className="h-6 w-6 p-0"
+                  className='h-6 w-6 p-0'
                 >
-                  <StarIcon className="h-3 w-3" />
+                  <StarIcon className='h-3 w-3' />
                 </Button>
               )}
-              <ChevronRightIcon className="h-3 w-3 text-muted-foreground" />
+              <ChevronRightIcon className='h-3 w-3 text-muted-foreground' />
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" size="sm">
+
+          <div className='flex items-center gap-2'>
+            <Badge variant='secondary' size='sm'>
               {content.metadata.category}
             </Badge>
             {content.metadata.estimatedReadingTime && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <ClockIcon className="h-3 w-3" />
+              <span className='flex items-center gap-1 text-muted-foreground text-xs'>
+                <ClockIcon className='h-3 w-3' />
                 {Math.ceil(content.metadata.estimatedReadingTime / 60)}m
               </span>
             )}
           </div>
         </CardHeader>
-        
+
         {showPreview && showContentPreviews && (
-          <CardContent className="pt-0">
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {content.metadata.description || 
-               (typeof content.content === 'string' 
-                 ? content.content.substring(0, 120) + '...'
-                 : 'Click to view content'
-               )
-              }
+          <CardContent className='pt-0'>
+            <p className='line-clamp-2 text-muted-foreground text-sm'>
+              {content.metadata.description ||
+                (typeof content.content === 'string'
+                  ? `${content.content.substring(0, 120)}...`
+                  : 'Click to view content')}
             </p>
-            
+
             {content.tags.length > 0 && (
-              <div className="flex items-center gap-1 mt-2">
-                <TagIcon className="h-3 w-3 text-muted-foreground" />
-                <div className="flex gap-1 overflow-x-auto">
-                  {content.tags.slice(0, 3).map(tag => (
-                    <Badge key={tag} variant="outline" size="sm" className="text-xs">
+              <div className='mt-2 flex items-center gap-1'>
+                <TagIcon className='h-3 w-3 text-muted-foreground' />
+                <div className='flex gap-1 overflow-x-auto'>
+                  {content.tags.slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant='outline' size='sm' className='text-xs'>
                       {tag}
                     </Badge>
                   ))}
                   {content.tags.length > 3 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className='text-muted-foreground text-xs'>
                       +{content.tags.length - 3}
                     </span>
                   )}
                 </div>
               </div>
             )}
-            
+
             {enableRatings && (
-              <div className="flex items-center gap-2 mt-2">
+              <div className='mt-2 flex items-center gap-2'>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={(e) => {
                     e.stopPropagation()
                     handleRating(content.id, 1)
                   }}
-                  className="h-6 px-2"
+                  className='h-6 px-2'
                 >
-                  <ThumbsUpIcon className="h-3 w-3" />
+                  <ThumbsUpIcon className='h-3 w-3' />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={(e) => {
                     e.stopPropagation()
                     handleRating(content.id, -1)
                   }}
-                  className="h-6 px-2"
+                  className='h-6 px-2'
                 >
-                  <ThumbsDownIcon className="h-3 w-3" />
+                  <ThumbsDownIcon className='h-3 w-3' />
                 </Button>
               </div>
             )}
@@ -490,16 +512,16 @@ export function HelpPanel({
   const renderSearchResults = () => {
     if (searchState.isSearching) {
       return (
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className='h-4 w-3/4' />
+                <Skeleton className='h-3 w-1/2' />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className='h-3 w-full' />
+                <Skeleton className='h-3 w-2/3' />
               </CardContent>
             </Card>
           ))}
@@ -509,24 +531,24 @@ export function HelpPanel({
 
     if (!searchState.results) {
       return (
-        <div className="text-center py-8">
-          <SearchIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Search Help Content</h3>
-          <p className="text-sm text-muted-foreground">
+        <div className='py-8 text-center'>
+          <SearchIcon className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+          <h3 className='mb-2 font-medium text-lg'>Search Help Content</h3>
+          <p className='text-muted-foreground text-sm'>
             Enter a search term to find relevant help articles and guides.
           </p>
-          
+
           {searchState.recentSearches.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-2">Recent Searches</p>
-              <div className="flex flex-wrap gap-2 justify-center">
+            <div className='mt-4'>
+              <p className='mb-2 font-medium text-sm'>Recent Searches</p>
+              <div className='flex flex-wrap justify-center gap-2'>
                 {searchState.recentSearches.map((search) => (
                   <Badge
                     key={search}
-                    variant="secondary"
-                    className="cursor-pointer"
+                    variant='secondary'
+                    className='cursor-pointer'
                     onClick={() => {
-                      setSearchState(prev => ({ ...prev, query: search }))
+                      setSearchState((prev) => ({ ...prev, query: search }))
                       performSearch(search)
                     }}
                   >
@@ -542,10 +564,10 @@ export function HelpPanel({
 
     if (searchState.results.documents.length === 0) {
       return (
-        <div className="text-center py-8">
-          <HelpCircleIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No Results Found</h3>
-          <p className="text-sm text-muted-foreground">
+        <div className='py-8 text-center'>
+          <HelpCircleIcon className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+          <h3 className='mb-2 font-medium text-lg'>No Results Found</h3>
+          <p className='text-muted-foreground text-sm'>
             Try different keywords or check the filters.
           </p>
         </div>
@@ -553,11 +575,11 @@ export function HelpPanel({
     }
 
     return (
-      <div className="space-y-3">
-        <div className="text-sm text-muted-foreground">
+      <div className='space-y-3'>
+        <div className='text-muted-foreground text-sm'>
           Found {searchState.results.total} result{searchState.results.total !== 1 ? 's' : ''}
         </div>
-        {searchState.results.documents.map(content => renderContentItem(content))}
+        {searchState.results.documents.map((content) => renderContentItem(content))}
       </div>
     )
   }
@@ -565,9 +587,9 @@ export function HelpPanel({
   const renderContentList = (content: HelpContentDocument[], emptyMessage: string) => {
     if (isLoading) {
       return (
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <Skeleton key={i} className='h-24 w-full' />
           ))}
         </div>
       )
@@ -575,18 +597,14 @@ export function HelpPanel({
 
     if (content.length === 0) {
       return (
-        <div className="text-center py-8">
-          <BookOpenIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        <div className='py-8 text-center'>
+          <BookOpenIcon className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+          <p className='text-muted-foreground text-sm'>{emptyMessage}</p>
         </div>
       )
     }
 
-    return (
-      <div className="space-y-3">
-        {content.map(item => renderContentItem(item))}
-      </div>
-    )
+    return <div className='space-y-3'>{content.map((item) => renderContentItem(item))}</div>
   }
 
   // ========================
@@ -595,7 +613,7 @@ export function HelpPanel({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className={cn("w-[400px] sm:w-[540px]", className)}>
+      <SheetContent side='right' className={cn('w-[400px] sm:w-[540px]', className)}>
         <SheetHeader>
           <SheetTitle>Help Center</SheetTitle>
           <SheetDescription>
@@ -603,94 +621,92 @@ export function HelpPanel({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col h-full mt-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
-            <TabsList className="grid w-full grid-cols-4">
+        <div className='mt-6 flex h-full flex-col'>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className='flex flex-1 flex-col'>
+            <TabsList className='grid w-full grid-cols-4'>
               {enableSearch && (
-                <TabsTrigger value="search" className="text-xs">
-                  <SearchIcon className="h-3 w-3 mr-1" />
+                <TabsTrigger value='search' className='text-xs'>
+                  <SearchIcon className='mr-1 h-3 w-3' />
                   Search
                 </TabsTrigger>
               )}
-              <TabsTrigger value="browse" className="text-xs">
-                <BookOpenIcon className="h-3 w-3 mr-1" />
+              <TabsTrigger value='browse' className='text-xs'>
+                <BookOpenIcon className='mr-1 h-3 w-3' />
                 Browse
               </TabsTrigger>
               {enableHistory && (
-                <TabsTrigger value="recent" className="text-xs">
-                  <ClockIcon className="h-3 w-3 mr-1" />
+                <TabsTrigger value='recent' className='text-xs'>
+                  <ClockIcon className='mr-1 h-3 w-3' />
                   Recent
                 </TabsTrigger>
               )}
               {enableBookmarks && (
-                <TabsTrigger value="bookmarks" className="text-xs">
-                  <StarIcon className="h-3 w-3 mr-1" />
+                <TabsTrigger value='bookmarks' className='text-xs'>
+                  <StarIcon className='mr-1 h-3 w-3' />
                   Saved
                 </TabsTrigger>
               )}
             </TabsList>
 
-            <div className="flex-1 mt-4">
+            <div className='mt-4 flex-1'>
               {enableSearch && (
-                <TabsContent value="search" className="mt-0 flex flex-col h-full">
-                  <div className="sticky top-0 bg-background z-10">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="relative flex-1">
-                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <TabsContent value='search' className='mt-0 flex h-full flex-col'>
+                  <div className='sticky top-0 z-10 bg-background'>
+                    <div className='mb-4 flex items-center gap-2'>
+                      <div className='relative flex-1'>
+                        <SearchIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground' />
                         <Input
                           ref={searchInputRef}
                           placeholder={searchPlaceholder}
                           value={searchState.query}
                           onChange={(e) => handleSearchChange(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                          className="pl-10"
+                          className='pl-10'
                         />
                         {searchState.query && (
                           <Button
-                            variant="ghost"
-                            size="sm"
+                            variant='ghost'
+                            size='sm'
                             onClick={() => handleSearchChange('')}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                            className='-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6 transform p-0'
                           >
-                            <XIcon className="h-3 w-3" />
+                            <XIcon className='h-3 w-3' />
                           </Button>
                         )}
                       </div>
                     </div>
                     {renderSearchFilters()}
                   </div>
-                  
-                  <ScrollArea className="flex-1">
-                    <div className="p-4">
-                      {renderSearchResults()}
-                    </div>
+
+                  <ScrollArea className='flex-1'>
+                    <div className='p-4'>{renderSearchResults()}</div>
                   </ScrollArea>
                 </TabsContent>
               )}
 
-              <TabsContent value="browse" className="mt-0 flex flex-col h-full">
-                <ScrollArea className="flex-1">
-                  <div className="p-4">
-                    {renderContentList(contextualContent, "No contextual help available.")}
+              <TabsContent value='browse' className='mt-0 flex h-full flex-col'>
+                <ScrollArea className='flex-1'>
+                  <div className='p-4'>
+                    {renderContentList(contextualContent, 'No contextual help available.')}
                   </div>
                 </ScrollArea>
               </TabsContent>
 
               {enableHistory && (
-                <TabsContent value="recent" className="mt-0 flex flex-col h-full">
-                  <ScrollArea className="flex-1">
-                    <div className="p-4">
-                      {renderContentList(recentContent, "No recent help content viewed.")}
+                <TabsContent value='recent' className='mt-0 flex h-full flex-col'>
+                  <ScrollArea className='flex-1'>
+                    <div className='p-4'>
+                      {renderContentList(recentContent, 'No recent help content viewed.')}
                     </div>
                   </ScrollArea>
                 </TabsContent>
               )}
 
               {enableBookmarks && (
-                <TabsContent value="bookmarks" className="mt-0 flex flex-col h-full">
-                  <ScrollArea className="flex-1">
-                    <div className="p-4">
-                      {renderContentList(bookmarkedContent, "No bookmarked help content.")}
+                <TabsContent value='bookmarks' className='mt-0 flex h-full flex-col'>
+                  <ScrollArea className='flex-1'>
+                    <div className='p-4'>
+                      {renderContentList(bookmarkedContent, 'No bookmarked help content.')}
                     </div>
                   </ScrollArea>
                 </TabsContent>

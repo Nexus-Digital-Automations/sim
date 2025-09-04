@@ -19,13 +19,13 @@
 
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMockRequest } from '@/app/api/__test-utils__/bun-compatible-utils'
 import {
+  type BunTestMocks,
   createTestRequest,
   defaultMockUser,
   setupComprehensiveTestMocks,
-  type BunTestMocks,
 } from '@/app/api/__test-utils__/bun-test-setup'
-import { createMockRequest } from '@/app/api/__test-utils__/bun-compatible-utils'
 
 // Mock database
 vi.mock('@/db', () => ({
@@ -109,11 +109,11 @@ vi.mock('drizzle-orm', () => ({
   ilike: vi.fn(),
 }))
 
-import { GET, POST } from './route'
-import { db } from '@/db'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { getCurrentUser } from '@/app/api/auth/oauth/utils'
+import { db } from '@/db'
+import { GET, POST } from './route'
 
 // Get typed mock references
 const mockDb = vi.mocked(db)
@@ -185,10 +185,10 @@ describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => 
 
   beforeEach(() => {
     console.log('🚀 Setting up Template API GET test environment')
-    
+
     // Clear all mocks
     vi.clearAllMocks()
-    
+
     // Setup auth mocks
     mockGetSession.mockResolvedValue({ user: defaultMockUser })
     mockVerifyInternalToken.mockResolvedValue(true)
@@ -205,19 +205,19 @@ describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => 
       groupBy: vi.fn().mockReturnThis(),
       then: vi.fn().mockResolvedValue(sampleTemplatesList),
     }
-    
+
     mockDb.select.mockReturnValue(mockQuery)
-    
+
     // Setup insert/update mocks
     const mockInsert = {
       values: vi.fn().mockReturnThis(),
       returning: vi.fn().mockResolvedValue([sampleTemplateData]),
     }
     mockDb.insert.mockReturnValue(mockInsert)
-    
+
     console.log('✅ Template API GET test environment setup complete')
   })
-  
+
   afterEach(() => {
     console.log('🧹 Cleaning up Template API GET test environment')
     vi.clearAllMocks()
@@ -241,7 +241,7 @@ describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => 
       // Setup unauthenticated session but valid API key
       mockGetSession.mockResolvedValue(null)
       const apiKeyResults = [{ userId: 'user-123' }]
-      
+
       // Mock API key validation query
       const mockApiKeyQuery = {
         from: vi.fn().mockReturnThis(),
@@ -258,7 +258,7 @@ describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => 
 
     it('should support internal JWT token authentication', async () => {
       console.log('🧪 Testing internal JWT token authentication')
-      
+
       // Setup internal token authentication
       mockVerifyInternalToken.mockResolvedValue(true)
 
@@ -269,7 +269,7 @@ describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => 
 
       console.log('📊 Internal JWT auth response status:', response.status)
       expect(response.status).toBe(200)
-      
+
       console.log('✅ Internal JWT token authentication test completed successfully')
     })
   })
@@ -553,10 +553,10 @@ describe('Template API - POST /api/templates', () => {
 
   beforeEach(() => {
     console.log('🚀 Setting up Template API POST test environment')
-    
+
     // Clear all mocks
     vi.clearAllMocks()
-    
+
     // Setup comprehensive test mocks
     mocks = setupComprehensiveTestMocks({
       auth: { authenticated: true, user: defaultMockUser },
@@ -565,14 +565,14 @@ describe('Template API - POST /api/templates', () => {
         insert: { results: [sampleTemplateData] },
       },
     })
-    
+
     // Setup auth mocks
     mockVerifyInternalToken.mockClear()
     mockGetCurrentUser.mockResolvedValue(defaultMockUser)
-    
+
     console.log('✅ Template API POST test environment setup complete')
   })
-  
+
   afterEach(() => {
     console.log('🧹 Cleaning up Template API POST test environment')
     mocks.cleanup()
@@ -778,7 +778,7 @@ describe('Template API - POST /api/templates', () => {
 
     it('should support internal JWT token authentication', async () => {
       console.log('🧪 Testing internal JWT token authentication for template creation')
-      
+
       // Setup internal token authentication
       mockVerifyInternalToken.mockResolvedValue(true)
 
@@ -800,8 +800,10 @@ describe('Template API - POST /api/templates', () => {
 
       console.log('📊 Internal JWT auth template creation response status:', response.status)
       expect(response.status).toBe(201)
-      
-      console.log('✅ Internal JWT token authentication for template creation test completed successfully')
+
+      console.log(
+        '✅ Internal JWT token authentication for template creation test completed successfully'
+      )
     })
   })
 

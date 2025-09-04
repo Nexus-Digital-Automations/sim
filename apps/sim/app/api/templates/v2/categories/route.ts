@@ -1,13 +1,13 @@
 /**
  * Template Categories API v2 - Hierarchical category management
- * 
+ *
  * Provides comprehensive category management with:
  * - Hierarchical organization with unlimited nesting
  * - Visual customization (colors, icons)
  * - SEO optimization (slugs, meta tags)
  * - Analytics tracking (template counts, usage stats)
  * - Efficient materialized path queries
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Library Team
  * @created 2025-09-04
@@ -17,11 +17,10 @@ import { and, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateCategories, templates, user } from '@/db/schema'
+import { templateCategories, templates } from '@/db/schema'
 
 const logger = createLogger('TemplateCategoriesAPI')
 
@@ -43,7 +42,10 @@ const CategoryQuerySchema = z.object({
   hasTemplates: z.coerce.boolean().optional(), // Categories with templates only
 
   // Sorting
-  sortBy: z.enum(['name', 'templateCount', 'createdAt', 'sortOrder']).optional().default('sortOrder'),
+  sortBy: z
+    .enum(['name', 'templateCount', 'createdAt', 'sortOrder'])
+    .optional()
+    .default('sortOrder'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
 
   // Response options
@@ -55,14 +57,18 @@ const CreateCategorySchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(1000).optional(),
   icon: z.string().max(50).optional(), // Lucide icon name
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional().default('#6366F1'),
-  
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional()
+    .default('#6366F1'),
+
   parentId: z.string().optional(), // Parent category ID
   sortOrder: z.number().int().min(0).optional().default(0),
-  
+
   isActive: z.boolean().optional().default(true),
   isFeatured: z.boolean().optional().default(false),
-  
+
   // SEO fields
   metaTitle: z.string().max(100).optional(),
   metaDescription: z.string().max(200).optional(),
@@ -97,8 +103,8 @@ function generateSlug(name: string): string {
  */
 function buildCategoryTree(categories: any[], parentId: string | null = null): any[] {
   return categories
-    .filter(cat => cat.parentId === parentId)
-    .map(category => ({
+    .filter((cat) => cat.parentId === parentId)
+    .map((category) => ({
       ...category,
       children: buildCategoryTree(categories, category.id),
     }))
@@ -167,7 +173,6 @@ export async function GET(request: NextRequest) {
           return templateCategories.templateCount
         case 'createdAt':
           return templateCategories.createdAt
-        case 'sortOrder':
         default:
           return templateCategories.sortOrder
       }
@@ -194,25 +199,25 @@ export async function GET(request: NextRequest) {
         isFeatured: templateCategories.isFeatured,
         createdAt: templateCategories.createdAt,
         updatedAt: templateCategories.updatedAt,
-        
+
         // Conditional fields
-        ...(params.includeMetadata ? {
-          metaTitle: templateCategories.metaTitle,
-          metaDescription: templateCategories.metaDescription,
-          contentDescription: templateCategories.contentDescription,
-        } : {}),
+        ...(params.includeMetadata
+          ? {
+              metaTitle: templateCategories.metaTitle,
+              metaDescription: templateCategories.metaDescription,
+              contentDescription: templateCategories.contentDescription,
+            }
+          : {}),
       })
       .from(templateCategories)
 
     const whereCondition = conditions.length > 0 ? and(...conditions) : undefined
-    const results = await query
-      .where(whereCondition)
-      .orderBy(orderBy)
+    const results = await query.where(whereCondition).orderBy(orderBy)
 
     // Add statistics if requested
     if (params.includeStats && results.length > 0) {
-      const categoryIds = results.map(c => c.id)
-      
+      const categoryIds = results.map((c) => c.id)
+
       // Get template statistics for each category
       const templateStats = await db
         .select({
@@ -234,16 +239,19 @@ export async function GET(request: NextRequest) {
         .groupBy(templates.categoryId)
 
       // Map stats to categories
-      const statsByCategory = templateStats.reduce((acc, stat) => {
-        acc[stat.categoryId] = {
-          totalTemplates: stat.totalTemplates,
-          averageRating: Math.round((stat.avgRating || 0) * 10) / 10,
-          totalViews: stat.totalViews || 0,
-          totalDownloads: stat.totalDownloads || 0,
-          featuredTemplates: stat.featuredTemplates || 0,
-        }
-        return acc
-      }, {} as Record<string, any>)
+      const statsByCategory = templateStats.reduce(
+        (acc, stat) => {
+          acc[stat.categoryId] = {
+            totalTemplates: stat.totalTemplates,
+            averageRating: Math.round((stat.avgRating || 0) * 10) / 10,
+            totalViews: stat.totalViews || 0,
+            totalDownloads: stat.totalDownloads || 0,
+            featuredTemplates: stat.featuredTemplates || 0,
+          }
+          return acc
+        },
+        {} as Record<string, any>
+      )
 
       // Add stats to results
       results.forEach((category: any) => {
@@ -258,9 +266,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build tree structure if including children
-    const responseData = params.includeChildren 
-      ? buildCategoryTree(results)
-      : results
+    const responseData = params.includeChildren ? buildCategoryTree(results) : results
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Fetched ${results.length} categories in ${elapsed}ms`)
@@ -276,10 +282,9 @@ export async function GET(request: NextRequest) {
         statsIncluded: params.includeStats,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
       return NextResponse.json(
@@ -336,10 +341,10 @@ export async function POST(request: NextRequest) {
 
     if (slugExists.length > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Category with similar name already exists',
-          suggestion: `${data.name} ${Math.floor(Math.random() * 100)}`
+          suggestion: `${data.name} ${Math.floor(Math.random() * 100)}`,
         },
         { status: 409 }
       )
@@ -368,7 +373,8 @@ export async function POST(request: NextRequest) {
       parentCategory = parentResult[0]
 
       // Check maximum depth
-      if (parentCategory.depth >= 4) { // Allow max 5 levels (0-4)
+      if (parentCategory.depth >= 4) {
+        // Allow max 5 levels (0-4)
         return NextResponse.json(
           { success: false, error: 'Maximum category depth exceeded' },
           { status: 400 }
@@ -384,49 +390,54 @@ export async function POST(request: NextRequest) {
     const categoryId = uuidv4()
     const now = new Date()
 
-    const newCategory = await db.insert(templateCategories).values({
-      id: categoryId,
-      name: data.name,
-      slug,
-      description: data.description,
-      icon: data.icon,
-      color: data.color,
-      parentId: data.parentId,
-      path,
-      depth,
-      sortOrder: data.sortOrder,
-      isActive: data.isActive,
-      isFeatured: data.isFeatured,
-      metaTitle: data.metaTitle,
-      metaDescription: data.metaDescription,
-      contentDescription: data.contentDescription,
-      createdByUserId: session.user.id,
-      createdAt: now,
-      updatedAt: now,
-    }).returning()
+    const newCategory = await db
+      .insert(templateCategories)
+      .values({
+        id: categoryId,
+        name: data.name,
+        slug,
+        description: data.description,
+        icon: data.icon,
+        color: data.color,
+        parentId: data.parentId,
+        path,
+        depth,
+        sortOrder: data.sortOrder,
+        isActive: data.isActive,
+        isFeatured: data.isFeatured,
+        metaTitle: data.metaTitle,
+        metaDescription: data.metaDescription,
+        contentDescription: data.contentDescription,
+        createdByUserId: session.user.id,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning()
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Category created: ${categoryId} in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: categoryId,
-        name: data.name,
-        slug,
-        path,
-        depth,
-        parentId: data.parentId,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: categoryId,
+          name: data.name,
+          slug,
+          path,
+          depth,
+          parentId: data.parentId,
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
-
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid category data:`, error.errors)
       return NextResponse.json(

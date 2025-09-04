@@ -1,6 +1,6 @@
 /**
  * Enhanced Executor Monitoring Integration - Event-driven workflow monitoring
- * 
+ *
  * Provides comprehensive monitoring integration for the Sim workflow executor:
  * - Real-time event collection during workflow execution
  * - Performance metrics tracking and anomaly detection
@@ -8,18 +8,23 @@
  * - Business metrics collection and cost tracking
  * - Intelligent error classification and context enhancement
  * - Resource utilization monitoring and optimization insights
- * 
+ *
  * @created 2025-09-03
  * @author Sim Monitoring System
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { generateId } from '@/lib/utils'
-import { enhancedEventCollector, type MonitoringEvent, type PerformanceEventData, type BusinessEventContext } from '@/lib/monitoring/core/event-collector'
-import { mlAnomalyDetector } from '@/lib/monitoring/analytics/anomaly-detector'
 import { monitoringSystem } from '@/lib/monitoring'
-import type { ExecutionContext, BlockLog } from './types'
+import { mlAnomalyDetector } from '@/lib/monitoring/analytics/anomaly-detector'
+import {
+  type BusinessEventContext,
+  enhancedEventCollector,
+  type MonitoringEvent,
+  type PerformanceEventData,
+} from '@/lib/monitoring/core/event-collector'
+import { generateId } from '@/lib/utils'
 import type { SerializedBlock } from '@/serializer/types'
+import type { BlockLog } from './types'
 
 const logger = createLogger('ExecutorMonitoring')
 
@@ -29,24 +34,24 @@ export interface ExecutionMonitoringContext {
   rootSpanId: string
   currentSpanId: string
   parentSpanId?: string
-  
+
   // Execution context
   workflowId: string
   workflowName?: string
   executionId: string
   userId: string
   workspaceId: string
-  
+
   // Performance tracking
   startTime: number
   blockStartTimes: Map<string, number>
   resourceBaseline: ResourceSnapshot
-  
+
   // Business context
   businessCategory?: BusinessEventContext['category']
   priority?: BusinessEventContext['priority']
   department?: string
-  
+
   // Monitoring configuration
   enableAnomalyDetection: boolean
   enablePerformanceTracking: boolean
@@ -83,7 +88,7 @@ export interface BlockExecutionResult {
 
 /**
  * Enhanced Executor Monitoring Integration Class
- * 
+ *
  * Provides comprehensive monitoring capabilities that integrate seamlessly with
  * the existing Sim workflow executor. Collects detailed performance metrics,
  * detects anomalies, and provides business intelligence insights.
@@ -206,7 +211,6 @@ export class ExecutorMonitoringIntegration {
       })
 
       return monitoringContext
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to initialize workflow monitoring`, {
         workflowId,
@@ -282,7 +286,6 @@ export class ExecutorMonitoringIntegration {
       )
 
       return blockSpanId
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to track block start`, {
         blockId: block.id,
@@ -325,31 +328,33 @@ export class ExecutorMonitoringIntegration {
       // Calculate execution metrics
       const duration = endTime - startTime
       const success = !blockLog.error
-      
+
       // Take final resource snapshot
       const finalResourceSnapshot = monitoringContext.collectDetailedResourceMetrics
         ? await this.resourceMonitor.takeSnapshot()
         : undefined
 
       // Calculate resource usage difference
-      const resourceUsage = finalResourceSnapshot && monitoringContext.resourceBaseline
-        ? this.calculateResourceDelta(monitoringContext.resourceBaseline, finalResourceSnapshot)
-        : {
-            cpu: 0,
-            memory: 0,
-            network: 0,
-            storage: 0,
-          }
+      const resourceUsage =
+        finalResourceSnapshot && monitoringContext.resourceBaseline
+          ? this.calculateResourceDelta(monitoringContext.resourceBaseline, finalResourceSnapshot)
+          : {
+              cpu: 0,
+              memory: 0,
+              network: 0,
+              storage: 0,
+            }
 
       // Extract cost information from block log
-      const cost = blockLog.output?.cost || blockLog.output?.tokens 
-        ? {
-            tokens: blockLog.output.tokens || 0,
-            cost: blockLog.output.cost || 0,
-            model: blockLog.output.model,
-            provider: blockLog.output.provider,
-          }
-        : undefined
+      const cost =
+        blockLog.output?.cost || blockLog.output?.tokens
+          ? {
+              tokens: blockLog.output.tokens || 0,
+              cost: blockLog.output.cost || 0,
+              model: blockLog.output.model,
+              provider: blockLog.output.provider,
+            }
+          : undefined
 
       // Create performance data
       const performanceData: PerformanceEventData = {
@@ -366,18 +371,20 @@ export class ExecutorMonitoringIntegration {
 
       // Create event data
       const eventData = {
-        status: success ? 'success' as const : 'error' as const,
+        status: success ? ('success' as const) : ('error' as const),
         duration,
         inputSize: performanceData.customMetrics?.inputSize,
         outputSize: performanceData.customMetrics?.outputSize,
         resourceUsage,
         cost,
-        error: blockLog.error ? {
-          name: blockLog.error.name || 'UnknownError',
-          message: blockLog.error.message || 'Unknown error occurred',
-          stack: blockLog.error.stack,
-          classification: this.classifyError(blockLog.error) as any,
-        } : undefined,
+        error: blockLog.error
+          ? {
+              name: blockLog.error.name || 'UnknownError',
+              message: blockLog.error.message || 'Unknown error occurred',
+              stack: blockLog.error.stack,
+              classification: this.classifyError(blockLog.error) as any,
+            }
+          : undefined,
         metadata: {
           executionSequence: Array.from(monitoringContext.blockStartTimes.keys()).indexOf(blockId),
           totalBlocks: monitoringContext.blockStartTimes.size,
@@ -406,7 +413,13 @@ export class ExecutorMonitoringIntegration {
 
       // Run anomaly detection if enabled
       if (monitoringContext.enableAnomalyDetection && success) {
-        await this.runAnomalyDetection(monitoringContext, blockId, blockType, performanceData, operationId)
+        await this.runAnomalyDetection(
+          monitoringContext,
+          blockId,
+          blockType,
+          performanceData,
+          operationId
+        )
       }
 
       // Update monitoring system with performance metrics
@@ -438,7 +451,6 @@ export class ExecutorMonitoringIntegration {
         duration,
         cost: cost?.cost || 0,
       })
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to track block completion`, {
         blockId,
@@ -483,24 +495,28 @@ export class ExecutorMonitoringIntegration {
       )
 
       // Calculate business metrics
-      const businessMetrics = success ? {
-        automatedTasks: 1,
-        timesSaved: Math.max(300, totalDuration * 3), // Estimate 3x manual time
-        processedItems: this.countProcessedItems(finalOutput),
-      } : {}
+      const businessMetrics = success
+        ? {
+            automatedTasks: 1,
+            timesSaved: Math.max(300, totalDuration * 3), // Estimate 3x manual time
+            processedItems: this.countProcessedItems(finalOutput),
+          }
+        : {}
 
       // Create event data
       const eventData = {
-        status: success ? 'success' as const : 'error' as const,
+        status: success ? ('success' as const) : ('error' as const),
         duration: totalDuration,
         outputSize: this.calculateDataSize(finalOutput),
         resourceUsage: totalResourceUsage,
-        error: error ? {
-          name: error.name || 'WorkflowExecutionError',
-          message: error.message || 'Workflow execution failed',
-          stack: error.stack,
-          classification: this.classifyError(error) as any,
-        } : undefined,
+        error: error
+          ? {
+              name: error.name || 'WorkflowExecutionError',
+              message: error.message || 'Workflow execution failed',
+              stack: error.stack,
+              classification: this.classifyError(error) as any,
+            }
+          : undefined,
         metadata: {
           blocksExecuted: monitoringContext.blockStartTimes.size,
           executionMode: 'normal',
@@ -548,7 +564,6 @@ export class ExecutorMonitoringIntegration {
         duration: totalDuration,
         blocksExecuted: monitoringContext.blockStartTimes.size,
       })
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to track workflow completion`, {
         executionId,
@@ -600,15 +615,14 @@ export class ExecutorMonitoringIntegration {
       }
 
       const anomalies = await mlAnomalyDetector.analyzeEvent(mockEvent)
-      
+
       if (anomalies.length > 0) {
         logger.info(`[${operationId}] Anomalies detected during block execution`, {
           blockId,
           anomalyCount: anomalies.length,
-          severities: anomalies.map(a => a.severity),
+          severities: anomalies.map((a) => a.severity),
         })
       }
-
     } catch (error) {
       logger.error(`[${operationId}] Error running anomaly detection`, {
         blockId,
@@ -626,7 +640,10 @@ export class ExecutorMonitoringIntegration {
     }
   }
 
-  private calculateResourceDelta(baseline: ResourceSnapshot, current: ResourceSnapshot): {
+  private calculateResourceDelta(
+    baseline: ResourceSnapshot,
+    current: ResourceSnapshot
+  ): {
     cpu: number
     memory: number
     network: number
@@ -642,19 +659,27 @@ export class ExecutorMonitoringIntegration {
 
   private classifyError(error: any): string {
     if (!error) return 'system_error'
-    
+
     const message = error.message?.toLowerCase() || ''
-    
+
     if (message.includes('timeout') || message.includes('time out')) {
       return 'timeout_error'
     }
-    if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+    if (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('connection')
+    ) {
       return 'external_error'
     }
-    if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
+    if (
+      message.includes('validation') ||
+      message.includes('invalid') ||
+      message.includes('required')
+    ) {
       return 'user_error'
     }
-    
+
     return 'system_error'
   }
 
@@ -677,7 +702,7 @@ export class ExecutorMonitoringIntegration {
 
 /**
  * Resource Monitor Class
- * 
+ *
  * Monitors system resource usage during workflow execution
  */
 class ResourceMonitor {
@@ -689,13 +714,13 @@ class ResourceMonitor {
 
   async takeSnapshot(): Promise<ResourceSnapshot> {
     const timestamp = Date.now()
-    
+
     // Get CPU usage (simplified - would use actual system APIs in production)
     const cpu = this.getCpuUsage()
-    
+
     // Get memory usage
     const memory = process.memoryUsage().heapUsed
-    
+
     // Placeholder for network and storage metrics
     const networkBytes = 0 // Would track actual network usage
     const storageIO = 0 // Would track actual storage I/O

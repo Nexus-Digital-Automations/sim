@@ -25,34 +25,30 @@
 
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import type React from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Calendar,
+  BookOpen,
   ChevronDown,
+  Clock,
   Filter,
   Hash,
   Search,
+  SlidersHorizontal,
   Star,
   Tag,
   TrendingUp,
-  X,
-  SlidersHorizontal,
-  BookOpen,
-  Clock,
   Users,
+  X,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { DatePickerWithRange } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
@@ -63,16 +59,14 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { DatePickerWithRange } from '@/components/ui/date-picker'
-import { cn } from '@/lib/utils'
 import type {
-  Template,
   TemplateCategory,
+  TemplateDifficulty,
   TemplateSearchFilters,
   TemplateSearchQuery,
   TemplateSearchResults,
-  TemplateDifficulty,
 } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 /**
  * Search and Filter Props Interface
@@ -164,13 +158,13 @@ const DIFFICULTY_LEVELS: Array<{
  * Sort Option Configuration
  */
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Most Relevant', icon: <Search className="h-4 w-4" /> },
-  { value: 'trending', label: 'Trending', icon: <TrendingUp className="h-4 w-4" /> },
-  { value: 'newest', label: 'Newest First', icon: <Clock className="h-4 w-4" /> },
-  { value: 'oldest', label: 'Oldest First', icon: <Clock className="h-4 w-4" /> },
-  { value: 'rating', label: 'Highest Rated', icon: <Star className="h-4 w-4" /> },
-  { value: 'views', label: 'Most Popular', icon: <Users className="h-4 w-4" /> },
-  { value: 'name', label: 'Alphabetical', icon: <BookOpen className="h-4 w-4" /> },
+  { value: 'relevance', label: 'Most Relevant', icon: <Search className='h-4 w-4' /> },
+  { value: 'trending', label: 'Trending', icon: <TrendingUp className='h-4 w-4' /> },
+  { value: 'newest', label: 'Newest First', icon: <Clock className='h-4 w-4' /> },
+  { value: 'oldest', label: 'Oldest First', icon: <Clock className='h-4 w-4' /> },
+  { value: 'rating', label: 'Highest Rated', icon: <Star className='h-4 w-4' /> },
+  { value: 'views', label: 'Most Popular', icon: <Users className='h-4 w-4' /> },
+  { value: 'name', label: 'Alphabetical', icon: <BookOpen className='h-4 w-4' /> },
 ]
 
 /**
@@ -237,7 +231,7 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
             value: cat.id,
             label: cat.name,
             count: cat.templateCount,
-            icon: <Tag className="h-4 w-4" />,
+            icon: <Tag className='h-4 w-4' />,
           })
         })
 
@@ -252,7 +246,7 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
               value: tag.name,
               label: tag.name,
               count: tag.count,
-              icon: <Hash className="h-4 w-4" />,
+              icon: <Hash className='h-4 w-4' />,
             })
           })
       }
@@ -268,14 +262,14 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
               value: tag.name,
               label: tag.name,
               count: tag.count,
-              icon: <Hash className="h-4 w-4" />,
+              icon: <Hash className='h-4 w-4' />,
             })
           })
       }
 
       return suggestions.slice(0, maxSuggestions)
     },
-    [categories, facets, popularTags, maxSuggestions],
+    [categories, facets, popularTags, maxSuggestions]
   )
 
   // Update suggestions when search query changes
@@ -312,7 +306,7 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
           break
       }
     },
-    [filters, onFiltersChange, onSearchChange],
+    [filters, onFiltersChange, onSearchChange]
   )
 
   // Handle date range changes
@@ -324,7 +318,7 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
         createdBefore: range.to,
       })
     },
-    [onFiltersChange],
+    [onFiltersChange]
   )
 
   // Count active filters
@@ -345,21 +339,21 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Search Input with Suggestions */}
-      <div className="relative">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className='relative'>
+        <div className='relative'>
+          <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder="Search templates, categories, or tags..."
+            placeholder='Search templates, categories, or tags...'
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onFocus={() => setShowSuggestions(suggestions.length > 0)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="pl-9 pr-4"
-            aria-label="Search templates"
-            autoComplete="off"
+            className='pr-4 pl-9'
+            aria-label='Search templates'
+            autoComplete='off'
           />
           {loading && (
-            <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+            <div className='-translate-y-1/2 absolute top-1/2 right-3 h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent' />
           )}
         </div>
 
@@ -370,19 +364,19 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 right-0 z-50 mt-1 rounded-md border bg-white shadow-lg"
+              className='absolute top-full right-0 left-0 z-50 mt-1 rounded-md border bg-white shadow-lg'
             >
-              <ScrollArea className="max-h-48">
+              <ScrollArea className='max-h-48'>
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={`${suggestion.type}-${suggestion.value}`}
                     onClick={() => handleSuggestionSelect(suggestion)}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 flex items-center gap-2"
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50'
                   >
                     {suggestion.icon}
-                    <span className="flex-1">{suggestion.label}</span>
+                    <span className='flex-1'>{suggestion.label}</span>
                     {suggestion.count && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant='secondary' className='ml-auto'>
                         {suggestion.count}
                       </Badge>
                     )}
@@ -395,15 +389,12 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
       </div>
 
       {/* Quick Filters and Sort */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div className='flex items-center gap-2'>
           {/* Sort Selector */}
-          <Select
-            value={sortBy}
-            onValueChange={(value) => onSortChange(value, sortOrder)}
-          >
-            <SelectTrigger className="w-48">
-              <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(value) => onSortChange(value, sortOrder)}>
+            <SelectTrigger className='w-48'>
+              <div className='flex items-center gap-2'>
                 {currentSortOption?.icon}
                 <SelectValue />
               </div>
@@ -411,7 +402,7 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
             <SelectContent>
               {SORT_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
+                  <div className='flex items-center gap-2'>
                     {option.icon}
                     {option.label}
                   </div>
@@ -422,43 +413,38 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
 
           {/* Sort Order Toggle */}
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => onSortChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc')}
           >
             <ChevronDown
-              className={cn(
-                'h-4 w-4 transition-transform',
-                sortOrder === 'asc' && 'rotate-180',
-              )}
+              className={cn('h-4 w-4 transition-transform', sortOrder === 'asc' && 'rotate-180')}
             />
           </Button>
 
           {/* Advanced Filters Toggle */}
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => setAdvancedFiltersOpen(!advancedFiltersOpen)}
-            className="relative"
+            className='relative'
           >
-            <SlidersHorizontal className="h-4 w-4 mr-2" />
+            <SlidersHorizontal className='mr-2 h-4 w-4' />
             Filters
             {activeFilterCount > 0 && (
-              <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
-                {activeFilterCount}
-              </Badge>
+              <Badge className='ml-2 h-5 w-5 rounded-full p-0 text-xs'>{activeFilterCount}</Badge>
             )}
           </Button>
 
           {/* Reset Filters */}
           {activeFilterCount > 0 && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={onResetFilters}
-              className="text-red-600 hover:text-red-700"
+              className='text-red-600 hover:text-red-700'
             >
-              <X className="h-4 w-4 mr-1" />
+              <X className='mr-1 h-4 w-4' />
               Clear
             </Button>
           )}
@@ -466,8 +452,10 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
 
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active</span>
+          <div className='flex items-center gap-2 text-muted-foreground text-sm'>
+            <span>
+              {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+            </span>
           </div>
         )}
       </div>
@@ -479,24 +467,24 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            className='overflow-hidden'
           >
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
+                <CardTitle className='flex items-center gap-2 text-lg'>
+                  <Filter className='h-5 w-5' />
                   Advanced Filters
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <CardContent className='space-y-6'>
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
                   {/* Category Filter */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Categories</Label>
-                    <ScrollArea className="h-32 rounded border p-2">
-                      <div className="space-y-2">
+                  <div className='space-y-3'>
+                    <Label className='font-medium text-sm'>Categories</Label>
+                    <ScrollArea className='h-32 rounded border p-2'>
+                      <div className='space-y-2'>
                         {categories.map((category) => (
-                          <div key={category.id} className="flex items-center space-x-2">
+                          <div key={category.id} className='flex items-center space-x-2'>
                             <Checkbox
                               id={`category-${category.id}`}
                               checked={filters.categories?.includes(category.id) || false}
@@ -509,10 +497,10 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                             />
                             <Label
                               htmlFor={`category-${category.id}`}
-                              className="text-sm font-normal cursor-pointer flex-1"
+                              className='flex-1 cursor-pointer font-normal text-sm'
                             >
                               {category.name}
-                              <span className="ml-auto text-xs text-muted-foreground">
+                              <span className='ml-auto text-muted-foreground text-xs'>
                                 ({category.templateCount})
                               </span>
                             </Label>
@@ -523,11 +511,11 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                   </div>
 
                   {/* Difficulty Filter */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Difficulty Level</Label>
-                    <div className="space-y-2">
+                  <div className='space-y-3'>
+                    <Label className='font-medium text-sm'>Difficulty Level</Label>
+                    <div className='space-y-2'>
                       {DIFFICULTY_LEVELS.map((level) => (
-                        <div key={level.value} className="flex items-center space-x-2">
+                        <div key={level.value} className='flex items-center space-x-2'>
                           <Checkbox
                             id={`difficulty-${level.value}`}
                             checked={filters.difficulty?.includes(level.value) || false}
@@ -540,9 +528,9 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                           />
                           <Label
                             htmlFor={`difficulty-${level.value}`}
-                            className="text-sm font-normal cursor-pointer"
+                            className='cursor-pointer font-normal text-sm'
                           >
-                            <Badge variant="secondary" className={level.color}>
+                            <Badge variant='secondary' className={level.color}>
                               {level.label}
                             </Badge>
                           </Label>
@@ -552,21 +540,21 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                   </div>
 
                   {/* Rating Filter */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Minimum Rating</Label>
-                    <div className="px-2">
+                  <div className='space-y-3'>
+                    <Label className='font-medium text-sm'>Minimum Rating</Label>
+                    <div className='px-2'>
                       <Slider
                         value={[filters.minRating || 0]}
                         onValueChange={([value]) => onFiltersChange({ minRating: value })}
                         max={5}
                         min={0}
                         step={0.5}
-                        className="w-full"
+                        className='w-full'
                       />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div className='mt-1 flex justify-between text-muted-foreground text-xs'>
                         <span>Any</span>
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <span className='flex items-center gap-1'>
+                          <Star className='h-3 w-3 fill-yellow-400 text-yellow-400' />
                           {filters.minRating || 0}+
                         </span>
                       </div>
@@ -578,9 +566,9 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
 
                 {/* Popular Tags */}
                 {popularTags && popularTags.length > 0 && (
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Popular Tags</Label>
-                    <div className="flex flex-wrap gap-2">
+                  <div className='space-y-3'>
+                    <Label className='font-medium text-sm'>Popular Tags</Label>
+                    <div className='flex flex-wrap gap-2'>
                       {popularTags.slice(0, 12).map((tag) => (
                         <button
                           key={tag.name}
@@ -592,10 +580,10 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                             onFiltersChange({ tags: newTags })
                           }}
                           className={cn(
-                            'text-sm px-3 py-1 rounded-full border transition-colors',
+                            'rounded-full border px-3 py-1 text-sm transition-colors',
                             filters.tags?.includes(tag.name)
-                              ? 'bg-blue-500 text-white border-blue-500'
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
+                              ? 'border-blue-500 bg-blue-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                           )}
                         >
                           {tag.name} ({tag.count})
@@ -608,42 +596,42 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
                 <Separator />
 
                 {/* Date Range Filter */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Creation Date</Label>
+                <div className='space-y-3'>
+                  <Label className='font-medium text-sm'>Creation Date</Label>
                   <DatePickerWithRange
                     date={dateRange}
                     onDateChange={handleDateRangeChange}
-                    className="w-full"
+                    className='w-full'
                   />
                 </div>
 
                 <Separator />
 
                 {/* Additional Options */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Additional Options</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
+                <div className='space-y-3'>
+                  <Label className='font-medium text-sm'>Additional Options</Label>
+                  <div className='space-y-2'>
+                    <div className='flex items-center space-x-2'>
                       <Checkbox
-                        id="has-description"
+                        id='has-description'
                         checked={filters.hasDescription || false}
                         onCheckedChange={(checked) =>
                           onFiltersChange({ hasDescription: checked as boolean })
                         }
                       />
-                      <Label htmlFor="has-description" className="text-sm font-normal">
+                      <Label htmlFor='has-description' className='font-normal text-sm'>
                         Has detailed description
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className='flex items-center space-x-2'>
                       <Checkbox
-                        id="has-thumbnail"
+                        id='has-thumbnail'
                         checked={filters.hasThumbnail || false}
                         onCheckedChange={(checked) =>
                           onFiltersChange({ hasThumbnail: checked as boolean })
                         }
                       />
-                      <Label htmlFor="has-thumbnail" className="text-sm font-normal">
+                      <Label htmlFor='has-thumbnail' className='font-normal text-sm'>
                         Has preview thumbnail
                       </Label>
                     </div>

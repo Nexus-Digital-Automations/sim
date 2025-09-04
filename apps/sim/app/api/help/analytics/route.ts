@@ -16,15 +16,15 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getSession } from '@/lib/auth'
-import { helpAnalytics } from '@/lib/help/help-analytics'
-import type { 
-  HelpAnalyticsEvent, 
-  HelpInteractionMetrics, 
+import type {
   ContentPerformanceMetrics,
-  UserEngagementMetrics 
+  HelpAnalyticsEvent,
+  HelpInteractionMetrics,
+  UserEngagementMetrics,
 } from '@/lib/help/help-analytics'
+import { helpAnalytics } from '@/lib/help/help-analytics'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('HelpAnalyticsAPI')
 
@@ -35,7 +35,7 @@ const logger = createLogger('HelpAnalyticsAPI')
 const trackEventSchema = z.object({
   eventType: z.enum([
     'help_view',
-    'search_query', 
+    'search_query',
     'content_interaction',
     'tooltip_shown',
     'panel_opened',
@@ -43,7 +43,7 @@ const trackEventSchema = z.object({
     'feedback_submitted',
     'content_bookmark',
     'tour_completed',
-    'error_encountered'
+    'error_encountered',
   ]),
   sessionId: z.string().min(1),
   data: z.object({
@@ -58,15 +58,19 @@ const trackEventSchema = z.object({
     errorMessage: z.string().optional(),
     metadata: z.record(z.any()).optional(),
   }),
-  context: z.object({
-    userAgent: z.string().optional(),
-    referrer: z.string().optional(),
-    viewport: z.object({
-      width: z.number(),
-      height: z.number(),
-    }).optional(),
-    timestamp: z.string().optional(),
-  }).optional(),
+  context: z
+    .object({
+      userAgent: z.string().optional(),
+      referrer: z.string().optional(),
+      viewport: z
+        .object({
+          width: z.number(),
+          height: z.number(),
+        })
+        .optional(),
+      timestamp: z.string().optional(),
+    })
+    .optional(),
 })
 
 const batchTrackSchema = z.object({
@@ -77,25 +81,27 @@ const batchTrackSchema = z.object({
 const analyticsQuerySchema = z.object({
   type: z.enum([
     'content_performance',
-    'user_engagement', 
+    'user_engagement',
     'search_analytics',
     'interaction_metrics',
     'trending_content',
     'user_journey',
     'conversion_funnel',
-    'error_analysis'
+    'error_analysis',
   ]),
   timeRange: z.object({
     start: z.string(),
     end: z.string(),
   }),
-  filters: z.object({
-    contentIds: z.array(z.string()).optional(),
-    categories: z.array(z.string()).optional(),
-    userLevels: z.array(z.string()).optional(),
-    components: z.array(z.string()).optional(),
-    pages: z.array(z.string()).optional(),
-  }).optional(),
+  filters: z
+    .object({
+      contentIds: z.array(z.string()).optional(),
+      categories: z.array(z.string()).optional(),
+      userLevels: z.array(z.string()).optional(),
+      components: z.array(z.string()).optional(),
+      pages: z.array(z.string()).optional(),
+    })
+    .optional(),
   groupBy: z.enum(['day', 'hour', 'week', 'month']).default('day'),
   limit: z.number().min(1).max(1000).default(100),
   includeDetails: z.boolean().default(false),
@@ -156,7 +162,7 @@ class AnalyticsProcessor {
   }
 
   async trackBatchEvents(events: HelpAnalyticsEvent[], userId?: string): Promise<void> {
-    const enrichedEvents = events.map(event => ({
+    const enrichedEvents = events.map((event) => ({
       ...event,
       userId,
       timestamp: new Date(),
@@ -224,9 +230,8 @@ class AnalyticsProcessor {
 
       logger.info('Analytics events flushed successfully', {
         eventCount: eventsToFlush.length,
-        eventTypes: [...new Set(eventsToFlush.map(e => e.eventType))],
+        eventTypes: [...new Set(eventsToFlush.map((e) => e.eventType))],
       })
-
     } catch (error) {
       logger.error('Failed to flush analytics events', {
         error: error instanceof Error ? error.message : String(error),
@@ -319,7 +324,6 @@ class AnalyticsProcessor {
       })
 
       return response
-
     } catch (error) {
       logger.error('Analytics query failed', {
         type: query.type,
@@ -605,20 +609,22 @@ export async function POST(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json({
-      success: true,
-      eventType,
-      sessionId,
-      meta: {
-        requestId,
-        processingTime,
+    return NextResponse.json(
+      {
+        success: true,
+        eventType,
+        sessionId,
+        meta: {
+          requestId,
+          processingTime,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Analytics tracking failed`, {
@@ -627,10 +633,7 @@ export async function POST(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Analytics tracking failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Analytics tracking failed' }, { status: 500 })
   }
 }
 
@@ -655,16 +658,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Parse boolean parameters  
+    // Parse boolean parameters
     if (params.includeDetails !== undefined) {
       params.includeDetails = params.includeDetails === 'true'
     }
 
     // Parse number parameters
-    if (params.limit) params.limit = parseInt(params.limit, 10)
+    if (params.limit) params.limit = Number.parseInt(params.limit, 10)
 
     // Build filters object
-    if (params.contentIds || params.categories || params.userLevels || params.components || params.pages) {
+    if (
+      params.contentIds ||
+      params.categories ||
+      params.userLevels ||
+      params.components ||
+      params.pages
+    ) {
       params.filters = {
         contentIds: params.contentIds,
         categories: params.categories,
@@ -705,10 +714,7 @@ export async function GET(request: NextRequest) {
     // Check authorization for analytics access
     const session = await getSession()
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Get analytics data
@@ -721,19 +727,21 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json({
-      ...analyticsData,
-      meta: {
-        ...analyticsData.summary,
-        processingTime,
+    return NextResponse.json(
+      {
+        ...analyticsData,
+        meta: {
+          ...analyticsData.summary,
+          processingTime,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-        'Cache-Control': 'private, max-age=300', // 5 minutes
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+          'Cache-Control': 'private, max-age=300', // 5 minutes
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Analytics query failed`, {
@@ -742,9 +750,6 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Analytics query failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Analytics query failed' }, { status: 500 })
   }
 }

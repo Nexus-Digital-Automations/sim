@@ -15,12 +15,12 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getSession } from '@/lib/auth'
-import { helpContentManager } from '@/lib/help/help-content-manager'
 import { helpAnalytics } from '@/lib/help/help-analytics'
+import type { HelpContentDocument } from '@/lib/help/help-content-manager'
+import { helpContentManager } from '@/lib/help/help-content-manager'
+import { createLogger } from '@/lib/logs/console/logger'
 import { helpContentLoader } from '@/help/content/index'
-import type { HelpContentDocument, ContentSearchFilter } from '@/lib/help/help-content-manager'
 
 const logger = createLogger('HelpContentAPI')
 
@@ -89,10 +89,12 @@ class ContentCache {
   }
 
   private generateETag(content: any): string {
-    const hash = JSON.stringify(content).split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0)
-      return a & a
-    }, 0)
+    const hash = JSON.stringify(content)
+      .split('')
+      .reduce((a, b) => {
+        a = (a << 5) - a + b.charCodeAt(0)
+        return a & a
+      }, 0)
     return `"${Math.abs(hash).toString(36)}"`
   }
 
@@ -117,10 +119,10 @@ setInterval(() => contentCache.cleanup(), 5 * 60 * 1000)
 
 /**
  * GET /api/help/content - Retrieve help content
- * 
+ *
  * Query Parameters:
  * - contentId: Specific content ID to retrieve
- * - category: Filter by content category  
+ * - category: Filter by content category
  * - component: Filter by component context
  * - userLevel: Filter by user experience level
  * - language: Content language (default: en)
@@ -138,14 +140,14 @@ export async function GET(request: NextRequest) {
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams)
-    
+
     // Convert boolean strings
     if (params.includeMetadata) params.includeMetadata = params.includeMetadata === 'true'
     if (params.includeAnalytics) params.includeAnalytics = params.includeAnalytics === 'true'
-    if (params.version) params.version = parseInt(params.version, 10)
+    if (params.version) params.version = Number.parseInt(params.version, 10)
 
     const validationResult = contentRequestSchema.safeParse(params)
-    
+
     if (!validationResult.success) {
       logger.warn(`[${requestId}] Invalid request parameters`, {
         errors: validationResult.error.format(),
@@ -191,7 +193,7 @@ export async function GET(request: NextRequest) {
       logger.info(`[${requestId}] Serving content from cache`)
       return NextResponse.json(cachedEntry.content, {
         headers: {
-          'ETag': cachedEntry.etag,
+          ETag: cachedEntry.etag,
           'Cache-Control': 'public, max-age=300', // 5 minutes
         },
       })
@@ -223,7 +225,7 @@ export async function GET(request: NextRequest) {
         blockType: searchParams.get('blockType') || undefined,
         errorState: searchParams.get('errorState') === 'true',
       }
-      
+
       content = await helpContentManager.getContextualContent(context)
     } else {
       // Default: return featured/recommended content
@@ -232,8 +234,8 @@ export async function GET(request: NextRequest) {
 
     // Filter by user level if specified
     if (userLevel) {
-      content = content.filter(item => 
-        item.userLevels.includes(userLevel) || item.userLevels.length === 0
+      content = content.filter(
+        (item) => item.userLevels.includes(userLevel) || item.userLevels.length === 0
       )
     }
 
@@ -243,7 +245,7 @@ export async function GET(request: NextRequest) {
         try {
           const analytics = await helpContentManager.getContentAnalytics(item.id)
           if (analytics) {
-            (item as any).analytics = analytics
+            ;(item as any).analytics = analytics
           }
         } catch (error) {
           logger.warn(`[${requestId}] Failed to load analytics for content ${item.id}`, error)
@@ -263,11 +265,17 @@ export async function GET(request: NextRequest) {
       },
       ...(includeMetadata && {
         metadata: {
-          categories: [...new Set(content.map(item => item.metadata.category))],
-          tags: [...new Set(content.flatMap(item => item.tags))],
-          averageReadingTime: content.length > 0 
-            ? Math.round(content.reduce((sum, item) => sum + (item.metadata.estimatedReadingTime || 0), 0) / content.length)
-            : 0,
+          categories: [...new Set(content.map((item) => item.metadata.category))],
+          tags: [...new Set(content.flatMap((item) => item.tags))],
+          averageReadingTime:
+            content.length > 0
+              ? Math.round(
+                  content.reduce(
+                    (sum, item) => sum + (item.metadata.estimatedReadingTime || 0),
+                    0
+                  ) / content.length
+                )
+              : 0,
         },
       }),
     }
@@ -300,12 +308,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'ETag': etag,
+        ETag: etag,
         'Cache-Control': 'public, max-age=300', // 5 minutes
         'X-Response-Time': `${processingTime}ms`,
       },
     })
-
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Error processing help content request`, {
@@ -314,22 +321,19 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
  * POST /api/help/content/contextual - Get contextual help for specific situations
- * 
+ *
  * Body:
  * - component: Component identifier
  * - page: Current page path (optional)
  * - userLevel: User experience level
  * - workflowState: Current workflow state (optional)
- * - blockType: Current block type (optional) 
+ * - blockType: Current block type (optional)
  * - errorState: Whether user is in error state (optional)
  * - lastAction: Last user action (optional)
  * - limit: Maximum number of results (default: 5)
@@ -393,7 +397,7 @@ export async function POST(request: NextRequest) {
         try {
           const analytics = await helpContentManager.getContentAnalytics(item.id)
           if (analytics) {
-            (item as any).analytics = analytics
+            ;(item as any).analytics = analytics
           }
         } catch (error) {
           logger.warn(`[${requestId}] Failed to load analytics for content ${item.id}`, error)
@@ -415,12 +419,7 @@ export async function POST(request: NextRequest) {
     // Track contextual help requests
     if (userId) {
       for (const item of limitedContent) {
-        helpAnalytics.trackHelpView(
-          item.id,
-          requestId,
-          context,
-          userId
-        )
+        helpAnalytics.trackHelpView(item.id, requestId, context, userId)
       }
 
       // Track contextual help request
@@ -447,7 +446,6 @@ export async function POST(request: NextRequest) {
         'Cache-Control': 'private, max-age=60', // 1 minute for contextual content
       },
     })
-
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Error processing contextual help request`, {
@@ -456,10 +454,7 @@ export async function POST(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -483,7 +478,7 @@ export async function HEAD(request: NextRequest) {
       return new NextResponse(null, {
         status: 200,
         headers: {
-          'ETag': etag,
+          ETag: etag,
           'Last-Modified': content.updatedAt.toUTCString(),
           'Content-Type': 'application/json',
         },
@@ -491,7 +486,6 @@ export async function HEAD(request: NextRequest) {
     }
 
     return new NextResponse(null, { status: 200 })
-
   } catch (error) {
     logger.error(`[${requestId}] Error processing HEAD request`, { error })
     return new NextResponse(null, { status: 500 })

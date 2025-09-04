@@ -19,15 +19,11 @@
  * @version 1.0.0
  */
 
-import { and, between, count, desc, eq, gte, lte, sql, sum, avg } from 'drizzle-orm'
+import { avg, between, count, desc, eq, gte, sql, sum } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, templateStars } from '@/db/schema'
-import type {
-  TemplateUsageAnalytics,
-  TemplateMarketplaceAnalytics,
-  TemplateSearchAnalytics,
-} from '../types'
+import { templateStars, templates } from '@/db/schema'
+import type { TemplateMarketplaceAnalytics, TemplateUsageAnalytics } from '../types'
 
 // Initialize structured logger with analytics context
 const logger = createLogger('TemplateAnalyticsService')
@@ -73,24 +69,24 @@ export interface TemplatePerformanceMetrics {
   name: string
   category: string
   author: string
-  
+
   // Usage metrics
   totalViews: number
   uniqueViews: number
   totalStars: number
   instantiations: number
   shares: number
-  
+
   // Engagement metrics
   clickThroughRate: number
   conversionRate: number // views to instantiations
   starRate: number // views to stars
-  
+
   // Time-based metrics
   viewsThisWeek: number
   viewsThisMonth: number
   growthRate: number
-  
+
   // Quality indicators
   avgRating?: number
   retentionRate?: number
@@ -105,7 +101,7 @@ export interface SearchAnalyticsInsights {
   uniqueSearchers: number
   avgResultsPerSearch: number
   clickThroughRate: number
-  
+
   // Popular queries
   topQueries: Array<{
     query: string
@@ -113,14 +109,14 @@ export interface SearchAnalyticsInsights {
     avgResults: number
     clickThroughRate: number
   }>
-  
+
   // Search patterns
   searchTrends: Array<{
     date: string
     searchCount: number
     avgResults: number
   }>
-  
+
   // Category performance
   categorySearchStats: Array<{
     category: string
@@ -137,12 +133,12 @@ export interface UserEngagementAnalytics {
   activeUsers: number
   newUsers: number
   returningUsers: number
-  
+
   // Engagement patterns
   avgSessionDuration: number
   avgTemplatesPerSession: number
   avgSearchesPerSession: number
-  
+
   // User segmentation
   userSegments: Array<{
     segment: string
@@ -150,7 +146,7 @@ export interface UserEngagementAnalytics {
     avgEngagement: number
     preferredCategories: string[]
   }>
-  
+
   // Retention metrics
   dailyRetention: number[]
   weeklyRetention: number[]
@@ -232,7 +228,9 @@ export class TemplateAnalyticsService {
       }
 
       // Update real-time metrics for immediate events
-      if (['template_view', 'template_star', 'template_instantiate'].includes(eventData.eventType)) {
+      if (
+        ['template_view', 'template_star', 'template_instantiate'].includes(eventData.eventType)
+      ) {
         await this.updateRealTimeMetrics(enrichedEvent)
       }
     } catch (error) {
@@ -300,40 +298,40 @@ export class TemplateAnalyticsService {
       const analytics: TemplateUsageAnalytics = {
         templateId: template.id,
         period,
-        
+
         // Basic usage metrics (from template table)
         views: template.views,
         downloads: 0, // Would be tracked in analytics events
         instantiations: 0, // Would be tracked in analytics events
         forks: 0, // Would be tracked in analytics events
-        
+
         // Engagement metrics
         stars: template.stars,
         comments: 0, // Would come from comments table
         ratings: 0, // Would come from ratings table
         averageRating: 0, // Would be calculated from ratings
-        
+
         // Performance metrics (would be calculated from event data)
         successRate: 0.95, // Placeholder - would calculate from execution data
         averageExecutionTime: 0, // Would come from execution analytics
         errorRate: 0.05, // Would come from execution analytics
-        
+
         // User analytics (would be calculated from event data)
         uniqueUsers: Math.floor(template.views * 0.7), // Estimated - would be actual from events
         returningUsers: Math.floor(template.views * 0.3), // Estimated
         newUsers: Math.floor(template.views * 0.7), // Estimated
-        
+
         // Geographic data (placeholder - would come from user analytics)
         topCountries: [
           { country: 'United States', count: Math.floor(template.views * 0.4) },
           { country: 'United Kingdom', count: Math.floor(template.views * 0.2) },
           { country: 'Canada', count: Math.floor(template.views * 0.1) },
         ],
-        
+
         // Temporal data (would be calculated from time-series event data)
         dailyActivity: this.generateMockDailyActivity(template.views, 30),
         peakUsageTimes: this.generateMockPeakUsage(),
-        
+
         // Conversion metrics
         instantiationRate: 0.15, // 15% of views result in instantiations
         retentionRate: 0.6, // 60% of users return
@@ -424,9 +422,7 @@ export class TemplateAnalyticsService {
         })
         .from(templates)
         .where(gte(templates.createdAt, timeRange.start))
-        .orderBy(
-          desc(sql`(${templates.views} + ${templates.stars} * 2)`)
-        )
+        .orderBy(desc(sql`(${templates.views} + ${templates.stars} * 2)`))
         .limit(10)
 
       // Get active contributors count
@@ -449,9 +445,11 @@ export class TemplateAnalyticsService {
         .from(templates)
         .where(gte(templates.createdAt, timeRange.start))
 
-      const growthRate = previousTemplateCount[0]?.count > 0
-        ? ((currentTemplateCount[0]?.count || 0) - (previousTemplateCount[0]?.count || 0)) / (previousTemplateCount[0]?.count || 1)
-        : 0
+      const growthRate =
+        previousTemplateCount[0]?.count > 0
+          ? ((currentTemplateCount[0]?.count || 0) - (previousTemplateCount[0]?.count || 0)) /
+            (previousTemplateCount[0]?.count || 1)
+          : 0
 
       const stats = overallStats[0]
 
@@ -461,31 +459,31 @@ export class TemplateAnalyticsService {
         activeTemplates: stats?.totalTemplates || 0, // Would filter by recent activity
         totalUsers: 0, // Would come from user analytics
         activeUsers: 0, // Would come from user analytics
-        
+
         // Category performance
-        categoryStats: categoryStats.map(cat => ({
+        categoryStats: categoryStats.map((cat) => ({
           category: cat.category,
           templateCount: cat.templateCount,
           activeCount: cat.templateCount, // Would filter by activity
           averageRating: Number(cat.averageStars) || 0,
           totalViews: cat.totalViews || 0,
         })),
-        
+
         // Trending data
         trendingTemplates: trendingTemplates,
-        trendingCategories: categoryStats.slice(0, 5).map(cat => cat.category),
+        trendingCategories: categoryStats.slice(0, 5).map((cat) => cat.category),
         trendingTags: [], // Would come from tag analytics
-        
+
         // Quality metrics
         averageQualityScore: 85, // Would be calculated from template quality scores
         averageRating: Number(stats?.avgStars) || 0,
         moderationQueue: 0, // Would come from moderation system
-        
+
         // Community metrics
         totalRatings: 0, // Would come from ratings table
         totalComments: 0, // Would come from comments table
         activeContributors: activeContributors[0]?.contributors || 0,
-        
+
         // Growth metrics
         newTemplatesThisMonth: currentTemplateCount[0]?.count || 0,
         newUsersThisMonth: 0, // Would come from user analytics
@@ -518,7 +516,9 @@ export class TemplateAnalyticsService {
    * @param period - Time period for analysis
    * @returns Promise<SearchAnalyticsInsights> - Search performance analytics
    */
-  async getSearchAnalytics(period: AnalyticsTimePeriod = 'month'): Promise<SearchAnalyticsInsights> {
+  async getSearchAnalytics(
+    period: AnalyticsTimePeriod = 'month'
+  ): Promise<SearchAnalyticsInsights> {
     const operationId = `search_analytics_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting search analytics`, {
@@ -544,7 +544,7 @@ export class TemplateAnalyticsService {
         uniqueSearchers: 0, // Would be tracked from search events
         avgResultsPerSearch: 8.5, // Estimated average
         clickThroughRate: 0.35, // Estimated 35% click-through rate
-        
+
         // Popular queries (would come from search event tracking)
         topQueries: [
           { query: 'email automation', count: 150, avgResults: 12, clickThroughRate: 0.4 },
@@ -553,12 +553,12 @@ export class TemplateAnalyticsService {
           { query: 'marketing automation', count: 90, avgResults: 10, clickThroughRate: 0.38 },
           { query: 'webhook handler', count: 75, avgResults: 6, clickThroughRate: 0.42 },
         ],
-        
+
         // Search trends (would be calculated from time-series data)
         searchTrends: this.generateMockSearchTrends(30),
-        
+
         // Category search performance
-        categorySearchStats: categoryStats.slice(0, 10).map(cat => ({
+        categorySearchStats: categoryStats.slice(0, 10).map((cat) => ({
           category: cat.category,
           searchCount: Math.floor((cat.totalViews || 0) * 0.1), // Estimated searches
           resultClickRate: 0.3 + Math.random() * 0.2, // Random rate between 30-50%
@@ -590,7 +590,9 @@ export class TemplateAnalyticsService {
    * @param period - Time period for analysis
    * @returns Promise<UserEngagementAnalytics> - User behavior and engagement metrics
    */
-  async getUserEngagementAnalytics(period: AnalyticsTimePeriod = 'month'): Promise<UserEngagementAnalytics> {
+  async getUserEngagementAnalytics(
+    period: AnalyticsTimePeriod = 'month'
+  ): Promise<UserEngagementAnalytics> {
     const operationId = `engagement_analytics_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting user engagement analytics`, {
@@ -619,8 +621,8 @@ export class TemplateAnalyticsService {
         .groupBy(templateStars.userId)
 
       const uniqueUserIds = new Set([
-        ...templateCreators.map(u => u.userId),
-        ...starUsers.map(u => u.userId),
+        ...templateCreators.map((u) => u.userId),
+        ...starUsers.map((u) => u.userId),
       ])
 
       // Get user segment analysis (based on template categories)
@@ -641,15 +643,15 @@ export class TemplateAnalyticsService {
         activeUsers: uniqueUserIds.size, // All users are considered active in this period
         newUsers: Math.floor(uniqueUserIds.size * 0.3), // Estimated 30% new users
         returningUsers: Math.floor(uniqueUserIds.size * 0.7), // Estimated 70% returning
-        
+
         // Engagement patterns (estimated)
         avgSessionDuration: 8.5 * 60, // 8.5 minutes in seconds
         avgTemplatesPerSession: 3.2,
         avgSearchesPerSession: 2.8,
-        
+
         // User segments
         userSegments,
-        
+
         // Retention metrics (mock data)
         dailyRetention: this.generateMockRetention(7),
         weeklyRetention: this.generateMockRetention(12),
@@ -698,7 +700,7 @@ export class TemplateAnalyticsService {
 
     // In a real implementation, this would insert events into an analytics database
     // For now, we'll just log the events
-    batchToProcess.forEach(event => {
+    batchToProcess.forEach((event) => {
       logger.debug(`[${this.requestId}] Analytics event processed`, {
         eventType: event.eventType,
         templateId: event.templateId,
@@ -757,7 +759,6 @@ export class TemplateAnalyticsService {
       case 'year':
         start = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
         break
-      case 'all':
       default:
         start = new Date(0) // Beginning of time
         break
@@ -772,7 +773,7 @@ export class TemplateAnalyticsService {
   private getPreviousTimeRange(period: AnalyticsTimePeriod): { start: Date; end: Date } {
     const current = this.getTimeRange(period)
     const duration = current.end.getTime() - current.start.getTime()
-    
+
     return {
       start: new Date(current.start.getTime() - duration),
       end: current.start,
@@ -782,10 +783,13 @@ export class TemplateAnalyticsService {
   /**
    * Generate mock daily activity data
    */
-  private generateMockDailyActivity(totalViews: number, days: number): Array<{ date: string; count: number }> {
+  private generateMockDailyActivity(
+    totalViews: number,
+    days: number
+  ): Array<{ date: string; count: number }> {
     const activity = []
     const baseActivity = Math.floor(totalViews / days)
-    
+
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000)
       const variation = Math.floor((Math.random() - 0.5) * baseActivity * 0.5)
@@ -794,7 +798,7 @@ export class TemplateAnalyticsService {
         count: Math.max(0, baseActivity + variation),
       })
     }
-    
+
     return activity
   }
 
@@ -804,39 +808,41 @@ export class TemplateAnalyticsService {
   private generateMockPeakUsage(): Array<{ hour: number; count: number }> {
     const peakHours = []
     const peakTimes = [9, 10, 11, 14, 15, 16, 20, 21] // Common work hours
-    
+
     for (let hour = 0; hour < 24; hour++) {
       const isPeak = peakTimes.includes(hour)
       const baseCount = 10
       const peakMultiplier = isPeak ? 2 + Math.random() : 0.5 + Math.random() * 0.5
-      
+
       peakHours.push({
         hour,
         count: Math.floor(baseCount * peakMultiplier),
       })
     }
-    
+
     return peakHours
   }
 
   /**
    * Generate mock search trends
    */
-  private generateMockSearchTrends(days: number): Array<{ date: string; searchCount: number; avgResults: number }> {
+  private generateMockSearchTrends(
+    days: number
+  ): Array<{ date: string; searchCount: number; avgResults: number }> {
     const trends = []
-    
+
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000)
       const baseSearches = 50 + Math.floor(Math.random() * 30)
       const avgResults = 8 + Math.floor(Math.random() * 6)
-      
+
       trends.push({
         date: date.toISOString().split('T')[0],
         searchCount: baseSearches,
         avgResults,
       })
     }
-    
+
     return trends
   }
 
@@ -846,12 +852,12 @@ export class TemplateAnalyticsService {
   private generateMockRetention(periods: number): number[] {
     const retention = []
     let currentRetention = 1.0 // 100% on day 0
-    
+
     for (let i = 0; i < periods; i++) {
       retention.push(currentRetention)
       currentRetention *= 0.8 + Math.random() * 0.15 // Decreasing retention with some variance
     }
-    
+
     return retention
   }
 
@@ -867,13 +873,13 @@ export class TemplateAnalyticsService {
     // Group users by their primary category
     const categoryUsers = new Map<string, Set<string>>()
     const userCategories = new Map<string, string[]>()
-    
-    userPreferences.forEach(pref => {
+
+    userPreferences.forEach((pref) => {
       if (!categoryUsers.has(pref.category)) {
         categoryUsers.set(pref.category, new Set())
       }
       categoryUsers.get(pref.category)!.add(pref.userId)
-      
+
       if (!userCategories.has(pref.userId)) {
         userCategories.set(pref.userId, [])
       }

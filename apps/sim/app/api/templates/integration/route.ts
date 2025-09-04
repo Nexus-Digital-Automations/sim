@@ -27,8 +27,8 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import {
-  templateSystemIntegration,
   TemplateIntegrationSchemas,
+  templateSystemIntegration,
 } from '@/lib/templates/integration-architecture'
 import type { TemplateApiResponse } from '@/lib/templates/types'
 

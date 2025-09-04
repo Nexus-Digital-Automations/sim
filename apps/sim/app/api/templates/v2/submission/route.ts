@@ -1,10 +1,10 @@
 /**
  * Template Submission & Approval Workflow API v2
- * 
+ *
  * This API handles the complete template submission and approval workflow process,
- * including quality validation, moderation queues, reviewer assignment, and 
+ * including quality validation, moderation queues, reviewer assignment, and
  * publication pipeline with comprehensive audit trails.
- * 
+ *
  * Features:
  * - Multi-stage approval workflow with configurable stages
  * - Automated quality scoring and validation
@@ -12,7 +12,7 @@
  * - Community feedback integration during review
  * - Comprehensive audit trails and version tracking
  * - Automated publishing pipeline with rollback capability
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Workflow Team
  * @created 2025-09-04
@@ -22,19 +22,10 @@ import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
-import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import {
-  templates,
-  templateCategories,
-  templateSubmissions,
-  templateReviews,
-  templateApprovals,
-  user,
-} from '@/db/schema'
+import { templateReviews, templateSubmissions, templates, user } from '@/db/schema'
 
 const logger = createLogger('TemplateSubmissionAPI')
 
@@ -49,19 +40,19 @@ const SubmissionQuerySchema = z.object({
   categoryId: z.string().optional(),
   reviewerId: z.string().optional(),
   submitterId: z.string().optional(),
-  
+
   // Date filtering
   submittedAfter: z.string().datetime().optional(),
   submittedBefore: z.string().datetime().optional(),
-  
+
   // Sorting
   sortBy: z.enum(['submitted', 'priority', 'category', 'status']).optional().default('submitted'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  
+
   // Pagination
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(20),
-  
+
   // Response options
   includeReviews: z.coerce.boolean().optional().default(false),
   includeTemplate: z.coerce.boolean().optional().default(false),
@@ -71,13 +62,13 @@ const CreateSubmissionSchema = z.object({
   templateId: z.string().min(1, 'Template ID is required'),
   submissionType: z.enum(['new', 'update', 'revision']).default('new'),
   priority: z.enum(['low', 'medium', 'high', 'urgent']).optional().default('medium'),
-  
+
   // Submission details
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().min(10, 'Description is required').max(2000),
   category: z.string().min(1, 'Category is required'),
   tags: z.array(z.string()).max(10, 'Maximum 10 tags allowed').default([]),
-  
+
   // Quality and compliance
   qualityChecklist: z.object({
     hasDocumentation: z.boolean(),
@@ -88,11 +79,11 @@ const CreateSubmissionSchema = z.object({
     isAccessible: z.boolean(),
     performanceTested: z.boolean(),
   }),
-  
+
   // Submission notes
   submissionNotes: z.string().max(1000).optional(),
   changeLog: z.string().max(1000).optional(),
-  
+
   // Special flags
   isBreakingChange: z.boolean().default(false),
   requiresDocumentation: z.boolean().default(false),
@@ -103,7 +94,7 @@ const ReviewSubmissionSchema = z.object({
   submissionId: z.string().min(1, 'Submission ID is required'),
   decision: z.enum(['approve', 'reject', 'request_changes']),
   reviewNotes: z.string().min(10, 'Review notes are required').max(2000),
-  
+
   // Detailed review criteria
   qualityScore: z.number().min(0).max(100).optional(),
   reviewCriteria: z.object({
@@ -113,10 +104,10 @@ const ReviewSubmissionSchema = z.object({
     security: z.number().min(1).max(5),
     usability: z.number().min(1).max(5),
   }),
-  
+
   // Action items for submitter
   actionItems: z.array(z.string()).optional().default([]),
-  
+
   // Priority adjustment
   suggestedPriority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
 })
@@ -128,43 +119,40 @@ const ReviewSubmissionSchema = z.object({
 /**
  * Calculate submission quality score based on checklist and template analysis
  */
-function calculateQualityScore(
-  qualityChecklist: any,
-  templateData: any
-): number {
+function calculateQualityScore(qualityChecklist: any, templateData: any): number {
   let score = 0
   let maxScore = 0
-  
+
   // Quality checklist scoring (60% weight)
   const checklistItems = Object.values(qualityChecklist)
   const checklistScore = checklistItems.filter(Boolean).length / checklistItems.length
   score += checklistScore * 60
   maxScore += 60
-  
+
   // Template analysis scoring (40% weight)
   const template = templateData.state || {}
   const blocks = template.blocks || {}
   const blockCount = Object.keys(blocks).length
-  
+
   // Block complexity (10 points)
   const complexityScore = Math.min(blockCount / 5, 1) * 10
   score += complexityScore
   maxScore += 10
-  
+
   // Description quality (15 points)
-  const descriptionScore = templateData.description 
+  const descriptionScore = templateData.description
     ? Math.min(templateData.description.length / 100, 1) * 15
     : 0
   score += descriptionScore
   maxScore += 15
-  
+
   // Metadata completeness (15 points)
   const metadataFields = ['name', 'description', 'category', 'icon', 'color']
-  const completedFields = metadataFields.filter(field => templateData[field])
+  const completedFields = metadataFields.filter((field) => templateData[field])
   const metadataScore = (completedFields.length / metadataFields.length) * 15
   score += metadataScore
   maxScore += 15
-  
+
   return Math.round((score / maxScore) * 100)
 }
 
@@ -182,11 +170,10 @@ async function assignReviewer(
     // 2. Check current workload
     // 3. Consider reviewer availability and timezone
     // 4. Balance assignments across reviewers
-    
+
     // For now, return a placeholder reviewer ID
     // This would be replaced with actual reviewer assignment logic
     return 'reviewer_placeholder_id'
-    
   } catch (error) {
     logger.warn('Failed to assign reviewer automatically', { error: error.message })
     return null
@@ -202,7 +189,7 @@ function createApprovalWorkflow(
   isBreakingChange: boolean
 ): any[] {
   const stages = []
-  
+
   // Stage 1: Initial Review (always required)
   stages.push({
     stageNumber: 1,
@@ -213,7 +200,7 @@ function createApprovalWorkflow(
     estimatedDays: 2,
     criteria: ['quality_check', 'security_scan', 'compliance_check'],
   })
-  
+
   // Stage 2: Category Expert Review (for medium+ priority or complex templates)
   if (submissionData.priority !== 'low' || qualityScore >= 80) {
     stages.push({
@@ -226,9 +213,13 @@ function createApprovalWorkflow(
       criteria: ['technical_accuracy', 'best_practices', 'category_fit'],
     })
   }
-  
+
   // Stage 3: Senior Review (for breaking changes or high priority)
-  if (isBreakingChange || submissionData.priority === 'high' || submissionData.priority === 'urgent') {
+  if (
+    isBreakingChange ||
+    submissionData.priority === 'high' ||
+    submissionData.priority === 'urgent'
+  ) {
     stages.push({
       stageNumber: 3,
       stageName: 'Senior Review',
@@ -239,7 +230,7 @@ function createApprovalWorkflow(
       criteria: ['impact_assessment', 'backward_compatibility', 'strategic_alignment'],
     })
   }
-  
+
   // Stage 4: Community Feedback (optional for fast-track requests)
   if (!submissionData.requestFastTrack) {
     stages.push({
@@ -252,7 +243,7 @@ function createApprovalWorkflow(
       criteria: ['community_testing', 'user_feedback', 'usability_testing'],
     })
   }
-  
+
   // Stage 5: Final Approval (always required)
   stages.push({
     stageNumber: stages.length + 1,
@@ -263,7 +254,7 @@ function createApprovalWorkflow(
     estimatedDays: 1,
     criteria: ['final_validation', 'publication_ready', 'release_notes'],
   })
-  
+
   return stages
 }
 
@@ -282,14 +273,13 @@ async function sendSubmissionNotification(
     // - In-app notifications
     // - Slack/Teams integration
     // - Webhook calls
-    
+
     logger.info('Submission notification sent', {
       submissionId,
       recipientId,
       eventType,
       data,
     })
-    
   } catch (error) {
     logger.warn('Failed to send submission notification', {
       submissionId,
@@ -396,20 +386,22 @@ export async function GET(request: NextRequest) {
         qualityScore: templateSubmissions.qualityScore,
         submittedAt: templateSubmissions.submittedAt,
         updatedAt: templateSubmissions.updatedAt,
-        
+
         // Submitter info
         submitterId: templateSubmissions.submitterId,
         submitterName: user.name,
         submitterImage: user.image,
-        
+
         // Assignment info
         assignedReviewerId: templateSubmissions.assignedReviewerId,
-        
+
         // Optional template data
-        ...(params.includeTemplate ? {
-          templateName: templates.name,
-          templateDescription: templates.description,
-        } : {}),
+        ...(params.includeTemplate
+          ? {
+              templateName: templates.name,
+              templateDescription: templates.description,
+            }
+          : {}),
       })
       .from(templateSubmissions)
       .leftJoin(user, eq(templateSubmissions.submitterId, user.id))
@@ -435,7 +427,7 @@ export async function GET(request: NextRequest) {
 
     // Add review data if requested
     if (params.includeReviews && results.length > 0) {
-      const submissionIds = results.map(s => s.id)
+      const submissionIds = results.map((s) => s.id)
       const reviews = await db
         .select({
           submissionId: templateReviews.submissionId,
@@ -451,13 +443,16 @@ export async function GET(request: NextRequest) {
         .where(inArray(templateReviews.submissionId, submissionIds))
 
       // Group reviews by submission
-      const reviewsBySubmission = reviews.reduce((acc, review) => {
-        if (!acc[review.submissionId]) {
-          acc[review.submissionId] = []
-        }
-        acc[review.submissionId].push(review)
-        return acc
-      }, {} as Record<string, any[]>)
+      const reviewsBySubmission = reviews.reduce(
+        (acc, review) => {
+          if (!acc[review.submissionId]) {
+            acc[review.submissionId] = []
+          }
+          acc[review.submissionId].push(review)
+          return acc
+        },
+        {} as Record<string, any[]>
+      )
 
       // Add reviews to results
       results.forEach((submission: any) => {
@@ -490,10 +485,9 @@ export async function GET(request: NextRequest) {
         userId,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
       return NextResponse.json(
@@ -528,7 +522,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getSession()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
@@ -561,20 +555,14 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
 
     // Verify user can submit this template
     if (template.userId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     // Calculate quality score
@@ -588,11 +576,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Create approval workflow
-    const approvalStages = createApprovalWorkflow(
-      data,
-      qualityScore,
-      data.isBreakingChange
-    )
+    const approvalStages = createApprovalWorkflow(data, qualityScore, data.isBreakingChange)
 
     // Create submission
     const submissionId = uuidv4()
@@ -627,40 +611,40 @@ export async function POST(request: NextRequest) {
 
     // Send notification to assigned reviewer
     if (assignedReviewerId) {
-      await sendSubmissionNotification(
-        submissionId,
-        assignedReviewerId,
-        'submission_assigned',
-        {
-          templateName: template.name,
-          submitterName: session.user.name,
-          priority: data.priority,
-        }
-      )
+      await sendSubmissionNotification(submissionId, assignedReviewerId, 'submission_assigned', {
+        templateName: template.name,
+        submitterName: session.user.name,
+        priority: data.priority,
+      })
     }
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template submission created successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        submissionId,
-        status: 'pending',
-        qualityScore,
-        estimatedReviewTime: approvalStages.reduce((total, stage) => total + stage.estimatedDays, 0),
-        assignedReviewerId,
-        approvalStages: approvalStages.length,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          submissionId,
+          status: 'pending',
+          qualityScore,
+          estimatedReviewTime: approvalStages.reduce(
+            (total, stage) => total + stage.estimatedDays,
+            0
+          ),
+          assignedReviewerId,
+          approvalStages: approvalStages.length,
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
-
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid submission data:`, error.errors)
       return NextResponse.json(

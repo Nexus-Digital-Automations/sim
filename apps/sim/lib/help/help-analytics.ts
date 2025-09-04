@@ -15,7 +15,7 @@
 
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/console/logger'
-import type { HelpContent, HelpContext, UserInteraction } from './contextual-help'
+import type { HelpContext } from './contextual-help'
 
 const logger = createLogger('HelpAnalytics')
 
@@ -316,10 +316,14 @@ export class HelpAnalyticsService {
     const operationId = nanoid()
 
     try {
-      const eventType = action === 'start' ? 'tour_start' 
-        : action === 'step' ? 'tour_step'
-        : action === 'complete' ? 'tour_complete'
-        : 'tour_skip'
+      const eventType =
+        action === 'start'
+          ? 'tour_start'
+          : action === 'step'
+            ? 'tour_step'
+            : action === 'complete'
+              ? 'tour_complete'
+              : 'tour_skip'
 
       const event: HelpAnalyticsEvent = {
         id: nanoid(),
@@ -589,9 +593,10 @@ export class HelpAnalyticsService {
   private getMetadata(): AnalyticsMetadata {
     return {
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
-      viewport: typeof window !== 'undefined' 
-        ? { width: window.innerWidth, height: window.innerHeight }
-        : { width: 0, height: 0 },
+      viewport:
+        typeof window !== 'undefined'
+          ? { width: window.innerWidth, height: window.innerHeight }
+          : { width: 0, height: 0 },
       language: typeof navigator !== 'undefined' ? navigator.language : 'en',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       referrer: typeof document !== 'undefined' ? document.referrer : undefined,

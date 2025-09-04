@@ -1,6 +1,6 @@
 /**
  * Enhanced Event Collection System - Event-driven monitoring architecture
- * 
+ *
  * Provides comprehensive event collection and streaming capabilities for workflow monitoring:
  * - Redis Streams for real-time event processing
  * - Event sourcing for complete audit trails
@@ -8,7 +8,7 @@
  * - High-throughput event publishing with batching
  * - Intelligent event correlation and context enhancement
  * - Business metrics collection and analysis
- * 
+ *
  * @created 2025-09-03
  * @author Sim Monitoring System
  */
@@ -16,7 +16,6 @@
 import { EventEmitter } from 'events'
 import { createLogger } from '@/lib/logs/console/logger'
 import { generateId } from '@/lib/utils'
-import type { TraceSpan } from '@/lib/logs/types'
 
 const logger = createLogger('EventCollector')
 
@@ -29,9 +28,9 @@ export interface MonitoringEvent {
   parentSpanId?: string
 
   // Event classification
-  eventType: 
+  eventType:
     | 'workflow_started'
-    | 'workflow_completed' 
+    | 'workflow_completed'
     | 'workflow_failed'
     | 'workflow_cancelled'
     | 'block_started'
@@ -54,10 +53,10 @@ export interface MonitoringEvent {
 
   // Event data payload
   data: EventData
-  
+
   // Performance metrics
   metrics?: PerformanceEventData
-  
+
   // Business context
   businessContext?: BusinessEventContext
 }
@@ -68,7 +67,7 @@ export interface EventData {
   duration?: number
   inputSize?: number
   outputSize?: number
-  
+
   // Error information
   error?: {
     name: string
@@ -77,14 +76,14 @@ export interface EventData {
     code?: string
     classification: 'user_error' | 'system_error' | 'external_error' | 'timeout_error'
   }
-  
+
   // Resource usage
   resourceUsage?: {
     cpu: number
     memory: number
     network: number
   }
-  
+
   // Cost information
   cost?: {
     tokens: number
@@ -92,7 +91,7 @@ export interface EventData {
     model?: string
     provider?: string
   }
-  
+
   // Custom metadata
   metadata?: Record<string, any>
 }
@@ -117,7 +116,7 @@ export interface BusinessEventContext {
   category: 'automation' | 'data_processing' | 'integration' | 'ai_workflow' | 'custom'
   priority: 'low' | 'medium' | 'high' | 'critical'
   department?: string
-  
+
   // Business metrics
   businessValue: {
     timesSaved?: number // seconds
@@ -125,7 +124,7 @@ export interface BusinessEventContext {
     processedItems?: number
     automatedTasks?: number
   }
-  
+
   // Compliance tracking
   complianceFlags?: {
     dataProcessed: boolean
@@ -139,15 +138,15 @@ export interface EventStreamConfig {
   // Redis Streams configuration
   streamName: string
   maxLength: number
-  
+
   // Batch processing
   batchSize: number
   flushInterval: number // milliseconds
-  
+
   // Retry configuration
   maxRetries: number
   retryBackoff: number
-  
+
   // Event filtering
   eventTypeFilter?: string[]
   severityFilter?: ('low' | 'medium' | 'high' | 'critical')[]
@@ -155,7 +154,7 @@ export interface EventStreamConfig {
 
 /**
  * Enhanced Event Collector Class
- * 
+ *
  * Manages comprehensive event collection, streaming, and correlation for
  * workflow monitoring and analytics. Integrates with existing Sim monitoring
  * infrastructure while adding enterprise-grade capabilities.
@@ -171,21 +170,23 @@ export class EnhancedEventCollector extends EventEmitter {
     lastFlushTime: Date.now(),
   }
 
-  constructor(private config: EventStreamConfig = {
-    streamName: 'sim:monitoring:events',
-    maxLength: 100000,
-    batchSize: 100,
-    flushInterval: 1000,
-    maxRetries: 3,
-    retryBackoff: 1000,
-  }) {
+  constructor(
+    private config: EventStreamConfig = {
+      streamName: 'sim:monitoring:events',
+      maxLength: 100000,
+      batchSize: 100,
+      flushInterval: 1000,
+      maxRetries: 3,
+      retryBackoff: 1000,
+    }
+  ) {
     super()
     logger.info('Enhanced Event Collector initialized', {
       streamName: config.streamName,
       batchSize: config.batchSize,
       flushInterval: config.flushInterval,
     })
-    
+
     this.setupPeriodicFlush()
   }
 
@@ -209,7 +210,7 @@ export class EnhancedEventCollector extends EventEmitter {
     businessContext?: BusinessEventContext
   ): Promise<void> {
     const operationId = generateId()
-    
+
     logger.debug(`[${operationId}] Collecting workflow event`, {
       eventType,
       workflowId: context.workflowId,
@@ -257,7 +258,6 @@ export class EnhancedEventCollector extends EventEmitter {
         eventId: event.eventId,
         bufferSize: this.eventBuffer.length,
       })
-
     } catch (error) {
       this.processingStats.eventsFailed++
       logger.error(`[${operationId}] Failed to collect workflow event`, {
@@ -342,7 +342,7 @@ export class EnhancedEventCollector extends EventEmitter {
 
       // Emit for real-time processing
       this.emit('event_collected', event)
-      
+
       // Check for performance anomalies
       if (performanceData) {
         await this.checkPerformanceAnomalies(event, performanceData)
@@ -356,7 +356,6 @@ export class EnhancedEventCollector extends EventEmitter {
         blockType: context.blockType,
         bufferSize: this.eventBuffer.length,
       })
-
     } catch (error) {
       this.processingStats.eventsFailed++
       logger.error(`[${operationId}] Failed to collect block event`, {
@@ -431,7 +430,6 @@ export class EnhancedEventCollector extends EventEmitter {
         severity,
         eventType,
       })
-
     } catch (error) {
       this.processingStats.eventsFailed++
       logger.error(`[${operationId}] Failed to collect system event`, {
@@ -468,7 +466,7 @@ export class EnhancedEventCollector extends EventEmitter {
   updateConfig(newConfig: Partial<EventStreamConfig>): void {
     this.config = { ...this.config, ...newConfig }
     logger.info('Event collector configuration updated', newConfig)
-    
+
     // Restart periodic flush with new interval if changed
     if (newConfig.flushInterval && this.flushTimer) {
       clearInterval(this.flushTimer)
@@ -489,7 +487,7 @@ export class EnhancedEventCollector extends EventEmitter {
    */
   async shutdown(): Promise<void> {
     logger.info('Shutting down enhanced event collector')
-    
+
     try {
       // Clear periodic flush timer
       if (this.flushTimer) {
@@ -524,15 +522,16 @@ export class EnhancedEventCollector extends EventEmitter {
 
   private shouldFilterEvent(event: MonitoringEvent): boolean {
     // Apply event type filtering
-    if (this.config.eventTypeFilter && 
-        !this.config.eventTypeFilter.includes(event.eventType)) {
+    if (this.config.eventTypeFilter && !this.config.eventTypeFilter.includes(event.eventType)) {
       return true
     }
 
     // Apply severity filtering for system events
-    if (this.config.severityFilter && 
-        event.businessContext?.priority &&
-        !this.config.severityFilter.includes(event.businessContext.priority)) {
+    if (
+      this.config.severityFilter &&
+      event.businessContext?.priority &&
+      !this.config.severityFilter.includes(event.businessContext.priority)
+    ) {
       return true
     }
 
@@ -542,7 +541,7 @@ export class EnhancedEventCollector extends EventEmitter {
   private async enhanceEventContext(event: MonitoringEvent): Promise<void> {
     // Add correlation IDs and context enrichment
     // This could be enhanced with additional context from databases, caches, etc.
-    
+
     // Add execution sequence number if available
     if (event.blockId && event.executionId) {
       event.data.metadata = {
@@ -582,10 +581,12 @@ export class EnhancedEventCollector extends EventEmitter {
     }
 
     // Determine priority based on performance and cost
-    if (performanceData?.executionTime > 30000) { // > 30 seconds
+    if (performanceData?.executionTime > 30000) {
+      // > 30 seconds
       context.priority = 'high'
     }
-    if (eventData.cost?.cost && eventData.cost.cost > 1.0) { // > $1
+    if (eventData.cost?.cost && eventData.cost.cost > 1.0) {
+      // > $1
       context.priority = 'high'
     }
     if (eventData.status === 'error') {
@@ -612,7 +613,8 @@ export class EnhancedEventCollector extends EventEmitter {
     const anomalies: string[] = []
 
     // Check execution time anomalies
-    if (performanceData.executionTime > 60000) { // > 1 minute
+    if (performanceData.executionTime > 60000) {
+      // > 1 minute
       anomalies.push(`Slow execution: ${performanceData.executionTime}ms`)
     }
 
@@ -620,8 +622,11 @@ export class EnhancedEventCollector extends EventEmitter {
     if (performanceData.resourceUtilization.cpu > 80) {
       anomalies.push(`High CPU usage: ${performanceData.resourceUtilization.cpu}%`)
     }
-    if (performanceData.resourceUtilization.memory > 1024 * 1024 * 500) { // > 500MB
-      anomalies.push(`High memory usage: ${Math.round(performanceData.resourceUtilization.memory / 1024 / 1024)}MB`)
+    if (performanceData.resourceUtilization.memory > 1024 * 1024 * 500) {
+      // > 500MB
+      anomalies.push(
+        `High memory usage: ${Math.round(performanceData.resourceUtilization.memory / 1024 / 1024)}MB`
+      )
     }
 
     // Emit performance anomaly events
@@ -669,7 +674,7 @@ export class EnhancedEventCollector extends EventEmitter {
       // Update processing stats
       const processingTime = Date.now() - startTime
       this.processingStats.eventsProcessed += eventsToFlush.length
-      this.processingStats.averageProcessingTime = 
+      this.processingStats.averageProcessingTime =
         (this.processingStats.averageProcessingTime + processingTime) / 2
       this.processingStats.lastFlushTime = Date.now()
 
@@ -677,17 +682,16 @@ export class EnhancedEventCollector extends EventEmitter {
         eventCount: eventsToFlush.length,
         processingTimeMs: processingTime,
       })
-
     } catch (error) {
       // On error, add events back to buffer for retry
       this.eventBuffer.unshift(...eventsToFlush)
       this.processingStats.eventsFailed += eventsToFlush.length
-      
+
       logger.error(`[${operationId}] Failed to flush events`, {
         eventCount: eventsToFlush.length,
         error: error instanceof Error ? error.message : String(error),
       })
-      
+
       throw error
     }
   }
@@ -695,10 +699,14 @@ export class EnhancedEventCollector extends EventEmitter {
   private getExecutionSequence(executionId: string, blockId: string): number {
     // This would typically be retrieved from execution state
     // For now, return a simple hash-based sequence
-    return Math.abs((executionId + blockId).split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0)
-      return a & a
-    }, 0)) % 1000
+    return (
+      Math.abs(
+        (executionId + blockId).split('').reduce((a, b) => {
+          a = (a << 5) - a + b.charCodeAt(0)
+          return a & a
+        }, 0)
+      ) % 1000
+    )
   }
 }
 

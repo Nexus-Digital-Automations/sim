@@ -292,21 +292,21 @@ export class HelpContentLoader implements ContentLoader {
 
   async loadContent(contentId: string, language = 'en'): Promise<HelpContentDocument | null> {
     const cacheKey = `${contentId}-${language}`
-    
+
     // Check cache first
     if (this.isValidCache(cacheKey)) {
       return this.contentCache.get(cacheKey) || null
     }
 
     try {
-      const contentIndex = HELP_CONTENT_INDEX.find(item => item.id === contentId)
+      const contentIndex = HELP_CONTENT_INDEX.find((item) => item.id === contentId)
       if (!contentIndex) {
         throw new Error(`Content not found: ${contentId}`)
       }
 
       // In a real implementation, this would load from database or file system
       const content = await this.fetchContentFromSource(contentIndex, language)
-      
+
       if (content) {
         this.contentCache.set(cacheKey, content)
         this.setCacheExpiry(cacheKey)
@@ -320,13 +320,11 @@ export class HelpContentLoader implements ContentLoader {
   }
 
   async loadCategory(category: string, language = 'en'): Promise<HelpContentDocument[]> {
-    const categoryItems = HELP_CONTENT_INDEX
-      .filter(item => HELP_CATEGORIES[item.category] === category)
-      .sort((a, b) => b.priority - a.priority)
+    const categoryItems = HELP_CONTENT_INDEX.filter(
+      (item) => HELP_CATEGORIES[item.category] === category
+    ).sort((a, b) => b.priority - a.priority)
 
-    const contentPromises = categoryItems.map(item => 
-      this.loadContent(item.id, language)
-    )
+    const contentPromises = categoryItems.map((item) => this.loadContent(item.id, language))
 
     const results = await Promise.all(contentPromises)
     return results.filter((content): content is HelpContentDocument => content !== null)
@@ -335,12 +333,12 @@ export class HelpContentLoader implements ContentLoader {
   async searchContent(query: string, filters: any = {}): Promise<HelpContentDocument[]> {
     // This would implement actual search logic
     const allContent = await Promise.all(
-      HELP_CONTENT_INDEX.map(item => this.loadContent(item.id))
+      HELP_CONTENT_INDEX.map((item) => this.loadContent(item.id))
     )
 
     return allContent
       .filter((content): content is HelpContentDocument => content !== null)
-      .filter(content => {
+      .filter((content) => {
         const searchText = `${content.title} ${content.content}`.toLowerCase()
         return searchText.includes(query.toLowerCase())
       })
@@ -357,7 +355,7 @@ export class HelpContentLoader implements ContentLoader {
   }
 
   private async fetchContentFromSource(
-    contentIndex: HelpContentIndex, 
+    contentIndex: HelpContentIndex,
     language: string
   ): Promise<HelpContentDocument> {
     // Mock implementation - in reality would load from database/files
@@ -392,7 +390,7 @@ export class HelpContentLoader implements ContentLoader {
 
   private generateTitle(contentId: string): string {
     const titleMap: Record<string, string> = {
-      'welcome': 'Welcome to Sim',
+      welcome: 'Welcome to Sim',
       'quick-start-guide': 'Quick Start Guide',
       'interface-overview': 'Interface Overview',
       'creating-workflows': 'Creating Your First Workflow',
@@ -415,13 +413,15 @@ export class HelpContentLoader implements ContentLoader {
       'performance-issues': 'Troubleshooting Performance Problems',
     }
 
-    return titleMap[contentId] || contentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return (
+      titleMap[contentId] || contentId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+    )
   }
 
   private async generateContent(contentId: string): Promise<string> {
     // Mock markdown content - in reality would load from files or database
     const contentMap: Record<string, string> = {
-      'welcome': `
+      welcome: `
 # Welcome to Sim
 
 Welcome to Sim, the powerful workflow automation platform that helps you create, manage, and execute complex workflows with ease.
@@ -522,7 +522,10 @@ Before you start building, consider:
       `,
     }
 
-    return contentMap[contentId] || `# ${this.generateTitle(contentId)}\n\nContent for ${contentId} coming soon...`
+    return (
+      contentMap[contentId] ||
+      `# ${this.generateTitle(contentId)}\n\nContent for ${contentId} coming soon...`
+    )
   }
 }
 
@@ -537,20 +540,18 @@ export const helpContentLoader = new HelpContentLoader()
 // ========================
 
 export function getContentByCategory(category: keyof typeof HELP_CATEGORIES): HelpContentIndex[] {
-  return HELP_CONTENT_INDEX.filter(item => item.category === category)
+  return HELP_CONTENT_INDEX.filter((item) => item.category === category)
 }
 
 export function getContentByPriority(minPriority = 70): HelpContentIndex[] {
-  return HELP_CONTENT_INDEX.filter(item => item.priority >= minPriority)
+  return HELP_CONTENT_INDEX.filter((item) => item.priority >= minPriority)
 }
 
 export function getContentDependencies(contentId: string): HelpContentIndex[] {
-  const content = HELP_CONTENT_INDEX.find(item => item.id === contentId)
+  const content = HELP_CONTENT_INDEX.find((item) => item.id === contentId)
   if (!content?.dependencies) return []
 
-  return HELP_CONTENT_INDEX.filter(item => 
-    content.dependencies!.includes(item.id)
-  )
+  return HELP_CONTENT_INDEX.filter((item) => content.dependencies!.includes(item.id))
 }
 
 export function validateContentStructure(): boolean {
@@ -558,7 +559,7 @@ export function validateContentStructure(): boolean {
   for (const content of HELP_CONTENT_INDEX) {
     if (content.dependencies) {
       for (const depId of content.dependencies) {
-        const depExists = HELP_CONTENT_INDEX.some(item => item.id === depId)
+        const depExists = HELP_CONTENT_INDEX.some((item) => item.id === depId)
         if (!depExists) {
           console.error(`Missing dependency: ${depId} for content: ${content.id}`)
           return false

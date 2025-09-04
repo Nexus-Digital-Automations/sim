@@ -1,30 +1,37 @@
 /**
  * Enhanced WebSocket Handler for Real-time Monitoring
- * 
+ *
  * Integrates comprehensive monitoring services with WebSocket infrastructure:
  * - Real-time event streaming from enhanced event collector
  * - ML anomaly detection alerts and notifications
  * - Advanced performance metrics and business intelligence
  * - Intelligent event filtering and correlation
  * - Multi-tenant subscription management
- * 
+ *
  * @enhanced 2025-09-03
  * @author Sim Enhanced Monitoring System
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
 import { generateId } from '@/lib/utils'
+import { mlAnomalyDetector } from '../analytics/anomaly-detector'
+import type { AnomalyResult, MonitoringEvent } from '../core/event-collector'
+import { enhancedEventCollector } from '../core/event-collector'
 import type { ExecutionUpdate } from '../types'
 import { executionMonitor } from './execution-monitor'
 import { performanceCollector } from './performance-collector'
-import { enhancedEventCollector } from '../core/event-collector'
-import { mlAnomalyDetector } from '../analytics/anomaly-detector'
-import type { MonitoringEvent, AnomalyResult } from '../core/event-collector'
 
 const logger = createLogger('MonitoringWebSocketHandler')
 
 export interface MonitoringSubscription {
-  type: 'execution' | 'workspace' | 'performance' | 'alerts' | 'events' | 'anomalies' | 'business_metrics'
+  type:
+    | 'execution'
+    | 'workspace'
+    | 'performance'
+    | 'alerts'
+    | 'events'
+    | 'anomalies'
+    | 'business_metrics'
   id: string
   workspaceId: string
   filters?: {
@@ -53,12 +60,15 @@ export class MonitoringWebSocketHandler {
   private activeIterators = new Map<string, AsyncIterator<any>>()
   private eventQueues = new Map<string, MonitoringEvent[]>() // connectionId -> event buffer
   private throttleTimers = new Map<string, NodeJS.Timeout>() // subscription throttling
-  private connectionStats = new Map<string, {
-    messagesReceived: number
-    messagesSent: number
-    lastActivity: Date
-    subscriptionCount: number
-  }>()
+  private connectionStats = new Map<
+    string,
+    {
+      messagesReceived: number
+      messagesSent: number
+      lastActivity: Date
+      subscriptionCount: number
+    }
+  >()
 
   constructor(private socketServer: any) {
     this.setupEventListeners()
@@ -66,11 +76,11 @@ export class MonitoringWebSocketHandler {
     logger.info('Enhanced MonitoringWebSocketHandler initialized', {
       features: [
         'real-time-events',
-        'ml-anomaly-detection', 
+        'ml-anomaly-detection',
         'business-intelligence',
         'enhanced-filtering',
-        'multi-tenant-subscriptions'
-      ]
+        'multi-tenant-subscriptions',
+      ],
     })
   }
 
@@ -79,11 +89,11 @@ export class MonitoringWebSocketHandler {
    */
   async handleConnection(connectionId: string, workspaceId: string): Promise<void> {
     const operationId = generateId()
-    
+
     logger.info(`[${operationId}] New enhanced monitoring connection`, {
       connectionId,
       workspaceId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     // Initialize connection tracking
@@ -101,13 +111,13 @@ export class MonitoringWebSocketHandler {
     try {
       // Current active executions
       const activeExecutions = await executionMonitor.getActiveExecutions(workspaceId)
-      
+
       // System health status
       const systemHealth = this.getSystemHealthStatus()
-      
+
       // Recent anomaly detection statistics
       const anomalyStats = mlAnomalyDetector.getDetectionStats()
-      
+
       // Event collector statistics
       const eventStats = enhancedEventCollector.getCollectorStats()
 
@@ -126,26 +136,25 @@ export class MonitoringWebSocketHandler {
               'ml-anomaly-detection',
               'performance-analytics',
               'business-intelligence',
-              'predictive-alerting'
-            ]
-          }
+              'predictive-alerting',
+            ],
+          },
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
-      
+
       this.updateConnectionStats(connectionId, 'sent')
-      
     } catch (error) {
       logger.error(`[${operationId}] Error establishing enhanced monitoring connection`, {
         connectionId,
         workspaceId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
-      
+
       this.sendToConnection(connectionId, {
         type: 'connection_error',
         error: 'Failed to establish monitoring connection',
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -156,12 +165,12 @@ export class MonitoringWebSocketHandler {
   async handleDisconnect(connectionId: string): Promise<void> {
     const operationId = generateId()
     const stats = this.connectionStats.get(connectionId)
-    
+
     logger.info(`[${operationId}] Enhanced monitoring connection disconnected`, {
       connectionId,
       workspaceId: this.connectionWorkspaces.get(connectionId),
       stats,
-      subscriptionCount: this.subscriptions.get(connectionId)?.size || 0
+      subscriptionCount: this.subscriptions.get(connectionId)?.size || 0,
     })
 
     try {
@@ -171,7 +180,10 @@ export class MonitoringWebSocketHandler {
         try {
           await iterator.return()
         } catch (error) {
-          logger.warn(`[${operationId}] Error cleaning up iterator for connection ${connectionId}:`, error)
+          logger.warn(
+            `[${operationId}] Error cleaning up iterator for connection ${connectionId}:`,
+            error
+          )
         }
       }
 
@@ -189,11 +201,10 @@ export class MonitoringWebSocketHandler {
       this.connectionWorkspaces.delete(connectionId)
       this.eventQueues.delete(connectionId)
       this.connectionStats.delete(connectionId)
-      
     } catch (error) {
       logger.error(`[${operationId}] Error during connection cleanup`, {
         connectionId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -245,15 +256,15 @@ export class MonitoringWebSocketHandler {
         case 'alerts':
           await this.handleAlertsSubscription(connectionId, subscription)
           break
-          
+
         case 'events':
           await this.handleEventsSubscription(connectionId, subscription)
           break
-          
+
         case 'anomalies':
           await this.handleAnomaliesSubscription(connectionId, subscription)
           break
-          
+
         case 'business_metrics':
           await this.handleBusinessMetricsSubscription(connectionId, subscription)
           break
@@ -445,14 +456,14 @@ export class MonitoringWebSocketHandler {
           'real-time-alerts',
           'predictive-alerts',
           'anomaly-detection',
-          'business-impact-assessment'
+          'business-impact-assessment',
         ],
         activeAlerts: [],
-        detectionStats: mlAnomalyDetector.getDetectionStats()
+        detectionStats: mlAnomalyDetector.getDetectionStats(),
       },
     })
   }
-  
+
   /**
    * Handle new enhanced events subscription for real-time event streaming
    */
@@ -463,7 +474,7 @@ export class MonitoringWebSocketHandler {
     const operationId = `events-sub-${connectionId}-${subscription.id}`
     logger.debug(`[${operationId}] Setting up enhanced events subscription`, {
       filters: subscription.filters,
-      options: subscription.options
+      options: subscription.options,
     })
 
     try {
@@ -498,22 +509,21 @@ export class MonitoringWebSocketHandler {
         data: {
           filters: subscription.filters,
           eventCollectorStats: enhancedEventCollector.getCollectorStats(),
-          message: 'Real-time event streaming active'
-        }
+          message: 'Real-time event streaming active',
+        },
       })
-      
+
       this.updateConnectionStats(connectionId, 'sent')
-      
     } catch (error) {
       logger.error(`[${operationId}] Error setting up events subscription`, {
         connectionId,
         subscriptionId: subscription.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
   }
-  
+
   /**
    * Handle ML anomalies subscription for intelligent monitoring
    */
@@ -524,7 +534,7 @@ export class MonitoringWebSocketHandler {
     const operationId = `anomalies-sub-${connectionId}-${subscription.id}`
     logger.info(`[${operationId}] Setting up ML anomalies subscription`, {
       workspaceId: subscription.workspaceId,
-      filters: subscription.filters
+      filters: subscription.filters,
     })
 
     try {
@@ -563,24 +573,23 @@ export class MonitoringWebSocketHandler {
             'statistical-detection',
             'business-impact-assessment',
             'actionable-recommendations',
-            'predictive-alerting'
+            'predictive-alerting',
           ],
-          message: 'ML-powered anomaly detection active'
-        }
+          message: 'ML-powered anomaly detection active',
+        },
       })
-      
+
       this.updateConnectionStats(connectionId, 'sent')
-      
     } catch (error) {
       logger.error(`[${operationId}] Error setting up anomalies subscription`, {
         connectionId,
         subscriptionId: subscription.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
   }
-  
+
   /**
    * Handle business metrics subscription for intelligence analytics
    */
@@ -624,33 +633,35 @@ export class MonitoringWebSocketHandler {
           filters: subscription.filters,
           capabilities: [
             'cost-tracking',
-            'time-savings-analysis', 
+            'time-savings-analysis',
             'productivity-metrics',
             'roi-calculation',
-            'department-analytics'
+            'department-analytics',
           ],
-          message: 'Business intelligence analytics active'
-        }
+          message: 'Business intelligence analytics active',
+        },
       })
-      
+
       this.updateConnectionStats(connectionId, 'sent')
-      
     } catch (error) {
       logger.error(`[${operationId}] Error setting up business metrics subscription`, {
         connectionId,
         subscriptionId: subscription.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
   }
-  
+
   // Helper methods for enhanced functionality
-  
+
   /**
    * Check if event should be forwarded to subscription based on filters
    */
-  private shouldForwardEvent(event: MonitoringEvent, subscription: MonitoringSubscription): boolean {
+  private shouldForwardEvent(
+    event: MonitoringEvent,
+    subscription: MonitoringSubscription
+  ): boolean {
     const filters = subscription.filters
     if (!filters) return true
 
@@ -675,8 +686,11 @@ export class MonitoringWebSocketHandler {
     }
 
     // Check severity filtering
-    if (filters.severityLevels && event.businessContext?.priority && 
-        !filters.severityLevels.includes(event.businessContext.priority)) {
+    if (
+      filters.severityLevels &&
+      event.businessContext?.priority &&
+      !filters.severityLevels.includes(event.businessContext.priority)
+    ) {
       return false
     }
 
@@ -686,8 +700,11 @@ export class MonitoringWebSocketHandler {
     }
 
     // Check business category filtering
-    if (filters.businessCategories && event.businessContext?.category && 
-        !filters.businessCategories.includes(event.businessContext.category)) {
+    if (
+      filters.businessCategories &&
+      event.businessContext?.category &&
+      !filters.businessCategories.includes(event.businessContext.category)
+    ) {
       return false
     }
 
@@ -697,7 +714,10 @@ export class MonitoringWebSocketHandler {
   /**
    * Check if anomaly should be forwarded to subscription
    */
-  private shouldForwardAnomaly(anomaly: AnomalyResult, subscription: MonitoringSubscription): boolean {
+  private shouldForwardAnomaly(
+    anomaly: AnomalyResult,
+    subscription: MonitoringSubscription
+  ): boolean {
     const filters = subscription.filters
     if (!filters) return true
 
@@ -722,7 +742,11 @@ export class MonitoringWebSocketHandler {
     }
 
     // Check block type filtering
-    if (filters.blockTypes && anomaly.blockType && !filters.blockTypes.includes(anomaly.blockType)) {
+    if (
+      filters.blockTypes &&
+      anomaly.blockType &&
+      !filters.blockTypes.includes(anomaly.blockType)
+    ) {
       return false
     }
 
@@ -732,24 +756,33 @@ export class MonitoringWebSocketHandler {
   /**
    * Forward event to subscription with optional throttling
    */
-  private forwardEventToSubscription(connectionId: string, subscriptionId: string, event: MonitoringEvent): void {
+  private forwardEventToSubscription(
+    connectionId: string,
+    subscriptionId: string,
+    event: MonitoringEvent
+  ): void {
     const subscription = this.findSubscription(connectionId, subscriptionId)
     if (!subscription) return
 
     const throttleMs = subscription.options?.throttleMs
     if (throttleMs && throttleMs > 0) {
-      this.throttledSend(connectionId, subscriptionId, {
-        type: 'event_update',
+      this.throttledSend(
+        connectionId,
         subscriptionId,
-        data: event,
-        timestamp: new Date().toISOString()
-      }, throttleMs)
+        {
+          type: 'event_update',
+          subscriptionId,
+          data: event,
+          timestamp: new Date().toISOString(),
+        },
+        throttleMs
+      )
     } else {
       this.sendToConnection(connectionId, {
         type: 'event_update',
         subscriptionId,
         data: event,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
       this.updateConnectionStats(connectionId, 'sent')
     }
@@ -758,7 +791,11 @@ export class MonitoringWebSocketHandler {
   /**
    * Forward anomaly to subscription with business impact analysis
    */
-  private forwardAnomalyToSubscription(connectionId: string, subscriptionId: string, anomaly: AnomalyResult): void {
+  private forwardAnomalyToSubscription(
+    connectionId: string,
+    subscriptionId: string,
+    anomaly: AnomalyResult
+  ): void {
     this.sendToConnection(connectionId, {
       type: 'anomaly_detected',
       subscriptionId,
@@ -768,8 +805,8 @@ export class MonitoringWebSocketHandler {
         recommendations: anomaly.recommendations,
         confidence: anomaly.confidence,
         severity: anomaly.severity,
-        timestamp: anomaly.timestamp.toISOString()
-      }
+        timestamp: anomaly.timestamp.toISOString(),
+      },
     })
     this.updateConnectionStats(connectionId, 'sent')
   }
@@ -777,7 +814,11 @@ export class MonitoringWebSocketHandler {
   /**
    * Forward business metrics to subscription
    */
-  private forwardBusinessMetricsToSubscription(connectionId: string, subscriptionId: string, event: MonitoringEvent): void {
+  private forwardBusinessMetricsToSubscription(
+    connectionId: string,
+    subscriptionId: string,
+    event: MonitoringEvent
+  ): void {
     if (!event.businessContext) return
 
     this.sendToConnection(connectionId, {
@@ -789,12 +830,12 @@ export class MonitoringWebSocketHandler {
         blockId: event.blockId,
         businessContext: event.businessContext,
         eventType: event.eventType,
-        timestamp: event.timestamp.toISOString()
-      }
+        timestamp: event.timestamp.toISOString(),
+      },
     })
     this.updateConnectionStats(connectionId, 'sent')
   }
-  
+
   /**
    * Handle processed events from enhanced event collector
    */
@@ -831,14 +872,17 @@ export class MonitoringWebSocketHandler {
       }
     }
   }
-  
+
   /**
    * Find a subscription by connection and subscription ID
    */
-  private findSubscription(connectionId: string, subscriptionId: string): MonitoringSubscription | undefined {
+  private findSubscription(
+    connectionId: string,
+    subscriptionId: string
+  ): MonitoringSubscription | undefined {
     const subscriptions = this.subscriptions.get(connectionId)
     if (!subscriptions) return undefined
-    
+
     for (const subscription of subscriptions) {
       if (subscription.id === subscriptionId) {
         return subscription
@@ -855,24 +899,27 @@ export class MonitoringWebSocketHandler {
       for (const subscription of subscriptions) {
         // Route to appropriate subscription types
         let shouldBroadcast = false
-        
+
         if (eventType === 'event_processed' && subscription.type === 'events') {
           shouldBroadcast = this.shouldForwardEvent(data, subscription)
         } else if (eventType === 'performance_anomaly' && subscription.type === 'performance') {
           shouldBroadcast = true // Performance subscriptions get all anomalies
-        } else if (eventType === 'system_event' && (subscription.type === 'alerts' || subscription.type === 'events')) {
+        } else if (
+          eventType === 'system_event' &&
+          (subscription.type === 'alerts' || subscription.type === 'events')
+        ) {
           shouldBroadcast = true // System events go to alerts and events
         }
-        
+
         if (shouldBroadcast) {
           const message = {
             type: eventType,
             subscriptionId: subscription.id,
             data,
             timestamp: new Date().toISOString(),
-            priority: highPriority ? 'high' : 'normal'
+            priority: highPriority ? 'high' : 'normal',
           }
-          
+
           if (highPriority) {
             // Send immediately for high priority
             this.sendToConnection(connectionId, message)
@@ -895,22 +942,27 @@ export class MonitoringWebSocketHandler {
   /**
    * Send message with throttling support
    */
-  private throttledSend(connectionId: string, subscriptionId: string, message: any, throttleMs: number): void {
+  private throttledSend(
+    connectionId: string,
+    subscriptionId: string,
+    message: any,
+    throttleMs: number
+  ): void {
     const timerKey = `${connectionId}:${subscriptionId}:throttle`
-    
+
     // Clear existing timer if present
     const existingTimer = this.throttleTimers.get(timerKey)
     if (existingTimer) {
       clearTimeout(existingTimer)
     }
-    
+
     // Set new timer
     const timer = setTimeout(() => {
       this.sendToConnection(connectionId, message)
       this.updateConnectionStats(connectionId, 'sent')
       this.throttleTimers.delete(timerKey)
     }, throttleMs)
-    
+
     this.throttleTimers.set(timerKey, timer)
   }
 
@@ -939,10 +991,10 @@ export class MonitoringWebSocketHandler {
         eventCollector: 'active',
         anomalyDetector: 'active',
         performanceMonitor: 'active',
-        alertingSystem: 'active'
+        alertingSystem: 'active',
       },
       uptime: process.uptime() * 1000,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 
@@ -1072,7 +1124,7 @@ export class MonitoringWebSocketHandler {
 
     logger.debug('Event listeners set up for monitoring services')
   }
-  
+
   /**
    * Setup enhanced event handlers for new monitoring components
    */
@@ -1099,12 +1151,7 @@ export class MonitoringWebSocketHandler {
     })
 
     logger.info(`[${operationId}] Enhanced event handlers established`, {
-      handlers: [
-        'event-processor',
-        'performance-anomaly',
-        'system-event',
-        'ml-anomaly-detection'
-      ]
+      handlers: ['event-processor', 'performance-anomaly', 'system-event', 'ml-anomaly-detection'],
     })
   }
 
@@ -1157,7 +1204,7 @@ export class MonitoringWebSocketHandler {
   } {
     let totalSubscriptions = 0
     const subscriptionTypes: Record<string, number> = {}
-    
+
     for (const subscriptionSet of this.subscriptions.values()) {
       totalSubscriptions += subscriptionSet.size
       for (const subscription of subscriptionSet) {
@@ -1165,12 +1212,14 @@ export class MonitoringWebSocketHandler {
       }
     }
 
-    const connectionStatsArray = Array.from(this.connectionStats.entries()).map(([connectionId, stats]) => ({
-      connectionId,
-      workspaceId: this.connectionWorkspaces.get(connectionId),
-      ...stats,
-      subscriptionCount: this.subscriptions.get(connectionId)?.size || 0
-    }))
+    const connectionStatsArray = Array.from(this.connectionStats.entries()).map(
+      ([connectionId, stats]) => ({
+        connectionId,
+        workspaceId: this.connectionWorkspaces.get(connectionId),
+        ...stats,
+        subscriptionCount: this.subscriptions.get(connectionId)?.size || 0,
+      })
+    )
 
     return {
       connections: this.subscriptions.size,
@@ -1226,18 +1275,17 @@ export class MonitoringWebSocketHandler {
       logger.info(`[${operationId}] Enhanced MonitoringWebSocketHandler destroyed successfully`, {
         resourcesCleaned: [
           'active-iterators',
-          'subscriptions', 
+          'subscriptions',
           'connection-workspaces',
           'event-queues',
           'throttle-timers',
           'connection-stats',
-          'event-listeners'
-        ]
+          'event-listeners',
+        ],
       })
-      
     } catch (error) {
       logger.error(`[${operationId}] Error during enhanced handler destruction`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }

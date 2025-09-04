@@ -29,12 +29,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // ================================
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls } from '@/app/api/__test-utils__/module-mocks'
-
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
 // Replace with your actual file upload route handlers
-import { GET, POST, PUT, DELETE } from './route' // TODO: Import actual file handlers
+import { DELETE, GET, POST } from './route' // TODO: Import actual file handlers
 
 // ================================
 // FILE TEST DATA DEFINITIONS
@@ -130,7 +129,7 @@ function createMockFile(
 ): File {
   const blob = new Blob([content], { type: mimetype })
   const file = new File([blob], filename, { type: mimetype })
-  
+
   console.log(`📁 Created mock file: ${filename} (${mimetype}, ${blob.size} bytes)`)
   return file
 }
@@ -138,18 +137,15 @@ function createMockFile(
 /**
  * Create mock FormData with file
  */
-function createMockFormData(
-  file: File,
-  additionalFields: Record<string, string> = {}
-): FormData {
+function createMockFormData(file: File, additionalFields: Record<string, string> = {}): FormData {
   const formData = new FormData()
   formData.append('file', file)
-  
+
   // Add additional fields
   Object.entries(additionalFields).forEach(([key, value]) => {
     formData.append(key, value)
   })
-  
+
   console.log('📁 Created FormData with file and fields:', Object.keys(additionalFields))
   return formData
 }
@@ -187,13 +183,13 @@ function createFileDownloadRequest(
   headers: Record<string, string> = {}
 ): NextRequest {
   const url = `http://localhost:3000/api/files/${fileId}/download`
-  
+
   console.log(`📁 Creating file download request for: ${fileId}`)
 
   return new NextRequest(url, {
     method: 'GET',
     headers: new Headers({
-      'Accept': '*/*',
+      Accept: '*/*',
       ...headers,
     }),
   })
@@ -230,7 +226,7 @@ async function validateFileUploadResponse(response: Response, expectedStatus: nu
 function setupFileStorageMocks(
   operation: 'upload' | 'download' | 'delete',
   fileData?: any,
-  shouldFail: boolean = false
+  shouldFail = false
 ) {
   switch (operation) {
     case 'upload':
@@ -267,14 +263,14 @@ function setupFileStorageMocks(
 describe('[FILE_ENDPOINT] File Upload API Tests', () => {
   beforeEach(() => {
     console.log('\\n📁 Setting up file upload test environment')
-    
+
     // Reset all mocks
     mockControls.reset()
     vi.clearAllMocks()
-    
+
     // Setup authenticated user for file operations
     mockControls.setAuthUser(testUser)
-    
+
     console.log('✅ File upload test environment setup completed')
   })
 
@@ -323,11 +319,7 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
     it('should upload image with metadata extraction', async () => {
       console.log('[FILE_TEST] Testing image upload with metadata')
 
-      const imageFile = createMockFile(
-        'test-image.jpg',
-        'JPEG image content',
-        'image/jpeg'
-      )
+      const imageFile = createMockFile('test-image.jpg', 'JPEG image content', 'image/jpeg')
       const formData = createMockFormData(imageFile)
 
       setupFileStorageMocks('upload', sampleImageMetadata)
@@ -354,7 +346,7 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
       ]
 
       const formData = new FormData()
-      files.forEach(file => formData.append('files', file))
+      files.forEach((file) => formData.append('files', file))
 
       const uploadedFiles = files.map((file, index) => ({
         ...sampleFileMetadata,
@@ -462,7 +454,11 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
     it('should scan files for malware', async () => {
       console.log('[FILE_TEST] Testing virus scanning')
 
-      const suspiciousFile = createMockFile('suspicious.txt', 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*', 'text/plain')
+      const suspiciousFile = createMockFile(
+        'suspicious.txt',
+        'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*',
+        'text/plain'
+      )
       const formData = createMockFormData(suspiciousFile)
 
       // Mock virus detection
@@ -530,12 +526,12 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
       setupFileStorageMocks('download', largeFileMetadata)
 
       const request = createFileDownloadRequest(largeFileMetadata.id, {
-        'Range': 'bytes=0-1023', // Request first 1024 bytes
+        Range: 'bytes=0-1023', // Request first 1024 bytes
       })
       const response = await GET(request) // TODO: Replace with actual handler
 
       expect([200, 206].includes(response.status)).toBe(true) // 206 for partial content
-      
+
       if (response.status === 206) {
         expect(response.headers.get('content-range')).toContain('bytes 0-1023')
         expect(response.headers.get('accept-ranges')).toBe('bytes')
@@ -629,7 +625,7 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
       const response = await DELETE(request) // TODO: Replace with actual handler
 
       expect([200, 204].includes(response.status)).toBe(true)
-      
+
       if (response.status === 200) {
         const data = await response.json()
         expect(data.message || data.id).toBeDefined()
@@ -648,10 +644,10 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
         fileIds,
       }
 
-      const files = fileIds.map(id => ({ ...sampleFileMetadata, id }))
+      const files = fileIds.map((id) => ({ ...sampleFileMetadata, id }))
       mockControls.setDatabaseResults([
         files, // Existing files
-        fileIds.map(id => ({ id })), // Deletion confirmations
+        fileIds.map((id) => ({ id })), // Deletion confirmations
       ])
 
       const request = new NextRequest('http://localhost:3000/api/files/bulk', {
@@ -678,18 +674,16 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
         { ...sampleFileMetadata, id: 'file-3', mimetype: 'text/plain' },
       ]
 
-      const imageFiles = fileList.filter(f => f.mimetype.startsWith('image/'))
+      const imageFiles = fileList.filter((f) => f.mimetype.startsWith('image/'))
       mockControls.setDatabaseResults([imageFiles, [{ count: imageFiles.length }]])
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/files?type=image&page=1&limit=10'
-      )
+      const request = new NextRequest('http://localhost:3000/api/files?type=image&page=1&limit=10')
       const response = await GET(request) // TODO: Replace with actual handler
 
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(Array.isArray(data.files || data.data || data)).toBe(true)
-      
+
       const files = data.files || data.data || data
       files.forEach((file: any) => {
         expect(file.mimetype).toContain('image/')

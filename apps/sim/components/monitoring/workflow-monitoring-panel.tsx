@@ -373,11 +373,11 @@ export function WorkflowMonitoringPanel({
       </div>
     )
   }
-  
+
   // Render business intelligence insights
   const renderBusinessIntelligence = () => {
     const { businessMetrics } = monitoringData
-    
+
     return (
       <div className='space-y-4'>
         {/* Business value metrics */}
@@ -397,7 +397,9 @@ export function WorkflowMonitoringPanel({
               <Clock className='h-4 w-4 text-blue-500' />
               <div>
                 <div className='text-muted-foreground text-xs'>Time Saved</div>
-                <div className='font-medium text-sm'>{formatDuration(businessMetrics.timeSaved)}</div>
+                <div className='font-medium text-sm'>
+                  {formatDuration(businessMetrics.timeSaved)}
+                </div>
               </div>
             </div>
           </Card>
@@ -417,7 +419,9 @@ export function WorkflowMonitoringPanel({
               <TrendingUp className='h-4 w-4 text-orange-500' />
               <div>
                 <div className='text-muted-foreground text-xs'>ROI</div>
-                <div className='font-medium text-sm'>{businessMetrics.roinPercentage.toFixed(1)}%</div>
+                <div className='font-medium text-sm'>
+                  {businessMetrics.roinPercentage.toFixed(1)}%
+                </div>
               </div>
             </div>
           </Card>
@@ -432,33 +436,34 @@ export function WorkflowMonitoringPanel({
                 <Shield className='h-4 w-4 text-green-500' />
                 <span>System Status</span>
               </span>
-              <span className={`font-medium ${
-                monitoringData.systemHealth.status === 'healthy' ? 'text-green-600' :
-                monitoringData.systemHealth.status === 'degraded' ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {monitoringData.systemHealth.status.charAt(0).toUpperCase() + monitoringData.systemHealth.status.slice(1)}
+              <span
+                className={`font-medium ${
+                  monitoringData.systemHealth.status === 'healthy'
+                    ? 'text-green-600'
+                    : monitoringData.systemHealth.status === 'degraded'
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                }`}
+              >
+                {monitoringData.systemHealth.status.charAt(0).toUpperCase() +
+                  monitoringData.systemHealth.status.slice(1)}
               </span>
             </div>
-            
+
             <div className='flex justify-between rounded bg-muted p-3 text-sm'>
               <span className='flex items-center space-x-2'>
                 <Brain className='h-4 w-4 text-purple-500' />
                 <span>ML Anomalies Detected</span>
               </span>
-              <span className='font-medium'>
-                {monitoringData.detectedAnomalies.length}
-              </span>
+              <span className='font-medium'>{monitoringData.detectedAnomalies.length}</span>
             </div>
-            
+
             <div className='flex justify-between rounded bg-muted p-3 text-sm'>
               <span className='flex items-center space-x-2'>
                 <Network className='h-4 w-4 text-blue-500' />
                 <span>Real-time Events</span>
               </span>
-              <span className='font-medium'>
-                {monitoringData.realtimeEvents.length}
-              </span>
+              <span className='font-medium'>{monitoringData.realtimeEvents.length}</span>
             </div>
           </div>
         </div>
@@ -469,9 +474,11 @@ export function WorkflowMonitoringPanel({
           <div className='grid grid-cols-2 gap-2 text-xs'>
             <div className='flex justify-between'>
               <span>Status:</span>
-              <span className={`font-medium ${
-                monitoringData.connectionStats.connected ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <span
+                className={`font-medium ${
+                  monitoringData.connectionStats.connected ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
                 {monitoringData.connectionStats.connected ? 'Connected' : 'Disconnected'}
               </span>
             </div>
@@ -589,7 +596,7 @@ export function WorkflowMonitoringPanel({
             <TabsContent value='analytics' className='mt-0'>
               {renderAnalytics()}
             </TabsContent>
-            
+
             <TabsContent value='intelligence' className='mt-0'>
               {renderBusinessIntelligence()}
             </TabsContent>

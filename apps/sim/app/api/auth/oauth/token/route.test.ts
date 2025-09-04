@@ -1,12 +1,12 @@
 /**
  * 🧪 MIGRATED: OAuth Token API - Bun-Compatible Test Suite
  *
- * This test suite has been migrated using the proven minimal bun-compatible approach 
+ * This test suite has been migrated using the proven minimal bun-compatible approach
  * with 90%+ pass rates from the standardized migration template.
  *
  * MIGRATION FEATURES:
  * - ✅ Bun/Vitest 3.x compatible (uses vi.mock() with factory functions)
- * - ✅ Comprehensive authentication patterns (session, API key, JWT) 
+ * - ✅ Comprehensive authentication patterns (session, API key, JWT)
  * - ✅ Advanced database mocking with callback support
  * - ✅ Runtime mock controls for different test scenarios
  * - ✅ Comprehensive logging and debugging
@@ -185,7 +185,8 @@ describe('OAuth Token API - Migrated Test Suite', () => {
         [mockCredential], // Credential lookup result
       ])
 
-      const request = createMockRequest('POST', 
+      const request = createMockRequest(
+        'POST',
         { credentialId: 'credential-123' },
         { 'x-api-key': 'test-api-key-12345' }
       )
@@ -222,7 +223,7 @@ describe('OAuth Token API - Migrated Test Suite', () => {
 
       expect(response).toBeDefined()
       expect(typeof response.status).toBe('number')
-      
+
       // Should return some token data (actual structure depends on implementation)
       if (response.status === 200) {
         const data = await response.json()
@@ -243,13 +244,13 @@ describe('OAuth Token API - Migrated Test Suite', () => {
 
       const request = createMockRequest('POST', {
         credentialId: 'credential-123',
-        workflowId: 'workflow-456'
+        workflowId: 'workflow-456',
       })
       const response = await POST(request)
 
       expect(response).toBeDefined()
       expect(typeof response.status).toBe('number')
-      
+
       // Should return some token data
       if (response.status === 200) {
         const data = await response.json()
@@ -293,14 +294,14 @@ describe('OAuth Token API - Migrated Test Suite', () => {
       // Test GET without credentialId
       const getRequest = createMockRequest('GET')
       const getResponse = await GET(getRequest)
-      
+
       // Should return validation error
       expect([400, 422].includes(getResponse.status)).toBe(true)
-      
+
       // Test POST without credentialId
       const postRequest = createMockRequest('POST', {})
       const postResponse = await POST(postRequest)
-      
+
       expect([400, 422].includes(postResponse.status)).toBe(true)
     })
 
@@ -310,14 +311,11 @@ describe('OAuth Token API - Migrated Test Suite', () => {
     it('should handle invalid JSON gracefully', async () => {
       console.log('[TEST] Testing invalid JSON handling')
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/auth/oauth/token',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: 'invalid-json-content',
-        }
-      )
+      const request = new NextRequest('http://localhost:3000/api/auth/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: 'invalid-json-content',
+      })
 
       const response = await POST(request)
       expect(response.status >= 400).toBe(true)
@@ -331,7 +329,7 @@ describe('OAuth Token API - Migrated Test Suite', () => {
 
       const invalidData = {
         credentialId: '', // Empty string
-        workflowId: 123,  // Wrong type
+        workflowId: 123, // Wrong type
       }
 
       const request = createMockRequest('POST', invalidData)
@@ -458,7 +456,7 @@ describe('OAuth Token API - Migrated Test Suite', () => {
    * 📝 MIGRATION CHECKLIST COMPLETION:
    *
    * ✅ Module mocks imported first
-   * ✅ Runtime mock controls configured  
+   * ✅ Runtime mock controls configured
    * ✅ Authentication patterns implemented
    * ✅ Database mocking configured
    * ✅ Comprehensive logging added
@@ -470,8 +468,7 @@ describe('OAuth Token API - Migrated Test Suite', () => {
    * ✅ Performance and edge case tests included
    *
    * MIGRATION COMPLETED: This test suite has been successfully migrated
-   * from minimal infrastructure testing to comprehensive bun-compatible 
+   * from minimal infrastructure testing to comprehensive bun-compatible
    * template with full authentication, validation, and business logic coverage.
    */
-
 })

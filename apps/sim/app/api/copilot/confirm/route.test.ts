@@ -328,7 +328,7 @@ describe('Copilot Confirm API Route', () => {
         exists: vi.fn().mockResolvedValue(0), // Always return 0 (not found)
         set: mockRedisSet,
       }
-      
+
       mockGetRedisClient.mockReturnValue(mockRedisClient)
 
       const req = createMockRequest('POST', {

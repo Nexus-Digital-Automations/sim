@@ -27,21 +27,18 @@
 'use client'
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
+  ArrowRight,
   ChevronDown,
   ChevronRight,
+  Grid,
   Home,
+  List,
   Search,
+  Sparkles,
   Star,
   TrendingUp,
-  Grid,
-  List,
-  Filter,
-  ArrowRight,
-  Sparkles,
-  Clock,
-  Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -50,8 +47,8 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import type { TemplateCategory } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 /**
  * Template Category Navigation Props Interface
@@ -138,47 +135,47 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   return (
     <motion.div
       variants={cardVariants}
-      whileHover="hover"
-      whileTap="tap"
+      whileHover='hover'
+      whileTap='tap'
       className={cn(
         'group relative',
         viewMode === 'tree' && 'w-full',
         viewMode === 'grid' && 'aspect-square',
-        viewMode === 'list' && 'w-full',
+        viewMode === 'list' && 'w-full'
       )}
     >
       <Card
         className={cn(
-          'h-full cursor-pointer transition-all duration-200 border-2 hover:shadow-md',
+          'h-full cursor-pointer border-2 transition-all duration-200 hover:shadow-md',
           selected
             ? 'border-blue-500 bg-blue-50/50 shadow-sm'
             : 'border-gray-200 hover:border-gray-300',
-          compact && 'shadow-none border-0 hover:bg-muted/50',
+          compact && 'border-0 shadow-none hover:bg-muted/50'
         )}
         onClick={onClick}
       >
         <CardContent
           className={cn(
-            'p-4 h-full flex',
+            'flex h-full p-4',
             viewMode === 'grid' && 'flex-col items-center justify-center text-center',
             viewMode === 'list' && 'flex-row items-center',
             viewMode === 'tree' && 'flex-row items-center',
-            compact && 'p-3',
+            compact && 'p-3'
           )}
         >
           {/* Category Icon */}
           <div
             className={cn(
-              'rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0',
-              viewMode === 'grid' ? 'h-12 w-12 text-2xl mb-3' : 'h-10 w-10 text-lg',
+              'flex flex-shrink-0 items-center justify-center rounded-lg font-bold text-white',
+              viewMode === 'grid' ? 'mb-3 h-12 w-12 text-2xl' : 'h-10 w-10 text-lg',
               viewMode === 'list' && 'mr-3',
               viewMode === 'tree' && 'mr-3',
-              compact && 'h-8 w-8 text-base mr-2',
+              compact && 'mr-2 h-8 w-8 text-base'
             )}
             style={{ backgroundColor: category.color }}
           >
             {category.icon && (
-              <span role="img" aria-label={category.name}>
+              <span role='img' aria-label={category.name}>
                 {category.icon === 'briefcase' && '💼'}
                 {category.icon === 'database' && '🗄️'}
                 {category.icon === 'server' && '🖥️'}
@@ -187,7 +184,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
                 {category.icon === 'dollar-sign' && '💰'}
                 {category.icon === 'users' && '👥'}
                 {category.icon === 'graduation-cap' && '🎓'}
-                {!['briefcase', 'database', 'server', 'share-2', 'shopping-cart', 'dollar-sign', 'users', 'graduation-cap'].includes(category.icon) && '📁'}
+                {![
+                  'briefcase',
+                  'database',
+                  'server',
+                  'share-2',
+                  'shopping-cart',
+                  'dollar-sign',
+                  'users',
+                  'graduation-cap',
+                ].includes(category.icon) && '📁'}
               </span>
             )}
           </div>
@@ -195,24 +201,24 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           {/* Category Content */}
           <div
             className={cn(
-              'flex-1 min-w-0',
+              'min-w-0 flex-1',
               viewMode === 'grid' && 'text-center',
               viewMode === 'list' && 'flex items-center justify-between',
-              viewMode === 'tree' && 'flex items-center justify-between',
+              viewMode === 'tree' && 'flex items-center justify-between'
             )}
           >
             <div
               className={cn(
                 'min-w-0 flex-1',
                 viewMode === 'list' && 'mr-3',
-                viewMode === 'tree' && 'mr-3',
+                viewMode === 'tree' && 'mr-3'
               )}
             >
               <h3
                 className={cn(
-                  'font-semibold text-gray-900 line-clamp-1',
-                  viewMode === 'grid' ? 'text-sm mb-1' : 'text-sm',
-                  compact && 'text-xs',
+                  'line-clamp-1 font-semibold text-gray-900',
+                  viewMode === 'grid' ? 'mb-1 text-sm' : 'text-sm',
+                  compact && 'text-xs'
                 )}
               >
                 {category.name}
@@ -220,8 +226,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
               {!compact && category.description && (
                 <p
                   className={cn(
-                    'text-xs text-muted-foreground line-clamp-2 leading-relaxed',
-                    viewMode === 'grid' && 'mb-2',
+                    'line-clamp-2 text-muted-foreground text-xs leading-relaxed',
+                    viewMode === 'grid' && 'mb-2'
                   )}
                 >
                   {category.description}
@@ -232,20 +238,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             {/* Category Metadata */}
             <div
               className={cn(
-                'flex items-center gap-2 flex-shrink-0',
-                viewMode === 'grid' && 'justify-center mt-auto',
+                'flex flex-shrink-0 items-center gap-2',
+                viewMode === 'grid' && 'mt-auto justify-center',
                 viewMode === 'list' && 'flex-col items-end',
-                viewMode === 'tree' && 'flex-col items-end',
+                viewMode === 'tree' && 'flex-col items-end'
               )}
             >
               {/* Template Count */}
               {showCount && (
                 <Badge
-                  variant="secondary"
-                  className={cn(
-                    'text-xs font-medium',
-                    compact && 'text-xs px-1.5 py-0.5',
-                  )}
+                  variant='secondary'
+                  className={cn('font-medium text-xs', compact && 'px-1.5 py-0.5 text-xs')}
                 >
                   {formatCount(category.templateCount)}
                 </Badge>
@@ -256,8 +259,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <Badge variant="outline" className="text-orange-600 border-orange-600">
-                        <TrendingUp className="h-3 w-3" />
+                      <Badge variant='outline' className='border-orange-600 text-orange-600'>
+                        <TrendingUp className='h-3 w-3' />
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -272,8 +275,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                        <Star className="h-3 w-3" />
+                      <Badge variant='outline' className='border-yellow-600 text-yellow-600'>
+                        <Star className='h-3 w-3' />
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -286,18 +289,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
               {/* Subcategory Indicator */}
               {viewMode === 'tree' && hasSubcategories && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
+                  variant='ghost'
+                  size='sm'
+                  className='h-6 w-6 p-0'
                   onClick={(e) => {
                     e.stopPropagation()
                     setExpanded(!expanded)
                   }}
                 >
                   {expanded ? (
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className='h-3 w-3' />
                   ) : (
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className='h-3 w-3' />
                   )}
                 </Button>
               )}
@@ -312,17 +315,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           {expanded && (
             <motion.div
               variants={contentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="mt-2 ml-6 space-y-2 overflow-hidden"
+              initial='hidden'
+              animate='visible'
+              exit='hidden'
+              className='mt-2 ml-6 space-y-2 overflow-hidden'
             >
               {category.subcategories?.map((subcategory) => (
                 <CategoryCard
                   key={subcategory.id}
                   category={subcategory}
                   selected={false}
-                  viewMode="tree"
+                  viewMode='tree'
                   compact={true}
                   showCount={showCount}
                   showTrending={false}
@@ -382,27 +385,27 @@ const BreadcrumbNavigation: React.FC<BreadcrumbNavigationProps> = ({
   if (breadcrumbPath.length === 0) return null
 
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+    <div className='mb-4 flex items-center gap-2 text-muted-foreground text-sm'>
       <Button
-        variant="ghost"
-        size="sm"
-        className="h-8 px-2 text-muted-foreground hover:text-foreground"
+        variant='ghost'
+        size='sm'
+        className='h-8 px-2 text-muted-foreground hover:text-foreground'
         onClick={() => onCategorySelect(null)}
       >
-        <Home className="h-3 w-3 mr-1" />
+        <Home className='mr-1 h-3 w-3' />
         All Categories
       </Button>
       {breadcrumbPath.map((item, index) => (
         <React.Fragment key={item.id}>
-          <ChevronRight className="h-3 w-3" />
+          <ChevronRight className='h-3 w-3' />
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             className={cn(
               'h-8 px-2',
               index === breadcrumbPath.length - 1
-                ? 'text-foreground font-medium'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'font-medium text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
             onClick={() => onCategorySelect(item.id)}
           >
@@ -438,24 +441,24 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
   if (popularCategories.length === 0) return null
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-yellow-500" />
-        <h3 className="font-medium text-sm">Popular Categories</h3>
+    <div className='space-y-3'>
+      <div className='flex items-center gap-2'>
+        <Sparkles className='h-4 w-4 text-yellow-500' />
+        <h3 className='font-medium text-sm'>Popular Categories</h3>
       </div>
-      <div className="space-y-2">
+      <div className='space-y-2'>
         {popularCategories.map((category) => (
           <button
             key={category.id}
             onClick={() => onCategorySelect(category.id)}
-            className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors text-left"
+            className='flex w-full items-center gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted/50'
           >
             <div
-              className="h-6 w-6 rounded flex items-center justify-center text-white text-xs"
+              className='flex h-6 w-6 items-center justify-center rounded text-white text-xs'
               style={{ backgroundColor: category.color }}
             >
               {category.icon && (
-                <span role="img" aria-label={category.name}>
+                <span role='img' aria-label={category.name}>
                   {category.icon === 'briefcase' && '💼'}
                   {category.icon === 'database' && '🗄️'}
                   {category.icon === 'server' && '🖥️'}
@@ -464,17 +467,26 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
                   {category.icon === 'dollar-sign' && '💰'}
                   {category.icon === 'users' && '👥'}
                   {category.icon === 'graduation-cap' && '🎓'}
-                  {!['briefcase', 'database', 'server', 'share-2', 'shopping-cart', 'dollar-sign', 'users', 'graduation-cap'].includes(category.icon) && '📁'}
+                  {![
+                    'briefcase',
+                    'database',
+                    'server',
+                    'share-2',
+                    'shopping-cart',
+                    'dollar-sign',
+                    'users',
+                    'graduation-cap',
+                  ].includes(category.icon) && '📁'}
                 </span>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm truncate">{category.name}</div>
-              <div className="text-xs text-muted-foreground">
+            <div className='min-w-0 flex-1'>
+              <div className='truncate font-medium text-sm'>{category.name}</div>
+              <div className='text-muted-foreground text-xs'>
                 {category.templateCount} templates
               </div>
             </div>
-            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+            <ArrowRight className='h-3 w-3 text-muted-foreground' />
           </button>
         ))}
       </div>
@@ -509,9 +521,7 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
       (category) =>
         category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         category.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.popularTags.some((tag) =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase()),
-        ),
+        category.popularTags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     )
   }, [categories, searchQuery])
 
@@ -521,7 +531,7 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
       setSearchQuery(value)
       onCategorySearch?.(value)
     },
-    [onCategorySearch],
+    [onCategorySearch]
   )
 
   // Handle category selection
@@ -529,7 +539,7 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
     (categoryId: string | null) => {
       onCategorySelect(categoryId)
     },
-    [onCategorySelect],
+    [onCategorySelect]
   )
 
   // Handle subcategory selection
@@ -537,7 +547,7 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
     (subcategoryId: string) => {
       onCategorySelect(subcategoryId)
     },
-    [onCategorySelect],
+    [onCategorySelect]
   )
 
   // Grid layout configuration
@@ -559,9 +569,9 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
   if (loading) {
     return (
       <div className={cn('space-y-4', className)}>
-        <div className="animate-pulse space-y-2">
+        <div className='animate-pulse space-y-2'>
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-16 bg-muted rounded-lg" />
+            <div key={index} className='h-16 rounded-lg bg-muted' />
           ))}
         </div>
       </div>
@@ -572,37 +582,37 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
     <div className={cn('space-y-4', className)}>
       {/* Search and View Controls */}
       {!compact && (
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className='space-y-4'>
+          <div className='relative'>
+            <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
             <Input
-              placeholder="Search categories..."
+              placeholder='Search categories...'
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9"
+              className='pl-9'
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 p-1 bg-muted rounded-md">
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-1 rounded-md bg-muted p-1'>
               <Button
                 variant={viewModeState === 'tree' ? 'default' : 'ghost'}
-                size="sm"
+                size='sm'
                 onClick={() => setViewModeState('tree')}
-                className="h-8 px-3"
+                className='h-8 px-3'
               >
-                <List className="h-4 w-4" />
+                <List className='h-4 w-4' />
               </Button>
               <Button
                 variant={viewModeState === 'grid' ? 'default' : 'ghost'}
-                size="sm"
+                size='sm'
                 onClick={() => setViewModeState('grid')}
-                className="h-8 px-3"
+                className='h-8 px-3'
               >
-                <Grid className="h-4 w-4" />
+                <Grid className='h-4 w-4' />
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className='text-muted-foreground text-sm'>
               {filteredCategories.length} categor{filteredCategories.length !== 1 ? 'ies' : 'y'}
             </div>
           </div>
@@ -630,12 +640,7 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
 
       {/* Category Navigation */}
       <ScrollArea className={compact ? 'h-96' : 'h-full'}>
-        <div
-          className={cn(
-            viewModeState === 'tree' ? 'space-y-2' : `grid ${gridConfig}`,
-            'pb-4',
-          )}
-        >
+        <div className={cn(viewModeState === 'tree' ? 'space-y-2' : `grid ${gridConfig}`, 'pb-4')}>
           {filteredCategories.map((category) => (
             <CategoryCard
               key={category.id}
@@ -653,13 +658,11 @@ export const TemplateCategoryNavigation: React.FC<TemplateCategoryNavigationProp
 
         {/* Empty State */}
         {filteredCategories.length === 0 && (
-          <div className="flex items-center justify-center py-12 text-center">
+          <div className='flex items-center justify-center py-12 text-center'>
             <div>
-              <Search className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">No categories found</h3>
-              <p className="text-sm text-muted-foreground">
-                Try adjusting your search terms
-              </p>
+              <Search className='mx-auto mb-4 h-8 w-8 text-muted-foreground' />
+              <h3 className='mb-2 font-semibold'>No categories found</h3>
+              <p className='text-muted-foreground text-sm'>Try adjusting your search terms</p>
             </div>
           </div>
         )}

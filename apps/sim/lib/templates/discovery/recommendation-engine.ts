@@ -19,16 +19,11 @@
  * @version 1.0.0
  */
 
-import { and, desc, eq, gte, inArray, sql, count, avg } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, templateStars, workflow } from '@/db/schema'
-import type {
-  TemplateRecommendation,
-  Template,
-  TemplateMetadata,
-  TemplateUserProfile,
-} from '../types'
+import { templateStars, templates } from '@/db/schema'
+import type { Template, TemplateRecommendation } from '../types'
 
 // Initialize structured logger with recommendation context
 const logger = createLogger('TemplateRecommendationEngine')
@@ -127,13 +122,20 @@ export class TemplateRecommendationEngine {
       const userProfile = await this.getUserBehaviorProfile(userId)
 
       // Get collaborative filtering recommendations (users with similar behavior)
-      const collaborativeRecs = await this.getCollaborativeRecommendations(userId, userProfile, limit)
+      const collaborativeRecs = await this.getCollaborativeRecommendations(
+        userId,
+        userProfile,
+        limit
+      )
 
       // Get content-based recommendations (similar to user's preferences)
       const contentBasedRecs = await this.getContentBasedRecommendations(userId, userProfile, limit)
 
       // Get trending templates in user's categories
-      const trendingRecs = await this.getTrendingRecommendations(userProfile.preferredCategories, limit)
+      const trendingRecs = await this.getTrendingRecommendations(
+        userProfile.preferredCategories,
+        limit
+      )
 
       // Get diversity recommendations (explore new categories)
       const diversityRecs = await this.getDiversityRecommendations(userId, userProfile, limit)
@@ -157,12 +159,10 @@ export class TemplateRecommendationEngine {
       )
 
       // Limit to requested number and add confidence scores
-      const finalRecommendations = filteredRecommendations
-        .slice(0, limit)
-        .map((rec, index) => ({
-          ...rec,
-          confidence: Math.max(0.1, rec.score * (1 - index * 0.05)), // Decrease confidence with rank
-        }))
+      const finalRecommendations = filteredRecommendations.slice(0, limit).map((rec, index) => ({
+        ...rec,
+        confidence: Math.max(0.1, rec.score * (1 - index * 0.05)), // Decrease confidence with rank
+      }))
 
       // Track recommendation event for learning and optimization
       await this.trackRecommendationEvent(userId, operationId, finalRecommendations)
@@ -268,7 +268,9 @@ export class TemplateRecommendationEngine {
 
       // Filter by minimum similarity score and sort by score
       const filteredSimilar = similarityScores
-        .filter(item => item.similarityScore.similarityScore >= (options.minSimilarityScore || 0.3))
+        .filter(
+          (item) => item.similarityScore.similarityScore >= (options.minSimilarityScore || 0.3)
+        )
         .sort((a, b) => b.similarityScore.similarityScore - a.similarityScore.similarityScore)
         .slice(0, limit)
 
@@ -393,7 +395,8 @@ export class TemplateRecommendationEngine {
       logger.info(`[${this.requestId}] Trending templates found`, {
         operationId,
         trendingTemplateCount: recommendations.length,
-        avgTrendingScore: recommendations.reduce((sum, rec) => sum + rec.score, 0) / recommendations.length,
+        avgTrendingScore:
+          recommendations.reduce((sum, rec) => sum + rec.score, 0) / recommendations.length,
         processingTime,
       })
 
@@ -444,8 +447,9 @@ export class TemplateRecommendationEngine {
           case 'rated':
             return desc(templates.stars)
           case 'trending':
-            return desc(sql`(${templates.views} + ${templates.stars} * 2 + CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '7 days' THEN 50 ELSE 0 END)`)
-          case 'popular':
+            return desc(
+              sql`(${templates.views} + ${templates.stars} * 2 + CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '7 days' THEN 50 ELSE 0 END)`
+            )
           default:
             return desc(templates.views)
         }
@@ -472,12 +476,14 @@ export class TemplateRecommendationEngine {
         .limit(limit)
 
       // Convert to recommendation format
-      const recommendations: TemplateRecommendation[] = categoryTemplates.map((template, index) => ({
-        template: template as Template,
-        score: Math.max(0.2, 0.9 * (1 - index * 0.1)), // Decreasing score by rank
-        reason: 'same_category',
-        confidence: Math.max(0.4, 0.8 * (1 - index * 0.05)),
-      }))
+      const recommendations: TemplateRecommendation[] = categoryTemplates.map(
+        (template, index) => ({
+          template: template as Template,
+          score: Math.max(0.2, 0.9 * (1 - index * 0.1)), // Decreasing score by rank
+          reason: 'same_category',
+          confidence: Math.max(0.4, 0.8 * (1 - index * 0.05)),
+        })
+      )
 
       const processingTime = Date.now() - this.startTime
       logger.info(`[${this.requestId}] Category recommendations generated`, {
@@ -531,7 +537,7 @@ export class TemplateRecommendationEngine {
     const tagCount: Record<string, number> = {}
     const authorCount: Record<string, number> = {}
 
-    allTemplates.forEach(template => {
+    allTemplates.forEach((template) => {
       // Count categories
       if (template.category) {
         categoryCount[template.category] = (categoryCount[template.category] || 0) + 1
@@ -545,7 +551,7 @@ export class TemplateRecommendationEngine {
       // Count tags from metadata
       const metadata = template.state?.metadata
       const tags = [...(metadata?.tags || []), ...(metadata?.autoTags || [])]
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         if (typeof tag === 'string') {
           tagCount[tag] = (tagCount[tag] || 0) + 1
         }
@@ -554,17 +560,17 @@ export class TemplateRecommendationEngine {
 
     // Build preference arrays
     const preferredCategories = Object.entries(categoryCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([category]) => category)
 
     const preferredTags = Object.entries(tagCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([tag]) => tag)
 
     const preferredAuthors = Object.entries(authorCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([author]) => author)
 
@@ -634,16 +640,27 @@ export class TemplateRecommendationEngine {
       .leftJoin(templates, eq(templateStars.templateId, templates.id))
       .where(
         and(
-          inArray(templateStars.userId, similarUsers.map(u => u.userId)),
+          inArray(
+            templateStars.userId,
+            similarUsers.map((u) => u.userId)
+          ),
           sql`${templates.id} NOT IN (
             SELECT template_id FROM template_stars WHERE user_id = ${userId}
           )` // Exclude already starred
         )
       )
       .groupBy(
-        templates.id, templates.name, templates.description, templates.author,
-        templates.views, templates.stars, templates.color, templates.icon,
-        templates.category, templates.createdAt, templates.updatedAt
+        templates.id,
+        templates.name,
+        templates.description,
+        templates.author,
+        templates.views,
+        templates.stars,
+        templates.color,
+        templates.icon,
+        templates.category,
+        templates.createdAt,
+        templates.updatedAt
       )
       .orderBy(desc(count(templateStars.id)), desc(templates.stars))
       .limit(limit)
@@ -660,7 +677,7 @@ export class TemplateRecommendationEngine {
     limit: number
   ): Promise<Template[]> {
     // Get templates matching user's preferred categories and tags
-    let contentQuery = db
+    const contentQuery = db
       .select({
         id: templates.id,
         name: templates.name,
@@ -681,7 +698,7 @@ export class TemplateRecommendationEngine {
           sql`${templates.userId} != ${userId}`, // Exclude user's own templates
           or(
             inArray(templates.category, userProfile.preferredCategories),
-            inArray(templates.author, userProfile.preferredAuthors),
+            inArray(templates.author, userProfile.preferredAuthors)
             // Tag matching would go here if we had better tag indexing
           )
         )
@@ -697,10 +714,10 @@ export class TemplateRecommendationEngine {
       .from(templateStars)
       .where(eq(templateStars.userId, userId))
 
-    const starredIds = new Set(userStarredIds.map(s => s.templateId))
-    
+    const starredIds = new Set(userStarredIds.map((s) => s.templateId))
+
     return contentTemplates
-      .filter(template => !starredIds.has(template.id))
+      .filter((template) => !starredIds.has(template.id))
       .slice(0, limit) as Template[]
   }
 
@@ -719,8 +736,8 @@ export class TemplateRecommendationEngine {
       .groupBy(templates.category)
 
     const unexploredCategories = allCategories
-      .map(c => c.category)
-      .filter(category => !userProfile.preferredCategories.includes(category))
+      .map((c) => c.category)
+      .filter((category) => !userProfile.preferredCategories.includes(category))
       .slice(0, 3) // Pick top 3 unexplored categories
 
     if (unexploredCategories.length === 0) {
@@ -789,9 +806,9 @@ export class TemplateRecommendationEngine {
       // Tag similarity (25% weight)
       const tags1 = new Set([...(metadata1.tags || []), ...(metadata1.autoTags || [])])
       const tags2 = new Set([...(metadata2.tags || []), ...(metadata2.autoTags || [])])
-      const commonTags = new Set([...tags1].filter(tag => tags2.has(tag)))
+      const commonTags = new Set([...tags1].filter((tag) => tags2.has(tag)))
       const totalTags = new Set([...tags1, ...tags2]).size
-      
+
       if (totalTags > 0) {
         const tagSimilarity = commonTags.size / totalTags
         similarityScore += tagSimilarity * 0.25
@@ -804,9 +821,9 @@ export class TemplateRecommendationEngine {
       // Block type similarity (15% weight)
       const blockTypes1 = new Set(metadata1.blockTypes || [])
       const blockTypes2 = new Set(metadata2.blockTypes || [])
-      const commonBlockTypes = new Set([...blockTypes1].filter(type => blockTypes2.has(type)))
+      const commonBlockTypes = new Set([...blockTypes1].filter((type) => blockTypes2.has(type)))
       const totalBlockTypes = new Set([...blockTypes1, ...blockTypes2]).size
-      
+
       if (totalBlockTypes > 0) {
         const blockTypeSimilarity = commonBlockTypes.size / totalBlockTypes
         similarityScore += blockTypeSimilarity * 0.15
@@ -846,17 +863,20 @@ export class TemplateRecommendationEngine {
     }>,
     diversityFactor: number
   ): Promise<TemplateRecommendation[]> {
-    const templateScores = new Map<string, {
-      template: Template
-      totalScore: number
-      reasons: TemplateRecommendation['reason'][]
-      algorithmScores: number[]
-    }>()
+    const templateScores = new Map<
+      string,
+      {
+        template: Template
+        totalScore: number
+        reasons: TemplateRecommendation['reason'][]
+        algorithmScores: number[]
+      }
+    >()
 
     // Combine scores from all algorithms
     algorithmResults.forEach(({ recommendations, weight, type }) => {
       recommendations.forEach((template, index) => {
-        const rankScore = 1 - (index / recommendations.length) // Higher rank = higher score
+        const rankScore = 1 - index / recommendations.length // Higher rank = higher score
         const algorithmScore = rankScore * weight
 
         if (templateScores.has(template.id)) {
@@ -877,7 +897,7 @@ export class TemplateRecommendationEngine {
 
     // Convert to recommendation format and apply diversity
     const recommendations = Array.from(templateScores.values())
-      .map(item => ({
+      .map((item) => ({
         template: item.template,
         score: item.totalScore,
         reason: item.reasons[0], // Primary reason
@@ -947,7 +967,7 @@ export class TemplateRecommendationEngine {
 
     // Exclude user's own templates if requested
     if (options.excludeOwned) {
-      filtered = filtered.filter(rec => rec.template.userId !== userId)
+      filtered = filtered.filter((rec) => rec.template.userId !== userId)
     }
 
     // Exclude templates user has already used (would need usage tracking)
@@ -959,13 +979,13 @@ export class TemplateRecommendationEngine {
         .from(templateStars)
         .where(eq(templateStars.userId, userId))
 
-      const starredSet = new Set(starredIds.map(s => s.templateId))
-      filtered = filtered.filter(rec => !starredSet.has(rec.template.id))
+      const starredSet = new Set(starredIds.map((s) => s.templateId))
+      filtered = filtered.filter((rec) => !starredSet.has(rec.template.id))
     }
 
     // Category filtering
     if (options.categories && options.categories.length > 0) {
-      filtered = filtered.filter(rec => options.categories.includes(rec.template.category))
+      filtered = filtered.filter((rec) => options.categories.includes(rec.template.category))
     }
 
     return filtered
@@ -996,7 +1016,7 @@ export class TemplateRecommendationEngine {
       .where(eq(templates.id, templateId))
       .limit(1)
 
-    return result[0] as Template || null
+    return (result[0] as Template) || null
   }
 
   /**
@@ -1013,11 +1033,15 @@ export class TemplateRecommendationEngine {
       userId,
       recommendationCount: recommendations.length,
       avgScore: recommendations.reduce((sum, rec) => sum + rec.score, 0) / recommendations.length,
-      avgConfidence: recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / recommendations.length,
-      reasonDistribution: recommendations.reduce((dist, rec) => {
-        dist[rec.reason] = (dist[rec.reason] || 0) + 1
-        return dist
-      }, {} as Record<string, number>),
+      avgConfidence:
+        recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / recommendations.length,
+      reasonDistribution: recommendations.reduce(
+        (dist, rec) => {
+          dist[rec.reason] = (dist[rec.reason] || 0) + 1
+          return dist
+        },
+        {} as Record<string, number>
+      ),
       processingTime: Date.now() - this.startTime,
     })
   }
@@ -1050,7 +1074,9 @@ export class TemplateRecommendationEngine {
       .from(templates)
       .where(inArray(templates.category, categories))
       .orderBy(
-        desc(sql`(${templates.views} + ${templates.stars} * 2 + CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '7 days' THEN 50 ELSE 0 END)`)
+        desc(
+          sql`(${templates.views} + ${templates.stars} * 2 + CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '7 days' THEN 50 ELSE 0 END)`
+        )
       )
       .limit(limit)
 

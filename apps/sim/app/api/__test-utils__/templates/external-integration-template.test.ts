@@ -29,12 +29,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // ================================
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls } from '@/app/api/__test-utils__/module-mocks'
-
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
 // Replace with your actual integration route handlers
-import { GET, POST, PUT, DELETE } from './route' // TODO: Import actual integration handlers
+import { GET, POST } from './route' // TODO: Import actual integration handlers
 
 // ================================
 // EXTERNAL INTEGRATION TEST DATA
@@ -178,12 +177,15 @@ function createWebhookRequest(
   headers: Record<string, string> = {}
 ): NextRequest {
   const url = 'http://localhost:3000/api/webhooks/[service]' // TODO: Replace with actual webhook endpoint
-  
+
   console.log('🪝 Creating webhook request with payload type:', payload.type)
 
   // Generate mock signature if not provided
   if (!signature) {
-    signature = generateMockWebhookSignature(JSON.stringify(payload), externalServiceConfig.webhookSecret)
+    signature = generateMockWebhookSignature(
+      JSON.stringify(payload),
+      externalServiceConfig.webhookSecret
+    )
   }
 
   return new NextRequest(url, {
@@ -205,7 +207,7 @@ function generateMockWebhookSignature(payload: string, secret: string): string {
   // Mock signature generation - implement actual signature logic for your service
   const timestamp = Math.floor(Date.now() / 1000)
   const signature = `t=${timestamp},v1=mock_signature_${payload.length}_${secret.length}`
-  console.log('🔐 Generated mock webhook signature:', signature.substring(0, 50) + '...')
+  console.log('🔐 Generated mock webhook signature:', `${signature.substring(0, 50)}...`)
   return signature
 }
 
@@ -302,17 +304,17 @@ function setupExternalApiMock(
 describe('[INTEGRATION_NAME] External Integration API Tests', () => {
   beforeEach(() => {
     console.log('\\n🌐 Setting up integration test environment')
-    
+
     // Reset all mocks
     mockControls.reset()
     vi.clearAllMocks()
-    
+
     // Setup authenticated user
     mockControls.setAuthUser(testUser)
-    
+
     // Clear any existing fetch mocks
     vi.restoreAllMocks()
-    
+
     console.log('✅ Integration test environment setup completed')
   })
 
@@ -354,7 +356,7 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            'Authorization': expect.stringContaining('Bearer'),
+            Authorization: expect.stringContaining('Bearer'),
           }),
         })
       )
@@ -375,7 +377,7 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Authorization': expect.stringContaining(externalServiceConfig.apiKey),
+            Authorization: expect.stringContaining(externalServiceConfig.apiKey),
           }),
         })
       )
@@ -437,7 +439,8 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
     it('should implement retry logic for transient failures', async () => {
       console.log('[INTEGRATION_TEST] Testing retry logic')
 
-      const mockFetch = vi.fn()
+      const mockFetch = vi
+        .fn()
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Connection timeout'))
         .mockResolvedValueOnce({
@@ -584,7 +587,11 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       setupExternalApiMock('success', { data: externalData })
       mockControls.setDatabaseResults([
         [], // No existing mappings
-        externalData.map((item, i) => ({ ...integrationMapping, id: `mapping-${i}`, external_id: item.id })),
+        externalData.map((item, i) => ({
+          ...integrationMapping,
+          id: `mapping-${i}`,
+          external_id: item.id,
+        })),
       ])
 
       const request = createIntegrationRequest('POST', {
@@ -612,7 +619,7 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       setupExternalApiMock('success', { data: newExternalData })
       mockControls.setDatabaseResults([
         [{ ...integrationMapping, last_sync: lastSyncTime }], // Existing sync record
-        newExternalData.map(item => ({ ...integrationMapping, external_id: item.id })),
+        newExternalData.map((item) => ({ ...integrationMapping, external_id: item.id })),
       ])
 
       const request = createIntegrationRequest('POST', {
@@ -669,7 +676,8 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       console.log('[INTEGRATION_TEST] Testing partial sync failures')
 
       // Mock mixed success/failure responses
-      const mockFetch = vi.fn()
+      const mockFetch = vi
+        .fn()
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -862,11 +870,15 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       setupExternalApiMock('timeout')
 
       // Setup fallback data in database
-      mockControls.setDatabaseResults([[{
-        ...integrationMapping,
-        cached_data: { fallback: 'data' },
-        cache_timestamp: new Date(),
-      }]])
+      mockControls.setDatabaseResults([
+        [
+          {
+            ...integrationMapping,
+            cached_data: { fallback: 'data' },
+            cache_timestamp: new Date(),
+          },
+        ],
+      ])
 
       const request = createIntegrationRequest('GET', {
         allow_fallback: true,
@@ -900,7 +912,7 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       const batchResponse = {
         batch_id: 'batch_123',
         processed: batchItems.length,
-        results: batchItems.map(item => ({ id: item.id, status: 'success' })),
+        results: batchItems.map((item) => ({ id: item.id, status: 'success' })),
       }
 
       setupExternalApiMock('success', batchResponse)
@@ -960,9 +972,14 @@ describe('[INTEGRATION_NAME] External Integration API Tests', () => {
       setupExternalApiMock('success', sampleExternalApiResponse)
 
       const concurrentRequests = Array.from({ length: 5 }, (_, i) =>
-        GET(createIntegrationRequest('GET', undefined, {}, 
-          `http://localhost:3000/api/integrations/test?request=${i}`
-        ))
+        GET(
+          createIntegrationRequest(
+            'GET',
+            undefined,
+            {},
+            `http://localhost:3000/api/integrations/test?request=${i}`
+          )
+        )
       )
 
       const startTime = Date.now()
@@ -1048,7 +1065,7 @@ export function testOAuthFlowVariations(
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.access_token).toContain(provider.name)
-      
+
       console.log(`✅ OAuth flow for ${provider.name} completed successfully`)
     }
   }
@@ -1087,7 +1104,9 @@ export function testRateLimitingScenarios(
     })
 
     expect(rateLimitedCount).toBeGreaterThan(0)
-    console.log(`✅ Rate limiting triggered ${rateLimitedCount} times out of ${requests.length} requests`)
+    console.log(
+      `✅ Rate limiting triggered ${rateLimitedCount} times out of ${requests.length} requests`
+    )
   }
 }
 

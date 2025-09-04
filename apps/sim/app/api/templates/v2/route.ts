@@ -1,6 +1,6 @@
 /**
  * Template Library API v2 - Comprehensive template management system
- * 
+ *
  * This API provides advanced template functionality including:
  * - Hierarchical categorization and tagging
  * - Advanced search and discovery
@@ -8,10 +8,10 @@
  * - Usage analytics and insights
  * - Template collections and favorites
  * - ML-powered recommendations
- * 
+ *
  * Replaces the legacy templates API with enterprise-grade functionality
  * designed to compete with n8n, Zapier, and Make template systems.
- * 
+ *
  * @version 2.0.0
  * @author Sim Template Library Team
  * @created 2025-09-04
@@ -21,22 +21,19 @@ import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-o
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  user,
-  templates,
   templateCategories,
-  templateTags,
-  templateTagAssociations,
-  templateRatings,
-  templateUsageAnalytics,
   templateFavorites,
-  templateCollections,
   templateSearchQueries,
+  templates,
+  templateTagAssociations,
+  templateTags,
+  templateUsageAnalytics,
+  user,
 } from '@/db/schema'
 
 const logger = createLogger('TemplateLibraryAPI')
@@ -64,7 +61,10 @@ const TemplateQuerySchema = z.object({
   tagSlugs: z.string().optional(), // Comma-separated tag slugs
 
   // Template filters
-  status: z.enum(['draft', 'pending_review', 'approved', 'rejected', 'archived']).optional().default('approved'),
+  status: z
+    .enum(['draft', 'pending_review', 'approved', 'rejected', 'archived'])
+    .optional()
+    .default('approved'),
   visibility: z.enum(['private', 'unlisted', 'public']).optional().default('public'),
   difficultyLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
   isFeatured: z.coerce.boolean().optional(),
@@ -98,20 +98,23 @@ const TemplateQuerySchema = z.object({
   publishedBefore: z.string().datetime().optional(),
 
   // Sorting options
-  sortBy: z.enum([
-    'relevance', // For search queries
-    'popularity', // Combined score of downloads, views, likes
-    'rating', // Average rating with count weight
-    'downloads',
-    'views',
-    'likes',
-    'createdAt',
-    'publishedAt',
-    'updatedAt',
-    'name',
-    'businessValue', // ROI potential
-    'communityScore', // Algorithm-calculated quality
-  ]).optional().default('popularity'),
+  sortBy: z
+    .enum([
+      'relevance', // For search queries
+      'popularity', // Combined score of downloads, views, likes
+      'rating', // Average rating with count weight
+      'downloads',
+      'views',
+      'likes',
+      'createdAt',
+      'publishedAt',
+      'updatedAt',
+      'name',
+      'businessValue', // ROI potential
+      'communityScore', // Algorithm-calculated quality
+    ])
+    .optional()
+    .default('popularity'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 
   // Response options
@@ -131,7 +134,7 @@ const CreateTemplateSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().min(10).max(2000),
   longDescription: z.string().max(10000).optional(),
-  
+
   // Workflow definition
   workflowTemplate: z.record(z.any()), // JSONB workflow definition
   templateVersion: z.string().optional().default('1.0.0'),
@@ -142,7 +145,10 @@ const CreateTemplateSchema = z.object({
   tagIds: z.array(z.string()).optional().default([]),
 
   // Template metadata
-  difficultyLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional().default('intermediate'),
+  difficultyLevel: z
+    .enum(['beginner', 'intermediate', 'advanced', 'expert'])
+    .optional()
+    .default('intermediate'),
   estimatedSetupTime: z.number().positive().optional(), // Minutes
   estimatedExecutionTime: z.number().positive().optional(), // Seconds
 
@@ -201,7 +207,7 @@ function buildPopularityScore() {
  */
 function sanitizeWorkflowTemplate(workflowTemplate: any): any {
   const sanitized = JSON.parse(JSON.stringify(workflowTemplate))
-  
+
   // Remove common sensitive fields
   const sensitivePatterns = [
     /api[_-]?key/i,
@@ -215,9 +221,9 @@ function sanitizeWorkflowTemplate(workflowTemplate: any): any {
 
   function cleanObject(obj: any): void {
     if (typeof obj !== 'object' || obj === null) return
-    
+
     for (const [key, value] of Object.entries(obj)) {
-      if (sensitivePatterns.some(pattern => pattern.test(key))) {
+      if (sensitivePatterns.some((pattern) => pattern.test(key))) {
         obj[key] = '[REDACTED]'
       } else if (typeof value === 'object') {
         cleanObject(value)
@@ -282,7 +288,7 @@ async function recordSearchAnalytics(data: z.infer<typeof SearchAnalyticsSchema>
 
 /**
  * GET /api/templates/v2 - Advanced template discovery with comprehensive filtering
- * 
+ *
  * Features:
  * - Full-text search across all template content
  * - Hierarchical category filtering
@@ -335,7 +341,7 @@ export async function GET(request: NextRequest) {
         .select({ id: templateCategories.id })
         .from(templateCategories)
         .where(eq(templateCategories.slug, params.categorySlug))
-      
+
       conditions.push(inArray(templates.categoryId, categorySubquery))
     }
 
@@ -346,7 +352,7 @@ export async function GET(request: NextRequest) {
         or(
           ilike(templates.name, `%${searchTerm}%`),
           ilike(templates.description, `%${searchTerm}%`),
-          ilike(templates.businessValueDescription, `%${searchTerm}%`),
+          ilike(templates.businessValueDescription, `%${searchTerm}%`)
           // TODO: Add full-text search on searchVector when implemented
         )
       )
@@ -390,10 +396,7 @@ export async function GET(request: NextRequest) {
     // Business value filter
     if (params.hasBusinessValue) {
       conditions.push(
-        or(
-          sql`${templates.estimatedCostSavings} > 0`,
-          sql`${templates.estimatedTimeSavings} > 0`
-        )
+        or(sql`${templates.estimatedCostSavings} > 0`, sql`${templates.estimatedTimeSavings} > 0`)
       )
     }
 
@@ -444,7 +447,6 @@ export async function GET(request: NextRequest) {
           return sql`COALESCE(${templates.estimatedCostSavings}, 0) + COALESCE(${templates.estimatedTimeSavings}, 0)`
         case 'communityScore':
           return templates.communityScore
-        case 'relevance':
         default:
           return params.search ? buildPopularityScore() : templates.createdAt
       }
@@ -469,7 +471,7 @@ export async function GET(request: NextRequest) {
         difficultyLevel: templates.difficultyLevel,
         estimatedSetupTime: templates.estimatedSetupTime,
         estimatedExecutionTime: templates.estimatedExecutionTime,
-        
+
         // Analytics
         viewCount: templates.viewCount,
         downloadCount: templates.downloadCount,
@@ -477,55 +479,61 @@ export async function GET(request: NextRequest) {
         ratingAverage: templates.ratingAverage,
         ratingCount: templates.ratingCount,
         communityScore: templates.communityScore,
-        
+
         // Status and visibility
         status: templates.status,
         visibility: templates.visibility,
         isFeatured: templates.isFeatured,
         isCommunityTemplate: templates.isCommunityTemplate,
-        
+
         // Business value
         estimatedCostSavings: templates.estimatedCostSavings,
         estimatedTimeSavings: templates.estimatedTimeSavings,
         businessValueDescription: templates.businessValueDescription,
-        
+
         // Media
         coverImageUrl: templates.coverImageUrl,
         previewImages: templates.previewImages,
-        
+
         // Integrations
         requiredIntegrations: templates.requiredIntegrations,
         supportedIntegrations: templates.supportedIntegrations,
-        
+
         // Timestamps
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
         publishedAt: templates.publishedAt,
-        
+
         // Conditional fields
         ...(params.includeWorkflowTemplate ? { workflowTemplate: templates.workflowTemplate } : {}),
-        
+
         // Category info (if requested)
-        ...(params.includeCategory ? {
-          categoryId: templates.categoryId,
-          categoryName: templateCategories.name,
-          categorySlug: templateCategories.slug,
-          categoryColor: templateCategories.color,
-          categoryIcon: templateCategories.icon,
-        } : { categoryId: templates.categoryId }),
-        
+        ...(params.includeCategory
+          ? {
+              categoryId: templates.categoryId,
+              categoryName: templateCategories.name,
+              categorySlug: templateCategories.slug,
+              categoryColor: templateCategories.color,
+              categoryIcon: templateCategories.icon,
+            }
+          : { categoryId: templates.categoryId }),
+
         // Author info (if requested)
-        ...(params.includeAuthor ? {
-          authorId: templates.createdByUserId,
-          authorName: user.name,
-          authorImage: user.image,
-        } : { authorId: templates.createdByUserId }),
-        
+        ...(params.includeAuthor
+          ? {
+              authorId: templates.createdByUserId,
+              authorName: user.name,
+              authorImage: user.image,
+            }
+          : { authorId: templates.createdByUserId }),
+
         // User-specific data
-        ...(userId ? {
-          isFavorited: sql<boolean>`CASE WHEN ${templateFavorites.templateId} IS NOT NULL THEN true ELSE false END`,
-        } : {}),
-        
+        ...(userId
+          ? {
+              isFavorited: sql<boolean>`CASE WHEN ${templateFavorites.templateId} IS NOT NULL THEN true ELSE false END`,
+            }
+          : {}),
+
         // Calculated fields
         popularityScore: buildPopularityScore(),
       })
@@ -535,40 +543,37 @@ export async function GET(request: NextRequest) {
     if (params.includeCategory) {
       query = query.leftJoin(templateCategories, eq(templates.categoryId, templateCategories.id))
     }
-    
+
     if (params.includeAuthor) {
       query = query.leftJoin(user, eq(templates.createdByUserId, user.id))
     }
-    
+
     if (userId) {
       query = query.leftJoin(
         templateFavorites,
-        and(
-          eq(templateFavorites.templateId, templates.id),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templates.id), eq(templateFavorites.userId, userId))
       )
     }
 
     // Apply tag filtering if specified
     if (params.tagIds || params.tagSlugs) {
       const tagConditions = []
-      
+
       if (params.tagIds) {
-        const tagIdArray = params.tagIds.split(',').map(id => id.trim())
+        const tagIdArray = params.tagIds.split(',').map((id) => id.trim())
         tagConditions.push(inArray(templateTags.id, tagIdArray))
       }
-      
+
       if (params.tagSlugs) {
-        const tagSlugArray = params.tagSlugs.split(',').map(slug => slug.trim())
+        const tagSlugArray = params.tagSlugs.split(',').map((slug) => slug.trim())
         tagConditions.push(inArray(templateTags.slug, tagSlugArray))
       }
-      
+
       // Join with tag associations and tags for filtering
       query = query
         .innerJoin(templateTagAssociations, eq(templateTagAssociations.templateId, templates.id))
         .innerJoin(templateTags, eq(templateTagAssociations.tagId, templateTags.id))
-      
+
       conditions.push(or(...tagConditions))
     }
 
@@ -577,10 +582,7 @@ export async function GET(request: NextRequest) {
       if (!query.toString().includes('template_favorites')) {
         query = query.innerJoin(
           templateFavorites,
-          and(
-            eq(templateFavorites.templateId, templates.id),
-            eq(templateFavorites.userId, userId)
-          )
+          and(eq(templateFavorites.templateId, templates.id), eq(templateFavorites.userId, userId))
         )
       }
     }
@@ -597,21 +599,18 @@ export async function GET(request: NextRequest) {
     const countQuery = db
       .select({ count: sql<number>`count(distinct ${templates.id})` })
       .from(templates)
-    
+
     // Apply same joins for count if necessary
     if (params.tagIds || params.tagSlugs) {
       countQuery
         .innerJoin(templateTagAssociations, eq(templateTagAssociations.templateId, templates.id))
         .innerJoin(templateTags, eq(templateTagAssociations.tagId, templateTags.id))
     }
-    
+
     if (params.favorited && userId) {
       countQuery.innerJoin(
         templateFavorites,
-        and(
-          eq(templateFavorites.templateId, templates.id),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templates.id), eq(templateFavorites.userId, userId))
       )
     }
 
@@ -620,7 +619,7 @@ export async function GET(request: NextRequest) {
 
     // Add tags to results if requested
     if (params.includeTags && results.length > 0) {
-      const templateIds = results.map(t => t.id)
+      const templateIds = results.map((t) => t.id)
       const tagsData = await db
         .select({
           templateId: templateTagAssociations.templateId,
@@ -635,17 +634,20 @@ export async function GET(request: NextRequest) {
         .where(inArray(templateTagAssociations.templateId, templateIds))
 
       // Group tags by template
-      const tagsByTemplate = tagsData.reduce((acc, tag) => {
-        if (!acc[tag.templateId]) acc[tag.templateId] = []
-        acc[tag.templateId].push({
-          id: tag.tagId,
-          name: tag.tagName,
-          slug: tag.tagSlug,
-          color: tag.tagColor,
-          type: tag.tagType,
-        })
-        return acc
-      }, {} as Record<string, any[]>)
+      const tagsByTemplate = tagsData.reduce(
+        (acc, tag) => {
+          if (!acc[tag.templateId]) acc[tag.templateId] = []
+          acc[tag.templateId].push({
+            id: tag.tagId,
+            name: tag.tagName,
+            slug: tag.tagSlug,
+            color: tag.tagColor,
+            type: tag.tagType,
+          })
+          return acc
+        },
+        {} as Record<string, any[]>
+      )
 
       // Add tags to results
       results.forEach((template: any) => {
@@ -655,17 +657,20 @@ export async function GET(request: NextRequest) {
 
     // Record search analytics
     if (params.search || params.query) {
-      await recordSearchAnalytics({
-        query: params.search || params.query!,
-        filtersApplied: {
-          categoryId: params.categoryId,
-          tagIds: params.tagIds,
-          difficultyLevel: params.difficultyLevel,
+      await recordSearchAnalytics(
+        {
+          query: params.search || params.query!,
+          filtersApplied: {
+            categoryId: params.categoryId,
+            tagIds: params.tagIds,
+            difficultyLevel: params.difficultyLevel,
+          },
+          sortOrder: `${params.sortBy}:${params.sortOrder}`,
+          resultsCount: results.length,
+          sessionId: request.headers.get('x-session-id') || undefined,
         },
-        sortOrder: `${params.sortBy}:${params.sortOrder}`,
-        resultsCount: results.length,
-        sessionId: request.headers.get('x-session-id') || undefined,
-      }, userId)
+        userId
+      )
     }
 
     // Calculate pagination metadata
@@ -674,7 +679,9 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = params.page > 1
 
     const elapsed = Date.now() - startTime
-    logger.info(`[${requestId}] Template discovery completed: ${results.length} results in ${elapsed}ms`)
+    logger.info(
+      `[${requestId}] Template discovery completed: ${results.length} results in ${elapsed}ms`
+    )
 
     return NextResponse.json({
       success: true,
@@ -693,16 +700,16 @@ export async function GET(request: NextRequest) {
         processingTime: elapsed,
         authenticated: !!userId,
         searchPerformed: !!(params.search || params.query),
-        filtersApplied: Object.keys(params).filter(key => 
-          params[key as keyof typeof params] !== undefined && 
-          !['page', 'limit', 'sortBy', 'sortOrder'].includes(key)
+        filtersApplied: Object.keys(params).filter(
+          (key) =>
+            params[key as keyof typeof params] !== undefined &&
+            !['page', 'limit', 'sortBy', 'sortOrder'].includes(key)
         ).length,
       },
     })
-
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
       return NextResponse.json(
@@ -730,7 +737,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/templates/v2 - Create comprehensive templates with advanced metadata
- * 
+ *
  * Features:
  * - Rich template metadata and categorization
  * - Business value and ROI tracking
@@ -773,10 +780,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (categoryExists.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Category not found' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Category not found' }, { status: 400 })
     }
 
     // Generate slug from name
@@ -795,10 +799,10 @@ export async function POST(request: NextRequest) {
 
     if (slugExists.length > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Template with similar name already exists',
-          suggestion: `${data.name} (${Math.floor(Math.random() * 1000)})`
+          suggestion: `${data.name} (${Math.floor(Math.random() * 1000)})`,
         },
         { status: 409 }
       )
@@ -811,40 +815,43 @@ export async function POST(request: NextRequest) {
     const templateId = uuidv4()
     const now = new Date()
 
-    const newTemplate = await db.insert(templates).values({
-      id: templateId,
-      name: data.name,
-      slug,
-      description: data.description,
-      longDescription: data.longDescription,
-      workflowTemplate: sanitizedWorkflow,
-      templateVersion: data.templateVersion,
-      minSimVersion: data.minSimVersion,
-      categoryId: data.categoryId,
-      difficultyLevel: data.difficultyLevel,
-      estimatedSetupTime: data.estimatedSetupTime,
-      estimatedExecutionTime: data.estimatedExecutionTime,
-      visibility: data.visibility,
-      isCommunityTemplate: data.isCommunityTemplate,
-      metaTitle: data.metaTitle,
-      metaDescription: data.metaDescription,
-      coverImageUrl: data.coverImageUrl,
-      previewImages: data.previewImages,
-      estimatedCostSavings: data.estimatedCostSavings,
-      estimatedTimeSavings: data.estimatedTimeSavings,
-      businessValueDescription: data.businessValueDescription,
-      requiredIntegrations: data.requiredIntegrations,
-      supportedIntegrations: data.supportedIntegrations,
-      technicalRequirements: data.technicalRequirements,
-      createdByUserId: userId,
-      createdAt: now,
-      updatedAt: now,
-      lastModifiedAt: now,
-    }).returning()
+    const newTemplate = await db
+      .insert(templates)
+      .values({
+        id: templateId,
+        name: data.name,
+        slug,
+        description: data.description,
+        longDescription: data.longDescription,
+        workflowTemplate: sanitizedWorkflow,
+        templateVersion: data.templateVersion,
+        minSimVersion: data.minSimVersion,
+        categoryId: data.categoryId,
+        difficultyLevel: data.difficultyLevel,
+        estimatedSetupTime: data.estimatedSetupTime,
+        estimatedExecutionTime: data.estimatedExecutionTime,
+        visibility: data.visibility,
+        isCommunityTemplate: data.isCommunityTemplate,
+        metaTitle: data.metaTitle,
+        metaDescription: data.metaDescription,
+        coverImageUrl: data.coverImageUrl,
+        previewImages: data.previewImages,
+        estimatedCostSavings: data.estimatedCostSavings,
+        estimatedTimeSavings: data.estimatedTimeSavings,
+        businessValueDescription: data.businessValueDescription,
+        requiredIntegrations: data.requiredIntegrations,
+        supportedIntegrations: data.supportedIntegrations,
+        technicalRequirements: data.technicalRequirements,
+        createdByUserId: userId,
+        createdAt: now,
+        updatedAt: now,
+        lastModifiedAt: now,
+      })
+      .returning()
 
     // Associate tags
     if (data.tagIds && data.tagIds.length > 0) {
-      const tagAssociations = data.tagIds.map(tagId => ({
+      const tagAssociations = data.tagIds.map((tagId) => ({
         templateId,
         tagId,
         createdAt: now,
@@ -864,25 +871,27 @@ export async function POST(request: NextRequest) {
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template created successfully: ${templateId} in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: templateId,
-        name: data.name,
-        slug,
-        categoryId: data.categoryId,
-        visibility: data.visibility,
-        message: 'Template created successfully',
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: templateId,
+          name: data.name,
+          slug,
+          categoryId: data.categoryId,
+          visibility: data.visibility,
+          message: 'Template created successfully',
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
-
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
-    
+
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid template data:`, error.errors)
       return NextResponse.json(

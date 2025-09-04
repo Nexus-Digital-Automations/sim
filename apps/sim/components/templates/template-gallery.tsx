@@ -24,10 +24,10 @@
 
 'use client'
 
-import React, { useCallback, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import type React from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Calendar,
   Download,
   Eye,
   Heart,
@@ -50,10 +50,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Progress } from '@/components/ui/progress'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import type { Template } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 /**
  * Template Gallery Props Interface
@@ -224,12 +223,12 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       {...cardProps}
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        'hover:shadow-lg hover:shadow-blue-500/10 border-0 bg-white/50 backdrop-blur-sm',
+        'border-0 bg-white/50 backdrop-blur-sm hover:shadow-blue-500/10 hover:shadow-lg',
         viewMode === 'list' && 'flex flex-row',
-        viewMode === 'compact' && 'h-32',
+        viewMode === 'compact' && 'h-32'
       )}
       onClick={() => onSelect?.(template)}
-      role="button"
+      role='button'
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -239,34 +238,34 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       }}
       aria-label={`Template: ${template.name} by ${template.author}`}
     >
-      <Card className="h-full border-0 shadow-none bg-transparent">
+      <Card className='h-full border-0 bg-transparent shadow-none'>
         {/* Template Thumbnail/Icon Section */}
         <CardHeader
           className={cn(
             'relative pb-3',
             viewMode === 'list' && 'w-48 flex-shrink-0',
-            viewMode === 'compact' && 'p-3',
+            viewMode === 'compact' && 'p-3'
           )}
         >
           <div
             className={cn(
-              'relative rounded-lg flex items-center justify-center text-white font-bold text-2xl',
-              viewMode === 'compact' ? 'h-12 w-12' : 'h-24 w-full',
+              'relative flex items-center justify-center rounded-lg font-bold text-2xl text-white',
+              viewMode === 'compact' ? 'h-12 w-12' : 'h-24 w-full'
             )}
             style={{ backgroundColor: template.color }}
           >
             {/* Template Icon */}
-            <div className="text-white/90">{template.icon || '📄'}</div>
+            <div className='text-white/90'>{template.icon || '📄'}</div>
 
             {/* Quality Score Indicator */}
             {showMetrics && qualityScore > 0 && viewMode !== 'compact' && (
-              <div className="absolute top-2 right-2">
+              <div className='absolute top-2 right-2'>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <div className="h-2 w-8 bg-white/20 rounded-full overflow-hidden">
+                      <div className='h-2 w-8 overflow-hidden rounded-full bg-white/20'>
                         <div
-                          className="h-full bg-white/80 transition-all duration-300"
+                          className='h-full bg-white/80 transition-all duration-300'
                           style={{ width: `${qualityScore}%` }}
                         />
                       </div>
@@ -281,35 +280,35 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
             {/* Featured Badge */}
             {template.featured && (
-              <Badge className="absolute -top-1 -left-1 bg-yellow-400 text-yellow-900">
-                <Star className="h-3 w-3 mr-1" />
+              <Badge className='-top-1 -left-1 absolute bg-yellow-400 text-yellow-900'>
+                <Star className='mr-1 h-3 w-3' />
                 Featured
               </Badge>
             )}
 
             {/* Trending Indicator */}
             {template.trending && (
-              <div className="absolute -top-1 -right-1 bg-orange-500 text-white p-1 rounded-full">
-                <TrendingUp className="h-3 w-3" />
+              <div className='-top-1 -right-1 absolute rounded-full bg-orange-500 p-1 text-white'>
+                <TrendingUp className='h-3 w-3' />
               </div>
             )}
           </div>
 
           {/* Quick Action Buttons - Shown on Hover */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center gap-2">
+          <div className='absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-black/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100'>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="sm"
-                    variant="secondary"
+                    size='sm'
+                    variant='secondary'
                     onClick={(e) => {
                       e.stopPropagation()
                       onPreview?.(template)
                     }}
-                    className="h-8 w-8 p-0"
+                    className='h-8 w-8 p-0'
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className='h-4 w-4' />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Preview Template</TooltipContent>
@@ -320,19 +319,19 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="sm"
+                    size='sm'
                     onClick={(e) => {
                       e.stopPropagation()
                       handleInstantiate()
                     }}
                     disabled={isInstantiating}
-                    className="h-8 px-3"
+                    className='h-8 px-3'
                   >
                     {isInstantiating ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
                     ) : (
                       <>
-                        <Play className="h-4 w-4 mr-1" />
+                        <Play className='mr-1 h-4 w-4' />
                         Use
                       </>
                     )}
@@ -349,28 +348,28 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           className={cn(
             'space-y-3',
             viewMode === 'compact' && 'py-2',
-            viewMode === 'list' && 'flex-1',
+            viewMode === 'list' && 'flex-1'
           )}
         >
           {/* Title and Description */}
-          <div className="space-y-1">
-            <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">
+          <div className='space-y-1'>
+            <h3 className='line-clamp-2 font-semibold text-sm leading-tight transition-colors group-hover:text-blue-600'>
               {template.name}
             </h3>
             {template.description && viewMode !== 'compact' && (
-              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              <p className='line-clamp-2 text-muted-foreground text-xs leading-relaxed'>
                 {template.description}
               </p>
             )}
           </div>
 
           {/* Author and Metadata */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <User className="h-3 w-3" />
-            <span className="truncate">{template.author}</span>
+          <div className='flex items-center gap-2 text-muted-foreground text-xs'>
+            <User className='h-3 w-3' />
+            <span className='truncate'>{template.author}</span>
             {template.metadata?.difficulty && showDifficulty && (
               <Badge
-                variant="outline"
+                variant='outline'
                 className={cn('text-xs', getDifficultyColor(template.metadata.difficulty))}
               >
                 {template.metadata.difficulty}
@@ -380,14 +379,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
           {/* Tags */}
           {template.metadata?.tags && viewMode !== 'compact' && (
-            <div className="flex flex-wrap gap-1">
+            <div className='flex flex-wrap gap-1'>
               {template.metadata.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs px-1 py-0">
+                <Badge key={tag} variant='secondary' className='px-1 py-0 text-xs'>
                   {tag}
                 </Badge>
               ))}
               {template.metadata.tags.length > 3 && (
-                <Badge variant="secondary" className="text-xs px-1 py-0">
+                <Badge variant='secondary' className='px-1 py-0 text-xs'>
                   +{template.metadata.tags.length - 3}
                 </Badge>
               )}
@@ -396,13 +395,13 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
           {/* Community Features */}
           {showCommunityFeatures && (template.ratingAverage || template.ratingCount) && (
-            <div className="flex items-center gap-3 text-xs">
+            <div className='flex items-center gap-3 text-xs'>
               {template.ratingAverage && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <div className='flex items-center gap-1'>
+                  <Star className='h-3 w-3 fill-yellow-400 text-yellow-400' />
                   <span>{template.ratingAverage.toFixed(1)}</span>
                   {template.ratingCount && (
-                    <span className="text-muted-foreground">({template.ratingCount})</span>
+                    <span className='text-muted-foreground'>({template.ratingCount})</span>
                   )}
                 </div>
               )}
@@ -411,22 +410,22 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
           {/* Metrics */}
           {showMetrics && viewMode !== 'compact' && (
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
+            <div className='flex items-center justify-between text-muted-foreground text-xs'>
+              <div className='flex items-center gap-3'>
+                <div className='flex items-center gap-1'>
+                  <Eye className='h-3 w-3' />
                   <span>{formatNumber(template.views)}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Download className="h-3 w-3" />
+                <div className='flex items-center gap-1'>
+                  <Download className='h-3 w-3' />
                   <span>{formatNumber(template.downloadCount || 0)}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Heart className="h-3 w-3" />
+                <div className='flex items-center gap-1'>
+                  <Heart className='h-3 w-3' />
                   <span>{formatNumber(template.stars)}</span>
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className='text-muted-foreground text-xs'>
                 {new Date(template.createdAt).toLocaleDateString()}
               </div>
             </div>
@@ -436,50 +435,47 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         {/* Action Footer */}
         <CardFooter
           className={cn(
-            'pt-0 flex items-center justify-between',
-            viewMode === 'compact' && 'hidden',
+            'flex items-center justify-between pt-0',
+            viewMode === 'compact' && 'hidden'
           )}
         >
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <Button
-              size="sm"
+              size='sm'
               onClick={(e) => {
                 e.stopPropagation()
                 handleInstantiate()
               }}
               disabled={isInstantiating}
-              className="h-8"
+              className='h-8'
             >
               {isInstantiating ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className='h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
               ) : (
                 <>
-                  <Zap className="h-4 w-4 mr-1" />
+                  <Zap className='mr-1 h-4 w-4' />
                   Use Template
                 </>
               )}
             </Button>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className='flex items-center gap-1'>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    size='sm'
+                    variant='ghost'
                     onClick={(e) => {
                       e.stopPropagation()
                       handleToggleStar()
                     }}
                     disabled={isStarring}
-                    className="h-8 w-8 p-0"
+                    className='h-8 w-8 p-0'
                   >
                     <Heart
-                      className={cn(
-                        'h-4 w-4',
-                        template.isStarred && 'fill-red-500 text-red-500',
-                      )}
+                      className={cn('h-4 w-4', template.isStarred && 'fill-red-500 text-red-500')}
                     />
                   </Button>
                 </TooltipTrigger>
@@ -491,28 +487,28 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button size='sm' variant='ghost' className='h-8 w-8 p-0'>
+                  <MoreHorizontal className='h-4 w-4' />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align='end'>
                 <DropdownMenuItem onClick={() => onPreview?.(template)}>
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className='mr-2 h-4 w-4' />
                   Preview
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onShare?.(template)}>
-                  <Share2 className="h-4 w-4 mr-2" />
+                  <Share2 className='mr-2 h-4 w-4' />
                   Share
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAddToCollection?.(template.id)}>
-                  <Users className="h-4 w-4 mr-2" />
+                  <Users className='mr-2 h-4 w-4' />
                   Add to Collection
                 </DropdownMenuItem>
                 {template.isOwner && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Edit Template</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Delete Template</DropdownMenuItem>
+                    <DropdownMenuItem className='text-red-600'>Delete Template</DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
@@ -553,7 +549,6 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
         return 'grid-cols-1 gap-3'
       case 'compact':
         return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3'
-      case 'grid':
       default:
         return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
     }
@@ -563,23 +558,23 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
   const LoadingSkeleton = () => (
     <div className={cn('grid', gridConfig)}>
       {Array.from({ length: 12 }).map((_, index) => (
-        <Card key={index} className="animate-pulse">
-          <CardHeader className="pb-3">
+        <Card key={index} className='animate-pulse'>
+          <CardHeader className='pb-3'>
             <div
               className={cn(
                 'rounded-lg bg-gray-200',
-                viewMode === 'compact' ? 'h-12 w-12' : 'h-24 w-full',
+                viewMode === 'compact' ? 'h-12 w-12' : 'h-24 w-full'
               )}
             />
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-3 bg-gray-200 rounded w-full" />
+          <CardContent className='space-y-3'>
+            <div className='space-y-2'>
+              <div className='h-4 w-3/4 rounded bg-gray-200' />
+              <div className='h-3 w-full rounded bg-gray-200' />
             </div>
-            <div className="flex gap-2">
-              <div className="h-6 bg-gray-200 rounded w-16" />
-              <div className="h-6 bg-gray-200 rounded w-20" />
+            <div className='flex gap-2'>
+              <div className='h-6 w-16 rounded bg-gray-200' />
+              <div className='h-6 w-20 rounded bg-gray-200' />
             </div>
           </CardContent>
         </Card>
@@ -590,9 +585,9 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
   // Error state display
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="text-red-500 text-sm font-medium mb-2">Error Loading Templates</div>
-        <div className="text-muted-foreground text-sm">{error}</div>
+      <div className='flex flex-col items-center justify-center py-12 text-center'>
+        <div className='mb-2 font-medium text-red-500 text-sm'>Error Loading Templates</div>
+        <div className='text-muted-foreground text-sm'>{error}</div>
       </div>
     )
   }
@@ -605,10 +600,10 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
   // Empty state
   if (!loading && templates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="text-4xl mb-4">🔍</div>
-        <div className="text-lg font-semibold mb-2">No Templates Found</div>
-        <div className="text-muted-foreground text-sm">
+      <div className='flex flex-col items-center justify-center py-12 text-center'>
+        <div className='mb-4 text-4xl'>🔍</div>
+        <div className='mb-2 font-semibold text-lg'>No Templates Found</div>
+        <div className='text-muted-foreground text-sm'>
           Try adjusting your filters or search terms
         </div>
       </div>
@@ -619,7 +614,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
     <div className={cn('w-full', className)}>
       {/* Template Grid */}
       <div className={cn('grid', gridConfig)}>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode='popLayout'>
           {templates.map((template) => (
             <TemplateCard
               key={template.id}
@@ -643,9 +638,9 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
 
       {/* Loading More Indicator */}
       {loading && templates.length > 0 && (
-        <div className="flex justify-center py-8">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <div className='flex justify-center py-8'>
+          <div className='flex items-center gap-2 text-muted-foreground text-sm'>
+            <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent' />
             Loading more templates...
           </div>
         </div>

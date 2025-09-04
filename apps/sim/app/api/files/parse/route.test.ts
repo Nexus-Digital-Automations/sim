@@ -17,12 +17,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // This MUST be imported before any other imports to ensure proper mock timing
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls } from '@/app/api/__test-utils__/module-mocks'
-
 // ================================
 // IMPORT TEST UTILITIES (AFTER MOCKS)
 // ================================
 import { createMockRequest, setupFileApiMocks } from '@/app/api/__test-utils__/utils'
-
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
@@ -68,40 +66,40 @@ let mockFileSystemConfig = {
  */
 const fileParsingMockControls = {
   ...mockControls,
-  
+
   // File parser controls
   setFileParserSupported: (supported: boolean) => {
     mockFileParserConfig.isSupported = supported
     console.log('🔧 File parser supported set:', supported)
   },
-  
+
   setFileParserResult: (result: any) => {
     mockFileParserConfig.parseResult = result
     console.log('🔧 File parser result set:', result)
   },
-  
+
   setBufferParserResult: (result: any) => {
     mockFileParserConfig.bufferResult = result
     console.log('🔧 Buffer parser result set:', result)
   },
-  
+
   // File system controls
   setFileAccessSuccess: (success: boolean) => {
     mockFileSystemConfig.accessSuccess = success
     console.log('🔧 File access success set:', success)
   },
-  
+
   setFileContent: (content: Buffer | string) => {
     mockFileSystemConfig.fileContent = Buffer.isBuffer(content) ? content : Buffer.from(content)
     console.log('🔧 File content set, size:', mockFileSystemConfig.fileContent.length)
   },
-  
+
   // Path controls
   setCustomPathJoin: (joinFn: (...args: string[]) => string) => {
     mockPathConfig.joinLogic = joinFn
     console.log('🔧 Custom path join function set')
   },
-  
+
   // Reset file-specific mocks
   resetFileMocks: () => {
     mockFileParserConfig = {
@@ -212,12 +210,12 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
    */
   beforeEach(() => {
     console.log('\n🧪 Setting up test environment for File Parse API')
-    
+
     // Reset all mock controls to clean state
     fileParsingMockControls.reset()
     fileParsingMockControls.resetFileMocks()
     vi.clearAllMocks()
-    
+
     console.log('✅ File Parse API test environment setup completed')
   })
 
@@ -235,50 +233,50 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
 
   it('should handle missing file path', async () => {
     console.log('[TEST] Testing missing file path handling')
-    
+
     // Setup file API mocks with default configuration
     setupFileApiMocks()
-    
+
     const req = createMockRequest('POST', {})
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 Response status:', response.status)
     console.log('📈 Response data:', data)
-    
+
     expect(response.status).toBe(400)
     expect(data).toHaveProperty('error', 'No file path provided')
   })
 
   it('should accept and process a local file', async () => {
     console.log('[TEST] Testing local file processing')
-    
+
     // Setup for local file processing
     setupFileApiMocks({
       cloudEnabled: false,
       storageProvider: 'local',
     })
-    
+
     // Configure file parsing mocks for successful parsing
     fileParsingMockControls.setFileParserSupported(true)
     fileParsingMockControls.setFileParserResult({
       content: 'parsed local file content',
       metadata: { pageCount: 1, fileType: 'txt' },
     })
-    
+
     const req = createMockRequest('POST', {
       filePath: '/api/files/serve/test-file.txt',
     })
-    
+
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 Local file processing status:', response.status)
     console.log('📈 Local file processing result:', data)
-    
+
     expect(response.status).toBe(200)
     expect(data).not.toBeNull()
-    
+
     if (data.success === true) {
       expect(data).toHaveProperty('output')
     } else {
@@ -289,32 +287,32 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
 
   it('should process S3 files', async () => {
     console.log('[TEST] Testing S3 file processing')
-    
+
     // Setup for S3 cloud storage processing
     setupFileApiMocks({
       cloudEnabled: true,
       storageProvider: 's3',
     })
-    
+
     // Configure file parsing mocks for S3 PDF processing
     fileParsingMockControls.setFileParserSupported(true)
     fileParsingMockControls.setBufferParserResult({
       content: 'parsed S3 PDF content',
       metadata: { pageCount: 3, fileType: 'pdf' },
     })
-    
+
     const req = createMockRequest('POST', {
       filePath: '/api/files/serve/s3/test-file.pdf',
     })
-    
+
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 S3 file processing status:', response.status)
     console.log('📈 S3 file processing result:', data)
-    
+
     expect(response.status).toBe(200)
-    
+
     if (data.success === true) {
       expect(data).toHaveProperty('output')
     } else {
@@ -324,30 +322,30 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
 
   it('should handle multiple files', async () => {
     console.log('[TEST] Testing multiple file processing')
-    
+
     // Setup for local multiple file processing
     setupFileApiMocks({
       cloudEnabled: false,
       storageProvider: 'local',
     })
-    
+
     // Configure file parsing mocks for multiple file processing
     fileParsingMockControls.setFileParserSupported(true)
     fileParsingMockControls.setFileParserResult({
       content: 'parsed multi-file content',
       metadata: { pageCount: 1, fileType: 'txt' },
     })
-    
+
     const req = createMockRequest('POST', {
       filePath: ['/api/files/serve/file1.txt', '/api/files/serve/file2.txt'],
     })
-    
+
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 Multiple file processing status:', response.status)
     console.log('📈 Multiple file processing result:', data)
-    
+
     expect(response.status).toBe(200)
     expect(data).toHaveProperty('success')
     expect(data).toHaveProperty('results')
@@ -361,29 +359,29 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
 
   it('should handle S3 access errors gracefully', async () => {
     console.log('[TEST] Testing S3 access error handling')
-    
+
     // Setup S3 configuration
     setupFileApiMocks({
       cloudEnabled: true,
       storageProvider: 's3',
     })
-    
+
     // Configure upload error to simulate S3 access denied
     fileParsingMockControls.setUploadError('Access denied')
-    
+
     const req = new NextRequest('http://localhost:3000/api/files/parse', {
       method: 'POST',
       body: JSON.stringify({
         filePath: '/api/files/serve/s3/test-file.txt',
       }),
     })
-    
+
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 S3 error handling status:', response.status)
     console.log('📈 S3 error handling result:', data)
-    
+
     expect(response.status).toBe(500)
     expect(data).toHaveProperty('success', false)
     expect(data).toHaveProperty('error')
@@ -392,26 +390,26 @@ describe('File Parse API Route - Enhanced Infrastructure', () => {
 
   it('should handle access errors gracefully', async () => {
     console.log('[TEST] Testing local file access error handling')
-    
+
     // Setup local file configuration
     setupFileApiMocks({
       cloudEnabled: false,
       storageProvider: 'local',
     })
-    
+
     // Configure file system to simulate access error
     fileParsingMockControls.setFileAccessSuccess(false)
-    
+
     const req = createMockRequest('POST', {
       filePath: '/api/files/serve/nonexistent.txt',
     })
-    
+
     const response = await POST(req)
     const data = await response.json()
-    
+
     console.log('📈 Local access error status:', response.status)
     console.log('📈 Local access error result:', data)
-    
+
     expect(response.status).toBe(200)
     expect(data).toHaveProperty('success')
     expect(data).toHaveProperty('error')

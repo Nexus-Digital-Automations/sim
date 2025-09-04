@@ -6,7 +6,12 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { apiKey as apiKeyTable, templateStars, legacyTemplates as templates, workflow } from '@/db/schema'
+import {
+  apiKey as apiKeyTable,
+  templateStars,
+  legacyTemplates as templates,
+  workflow,
+} from '@/db/schema'
 
 const logger = createLogger('TemplatesAPI')
 

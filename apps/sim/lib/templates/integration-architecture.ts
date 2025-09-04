@@ -24,18 +24,12 @@
  */
 
 import { EventEmitter } from 'events'
-import { Redis } from 'ioredis'
+import type { Redis } from 'ioredis'
 import { z } from 'zod'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import { templateManager } from './template-manager'
-import type {
-  Template,
-  TemplateInstantiationOptions,
-  TemplateSearchQuery,
-  TemplateCustomization,
-  TemplateApiResponse,
-} from './types'
+import type { Template, TemplateCustomization } from './types'
 
 // Initialize structured logger with integration context
 const logger = createLogger('TemplateIntegrationArchitecture')
@@ -641,7 +635,10 @@ export class TemplateSystemIntegration {
 
     try {
       // Check database connectivity
-      await db.select().from('templates' as any).limit(1)
+      await db
+        .select()
+        .from('templates' as any)
+        .limit(1)
       components.database = 'ok'
     } catch {
       components.database = 'error'
@@ -806,7 +803,10 @@ export const TemplateIntegrationSchemas = {
       category: z.string().min(1),
       tags: z.array(z.string()).optional(),
       icon: z.string().optional(),
-      color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+      color: z
+        .string()
+        .regex(/^#[0-9A-F]{6}$/i)
+        .optional(),
       visibility: z.enum(['public', 'private', 'organization']).optional(),
     }),
     options: z.object({

@@ -48,13 +48,14 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/db', () => {
   let resultIndex = 0
-  
+
   const createSelectChain = () => {
     const resolveQuery = () => {
       if (mockState.databaseError) {
-        const error = mockState.databaseError instanceof Error 
-          ? mockState.databaseError 
-          : new Error(mockState.databaseError.toString())
+        const error =
+          mockState.databaseError instanceof Error
+            ? mockState.databaseError
+            : new Error(mockState.databaseError.toString())
         console.log('🔍 Database throwing error:', error.message)
         return Promise.reject(error)
       }

@@ -16,11 +16,11 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
 import { getSession } from '@/lib/auth'
-import { helpContentManager } from '@/lib/help/help-content-manager'
 import { helpAnalytics } from '@/lib/help/help-analytics'
-import type { ContentSearchResult, ContentSearchFilter } from '@/lib/help/help-content-manager'
+import type { ContentSearchFilter, ContentSearchResult } from '@/lib/help/help-content-manager'
+import { helpContentManager } from '@/lib/help/help-content-manager'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('HelpSearchAPI')
 
@@ -30,15 +30,17 @@ const logger = createLogger('HelpSearchAPI')
 
 const searchRequestSchema = z.object({
   query: z.string().min(1).max(500),
-  filters: z.object({
-    categories: z.array(z.string()).optional(),
-    components: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-    contentTypes: z.array(z.string()).optional(),
-    userLevels: z.array(z.string()).optional(),
-    languages: z.array(z.string()).optional(),
-    isPublished: z.boolean().default(true),
-  }).optional(),
+  filters: z
+    .object({
+      categories: z.array(z.string()).optional(),
+      components: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
+      contentTypes: z.array(z.string()).optional(),
+      userLevels: z.array(z.string()).optional(),
+      languages: z.array(z.string()).optional(),
+      isPublished: z.boolean().default(true),
+    })
+    .optional(),
   page: z.number().min(1).default(1),
   pageSize: z.number().min(1).max(50).default(10),
   sortBy: z.enum(['relevance', 'date', 'popularity', 'rating']).default('relevance'),
@@ -53,11 +55,13 @@ const suggestionsRequestSchema = z.object({
   includePopular: z.boolean().default(true),
   includeRecent: z.boolean().default(true),
   includeContextual: z.boolean().default(true),
-  context: z.object({
-    component: z.string().optional(),
-    page: z.string().optional(),
-    userLevel: z.string().optional(),
-  }).optional(),
+  context: z
+    .object({
+      component: z.string().optional(),
+      page: z.string().optional(),
+      userLevel: z.string().optional(),
+    })
+    .optional(),
 })
 
 const autocompleteRequestSchema = z.object({
@@ -92,9 +96,9 @@ class SearchEngine {
   async search(
     query: string,
     filters: ContentSearchFilter = {},
-    page: number = 1,
-    pageSize: number = 10,
-    sortBy: string = 'relevance',
+    page = 1,
+    pageSize = 10,
+    sortBy = 'relevance',
     options: {
       highlightMatches?: boolean
       includeAnalytics?: boolean
@@ -124,7 +128,7 @@ class SearchEngine {
       }
 
       if (options.highlightMatches) {
-        enhancedResult.documents = enhancedResult.documents.map(doc => ({
+        enhancedResult.documents = enhancedResult.documents.map((doc) => ({
           ...doc,
           matches: this.generateMatches(doc, query),
         }))
@@ -145,7 +149,6 @@ class SearchEngine {
       this.trackSearch(query, searchResult.total, options.userId)
 
       return enhancedResult
-
     } catch (error) {
       logger.error('Search execution failed', { query, error })
       throw error
@@ -154,7 +157,7 @@ class SearchEngine {
 
   async getSuggestions(
     query: string,
-    limit: number = 5,
+    limit = 5,
     context?: any,
     userId?: string
   ): Promise<string[]> {
@@ -192,14 +195,13 @@ class SearchEngine {
       })
 
       return uniqueSuggestions
-
     } catch (error) {
       logger.error('Suggestion generation failed', { query, error })
       return []
     }
   }
 
-  async getAutocompletions(query: string, limit: number = 5): Promise<string[]> {
+  async getAutocompletions(query: string, limit = 5): Promise<string[]> {
     const queryLower = query.toLowerCase()
     const completions: string[] = []
 
@@ -243,7 +245,10 @@ class SearchEngine {
 
   private generateMatches(doc: any, query: string): SearchMatch[] {
     const matches: SearchMatch[] = []
-    const queryTerms = query.toLowerCase().split(' ').filter(term => term.length > 2)
+    const queryTerms = query
+      .toLowerCase()
+      .split(' ')
+      .filter((term) => term.length > 2)
 
     // Search in title
     const titleLower = doc.title.toLowerCase()
@@ -297,8 +302,8 @@ class SearchEngine {
     let snippet = text.substring(start, end)
 
     // Add ellipsis if truncated
-    if (start > 0) snippet = '...' + snippet
-    if (end < text.length) snippet = snippet + '...'
+    if (start > 0) snippet = `...${snippet}`
+    if (end < text.length) snippet = `${snippet}...`
 
     // Highlight the term
     const regex = new RegExp(`(${term})`, 'gi')
@@ -313,9 +318,12 @@ class SearchEngine {
 
     for (const [popularQuery, count] of this.popularQueries.entries()) {
       const popularLower = popularQuery.toLowerCase()
-      
+
       // Include if contains the query or is similar
-      if (popularLower.includes(queryLower) || this.calculateSimilarity(queryLower, popularLower) > 0.6) {
+      if (
+        popularLower.includes(queryLower) ||
+        this.calculateSimilarity(queryLower, popularLower) > 0.6
+      ) {
         suggestions.push({ query: popularQuery, count })
       }
     }
@@ -323,7 +331,7 @@ class SearchEngine {
     return suggestions
       .sort((a, b) => b.count - a.count)
       .slice(0, limit)
-      .map(s => s.query)
+      .map((s) => s.query)
   }
 
   private async getContextualSuggestions(query: string, context: any): Promise<string[]> {
@@ -338,19 +346,19 @@ class SearchEngine {
       suggestions.push(`${query} for ${context.userLevel}`)
     }
 
-    return suggestions.filter(s => s !== query)
+    return suggestions.filter((s) => s !== query)
   }
 
   private getSemanticSuggestions(query: string): string[] {
     // Simplified semantic suggestions based on keyword mapping
     const semanticMap: Record<string, string[]> = {
-      'workflow': ['automation', 'process', 'flow', 'pipeline'],
-      'block': ['component', 'node', 'step', 'action'],
-      'connect': ['link', 'join', 'attach', 'bind'],
-      'api': ['integration', 'service', 'endpoint', 'request'],
-      'data': ['information', 'content', 'payload', 'response'],
-      'error': ['issue', 'problem', 'bug', 'failure'],
-      'debug': ['troubleshoot', 'fix', 'solve', 'diagnose'],
+      workflow: ['automation', 'process', 'flow', 'pipeline'],
+      block: ['component', 'node', 'step', 'action'],
+      connect: ['link', 'join', 'attach', 'bind'],
+      api: ['integration', 'service', 'endpoint', 'request'],
+      data: ['information', 'content', 'payload', 'response'],
+      error: ['issue', 'problem', 'bug', 'failure'],
+      debug: ['troubleshoot', 'fix', 'solve', 'diagnose'],
     }
 
     const suggestions: string[] = []
@@ -387,12 +395,12 @@ class SearchEngine {
     const variations = [
       query.replace(/ing$/, ''),
       query.replace(/s$/, ''),
-      query + ' tutorial',
-      query + ' guide',
-      'how to ' + query,
+      `${query} tutorial`,
+      `${query} guide`,
+      `how to ${query}`,
     ]
 
-    suggestions.push(...variations.filter(v => v !== query))
+    suggestions.push(...variations.filter((v) => v !== query))
 
     return [...new Set(suggestions)].slice(0, 5)
   }
@@ -401,7 +409,7 @@ class SearchEngine {
     // Simple Jaccard similarity
     const setA = new Set(a.split(''))
     const setB = new Set(b.split(''))
-    const intersection = new Set([...setA].filter(x => setB.has(x)))
+    const intersection = new Set([...setA].filter((x) => setB.has(x)))
     const union = new Set([...setA, ...setB])
     return intersection.size / union.size
   }
@@ -463,11 +471,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse number parameters
-    if (params.page) params.page = parseInt(params.page, 10)
-    if (params.pageSize) params.pageSize = parseInt(params.pageSize, 10)
+    if (params.page) params.page = Number.parseInt(params.page, 10)
+    if (params.pageSize) params.pageSize = Number.parseInt(params.pageSize, 10)
 
     // Build filters object
-    if (params.categories || params.components || params.tags || params.contentTypes || params.userLevels || params.languages || params.isPublished !== undefined) {
+    if (
+      params.categories ||
+      params.components ||
+      params.tags ||
+      params.contentTypes ||
+      params.userLevels ||
+      params.languages ||
+      params.isPublished !== undefined
+    ) {
       params.filters = {
         categories: params.categories,
         components: params.components,
@@ -507,19 +523,12 @@ export async function GET(request: NextRequest) {
     const userId = session?.user?.email
 
     // Perform search
-    const result = await searchEngine.search(
-      query,
-      filters || {},
-      page,
-      pageSize,
-      sortBy,
-      {
-        highlightMatches,
-        includeAnalytics,
-        includeFacets,
-        userId,
-      }
-    )
+    const result = await searchEngine.search(query, filters || {}, page, pageSize, sortBy, {
+      highlightMatches,
+      includeAnalytics,
+      includeFacets,
+      userId,
+    })
 
     // Track search analytics
     if (userId) {
@@ -534,20 +543,22 @@ export async function GET(request: NextRequest) {
       cached: result.cached,
     })
 
-    return NextResponse.json({
-      ...result,
-      meta: {
-        ...result.meta,
-        requestId,
-        processingTime: processingTime,
+    return NextResponse.json(
+      {
+        ...result,
+        meta: {
+          ...result.meta,
+          requestId,
+          processingTime: processingTime,
+        },
       },
-    }, {
-      headers: {
-        'X-Response-Time': `${processingTime}ms`,
-        'Cache-Control': result.cached ? 'public, max-age=300' : 'private, max-age=60',
-      },
-    })
-
+      {
+        headers: {
+          'X-Response-Time': `${processingTime}ms`,
+          'Cache-Control': result.cached ? 'public, max-age=300' : 'private, max-age=60',
+        },
+      }
+    )
   } catch (error) {
     const processingTime = Date.now() - startTime
     logger.error(`[${requestId}] Search request failed`, {
@@ -556,10 +567,7 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime,
     })
 
-    return NextResponse.json(
-      { error: 'Search failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Search failed' }, { status: 500 })
   }
 }
 
@@ -568,18 +576,18 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8)
-  
+
   try {
     const { pathname } = new URL(request.url)
-    
+
     if (pathname.endsWith('/suggestions')) {
       return handleSuggestions(request, requestId)
-    } else if (pathname.endsWith('/autocomplete')) {
+    }
+    if (pathname.endsWith('/autocomplete')) {
       return handleAutocomplete(request, requestId)
     }
 
     return NextResponse.json({ error: 'Invalid endpoint' }, { status: 404 })
-
   } catch (error) {
     logger.error(`[${requestId}] Search POST request failed`, { error })
     return NextResponse.json({ error: 'Request failed' }, { status: 500 })
@@ -600,7 +608,8 @@ async function handleSuggestions(request: NextRequest, requestId: string) {
       )
     }
 
-    const { query, limit, includePopular, includeRecent, includeContextual, context } = validationResult.data
+    const { query, limit, includePopular, includeRecent, includeContextual, context } =
+      validationResult.data
 
     const session = await getSession()
     const userId = session?.user?.email
@@ -618,7 +627,6 @@ async function handleSuggestions(request: NextRequest, requestId: string) {
         processingTime,
       },
     })
-
   } catch (error) {
     logger.error(`[${requestId}] Suggestions request failed`, { error })
     return NextResponse.json({ error: 'Suggestions failed' }, { status: 500 })
@@ -654,7 +662,6 @@ async function handleAutocomplete(request: NextRequest, requestId: string) {
         processingTime,
       },
     })
-
   } catch (error) {
     logger.error(`[${requestId}] Autocomplete request failed`, { error })
     return NextResponse.json({ error: 'Autocomplete failed' }, { status: 500 })

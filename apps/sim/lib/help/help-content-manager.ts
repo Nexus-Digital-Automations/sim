@@ -15,7 +15,7 @@
 
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/console/logger'
-import type { HelpContent, HelpContext, UserInteraction } from './contextual-help'
+import type { HelpContext } from './contextual-help'
 
 const logger = createLogger('HelpContentManager')
 
@@ -377,8 +377,8 @@ export class HelpContentManager {
   async searchContent(
     query: string,
     filters: ContentSearchFilter = {},
-    page: number = 1,
-    pageSize: number = 10
+    page = 1,
+    pageSize = 10
   ): Promise<ContentSearchResult> {
     const operationId = nanoid()
     const startTime = Date.now()
@@ -475,7 +475,7 @@ export class HelpContentManager {
       }
 
       const searchResult = await this.searchContent('', filters, 1, 5)
-      
+
       logger.info(`[${operationId}] Contextual help content retrieved`, {
         component: context.component,
         contentCount: searchResult.documents.length,
@@ -581,7 +581,7 @@ export class HelpContentManager {
     try {
       logger.info(`[${operationId}] Tracking content interaction`, {
         contentId,
-        userId: userId.substring(0, 8) + '***',
+        userId: `${userId.substring(0, 8)}***`,
         interactionType,
       })
 
@@ -650,7 +650,9 @@ export class HelpContentManager {
   /**
    * Submit content feedback
    */
-  async submitFeedback(feedback: Omit<ContentFeedback, 'id' | 'createdAt'>): Promise<ContentFeedback> {
+  async submitFeedback(
+    feedback: Omit<ContentFeedback, 'id' | 'createdAt'>
+  ): Promise<ContentFeedback> {
     const operationId = nanoid()
 
     logger.info(`[${operationId}] Submitting content feedback`, {
@@ -716,17 +718,20 @@ export class HelpContentManager {
 
   private setupCacheCleanup(): void {
     // Clean up expired cache entries every 5 minutes
-    setInterval(() => {
-      const now = Date.now()
-      for (const [key, expiry] of this.cacheExpiry) {
-        if (now >= expiry) {
-          this.contentCache.delete(key)
-          this.searchCache.delete(key)
-          this.analyticsCache.delete(key)
-          this.cacheExpiry.delete(key)
+    setInterval(
+      () => {
+        const now = Date.now()
+        for (const [key, expiry] of this.cacheExpiry) {
+          if (now >= expiry) {
+            this.contentCache.delete(key)
+            this.searchCache.delete(key)
+            this.analyticsCache.delete(key)
+            this.cacheExpiry.delete(key)
+          }
         }
-      }
-    }, 5 * 60 * 1000)
+      },
+      5 * 60 * 1000
+    )
   }
 
   // ========================
@@ -738,7 +743,10 @@ export class HelpContentManager {
     logger.debug('Persisting content to database (mock)', { contentId: content.contentId })
   }
 
-  private async fetchContentFromDatabase(contentId: string, version?: number): Promise<HelpContentDocument | null> {
+  private async fetchContentFromDatabase(
+    contentId: string,
+    version?: number
+  ): Promise<HelpContentDocument | null> {
     // TODO: Implement database fetch
     logger.debug('Fetching content from database (mock)', { contentId, version })
     return null
@@ -752,7 +760,7 @@ export class HelpContentManager {
   ): Promise<ContentSearchResult> {
     // TODO: Implement actual search
     logger.debug('Performing search in database (mock)', { query, filters })
-    
+
     return {
       documents: [],
       total: 0,

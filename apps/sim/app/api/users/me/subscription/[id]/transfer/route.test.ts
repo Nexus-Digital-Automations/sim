@@ -199,7 +199,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       mockControls.setDatabaseResults([
         [mockSubscription], // Subscription lookup
         [mockOrganization], // Organization lookup
-        [mockAdminMember],  // Member permission check
+        [mockAdminMember], // Member permission check
       ])
 
       const request = createMockRequest('POST', { organizationId: 'org-456' })
@@ -233,16 +233,17 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       // Order: subscription query, organization query, member query, update query
       mockControls.setDatabaseResults([
         [personalSubscription], // 1. Subscription lookup - user owns it
-        [mockOrganization],     // 2. Organization exists
-        [mockAdminMember],      // 3. User is admin of organization
-        [{ id: 'sub-123' }],    // 4. Update query response
+        [mockOrganization], // 2. Organization exists
+        [mockAdminMember], // 3. User is admin of organization
+        [{ id: 'sub-123' }], // 4. Update query response
       ])
 
       const request = createMockRequest('POST', {
         organizationId: 'org-456',
       })
 
-      let response, data
+      let response
+      let data
       try {
         response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
         data = await response.json()
@@ -253,7 +254,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       console.log('📊 Response status:', response.status)
       console.log('📊 Response data:', data)
-      
+
       // Debug: If we got a 500, log more details
       if (response.status === 500) {
         console.log('🚫 500 Error Details:', JSON.stringify(data, null, 2))
@@ -278,7 +279,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 404)
-      
+
       expect(data).toHaveProperty('error', 'Subscription not found')
     })
 
@@ -293,7 +294,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       // Setup database results: subscription found, but organization not found
       mockControls.setDatabaseResults([
         [userSubscription], // Subscription exists and belongs to user
-        [],                 // Organization not found
+        [], // Organization not found
       ])
 
       const request = createMockRequest('POST', {
@@ -302,7 +303,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 404)
-      
+
       expect(data).toHaveProperty('error', 'Organization not found')
     })
 
@@ -325,7 +326,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 403)
-      
+
       expect(data).toHaveProperty('error', 'Unauthorized - subscription does not belong to user')
     })
 
@@ -340,9 +341,9 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       // Setup database results: user owns subscription, organization exists, user is regular member
       mockControls.setDatabaseResults([
         [personalSubscription], // User owns the subscription
-        [mockOrganization],     // Target organization exists
-        [mockRegularMember],    // User is regular member (not admin, but that's OK for personal transfer)
-        [{ id: 'sub-123' }],    // Update query response
+        [mockOrganization], // Target organization exists
+        [mockRegularMember], // User is regular member (not admin, but that's OK for personal transfer)
+        [{ id: 'sub-123' }], // Update query response
       ])
 
       const request = createMockRequest('POST', {
@@ -351,10 +352,10 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await response.json()
-      
+
       console.log('📊 Response status:', response.status)
       console.log('📊 Response data:', data)
-      
+
       // Personal transfers should succeed even if user is not admin of target org
       expect(response.status).toBe(200)
       expect(data).toHaveProperty('success', true)
@@ -372,8 +373,8 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       // Setup database results: subscription exists but not owned by user, organization exists, user is regular member
       mockControls.setDatabaseResults([
         [orgOwnedSubscription], // Subscription NOT owned by user
-        [mockOrganization],     // Target organization exists
-        [mockRegularMember],    // User is regular member, not admin
+        [mockOrganization], // Target organization exists
+        [mockRegularMember], // User is regular member, not admin
       ])
 
       const request = createMockRequest('POST', {
@@ -382,7 +383,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 403)
-      
+
       expect(data).toHaveProperty('error', 'Unauthorized - user is not admin of organization')
     })
 
@@ -393,7 +394,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 400)
-      
+
       expect(data).toHaveProperty('error', 'Invalid request parameters')
     })
 
@@ -409,7 +410,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
       const data = await validateApiResponse(response, 401)
-      
+
       expect(data).toHaveProperty('error', 'Unauthorized')
     })
 
@@ -424,10 +425,10 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       })
 
       const response = await POST(request, { params: Promise.resolve({ id: 'sub-123' }) })
-      
+
       // Expect graceful error handling
       expect([500, 503].includes(response.status)).toBe(true)
-      
+
       const data = await response.json()
       expect(data).toHaveProperty('error')
       expect(typeof data.error).toBe('string')
@@ -568,25 +569,24 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
       // Setup results for multiple concurrent requests
       mockControls.setDatabaseResults([
         [personalSubscription], // Subscription lookup
-        [mockOrganization],     // Organization lookup
-        [mockAdminMember],      // Member lookup
-        [{ id: 'sub-123' }],    // Update response
+        [mockOrganization], // Organization lookup
+        [mockAdminMember], // Member lookup
+        [{ id: 'sub-123' }], // Update response
         [personalSubscription], // Second request - subscription lookup
-        [mockOrganization],     // Second request - organization lookup
-        [mockAdminMember],      // Second request - member lookup
-        [{ id: 'sub-123' }],    // Second request - update response
+        [mockOrganization], // Second request - organization lookup
+        [mockAdminMember], // Second request - member lookup
+        [{ id: 'sub-123' }], // Second request - update response
         [personalSubscription], // Third request - subscription lookup
-        [mockOrganization],     // Third request - organization lookup
-        [mockAdminMember],      // Third request - member lookup
-        [{ id: 'sub-123' }],    // Third request - update response
+        [mockOrganization], // Third request - organization lookup
+        [mockAdminMember], // Third request - member lookup
+        [{ id: 'sub-123' }], // Third request - update response
       ])
 
       // Create multiple concurrent requests
       const requests = Array.from({ length: 3 }, () => {
-        return POST(
-          createMockRequest('POST', { organizationId: 'org-456' }),
-          { params: Promise.resolve({ id: 'sub-123' }) }
-        )
+        return POST(createMockRequest('POST', { organizationId: 'org-456' }), {
+          params: Promise.resolve({ id: 'sub-123' }),
+        })
       })
 
       const responses = await Promise.all(requests)
@@ -612,9 +612,9 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
 
       mockControls.setDatabaseResults([
         [personalSubscription], // Subscription lookup
-        [mockOrganization],     // Organization lookup
-        [mockAdminMember],      // Member lookup
-        [{ id: 'sub-123' }],    // Update response
+        [mockOrganization], // Organization lookup
+        [mockAdminMember], // Member lookup
+        [{ id: 'sub-123' }], // Update response
       ])
 
       const startTime = Date.now()
@@ -639,7 +639,7 @@ describe('Subscription Transfer API - Migrated Test Suite', () => {
    * 📝 MIGRATION CHECKLIST COMPLETION:
    *
    * ✅ Module mocks imported first
-   * ✅ Runtime mock controls configured  
+   * ✅ Runtime mock controls configured
    * ✅ Authentication patterns implemented
    * ✅ Database mocking configured
    * ✅ Comprehensive logging added

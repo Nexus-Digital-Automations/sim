@@ -27,41 +27,34 @@
 
 'use client'
 
-import React, { useCallback, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import type React from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
+  Activity,
+  AlertTriangle,
+  Archive,
+  BarChart,
   BarChart3,
-  BookOpen,
-  Calendar,
+  CheckCircle,
   ChevronDown,
   Clock,
   Download,
   Edit,
   Eye,
   FileText,
-  Filter,
-  FolderPlus,
-  Heart,
   MoreHorizontal,
+  PieChart,
   Plus,
   Search,
-  Settings,
   Star,
   Trash2,
   TrendingUp,
   Upload,
-  Users,
-  Zap,
-  Archive,
-  CheckCircle,
-  AlertTriangle,
-  BarChart,
-  PieChart,
-  Activity,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,6 +64,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -78,7 +72,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -87,17 +80,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Progress } from '@/components/ui/progress'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type {
   Template,
-  TemplateUsageAnalytics,
   TemplateMarketplaceAnalytics,
   TemplateStatus,
-  TemplateVisibility,
+  TemplateUsageAnalytics,
 } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 /**
  * Template Management Dashboard Props Interface
@@ -156,37 +146,37 @@ const TEMPLATE_STATUSES: Array<{
     value: 'draft',
     label: 'Draft',
     color: 'text-gray-600 bg-gray-100',
-    icon: <Edit className="h-3 w-3" />,
+    icon: <Edit className='h-3 w-3' />,
   },
   {
     value: 'pending_review',
     label: 'Pending Review',
     color: 'text-yellow-600 bg-yellow-100',
-    icon: <Clock className="h-3 w-3" />,
+    icon: <Clock className='h-3 w-3' />,
   },
   {
     value: 'approved',
     label: 'Approved',
     color: 'text-green-600 bg-green-100',
-    icon: <CheckCircle className="h-3 w-3" />,
+    icon: <CheckCircle className='h-3 w-3' />,
   },
   {
     value: 'published',
     label: 'Published',
     color: 'text-blue-600 bg-blue-100',
-    icon: <Eye className="h-3 w-3" />,
+    icon: <Eye className='h-3 w-3' />,
   },
   {
     value: 'archived',
     label: 'Archived',
     color: 'text-orange-600 bg-orange-100',
-    icon: <Archive className="h-3 w-3" />,
+    icon: <Archive className='h-3 w-3' />,
   },
   {
     value: 'rejected',
     label: 'Rejected',
     color: 'text-red-600 bg-red-100',
-    icon: <AlertTriangle className="h-3 w-3" />,
+    icon: <AlertTriangle className='h-3 w-3' />,
   },
 ]
 
@@ -204,27 +194,27 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, type, clas
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          {type === 'bar' && <BarChart className="h-5 w-5" />}
-          {type === 'line' && <Activity className="h-5 w-5" />}
-          {type === 'pie' && <PieChart className="h-5 w-5" />}
+        <CardTitle className='flex items-center gap-2 text-lg'>
+          {type === 'bar' && <BarChart className='h-5 w-5' />}
+          {type === 'line' && <Activity className='h-5 w-5' />}
+          {type === 'pie' && <PieChart className='h-5 w-5' />}
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-48 flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Interactive {type} chart would be rendered here</p>
-            <p className="text-xs">Using Chart.js or similar library</p>
+        <div className='flex h-48 items-center justify-center text-muted-foreground'>
+          <div className='text-center'>
+            <BarChart3 className='mx-auto mb-2 h-12 w-12 opacity-50' />
+            <p className='text-sm'>Interactive {type} chart would be rendered here</p>
+            <p className='text-xs'>Using Chart.js or similar library</p>
           </div>
         </div>
         {/* Mock data display */}
-        <div className="space-y-2 mt-4">
+        <div className='mt-4 space-y-2'>
           {data.slice(0, 3).map((item, index) => (
-            <div key={item.name} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{item.name}</span>
-              <span className="font-medium">{item.value.toLocaleString()}</span>
+            <div key={item.name} className='flex items-center justify-between text-sm'>
+              <span className='text-muted-foreground'>{item.name}</span>
+              <span className='font-medium'>{item.value.toLocaleString()}</span>
             </div>
           ))}
         </div>
@@ -275,91 +265,89 @@ const TemplateTableRow: React.FC<TemplateTableRowProps> = ({
         <Checkbox checked={selected} onCheckedChange={onSelect} />
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           <div
-            className="h-10 w-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+            className='flex h-10 w-10 items-center justify-center rounded-lg font-bold text-sm text-white'
             style={{ backgroundColor: template.color }}
           >
             {template.icon || '📄'}
           </div>
-          <div className="min-w-0">
-            <div className="font-medium text-sm truncate">{template.name}</div>
-            <div className="text-xs text-muted-foreground truncate">
+          <div className='min-w-0'>
+            <div className='truncate font-medium text-sm'>{template.name}</div>
+            <div className='truncate text-muted-foreground text-xs'>
               {template.description || 'No description'}
             </div>
           </div>
         </div>
       </TableCell>
       <TableCell>
-        <div className="text-sm">{template.category}</div>
+        <div className='text-sm'>{template.category}</div>
       </TableCell>
       <TableCell>
         {statusConfig && (
-          <Badge variant="secondary" className={cn('text-xs', statusConfig.color)}>
+          <Badge variant='secondary' className={cn('text-xs', statusConfig.color)}>
             {statusConfig.icon}
-            <span className="ml-1">{statusConfig.label}</span>
+            <span className='ml-1'>{statusConfig.label}</span>
           </Badge>
         )}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2 text-sm">
+        <div className='flex items-center gap-2 text-sm'>
           {template.ratingAverage && (
             <>
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              <Star className='h-3 w-3 fill-yellow-400 text-yellow-400' />
               <span>{template.ratingAverage.toFixed(1)}</span>
             </>
           )}
-          {!template.ratingAverage && (
-            <span className="text-muted-foreground">No ratings</span>
-          )}
+          {!template.ratingAverage && <span className='text-muted-foreground'>No ratings</span>}
         </div>
       </TableCell>
       <TableCell>
-        <div className="text-sm">{formatNumber(template.views)}</div>
+        <div className='text-sm'>{formatNumber(template.views)}</div>
       </TableCell>
       <TableCell>
-        <div className="text-sm">{formatNumber(template.stars)}</div>
+        <div className='text-sm'>{formatNumber(template.stars)}</div>
       </TableCell>
       <TableCell>
-        <div className="text-xs text-muted-foreground">
+        <div className='text-muted-foreground text-xs'>
           {new Date(template.updatedAt).toLocaleDateString()}
         </div>
       </TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem onClick={onEdit} disabled={!permissions?.canEdit}>
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className='mr-2 h-4 w-4' />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onExport}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className='mr-2 h-4 w-4' />
               Export
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {template.metadata?.status !== 'published' && (
               <DropdownMenuItem onClick={onPublish} disabled={!permissions?.canPublish}>
-                <Eye className="h-4 w-4 mr-2" />
+                <Eye className='mr-2 h-4 w-4' />
                 Publish
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={onArchive} disabled={!permissions?.canEdit}>
-              <Archive className="h-4 w-4 mr-2" />
+              <Archive className='mr-2 h-4 w-4' />
               Archive
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={onDelete}
               disabled={!permissions?.canDelete}
-              className="text-red-600 focus:text-red-600"
+              className='text-red-600 focus:text-red-600'
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className='mr-2 h-4 w-4' />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -414,7 +402,7 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         (template) =>
           template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           template.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          template.author.toLowerCase().includes(searchQuery.toLowerCase()),
+          template.author.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -435,9 +423,8 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
 
       if (sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
       }
+      return aValue < bValue ? 1 : -1
     })
 
     return filtered
@@ -465,7 +452,7 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         setSelectedTemplates(new Set())
       }
     },
-    [filteredAndSortedTemplates],
+    [filteredAndSortedTemplates]
   )
 
   // Handle bulk operations
@@ -480,7 +467,7 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         console.error('Bulk operation failed:', error)
       }
     },
-    [onBulkOperation, selectedTemplates],
+    [onBulkOperation, selectedTemplates]
   )
 
   // Calculate summary statistics
@@ -506,10 +493,10 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading template dashboard...</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent' />
+          <p className='text-muted-foreground'>Loading template dashboard...</p>
         </div>
       </div>
     )
@@ -517,11 +504,11 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 font-medium mb-2">Error Loading Dashboard</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <AlertTriangle className='mx-auto mb-4 h-12 w-12 text-red-500' />
+          <p className='mb-2 font-medium text-red-600'>Error Loading Dashboard</p>
+          <p className='text-muted-foreground text-sm'>{error}</p>
         </div>
       </div>
     )
@@ -530,22 +517,22 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold">Template Management</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className='font-bold text-3xl'>Template Management</h1>
+          <p className='mt-1 text-muted-foreground'>
             Manage your templates, analyze performance, and track usage
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {permissions.canCreate && (
             <>
-              <Button variant="outline" onClick={() => onImportTemplate}>
-                <Upload className="h-4 w-4 mr-2" />
+              <Button variant='outline' onClick={() => onImportTemplate}>
+                <Upload className='mr-2 h-4 w-4' />
                 Import
               </Button>
               <Button onClick={onCreateTemplate}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className='mr-2 h-4 w-4' />
                 Create Template
               </Button>
             </>
@@ -554,72 +541,72 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Templates</p>
-                <p className="text-2xl font-bold">{summaryStats.totalTemplates}</p>
+                <p className='font-medium text-muted-foreground text-sm'>Total Templates</p>
+                <p className='font-bold text-2xl'>{summaryStats.totalTemplates}</p>
               </div>
-              <FileText className="h-8 w-8 text-blue-500" />
+              <FileText className='h-8 w-8 text-blue-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Published</p>
-                <p className="text-2xl font-bold">{summaryStats.publishedTemplates}</p>
+                <p className='font-medium text-muted-foreground text-sm'>Published</p>
+                <p className='font-bold text-2xl'>{summaryStats.publishedTemplates}</p>
               </div>
-              <Eye className="h-8 w-8 text-green-500" />
+              <Eye className='h-8 w-8 text-green-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Views</p>
-                <p className="text-2xl font-bold">{summaryStats.totalViews.toLocaleString()}</p>
+                <p className='font-medium text-muted-foreground text-sm'>Total Views</p>
+                <p className='font-bold text-2xl'>{summaryStats.totalViews.toLocaleString()}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-500" />
+              <TrendingUp className='h-8 w-8 text-orange-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-6'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Average Rating</p>
-                <p className="text-2xl font-bold">
+                <p className='font-medium text-muted-foreground text-sm'>Average Rating</p>
+                <p className='font-bold text-2xl'>
                   {summaryStats.averageRating ? summaryStats.averageRating.toFixed(1) : '—'}
                 </p>
               </div>
-              <Star className="h-8 w-8 text-yellow-500" />
+              <Star className='h-8 w-8 text-yellow-500' />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='templates'>Templates</TabsTrigger>
+          <TabsTrigger value='analytics'>Analytics</TabsTrigger>
+          <TabsTrigger value='settings'>Settings</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value='overview' className='space-y-4'>
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <AnalyticsChart
-              title="Template Views Over Time"
+              title='Template Views Over Time'
               data={[
                 { name: 'Jan', value: 1200 },
                 { name: 'Feb', value: 1800 },
@@ -627,17 +614,17 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
                 { name: 'Apr', value: 1900 },
                 { name: 'May', value: 2800 },
               ]}
-              type="line"
+              type='line'
             />
             <AnalyticsChart
-              title="Templates by Category"
+              title='Templates by Category'
               data={[
                 { name: 'Business Automation', value: 24 },
                 { name: 'Data Processing', value: 18 },
                 { name: 'DevOps & CI/CD', value: 12 },
                 { name: 'Social Media', value: 8 },
               ]}
-              type="pie"
+              type='pie'
             />
           </div>
 
@@ -648,22 +635,22 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
               <CardDescription>Latest template activities and updates</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {templates.slice(0, 5).map((template) => (
-                  <div key={template.id} className="flex items-center gap-3">
+                  <div key={template.id} className='flex items-center gap-3'>
                     <div
-                      className="h-8 w-8 rounded-lg flex items-center justify-center text-white text-xs"
+                      className='flex h-8 w-8 items-center justify-center rounded-lg text-white text-xs'
                       style={{ backgroundColor: template.color }}
                     >
                       {template.icon || '📄'}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{template.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className='min-w-0 flex-1'>
+                      <p className='truncate font-medium text-sm'>{template.name}</p>
+                      <p className='text-muted-foreground text-xs'>
                         Updated {new Date(template.updatedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant='outline' className='text-xs'>
                       {template.metadata?.status || 'draft'}
                     </Badge>
                   </div>
@@ -674,25 +661,25 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         </TabsContent>
 
         {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-4">
+        <TabsContent value='templates' className='space-y-4'>
           {/* Filters and Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
+            <div className='flex min-w-0 flex-1 flex-col gap-2 sm:flex-row'>
+              <div className='relative min-w-0 flex-1'>
+                <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
                 <Input
-                  placeholder="Search templates..."
+                  placeholder='Search templates...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className='pl-9'
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className='w-full sm:w-48'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
                   {TEMPLATE_STATUSES.map((status) => (
                     <SelectItem key={status.value} value={status.value}>
                       {status.label}
@@ -704,14 +691,14 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
 
             {/* Bulk Actions */}
             {selectedTemplates.size > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+              <div className='flex items-center gap-2'>
+                <span className='text-muted-foreground text-sm'>
                   {selectedTemplates.size} selected
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Actions <ChevronDown className="h-4 w-4 ml-1" />
+                    <Button variant='outline' size='sm'>
+                      Actions <ChevronDown className='ml-1 h-4 w-4' />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -724,7 +711,7 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => handleBulkOperation('delete')}
-                      className="text-red-600"
+                      className='text-red-600'
                     >
                       Delete Selected
                     </DropdownMenuItem>
@@ -736,11 +723,11 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
 
           {/* Templates Table */}
           <Card>
-            <CardContent className="p-0">
+            <CardContent className='p-0'>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead className='w-12'>
                       <Checkbox
                         checked={
                           filteredAndSortedTemplates.length > 0 &&
@@ -756,7 +743,7 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
                     <TableHead>Views</TableHead>
                     <TableHead>Stars</TableHead>
                     <TableHead>Updated</TableHead>
-                    <TableHead className="w-12">Actions</TableHead>
+                    <TableHead className='w-12'>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -779,18 +766,18 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
               </Table>
 
               {filteredAndSortedTemplates.length === 0 && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No templates found</h3>
-                    <p className="text-muted-foreground mb-4">
+                <div className='flex items-center justify-center py-12'>
+                  <div className='text-center'>
+                    <FileText className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+                    <h3 className='mb-2 font-semibold text-lg'>No templates found</h3>
+                    <p className='mb-4 text-muted-foreground'>
                       {searchQuery || statusFilter !== 'all'
                         ? 'Try adjusting your filters'
                         : 'Create your first template to get started'}
                     </p>
                     {permissions.canCreate && !searchQuery && statusFilter === 'all' && (
                       <Button onClick={onCreateTemplate}>
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className='mr-2 h-4 w-4' />
                         Create Template
                       </Button>
                     )}
@@ -802,31 +789,31 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <TabsContent value='analytics' className='space-y-6'>
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3'>
             <AnalyticsChart
-              title="Views by Template"
+              title='Views by Template'
               data={templates
                 .sort((a, b) => b.views - a.views)
                 .slice(0, 5)
                 .map((t) => ({ name: t.name, value: t.views }))}
-              type="bar"
+              type='bar'
             />
             <AnalyticsChart
-              title="Stars by Template"
+              title='Stars by Template'
               data={templates
                 .sort((a, b) => b.stars - a.stars)
                 .slice(0, 5)
                 .map((t) => ({ name: t.name, value: t.stars }))}
-              type="bar"
+              type='bar'
             />
             <AnalyticsChart
-              title="Template Status Distribution"
+              title='Template Status Distribution'
               data={TEMPLATE_STATUSES.map((status) => ({
                 name: status.label,
                 value: templates.filter((t) => t.metadata?.status === status.value).length,
               }))}
-              type="pie"
+              type='pie'
             />
           </div>
 
@@ -839,38 +826,42 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Engagement Rate</span>
-                    <span className="text-sm font-medium">
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-muted-foreground text-sm'>Engagement Rate</span>
+                    <span className='font-medium text-sm'>
                       {((summaryStats.totalStars / summaryStats.totalViews) * 100).toFixed(1)}%
                     </span>
                   </div>
                   <Progress
                     value={(summaryStats.totalStars / summaryStats.totalViews) * 100}
-                    className="h-2"
+                    className='h-2'
                   />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Quality Score</span>
-                    <span className="text-sm font-medium">
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-muted-foreground text-sm'>Quality Score</span>
+                    <span className='font-medium text-sm'>
                       {(summaryStats.averageRating * 20).toFixed(0)}%
                     </span>
                   </div>
-                  <Progress value={summaryStats.averageRating * 20} className="h-2" />
+                  <Progress value={summaryStats.averageRating * 20} className='h-2' />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Completion Rate</span>
-                    <span className="text-sm font-medium">
-                      {((summaryStats.publishedTemplates / summaryStats.totalTemplates) * 100).toFixed(0)}%
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-muted-foreground text-sm'>Completion Rate</span>
+                    <span className='font-medium text-sm'>
+                      {(
+                        (summaryStats.publishedTemplates / summaryStats.totalTemplates) *
+                        100
+                      ).toFixed(0)}
+                      %
                     </span>
                   </div>
                   <Progress
                     value={(summaryStats.publishedTemplates / summaryStats.totalTemplates) * 100}
-                    className="h-2"
+                    className='h-2'
                   />
                 </div>
               </div>
@@ -879,46 +870,46 @@ export const TemplateManagementDashboard: React.FC<TemplateManagementDashboardPr
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
+        <TabsContent value='settings' className='space-y-6'>
           <Card>
             <CardHeader>
               <CardTitle>Template Settings</CardTitle>
               <CardDescription>Configure your template management preferences</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between'>
                   <div>
-                    <h4 className="font-medium">Auto-publish approved templates</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className='font-medium'>Auto-publish approved templates</h4>
+                    <p className='text-muted-foreground text-sm'>
                       Automatically publish templates when they are approved
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant='outline' size='sm'>
                     Configure
                   </Button>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
+                <div className='flex items-center justify-between'>
                   <div>
-                    <h4 className="font-medium">Template quality checks</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className='font-medium'>Template quality checks</h4>
+                    <p className='text-muted-foreground text-sm'>
                       Enable automated quality scoring for new templates
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant='outline' size='sm'>
                     Configure
                   </Button>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
+                <div className='flex items-center justify-between'>
                   <div>
-                    <h4 className="font-medium">Notification preferences</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className='font-medium'>Notification preferences</h4>
+                    <p className='text-muted-foreground text-sm'>
                       Manage notifications for template activities
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant='outline' size='sm'>
                     Configure
                   </Button>
                 </div>

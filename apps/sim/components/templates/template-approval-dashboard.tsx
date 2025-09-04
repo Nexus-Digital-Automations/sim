@@ -21,37 +21,33 @@
 
 'use client'
 
-import React, { useCallback, useState, useMemo, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   AlertTriangle,
+  Award,
   CheckCircle,
   Clock,
   Eye,
-  Filter,
+  FileText,
   MessageSquare,
   MoreHorizontal,
   Search,
   Star,
   ThumbsDown,
   ThumbsUp,
-  User,
-  Users,
-  Workflow,
-  Calendar,
-  Tag,
-  FileText,
-  Shield,
-  Zap,
-  Award,
   TrendingUp,
-  Download,
-  Heart,
+  User,
 } from 'lucide-react'
-
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +57,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -68,7 +66,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -77,13 +74,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Progress } from '@/components/ui/progress'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 // ========================
@@ -190,11 +183,11 @@ const StatusBadge: React.FC<{ status: string; priority?: string }> = ({ status, 
   const Icon = config.icon
 
   return (
-    <Badge variant="secondary" className={cn('text-xs', config.color)}>
-      <Icon className="h-3 w-3 mr-1" />
+    <Badge variant='secondary' className={cn('text-xs', config.color)}>
+      <Icon className='mr-1 h-3 w-3' />
       {config.label}
       {priority && priority !== 'medium' && (
-        <span className="ml-1 font-bold">
+        <span className='ml-1 font-bold'>
           {priority === 'high' ? '!' : priority === 'urgent' ? '!!' : ''}
         </span>
       )}
@@ -205,9 +198,9 @@ const StatusBadge: React.FC<{ status: string; priority?: string }> = ({ status, 
 /**
  * Quality score display with visual indicator
  */
-const QualityScore: React.FC<{ score: number; showLabel?: boolean }> = ({ 
-  score, 
-  showLabel = true 
+const QualityScore: React.FC<{ score: number; showLabel?: boolean }> = ({
+  score,
+  showLabel = true,
 }) => {
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-600 bg-green-100'
@@ -218,13 +211,11 @@ const QualityScore: React.FC<{ score: number; showLabel?: boolean }> = ({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className={cn('px-2 py-1 rounded text-xs font-medium', getScoreColor(score))}>
+    <div className='flex items-center gap-2'>
+      <div className={cn('rounded px-2 py-1 font-medium text-xs', getScoreColor(score))}>
         {score}%
       </div>
-      {showLabel && (
-        <Progress value={score} className="w-16 h-2" />
-      )}
+      {showLabel && <Progress value={score} className='h-2 w-16' />}
     </div>
   )
 }
@@ -232,13 +223,13 @@ const QualityScore: React.FC<{ score: number; showLabel?: boolean }> = ({
 /**
  * Approval workflow progress visualization
  */
-const WorkflowProgress: React.FC<{ 
+const WorkflowProgress: React.FC<{
   workflow: ApprovalStage[]
-  currentStage: number 
-  status: string 
+  currentStage: number
+  status: string
 }> = ({ workflow, currentStage, status }) => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className='flex items-center space-x-2'>
       {workflow.map((stage, index) => {
         const isCompleted = stage.stageNumber < currentStage
         const isCurrent = stage.stageNumber === currentStage
@@ -252,27 +243,27 @@ const WorkflowProgress: React.FC<{
                 <TooltipTrigger>
                   <div
                     className={cn(
-                      'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                      'flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs',
                       isCompleted && 'bg-green-500 text-white',
-                      isCurrent && !isRejected && 'bg-blue-500 text-white animate-pulse',
+                      isCurrent && !isRejected && 'animate-pulse bg-blue-500 text-white',
                       isRejected && 'bg-red-500 text-white',
                       isPending && 'bg-gray-200 text-gray-600'
                     )}
                   >
                     {isCompleted ? (
-                      <CheckCircle className="w-3 h-3" />
+                      <CheckCircle className='h-3 w-3' />
                     ) : isRejected ? (
-                      <AlertTriangle className="w-3 h-3" />
+                      <AlertTriangle className='h-3 w-3' />
                     ) : (
                       stage.stageNumber
                     )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <div className="text-sm">
-                    <div className="font-medium">{stage.stageName}</div>
-                    <div className="text-muted-foreground">{stage.description}</div>
-                    <div className="text-xs mt-1">
+                  <div className='text-sm'>
+                    <div className='font-medium'>{stage.stageName}</div>
+                    <div className='text-muted-foreground'>{stage.description}</div>
+                    <div className='mt-1 text-xs'>
                       Est. {stage.estimatedDays} day{stage.estimatedDays !== 1 ? 's' : ''}
                     </div>
                   </div>
@@ -280,12 +271,7 @@ const WorkflowProgress: React.FC<{
               </Tooltip>
             </TooltipProvider>
             {index < workflow.length - 1 && (
-              <div
-                className={cn(
-                  'w-8 h-0.5',
-                  isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                )}
-              />
+              <div className={cn('h-0.5 w-8', isCompleted ? 'bg-green-500' : 'bg-gray-200')} />
             )}
           </React.Fragment>
         )
@@ -344,75 +330,75 @@ const ReviewDialog: React.FC<{
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+      <DialogContent className='max-h-[90vh] max-w-3xl overflow-auto'>
         <DialogHeader>
           <DialogTitle>Review Template Submission</DialogTitle>
-          <DialogDescription>
-            Provide detailed feedback for "{submission.title}"
-          </DialogDescription>
+          <DialogDescription>Provide detailed feedback for "{submission.title}"</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {/* Submission Details */}
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Submission Details</CardTitle>
+            <CardHeader className='pb-3'>
+              <CardTitle className='text-base'>Submission Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <CardContent className='space-y-3'>
+              <div className='grid grid-cols-2 gap-4 text-sm'>
                 <div>
-                  <Label className="text-muted-foreground">Type:</Label>
-                  <div className="font-medium capitalize">{submission.submissionType}</div>
+                  <Label className='text-muted-foreground'>Type:</Label>
+                  <div className='font-medium capitalize'>{submission.submissionType}</div>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Priority:</Label>
-                  <Badge variant="outline" className="ml-2 capitalize">{submission.priority}</Badge>
+                  <Label className='text-muted-foreground'>Priority:</Label>
+                  <Badge variant='outline' className='ml-2 capitalize'>
+                    {submission.priority}
+                  </Badge>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Quality Score:</Label>
+                  <Label className='text-muted-foreground'>Quality Score:</Label>
                   <QualityScore score={submission.qualityScore} showLabel={false} />
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Submitted:</Label>
-                  <div className="font-medium">
+                  <Label className='text-muted-foreground'>Submitted:</Label>
+                  <div className='font-medium'>
                     {new Date(submission.submittedAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
               <div>
-                <Label className="text-muted-foreground">Description:</Label>
-                <p className="text-sm mt-1">{submission.description}</p>
+                <Label className='text-muted-foreground'>Description:</Label>
+                <p className='mt-1 text-sm'>{submission.description}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Review Decision */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
-              <Label className="text-base font-semibold">Review Decision</Label>
+              <Label className='font-semibold text-base'>Review Decision</Label>
               <Select
                 value={reviewData.decision}
                 onValueChange={(value) => setReviewData({ ...reviewData, decision: value })}
               >
-                <SelectTrigger className="mt-2">
+                <SelectTrigger className='mt-2'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="approve">
-                    <div className="flex items-center">
-                      <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
+                  <SelectItem value='approve'>
+                    <div className='flex items-center'>
+                      <ThumbsUp className='mr-2 h-4 w-4 text-green-500' />
                       Approve
                     </div>
                   </SelectItem>
-                  <SelectItem value="request_changes">
-                    <div className="flex items-center">
-                      <MessageSquare className="w-4 h-4 mr-2 text-yellow-500" />
+                  <SelectItem value='request_changes'>
+                    <div className='flex items-center'>
+                      <MessageSquare className='mr-2 h-4 w-4 text-yellow-500' />
                       Request Changes
                     </div>
                   </SelectItem>
-                  <SelectItem value="reject">
-                    <div className="flex items-center">
-                      <ThumbsDown className="w-4 h-4 mr-2 text-red-500" />
+                  <SelectItem value='reject'>
+                    <div className='flex items-center'>
+                      <ThumbsDown className='mr-2 h-4 w-4 text-red-500' />
                       Reject
                     </div>
                   </SelectItem>
@@ -421,31 +407,31 @@ const ReviewDialog: React.FC<{
             </div>
 
             <div>
-              <Label className="text-base font-semibold">Review Notes</Label>
+              <Label className='font-semibold text-base'>Review Notes</Label>
               <Textarea
                 value={reviewData.reviewNotes}
                 onChange={(e) => setReviewData({ ...reviewData, reviewNotes: e.target.value })}
-                placeholder="Provide detailed feedback for the submitter..."
+                placeholder='Provide detailed feedback for the submitter...'
                 rows={4}
-                className="mt-2"
+                className='mt-2'
               />
             </div>
           </div>
 
           {/* Review Criteria */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Review Criteria (1-5 scale)</Label>
-            <div className="grid grid-cols-2 gap-4">
+          <div className='space-y-4'>
+            <Label className='font-semibold text-base'>Review Criteria (1-5 scale)</Label>
+            <div className='grid grid-cols-2 gap-4'>
               {Object.entries(reviewData.reviewCriteria).map(([criterion, score]) => (
-                <div key={criterion} className="space-y-2">
-                  <Label className="text-sm capitalize">
+                <div key={criterion} className='space-y-2'>
+                  <Label className='text-sm capitalize'>
                     {criterion.replace(/([A-Z])/g, ' $1').toLowerCase()}
                   </Label>
-                  <div className="flex items-center space-x-2">
+                  <div className='flex items-center space-x-2'>
                     {[1, 2, 3, 4, 5].map((value) => (
                       <button
                         key={value}
-                        type="button"
+                        type='button'
                         onClick={() =>
                           setReviewData({
                             ...reviewData,
@@ -453,7 +439,7 @@ const ReviewDialog: React.FC<{
                           })
                         }
                         className={cn(
-                          'w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-colors',
+                          'flex h-8 w-8 items-center justify-center rounded-full border-2 font-medium text-xs transition-colors',
                           score >= value
                             ? 'border-blue-500 bg-blue-500 text-white'
                             : 'border-gray-300 text-gray-500 hover:border-blue-300'
@@ -462,9 +448,7 @@ const ReviewDialog: React.FC<{
                         {value}
                       </button>
                     ))}
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {score}/5
-                    </span>
+                    <span className='ml-2 text-muted-foreground text-sm'>{score}/5</span>
                   </div>
                 </div>
               ))}
@@ -472,8 +456,8 @@ const ReviewDialog: React.FC<{
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <div className='flex justify-end space-x-2 border-t pt-4'>
+            <Button variant='outline' onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={!reviewData.reviewNotes.trim()}>
@@ -515,7 +499,8 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
   // Filter submissions based on current filters
   const filteredSubmissions = useMemo(() => {
     return submissions.filter((submission) => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch =
+        !searchQuery ||
         submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.submitterName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -531,19 +516,20 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
   const summaryStats = useMemo(() => {
     return {
       total: submissions.length,
-      pending: submissions.filter(s => s.status === 'pending').length,
-      underReview: submissions.filter(s => s.status === 'under_review').length,
-      approved: submissions.filter(s => s.status === 'approved').length,
-      rejected: submissions.filter(s => s.status === 'rejected').length,
-      avgQualityScore: submissions.length > 0 
-        ? Math.round(submissions.reduce((sum, s) => sum + s.qualityScore, 0) / submissions.length)
-        : 0,
+      pending: submissions.filter((s) => s.status === 'pending').length,
+      underReview: submissions.filter((s) => s.status === 'under_review').length,
+      approved: submissions.filter((s) => s.status === 'approved').length,
+      rejected: submissions.filter((s) => s.status === 'rejected').length,
+      avgQualityScore:
+        submissions.length > 0
+          ? Math.round(submissions.reduce((sum, s) => sum + s.qualityScore, 0) / submissions.length)
+          : 0,
     }
   }, [submissions])
 
   // Handle submission selection
   const handleSelectSubmission = useCallback((submissionId: string, selected: boolean) => {
-    setSelectedSubmissions(prev => {
+    setSelectedSubmissions((prev) => {
       const newSet = new Set(prev)
       if (selected) {
         newSet.add(submissionId)
@@ -555,44 +541,53 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
   }, [])
 
   // Handle select all submissions
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedSubmissions(new Set(filteredSubmissions.map(s => s.id)))
-    } else {
-      setSelectedSubmissions(new Set())
-    }
-  }, [filteredSubmissions])
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      if (selected) {
+        setSelectedSubmissions(new Set(filteredSubmissions.map((s) => s.id)))
+      } else {
+        setSelectedSubmissions(new Set())
+      }
+    },
+    [filteredSubmissions]
+  )
 
   // Handle review submission
-  const handleReviewSubmit = useCallback(async (reviewData: any) => {
-    if (selectedSubmission && onReviewSubmit) {
-      try {
-        await onReviewSubmit(selectedSubmission.id, reviewData)
-        setSelectedSubmission(null)
-      } catch (error) {
-        console.error('Failed to submit review:', error)
+  const handleReviewSubmit = useCallback(
+    async (reviewData: any) => {
+      if (selectedSubmission && onReviewSubmit) {
+        try {
+          await onReviewSubmit(selectedSubmission.id, reviewData)
+          setSelectedSubmission(null)
+        } catch (error) {
+          console.error('Failed to submit review:', error)
+        }
       }
-    }
-  }, [selectedSubmission, onReviewSubmit])
+    },
+    [selectedSubmission, onReviewSubmit]
+  )
 
   // Handle bulk actions
-  const handleBulkAction = useCallback(async (action: string) => {
-    if (onBulkAction && selectedSubmissions.size > 0) {
-      try {
-        await onBulkAction(Array.from(selectedSubmissions), action)
-        setSelectedSubmissions(new Set())
-      } catch (error) {
-        console.error('Bulk action failed:', error)
+  const handleBulkAction = useCallback(
+    async (action: string) => {
+      if (onBulkAction && selectedSubmissions.size > 0) {
+        try {
+          await onBulkAction(Array.from(selectedSubmissions), action)
+          setSelectedSubmissions(new Set())
+        } catch (error) {
+          console.error('Bulk action failed:', error)
+        }
       }
-    }
-  }, [onBulkAction, selectedSubmissions])
+    },
+    [onBulkAction, selectedSubmissions]
+  )
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading approval dashboard...</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent' />
+          <p className='text-muted-foreground'>Loading approval dashboard...</p>
         </div>
       </div>
     )
@@ -600,11 +595,11 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 font-medium mb-2">Error Loading Dashboard</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <AlertTriangle className='mx-auto mb-4 h-12 w-12 text-red-500' />
+          <p className='mb-2 font-medium text-red-600'>Error Loading Dashboard</p>
+          <p className='text-muted-foreground text-sm'>{error}</p>
         </div>
       </div>
     )
@@ -613,152 +608,152 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold">Template Approval Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className='font-bold text-3xl'>Template Approval Dashboard</h1>
+          <p className='mt-1 text-muted-foreground'>
             Review and approve template submissions for the community marketplace
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="px-3 py-1">
+        <div className='flex items-center gap-2'>
+          <Badge variant='outline' className='px-3 py-1'>
             {userRole} Access
           </Badge>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6'>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold">{summaryStats.total}</p>
+                <p className='text-muted-foreground text-sm'>Total</p>
+                <p className='font-bold text-2xl'>{summaryStats.total}</p>
               </div>
-              <FileText className="h-8 w-8 text-blue-500" />
+              <FileText className='h-8 w-8 text-blue-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{summaryStats.pending}</p>
+                <p className='text-muted-foreground text-sm'>Pending</p>
+                <p className='font-bold text-2xl'>{summaryStats.pending}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
+              <Clock className='h-8 w-8 text-yellow-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Under Review</p>
-                <p className="text-2xl font-bold">{summaryStats.underReview}</p>
+                <p className='text-muted-foreground text-sm'>Under Review</p>
+                <p className='font-bold text-2xl'>{summaryStats.underReview}</p>
               </div>
-              <Eye className="h-8 w-8 text-blue-500" />
+              <Eye className='h-8 w-8 text-blue-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Approved</p>
-                <p className="text-2xl font-bold">{summaryStats.approved}</p>
+                <p className='text-muted-foreground text-sm'>Approved</p>
+                <p className='font-bold text-2xl'>{summaryStats.approved}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className='h-8 w-8 text-green-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Rejected</p>
-                <p className="text-2xl font-bold">{summaryStats.rejected}</p>
+                <p className='text-muted-foreground text-sm'>Rejected</p>
+                <p className='font-bold text-2xl'>{summaryStats.rejected}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <AlertTriangle className='h-8 w-8 text-red-500' />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+          <CardContent className='p-4'>
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm text-muted-foreground">Avg Quality</p>
-                <p className="text-2xl font-bold">{summaryStats.avgQualityScore}%</p>
+                <p className='text-muted-foreground text-sm'>Avg Quality</p>
+                <p className='font-bold text-2xl'>{summaryStats.avgQualityScore}%</p>
               </div>
-              <Star className="h-8 w-8 text-purple-500" />
+              <Star className='h-8 w-8 text-purple-500' />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value='submissions'>Submissions</TabsTrigger>
+          <TabsTrigger value='reviews'>Reviews</TabsTrigger>
+          <TabsTrigger value='analytics'>Analytics</TabsTrigger>
         </TabsList>
 
         {/* Submissions Tab */}
-        <TabsContent value="submissions" className="space-y-4">
+        <TabsContent value='submissions' className='space-y-4'>
           {/* Filters and Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
+            <div className='flex min-w-0 flex-1 flex-col gap-2 sm:flex-row'>
+              <div className='relative min-w-0 flex-1'>
+                <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
                 <Input
-                  placeholder="Search submissions..."
+                  placeholder='Search submissions...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className='pl-9'
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className='w-full sm:w-40'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="under_review">Under Review</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
+                  <SelectItem value='pending'>Pending</SelectItem>
+                  <SelectItem value='under_review'>Under Review</SelectItem>
+                  <SelectItem value='approved'>Approved</SelectItem>
+                  <SelectItem value='rejected'>Rejected</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className='w-full sm:w-40'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Priority</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value='all'>All Priority</SelectItem>
+                  <SelectItem value='urgent'>Urgent</SelectItem>
+                  <SelectItem value='high'>High</SelectItem>
+                  <SelectItem value='medium'>Medium</SelectItem>
+                  <SelectItem value='low'>Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Bulk Actions */}
             {selectedSubmissions.size > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+              <div className='flex items-center gap-2'>
+                <span className='text-muted-foreground text-sm'>
                   {selectedSubmissions.size} selected
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant='outline' size='sm'>
                       Bulk Actions
                     </Button>
                   </DropdownMenuTrigger>
@@ -781,19 +776,19 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
 
           {/* Submissions Table */}
           <Card>
-            <CardContent className="p-0">
+            <CardContent className='p-0'>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead className='w-12'>
                       <input
-                        type="checkbox"
+                        type='checkbox'
                         checked={
                           filteredSubmissions.length > 0 &&
                           selectedSubmissions.size === filteredSubmissions.length
                         }
                         onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="h-4 w-4"
+                        className='h-4 w-4'
                       />
                     </TableHead>
                     <TableHead>Template</TableHead>
@@ -803,7 +798,7 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                     <TableHead>Quality</TableHead>
                     <TableHead>Workflow</TableHead>
                     <TableHead>Submitted</TableHead>
-                    <TableHead className="w-12">Actions</TableHead>
+                    <TableHead className='w-12'>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -811,23 +806,21 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                     <TableRow key={submission.id}>
                       <TableCell>
                         <input
-                          type="checkbox"
+                          type='checkbox'
                           checked={selectedSubmissions.has(submission.id)}
-                          onChange={(e) => 
-                            handleSelectSubmission(submission.id, e.target.checked)
-                          }
-                          className="h-4 w-4"
+                          onChange={(e) => handleSelectSubmission(submission.id, e.target.checked)}
+                          className='h-4 w-4'
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium line-clamp-1">{submission.title}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-1">
+                        <div className='space-y-1'>
+                          <div className='line-clamp-1 font-medium'>{submission.title}</div>
+                          <div className='line-clamp-1 text-muted-foreground text-sm'>
                             {submission.description}
                           </div>
-                          <div className="flex gap-1 flex-wrap">
-                            {submission.tags.slice(0, 3).map(tag => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
+                          <div className='flex flex-wrap gap-1'>
+                            {submission.tags.slice(0, 3).map((tag) => (
+                              <Badge key={tag} variant='secondary' className='text-xs'>
                                 {tag}
                               </Badge>
                             ))}
@@ -835,25 +828,23 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className='flex items-center gap-2'>
                           {submission.submitterImage && (
                             <img
                               src={submission.submitterImage}
                               alt={submission.submitterName}
-                              className="w-6 h-6 rounded-full"
+                              className='h-6 w-6 rounded-full'
                             />
                           )}
-                          <div className="text-sm font-medium">
-                            {submission.submitterName}
-                          </div>
+                          <div className='font-medium text-sm'>{submission.submitterName}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={submission.status} priority={submission.priority} />
                       </TableCell>
                       <TableCell>
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant='outline'
                           className={cn(
                             'capitalize',
                             submission.priority === 'urgent' && 'border-red-500 text-red-700',
@@ -873,17 +864,17 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                           status={submission.status}
                         />
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className='text-muted-foreground text-sm'>
                         {new Date(submission.submittedAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+                              <MoreHorizontal className='h-4 w-4' />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() => {
@@ -891,20 +882,20 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                                 setReviewDialogOpen(true)
                               }}
                             >
-                              <Eye className="h-4 w-4 mr-2" />
+                              <Eye className='mr-2 h-4 w-4' />
                               Review
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <User className="h-4 w-4 mr-2" />
+                              <User className='mr-2 h-4 w-4' />
                               Assign Reviewer
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                              <MessageSquare className="h-4 w-4 mr-2" />
+                              <MessageSquare className='mr-2 h-4 w-4' />
                               Add Comment
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>
-                              <FileText className="h-4 w-4 mr-2" />
+                              <FileText className='mr-2 h-4 w-4' />
                               View Template
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -916,11 +907,11 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
               </Table>
 
               {filteredSubmissions.length === 0 && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No submissions found</h3>
-                    <p className="text-muted-foreground">
+                <div className='flex items-center justify-center py-12'>
+                  <div className='text-center'>
+                    <FileText className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+                    <h3 className='mb-2 font-semibold text-lg'>No submissions found</h3>
+                    <p className='text-muted-foreground'>
                       {searchQuery || statusFilter !== 'all' || priorityFilter !== 'all'
                         ? 'Try adjusting your filters'
                         : 'No template submissions available for review'}
@@ -933,33 +924,29 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
         </TabsContent>
 
         {/* Reviews Tab */}
-        <TabsContent value="reviews" className="space-y-4">
+        <TabsContent value='reviews' className='space-y-4'>
           <Card>
             <CardHeader>
               <CardTitle>Recent Reviews</CardTitle>
-              <CardDescription>
-                Track review activity and feedback from reviewers
-              </CardDescription>
+              <CardDescription>Track review activity and feedback from reviewers</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {reviews.slice(0, 10).map((review) => (
-                  <div key={review.id} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="font-medium">{review.reviewerName}</div>
+                  <div key={review.id} className='rounded-lg border p-4'>
+                    <div className='mb-2 flex items-start justify-between'>
+                      <div className='flex items-center gap-2'>
+                        <div className='font-medium'>{review.reviewerName}</div>
                         <StatusBadge status={review.decision} />
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className='text-muted-foreground text-sm'>
                         {new Date(review.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <p className="text-sm mb-3">{review.reviewNotes}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <p className='mb-3 text-sm'>{review.reviewNotes}</p>
+                    <div className='flex items-center gap-4 text-muted-foreground text-sm'>
                       <div>Quality Score: {review.qualityScore}%</div>
-                      {review.timeSpentMinutes && (
-                        <div>Time Spent: {review.timeSpentMinutes}m</div>
-                      )}
+                      {review.timeSpentMinutes && <div>Time Spent: {review.timeSpentMinutes}m</div>}
                       {review.actionItems.length > 0 && (
                         <div>Action Items: {review.actionItems.length}</div>
                       )}
@@ -972,17 +959,17 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value='analytics' className='space-y-4'>
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <Card>
               <CardHeader>
                 <CardTitle>Approval Rate Trends</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Analytics chart would be rendered here</p>
+                <div className='flex h-64 items-center justify-center text-muted-foreground'>
+                  <div className='text-center'>
+                    <TrendingUp className='mx-auto mb-2 h-12 w-12 opacity-50' />
+                    <p className='text-sm'>Analytics chart would be rendered here</p>
                   </div>
                 </div>
               </CardContent>
@@ -993,10 +980,10 @@ export const TemplateApprovalDashboard: React.FC<TemplateApprovalDashboardProps>
                 <CardTitle>Quality Score Distribution</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <Star className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Distribution chart would be rendered here</p>
+                <div className='flex h-64 items-center justify-center text-muted-foreground'>
+                  <div className='text-center'>
+                    <Star className='mx-auto mb-2 h-12 w-12 opacity-50' />
+                    <p className='text-sm'>Distribution chart would be rendered here</p>
                   </div>
                 </div>
               </CardContent>

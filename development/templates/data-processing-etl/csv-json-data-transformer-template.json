@@ -3,7 +3,7 @@
   "name": "CSV/JSON Data Transformer",
   "description": "Professional CSV and JSON data transformation with AI-powered field mapping and validation",
   "category": "data-processing",
-  "subcategory": "data-transformation", 
+  "subcategory": "data-transformation",
   "difficulty": 2,
   "estimatedTime": 15,
   "version": "1.0.0",
@@ -41,7 +41,7 @@
       },
       {
         "id": "ai-field-mapping",
-        "type": "data_transformer", 
+        "type": "data_transformer",
         "name": "AI Field Mapping",
         "description": "Intelligent field mapping with AI-powered suggestions",
         "position": { "x": 300, "y": 100 },
@@ -53,13 +53,13 @@
           "fieldMappings": [
             {
               "sourceField": "first_name",
-              "targetField": "firstName", 
+              "targetField": "firstName",
               "transformFunction": "capitalize"
             },
             {
               "sourceField": "last_name",
               "targetField": "lastName",
-              "transformFunction": "capitalize" 
+              "transformFunction": "capitalize"
             },
             {
               "sourceField": "email",
@@ -84,10 +84,10 @@
               "type": "object",
               "required": ["email"],
               "properties": {
-                "first_name": {"type": "string", "minLength": 1},
-                "last_name": {"type": "string", "minLength": 1}, 
-                "email": {"type": "string", "format": "email"},
-                "phone": {"type": "string", "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$"}
+                "first_name": { "type": "string", "minLength": 1 },
+                "last_name": { "type": "string", "minLength": 1 },
+                "email": { "type": "string", "format": "email" },
+                "phone": { "type": "string", "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$" }
               }
             }
           },
@@ -99,21 +99,21 @@
       {
         "id": "data-quality-check",
         "type": "evaluator",
-        "name": "Data Quality Assessment", 
+        "name": "Data Quality Assessment",
         "description": "Assess data quality and flag issues",
         "position": { "x": 500, "y": 100 },
         "config": {
           "inputData": "{{ai-field-mapping.transformedData}}",
           "qualityChecks": [
             {
-              "name": "email_validity", 
+              "name": "email_validity",
               "rule": "email_format_valid",
               "threshold": 0.95
             },
             {
               "name": "completeness",
-              "rule": "required_fields_present", 
-              "threshold": 0.90
+              "rule": "required_fields_present",
+              "threshold": 0.9
             },
             {
               "name": "duplicate_detection",
@@ -142,7 +142,7 @@
       {
         "id": "output-formatter",
         "type": "data_transformer",
-        "name": "Output Formatter", 
+        "name": "Output Formatter",
         "description": "Format data for target system",
         "position": { "x": 900, "y": 100 },
         "config": {
@@ -173,14 +173,14 @@
     "connections": [
       {
         "source": "data-input",
-        "target": "ai-field-mapping", 
+        "target": "ai-field-mapping",
         "sourceOutput": "content",
         "targetInput": "inputData"
       },
       {
         "source": "ai-field-mapping",
         "target": "data-quality-check",
-        "sourceOutput": "transformedData", 
+        "sourceOutput": "transformedData",
         "targetInput": "inputData"
       },
       {
@@ -190,7 +190,7 @@
         "targetInput": "inputData"
       },
       {
-        "source": "data-cleansing", 
+        "source": "data-cleansing",
         "target": "output-formatter",
         "sourceOutput": "transformedData",
         "targetInput": "inputData"
@@ -198,7 +198,7 @@
       {
         "source": "output-formatter",
         "target": "data-export",
-        "sourceOutput": "transformedData", 
+        "sourceOutput": "transformedData",
         "targetInput": "content"
       }
     ],
@@ -211,7 +211,7 @@
         "defaultValue": "./data/input/customers.csv"
       },
       {
-        "name": "output_file_path", 
+        "name": "output_file_path",
         "type": "string",
         "description": "Path for the output transformed file",
         "required": true,
@@ -248,7 +248,7 @@
         "description": "Configure your data source and parsing options",
         "options": [
           "File path or URL to data source",
-          "File format (auto-detection available)", 
+          "File format (auto-detection available)",
           "Parsing options (delimiters, headers, encoding)",
           "Preview and validation settings"
         ]
@@ -258,7 +258,7 @@
         "options": [
           "AI-powered field mapping suggestions",
           "Manual field mapping override",
-          "Data type conversions and validations", 
+          "Data type conversions and validations",
           "Custom transformation functions",
           "Default values and computed fields"
         ]
@@ -298,7 +298,7 @@
         "solution": "Review validation rules and thresholds, check data format consistency, use error handling options"
       },
       {
-        "issue": "Performance issues with large files", 
+        "issue": "Performance issues with large files",
         "solution": "Enable batch processing, increase batch size, or split large files into smaller chunks"
       },
       {
@@ -322,7 +322,7 @@
     "license": "MIT",
     "performance": {
       "smallDataset": "< 30 seconds (up to 10K records)",
-      "mediumDataset": "< 5 minutes (10K-1M records)", 
+      "mediumDataset": "< 5 minutes (10K-1M records)",
       "largeDataset": "< 30 minutes (1M+ records)",
       "throughput": "~10K records per minute"
     },

@@ -8,7 +8,7 @@
  * INTEGRATION FEATURES:
  * - Template Block Validation: Ensure templates use valid and available blocks
  * - Dependency Resolution: Resolve block dependencies and requirements
- * - Compatibility Checking: Verify template compatibility across system versions  
+ * - Compatibility Checking: Verify template compatibility across system versions
  * - Block Metadata Extraction: Extract block usage patterns for analytics
  * - Custom Block Support: Handle custom and user-defined blocks
  * - Version Management: Handle block version compatibility and migration
@@ -25,7 +25,7 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import { registry } from '@/blocks/registry'
-import type { BlockDefinition, BlockType, BlockValidationResult } from '@/blocks/types'
+import type { BlockDefinition, BlockType } from '@/blocks/types'
 import type { Template, TemplateValidationResult } from './types'
 
 // Initialize structured logger
@@ -62,7 +62,7 @@ export class BlockRegistryIntegration {
    */
   async validateTemplateBlocks(template: Template): Promise<TemplateValidationResult> {
     const operationId = `validate_${Date.now()}`
-    
+
     logger.info(`[${this.requestId}] Validating template blocks`, {
       operationId,
       templateId: template.id,
@@ -97,7 +97,7 @@ export class BlockRegistryIntegration {
 
       // Extract block usage information
       const blockUsage = await this.extractBlockUsage(template.state)
-      
+
       logger.info(`[${this.requestId}] Extracted block usage`, {
         operationId,
         totalBlocks: blockUsage.totalBlocks,
@@ -108,7 +108,7 @@ export class BlockRegistryIntegration {
       // Validate each block type
       for (const blockType of blockUsage.uniqueBlockTypes) {
         const blockValidation = await this.validateBlockType(blockType, template.state.blocks)
-        
+
         if (!blockValidation.isValid) {
           validationResult.isValid = false
           validationResult.errors.push(...blockValidation.errors)
@@ -188,7 +188,6 @@ export class BlockRegistryIntegration {
       })
 
       return validationResult
-
     } catch (error) {
       logger.error(`[${this.requestId}] Block validation failed`, {
         operationId,
@@ -196,7 +195,9 @@ export class BlockRegistryIntegration {
       })
 
       validationResult.isValid = false
-      validationResult.errors.push(`Block validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      validationResult.errors.push(
+        `Block validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
       validationResult.checks.syntax = false
       validationResult.qualityScore = 0
 
@@ -255,14 +256,18 @@ export class BlockRegistryIntegration {
       // Resolve dependencies for each block type
       for (const blockType of blockUsage.uniqueBlockTypes) {
         const blockDefinition = await this.getBlockDefinition(blockType)
-        
+
         if (!blockDefinition) {
           missingDependencies.push(blockType)
           dependencies.push({
             blockType,
             satisfied: false,
             conflicts: [`Block type '${blockType}' not found in registry`],
-            recommendations: ['Check block name spelling', 'Install required plugin', 'Update block registry'],
+            recommendations: [
+              'Check block name spelling',
+              'Install required plugin',
+              'Update block registry',
+            ],
           })
           continue
         }
@@ -280,7 +285,7 @@ export class BlockRegistryIntegration {
         // Validate each dependency
         for (const dependency of blockDependencies) {
           const dependencyDefinition = await this.getBlockDefinition(dependency)
-          
+
           if (!dependencyDefinition) {
             dependencyResult.satisfied = false
             dependencyResult.conflicts.push(`Missing dependency: ${dependency}`)
@@ -311,7 +316,9 @@ export class BlockRegistryIntegration {
       }
 
       // Detect consolidation opportunities
-      const consolidationOpportunities = await this.detectConsolidationOpportunities(blockUsage.uniqueBlockTypes)
+      const consolidationOpportunities = await this.detectConsolidationOpportunities(
+        blockUsage.uniqueBlockTypes
+      )
       optimizations.push(...consolidationOpportunities)
 
       const resolved = missingDependencies.length === 0 && conflictingDependencies.length === 0
@@ -332,7 +339,6 @@ export class BlockRegistryIntegration {
         conflictingDependencies,
         optimizations,
       }
-
     } catch (error) {
       logger.error(`[${this.requestId}] Dependency resolution failed`, {
         operationId,
@@ -426,7 +432,6 @@ export class BlockRegistryIntegration {
         securityMetrics,
         recommendations,
       }
-
     } catch (error) {
       logger.error(`[${this.requestId}] Block analytics extraction failed`, {
         operationId,
@@ -488,24 +493,23 @@ export class BlockRegistryIntegration {
     }
 
     const blocks = Object.values(templateState.blocks) as any[]
-    const blockTypes = blocks.map(block => block.type).filter(Boolean)
+    const blockTypes = blocks.map((block) => block.type).filter(Boolean)
     const blockFrequency: Record<string, number> = {}
     const customBlocks: string[] = []
     const deprecatedBlocks: string[] = []
 
     // Count block frequencies
-    blockTypes.forEach(blockType => {
+    blockTypes.forEach((blockType) => {
       blockFrequency[blockType] = (blockFrequency[blockType] || 0) + 1
     })
 
     // Find most used block
-    const mostUsedBlock = Object.entries(blockFrequency)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || ''
+    const mostUsedBlock = Object.entries(blockFrequency).sort(([, a], [, b]) => b - a)[0]?.[0] || ''
 
     // Identify custom and deprecated blocks
     for (const blockType of [...new Set(blockTypes)]) {
       const blockDefinition = await this.getBlockDefinition(blockType)
-      
+
       if (!blockDefinition) {
         customBlocks.push(blockType)
       } else if (blockDefinition.deprecated) {
@@ -523,7 +527,10 @@ export class BlockRegistryIntegration {
     }
   }
 
-  private async validateBlockType(blockType: string, blocks: any): Promise<{
+  private async validateBlockType(
+    blockType: string,
+    blocks: any
+  ): Promise<{
     isValid: boolean
     errors: string[]
     warnings: string[]
@@ -536,13 +543,16 @@ export class BlockRegistryIntegration {
     performanceRecommendation?: string
   }> {
     const blockDefinition = await this.getBlockDefinition(blockType)
-    
+
     if (!blockDefinition) {
       return {
         isValid: false,
         errors: [`Unknown block type: ${blockType}`],
         warnings: [],
-        suggestions: [`Check if block type '${blockType}' is spelled correctly`, 'Install required plugin'],
+        suggestions: [
+          `Check if block type '${blockType}' is spelled correctly`,
+          'Install required plugin',
+        ],
         isDeprecated: false,
         hasSecurityIssues: false,
         hasPerformanceIssues: false,
@@ -598,12 +608,15 @@ export class BlockRegistryIntegration {
 
     for (const blockType of blockTypes) {
       const dependencies = await this.getBlockDependencies(blockType)
-      
+
       for (const dependency of dependencies) {
-        const dependencyExists = blockTypes.includes(dependency) || await this.isBlockRegistered(dependency)
-        
+        const dependencyExists =
+          blockTypes.includes(dependency) || (await this.isBlockRegistered(dependency))
+
         if (!dependencyExists) {
-          errors.push(`Block '${blockType}' requires dependency '${dependency}' which is not available`)
+          errors.push(
+            `Block '${blockType}' requires dependency '${dependency}' which is not available`
+          )
         }
       }
     }
@@ -639,7 +652,7 @@ export class BlockRegistryIntegration {
     try {
       // Get block definition from registry
       const blockDefinition = registry.getBlock(blockType as BlockType)
-      
+
       if (blockDefinition) {
         this.blockCache.set(blockType, blockDefinition)
         return blockDefinition
@@ -663,7 +676,7 @@ export class BlockRegistryIntegration {
     try {
       const blockDefinition = await this.getBlockDefinition(blockType)
       const dependencies = blockDefinition?.dependencies || []
-      
+
       this.dependencyCache.set(blockType, dependencies)
       return dependencies
     } catch (error) {
@@ -682,9 +695,12 @@ export class BlockRegistryIntegration {
   private hasSecurityConcerns(blockDefinition: BlockDefinition): boolean {
     // Implementation would check for security-related concerns
     const securityKeywords = ['credential', 'auth', 'token', 'secret', 'password', 'api_key']
-    return securityKeywords.some(keyword => 
-      blockDefinition.name.toLowerCase().includes(keyword) ||
-      JSON.stringify(blockDefinition.subBlocks || {}).toLowerCase().includes(keyword)
+    return securityKeywords.some(
+      (keyword) =>
+        blockDefinition.name.toLowerCase().includes(keyword) ||
+        JSON.stringify(blockDefinition.subBlocks || {})
+          .toLowerCase()
+          .includes(keyword)
     )
   }
 
@@ -695,7 +711,7 @@ export class BlockRegistryIntegration {
   private hasPerformanceConcerns(blockDefinition: BlockDefinition): boolean {
     // Implementation would check for performance-related concerns
     const performanceKeywords = ['database', 'api', 'file', 'network', 'external']
-    return performanceKeywords.some(keyword => 
+    return performanceKeywords.some((keyword) =>
       blockDefinition.name.toLowerCase().includes(keyword)
     )
   }
@@ -704,7 +720,10 @@ export class BlockRegistryIntegration {
     return `Consider performance implications and implement appropriate error handling for block '${blockDefinition.name}'`
   }
 
-  private async validateBlockConfiguration(blockDefinition: BlockDefinition, blockInstance: any): Promise<{
+  private async validateBlockConfiguration(
+    blockDefinition: BlockDefinition,
+    blockInstance: any
+  ): Promise<{
     isValid: boolean
     errors: string[]
     warnings: string[]
@@ -717,21 +736,29 @@ export class BlockRegistryIntegration {
     }
   }
 
-  private async detectUnusedBlocks(templateState: any, usedBlockTypes: string[]): Promise<string[]> {
+  private async detectUnusedBlocks(
+    templateState: any,
+    usedBlockTypes: string[]
+  ): Promise<string[]> {
     // Implementation would detect blocks that are registered but not used
     return []
   }
 
-  private async detectConsolidationOpportunities(blockTypes: string[]): Promise<Array<{
-    type: 'consolidate_blocks'
-    description: string
-    impact: 'low' | 'medium' | 'high'
-  }>> {
+  private async detectConsolidationOpportunities(blockTypes: string[]): Promise<
+    Array<{
+      type: 'consolidate_blocks'
+      description: string
+      impact: 'low' | 'medium' | 'high'
+    }>
+  > {
     // Implementation would detect opportunities to consolidate similar blocks
     return []
   }
 
-  private async calculateComplexityMetrics(templateState: any, blockUsage: any): Promise<{
+  private async calculateComplexityMetrics(
+    templateState: any,
+    blockUsage: any
+  ): Promise<{
     averageConfigurationComplexity: number
     maxBlockDepth: number
     blockConnectivity: number
@@ -746,7 +773,10 @@ export class BlockRegistryIntegration {
     }
   }
 
-  private async calculatePerformanceMetrics(templateState: any, blockUsage: any): Promise<{
+  private async calculatePerformanceMetrics(
+    templateState: any,
+    blockUsage: any
+  ): Promise<{
     estimatedExecutionTime: number
     resourceIntensiveBlocks: string[]
     bottleneckBlocks: string[]
@@ -761,7 +791,10 @@ export class BlockRegistryIntegration {
     }
   }
 
-  private async calculateSecurityMetrics(templateState: any, blockUsage: any): Promise<{
+  private async calculateSecurityMetrics(
+    templateState: any,
+    blockUsage: any
+  ): Promise<{
     blocksWithCredentials: string[]
     externalApiBlocks: string[]
     dataProcessingBlocks: string[]
@@ -776,13 +809,18 @@ export class BlockRegistryIntegration {
     }
   }
 
-  private async generateBlockRecommendations(templateState: any, blockUsage: any): Promise<Array<{
-    category: 'performance' | 'security' | 'maintainability' | 'compatibility'
-    priority: 'low' | 'medium' | 'high'
-    message: string
-    blockTypes: string[]
-    impact: string
-  }>> {
+  private async generateBlockRecommendations(
+    templateState: any,
+    blockUsage: any
+  ): Promise<
+    Array<{
+      category: 'performance' | 'security' | 'maintainability' | 'compatibility'
+      priority: 'low' | 'medium' | 'high'
+      message: string
+      blockTypes: string[]
+      impact: string
+    }>
+  > {
     // Implementation would generate recommendations
     return [
       {

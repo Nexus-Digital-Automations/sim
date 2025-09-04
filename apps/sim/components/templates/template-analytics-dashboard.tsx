@@ -21,38 +21,32 @@
 
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import type React from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   Activity,
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  Award,
   BarChart3,
-  Calendar,
   Clock,
-  Download,
   DollarSign,
+  Download,
   Eye,
-  Filter,
   Heart,
+  Minus,
   PieChart,
-  Share2,
   Star,
-  TrendingDown,
+  Target,
   TrendingUp,
   Users,
   Zap,
-  Target,
-  Award,
-  FileText,
-  Globe,
-  AlertCircle,
-  ArrowUp,
-  ArrowDown,
-  Minus,
 } from 'lucide-react'
-
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -61,8 +55,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 // ========================
@@ -172,9 +164,9 @@ const MetricCard: React.FC<{
   onClick?: () => void
 }> = ({ title, value, subtitle, trend, icon, color = 'text-blue-500', onClick }) => {
   const getTrendIcon = (trend?: number) => {
-    if (trend === undefined || trend === 0) return <Minus className="h-3 w-3 text-gray-400" />
-    if (trend > 0) return <ArrowUp className="h-3 w-3 text-green-500" />
-    return <ArrowDown className="h-3 w-3 text-red-500" />
+    if (trend === undefined || trend === 0) return <Minus className='h-3 w-3 text-gray-400' />
+    if (trend > 0) return <ArrowUp className='h-3 w-3 text-green-500' />
+    return <ArrowDown className='h-3 w-3 text-red-500' />
   }
 
   const getTrendColor = (trend?: number) => {
@@ -185,29 +177,29 @@ const MetricCard: React.FC<{
 
   return (
     <Card
-      className={cn(
-        'transition-all hover:shadow-md cursor-pointer',
-        onClick && 'hover:shadow-lg'
-      )}
+      className={cn('cursor-pointer transition-all hover:shadow-md', onClick && 'hover:shadow-lg')}
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
+      <CardContent className='p-6'>
+        <div className='flex items-center justify-between'>
+          <div className='space-y-1'>
+            <p className='font-medium text-muted-foreground text-sm'>{title}</p>
+            <p className='font-bold text-2xl'>{value}</p>
+            {subtitle && <p className='text-muted-foreground text-xs'>{subtitle}</p>}
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className={cn('h-8 w-8 rounded-full bg-opacity-20 flex items-center justify-center', color)}>
+          <div className='flex flex-col items-end gap-2'>
+            <div
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full bg-opacity-20',
+                color
+              )}
+            >
               {icon}
             </div>
             {trend !== undefined && (
-              <div className={cn('flex items-center text-xs font-medium', getTrendColor(trend))}>
+              <div className={cn('flex items-center font-medium text-xs', getTrendColor(trend))}>
                 {getTrendIcon(trend)}
-                <span className="ml-1">{Math.abs(trend).toFixed(1)}%</span>
+                <span className='ml-1'>{Math.abs(trend).toFixed(1)}%</span>
               </div>
             )}
           </div>
@@ -231,20 +223,20 @@ const ChartPlaceholder: React.FC<{
     switch (type) {
       case 'line':
       case 'area':
-        return <Activity className="h-8 w-8" />
+        return <Activity className='h-8 w-8' />
       case 'bar':
-        return <BarChart3 className="h-8 w-8" />
+        return <BarChart3 className='h-8 w-8' />
       case 'pie':
-        return <PieChart className="h-8 w-8" />
+        return <PieChart className='h-8 w-8' />
       default:
-        return <BarChart3 className="h-8 w-8" />
+        return <BarChart3 className='h-8 w-8' />
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className='flex items-center gap-2 text-lg'>
           {getChartIcon(type)}
           {title}
         </CardTitle>
@@ -252,13 +244,11 @@ const ChartPlaceholder: React.FC<{
       </CardHeader>
       <CardContent>
         <div className={cn('flex items-center justify-center text-muted-foreground', height)}>
-          <div className="text-center">
+          <div className='text-center'>
             {getChartIcon(type)}
-            <p className="text-sm mt-2">Interactive {type} chart</p>
-            <p className="text-xs">Using Chart.js or similar</p>
-            {data && (
-              <p className="text-xs mt-1">{data.length} data points</p>
-            )}
+            <p className='mt-2 text-sm'>Interactive {type} chart</p>
+            <p className='text-xs'>Using Chart.js or similar</p>
+            {data && <p className='mt-1 text-xs'>{data.length} data points</p>}
           </div>
         </div>
       </CardContent>
@@ -276,40 +266,42 @@ const TopTemplatesList: React.FC<{
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Top Performing Templates</CardTitle>
-        <CardDescription>
-          Highest engagement and success scores this period
-        </CardDescription>
+        <CardTitle className='text-lg'>Top Performing Templates</CardTitle>
+        <CardDescription>Highest engagement and success scores this period</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {templates.map((template, index) => (
             <div
               key={template.templateId}
-              className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+              className='flex cursor-pointer items-center justify-between rounded-lg bg-muted/30 p-3 transition-colors hover:bg-muted/50'
               onClick={() => onTemplateClick?.(template.templateId)}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+              <div className='flex items-center gap-3'>
+                <div className='flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600 text-sm'>
                   {index + 1}
                 </div>
                 <div>
-                  <div className="font-medium text-sm">{template.templateName}</div>
-                  <div className="text-xs text-muted-foreground">{template.categoryName}</div>
+                  <div className='font-medium text-sm'>{template.templateName}</div>
+                  <div className='text-muted-foreground text-xs'>{template.categoryName}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-sm font-medium">{template.metrics.totalViews.toLocaleString()}</div>
-                  <div className="text-xs text-muted-foreground">Views</div>
+              <div className='flex items-center gap-4'>
+                <div className='text-center'>
+                  <div className='font-medium text-sm'>
+                    {template.metrics.totalViews.toLocaleString()}
+                  </div>
+                  <div className='text-muted-foreground text-xs'>Views</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-medium">{template.metrics.totalDownloads.toLocaleString()}</div>
-                  <div className="text-xs text-muted-foreground">Downloads</div>
+                <div className='text-center'>
+                  <div className='font-medium text-sm'>
+                    {template.metrics.totalDownloads.toLocaleString()}
+                  </div>
+                  <div className='text-muted-foreground text-xs'>Downloads</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-medium">{template.successScore}</div>
-                  <div className="text-xs text-muted-foreground">Score</div>
+                <div className='text-center'>
+                  <div className='font-medium text-sm'>{template.successScore}</div>
+                  <div className='text-muted-foreground text-xs'>Score</div>
                 </div>
               </div>
             </div>
@@ -330,36 +322,34 @@ const CategoryBreakdown: React.FC<{
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Category Performance</CardTitle>
-        <CardDescription>
-          Template usage by category with market share
-        </CardDescription>
+        <CardTitle className='text-lg'>Category Performance</CardTitle>
+        <CardDescription>Template usage by category with market share</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {categories.map((category) => (
             <div
               key={category.categoryId}
-              className="space-y-2 cursor-pointer"
+              className='cursor-pointer space-y-2'
               onClick={() => onCategoryClick?.(category.categoryId)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-2'>
                   <div
-                    className="w-4 h-4 rounded-full"
+                    className='h-4 w-4 rounded-full'
                     style={{ backgroundColor: category.categoryColor }}
                   />
-                  <span className="font-medium text-sm">{category.categoryName}</span>
+                  <span className='font-medium text-sm'>{category.categoryName}</span>
                 </div>
-                <div className="flex items-center gap-4 text-sm">
+                <div className='flex items-center gap-4 text-sm'>
                   <span>{category.metrics.totalDownloads.toLocaleString()}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant='outline' className='text-xs'>
                     {category.share}%
                   </Badge>
                 </div>
               </div>
-              <Progress value={category.share} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <Progress value={category.share} className='h-2' />
+              <div className='flex justify-between text-muted-foreground text-xs'>
                 <span>{category.metrics.uniqueTemplates} templates</span>
                 <span>Avg rating: {category.metrics.avgRating.toFixed(1)}/5</span>
               </div>
@@ -429,22 +419,28 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
   }, [analyticsData])
 
   // Handle time range change
-  const handleTimeRangeChange = useCallback((timeRange: string) => {
-    setSelectedTimeRange(timeRange)
-    onTimeRangeChange?.(timeRange)
-  }, [onTimeRangeChange])
+  const handleTimeRangeChange = useCallback(
+    (timeRange: string) => {
+      setSelectedTimeRange(timeRange)
+      onTimeRangeChange?.(timeRange)
+    },
+    [onTimeRangeChange]
+  )
 
   // Handle export
-  const handleExport = useCallback((format: 'csv' | 'json' | 'pdf') => {
-    onExportData?.(format)
-  }, [onExportData])
+  const handleExport = useCallback(
+    (format: 'csv' | 'json' | 'pdf') => {
+      onExportData?.(format)
+    },
+    [onExportData]
+  )
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading analytics dashboard...</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <div className='mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent' />
+          <p className='text-muted-foreground'>Loading analytics dashboard...</p>
         </div>
       </div>
     )
@@ -452,11 +448,11 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 font-medium mb-2">Error Loading Analytics</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <AlertCircle className='mx-auto mb-4 h-12 w-12 text-red-500' />
+          <p className='mb-2 font-medium text-red-600'>Error Loading Analytics</p>
+          <p className='text-muted-foreground text-sm'>{error}</p>
         </div>
       </div>
     )
@@ -464,11 +460,11 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
 
   if (!analyticsData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-semibold mb-2">No Analytics Data</p>
-          <p className="text-muted-foreground">
+      <div className='flex h-64 items-center justify-center'>
+        <div className='text-center'>
+          <BarChart3 className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+          <p className='mb-2 font-semibold text-lg'>No Analytics Data</p>
+          <p className='text-muted-foreground'>
             Select a template or time period to view analytics
           </p>
         </div>
@@ -479,28 +475,28 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold">Template Analytics Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className='font-bold text-3xl'>Template Analytics Dashboard</h1>
+          <p className='mt-1 text-muted-foreground'>
             Comprehensive insights and metrics for template performance and usage
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Select value={selectedTimeRange} onValueChange={handleTimeRangeChange}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className='w-32'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1d">Last Day</SelectItem>
-              <SelectItem value="7d">Last Week</SelectItem>
-              <SelectItem value="30d">Last Month</SelectItem>
-              <SelectItem value="90d">Last 3 Months</SelectItem>
-              <SelectItem value="1y">Last Year</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value='1d'>Last Day</SelectItem>
+              <SelectItem value='7d'>Last Week</SelectItem>
+              <SelectItem value='30d'>Last Month</SelectItem>
+              <SelectItem value='90d'>Last 3 Months</SelectItem>
+              <SelectItem value='1y'>Last Year</SelectItem>
+              <SelectItem value='all'>All Time</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={() => handleExport('csv')}>
+          <Button variant='outline' onClick={() => handleExport('csv')}>
             Export
           </Button>
         </div>
@@ -508,85 +504,85 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
 
       {/* Summary Metrics */}
       {summaryMetrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'>
           <MetricCard
-            title="Total Views"
+            title='Total Views'
             value={summaryMetrics.totalViews.value.toLocaleString()}
             subtitle={summaryMetrics.totalViews.subtitle}
             trend={summaryMetrics.totalViews.trend}
-            icon={<Eye className="h-4 w-4" />}
-            color="text-blue-500 bg-blue-100"
+            icon={<Eye className='h-4 w-4' />}
+            color='text-blue-500 bg-blue-100'
           />
           <MetricCard
-            title="Downloads"
+            title='Downloads'
             value={summaryMetrics.totalDownloads.value.toLocaleString()}
             subtitle={summaryMetrics.totalDownloads.subtitle}
             trend={summaryMetrics.totalDownloads.trend}
-            icon={<Download className="h-4 w-4" />}
-            color="text-green-500 bg-green-100"
+            icon={<Download className='h-4 w-4' />}
+            color='text-green-500 bg-green-100'
           />
           <MetricCard
-            title="Success Rate"
+            title='Success Rate'
             value={summaryMetrics.successRate.value}
             subtitle={summaryMetrics.successRate.subtitle}
             trend={summaryMetrics.successRate.trend}
-            icon={<Target className="h-4 w-4" />}
-            color="text-purple-500 bg-purple-100"
+            icon={<Target className='h-4 w-4' />}
+            color='text-purple-500 bg-purple-100'
           />
           <MetricCard
-            title="Avg Rating"
+            title='Avg Rating'
             value={summaryMetrics.avgRating.value}
             subtitle={summaryMetrics.avgRating.subtitle}
             trend={summaryMetrics.avgRating.trend}
-            icon={<Star className="h-4 w-4" />}
-            color="text-yellow-500 bg-yellow-100"
+            icon={<Star className='h-4 w-4' />}
+            color='text-yellow-500 bg-yellow-100'
           />
           <MetricCard
-            title="Time Saved"
+            title='Time Saved'
             value={summaryMetrics.timeSaved.value}
             subtitle={summaryMetrics.timeSaved.subtitle}
             trend={summaryMetrics.timeSaved.trend}
-            icon={<Clock className="h-4 w-4" />}
-            color="text-orange-500 bg-orange-100"
+            icon={<Clock className='h-4 w-4' />}
+            color='text-orange-500 bg-orange-100'
           />
           <MetricCard
-            title="Cost Saved"
+            title='Cost Saved'
             value={summaryMetrics.costSaved.value}
             subtitle={summaryMetrics.costSaved.subtitle}
             trend={summaryMetrics.costSaved.trend}
-            icon={<DollarSign className="h-4 w-4" />}
-            color="text-red-500 bg-red-100"
+            icon={<DollarSign className='h-4 w-4' />}
+            color='text-red-500 bg-red-100'
           />
         </div>
       )}
 
       {/* Main Analytics */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-4'>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
-          <TabsTrigger value="business">Business Impact</TabsTrigger>
+          <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='performance'>Performance</TabsTrigger>
+          <TabsTrigger value='engagement'>Engagement</TabsTrigger>
+          <TabsTrigger value='business'>Business Impact</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value='overview' className='space-y-6'>
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <ChartPlaceholder
-              title="Usage Trends Over Time"
-              type="line"
+              title='Usage Trends Over Time'
+              type='line'
               data={analyticsData.trends}
-              description="Views, downloads, and executions over the selected time period"
+              description='Views, downloads, and executions over the selected time period'
             />
             <ChartPlaceholder
-              title="Template Category Distribution"
-              type="pie"
+              title='Template Category Distribution'
+              type='pie'
               data={analyticsData.categoryBreakdown}
-              description="Usage breakdown by template category"
+              description='Usage breakdown by template category'
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <TopTemplatesList
               templates={analyticsData.topTemplates}
               onTemplateClick={onTemplateSelect}
@@ -599,169 +595,171 @@ export const TemplateAnalyticsDashboard: React.FC<TemplateAnalyticsDashboardProp
         </TabsContent>
 
         {/* Performance Tab */}
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TabsContent value='performance' className='space-y-6'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
             <MetricCard
-              title="Avg Execution Time"
+              title='Avg Execution Time'
               value={`${analyticsData.summary.performance?.avgExecutionTime || 0}s`}
-              icon={<Zap className="h-4 w-4" />}
-              color="text-blue-500 bg-blue-100"
+              icon={<Zap className='h-4 w-4' />}
+              color='text-blue-500 bg-blue-100'
             />
             <MetricCard
-              title="Setup Time"
+              title='Setup Time'
               value={`${analyticsData.summary.performance?.avgSetupTime || 0}m`}
-              icon={<Clock className="h-4 w-4" />}
-              color="text-green-500 bg-green-100"
+              icon={<Clock className='h-4 w-4' />}
+              color='text-green-500 bg-green-100'
             />
             <MetricCard
-              title="First-time Success"
+              title='First-time Success'
               value={`${analyticsData.summary.performance?.firstTimeSuccessRate?.toFixed(1) || 0}%`}
-              icon={<Award className="h-4 w-4" />}
-              color="text-purple-500 bg-purple-100"
+              icon={<Award className='h-4 w-4' />}
+              color='text-purple-500 bg-purple-100'
             />
             <MetricCard
-              title="Error Rate"
+              title='Error Rate'
               value={`${analyticsData.summary.performance?.errorRate?.toFixed(1) || 0}%`}
-              icon={<AlertCircle className="h-4 w-4" />}
-              color="text-red-500 bg-red-100"
+              icon={<AlertCircle className='h-4 w-4' />}
+              color='text-red-500 bg-red-100'
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <ChartPlaceholder
-              title="Performance Metrics Over Time"
-              type="area"
-              description="Execution time and success rate trends"
+              title='Performance Metrics Over Time'
+              type='area'
+              description='Execution time and success rate trends'
             />
             <ChartPlaceholder
-              title="Error Analysis"
-              type="bar"
-              description="Common error types and frequency"
+              title='Error Analysis'
+              type='bar'
+              description='Common error types and frequency'
             />
           </div>
         </TabsContent>
 
         {/* Engagement Tab */}
-        <TabsContent value="engagement" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TabsContent value='engagement' className='space-y-6'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
             <MetricCard
-              title="Community Rating"
+              title='Community Rating'
               value={analyticsData.summary.engagement?.avgRating?.toFixed(1) || '0.0'}
               subtitle={`${analyticsData.summary.engagement?.totalRatings || 0} reviews`}
-              icon={<Star className="h-4 w-4" />}
-              color="text-yellow-500 bg-yellow-100"
+              icon={<Star className='h-4 w-4' />}
+              color='text-yellow-500 bg-yellow-100'
             />
             <MetricCard
-              title="Favorites"
+              title='Favorites'
               value={analyticsData.summary.engagement?.totalFavorites || 0}
-              icon={<Heart className="h-4 w-4" />}
-              color="text-red-500 bg-red-100"
+              icon={<Heart className='h-4 w-4' />}
+              color='text-red-500 bg-red-100'
             />
             <MetricCard
-              title="Verification Rate"
+              title='Verification Rate'
               value={`${analyticsData.summary.engagement?.verificationRate || 0}%`}
-              icon={<Users className="h-4 w-4" />}
-              color="text-blue-500 bg-blue-100"
+              icon={<Users className='h-4 w-4' />}
+              color='text-blue-500 bg-blue-100'
             />
             <MetricCard
-              title="Avg Session"
+              title='Avg Session'
               value={`${analyticsData.summary.usage?.avgSessionDuration || 0}m`}
-              icon={<Activity className="h-4 w-4" />}
-              color="text-green-500 bg-green-100"
+              icon={<Activity className='h-4 w-4' />}
+              color='text-green-500 bg-green-100'
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <ChartPlaceholder
-              title="User Engagement Patterns"
-              type="line"
-              description="User activity and retention patterns"
+              title='User Engagement Patterns'
+              type='line'
+              description='User activity and retention patterns'
             />
             <ChartPlaceholder
-              title="Rating Distribution"
-              type="bar"
-              description="Distribution of user ratings (1-5 stars)"
+              title='Rating Distribution'
+              type='bar'
+              description='Distribution of user ratings (1-5 stars)'
             />
           </div>
         </TabsContent>
 
         {/* Business Impact Tab */}
-        <TabsContent value="business" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TabsContent value='business' className='space-y-6'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
             <MetricCard
-              title="Total Cost Savings"
+              title='Total Cost Savings'
               value={`$${analyticsData.summary.businessImpact?.totalCostSaved?.toLocaleString() || 0}`}
-              icon={<DollarSign className="h-4 w-4" />}
-              color="text-green-500 bg-green-100"
+              icon={<DollarSign className='h-4 w-4' />}
+              color='text-green-500 bg-green-100'
             />
             <MetricCard
-              title="Time Savings"
+              title='Time Savings'
               value={`${Math.round((analyticsData.summary.businessImpact?.totalTimeSaved || 0) / 60)}h`}
-              icon={<Clock className="h-4 w-4" />}
-              color="text-blue-500 bg-blue-100"
+              icon={<Clock className='h-4 w-4' />}
+              color='text-blue-500 bg-blue-100'
             />
             <MetricCard
-              title="Satisfaction Score"
-              value={analyticsData.summary.businessImpact?.avgSatisfactionScore?.toFixed(1) || '0.0'}
-              subtitle="Out of 5.0"
-              icon={<Target className="h-4 w-4" />}
-              color="text-purple-500 bg-purple-100"
+              title='Satisfaction Score'
+              value={
+                analyticsData.summary.businessImpact?.avgSatisfactionScore?.toFixed(1) || '0.0'
+              }
+              subtitle='Out of 5.0'
+              icon={<Target className='h-4 w-4' />}
+              color='text-purple-500 bg-purple-100'
             />
             <MetricCard
-              title="ROI per Use"
+              title='ROI per Use'
               value={`$${analyticsData.summary.businessImpact?.avgCostSavingsPerExecution?.toFixed(2) || 0}`}
-              icon={<TrendingUp className="h-4 w-4" />}
-              color="text-orange-500 bg-orange-100"
+              icon={<TrendingUp className='h-4 w-4' />}
+              color='text-orange-500 bg-orange-100'
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
             <ChartPlaceholder
-              title="Business Value Over Time"
-              type="area"
-              description="Cumulative cost and time savings trends"
+              title='Business Value Over Time'
+              type='area'
+              description='Cumulative cost and time savings trends'
             />
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Business Impact Insights</CardTitle>
+                <CardTitle className='text-lg'>Business Impact Insights</CardTitle>
                 <CardDescription>
                   Key insights and recommendations based on analytics
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-800 dark:text-green-200">
+                <div className='space-y-4'>
+                  <div className='rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950'>
+                    <div className='mb-2 flex items-center gap-2'>
+                      <TrendingUp className='h-4 w-4 text-green-600' />
+                      <span className='font-medium text-green-800 dark:text-green-200'>
                         High ROI Templates
                       </span>
                     </div>
-                    <p className="text-sm text-green-700 dark:text-green-300">
+                    <p className='text-green-700 text-sm dark:text-green-300'>
                       Templates with 90%+ success rates show 3x higher cost savings
                     </p>
                   </div>
 
-                  <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-800 dark:text-blue-200">
+                  <div className='rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950'>
+                    <div className='mb-2 flex items-center gap-2'>
+                      <Users className='h-4 w-4 text-blue-600' />
+                      <span className='font-medium text-blue-800 dark:text-blue-200'>
                         User Adoption
                       </span>
                     </div>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className='text-blue-700 text-sm dark:text-blue-300'>
                       Business automation templates have 75% higher adoption rates
                     </p>
                   </div>
 
-                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Award className="h-4 w-4 text-yellow-600" />
-                      <span className="font-medium text-yellow-800 dark:text-yellow-200">
+                  <div className='rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950'>
+                    <div className='mb-2 flex items-center gap-2'>
+                      <Award className='h-4 w-4 text-yellow-600' />
+                      <span className='font-medium text-yellow-800 dark:text-yellow-200'>
                         Quality Opportunity
                       </span>
                     </div>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <p className='text-sm text-yellow-700 dark:text-yellow-300'>
                       Improving documentation could increase success rates by 15%
                     </p>
                   </div>
