@@ -852,25 +852,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1757016201012_mtxq30xco",
-      "title": "Research existing help systems integration patterns and successful predictive help implementations",
-      "description": "Conduct comprehensive research on successful predictive help implementations in major software platforms, integration patterns, API design patterns, performance benchmarks, and user adoption strategies",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "high",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "development/research-reports/"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T20:03:21.012Z",
-      "auto_research_created": false
-    },
-    {
       "id": "task_1757012289023_12tkp5kwi",
       "title": "Research ML personalization models for AI help systems in workflow automation",
       "description": "Comprehensive research on personalization algorithms, user profiling, dynamic learning systems, feature engineering, ML models, technical architecture, and workflow platform applications with implementation guidance",
