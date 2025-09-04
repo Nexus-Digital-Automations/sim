@@ -32,7 +32,7 @@ import {
   templates,
   templateTagAssignments,
   templateTags,
-  workflows,
+  workflow,
 } from '@/db/schema'
 
 const logger = createLogger('MarketplaceManagementAPI')
@@ -425,18 +425,18 @@ export async function POST(request: NextRequest) {
     })
 
     // Verify workflow exists and belongs to user
-    const workflow = await db
+    const workflowResult = await db
       .select({
-        id: workflows.id,
-        name: workflows.name,
-        userId: workflows.userId,
-        content: workflows.content,
+        id: workflow.id,
+        name: workflow.name,
+        userId: workflow.userId,
+        content: workflow.content,
       })
-      .from(workflows)
-      .where(and(eq(workflows.id, workflowId), eq(workflows.userId, userId)))
+      .from(workflow)
+      .where(and(eq(workflow.id, workflowId), eq(workflow.userId, userId)))
       .limit(1)
 
-    if (workflow.length === 0) {
+    if (workflowResult.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -487,7 +487,7 @@ export async function POST(request: NextRequest) {
     const templateId = crypto.randomUUID()
 
     // Extract integrations and keywords from workflow content
-    const workflowContent = workflow[0].content
+    const workflowContent = workflowResult[0].content
     const extractedIntegrations = extractIntegrationsFromWorkflow(workflowContent)
     const extractedKeywords = extractKeywordsFromWorkflow(workflowContent, name, description)
 

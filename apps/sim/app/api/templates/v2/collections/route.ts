@@ -27,9 +27,9 @@ import { and, asc, count, desc, eq, inArray, like, or, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { auth } from '@/app/api/auth'
-import { db } from '@/db/connection'
+import { db } from '@/db'
 import { templateCollectionItems, templateCollections, templatesV2, users } from '@/db/schema'
 
 // Initialize structured logger with request tracking

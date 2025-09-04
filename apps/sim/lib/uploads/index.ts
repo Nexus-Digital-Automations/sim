@@ -14,14 +14,10 @@ export {
   MIME_TYPE_MAPPING,
 } from '@/lib/uploads/file-utils'
 export {
-  BLOB_CHAT_CONFIG,
-  BLOB_CONFIG,
-  BLOB_KB_CONFIG,
-  S3_CHAT_CONFIG,
-  S3_CONFIG,
-  S3_KB_CONFIG,
+  LOCAL_CONFIG,
   UPLOAD_DIR,
   USE_BLOB_STORAGE,
+  USE_LOCAL_STORAGE,
   USE_S3_STORAGE,
 } from '@/lib/uploads/setup'
 export {

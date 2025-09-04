@@ -22,9 +22,9 @@ import crypto from 'crypto'
 import { and, eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { auth } from '@/app/api/auth'
-import { db } from '@/db/connection'
+import { db } from '@/db'
 import { templateCollectionItems, templateCollections } from '@/db/schema'
 
 // Initialize structured logger with request tracking

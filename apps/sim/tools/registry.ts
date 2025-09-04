@@ -136,7 +136,6 @@ import {
 import { pythonExecuteTool } from '@/tools/python/execute'
 import { qdrantFetchTool, qdrantSearchTool, qdrantUpsertTool } from '@/tools/qdrant'
 import { redditGetCommentsTool, redditGetPostsTool, redditHotPostsTool } from '@/tools/reddit'
-import { s3GetObjectTool } from '@/tools/s3'
 import { searchTool as serperSearch } from '@/tools/serper'
 import {
   sharepointCreatePageTool,
@@ -297,7 +296,6 @@ export const tools: Record<string, ToolConfig> = {
   knowledge_upload_chunk: knowledgeUploadChunkTool,
   knowledge_create_document: knowledgeCreateDocumentTool,
   elevenlabs_tts: elevenLabsTtsTool,
-  s3_get_object: s3GetObjectTool,
   telegram_message: telegramMessageTool,
   clay_populate: clayPopulateTool,
   discord_send_message: discordSendMessageTool,

@@ -125,7 +125,7 @@ const getElementPosition = (element: Element) => {
   const rect = element.getBoundingClientRect()
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
-  
+
   return {
     x: rect.left + scrollLeft,
     y: rect.top + scrollTop,
@@ -149,10 +149,10 @@ const calculateOverlayPosition = (
       transform: 'translate(-50%, -50%)',
     }
   }
-  
+
   const target = getElementPosition(targetElement)
   const { x: offsetX = 0, y: offsetY = 0 } = offset
-  
+
   switch (position) {
     case 'top':
       return {
@@ -184,23 +184,27 @@ const calculateOverlayPosition = (
         y: target.centerY + offsetY,
         transform: 'translate(-50%, -50%)',
       }
-    default: { // auto
+    default: {
+      // auto
       // Smart positioning based on available space
       const spaceAbove = target.y
       const spaceBelow = window.innerHeight - (target.y + target.height)
       const spaceLeft = target.x
       const spaceRight = window.innerWidth - (target.x + target.width)
-      
+
       if (spaceBelow > 300) {
         return calculateOverlayPosition(targetElement, 'bottom', offset)
-      }if (spaceAbove > 300) {
+      }
+      if (spaceAbove > 300) {
         return calculateOverlayPosition(targetElement, 'top', offset)
-      }if (spaceRight > 400) {
+      }
+      if (spaceRight > 400) {
         return calculateOverlayPosition(targetElement, 'right', offset)
-      }if (spaceLeft > 400) {
+      }
+      if (spaceLeft > 400) {
         return calculateOverlayPosition(targetElement, 'left', offset)
       }
-        return calculateOverlayPosition(targetElement, 'center', offset)
+      return calculateOverlayPosition(targetElement, 'center', offset)
     }
   }
 }
@@ -230,29 +234,29 @@ export function ContextualOverlay({
   const overlayRef = useRef<HTMLDivElement>(null)
   const tourStartTime = useRef<number | undefined>(undefined)
   const stepStartTime = useRef<number | undefined>(undefined)
-  
+
   const currentStep = tour.steps[currentStepIndex]
   const isLastStep = currentStepIndex === tour.steps.length - 1
   const progress = ((currentStepIndex + 1) / tour.steps.length) * 100
-  
+
   // ========================
   // HELPER FUNCTIONS
   // ========================
-  
+
   const updateOverlayPosition = useCallback(() => {
     if (!currentStep) return
-    
+
     let target: Element | null = null
-    
+
     if (currentStep.target) {
       target = getTargetElement(currentStep.target)
       setTargetElement(target)
     }
-    
+
     const position = calculateOverlayPosition(target, currentStep.position, currentStep.offset)
     setOverlayPosition(position)
   }, [currentStep])
-  
+
   const scrollToTarget = useCallback((element: Element) => {
     element.scrollIntoView({
       behavior: 'smooth',
@@ -260,35 +264,38 @@ export function ContextualOverlay({
       inline: 'center',
     })
   }, [])
-  
-  const highlightTarget = useCallback((element: Element | null) => {
-    if (!element || !tour.highlightTarget) return
-    
-    // Add highlight class to target element
-    element.classList.add('tour-highlight')
-    
-    // Remove highlight after a delay
-    setTimeout(() => {
-      element.classList.remove('tour-highlight')
-    }, 2000)
-  }, [tour.highlightTarget])
-  
+
+  const highlightTarget = useCallback(
+    (element: Element | null) => {
+      if (!element || !tour.highlightTarget) return
+
+      // Add highlight class to target element
+      element.classList.add('tour-highlight')
+
+      // Remove highlight after a delay
+      setTimeout(() => {
+        element.classList.remove('tour-highlight')
+      }, 2000)
+    },
+    [tour.highlightTarget]
+  )
+
   // ========================
   // EVENT HANDLERS
   // ========================
-  
+
   const handleNext = useCallback(async () => {
     if (!currentStep) return
-    
+
     try {
       setIsLoading(true)
-      
+
       // Validate step requirements if validation exists
       if (currentStep.validationCheck && !currentStep.validationCheck()) {
         console.warn('Step validation failed, cannot proceed')
         return
       }
-      
+
       // Track step completion
       if (stepStartTime.current) {
         const duration = Date.now() - stepStartTime.current
@@ -304,16 +311,16 @@ export function ContextualOverlay({
           }
         )
       }
-      
+
       // Mark step as completed
-      setCompletedSteps(prev => new Set(prev).add(currentStepIndex))
-      
+      setCompletedSteps((prev) => new Set(prev).add(currentStepIndex))
+
       if (isLastStep) {
         handleComplete()
       } else {
         const nextIndex = currentStepIndex + 1
         setCurrentStepIndex(nextIndex)
-        
+
         // Track step change
         tour.onStepChange?.(nextIndex, tour.steps[nextIndex])
         stepStartTime.current = Date.now()
@@ -324,16 +331,16 @@ export function ContextualOverlay({
       setIsLoading(false)
     }
   }, [currentStep, currentStepIndex, isLastStep, tour, helpState.sessionId])
-  
+
   const handlePrevious = useCallback(() => {
     if (currentStepIndex > 0) {
       const prevIndex = currentStepIndex - 1
       setCurrentStepIndex(prevIndex)
-      
+
       // Track step change
       tour.onStepChange?.(prevIndex, tour.steps[prevIndex])
       stepStartTime.current = Date.now()
-      
+
       // Track analytics
       helpAnalytics.trackHelpInteraction(
         tour.id,
@@ -343,7 +350,7 @@ export function ContextualOverlay({
       )
     }
   }, [currentStepIndex, tour, helpState.sessionId])
-  
+
   const handleSkip = useCallback(() => {
     // Track skip analytics
     helpAnalytics.trackHelpInteraction(
@@ -357,11 +364,11 @@ export function ContextualOverlay({
         completionRate: (completedSteps.size / tour.steps.length) * 100,
       }
     )
-    
+
     tour.onSkip?.()
     onClose()
   }, [tour, helpState.sessionId, currentStepIndex, completedSteps, onClose])
-  
+
   const handleComplete = useCallback(() => {
     // Track completion analytics
     if (tourStartTime.current) {
@@ -379,16 +386,16 @@ export function ContextualOverlay({
         }
       )
     }
-    
+
     tour.onComplete?.()
     onClose()
   }, [tour, helpState.sessionId, completedSteps, onClose])
-  
+
   const handleActionClick = useCallback(
     async (action: OverlayAction) => {
       try {
         setIsLoading(true)
-        
+
         // Track action click
         helpAnalytics.trackHelpInteraction(
           tour.id,
@@ -397,7 +404,7 @@ export function ContextualOverlay({
           action.id,
           action.analytics?.properties
         )
-        
+
         await action.onClick()
       } catch (error) {
         console.error('Error executing overlay action:', error)
@@ -407,7 +414,7 @@ export function ContextualOverlay({
     },
     [tour.id, helpState.sessionId]
   )
-  
+
   const handleClose = useCallback(() => {
     // Track close analytics
     helpAnalytics.trackHelpInteraction(
@@ -421,20 +428,20 @@ export function ContextualOverlay({
         completionRate: (completedSteps.size / tour.steps.length) * 100,
       }
     )
-    
+
     onClose()
   }, [tour.id, helpState.sessionId, currentStepIndex, completedSteps, onClose])
-  
+
   // ========================
   // EFFECTS
   // ========================
-  
+
   // Initialize tour
   useEffect(() => {
     if (isActive && !tourStartTime.current) {
       tourStartTime.current = Date.now()
       stepStartTime.current = Date.now()
-      
+
       // Track tour start
       helpAnalytics.trackHelpInteraction(
         tour.id,
@@ -443,42 +450,49 @@ export function ContextualOverlay({
         'start',
         tour.analytics?.properties
       )
-      
+
       tour.onStart?.()
     }
   }, [isActive, tour, helpState.sessionId])
-  
+
   // Update overlay position when step changes
   useEffect(() => {
     if (isActive) {
       updateOverlayPosition()
-      
+
       // Scroll to target if it exists
       if (targetElement) {
         setTimeout(() => scrollToTarget(targetElement), 100)
         setTimeout(() => highlightTarget(targetElement), 200)
       }
     }
-  }, [isActive, currentStepIndex, updateOverlayPosition, targetElement, scrollToTarget, highlightTarget])
-  
+  }, [
+    isActive,
+    currentStepIndex,
+    updateOverlayPosition,
+    targetElement,
+    scrollToTarget,
+    highlightTarget,
+  ])
+
   // Handle window resize
   useEffect(() => {
     if (!isActive) return
-    
+
     const handleResize = () => updateOverlayPosition()
     window.addEventListener('resize', handleResize)
     window.addEventListener('scroll', handleResize)
-    
+
     return () => {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('scroll', handleResize)
     }
   }, [isActive, updateOverlayPosition])
-  
+
   // Handle keyboard navigation
   useEffect(() => {
     if (!isActive) return
-    
+
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case 'Escape':
@@ -498,35 +512,35 @@ export function ContextualOverlay({
           break
       }
     }
-    
+
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isActive, currentStepIndex, handleClose, handlePrevious, handleNext])
-  
+
   // Auto-advance if enabled
   useEffect(() => {
     if (!isActive || !tour.autoAdvance || !tour.autoAdvanceDelay) return
-    
+
     const timer = setTimeout(() => {
       if (!currentStep.waitForInteraction) {
         handleNext()
       }
     }, tour.autoAdvanceDelay * 1000)
-    
+
     return () => clearTimeout(timer)
   }, [isActive, currentStepIndex, tour.autoAdvance, tour.autoAdvanceDelay, currentStep, handleNext])
-  
+
   // ========================
   // RENDER HELPERS
   // ========================
-  
+
   const renderSpotlight = () => {
     if (!targetElement || !tour.highlightTarget) return null
-    
+
     const target = getElementPosition(targetElement)
     const radius = currentStep.spotlightRadius || 8
     const padding = currentStep.spotlightPadding || 8
-    
+
     return (
       <div
         className='pointer-events-none absolute inset-0'
@@ -536,10 +550,10 @@ export function ContextualOverlay({
       />
     )
   }
-  
+
   const renderMedia = () => {
     if (!currentStep.mediaUrl) return null
-    
+
     return (
       <div className='mb-4'>
         {currentStep.mediaType === 'video' ? (
@@ -561,7 +575,7 @@ export function ContextualOverlay({
       </div>
     )
   }
-  
+
   const renderContent = () => {
     return (
       <Card className='w-full max-w-md border-0 bg-background shadow-xl'>
@@ -573,18 +587,20 @@ export function ContextualOverlay({
                 <InfoIcon className='h-4 w-4 text-primary' />
                 <h2 className='font-semibold text-lg'>{currentStep.title}</h2>
               </div>
-              
+
               {tour.showProgress && (
                 <div className='space-y-2'>
                   <div className='flex items-center justify-between text-muted-foreground text-sm'>
-                    <span>Step {currentStepIndex + 1} of {tour.steps.length}</span>
+                    <span>
+                      Step {currentStepIndex + 1} of {tour.steps.length}
+                    </span>
                     <span>{Math.round(progress)}% complete</span>
                   </div>
                   <Progress value={progress} className='h-2' />
                 </div>
               )}
             </div>
-            
+
             <Button
               variant='ghost'
               size='sm'
@@ -595,9 +611,9 @@ export function ContextualOverlay({
               <XIcon className='h-4 w-4' />
             </Button>
           </div>
-          
+
           {renderMedia()}
-          
+
           {/* Content */}
           <div className='mb-6 text-muted-foreground text-sm leading-relaxed'>
             {typeof currentStep.content === 'string' ? (
@@ -606,7 +622,7 @@ export function ContextualOverlay({
               currentStep.content
             )}
           </div>
-          
+
           {/* Target description */}
           {currentStep.targetDescription && (
             <div className='mb-4 rounded-lg bg-muted p-3'>
@@ -617,7 +633,7 @@ export function ContextualOverlay({
               </div>
             </div>
           )}
-          
+
           {/* Prerequisites */}
           {currentStep.prerequisites && currentStep.prerequisites.length > 0 && (
             <div className='mb-4'>
@@ -634,7 +650,7 @@ export function ContextualOverlay({
               </ul>
             </div>
           )}
-          
+
           {/* Custom actions */}
           {currentStep.actions && currentStep.actions.length > 0 && (
             <>
@@ -660,7 +676,7 @@ export function ContextualOverlay({
               <Separator className='mt-4' />
             </>
           )}
-          
+
           {/* Navigation */}
           <div className='flex items-center justify-between pt-4'>
             <div className='flex gap-2'>
@@ -673,25 +689,16 @@ export function ContextualOverlay({
                 <ChevronLeftIcon className='mr-1 h-4 w-4' />
                 Previous
               </Button>
-              
+
               {tour.allowSkipping && (
-                <Button
-                  variant='ghost'
-                  onClick={handleSkip}
-                  disabled={isLoading}
-                  className='h-9'
-                >
+                <Button variant='ghost' onClick={handleSkip} disabled={isLoading} className='h-9'>
                   <SkipForwardIcon className='mr-1 h-4 w-4' />
                   Skip Tour
                 </Button>
               )}
             </div>
-            
-            <Button
-              onClick={handleNext}
-              disabled={isLoading}
-              className='h-9'
-            >
+
+            <Button onClick={handleNext} disabled={isLoading} className='h-9'>
               {isLoading && (
                 <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
               )}
@@ -708,7 +715,7 @@ export function ContextualOverlay({
               )}
             </Button>
           </div>
-          
+
           {/* Optional step indicator */}
           {currentStep.optional && (
             <div className='mt-4 border-t pt-4'>
@@ -721,11 +728,11 @@ export function ContextualOverlay({
       </Card>
     )
   }
-  
+
   if (!isActive || !currentStep) {
     return null
   }
-  
+
   return createPortal(
     <div
       className={cn(
@@ -740,7 +747,7 @@ export function ContextualOverlay({
     >
       {/* Spotlight effect */}
       {tour.dimBackground && renderSpotlight()}
-      
+
       {/* Overlay content */}
       <div
         ref={overlayRef}
@@ -769,17 +776,17 @@ export function ContextualOverlay({
 export function useTour() {
   const [activeTour, setActiveTour] = useState<TourConfig | null>(null)
   const [isActive, setIsActive] = useState(false)
-  
+
   const startTour = useCallback((tour: TourConfig) => {
     setActiveTour(tour)
     setIsActive(true)
   }, [])
-  
+
   const endTour = useCallback(() => {
     setActiveTour(null)
     setIsActive(false)
   }, [])
-  
+
   return {
     activeTour,
     isActive,
@@ -793,9 +800,4 @@ export function useTour() {
 // ========================
 
 export default ContextualOverlay
-export type {
-  ContextualOverlayProps,
-  TourConfig,
-  OverlayStep,
-  OverlayAction,
-}
+export type { ContextualOverlayProps, TourConfig, OverlayStep, OverlayAction }

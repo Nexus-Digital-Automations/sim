@@ -27,7 +27,7 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import { env, isTruthy } from './lib/env'
-import { isDev, isHosted, isProd } from './lib/environment'
+import { isDev, isProd } from './lib/environment'
 import { getMainCSPPolicy, getWorkflowExecutionCSPPolicy } from './lib/security/csp'
 
 /**
@@ -50,36 +50,17 @@ const nextConfig: NextConfig = {
         hostname: 'avatars.githubusercontent.com',
       },
       {
-        protocol: 'https',
-        hostname: 'api.stability.ai',
-      },
-      // Azure Blob Storage
-      {
-        protocol: 'https',
-        hostname: '*.blob.core.windows.net',
-      },
-      // AWS S3 - various regions and bucket configurations
-      {
-        protocol: 'https',
-        hostname: '*.s3.amazonaws.com',
+        protocol: 'http',
+        hostname: 'localhost',
       },
       {
-        protocol: 'https',
-        hostname: '*.s3.*.amazonaws.com',
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        protocol: 'http',
+        hostname: '0.0.0.0',
       },
-      // Custom domain for file storage if configured
-      ...(env.NEXT_PUBLIC_BLOB_BASE_URL
-        ? [
-            {
-              protocol: 'https' as const,
-              hostname: new URL(env.NEXT_PUBLIC_BLOB_BASE_URL).hostname,
-            },
-          ]
-        : []),
     ],
   },
   typescript: {
@@ -163,8 +144,8 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Exclude Vercel internal resources and static assets from strict COEP, Google Drive Picker to prevent 'refused to connect' issue
-        source: '/((?!_next|_vercel|api|favicon.ico|w/.*|workspace/.*|api/tools/drive).*)',
+        // Exclude internal resources and static assets from strict COEP, Google Drive Picker to prevent 'refused to connect' issue
+        source: '/((?!_next|api|favicon.ico|w/.*|workspace/.*|api/tools/drive).*)',
         headers: [
           {
             key: 'Cross-Origin-Embedder-Policy',
@@ -177,8 +158,8 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // For main app routes, Google Drive Picker, and Vercel resources - use permissive policies
-        source: '/(w/.*|workspace/.*|api/tools/drive|_next/.*|_vercel/.*)',
+        // For main app routes, Google Drive Picker, and internal resources - use permissive policies
+        source: '/(w/.*|workspace/.*|api/tools/drive|_next/.*)',
         headers: [
           {
             key: 'Cross-Origin-Embedder-Policy',
@@ -240,23 +221,7 @@ const nextConfig: NextConfig = {
       })
     }
 
-    // Only enable domain redirects for the hosted version
-    if (isHosted) {
-      redirects.push(
-        {
-          source: '/((?!api|_next|_vercel|favicon|static|.*\\..*).*)',
-          destination: 'https://www.sim.ai/$1',
-          permanent: true,
-          has: [{ type: 'host' as const, value: 'simstudio.ai' }],
-        },
-        {
-          source: '/((?!api|_next|_vercel|favicon|static|.*\\..*).*)',
-          destination: 'https://www.sim.ai/$1',
-          permanent: true,
-          has: [{ type: 'host' as const, value: 'www.simstudio.ai' }],
-        }
-      )
-    }
+    // Local hosting - no domain redirects needed
 
     return redirects
   },

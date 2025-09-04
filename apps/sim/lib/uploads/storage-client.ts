@@ -1,7 +1,7 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { v4 as uuidv4 } from 'uuid'
 import { createLogger } from '@/lib/logs/console/logger'
-import type { CustomBlobConfig } from '@/lib/uploads/blob/blob-client'
-import type { CustomS3Config } from '@/lib/uploads/s3/s3-client'
-import { USE_BLOB_STORAGE, USE_S3_STORAGE } from '@/lib/uploads/setup'
 
 const logger = createLogger('StorageClient')
 
@@ -15,18 +15,20 @@ export type FileInfo = {
 }
 
 export type CustomStorageConfig = {
-  // S3 config
-  bucket?: string
-  region?: string
-  // Blob config
-  containerName?: string
-  accountName?: string
-  accountKey?: string
-  connectionString?: string
+  // Local storage config
+  baseDir?: string
+}
+
+// Local storage directory
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads')
+
+// Ensure uploads directory exists
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 }
 
 /**
- * Upload a file to the configured storage provider
+ * Upload a file to local storage
  * @param file Buffer containing file data
  * @param fileName Original file name
  * @param contentType MIME type of the file
@@ -41,7 +43,7 @@ export async function uploadFile(
 ): Promise<FileInfo>
 
 /**
- * Upload a file to the configured storage provider with custom configuration
+ * Upload a file to local storage with custom configuration
  * @param file Buffer containing file data
  * @param fileName Original file name
  * @param contentType MIME type of the file
@@ -64,48 +66,46 @@ export async function uploadFile(
   configOrSize?: CustomStorageConfig | number,
   size?: number
 ): Promise<FileInfo> {
-  if (USE_BLOB_STORAGE) {
-    logger.info(`Uploading file to Azure Blob Storage: ${fileName}`)
-    const { uploadToBlob } = await import('@/lib/uploads/blob/blob-client')
-    if (typeof configOrSize === 'object') {
-      const blobConfig: CustomBlobConfig = {
-        containerName: configOrSize.containerName!,
-        accountName: configOrSize.accountName!,
-        accountKey: configOrSize.accountKey,
-        connectionString: configOrSize.connectionString,
-      }
-      return uploadToBlob(file, fileName, contentType, blobConfig, size)
-    }
-    return uploadToBlob(file, fileName, contentType, configOrSize)
+  const actualSize = size || (typeof configOrSize === 'number' ? configOrSize : file.length)
+  const baseDir =
+    typeof configOrSize === 'object' ? configOrSize.baseDir || UPLOADS_DIR : UPLOADS_DIR
+
+  // Generate unique filename to avoid conflicts
+  const fileExt = path.extname(fileName)
+  const baseName = path.basename(fileName, fileExt)
+  const uniqueId = uuidv4()
+  const key = `${baseName}-${uniqueId}${fileExt}`
+  const filePath = path.join(baseDir, key)
+
+  // Ensure directory exists
+  const dir = path.dirname(filePath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
 
-  if (USE_S3_STORAGE) {
-    logger.info(`Uploading file to S3: ${fileName}`)
-    const { uploadToS3 } = await import('@/lib/uploads/s3/s3-client')
-    if (typeof configOrSize === 'object') {
-      const s3Config: CustomS3Config = {
-        bucket: configOrSize.bucket!,
-        region: configOrSize.region!,
-      }
-      return uploadToS3(file, fileName, contentType, s3Config, size)
-    }
-    return uploadToS3(file, fileName, contentType, configOrSize)
-  }
+  // Write file to local storage
+  await fs.promises.writeFile(filePath, file)
 
-  throw new Error(
-    'No storage provider configured. Set Azure credentials (AZURE_CONNECTION_STRING or AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY) or configure AWS credentials for S3.'
-  )
+  logger.info(`File uploaded to local storage: ${filePath}`)
+
+  return {
+    path: filePath,
+    key,
+    name: fileName,
+    size: actualSize,
+    type: contentType,
+  }
 }
 
 /**
- * Download a file from the configured storage provider
+ * Download a file from local storage
  * @param key File key/name
  * @returns File buffer
  */
 export async function downloadFile(key: string): Promise<Buffer>
 
 /**
- * Download a file from the configured storage provider with custom configuration
+ * Download a file from local storage with custom configuration
  * @param key File key/name
  * @param customConfig Custom storage configuration
  * @returns File buffer
@@ -116,151 +116,74 @@ export async function downloadFile(
   key: string,
   customConfig?: CustomStorageConfig
 ): Promise<Buffer> {
-  if (USE_BLOB_STORAGE) {
-    logger.info(`Downloading file from Azure Blob Storage: ${key}`)
-    const { downloadFromBlob } = await import('@/lib/uploads/blob/blob-client')
-    if (customConfig) {
-      const blobConfig: CustomBlobConfig = {
-        containerName: customConfig.containerName!,
-        accountName: customConfig.accountName!,
-        accountKey: customConfig.accountKey,
-        connectionString: customConfig.connectionString,
-      }
-      return downloadFromBlob(key, blobConfig)
-    }
-    return downloadFromBlob(key)
+  const baseDir = customConfig?.baseDir || UPLOADS_DIR
+  const filePath = path.join(baseDir, key)
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${key}`)
   }
 
-  if (USE_S3_STORAGE) {
-    logger.info(`Downloading file from S3: ${key}`)
-    const { downloadFromS3 } = await import('@/lib/uploads/s3/s3-client')
-    if (customConfig) {
-      const s3Config: CustomS3Config = {
-        bucket: customConfig.bucket!,
-        region: customConfig.region!,
-      }
-      return downloadFromS3(key, s3Config)
-    }
-    return downloadFromS3(key)
-  }
-
-  throw new Error(
-    'No storage provider configured. Set Azure credentials (AZURE_CONNECTION_STRING or AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY) or configure AWS credentials for S3.'
-  )
+  logger.info(`Downloading file from local storage: ${filePath}`)
+  return fs.promises.readFile(filePath)
 }
 
 /**
- * Delete a file from the configured storage provider
+ * Delete a file from local storage
  * @param key File key/name
  */
 export async function deleteFile(key: string): Promise<void> {
-  if (USE_BLOB_STORAGE) {
-    logger.info(`Deleting file from Azure Blob Storage: ${key}`)
-    const { deleteFromBlob } = await import('@/lib/uploads/blob/blob-client')
-    return deleteFromBlob(key)
-  }
+  const filePath = path.join(UPLOADS_DIR, key)
 
-  if (USE_S3_STORAGE) {
-    logger.info(`Deleting file from S3: ${key}`)
-    const { deleteFromS3 } = await import('@/lib/uploads/s3/s3-client')
-    return deleteFromS3(key)
+  if (fs.existsSync(filePath)) {
+    await fs.promises.unlink(filePath)
+    logger.info(`File deleted from local storage: ${filePath}`)
   }
-
-  throw new Error(
-    'No storage provider configured. Set Azure credentials (AZURE_CONNECTION_STRING or AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY) or configure AWS credentials for S3.'
-  )
 }
 
 /**
- * Generate a presigned URL for direct file access
+ * Generate a local file URL for direct file access
  * @param key File key/name
- * @param expiresIn Time in seconds until URL expires
- * @returns Presigned URL
+ * @param expiresIn Time in seconds until URL expires (unused for local storage)
+ * @returns Local file URL
  */
 export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
-  if (USE_BLOB_STORAGE) {
-    logger.info(`Generating presigned URL for Azure Blob Storage: ${key}`)
-    const { getPresignedUrl: getBlobPresignedUrl } = await import('@/lib/uploads/blob/blob-client')
-    return getBlobPresignedUrl(key, expiresIn)
-  }
-
-  if (USE_S3_STORAGE) {
-    logger.info(`Generating presigned URL for S3: ${key}`)
-    const { getPresignedUrl: getS3PresignedUrl } = await import('@/lib/uploads/s3/s3-client')
-    return getS3PresignedUrl(key, expiresIn)
-  }
-
-  throw new Error(
-    'No storage provider configured. Set Azure credentials (AZURE_CONNECTION_STRING or AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY) or configure AWS credentials for S3.'
-  )
+  logger.info(`Generating local file URL: ${key}`)
+  return `/api/files/serve/${key}`
 }
 
 /**
- * Generate a presigned URL for direct file access with custom configuration
+ * Generate a local file URL for direct file access with custom configuration
  * @param key File key/name
  * @param customConfig Custom storage configuration
- * @param expiresIn Time in seconds until URL expires
- * @returns Presigned URL
+ * @param expiresIn Time in seconds until URL expires (unused for local storage)
+ * @returns Local file URL
  */
 export async function getPresignedUrlWithConfig(
   key: string,
   customConfig: CustomStorageConfig,
   expiresIn = 3600
 ): Promise<string> {
-  if (USE_BLOB_STORAGE) {
-    logger.info(`Generating presigned URL for Azure Blob Storage with custom config: ${key}`)
-    const { getPresignedUrlWithConfig: getBlobPresignedUrlWithConfig } = await import(
-      '@/lib/uploads/blob/blob-client'
-    )
-    // Convert CustomStorageConfig to CustomBlobConfig
-    const blobConfig: CustomBlobConfig = {
-      containerName: customConfig.containerName!,
-      accountName: customConfig.accountName!,
-      accountKey: customConfig.accountKey,
-      connectionString: customConfig.connectionString,
-    }
-    return getBlobPresignedUrlWithConfig(key, blobConfig, expiresIn)
-  }
-
-  if (USE_S3_STORAGE) {
-    logger.info(`Generating presigned URL for S3 with custom config: ${key}`)
-    const { getPresignedUrlWithConfig: getS3PresignedUrlWithConfig } = await import(
-      '@/lib/uploads/s3/s3-client'
-    )
-    // Convert CustomStorageConfig to CustomS3Config
-    const s3Config: CustomS3Config = {
-      bucket: customConfig.bucket!,
-      region: customConfig.region!,
-    }
-    return getS3PresignedUrlWithConfig(key, s3Config, expiresIn)
-  }
-
-  throw new Error(
-    'No storage provider configured. Set Azure credentials (AZURE_CONNECTION_STRING or AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY) or configure AWS credentials for S3.'
-  )
+  logger.info(`Generating local file URL with custom config: ${key}`)
+  return `/api/files/serve/${key}`
 }
 
 /**
  * Get the current storage provider name
  */
-export function getStorageProvider(): 'blob' | 's3' | 'local' {
-  if (USE_BLOB_STORAGE) return 'blob'
-  if (USE_S3_STORAGE) return 's3'
+export function getStorageProvider(): 'local' {
   return 'local'
 }
 
 /**
- * Check if we're using cloud storage (either S3 or Blob)
+ * Check if we're using cloud storage (always false for local storage)
  */
 export function isUsingCloudStorage(): boolean {
-  return USE_BLOB_STORAGE || USE_S3_STORAGE
+  return false
 }
 
 /**
- * Get the appropriate serve path prefix based on storage provider
+ * Get the appropriate serve path prefix for local storage
  */
 export function getServePathPrefix(): string {
-  if (USE_BLOB_STORAGE) return '/api/files/serve/blob/'
-  if (USE_S3_STORAGE) return '/api/files/serve/s3/'
   return '/api/files/serve/'
 }

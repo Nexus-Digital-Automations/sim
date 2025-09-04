@@ -1,11 +1,10 @@
-import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { and, eq, inArray, lt, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/internal'
 import { env } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { snapshotService } from '@/lib/logs/execution/snapshot/service'
-import { deleteFile, isUsingCloudStorage } from '@/lib/uploads'
+import { deleteFile } from '@/lib/uploads'
 // Dynamic import for S3 client to avoid client-side bundling
 import { db } from '@/db'
 import { subscription, user, workflow, workflowExecutionLogs } from '@/db/schema'
@@ -15,9 +14,9 @@ export const dynamic = 'force-dynamic'
 const logger = createLogger('LogsCleanupAPI')
 
 const BATCH_SIZE = 2000
-const S3_CONFIG = {
-  bucket: env.S3_LOGS_BUCKET_NAME || '',
-  region: env.AWS_REGION || '',
+const LOCAL_LOGS_CONFIG = {
+  logsDir: process.env.LOGS_DIR || 'logs',
+  maxRetentionDays: 30,
 }
 
 export async function GET(request: NextRequest) {
@@ -27,8 +26,8 @@ export async function GET(request: NextRequest) {
       return authError
     }
 
-    if (!S3_CONFIG.bucket || !S3_CONFIG.region) {
-      return new NextResponse('Configuration error: S3 bucket or region not set', { status: 500 })
+    if (!LOCAL_LOGS_CONFIG.logsDir) {
+      return new NextResponse('Configuration error: logs directory not set', { status: 500 })
     }
 
     const retentionDate = new Date()
@@ -131,27 +130,20 @@ export async function GET(request: NextRequest) {
         })
 
         try {
-          const { getS3Client } = await import('@/lib/uploads/s3/s3-client')
-          await getS3Client().send(
-            new PutObjectCommand({
-              Bucket: S3_CONFIG.bucket,
-              Key: enhancedLogKey,
-              Body: enhancedLogData,
-              ContentType: 'application/json',
-              Metadata: {
-                logId: String(log.id),
-                workflowId: String(log.workflowId),
-                executionId: String(log.executionId),
-                logType: 'enhanced',
-                archivedAt: new Date().toISOString(),
-              },
-            })
-          )
+          // Archive to local file system instead of S3
+          const fs = await import('node:fs/promises')
+          const path = await import('node:path')
+
+          const archiveDir = path.join(LOCAL_LOGS_CONFIG.logsDir, 'archived')
+          await fs.mkdir(archiveDir, { recursive: true })
+
+          const archiveFile = path.join(archiveDir, `${enhancedLogKey}.json`)
+          await fs.writeFile(archiveFile, enhancedLogData)
 
           results.enhancedLogs.archived++
 
-          // Clean up associated files if using cloud storage
-          if (isUsingCloudStorage() && log.files && Array.isArray(log.files)) {
+          // Clean up associated local files
+          if (log.files && Array.isArray(log.files)) {
             for (const file of log.files) {
               if (file && typeof file === 'object' && file.key) {
                 results.files.total++

@@ -65,7 +65,6 @@ import { ResponseBlock } from '@/blocks/blocks/response'
 // Traditional Automation Blocks
 import { RestApiBlock } from '@/blocks/blocks/rest-api'
 import { RouterBlock } from '@/blocks/blocks/router'
-import { S3Block } from '@/blocks/blocks/s3'
 import { ScheduleBlock } from '@/blocks/blocks/schedule'
 import { SerperBlock } from '@/blocks/blocks/serper'
 import { SharepointBlock } from '@/blocks/blocks/sharepoint'
@@ -158,7 +157,6 @@ export const registry: Record<string, BlockConfig> = {
   rest_api: RestApiBlock,
   router: RouterBlock,
   schedule: ScheduleBlock,
-  s3: S3Block,
   serper: SerperBlock,
   sharepoint: SharepointBlock,
   sql_query_builder: SqlQueryBuilderBlock,

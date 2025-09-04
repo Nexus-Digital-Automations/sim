@@ -12,14 +12,10 @@
  * @author Claude Development System
  */
 
-import { beforeEach, describe, expect, it, jest, afterEach } from '@jest/globals'
-import {
-  ContextualHelpSystem,
-  type HelpContent,
-  type HelpContext,
-} from '@/lib/help/contextual-help'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { ContextualHelpSystem, type HelpContext } from '@/lib/help/contextual-help'
 import { HelpAnalyticsService } from '@/lib/help/help-analytics'
-import { HelpContentManager, type HelpContentDocument } from '@/lib/help/help-content-manager'
+import { HelpContentManager } from '@/lib/help/help-content-manager'
 
 // Mock logger
 jest.mock('@/lib/logs/console/logger', () => ({
@@ -136,12 +132,7 @@ describe('Help System Integration Tests', () => {
       const sessionId = 'integration-session-123'
       const userId = 'integration-user-456'
 
-      await analyticsService.trackHelpView(
-        createdContent.contentId,
-        sessionId,
-        helpContext,
-        userId
-      )
+      await analyticsService.trackHelpView(createdContent.contentId, sessionId, helpContext, userId)
 
       await analyticsService.trackHelpInteraction(
         createdContent.contentId,
@@ -373,12 +364,7 @@ describe('Help System Integration Tests', () => {
       expect(searchResults.documents).toBeDefined()
 
       // 2. Track search analytics
-      await analyticsService.trackSearchQuery(
-        searchQuery,
-        sessionId,
-        searchResults.total,
-        userId
-      )
+      await analyticsService.trackSearchQuery(searchQuery, sessionId, searchResults.total, userId)
 
       // 3. Simulate user clicking on search result
       if (searchResults.documents.length > 0) {
@@ -627,7 +613,7 @@ describe('Help System Integration Tests', () => {
 
       for (const query of searchQueries) {
         await analyticsService.trackSearchQuery(query, sessionId, 10, userId)
-        
+
         // Small delay to simulate rapid but sequential queries
         await new Promise((resolve) => setTimeout(resolve, 10))
       }
@@ -713,11 +699,16 @@ describe('Help System Integration Tests', () => {
       const endDate = new Date('2025-01-31')
 
       // Track various events
-      await analyticsService.trackHelpView('content-1', sessionId, {
-        component: 'workflow-canvas',
-        page: '/analytics-test',
-        userLevel: 'beginner',
-      }, userId)
+      await analyticsService.trackHelpView(
+        'content-1',
+        sessionId,
+        {
+          component: 'workflow-canvas',
+          page: '/analytics-test',
+          userLevel: 'beginner',
+        },
+        userId
+      )
 
       await analyticsService.trackHelpInteraction(
         'content-1',
@@ -790,11 +781,16 @@ describe('Help System Integration Tests', () => {
       })
 
       // Simulate user interactions for effectiveness measurement
-      await analyticsService.trackHelpView(contentId, 'eff-session-1', {
-        component: 'test-component',
-        page: '/effectiveness-test',
-        userLevel: 'beginner',
-      }, 'eff-user-1')
+      await analyticsService.trackHelpView(
+        contentId,
+        'eff-session-1',
+        {
+          component: 'test-component',
+          page: '/effectiveness-test',
+          userLevel: 'beginner',
+        },
+        'eff-user-1'
+      )
 
       await analyticsService.trackHelpInteraction(
         contentId,
@@ -912,7 +908,7 @@ describe('Help System Integration Tests', () => {
       // Verify system remained stable
       expect(endTime - startTime).toBeLessThan(15000) // Should complete within 15 seconds
 
-      const successRate = results.filter(r => r.status === 'fulfilled').length / results.length
+      const successRate = results.filter((r) => r.status === 'fulfilled').length / results.length
       expect(successRate).toBeGreaterThan(0.7) // At least 70% success rate under stress
 
       // Verify no memory leaks or resource exhaustion

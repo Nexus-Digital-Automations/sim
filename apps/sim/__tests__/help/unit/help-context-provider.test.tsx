@@ -14,16 +14,16 @@
  */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { contextualHelpSystem } from '@/lib/help/contextual-help'
 import {
   HelpContextProvider,
-  useHelp,
   type HelpState,
   type HelpUserPreferences,
   type TourStep,
+  useHelp,
 } from '@/lib/help/help-context-provider'
-import { contextualHelpSystem } from '@/lib/help/contextual-help'
 
 // Mock logger
 jest.mock('@/lib/logs/console/logger', () => ({
@@ -65,67 +65,76 @@ const TestHelpConsumer = ({ onStateChange }: { onStateChange?: (state: HelpState
   }, [help.state, onStateChange])
 
   return (
-    <div data-testid="help-consumer">
-      <div data-testid="session-id">{help.state.sessionId}</div>
-      <div data-testid="user-level">{help.state.userLevel}</div>
-      <div data-testid="is-initialized">{help.state.isInitialized.toString()}</div>
-      <div data-testid="is-loading">{help.state.isLoading.toString()}</div>
-      <div data-testid="help-panel-open">{help.state.isHelpPanelOpen.toString()}</div>
-      <div data-testid="active-help-count">{help.state.activeHelp.size}</div>
-      <div data-testid="current-help-title">
+    <div data-testid='help-consumer'>
+      <div data-testid='session-id'>{help.state.sessionId}</div>
+      <div data-testid='user-level'>{help.state.userLevel}</div>
+      <div data-testid='is-initialized'>{help.state.isInitialized.toString()}</div>
+      <div data-testid='is-loading'>{help.state.isLoading.toString()}</div>
+      <div data-testid='help-panel-open'>{help.state.isHelpPanelOpen.toString()}</div>
+      <div data-testid='active-help-count'>{help.state.activeHelp.size}</div>
+      <div data-testid='current-help-title'>
         {help.state.currentHelp?.title || 'no-current-help'}
       </div>
-      <div data-testid="tour-active">{help.state.isSpotlightActive.toString()}</div>
-      <div data-testid="current-tour-step">{help.state.currentTourStep}</div>
-      <div data-testid="tour-steps-count">{help.state.tourSteps.length}</div>
+      <div data-testid='tour-active'>{help.state.isSpotlightActive.toString()}</div>
+      <div data-testid='current-tour-step'>{help.state.currentTourStep}</div>
+      <div data-testid='tour-steps-count'>{help.state.tourSteps.length}</div>
 
-      <button data-testid="show-help-btn" onClick={() => help.showHelp('test-component')}>
+      <button data-testid='show-help-btn' onClick={() => help.showHelp('test-component')}>
         Show Help
       </button>
-      <button data-testid="open-panel-btn" onClick={help.openHelpPanel}>
+      <button data-testid='open-panel-btn' onClick={help.openHelpPanel}>
         Open Panel
       </button>
-      <button data-testid="close-panel-btn" onClick={help.closeHelpPanel}>
+      <button data-testid='close-panel-btn' onClick={help.closeHelpPanel}>
         Close Panel
       </button>
-      <button data-testid="toggle-panel-btn" onClick={help.toggleHelpPanel}>
+      <button data-testid='toggle-panel-btn' onClick={help.toggleHelpPanel}>
         Toggle Panel
       </button>
-      <button data-testid="clear-help-btn" onClick={help.clearAllHelp}>
+      <button data-testid='clear-help-btn' onClick={help.clearAllHelp}>
         Clear Help
       </button>
       <button
-        data-testid="start-tour-btn"
-        onClick={() => help.startTour([{ id: '1', title: 'Step 1', description: 'Test step', target: '.test', placement: 'top', showSkip: true, showPrevious: false }])}
+        data-testid='start-tour-btn'
+        onClick={() =>
+          help.startTour([
+            {
+              id: '1',
+              title: 'Step 1',
+              description: 'Test step',
+              target: '.test',
+              placement: 'top',
+              showSkip: true,
+              showPrevious: false,
+            },
+          ])
+        }
       >
         Start Tour
       </button>
-      <button data-testid="next-step-btn" onClick={help.nextTourStep}>
+      <button data-testid='next-step-btn' onClick={help.nextTourStep}>
         Next Step
       </button>
-      <button data-testid="previous-step-btn" onClick={help.previousTourStep}>
+      <button data-testid='previous-step-btn' onClick={help.previousTourStep}>
         Previous Step
       </button>
-      <button data-testid="complete-tour-btn" onClick={help.completeTour}>
+      <button data-testid='complete-tour-btn' onClick={help.completeTour}>
         Complete Tour
       </button>
-      <button data-testid="skip-tour-btn" onClick={help.skipTour}>
+      <button data-testid='skip-tour-btn' onClick={help.skipTour}>
         Skip Tour
       </button>
       <button
-        data-testid="update-preferences-btn"
+        data-testid='update-preferences-btn'
         onClick={() => help.updatePreferences({ enableAutoHelp: false })}
       >
         Update Preferences
       </button>
-      <button
-        data-testid="update-user-level-btn"
-        onClick={() => help.updateUserLevel('advanced')}
-      >
+      <button data-testid='update-user-level-btn' onClick={() => help.updateUserLevel('advanced')}>
         Update User Level
       </button>
       <button
-        data-testid="track-interaction-btn"
+        data-testid='track-interaction-btn'
         onClick={() => help.trackInteraction('click', 'test-button')}
       >
         Track Interaction
@@ -192,10 +201,7 @@ describe('HelpContextProvider', () => {
       let capturedState: HelpState | null = null
 
       render(
-        <HelpContextProvider
-          initialUserLevel="advanced"
-          initialPreferences={initialPreferences}
-        >
+        <HelpContextProvider initialUserLevel='advanced' initialPreferences={initialPreferences}>
           <TestHelpConsumer onStateChange={(state) => (capturedState = state)} />
         </HelpContextProvider>
       )
@@ -587,7 +593,8 @@ describe('HelpContextProvider', () => {
       expect(capturedState!.analytics.totalInteractions).toBe(initialInteractionCount + 1)
       expect(capturedState!.interactionHistory.length).toBeGreaterThan(0)
 
-      const lastInteraction = capturedState!.interactionHistory[capturedState!.interactionHistory.length - 1]
+      const lastInteraction =
+        capturedState!.interactionHistory[capturedState!.interactionHistory.length - 1]
       expect(lastInteraction.type).toBe('click')
       expect(lastInteraction.target).toBe('test-button')
       expect(lastInteraction.successful).toBe(true)
@@ -693,7 +700,7 @@ describe('HelpContextProvider', () => {
           useHelp()
           return <div>Should not render</div>
         } catch (error) {
-          return <div data-testid="error-caught">Error caught</div>
+          return <div data-testid='error-caught'>Error caught</div>
         }
       }
 
@@ -732,8 +739,7 @@ describe('HelpContextProvider', () => {
 
     it('should handle context update with missing window object', async () => {
       // Mock missing window
-      const originalWindow = global.window
-      delete (global as any).window
+      const originalWindow = (global.window(global as any).window = undefined)
 
       render(
         <HelpContextProvider>
@@ -836,12 +842,12 @@ describe('HelpContextProvider', () => {
       render(
         <div>
           <HelpContextProvider>
-            <div data-testid="provider-1">
+            <div data-testid='provider-1'>
               <TestHelpConsumer />
             </div>
           </HelpContextProvider>
           <HelpContextProvider>
-            <div data-testid="provider-2">
+            <div data-testid='provider-2'>
               <TestHelpConsumer />
             </div>
           </HelpContextProvider>

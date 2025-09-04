@@ -103,26 +103,10 @@ export const env = createEnv({
     CRON_SECRET:                           z.string().optional(),                  // Secret for authenticating cron job requests
     JOB_RETENTION_DAYS:                    z.string().optional().default('1'),     // Days to retain job logs/data
 
-    // Cloud Storage - AWS S3
-    AWS_REGION:                            z.string().optional(),                  // AWS region for S3 buckets
-    AWS_ACCESS_KEY_ID:                     z.string().optional(),                  // AWS access key ID
-    AWS_SECRET_ACCESS_KEY:                 z.string().optional(),                  // AWS secret access key
-    S3_BUCKET_NAME:                        z.string().optional(),                  // S3 bucket for general file storage
-    S3_LOGS_BUCKET_NAME:                   z.string().optional(),                  // S3 bucket for storing logs
-    S3_KB_BUCKET_NAME:                     z.string().optional(),                  // S3 bucket for knowledge base files
-    S3_EXECUTION_FILES_BUCKET_NAME:        z.string().optional(),                  // S3 bucket for workflow execution files
-    S3_CHAT_BUCKET_NAME:                   z.string().optional(),                  // S3 bucket for chat logos
-    S3_COPILOT_BUCKET_NAME:                z.string().optional(),                  // S3 bucket for copilot files
-
-    // Cloud Storage - Azure Blob 
-    AZURE_ACCOUNT_NAME:                    z.string().optional(),                  // Azure storage account name
-    AZURE_ACCOUNT_KEY:                     z.string().optional(),                  // Azure storage account key
-    AZURE_CONNECTION_STRING:               z.string().optional(),                  // Azure storage connection string
-    AZURE_STORAGE_CONTAINER_NAME:          z.string().optional(),                  // Azure container for general files
-    AZURE_STORAGE_KB_CONTAINER_NAME:       z.string().optional(),                  // Azure container for knowledge base files
-    AZURE_STORAGE_EXECUTION_FILES_CONTAINER_NAME: z.string().optional(),          // Azure container for workflow execution files
-    AZURE_STORAGE_CHAT_CONTAINER_NAME:     z.string().optional(),                  // Azure container for chat logos
-    AZURE_STORAGE_COPILOT_CONTAINER_NAME:  z.string().optional(),                  // Azure container for copilot files
+    // Local Storage Configuration
+    UPLOADS_DIR:                           z.string().optional(),                  // Local directory for file uploads
+    EXECUTION_FILES_DIR:                   z.string().optional(),                  // Local directory for workflow execution files
+    LOGS_DIR:                              z.string().optional(),                  // Local directory for log files
 
     // Data Retention
     FREE_PLAN_LOG_RETENTION_DAYS:          z.string().optional(),                  // Log retention days for free plan users
@@ -201,7 +185,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SOCKET_URL:                z.string().url().optional(),            // WebSocket server URL for real-time features
 
     // Asset Storage
-    NEXT_PUBLIC_BLOB_BASE_URL:             z.string().url().optional(),            // Base URL for Vercel Blob storage (CDN assets)
+    NEXT_PUBLIC_UPLOADS_BASE_URL:          z.string().url().optional(),            // Base URL for local file serving
     
     // Billing
     NEXT_PUBLIC_BILLING_ENABLED:           z.boolean().optional(),                 // Enable billing enforcement and usage tracking (client-side)
@@ -246,7 +230,7 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    NEXT_PUBLIC_BLOB_BASE_URL: process.env.NEXT_PUBLIC_BLOB_BASE_URL,
+    NEXT_PUBLIC_UPLOADS_BASE_URL: process.env.NEXT_PUBLIC_UPLOADS_BASE_URL,
     NEXT_PUBLIC_BILLING_ENABLED: process.env.NEXT_PUBLIC_BILLING_ENABLED,
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     NEXT_PUBLIC_RB2B_KEY: process.env.NEXT_PUBLIC_RB2B_KEY,

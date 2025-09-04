@@ -8,7 +8,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757009940262_hhzetmwoo.md"
@@ -26,9 +26,9 @@
       "created_at": "2025-09-04T18:19:00.262Z",
       "created_by": "auto-research-system",
       "auto_created_for": "task_1757009940261_eyzruv2ai",
-      "assigned_agent": "development_session_1757016189788_1_general_bc77ed74",
-      "started_at": "2025-09-04T20:03:33.109Z",
-      "claimed_by": "development_session_1757016189788_1_general_bc77ed74",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1757011830437_1_general_be0631bc",
@@ -49,6 +49,12 @@
           "assignedAt": "2025-09-04T20:03:33.109Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T20:38:35.136Z",
+          "reason": "Task stale for 35 minutes"
         }
       ]
     },
@@ -59,7 +65,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757009930108_e9not29py.md"
@@ -77,9 +83,9 @@
       "created_at": "2025-09-04T18:18:50.108Z",
       "created_by": "auto-research-system",
       "auto_created_for": "task_1757009930107_flncrd9el",
-      "assigned_agent": "development_session_1757016938561_1_general_1e1443fb",
-      "started_at": "2025-09-04T20:16:16.965Z",
-      "claimed_by": "development_session_1757016938561_1_general_1e1443fb",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1757012003406_1_general_58a55811",
@@ -100,6 +106,12 @@
           "assignedAt": "2025-09-04T20:16:16.965Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T20:38:35.136Z",
+          "reason": "Task stale for 22 minutes"
         }
       ]
     },
@@ -348,10 +360,7 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": [
-        "task_1757011744427_ossxvrhe0",
-        "task_1757011756024_6xxxlomc9"
-      ],
+      "dependencies": ["task_1757011744427_ossxvrhe0", "task_1757011756024_6xxxlomc9"],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/embedding-service.ts"
@@ -965,10 +974,7 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/",
-        "development/essentials/"
-      ],
+      "important_files": ["development/research-reports/", "development/essentials/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1063,9 +1069,7 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/"
-      ],
+      "important_files": ["development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1083,9 +1087,7 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/"
-      ],
+      "important_files": ["development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1118,10 +1120,7 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/",
-        "development/reports/"
-      ],
+      "important_files": ["development/research-reports/", "development/reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1357,10 +1356,7 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/reports/",
-        "development/research-reports/"
-      ],
+      "important_files": ["development/reports/", "development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1537,10 +1533,7 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "apps/sim/app/api/__test-utils__/",
-        "apps/sim/app/api/**/*.test.ts"
-      ],
+      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -1650,10 +1643,7 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": [
-        "task_1757011756024_tddfvc62d",
-        "task_1757011765846_6wri25dfy"
-      ],
+      "dependencies": ["task_1757011756024_tddfvc62d", "task_1757011765846_6wri25dfy"],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/help/search/route.ts",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/semantic-search.ts"
@@ -1680,9 +1670,7 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": [
-        "task_1757009940262_hhzetmwoo"
-      ],
+      "dependencies": ["task_1757009940262_hhzetmwoo"],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/research-build-context-sensitive-help-and-documentation-system-1757009205206.md"
       ],
@@ -1701,9 +1689,7 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": [
-        "task_1757009930108_e9not29py"
-      ],
+      "dependencies": ["task_1757009930108_e9not29py"],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/research-build-context-sensitive-help-and-documentation-system-1757009205206.md"
       ],
@@ -1722,9 +1708,7 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": [
-        "task_1757009789910_6sxvzjavd"
-      ],
+      "dependencies": ["task_1757009789910_6sxvzjavd"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1741,9 +1725,7 @@
       "category": "missing-feature",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1757011676893_mu4480p13"
-      ],
+      "dependencies": ["task_1757011676893_mu4480p13"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1760,9 +1742,7 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1757011763326_55ahgwlf6"
-      ],
+      "dependencies": ["task_1757011763326_55ahgwlf6"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1779,9 +1759,7 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1757011763325_vfaj4s003"
-      ],
+      "dependencies": ["task_1757011763325_vfaj4s003"],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/templates/template-browser.tsx",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/workflow-wizard/workflow-wizard.tsx"
@@ -1801,9 +1779,7 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1757011763324_w8ejxorjq"
-      ],
+      "dependencies": ["task_1757011763324_w8ejxorjq"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1820,9 +1796,7 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": [
-        "task_1757011763323_adpd2dq7d"
-      ],
+      "dependencies": ["task_1757011763323_adpd2dq7d"],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1839,245 +1813,41 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1757016189788_1_general_bc77ed74": {
+    "development_session_1757019653720_1_general_c58200bc": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:03:09.789Z",
+      "lastHeartbeat": "2025-09-04T21:00:53.721Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:03:09.789Z",
-      "sessionId": "session_1757016189788",
+      "createdAt": "2025-09-04T21:00:53.721Z",
+      "sessionId": "session_1757019653720",
       "metadata": {}
     },
-    "development_session_1757016189790_1_general_c500f365": {
+    "development_session_1757020276047_1_general_29dba3e7": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:03:09.792Z",
+      "lastHeartbeat": "2025-09-04T21:11:16.048Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:03:09.792Z",
-      "sessionId": "session_1757016189790",
+      "createdAt": "2025-09-04T21:11:16.048Z",
+      "sessionId": "session_1757020276047",
       "metadata": {
-        "renewedAt": "2025-09-04T20:03:14.189Z",
+        "renewedAt": "2025-09-04T21:11:21.583Z",
         "renewalReason": "Agent reinitialization requested"
       },
-      "lastRenewal": "2025-09-04T20:03:14.189Z",
+      "lastRenewal": "2025-09-04T21:11:21.583Z",
       "renewalCount": 1,
-      "agentId": "development_session_1757016189790_1_general_c500f365"
-    },
-    "development_session_1757016189794_1_general_e8049ddd": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:03:09.796Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:03:09.796Z",
-      "sessionId": "session_1757016189794",
-      "metadata": {}
-    },
-    "development_session_1757016189810_1_general_42cc5635": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:03:09.811Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:03:09.811Z",
-      "sessionId": "session_1757016189810",
-      "metadata": {}
-    },
-    "development_session_1757016190414_1_general_33f964eb": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:03:10.415Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:03:10.415Z",
-      "sessionId": "session_1757016190414",
-      "metadata": {
-        "renewedAt": "2025-09-04T20:03:15.573Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T20:03:15.573Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757016190414_1_general_33f964eb"
-    },
-    "development_session_1757017040292_1_general_d7240b10": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:17:20.293Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:17:20.293Z",
-      "sessionId": "session_1757017040292",
-      "metadata": {}
-    },
-    "development_session_1757017041226_1_general_116367c2": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:17:21.227Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:17:21.227Z",
-      "sessionId": "session_1757017041226",
-      "metadata": {
-        "renewedAt": "2025-09-04T20:17:26.964Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T20:17:26.964Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757017041226_1_general_116367c2"
-    },
-    "development_session_1757017041642_1_general_e4a8062b": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:17:21.643Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:17:21.643Z",
-      "sessionId": "session_1757017041642",
-      "metadata": {}
-    },
-    "development_session_1757017042059_1_general_426c1752": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:17:22.060Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:17:22.060Z",
-      "sessionId": "session_1757017042059",
-      "metadata": {
-        "renewedAt": "2025-09-04T20:17:28.772Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T20:17:28.772Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757017042059_1_general_426c1752"
-    },
-    "development_session_1757017044553_1_general_4683c938": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T20:17:24.554Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T20:17:24.554Z",
-      "sessionId": "session_1757017044553",
-      "metadata": {
-        "renewedAt": "2025-09-04T20:17:30.182Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T20:17:30.182Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757017044553_1_general_4683c938"
+      "agentId": "development_session_1757020276047_1_general_29dba3e7"
     }
   },
   "settings": {

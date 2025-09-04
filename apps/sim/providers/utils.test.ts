@@ -245,14 +245,7 @@ describe('Model Capabilities', () => {
 
   describe('supportsToolUsageControl', () => {
     it.concurrent('should return true for providers that support tool usage control', () => {
-      const supportedProviders = [
-        'openai',
-        'azure-openai',
-        'anthropic',
-        'deepseek',
-        'xai',
-        'google',
-      ]
+      const supportedProviders = ['openai', 'anthropic', 'deepseek', 'xai', 'google']
 
       for (const provider of supportedProviders) {
         expect(supportsToolUsageControl(provider)).toBe(true)
@@ -449,7 +442,6 @@ describe('Provider Management', () => {
       expect(getProviderFromModel('gpt-4o')).toBe('openai')
       expect(getProviderFromModel('claude-sonnet-4-0')).toBe('anthropic')
       expect(getProviderFromModel('gemini-2.5-pro')).toBe('google')
-      expect(getProviderFromModel('azure/gpt-4o')).toBe('azure-openai')
     })
 
     it.concurrent('should use model patterns for pattern matching', () => {
@@ -522,7 +514,6 @@ describe('Provider Management', () => {
       expect(providerIds).toContain('openai')
       expect(providerIds).toContain('anthropic')
       expect(providerIds).toContain('google')
-      expect(providerIds).toContain('azure-openai')
     })
   })
 

@@ -1,7 +1,6 @@
 import { getCostMultiplier, isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import { anthropicProvider } from '@/providers/anthropic'
-import { azureOpenAIProvider } from '@/providers/azure-openai'
 import { cerebrasProvider } from '@/providers/cerebras'
 import { deepseekProvider } from '@/providers/deepseek'
 import { googleProvider } from '@/providers/google'
@@ -83,11 +82,6 @@ export const providers: Record<
     ...groqProvider,
     models: getProviderModelsFromDefinitions('groq'),
     modelPatterns: PROVIDER_DEFINITIONS.groq.modelPatterns,
-  },
-  'azure-openai': {
-    ...azureOpenAIProvider,
-    models: getProviderModelsFromDefinitions('azure-openai'),
-    modelPatterns: PROVIDER_DEFINITIONS['azure-openai'].modelPatterns,
   },
   openrouter: {
     ...openRouterProvider,

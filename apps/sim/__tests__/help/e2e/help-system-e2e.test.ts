@@ -12,13 +12,13 @@
  * @author Claude Development System
  */
 
-import puppeteer, { Browser, Page } from 'puppeteer'
-import { beforeAll, afterAll, beforeEach, afterEach, describe, expect, it } from '@jest/globals'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from '@jest/globals'
+import puppeteer, { type Browser, type Page } from 'puppeteer'
 
 // Test configuration
 const TEST_CONFIG = {
   headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
-  slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0,
+  slowMo: process.env.SLOW_MO ? Number.parseInt(process.env.SLOW_MO) : 0,
   devtools: process.env.DEVTOOLS === 'true',
   timeout: 30000,
   baseUrl: process.env.TEST_BASE_URL || 'http://localhost:3000',
@@ -52,7 +52,7 @@ describe('Help System E2E Tests', () => {
   beforeEach(async () => {
     page = await browser.newPage()
     await page.setViewport({ width: 1920, height: 1080 })
-    
+
     // Enable console logging for debugging
     page.on('console', (msg) => {
       if (process.env.DEBUG_LOGS === 'true') {
@@ -84,29 +84,29 @@ describe('Help System E2E Tests', () => {
 
       // Wait for page to load and help system to initialize
       await page.waitForSelector('[data-testid="workflow-canvas"]', { timeout: 10000 })
-      
+
       // Take screenshot of initial state
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-tooltip-initial.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Hover over workflow canvas to trigger help tooltip
       await page.hover('[data-testid="workflow-canvas"]')
-      
+
       // Wait for tooltip to appear
       await page.waitForSelector('[data-help-tooltip]', { timeout: 5000 })
-      
+
       // Verify tooltip content
-      const tooltipText = await page.$eval('[data-help-tooltip]', el => 
+      const tooltipText = await page.$eval('[data-help-tooltip]', (el) =>
         el.getAttribute('data-help-tooltip')
       )
       expect(tooltipText).toBeTruthy()
 
       // Take screenshot with tooltip
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-tooltip-active.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Verify tooltip positioning
@@ -185,9 +185,9 @@ describe('Help System E2E Tests', () => {
       await page.waitForSelector('[data-testid="help-panel"]', { timeout: 5000 })
 
       // Take screenshot of open help panel
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-panel-open.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Verify panel is visible
@@ -195,24 +195,24 @@ describe('Help System E2E Tests', () => {
       expect(panel).toBeTruthy()
 
       // Verify panel content
-      const panelContent = await page.$eval('[data-testid="help-panel"]', el => el.textContent)
+      const panelContent = await page.$eval('[data-testid="help-panel"]', (el) => el.textContent)
       expect(panelContent).toContain('Help')
 
       // Close help panel
       const closeButton = await page.$('[data-testid="close-help"]')
       if (closeButton) {
         await closeButton.click()
-        
+
         // Wait for panel to disappear
         await page.waitForFunction(() => !document.querySelector('[data-testid="help-panel"]'), {
-          timeout: 5000
+          timeout: 5000,
         })
       }
 
       // Take screenshot after closing
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-panel-closed.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
 
@@ -226,26 +226,26 @@ describe('Help System E2E Tests', () => {
 
       for (const testPage of testPages) {
         try {
-          await page.goto(`${TEST_CONFIG.baseUrl}${testPage.path}`, { 
+          await page.goto(`${TEST_CONFIG.baseUrl}${testPage.path}`, {
             waitUntil: 'networkidle0',
-            timeout: 10000 
+            timeout: 10000,
           })
 
           // Wait for page to stabilize
           await page.waitForTimeout(2000)
 
           // Check for contextual help indicators
-          const helpIndicators = await page.$$eval('[data-help-context]', elements =>
-            elements.map(el => ({
+          const helpIndicators = await page.$$eval('[data-help-context]', (elements) =>
+            elements.map((el) => ({
               context: el.getAttribute('data-help-context'),
-              visible: el.offsetParent !== null
+              visible: el.offsetParent !== null,
             }))
           )
 
           // Take screenshot for each page
-          await page.screenshot({ 
+          await page.screenshot({
             path: `test-screenshots/contextual-help-${testPage.context}.png`,
-            fullPage: true 
+            fullPage: true,
           })
 
           // Log contextual help found (for debugging)
@@ -256,7 +256,6 @@ describe('Help System E2E Tests', () => {
           // At minimum, page should load without errors
           const pageTitle = await page.title()
           expect(pageTitle).toBeTruthy()
-
         } catch (error) {
           console.warn(`Could not test contextual help for ${testPage.path}:`, error.message)
           // Continue with other pages
@@ -317,10 +316,10 @@ describe('Help System E2E Tests', () => {
           // Add tour navigation
           let tourStep = 0
           const tourSteps = [
-            { title: 'Welcome', content: 'Let\'s take a tour of the workflow editor.' },
+            { title: 'Welcome', content: "Let's take a tour of the workflow editor." },
             { title: 'Canvas', content: 'This is where you build your workflows.' },
             { title: 'Blocks', content: 'Drag blocks from the sidebar to create workflows.' },
-            { title: 'Complete', content: 'Tour complete! You\'re ready to create workflows.' }
+            { title: 'Complete', content: "Tour complete! You're ready to create workflows." },
           ]
 
           function updateTourStep() {
@@ -328,7 +327,7 @@ describe('Help System E2E Tests', () => {
             if (step) {
               tourContent.querySelector('h3')!.textContent = step.title
               tourContent.querySelector('p')!.textContent = step.content
-              
+
               if (tourStep === tourSteps.length - 1) {
                 tourContent.querySelector('[data-testid="tour-next"]')!.textContent = 'Finish'
               }
@@ -353,9 +352,9 @@ describe('Help System E2E Tests', () => {
 
       if (tourStarted) {
         // Take screenshot of tour start
-        await page.screenshot({ 
+        await page.screenshot({
           path: 'test-screenshots/tour-start.png',
-          fullPage: true 
+          fullPage: true,
         })
 
         // Navigate through tour steps
@@ -373,9 +372,9 @@ describe('Help System E2E Tests', () => {
             }
 
             // Take screenshot of current step
-            await page.screenshot({ 
+            await page.screenshot({
               path: `test-screenshots/tour-step-${stepCount}.png`,
-              fullPage: true 
+              fullPage: true,
             })
 
             // Click next button
@@ -399,9 +398,9 @@ describe('Help System E2E Tests', () => {
         expect(tourStillActive).toBeNull()
 
         // Take final screenshot
-        await page.screenshot({ 
+        await page.screenshot({
           path: 'test-screenshots/tour-complete.png',
-          fullPage: true 
+          fullPage: true,
         })
       }
     })
@@ -439,11 +438,11 @@ describe('Help System E2E Tests', () => {
 
       // Verify tour is visible
       await page.waitForSelector('[data-testid="skippable-tour"]')
-      
+
       // Take screenshot before skipping
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/tour-before-skip.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Skip the tour
@@ -451,16 +450,16 @@ describe('Help System E2E Tests', () => {
 
       // Verify tour is gone
       await page.waitForFunction(() => !document.querySelector('[data-testid="skippable-tour"]'), {
-        timeout: 3000
+        timeout: 3000,
       })
 
       const tourGone = await page.$('[data-testid="skippable-tour"]')
       expect(tourGone).toBeNull()
 
       // Take screenshot after skipping
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/tour-after-skip.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
   })
@@ -470,7 +469,7 @@ describe('Help System E2E Tests', () => {
       await page.goto(`${TEST_CONFIG.baseUrl}/help`, { waitUntil: 'networkidle0' })
 
       // If help page doesn't exist, create search functionality
-      const hasSearchBox = await page.$('[data-testid="help-search"]') !== null
+      const hasSearchBox = (await page.$('[data-testid="help-search"]')) !== null
 
       if (!hasSearchBox) {
         // Create mock help search interface
@@ -492,30 +491,45 @@ describe('Help System E2E Tests', () => {
           document.body.appendChild(container)
 
           // Add search functionality
-          const searchInput = container.querySelector('[data-testid="help-search"]') as HTMLInputElement
-          const resultsDiv = container.querySelector('[data-testid="search-results"]') as HTMLElement
+          const searchInput = container.querySelector(
+            '[data-testid="help-search"]'
+          ) as HTMLInputElement
+          const resultsDiv = container.querySelector(
+            '[data-testid="search-results"]'
+          ) as HTMLElement
 
           const mockResults = [
-            { title: 'Getting Started with Workflows', content: 'Learn how to create your first workflow...' },
-            { title: 'Block Configuration Guide', content: 'Configure blocks with advanced settings...' },
+            {
+              title: 'Getting Started with Workflows',
+              content: 'Learn how to create your first workflow...',
+            },
+            {
+              title: 'Block Configuration Guide',
+              content: 'Configure blocks with advanced settings...',
+            },
             { title: 'Troubleshooting Common Issues', content: 'Solutions to common problems...' },
           ]
 
           searchInput.addEventListener('input', (e) => {
             const query = (e.target as HTMLInputElement).value.toLowerCase()
-            
+
             if (query.length > 2) {
-              const filtered = mockResults.filter(result => 
-                result.title.toLowerCase().includes(query) || 
-                result.content.toLowerCase().includes(query)
+              const filtered = mockResults.filter(
+                (result) =>
+                  result.title.toLowerCase().includes(query) ||
+                  result.content.toLowerCase().includes(query)
               )
 
-              resultsDiv.innerHTML = filtered.map(result => `
+              resultsDiv.innerHTML = filtered
+                .map(
+                  (result) => `
                 <div style="border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 4px;">
                   <h3 style="margin: 0 0 10px 0;">${result.title}</h3>
                   <p style="margin: 0; color: #666;">${result.content}</p>
                 </div>
-              `).join('')
+              `
+                )
+                .join('')
             } else {
               resultsDiv.innerHTML = ''
             }
@@ -525,49 +539,55 @@ describe('Help System E2E Tests', () => {
 
       // Test search functionality
       await page.waitForSelector('[data-testid="help-search"]')
-      
+
       // Type search query
       await page.type('[data-testid="help-search"]', 'workflow')
-      
+
       // Wait for search results
       await page.waitForTimeout(1000)
-      
+
       // Take screenshot of search results
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-search-results.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Verify search results appear
       const searchResults = await page.$('[data-testid="search-results"]')
       expect(searchResults).toBeTruthy()
 
-      const resultsContent = await page.$eval('[data-testid="search-results"]', el => el.textContent)
+      const resultsContent = await page.$eval(
+        '[data-testid="search-results"]',
+        (el) => el.textContent
+      )
       expect(resultsContent).toBeTruthy()
 
       // Test different search terms
-      await page.$eval('[data-testid="help-search"]', el => (el as HTMLInputElement).value = '')
+      await page.$eval('[data-testid="help-search"]', (el) => ((el as HTMLInputElement).value = ''))
       await page.type('[data-testid="help-search"]', 'troubleshooting')
       await page.waitForTimeout(1000)
 
       // Take screenshot of different search
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-search-troubleshooting.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Clear search
-      await page.$eval('[data-testid="help-search"]', el => (el as HTMLInputElement).value = '')
+      await page.$eval('[data-testid="help-search"]', (el) => ((el as HTMLInputElement).value = ''))
       await page.type('[data-testid="help-search"]', 'xyz')
       await page.waitForTimeout(1000)
 
       // Verify no results found handling
-      const noResultsContent = await page.$eval('[data-testid="search-results"]', el => el.textContent)
-      
+      const noResultsContent = await page.$eval(
+        '[data-testid="search-results"]',
+        (el) => el.textContent
+      )
+
       // Take screenshot of no results
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-search-no-results.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
 
@@ -575,7 +595,7 @@ describe('Help System E2E Tests', () => {
       await page.goto(`${TEST_CONFIG.baseUrl}/help`, { waitUntil: 'networkidle0' })
 
       // Create search interface if not present
-      const hasSearchBox = await page.$('[data-testid="help-search"]') !== null
+      const hasSearchBox = (await page.$('[data-testid="help-search"]')) !== null
 
       if (!hasSearchBox) {
         await page.evaluate(() => {
@@ -587,13 +607,18 @@ describe('Help System E2E Tests', () => {
           `
           document.body.appendChild(container)
 
-          const searchInput = container.querySelector('[data-testid="help-search"]') as HTMLInputElement
-          const resultsDiv = container.querySelector('[data-testid="search-results"]') as HTMLElement
+          const searchInput = container.querySelector(
+            '[data-testid="help-search"]'
+          ) as HTMLInputElement
+          const resultsDiv = container.querySelector(
+            '[data-testid="search-results"]'
+          ) as HTMLElement
 
           searchInput.addEventListener('input', (e) => {
             const query = (e.target as HTMLInputElement).value
             if (query === 'nonexistent') {
-              resultsDiv.innerHTML = '<p data-testid="no-results">No help articles found for your search.</p>'
+              resultsDiv.innerHTML =
+                '<p data-testid="no-results">No help articles found for your search.</p>'
             } else {
               resultsDiv.innerHTML = ''
             }
@@ -609,13 +634,13 @@ describe('Help System E2E Tests', () => {
       const noResultsElement = await page.$('[data-testid="no-results"]')
       expect(noResultsElement).toBeTruthy()
 
-      const noResultsText = await page.$eval('[data-testid="no-results"]', el => el.textContent)
+      const noResultsText = await page.$eval('[data-testid="no-results"]', (el) => el.textContent)
       expect(noResultsText).toContain('No help articles found')
 
       // Take screenshot of no results state
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-no-results-state.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
   })
@@ -631,7 +656,7 @@ describe('Help System E2E Tests', () => {
         helpButton.setAttribute('aria-label', 'Open help panel')
         helpButton.textContent = 'Help'
         helpButton.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 1000;'
-        
+
         helpButton.addEventListener('click', () => {
           const panel = document.createElement('div')
           panel.setAttribute('data-testid', 'accessible-help-panel')
@@ -659,57 +684,61 @@ describe('Help System E2E Tests', () => {
               </ul>
             </nav>
           `
-          
+
           panel.querySelector('[data-testid="help-close"]')?.addEventListener('click', () => {
             panel.remove()
             helpButton.focus()
           })
-          
+
           document.body.appendChild(panel)
-          
+
           // Focus first link
           const firstLink = panel.querySelector('a')
           firstLink?.focus()
         })
-        
+
         document.body.appendChild(helpButton)
       })
 
       // Test keyboard navigation
       await page.keyboard.press('Tab') // Navigate to help button
       await page.keyboard.press('Enter') // Open help panel
-      
+
       // Wait for panel to appear
       await page.waitForSelector('[data-testid="accessible-help-panel"]')
-      
+
       // Take screenshot of accessible help panel
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/accessible-help-panel.png',
-        fullPage: true 
+        fullPage: true,
       })
 
       // Navigate through help links with Tab
       await page.keyboard.press('Tab')
       await page.keyboard.press('Tab')
       await page.keyboard.press('Tab')
-      
+
       // Navigate to close button and close panel
       await page.keyboard.press('Shift+Tab') // Go back to close button
       await page.keyboard.press('Shift+Tab')
       await page.keyboard.press('Shift+Tab')
       await page.keyboard.press('Shift+Tab')
       await page.keyboard.press('Enter') // Close panel
-      
+
       // Verify panel closed and focus returned
-      await page.waitForFunction(() => !document.querySelector('[data-testid="accessible-help-panel"]'))
-      
-      const focusedElement = await page.evaluate(() => document.activeElement?.getAttribute('data-testid'))
+      await page.waitForFunction(
+        () => !document.querySelector('[data-testid="accessible-help-panel"]')
+      )
+
+      const focusedElement = await page.evaluate(() =>
+        document.activeElement?.getAttribute('data-testid')
+      )
       expect(focusedElement).toBe('accessible-help')
-      
+
       // Take screenshot after closing
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/accessible-help-closed.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
 
@@ -736,15 +765,16 @@ describe('Help System E2E Tests', () => {
         helpButton.setAttribute('data-testid', 'announcing-help')
         helpButton.setAttribute('aria-label', 'Help and documentation')
         helpButton.textContent = 'Help'
-        
+
         helpButton.addEventListener('click', () => {
           announcement.textContent = 'Help panel opened. Use Tab to navigate help topics.'
-          
+
           setTimeout(() => {
             const panel = document.createElement('div')
             panel.setAttribute('role', 'region')
             panel.setAttribute('aria-label', 'Help documentation')
-            panel.style.cssText = 'position: fixed; top: 100px; left: 100px; background: white; border: 1px solid #ccc; padding: 20px;'
+            panel.style.cssText =
+              'position: fixed; top: 100px; left: 100px; background: white; border: 1px solid #ccc; padding: 20px;'
             panel.innerHTML = `
               <h2>Help Topics</h2>
               <ul role="list">
@@ -757,33 +787,36 @@ describe('Help System E2E Tests', () => {
             document.body.appendChild(panel)
           }, 100)
         })
-        
+
         document.body.appendChild(helpButton)
       })
 
       // Test screen reader announcements
       await page.click('[data-testid="announcing-help"]')
-      
+
       // Verify ARIA live region updated
-      const announcement = await page.waitForFunction(() => {
-        const element = document.querySelector('[data-testid="screen-reader-announcements"]')
-        return element?.textContent?.includes('Help panel opened')
-      }, { timeout: 3000 })
-      
+      const announcement = await page.waitForFunction(
+        () => {
+          const element = document.querySelector('[data-testid="screen-reader-announcements"]')
+          return element?.textContent?.includes('Help panel opened')
+        },
+        { timeout: 3000 }
+      )
+
       expect(announcement).toBeTruthy()
-      
+
       // Check ARIA attributes on help content
       const helpRegion = await page.$('[role="region"][aria-label="Help documentation"]')
       expect(helpRegion).toBeTruthy()
-      
+
       // Verify list structure for screen readers
       const helpList = await page.$('[role="list"]')
       expect(helpList).toBeTruthy()
-      
+
       // Take screenshot of accessible help structure
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/accessible-help-structure.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
   })
@@ -791,15 +824,15 @@ describe('Help System E2E Tests', () => {
   describe('Performance and Load Testing', () => {
     it('should load help content quickly', async () => {
       const startTime = Date.now()
-      
+
       await page.goto(`${TEST_CONFIG.baseUrl}/help`, { waitUntil: 'networkidle0' })
-      
+
       const loadTime = Date.now() - startTime
       expect(loadTime).toBeLessThan(5000) // Should load within 5 seconds
 
       // Measure help panel performance
       const helpLoadStart = Date.now()
-      
+
       // Create and measure help panel load time
       await page.evaluate(() => {
         const panel = document.createElement('div')
@@ -811,14 +844,14 @@ describe('Help System E2E Tests', () => {
         `
         document.body.appendChild(panel)
       })
-      
+
       const helpLoadTime = Date.now() - helpLoadStart
       expect(helpLoadTime).toBeLessThan(1000) // Help content should render within 1 second
-      
+
       // Take performance screenshot
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-performance-test.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
 
@@ -857,25 +890,25 @@ describe('Help System E2E Tests', () => {
       })
 
       const performanceStart = Date.now()
-      
+
       // Trigger multiple tooltips rapidly
       const helpElements = await page.$$('[data-help-tooltip]')
-      
+
       // Hover over multiple elements quickly
       for (let i = 0; i < Math.min(10, helpElements.length); i++) {
         await helpElements[i].hover()
         await page.waitForTimeout(50) // Small delay between hovers
       }
-      
+
       const performanceEnd = Date.now()
       const interactionTime = performanceEnd - performanceStart
-      
+
       expect(interactionTime).toBeLessThan(2000) // Should handle multiple interactions within 2 seconds
-      
+
       // Take screenshot of stress test results
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-stress-test.png',
-        fullPage: true 
+        fullPage: true,
       })
     })
   })
@@ -891,7 +924,7 @@ describe('Help System E2E Tests', () => {
       for (const viewport of viewports) {
         await page.setViewport({ width: viewport.width, height: viewport.height })
         await page.goto(`${TEST_CONFIG.baseUrl}/w/new`, { waitUntil: 'networkidle0' })
-        
+
         // Create responsive help interface
         await page.evaluate((vp) => {
           const helpButton = document.createElement('button')
@@ -905,7 +938,7 @@ describe('Help System E2E Tests', () => {
             padding: ${vp.width < 768 ? '15px' : '10px'};
             font-size: ${vp.width < 768 ? '18px' : '14px'};
           `
-          
+
           helpButton.addEventListener('click', () => {
             const panel = document.createElement('div')
             panel.style.cssText = `
@@ -926,27 +959,27 @@ describe('Help System E2E Tests', () => {
             `
             document.body.appendChild(panel)
           })
-          
+
           document.body.appendChild(helpButton)
         }, viewport)
-        
+
         // Test help functionality at each viewport size
         await page.click('[data-testid="responsive-help"]')
-        
+
         // Take screenshot for each viewport
-        await page.screenshot({ 
+        await page.screenshot({
           path: `test-screenshots/responsive-help-${viewport.name}.png`,
-          fullPage: true 
+          fullPage: true,
         })
-        
+
         // Verify help panel is visible and appropriately sized
         const panel = await page.$('div:has-text("Help (")')
         expect(panel).toBeTruthy()
-        
+
         const boundingBox = await panel?.boundingBox()
         expect(boundingBox?.width).toBeLessThanOrEqual(viewport.width)
         expect(boundingBox?.height).toBeLessThanOrEqual(viewport.height)
-        
+
         // Close panel before next test
         await page.click('button:has-text("Close")')
       }
@@ -959,13 +992,13 @@ describe('Help System E2E Tests', () => {
 
       // Simulate network failure
       await page.setOfflineMode(true)
-      
+
       // Create help system that handles offline state
       await page.evaluate(() => {
         const helpButton = document.createElement('button')
         helpButton.setAttribute('data-testid', 'offline-help')
         helpButton.textContent = 'Help (Offline Test)'
-        
+
         helpButton.addEventListener('click', async () => {
           try {
             // Simulate fetching help content (will fail offline)
@@ -992,26 +1025,26 @@ describe('Help System E2E Tests', () => {
             document.body.appendChild(offlineMessage)
           }
         })
-        
+
         document.body.appendChild(helpButton)
       })
-      
+
       // Test offline help behavior
       await page.click('[data-testid="offline-help"]')
-      
+
       // Wait for offline message
       await page.waitForSelector('div:has-text("Help Unavailable")', { timeout: 5000 })
-      
+
       // Take screenshot of offline state
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-offline-state.png',
-        fullPage: true 
+        fullPage: true,
       })
-      
+
       // Verify graceful error handling
       const offlineMessage = await page.$('div:has-text("Help Unavailable")')
       expect(offlineMessage).toBeTruthy()
-      
+
       // Restore network
       await page.setOfflineMode(false)
     })
@@ -1024,7 +1057,7 @@ describe('Help System E2E Tests', () => {
         const helpButton = document.createElement('button')
         helpButton.setAttribute('data-testid', 'error-prone-help')
         helpButton.textContent = 'Help (Error Test)'
-        
+
         helpButton.addEventListener('click', () => {
           try {
             // This will cause an error
@@ -1050,29 +1083,29 @@ describe('Help System E2E Tests', () => {
             document.body.appendChild(errorMessage)
           }
         })
-        
+
         document.body.appendChild(helpButton)
       })
-      
+
       // Test error handling
       await page.click('[data-testid="error-prone-help"]')
-      
+
       // Verify error was handled gracefully
-      const errorMessage = await page.waitForSelector('div:has-text("Help System Error")', { 
-        timeout: 5000 
+      const errorMessage = await page.waitForSelector('div:has-text("Help System Error")', {
+        timeout: 5000,
       })
       expect(errorMessage).toBeTruthy()
-      
+
       // Take screenshot of error state
-      await page.screenshot({ 
+      await page.screenshot({
         path: 'test-screenshots/help-error-state.png',
-        fullPage: true 
+        fullPage: true,
       })
-      
+
       // Verify page is still functional
       const pageTitle = await page.title()
       expect(pageTitle).toBeTruthy()
-      
+
       // Dismiss error message
       await page.click('button:has-text("Dismiss")')
     })

@@ -2,7 +2,6 @@ import type { StreamingExecution } from '@/executor/types'
 
 export type ProviderId =
   | 'openai'
-  | 'azure-openai'
   | 'anthropic'
   | 'google'
   | 'deepseek'
