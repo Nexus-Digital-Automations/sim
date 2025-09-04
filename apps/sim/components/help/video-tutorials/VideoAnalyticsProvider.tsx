@@ -246,14 +246,14 @@ interface VideoAnalyticsProviderProps {
 
 export function VideoAnalyticsProvider({
   children,
-  enableTracking = true,
+  enableTracking: enableTrackingProp = true,
   sampleRate = 1.0,
   batchSize = 10,
 }: VideoAnalyticsProviderProps) {
   const { state: helpState } = useHelp()
 
   // State management
-  const [isTrackingEnabled, setIsTrackingEnabled] = useState(enableTracking)
+  const [isTrackingEnabled, setIsTrackingEnabled] = useState(enableTrackingProp)
   const [currentSession, setCurrentSession] = useState<VideoSessionMetrics | null>(null)
 
   // Analytics storage

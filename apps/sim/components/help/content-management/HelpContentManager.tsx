@@ -1,6 +1,6 @@
 /**
  * Help Content Management System - Comprehensive multimedia help content organization
- * 
+ *
  * Features:
  * - Unified content management for tutorials, guides, and documentation
  * - Advanced categorization and tagging system
@@ -10,7 +10,7 @@
  * - Content analytics and performance tracking
  * - Collaborative editing and approval workflows
  * - CDN integration for optimized content delivery
- * 
+ *
  * @created 2025-01-04
  * @author Video Tutorials & Interactive Guides Specialist
  */
@@ -30,21 +30,32 @@ import {
   SearchIcon,
   TagIcon,
   TrendingUpIcon,
-  UserCheckIcon
+  UserCheckIcon,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Progress } from '@/components/ui/progress'
-import { useHelp } from '@/lib/help/help-context-provider'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import { helpAnalytics } from '@/lib/help/help-analytics'
+import { useHelp } from '@/lib/help/help-context-provider'
 import { cn } from '@/lib/utils'
 
 // ========================
@@ -56,55 +67,55 @@ export interface HelpContent {
   title: string
   description: string
   slug: string
-  
+
   // Content type and format
   type: 'tutorial' | 'guide' | 'documentation' | 'faq' | 'troubleshooting'
   format: 'video' | 'interactive' | 'article' | 'checklist' | 'mixed'
-  
+
   // Content organization
   category: string
   subcategory?: string
   tags: string[]
   keywords: string[]
-  
+
   // Content data
   content: HelpContentData
-  
+
   // Metadata
   author: string
   contributors: string[]
   reviewers: string[]
-  
+
   // Status and workflow
   status: 'draft' | 'review' | 'published' | 'archived' | 'deprecated'
   publishedAt?: string
   lastModifiedAt: string
   createdAt: string
-  
+
   // Localization
   language: string
   translations: Record<string, string> // language code -> content id
-  
+
   // SEO and discovery
   seoTitle?: string
   seoDescription?: string
   searchKeywords: string[]
-  
+
   // Analytics and performance
   viewCount: number
   completionRate: number
   averageRating: number
   ratingCount: number
-  
+
   // Access control
   visibility: 'public' | 'internal' | 'restricted'
   permissions: ContentPermissions
-  
+
   // Related content
   relatedContent: string[]
   prerequisites: string[]
   followUpContent: string[]
-  
+
   // Content versioning
   version: string
   changelog: ChangelogEntry[]
@@ -116,15 +127,15 @@ export interface HelpContentData {
   thumbnail?: string
   duration?: number
   chapters?: VideoChapter[]
-  
+
   // Interactive guide specific
   steps?: GuideStep[]
   branches?: GuideBranch[]
-  
+
   // Article/documentation specific
   body?: string
   sections?: ContentSection[]
-  
+
   // Shared content elements
   media: MediaAsset[]
   attachments: FileAttachment[]
@@ -275,10 +286,10 @@ const MOCK_CATEGORIES: ContentCategory[] = [
         icon: 'book',
         color: 'blue',
         subcategories: [],
-        contentCount: 8
-      }
+        contentCount: 8,
+      },
     ],
-    contentCount: 12
+    contentCount: 12,
   },
   {
     id: 'workflows',
@@ -287,8 +298,8 @@ const MOCK_CATEGORIES: ContentCategory[] = [
     icon: 'workflow',
     color: 'green',
     subcategories: [],
-    contentCount: 15
-  }
+    contentCount: 15,
+  },
 ]
 
 const MOCK_CONTENT: HelpContent[] = [
@@ -312,12 +323,12 @@ const MOCK_CONTENT: HelpContent[] = [
           id: 'ch1',
           title: 'What are Workflows?',
           startTime: 0,
-          endTime: 120
-        }
+          endTime: 120,
+        },
       ],
       media: [],
       attachments: [],
-      links: []
+      links: [],
     },
     author: 'John Doe',
     contributors: [],
@@ -329,7 +340,7 @@ const MOCK_CONTENT: HelpContent[] = [
     language: 'en',
     translations: {
       es: 'content-1-es',
-      fr: 'content-1-fr'
+      fr: 'content-1-fr',
     },
     searchKeywords: ['workflow', 'automation', 'tutorial', 'beginner'],
     viewCount: 1250,
@@ -341,7 +352,7 @@ const MOCK_CONTENT: HelpContent[] = [
       canView: ['*'],
       canEdit: ['author', 'admin'],
       canPublish: ['admin'],
-      canDelete: ['admin']
+      canDelete: ['admin'],
     },
     relatedContent: ['content-2', 'content-3'],
     prerequisites: [],
@@ -353,10 +364,10 @@ const MOCK_CONTENT: HelpContent[] = [
         version: '1.2.0',
         changes: 'Updated video quality and added closed captions',
         author: 'John Doe',
-        timestamp: '2025-01-04T10:00:00Z'
-      }
-    ]
-  }
+        timestamp: '2025-01-04T10:00:00Z',
+      },
+    ],
+  },
 ]
 
 const MOCK_TEMPLATES: ContentTemplate[] = [
@@ -370,10 +381,10 @@ const MOCK_TEMPLATES: ContentTemplate[] = [
         { name: 'Introduction', required: true, type: 'text' },
         { name: 'Video Content', required: true, type: 'media' },
         { name: 'Key Points', required: false, type: 'text' },
-        { name: 'Practice Exercises', required: false, type: 'steps' }
-      ]
-    }
-  }
+        { name: 'Practice Exercises', required: false, type: 'steps' },
+      ],
+    },
+  },
 ]
 
 // ========================
@@ -385,15 +396,15 @@ export function HelpContentManager({
   showAnalytics = true,
   enableCollaboration = true,
   enableVersioning = true,
-  enableLocalization = true
+  enableLocalization = true,
 }: HelpContentManagerProps) {
   const { state: helpState } = useHelp()
-  
+
   // Core state
   const [content, setContent] = useState<HelpContent[]>(MOCK_CONTENT)
   const [categories, setCategories] = useState<ContentCategory[]>(MOCK_CATEGORIES)
   const [templates, setTemplates] = useState<ContentTemplate[]>(MOCK_TEMPLATES)
-  
+
   // UI state
   const [activeTab, setActiveTab] = useState('content')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -417,7 +428,7 @@ export function HelpContentManager({
       // const categoriesResponse = await fetch('/api/help/categories')
       // setContent(await contentResponse.json())
       // setCategories(await categoriesResponse.json())
-      
+
       // Track content manager access
       helpAnalytics.trackHelpInteraction(
         'content-manager',
@@ -438,7 +449,7 @@ export function HelpContentManager({
       // TODO: Replace with actual API call
       // const response = await fetch(`/api/help/content/${contentId}/analytics`)
       // return await response.json()
-      
+
       // Mock analytics for demonstration
       return {
         contentId,
@@ -451,13 +462,13 @@ export function HelpContentManager({
           bounceRate: 0.15,
           ratingAverage: 4.7,
           searchImpressions: 5600,
-          searchClicks: 340
+          searchClicks: 340,
         },
         trends: {
           viewsTrend: 12,
           completionTrend: 8,
-          ratingTrend: 3
-        }
+          ratingTrend: 3,
+        },
       }
     } catch (error) {
       console.error('Error loading analytics:', error)
@@ -469,127 +480,141 @@ export function HelpContentManager({
   // CONTENT OPERATIONS
   // ========================
 
-  const createContent = useCallback(async (contentData: Partial<HelpContent>) => {
-    try {
-      // TODO: Replace with actual API call
-      const newContent: HelpContent = {
-        id: `content-${Date.now()}`,
-        title: contentData.title || 'New Content',
-        description: contentData.description || '',
-        slug: contentData.title?.toLowerCase().replace(/\s+/g, '-') || 'new-content',
-        type: contentData.type || 'tutorial',
-        format: contentData.format || 'video',
-        category: contentData.category || 'getting-started',
-        tags: contentData.tags || [],
-        keywords: contentData.keywords || [],
-        content: contentData.content || { media: [], attachments: [], links: [] },
-        author: helpState.userProfile?.name || 'Unknown Author',
-        contributors: [],
-        reviewers: [],
-        status: 'draft',
-        lastModifiedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        language: 'en',
-        translations: {},
-        searchKeywords: contentData.keywords || [],
-        viewCount: 0,
-        completionRate: 0,
-        averageRating: 0,
-        ratingCount: 0,
-        visibility: 'internal',
-        permissions: {
-          canView: ['author'],
-          canEdit: ['author'],
-          canPublish: ['admin'],
-          canDelete: ['admin']
-        },
-        relatedContent: [],
-        prerequisites: [],
-        followUpContent: [],
-        version: '1.0.0',
-        changelog: []
+  const createContent = useCallback(
+    async (contentData: Partial<HelpContent>) => {
+      try {
+        // TODO: Replace with actual API call
+        const newContent: HelpContent = {
+          id: `content-${Date.now()}`,
+          title: contentData.title || 'New Content',
+          description: contentData.description || '',
+          slug: contentData.title?.toLowerCase().replace(/\s+/g, '-') || 'new-content',
+          type: contentData.type || 'tutorial',
+          format: contentData.format || 'video',
+          category: contentData.category || 'getting-started',
+          tags: contentData.tags || [],
+          keywords: contentData.keywords || [],
+          content: contentData.content || { media: [], attachments: [], links: [] },
+          author: helpState.userProfile?.name || 'Unknown Author',
+          contributors: [],
+          reviewers: [],
+          status: 'draft',
+          lastModifiedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          language: 'en',
+          translations: {},
+          searchKeywords: contentData.keywords || [],
+          viewCount: 0,
+          completionRate: 0,
+          averageRating: 0,
+          ratingCount: 0,
+          visibility: 'internal',
+          permissions: {
+            canView: ['author'],
+            canEdit: ['author'],
+            canPublish: ['admin'],
+            canDelete: ['admin'],
+          },
+          relatedContent: [],
+          prerequisites: [],
+          followUpContent: [],
+          version: '1.0.0',
+          changelog: [],
+        }
+
+        setContent((prev) => [newContent, ...prev])
+
+        // Track content creation
+        helpAnalytics.trackHelpInteraction(
+          newContent.id,
+          helpState.sessionId,
+          'content_create',
+          'content_management',
+          { type: newContent.type, format: newContent.format }
+        )
+
+        return newContent
+      } catch (error) {
+        console.error('Error creating content:', error)
+        throw error
       }
-      
-      setContent(prev => [newContent, ...prev])
-      
-      // Track content creation
-      helpAnalytics.trackHelpInteraction(
-        newContent.id,
-        helpState.sessionId,
-        'content_create',
-        'content_management',
-        { type: newContent.type, format: newContent.format }
-      )
-      
-      return newContent
-    } catch (error) {
-      console.error('Error creating content:', error)
-      throw error
-    }
-  }, [helpState])
+    },
+    [helpState]
+  )
 
-  const updateContent = useCallback(async (contentId: string, updates: Partial<HelpContent>) => {
-    try {
-      // TODO: Replace with actual API call
-      setContent(prev => prev.map(item => 
-        item.id === contentId 
-          ? { ...item, ...updates, lastModifiedAt: new Date().toISOString() }
-          : item
-      ))
-      
-      // Track content update
-      helpAnalytics.trackHelpInteraction(
-        contentId,
-        helpState.sessionId,
-        'content_update',
-        'content_management',
-        { updatedFields: Object.keys(updates) }
-      )
-    } catch (error) {
-      console.error('Error updating content:', error)
-      throw error
-    }
-  }, [helpState.sessionId])
+  const updateContent = useCallback(
+    async (contentId: string, updates: Partial<HelpContent>) => {
+      try {
+        // TODO: Replace with actual API call
+        setContent((prev) =>
+          prev.map((item) =>
+            item.id === contentId
+              ? { ...item, ...updates, lastModifiedAt: new Date().toISOString() }
+              : item
+          )
+        )
 
-  const deleteContent = useCallback(async (contentId: string) => {
-    try {
-      // TODO: Replace with actual API call
-      setContent(prev => prev.filter(item => item.id !== contentId))
-      
-      // Track content deletion
-      helpAnalytics.trackHelpInteraction(
-        contentId,
-        helpState.sessionId,
-        'content_delete',
-        'content_management',
-        {}
-      )
-    } catch (error) {
-      console.error('Error deleting content:', error)
-      throw error
-    }
-  }, [helpState.sessionId])
+        // Track content update
+        helpAnalytics.trackHelpInteraction(
+          contentId,
+          helpState.sessionId,
+          'content_update',
+          'content_management',
+          { updatedFields: Object.keys(updates) }
+        )
+      } catch (error) {
+        console.error('Error updating content:', error)
+        throw error
+      }
+    },
+    [helpState.sessionId]
+  )
 
-  const publishContent = useCallback(async (contentId: string) => {
-    try {
-      await updateContent(contentId, { 
-        status: 'published',
-        publishedAt: new Date().toISOString()
-      })
-      
-      // Track content publication
-      helpAnalytics.trackHelpInteraction(
-        contentId,
-        helpState.sessionId,
-        'content_publish',
-        'content_management',
-        {}
-      )
-    } catch (error) {
-      console.error('Error publishing content:', error)
-      throw error
-    }
-  }, [updateContent, helpState.sessionId])
+  const deleteContent = useCallback(
+    async (contentId: string) => {
+      try {
+        // TODO: Replace with actual API call
+        setContent((prev) => prev.filter((item) => item.id !== contentId))
+
+        // Track content deletion
+        helpAnalytics.trackHelpInteraction(
+          contentId,
+          helpState.sessionId,
+          'content_delete',
+          'content_management',
+          {}
+        )
+      } catch (error) {
+        console.error('Error deleting content:', error)
+        throw error
+      }
+    },
+    [helpState.sessionId]
+  )
+
+  const publishContent = useCallback(
+    async (contentId: string) => {
+      try {
+        await updateContent(contentId, {
+          status: 'published',
+          publishedAt: new Date().toISOString(),
+        })
+
+        // Track content publication
+        helpAnalytics.trackHelpInteraction(
+          contentId,
+          helpState.sessionId,
+          'content_publish',
+          'content_management',
+          {}
+        )
+      } catch (error) {
+        console.error('Error publishing content:', error)
+        throw error
+      }
+    },
+    [updateContent, helpState.sessionId]
+  )
 
   // ========================
   // FILTERING AND SEARCH
@@ -597,33 +622,34 @@ export function HelpContentManager({
 
   const filteredContent = useCallback(() => {
     let filtered = [...content]
-    
+
     // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.tags.some(tag => tag.toLowerCase().includes(query)) ||
-        item.keywords.some(keyword => keyword.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+          item.keywords.some((keyword) => keyword.toLowerCase().includes(query))
       )
     }
-    
+
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(item => item.category === selectedCategory)
+      filtered = filtered.filter((item) => item.category === selectedCategory)
     }
-    
+
     // Apply status filter
     if (selectedStatus !== 'all') {
-      filtered = filtered.filter(item => item.status === selectedStatus)
+      filtered = filtered.filter((item) => item.status === selectedStatus)
     }
-    
+
     // Apply type filter
     if (selectedType !== 'all') {
-      filtered = filtered.filter(item => item.type === selectedType)
+      filtered = filtered.filter((item) => item.type === selectedType)
     }
-    
+
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -641,7 +667,7 @@ export function HelpContentManager({
           return 0
       }
     })
-    
+
     return filtered
   }, [content, searchQuery, selectedCategory, selectedStatus, selectedType, sortBy])
 
@@ -660,127 +686,122 @@ export function HelpContentManager({
   const renderContentCard = (item: HelpContent) => {
     const getStatusColor = (status: string) => {
       switch (status) {
-        case 'published': return 'bg-green-100 text-green-800'
-        case 'draft': return 'bg-gray-100 text-gray-800'
-        case 'review': return 'bg-yellow-100 text-yellow-800'
-        case 'archived': return 'bg-red-100 text-red-800'
-        default: return 'bg-gray-100 text-gray-800'
+        case 'published':
+          return 'bg-green-100 text-green-800'
+        case 'draft':
+          return 'bg-gray-100 text-gray-800'
+        case 'review':
+          return 'bg-yellow-100 text-yellow-800'
+        case 'archived':
+          return 'bg-red-100 text-red-800'
+        default:
+          return 'bg-gray-100 text-gray-800'
       }
     }
 
     const getTypeIcon = (type: string) => {
       switch (type) {
-        case 'tutorial': return <PlayCircleIcon className="w-4 h-4" />
-        case 'guide': return <BookOpenIcon className="w-4 h-4" />
-        case 'documentation': return <FileTextIcon className="w-4 h-4" />
-        default: return <FileTextIcon className="w-4 h-4" />
+        case 'tutorial':
+          return <PlayCircleIcon className='w-4 h-4' />
+        case 'guide':
+          return <BookOpenIcon className='w-4 h-4' />
+        case 'documentation':
+          return <FileTextIcon className='w-4 h-4' />
+        default:
+          return <FileTextIcon className='w-4 h-4' />
       }
     }
 
     return (
-      <Card key={item.id} className="group hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold mb-1">
-                {item.title}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                {item.description}
-              </p>
+      <Card key={item.id} className='group hover:shadow-md transition-shadow'>
+        <CardHeader className='pb-3'>
+          <div className='flex items-start justify-between'>
+            <div className='flex-1'>
+              <CardTitle className='text-lg font-semibold mb-1'>{item.title}</CardTitle>
+              <p className='text-sm text-muted-foreground line-clamp-2 mb-2'>{item.description}</p>
             </div>
-            
-            <Badge className={getStatusColor(item.status)}>
-              {item.status}
-            </Badge>
+
+            <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
           </div>
-          
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-            <div className="flex items-center">
+
+          <div className='flex items-center space-x-4 text-sm text-muted-foreground'>
+            <div className='flex items-center'>
               {getTypeIcon(item.type)}
-              <span className="ml-1 capitalize">{item.type}</span>
+              <span className='ml-1 capitalize'>{item.type}</span>
             </div>
-            
-            <div className="flex items-center">
-              <EyeIcon className="w-4 h-4 mr-1" />
+
+            <div className='flex items-center'>
+              <EyeIcon className='w-4 h-4 mr-1' />
               {item.viewCount.toLocaleString()}
             </div>
-            
+
             {showAnalytics && (
-              <div className="flex items-center">
-                <TrendingUpIcon className="w-4 h-4 mr-1" />
+              <div className='flex items-center'>
+                <TrendingUpIcon className='w-4 h-4 mr-1' />
                 {Math.round(item.completionRate * 100)}%
               </div>
             )}
           </div>
         </CardHeader>
-        
-        <CardContent className="pt-0">
+
+        <CardContent className='pt-0'>
           {/* Tags */}
-          <div className="flex flex-wrap gap-1 mb-3">
-            {item.tags.slice(0, 3).map(tag => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                <TagIcon className="w-2 h-2 mr-1" />
+          <div className='flex flex-wrap gap-1 mb-3'>
+            {item.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant='outline' className='text-xs'>
+                <TagIcon className='w-2 h-2 mr-1' />
                 {tag}
               </Badge>
             ))}
             {item.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant='outline' className='text-xs'>
                 +{item.tags.length - 3}
               </Badge>
             )}
           </div>
-          
+
           {/* Metadata */}
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className='text-xs text-muted-foreground space-y-1'>
             <div>Author: {item.author}</div>
             <div>Last modified: {new Date(item.lastModifiedAt).toLocaleDateString()}</div>
             {enableLocalization && Object.keys(item.translations).length > 0 && (
-              <div className="flex items-center">
-                <GlobeIcon className="w-3 h-3 mr-1" />
+              <div className='flex items-center'>
+                <GlobeIcon className='w-3 h-3 mr-1' />
                 {Object.keys(item.translations).length + 1} languages
               </div>
             )}
           </div>
-          
+
           {/* Actions */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t">
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setSelectedContent(item)}
-              >
-                <EyeIcon className="w-4 h-4 mr-1" />
+          <div className='flex items-center justify-between mt-4 pt-3 border-t'>
+            <div className='flex items-center space-x-2'>
+              <Button variant='ghost' size='sm' onClick={() => setSelectedContent(item)}>
+                <EyeIcon className='w-4 h-4 mr-1' />
                 View
               </Button>
-              
-              <Button variant="ghost" size="sm">
-                <EditIcon className="w-4 h-4 mr-1" />
+
+              <Button variant='ghost' size='sm'>
+                <EditIcon className='w-4 h-4 mr-1' />
                 Edit
               </Button>
-              
+
               {enableCollaboration && (
-                <Button variant="ghost" size="sm">
-                  <UserCheckIcon className="w-4 h-4 mr-1" />
+                <Button variant='ghost' size='sm'>
+                  <UserCheckIcon className='w-4 h-4 mr-1' />
                   Review
                 </Button>
               )}
             </div>
-            
-            <div className="flex items-center space-x-2">
+
+            <div className='flex items-center space-x-2'>
               {item.status === 'draft' && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => publishContent(item.id)}
-                >
+                <Button variant='outline' size='sm' onClick={() => publishContent(item.id)}>
                   Publish
                 </Button>
               )}
-              
+
               {showAnalytics && (
-                <Button variant="outline" size="sm">
+                <Button variant='outline' size='sm'>
                   Analytics
                 </Button>
               )}
@@ -795,53 +816,53 @@ export function HelpContentManager({
     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PlusIcon className="w-4 h-4 mr-2" />
+          <PlusIcon className='w-4 h-4 mr-2' />
           Create Content
         </Button>
       </DialogTrigger>
-      
-      <DialogContent className="max-w-2xl">
+
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Create New Content</DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+
+        <div className='space-y-4'>
+          <div className='grid grid-cols-2 gap-4'>
             <div>
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" placeholder="Content title" />
+              <Label htmlFor='title'>Title</Label>
+              <Input id='title' placeholder='Content title' />
             </div>
-            
+
             <div>
-              <Label htmlFor="type">Content Type</Label>
+              <Label htmlFor='type'>Content Type</Label>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder='Select type' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tutorial">Video Tutorial</SelectItem>
-                  <SelectItem value="guide">Interactive Guide</SelectItem>
-                  <SelectItem value="documentation">Documentation</SelectItem>
-                  <SelectItem value="faq">FAQ</SelectItem>
+                  <SelectItem value='tutorial'>Video Tutorial</SelectItem>
+                  <SelectItem value='guide'>Interactive Guide</SelectItem>
+                  <SelectItem value='documentation'>Documentation</SelectItem>
+                  <SelectItem value='faq'>FAQ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          
+
           <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" placeholder="Brief description of the content" />
+            <Label htmlFor='description'>Description</Label>
+            <Textarea id='description' placeholder='Brief description of the content' />
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className='grid grid-cols-2 gap-4'>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor='category'>Category</Label>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder='Select category' />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -849,15 +870,15 @@ export function HelpContentManager({
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
-              <Label htmlFor="template">Use Template</Label>
+              <Label htmlFor='template'>Use Template</Label>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="Optional template" />
+                  <SelectValue placeholder='Optional template' />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.map(template => (
+                  {templates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
                     </SelectItem>
@@ -866,27 +887,29 @@ export function HelpContentManager({
               </Select>
             </div>
           </div>
-          
+
           <div>
-            <Label htmlFor="tags">Tags</Label>
-            <Input id="tags" placeholder="Comma-separated tags" />
+            <Label htmlFor='tags'>Tags</Label>
+            <Input id='tags' placeholder='Comma-separated tags' />
           </div>
-          
+
           {enableLocalization && (
-            <div className="flex items-center space-x-2">
-              <Switch id="multilingual" />
-              <Label htmlFor="multilingual">Enable multi-language support</Label>
+            <div className='flex items-center space-x-2'>
+              <Switch id='multilingual' />
+              <Label htmlFor='multilingual'>Enable multi-language support</Label>
             </div>
           )}
-          
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+
+          <div className='flex justify-end space-x-2'>
+            <Button variant='outline' onClick={() => setIsCreateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              // TODO: Implement content creation
-              setIsCreateDialogOpen(false)
-            }}>
+            <Button
+              onClick={() => {
+                // TODO: Implement content creation
+                setIsCreateDialogOpen(false)
+              }}
+            >
               Create Content
             </Button>
           </div>
@@ -900,95 +923,93 @@ export function HelpContentManager({
   // ========================
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-2xl font-bold">Help Content Manager</h1>
-          <p className="text-muted-foreground">
-            Manage tutorials, guides, and documentation
-          </p>
+          <h1 className='text-2xl font-bold'>Help Content Manager</h1>
+          <p className='text-muted-foreground'>Manage tutorials, guides, and documentation</p>
         </div>
-        
+
         {renderCreateContentDialog()}
       </div>
 
       {/* Content Management Interface */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
         <TabsList>
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          {showAnalytics && <TabsTrigger value="analytics">Analytics</TabsTrigger>}
-          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value='content'>Content</TabsTrigger>
+          <TabsTrigger value='categories'>Categories</TabsTrigger>
+          {showAnalytics && <TabsTrigger value='analytics'>Analytics</TabsTrigger>}
+          <TabsTrigger value='templates'>Templates</TabsTrigger>
         </TabsList>
 
         {/* Content Tab */}
-        <TabsContent value="content" className="space-y-6">
+        <TabsContent value='content' className='space-y-6'>
           {/* Filters and Search */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <div className='flex flex-col lg:flex-row gap-4'>
+            <div className='flex-1'>
+              <div className='relative'>
+                <SearchIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4' />
                 <Input
-                  placeholder="Search content..."
+                  placeholder='Search content...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className='pl-10'
                 />
               </div>
             </div>
-            
-            <div className="flex gap-2">
+
+            <div className='flex gap-2'>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Category" />
+                <SelectTrigger className='w-40'>
+                  <SelectValue placeholder='Category' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
+                  <SelectItem value='all'>All Categories</SelectItem>
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className='w-32'>
+                  <SelectValue placeholder='Status' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value='all'>All Status</SelectItem>
+                  <SelectItem value='draft'>Draft</SelectItem>
+                  <SelectItem value='review'>Review</SelectItem>
+                  <SelectItem value='published'>Published</SelectItem>
+                  <SelectItem value='archived'>Archived</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Type" />
+                <SelectTrigger className='w-32'>
+                  <SelectValue placeholder='Type' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="tutorial">Tutorial</SelectItem>
-                  <SelectItem value="guide">Guide</SelectItem>
-                  <SelectItem value="documentation">Docs</SelectItem>
-                  <SelectItem value="faq">FAQ</SelectItem>
+                  <SelectItem value='all'>All Types</SelectItem>
+                  <SelectItem value='tutorial'>Tutorial</SelectItem>
+                  <SelectItem value='guide'>Guide</SelectItem>
+                  <SelectItem value='documentation'>Docs</SelectItem>
+                  <SelectItem value='faq'>FAQ</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Sort by" />
+                <SelectTrigger className='w-40'>
+                  <SelectValue placeholder='Sort by' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="lastModified">Last Modified</SelectItem>
-                  <SelectItem value="created">Created</SelectItem>
-                  <SelectItem value="title">Title</SelectItem>
-                  <SelectItem value="views">Views</SelectItem>
-                  <SelectItem value="rating">Rating</SelectItem>
+                  <SelectItem value='lastModified'>Last Modified</SelectItem>
+                  <SelectItem value='created'>Created</SelectItem>
+                  <SelectItem value='title'>Title</SelectItem>
+                  <SelectItem value='views'>Views</SelectItem>
+                  <SelectItem value='rating'>Rating</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -996,50 +1017,51 @@ export function HelpContentManager({
 
           {/* Content Grid */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full" />
+            <div className='flex items-center justify-center py-12'>
+              <div className='animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full' />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {filteredContent().map(renderContentCard)}
             </div>
           )}
-          
+
           {filteredContent().length === 0 && !isLoading && (
-            <div className="text-center py-12">
-              <FolderIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-muted-foreground">No content found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery || selectedCategory !== 'all' || selectedStatus !== 'all' 
-                  ? 'Try adjusting your filters' 
-                  : 'Create your first piece of content to get started'
-                }
+            <div className='text-center py-12'>
+              <FolderIcon className='w-12 h-12 text-muted-foreground mx-auto mb-4' />
+              <h3 className='text-lg font-semibold text-muted-foreground'>No content found</h3>
+              <p className='text-muted-foreground'>
+                {searchQuery || selectedCategory !== 'all' || selectedStatus !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'Create your first piece of content to get started'}
               </p>
             </div>
           )}
         </TabsContent>
 
         {/* Categories Tab */}
-        <TabsContent value="categories" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map(category => (
+        <TabsContent value='categories' className='space-y-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {categories.map((category) => (
               <Card key={category.id}>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <div className={`w-8 h-8 rounded-md mr-3 flex items-center justify-center bg-${category.color}-100`}>
+                  <CardTitle className='flex items-center text-lg'>
+                    <div
+                      className={`w-8 h-8 rounded-md mr-3 flex items-center justify-center bg-${category.color}-100`}
+                    >
                       <FolderIcon className={`w-4 h-4 text-${category.color}-600`} />
                     </div>
                     {category.name}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">{category.description}</p>
+                  <p className='text-sm text-muted-foreground'>{category.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm text-muted-foreground'>
                       {category.contentCount} items
                     </span>
-                    <Button variant="ghost" size="sm">
-                      <EditIcon className="w-4 h-4" />
+                    <Button variant='ghost' size='sm'>
+                      <EditIcon className='w-4 h-4' />
                     </Button>
                   </div>
                 </CardContent>
@@ -1050,51 +1072,58 @@ export function HelpContentManager({
 
         {/* Analytics Tab */}
         {showAnalytics && (
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <TabsContent value='analytics' className='space-y-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Content</CardTitle>
+                <CardHeader className='pb-2'>
+                  <CardTitle className='text-sm font-medium'>Total Content</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{content.length}</div>
-                  <p className="text-xs text-muted-foreground">+2 from last week</p>
+                  <div className='text-2xl font-bold'>{content.length}</div>
+                  <p className='text-xs text-muted-foreground'>+2 from last week</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                <CardHeader className='pb-2'>
+                  <CardTitle className='text-sm font-medium'>Total Views</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className='text-2xl font-bold'>
                     {content.reduce((sum, item) => sum + item.viewCount, 0).toLocaleString()}
                   </div>
-                  <p className="text-xs text-muted-foreground">+15% from last week</p>
+                  <p className='text-xs text-muted-foreground'>+15% from last week</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Avg. Completion</CardTitle>
+                <CardHeader className='pb-2'>
+                  <CardTitle className='text-sm font-medium'>Avg. Completion</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {Math.round(content.reduce((sum, item) => sum + item.completionRate, 0) / content.length * 100)}%
+                  <div className='text-2xl font-bold'>
+                    {Math.round(
+                      (content.reduce((sum, item) => sum + item.completionRate, 0) /
+                        content.length) *
+                        100
+                    )}
+                    %
                   </div>
-                  <p className="text-xs text-muted-foreground">+3% from last week</p>
+                  <p className='text-xs text-muted-foreground'>+3% from last week</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
+                <CardHeader className='pb-2'>
+                  <CardTitle className='text-sm font-medium'>Avg. Rating</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {(content.reduce((sum, item) => sum + item.averageRating, 0) / content.length).toFixed(1)}
+                  <div className='text-2xl font-bold'>
+                    {(
+                      content.reduce((sum, item) => sum + item.averageRating, 0) / content.length
+                    ).toFixed(1)}
                   </div>
-                  <p className="text-xs text-muted-foreground">+0.2 from last week</p>
+                  <p className='text-xs text-muted-foreground'>+0.2 from last week</p>
                 </CardContent>
               </Card>
             </div>
@@ -1102,26 +1131,30 @@ export function HelpContentManager({
         )}
 
         {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map(template => (
+        <TabsContent value='templates' className='space-y-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {templates.map((template) => (
               <Card key={template.id}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{template.description}</p>
+                  <CardTitle className='text-lg'>{template.name}</CardTitle>
+                  <p className='text-sm text-muted-foreground'>{template.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <Badge className="mb-3">{template.type}</Badge>
-                  <div className="text-sm">
+                  <Badge className='mb-3'>{template.type}</Badge>
+                  <div className='text-sm'>
                     <strong>Sections:</strong>
-                    <ul className="mt-1 space-y-1">
+                    <ul className='mt-1 space-y-1'>
                       {template.structure.sections.map((section, index) => (
-                        <li key={index} className="flex items-center">
-                          <span className={section.required ? 'font-medium' : 'text-muted-foreground'}>
+                        <li key={index} className='flex items-center'>
+                          <span
+                            className={section.required ? 'font-medium' : 'text-muted-foreground'}
+                          >
                             {section.name}
                           </span>
                           {section.required && (
-                            <Badge variant="outline" className="ml-2 text-xs">Required</Badge>
+                            <Badge variant='outline' className='ml-2 text-xs'>
+                              Required
+                            </Badge>
                           )}
                         </li>
                       ))}
@@ -1148,5 +1181,5 @@ export type {
   ContentCategory,
   ContentTemplate,
   ContentAnalytics,
-  HelpContentManagerProps
+  HelpContentManagerProps,
 }
