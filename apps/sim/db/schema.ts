@@ -2719,6 +2719,46 @@ export const templateTagAssociations = pgTable(
 export const templateTagAssignments = templateTagAssociations
 
 /**
+ * Template pricing table - Basic template pricing configuration
+ *
+ * Simple pricing system supporting:
+ * - Basic template monetization
+ * - Revenue sharing configuration
+ * - Currency support
+ */
+export const templatePricing = pgTable(
+  'template_pricing',
+  {
+    id: text('id').primaryKey(), // UUID format for pricing identification
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' })
+      .unique(), // One pricing record per template
+
+    // Core pricing configuration
+    pricingType: text('pricing_type').notNull().default('free'), // 'free', 'one_time', 'subscription'
+    basePrice: decimal('base_price', { precision: 10, scale: 2 }).default('0.00'), // Base price
+    currency: text('currency').notNull().default('USD'), // Currency code (ISO 4217)
+
+    // Revenue sharing configuration
+    creatorSharePercentage: decimal('creator_share_percentage', { precision: 5, scale: 2 }).default(
+      '70.00'
+    ), // Creator's share (0-100%)
+    platformFeePercentage: decimal('platform_fee_percentage', { precision: 5, scale: 2 }).default(
+      '30.00'
+    ), // Platform fee (0-100%)
+
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateIdx: index('template_pricing_template_idx').on(table.templateId),
+    priceIdx: index('template_pricing_price_idx').on(table.basePrice),
+  })
+)
+
+/**
  * Template ratings table - User rating and review system
  *
  * Comprehensive review system supporting:

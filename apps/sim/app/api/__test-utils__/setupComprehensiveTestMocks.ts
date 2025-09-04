@@ -264,9 +264,9 @@ function mergeConfig(
 
   for (const [key, value] of Object.entries(userConfig)) {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = { ...defaultConfig[key], ...value }
+      ;(result as any)[key] = { ...(defaultConfig as any)[key], ...value }
     } else {
-      result[key] = value
+      ;(result as any)[key] = value
     }
   }
 
@@ -399,19 +399,19 @@ function setupFeatureMocks(config: EnhancedTestSetupOptions) {
   const featureMocks = {}
 
   if (config.features?.workflowUtils) {
-    featureMocks.workflowUtils = setupWorkflowUtilsMocks(config)
+    ;(featureMocks as any).workflowUtils = setupWorkflowUtilsMocks(config)
   }
 
   if (config.features?.fileSystem) {
-    featureMocks.fileSystem = setupFileSystemMocks(config)
+    ;(featureMocks as any).fileSystem = setupFileSystemMocks(config)
   }
 
   if (config.features?.uploadUtils) {
-    featureMocks.uploadUtils = setupUploadUtilsMocks(config)
+    ;(featureMocks as any).uploadUtils = setupUploadUtilsMocks(config)
   }
 
   if (config.features?.encryption) {
-    featureMocks.encryption = setupEncryptionMocks(config)
+    ;(featureMocks as any).encryption = setupEncryptionMocks(config)
   }
 
   if (config.features?.logging && Object.keys(featureMocks).length > 0) {
@@ -765,7 +765,7 @@ function convertLegacyOptions(legacyOptions: any): EnhancedTestSetupOptions {
 /**
  * Quick setup for common test patterns
  */
-export function quickTestSetup(authenticated = true, user?: any) {
+function quickTestSetup(authenticated = true, user?: any) {
   return setupEnhancedTestMocks({
     auth: {
       authenticated,
@@ -781,7 +781,7 @@ export function quickTestSetup(authenticated = true, user?: any) {
 /**
  * Setup for authentication-focused tests
  */
-export function setupAuthTestMocks(
+function setupAuthTestMocks(
   options: {
     sessionAuth?: boolean
     apiKey?: boolean
@@ -806,7 +806,7 @@ export function setupAuthTestMocks(
 /**
  * Setup for database-focused tests
  */
-export function setupDatabaseTestMocks(
+function setupDatabaseTestMocks(
   selectResults: any[][] = [[]],
   options: { callbacks?: boolean; errors?: boolean } = {}
 ) {
@@ -835,9 +835,6 @@ export function setupDatabaseTestMocks(
 
 // Export the main function as default
 export default setupEnhancedTestMocks
-
-// Export all enhanced interfaces and utilities
-export type { EnhancedTestSetupOptions, EnhancedTestMockResult }
 
 // Export helper functions
 export {

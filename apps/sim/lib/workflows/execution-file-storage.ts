@@ -102,6 +102,16 @@ export async function getExecutionFileUrl(key: string): Promise<string> {
 }
 
 /**
+ * Generate a download URL for an execution file
+ */
+export async function generateExecutionFileDownloadUrl(
+  executionId: string,
+  fileId: string
+): Promise<string> {
+  return `/api/files/execution/${encodeURIComponent(executionId)}/${encodeURIComponent(fileId)}`
+}
+
+/**
  * Clean up execution files for a specific execution
  */
 export async function cleanupExecutionFiles(

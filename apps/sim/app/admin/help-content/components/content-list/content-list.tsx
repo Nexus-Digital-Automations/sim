@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Accessibility,
   AlertCircle,
+  ArrowUpDown,
   BarChart3,
   CheckCircle,
   ChevronDown,
@@ -39,7 +40,6 @@ import {
   RefreshCw,
   Search,
   Settings,
-  Sort,
   Trash2,
   TrendingDown,
   TrendingUp,
@@ -660,7 +660,7 @@ export function ContentList({
                   >
                     <div className='flex items-center'>
                       Title
-                      <Sort className='ml-1 h-4 w-4' />
+                      <ArrowUpDown className='ml-1 h-4 w-4' />
                     </div>
                   </th>
                   <th className='px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider'>
@@ -672,7 +672,7 @@ export function ContentList({
                   >
                     <div className='flex items-center'>
                       Status
-                      <Sort className='ml-1 h-4 w-4' />
+                      <ArrowUpDown className='ml-1 h-4 w-4' />
                     </div>
                   </th>
                   <th
@@ -681,7 +681,7 @@ export function ContentList({
                   >
                     <div className='flex items-center'>
                       Author
-                      <Sort className='ml-1 h-4 w-4' />
+                      <ArrowUpDown className='ml-1 h-4 w-4' />
                     </div>
                   </th>
                   <th
@@ -690,7 +690,7 @@ export function ContentList({
                   >
                     <div className='flex items-center'>
                       Views
-                      <Sort className='ml-1 h-4 w-4' />
+                      <ArrowUpDown className='ml-1 h-4 w-4' />
                     </div>
                   </th>
                   <th className='px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider'>
@@ -702,7 +702,7 @@ export function ContentList({
                   >
                     <div className='flex items-center'>
                       Updated
-                      <Sort className='ml-1 h-4 w-4' />
+                      <ArrowUpDown className='ml-1 h-4 w-4' />
                     </div>
                   </th>
                   <th className='px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider'>
@@ -805,10 +805,9 @@ export function ContentList({
                           WCAG {item.accessibility.wcagCompliance}
                         </span>
                         {item.accessibility.issues.length > 0 && (
-                          <AlertCircle
-                            className='ml-2 h-4 w-4 text-red-500'
-                            title={`${item.accessibility.issues.length} accessibility issues`}
-                          />
+                          <div title={`${item.accessibility.issues.length} accessibility issues`}>
+                            <AlertCircle className='ml-2 h-4 w-4 text-red-500' />
+                          </div>
                         )}
                       </div>
                     </td>

@@ -1,75 +1,135 @@
 {
   "execution": {
-    "timestamp": "2025-09-04T21:11:10.594Z",
+    "timestamp": "2025-09-04T22:19:20.524Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 57037,
+    "pid": 45882,
     "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
-    "endTimestamp": "2025-09-04T21:11:10.609Z",
-    "durationMs": 15
+    "endTimestamp": "2025-09-04T22:19:20.535Z",
+    "durationMs": 11
   },
   "input": {
     "sessionId": "e42686d4-ae30-4a73-ab3f-f323e0f24763",
     "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e42686d4-ae30-4a73-ab3f-f323e0f24763.jsonl",
-    "stopHookActive": true,
+    "stopHookActive": false,
     "rawInput": {
       "session_id": "e42686d4-ae30-4a73-ab3f-f323e0f24763",
       "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e42686d4-ae30-4a73-ab3f-f323e0f24763.jsonl",
       "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
       "hook_event_name": "Stop",
-      "stop_hook_active": true
+      "stop_hook_active": false
     }
   },
   "projectState": {},
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-04T21:11:10.595Z",
-      "message": "Raw input data: \"{\"session_id\":\"e42686d4-ae30-4a73-ab3f-f323e0f24763\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e42686d4-ae30-4a73-ab3f-f323e0f24763.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
+      "timestamp": "2025-09-04T22:19:20.524Z",
+      "message": "Raw input data: \"{\"session_id\":\"e42686d4-ae30-4a73-ab3f-f323e0f24763\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/e42686d4-ae30-4a73-ab3f-f323e0f24763.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
     },
     {
-      "timestamp": "2025-09-04T21:11:10.595Z",
-      "message": "Input data length: 320"
+      "timestamp": "2025-09-04T22:19:20.524Z",
+      "message": "Input data length: 321"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.595Z",
+      "timestamp": "2025-09-04T22:19:20.524Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.595Z",
+      "timestamp": "2025-09-04T22:19:20.524Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.604Z",
-      "message": "Found 1 total agents in TODO.json"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Found 6 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.604Z",
-      "message": "Agent development_session_1757019653720_1_general_c58200bc: heartbeat=2025-09-04T21:00:53.721Z, timeSince=617s, isActive=true"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757019653720_1_general_c58200bc: heartbeat=2025-09-04T21:00:53.721Z, timeSince=4707s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.604Z",
-      "message": "Active agents found: 1, Stale agents removed: 0, Stale tasks reset: 0"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757020276047_1_general_29dba3e7: heartbeat=2025-09-04T21:11:16.048Z, timeSince=4084s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.609Z",
-      "message": "Task status: 78 pending, 2 in_progress, 0 completed"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757020447800_1_general_0063208e: heartbeat=2025-09-04T21:14:07.801Z, timeSince=3913s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.609Z",
-      "message": "Never-stop mode: Providing instructive task management guidance"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757020980980_1_general_3b68cf2a: heartbeat=2025-09-04T21:23:00.981Z, timeSince=3380s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T21:11:10.609Z",
-      "message": "Exiting with code 2: Infinite continue mode - providing task guidance"
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757021171062_1_general_b0aa6566: heartbeat=2025-09-04T21:26:11.063Z, timeSince=3189s, isActive=false"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Agent development_session_1757021172560_1_general_c08a6981: heartbeat=2025-09-04T21:26:12.561Z, timeSince=3188s, isActive=false"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757019653720_1_general_c58200bc"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757020276047_1_general_29dba3e7"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757020447800_1_general_0063208e"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757020980980_1_general_3b68cf2a"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757021171062_1_general_b0aa6566"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Removed stale agent: development_session_1757021172560_1_general_c08a6981"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Reset stale task: Research: Implement intelligent chatbot with contextual awareness (66 min)"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.532Z",
+      "message": "Reset stale task: Research: Implement semantic search API endpoints for help content matching (57 min)"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "Removed 6 stale agents from TODO.json"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "Reset 2 stale tasks back to pending"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "Active agents found: 0, Stale agents removed: 6, Stale tasks reset: 2"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "No active agents detected - analyzing situation for appropriate guidance"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "Found 6 stale agents - providing reactivation guidance"
+    },
+    {
+      "timestamp": "2025-09-04T22:19:20.535Z",
+      "message": "Exiting with code 2: Only stale agents found - providing reactivation guidance"
     }
   ],
   "output": {
     "exitCode": 2,
-    "exitReason": "Infinite continue mode - providing task guidance"
+    "exitReason": "Only stale agents found - providing reactivation guidance"
   },
   "errors": []
 }

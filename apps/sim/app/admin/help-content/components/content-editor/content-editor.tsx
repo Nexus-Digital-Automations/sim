@@ -26,6 +26,7 @@ import {
   CheckCircle,
   Code,
   Eye,
+  FileText,
   Heading1,
   Heading2,
   Heading3,
@@ -41,7 +42,6 @@ import {
   Save,
   Settings,
   Sparkles,
-  Template,
   Type,
   Underline,
   Undo,
@@ -382,13 +382,17 @@ export function ContentEditor({
 
   // Accessibility checker
   const checkAccessibility = useCallback(async () => {
-    const issues = []
+    const issues: Array<{
+      type: 'grammar' | 'clarity' | 'accessibility' | 'seo' | 'engagement'
+      message: string
+      severity: 'info' | 'warning' | 'error'
+    }> = []
 
     // Check heading structure
     const headings = editorRef.current?.querySelectorAll('h1, h2, h3, h4, h5, h6')
     if (headings && headings.length === 0) {
       issues.push({
-        type: 'heading',
+        type: 'accessibility',
         message: 'Content should have proper heading structure',
         severity: 'warning',
       })
@@ -399,7 +403,7 @@ export function ContentEditor({
     images?.forEach((img) => {
       if (!img.alt || img.alt.trim() === '') {
         issues.push({
-          type: 'alt-text',
+          type: 'accessibility',
           message: `Image missing alt text: ${img.src}`,
           severity: 'error',
         })
@@ -502,7 +506,7 @@ export function ContentEditor({
             onClick={() => setShowTemplates(true)}
             className='inline-flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-gray-700 text-sm hover:bg-gray-200'
           >
-            <Template className='mr-1 h-4 w-4' />
+            <FileText className='mr-1 h-4 w-4' />
             Templates
           </button>
 

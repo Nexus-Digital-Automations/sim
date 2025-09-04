@@ -707,4 +707,72 @@ interface RateLimitEntry {
 // Export all types and main class
 export { EmbeddingService, SemanticSearchService, IntelligentChatbot, PredictiveHelpEngine }
 
+/**
+ * Factory function to create a fully configured AI Help Engine instance
+ * @param environment - Environment configuration
+ * @param logger - Logger instance
+ * @returns Configured AIHelpEngine instance
+ */
+export function createAIHelpEngine(
+  environment: 'development' | 'production' | 'test' = 'development',
+  logger?: Logger
+): AIHelpEngine {
+  // Import configuration utilities
+  const { getConfigForEnvironment } = require('./config')
+
+  // Create logger if not provided
+  if (!logger) {
+    const { createLogger } = require('@/lib/logs/console/logger')
+    logger = createLogger('AIHelpEngine')
+  }
+
+  // Get environment-specific configuration
+  const config = getConfigForEnvironment()
+
+  // Create and return engine instance
+  return new AIHelpEngine(config, logger)
+}
+
+/**
+ * Singleton AI Help Engine instance for application-wide use
+ */
+let globalAIHelpEngine: AIHelpEngine | null = null
+
+/**
+ * Get or create the global AI Help Engine instance
+ * @returns Global AIHelpEngine instance
+ */
+export function getAIHelpEngine(): AIHelpEngine {
+  if (!globalAIHelpEngine) {
+    globalAIHelpEngine = createAIHelpEngine()
+  }
+  return globalAIHelpEngine
+}
+
+/**
+ * Initialize the global AI Help Engine with custom configuration
+ * @param config - Custom configuration
+ * @param logger - Custom logger
+ * @returns Initialized AIHelpEngine instance
+ */
+export function initializeAIHelpEngine(config: AIHelpEngineConfig, logger?: Logger): AIHelpEngine {
+  if (!logger) {
+    const { createLogger } = require('@/lib/logs/console/logger')
+    logger = createLogger('AIHelpEngine')
+  }
+
+  globalAIHelpEngine = new AIHelpEngine(config, logger)
+  return globalAIHelpEngine
+}
+
+/**
+ * Gracefully shutdown the global AI Help Engine
+ */
+export async function shutdownAIHelpEngine(): Promise<void> {
+  if (globalAIHelpEngine) {
+    await globalAIHelpEngine.shutdown()
+    globalAIHelpEngine = null
+  }
+}
+
 export default AIHelpEngine

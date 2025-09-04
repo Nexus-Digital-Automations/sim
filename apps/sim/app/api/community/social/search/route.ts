@@ -515,7 +515,7 @@ async function searchUsers(
     // Build text search conditions
     const textSearchCondition = searchTerms
       .map(
-        (term, index) =>
+        (term: string, index: number) =>
           `(LOWER(u.name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.display_name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.bio) LIKE $${queryValues.length + index + 1} OR 
@@ -525,7 +525,7 @@ async function searchUsers(
       .join(' AND ')
 
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map((term) => `%${term}%`))
+    queryValues.push(...searchTerms.map((term: string) => `%${term}%`))
 
     // Apply filters
     if (params.filters?.verified) {
@@ -673,7 +673,7 @@ async function searchTemplates(
     // Build text search conditions
     const textSearchCondition = searchTerms
       .map(
-        (term, index) =>
+        (term: string, index: number) =>
           `(LOWER(t.name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(t.description) LIKE $${queryValues.length + index + 1} OR 
         LOWER(t.category) LIKE $${queryValues.length + index + 1})`
@@ -681,7 +681,7 @@ async function searchTemplates(
       .join(' AND ')
 
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map((term) => `%${term}%`))
+    queryValues.push(...searchTerms.map((term: string) => `%${term}%`))
 
     // Apply category filters
     if (params.filters?.categories?.length > 0) {
@@ -824,14 +824,14 @@ async function searchActivities(
     // Build text search conditions
     const textSearchCondition = searchTerms
       .map(
-        (term, index) =>
+        (term: string, index: number) =>
           `(LOWER(cua.target_title) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cua.activity_data::text) LIKE $${queryValues.length + index + 1})`
       )
       .join(' AND ')
 
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map((term) => `%${term}%`))
+    queryValues.push(...searchTerms.map((term: string) => `%${term}%`))
 
     // Apply content type filters
     if (params.filters?.contentType?.length > 0) {
@@ -941,11 +941,13 @@ async function searchComments(
 
     // Build text search conditions
     const textSearchCondition = searchTerms
-      .map((term, index) => `LOWER(cc.content) LIKE $${queryValues.length + index + 1}`)
+      .map(
+        (term: string, index: number) => `LOWER(cc.content) LIKE $${queryValues.length + index + 1}`
+      )
       .join(' AND ')
 
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map((term) => `%${term}%`))
+    queryValues.push(...searchTerms.map((term: string) => `%${term}%`))
 
     // Apply date filters
     if (params.filters?.dateRange?.from) {

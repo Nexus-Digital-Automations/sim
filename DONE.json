@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3590,7 +3606,9 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3622,7 +3640,10 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/", "development/reports/"],
+      "important_files": [
+        "development/research-reports/",
+        "development/reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3654,7 +3675,9 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3891,9 +3914,284 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757021179014_dgtqti9lv",
+      "title": "Fix all linter errors - A11y and TypeScript violations",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T21:26:19.014Z",
+      "auto_research_created": false,
+      "description": "No description provided",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T21:37:24.384Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T21:37:24.384Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757009940262_hhzetmwoo",
+      "title": "Research: Implement intelligent chatbot with contextual awareness",
+      "description": "Research and analysis required for implementing: \"Implement intelligent chatbot with contextual awareness\"\n\n**Implementation Task Details:**\nCreate intelligent chatbot system with contextual awareness, natural language processing for help queries, user intent recognition, conversation management, and integration with Claude AI for advanced NLP capabilities based on research specifications\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757009940261_eyzruv2ai\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1757009940262_hhzetmwoo.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1757009940262_hhzetmwoo.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:19:00.262Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1757009940261_eyzruv2ai",
+      "assigned_agent": "development_session_1757024432879_1_general_fa5369f4",
+      "started_at": "2025-09-04T22:21:24.146Z",
+      "claimed_by": "development_session_1757024432879_1_general_fa5369f4",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757011830437_1_general_be0631bc",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:51:48.423Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T19:06:49.842Z",
+          "reason": "Task stale for 15 minutes"
+        },
+        {
+          "agentId": "development_session_1757016189788_1_general_bc77ed74",
+          "role": "primary",
+          "assignedAt": "2025-09-04T20:03:33.109Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T20:38:35.136Z",
+          "reason": "Task stale for 35 minutes"
+        },
+        {
+          "agent": "agent_1757020393758",
+          "action": "claimed",
+          "timestamp": "2025-09-04T21:13:13.758Z"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T22:19:20.532Z",
+          "reason": "Task stale for 66 minutes"
+        },
+        {
+          "agentId": "development_session_1757024432879_1_general_fa5369f4",
+          "role": "primary",
+          "assignedAt": "2025-09-04T22:21:24.146Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T22:25:37.696Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T22:25:37.698Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757011765846_6wri25dfy",
+      "title": "Research: Implement semantic search API endpoints for help content matching",
+      "description": "Research and analysis required for implementing: \"Implement semantic search API endpoints for help content matching\"\n\n**Implementation Task Details:**\nCreate semantic search API endpoints that leverage vector embeddings for help content discovery. Implement real-time similarity search, context-aware filtering, hybrid search combining vector and keyword matching, and caching optimizations. Build upon existing help search API while adding advanced semantic capabilities.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757011765845_nq5dd5kag\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1757011765846_6wri25dfy.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1757011765846_6wri25dfy.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:49:25.846Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1757011765845_nq5dd5kag",
+      "assigned_agent": "development_session_1757024452218_1_general_ab32104a",
+      "started_at": "2025-09-04T22:21:34.482Z",
+      "claimed_by": "development_session_1757024452218_1_general_ab32104a",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757020276047_1_general_29dba3e7",
+          "role": "primary",
+          "assignedAt": "2025-09-04T21:22:33.835Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T22:19:20.532Z",
+          "reason": "Task stale for 57 minutes"
+        },
+        {
+          "agentId": "development_session_1757024452218_1_general_ab32104a",
+          "role": "primary",
+          "assignedAt": "2025-09-04T22:21:34.482Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T22:25:48.979Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T22:25:48.979Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757011763324_w8ejxorjq",
+      "title": "Research: Implement database schema for user goals and analytics",
+      "description": "Research and analysis required for implementing: \"Implement database schema for user goals and analytics\"\n\n**Implementation Task Details:**\nCreate database tables for user workflow goals, preferences, template usage analytics, and wizard completion tracking\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757011763322_w7owwwnoh\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1757011763324_w8ejxorjq.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1757011763324_w8ejxorjq.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:49:23.324Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1757011763322_w7owwwnoh",
+      "assigned_agent": "development_session_1757024452218_1_general_ab32104a",
+      "started_at": "2025-09-04T22:26:27.494Z",
+      "claimed_by": "development_session_1757024452218_1_general_ab32104a",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757024452218_1_general_ab32104a",
+          "role": "primary",
+          "assignedAt": "2025-09-04T22:26:27.494Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T22:29:02.642Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T22:29:02.642Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757009930107_flncrd9el",
+      "title": "Create AI help engine core architecture",
+      "description": "Create the core AI help engine architecture at /Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/ with natural language processing, contextual intent recognition, predictive help based on user behavior patterns, machine learning models for personalization, and real-time response generation based on research report requirements",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/research-build-context-sensitive-help-and-documentation-system-1757009205206.md"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:18:50.112Z",
+      "auto_research_created": true,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T22:31:16.140Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T22:31:16.140Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 82,
-  "last_completion": "2025-09-04T21:30:33.008Z",
+  "total_completed": 87,
+  "last_completion": "2025-09-04T22:31:16.140Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

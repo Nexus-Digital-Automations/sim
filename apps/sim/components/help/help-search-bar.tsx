@@ -74,6 +74,7 @@ export interface HelpSearchBarProps {
   shortcutKey?: string
 
   // Filtering
+  enableFilters?: boolean
   availableFilters?: SearchFilter[]
   selectedFilters?: string[]
 
@@ -265,6 +266,7 @@ export function HelpSearchBar({
   showCategorySuggestions = true,
   enableShortcuts = true,
   shortcutKey = 'k',
+  enableFilters = false,
   availableFilters = [],
   selectedFilters = [],
   onSearch,
@@ -472,6 +474,37 @@ export function HelpSearchBar({
     }
   }
 
+  const renderAdvancedFilters = () => {
+    if (!enableFilters || availableFilters.length === 0) return null
+
+    return (
+      <div className='border-t p-2'>
+        <div className='mb-2'>
+          <span className='font-medium text-muted-foreground text-xs'>Filters</span>
+        </div>
+        <div className='flex flex-wrap gap-1'>
+          {availableFilters.map((filter) => (
+            <Button
+              key={filter.id}
+              variant={selectedFilters.includes(filter.id) ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => {
+                const newFilters = selectedFilters.includes(filter.id)
+                  ? selectedFilters.filter((f) => f !== filter.id)
+                  : [...selectedFilters, filter.id]
+                onFilterChange?.(newFilters)
+              }}
+              className='h-6 px-2 text-xs'
+            >
+              {filter.icon && <span className='mr-1'>{filter.icon}</span>}
+              {filter.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const renderResultIcon = (type: SearchResult['type']) => {
     switch (type) {
       case 'content':
@@ -610,6 +643,9 @@ export function HelpSearchBar({
                   </CommandGroup>
                 </>
               )}
+
+              {/* Advanced Filters */}
+              {renderAdvancedFilters()}
 
               {/* Empty State */}
               {!isSearching && query && results.length === 0 && suggestions.length === 0 && (
