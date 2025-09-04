@@ -20,8 +20,11 @@
  * @created 2025-09-04
  */
 
+import { randomUUID } from 'crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { getSession } from '@/lib/auth'
+import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { templateRecommendationEngine } from '@/lib/workflow-wizard/template-recommendation-engine'
 import type { 
@@ -29,8 +32,12 @@ import type {
   UserContext 
 } from '@/lib/workflow-wizard/wizard-engine'
 
-// Initialize structured logger
-const logger = createLogger('TemplateSuggestionsAPI')
+// Initialize structured logger with comprehensive context tracking
+const logger = createLogger('TemplateSuggestionsAPI', {
+  service: 'workflow-wizard',
+  component: 'template-suggestions-api',
+  version: '2.0.0'
+})
 
 /**
  * Request validation schema
@@ -121,7 +128,7 @@ const TemplateSuggestionsResponseSchema = z.object({
         requiredCredentials: z.array(z.string()),
         supportedIntegrations: z.array(z.string()),
         aiRecommendationScore: z.number().optional(),
-      })),
+      }),
       score: z.number().min(0).max(1),
       reasons: z.array(z.string()),
       matchingCriteria: z.array(z.string()),
@@ -164,6 +171,34 @@ const CACHE_CONFIG = {
 /**
  * Simple in-memory cache for development
  */
+/**
+ * Enhanced rate limiter implementation
+ */
+class RateLimiter {
+  private requests = new Map<string, Array<number>>()
+
+  isRateLimited(key: string, config: { windowMs: number; maxRequests: number }): boolean {
+    const now = Date.now()
+    const userRequests = this.requests.get(key) || []
+    
+    // Clean up old requests outside the window
+    const recentRequests = userRequests.filter(time => now - time < config.windowMs)
+    
+    if (recentRequests.length >= config.maxRequests) {
+      return true
+    }
+    
+    recentRequests.push(now)
+    this.requests.set(key, recentRequests)
+    return false
+  }
+}
+
+const rateLimiter = new RateLimiter()
+
+/**
+ * Enhanced caching with privacy considerations
+ */
 class SimpleCache {
   private cache = new Map<string, { data: any; expires: number }>()
 
@@ -191,11 +226,15 @@ class SimpleCache {
 
   private cleanup(): void {
     const now = Date.now()
-    for (const [key, entry] of this.cache.entries()) {
+    const expiredKeys: string[] = []
+    
+    this.cache.forEach((entry, key) => {
       if (now > entry.expires) {
-        this.cache.delete(key)
+        expiredKeys.push(key)
       }
-    }
+    })
+    
+    expiredKeys.forEach(key => this.cache.delete(key))
   }
 }
 
@@ -228,11 +267,44 @@ function generateCacheKey(
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now()
-  const requestId = crypto.randomUUID().slice(0, 8)
+  const requestId = randomUUID().slice(0, 8)
 
   logger.info(`[${requestId}] Template suggestions request received`)
 
   try {
+    // Optional authentication - allows both authenticated and anonymous requests
+    let userId: string | null = null
+    let isInternalCall = false
+
+    // Check for internal JWT token first (for server-side calls)
+    const authHeader = request.headers.get('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1]
+      isInternalCall = await verifyInternalToken(token)
+    }
+
+    if (!isInternalCall) {
+      // Try to get session if available (for personalized suggestions)
+      const session = await getSession()
+      if (session?.user?.id) {
+        userId = session.user.id
+      }
+    }
+
+    // Rate limiting check
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rateLimitKey = `template-suggestions:${userId || clientIP}`
+    
+    if (rateLimiter.isRateLimited(rateLimitKey, RATE_LIMIT_CONFIG)) {
+      logger.warn(`[${requestId}] Rate limit exceeded for template suggestions`, { userId, clientIP })
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many suggestion requests'
+        },
+      }, { status: 429 })
+    }
     // Parse and validate request body
     const body = await request.json()
     const validationResult = TemplateSuggestionsRequestSchema.safeParse(body)
@@ -269,12 +341,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
     }
 
-    // Get template recommendations
+    // Enhanced request validation for user context
+    if (userId && userId !== userContext.userId) {
+      logger.warn(`[${requestId}] User ID mismatch in template suggestions request`, {
+        sessionUserId: userId,
+        contextUserId: userContext.userId,
+      })
+      // Continue with anonymous context for security
+      userContext.userId = 'anonymous'
+    }
+
+    // Get template recommendations with enhanced context
     logger.info(`[${requestId}] Generating template recommendations`, {
+      userId,
       goalId: goal.id,
       goalCategory: goal.category,
       userSkillLevel: userContext.skillLevel,
       maxRecommendations: options.maxRecommendations,
+      isAuthenticated: !!userId,
+      isInternalCall,
     })
 
     const recommendations = await templateRecommendationEngine.getRecommendations(
@@ -346,8 +431,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(responseData)
 
-  } catch (error) {
+  } catch (error: any) {
     const processingTime = Date.now() - startTime
+
+    if (error instanceof z.ZodError) {
+      logger.warn(`[${requestId}] Invalid template suggestions parameters`, {
+        errors: error.errors,
+        processingTime,
+      })
+      
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST_DATA',
+          message: 'Invalid request data',
+          details: error.errors,
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          processingTime,
+        },
+      }, { status: 400 })
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     
     logger.error(`[${requestId}] Template suggestions request failed`, {
@@ -358,7 +465,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       success: false,
-      error: 'Failed to generate template suggestions',
+      error: {
+        code: 'SUGGESTIONS_FAILED',
+        message: 'Failed to generate template suggestions',
+        details: errorMessage,
+      },
       meta: {
         requestId,
         timestamp: new Date().toISOString(),

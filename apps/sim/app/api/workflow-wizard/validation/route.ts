@@ -22,15 +22,56 @@
  * @created 2025-09-04
  */
 
+import { randomUUID } from 'crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { getSession } from '@/lib/auth'
+import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
 import type { ConfigurationField } from '@/lib/workflow-wizard/configuration-assistant'
 import { configurationAssistant } from '@/lib/workflow-wizard/configuration-assistant'
 import type { BusinessGoal, WorkflowTemplate } from '@/lib/workflow-wizard/wizard-engine'
 
-// Initialize structured logger
-const logger = createLogger('ConfigurationValidationAPI')
+// Initialize structured logger with comprehensive context tracking
+const logger = createLogger('ConfigurationValidationAPI', {
+  service: 'workflow-wizard',
+  component: 'validation-api',
+  version: '2.0.0'
+})
+
+/**
+ * Rate limiting configuration
+ */
+const RATE_LIMIT_CONFIG = {
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  maxRequests: 100, // requests per window per IP
+}
+
+/**
+ * Simple rate limiter implementation
+ */
+class RateLimiter {
+  private requests = new Map<string, Array<number>>()
+
+  isRateLimited(key: string, config: { windowMs: number; maxRequests: number }): boolean {
+    const now = Date.now()
+    const userRequests = this.requests.get(key) || []
+    
+    // Clean up old requests outside the window
+    const recentRequests = userRequests.filter(time => now - time < config.windowMs)
+    
+    if (recentRequests.length >= config.maxRequests) {
+      return true
+    }
+    
+    recentRequests.push(now)
+    this.requests.set(key, recentRequests)
+    return false
+  }
+}
+
+const rateLimiter = new RateLimiter()
 
 /**
  * Validation rule schema
@@ -264,11 +305,58 @@ const ValidationResponseSchema = z.object({
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now()
-  const requestId = crypto.randomUUID().slice(0, 8)
+  const requestId = randomUUID().slice(0, 8)
 
   logger.info(`[${requestId}] Configuration validation request received`)
 
   try {
+    // Authentication check
+    let userId: string | null = null
+    let hasAdminAccess = false
+
+    // Check for internal JWT token first (for server-side calls)
+    const authHeader = request.headers.get('authorization')
+    let isInternalCall = false
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1]
+      isInternalCall = await verifyInternalToken(token)
+    }
+
+    if (!isInternalCall) {
+      const session = await getSession()
+      if (!session?.user?.id) {
+        logger.warn(`[${requestId}] Unauthorized validation request`)
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'Authentication required for configuration validation'
+          },
+        }, { status: 401 })
+      }
+
+      userId = session.user.id
+      // TODO: Check for admin permissions if needed
+      hasAdminAccess = true // Placeholder
+    } else {
+      hasAdminAccess = true // Internal calls have full access
+    }
+
+    // Rate limiting check
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rateLimitKey = `validation:${userId || clientIP}`
+    
+    if (rateLimiter.isRateLimited(rateLimitKey, RATE_LIMIT_CONFIG)) {
+      logger.warn(`[${requestId}] Rate limit exceeded for validation request`, { userId, clientIP })
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many validation requests'
+        },
+      }, { status: 429 })
+    }
     // Parse and validate request body
     const body = await request.json()
     const validationResult = ValidationRequestSchema.safeParse(body)
@@ -298,11 +386,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } = validationResult.data
 
     logger.info(`[${requestId}] Validating configuration`, {
+      userId,
       templateId: template.id,
       goalId: goal.id,
       fieldCount: fields.length,
       configurationKeys: Object.keys(configuration),
       validationLevel: options.validationLevel,
+      isInternalCall,
     })
 
     // Create configuration context
@@ -402,9 +492,46 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       processingTime,
     })
 
+    // Add audit logging for enterprise compliance
+    if (options.validationLevel === 'enterprise') {
+      logger.info(`[${requestId}] Enterprise validation audit`, {
+        userId,
+        templateId: template.id,
+        validationResult: {
+          isValid: result.isValid,
+          errorCount: result.errors.length,
+          warningCount: result.warnings.length,
+          securityRiskLevel: securityAnalysis?.riskLevel,
+        },
+        timestamp: new Date().toISOString(),
+      })
+    }
+
     return NextResponse.json(responseData)
-  } catch (error) {
+  } catch (error: any) {
     const processingTime = Date.now() - startTime
+
+    if (error instanceof z.ZodError) {
+      logger.warn(`[${requestId}] Invalid request parameters`, {
+        errors: error.errors,
+        processingTime,
+      })
+      
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST_DATA',
+          message: 'Invalid request data',
+          details: error.errors,
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          processingTime,
+        },
+      }, { status: 400 })
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
     logger.error(`[${requestId}] Configuration validation failed`, {
@@ -413,18 +540,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       processingTime,
     })
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to validate configuration',
-        meta: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          processingTime,
-        },
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'VALIDATION_FAILED',
+        message: 'Failed to validate configuration',
+        details: errorMessage,
       },
-      { status: 500 }
-    )
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+        processingTime,
+      },
+    }, { status: 500 })
   }
 }
 

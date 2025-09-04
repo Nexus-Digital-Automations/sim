@@ -22,19 +22,64 @@
  * @created 2025-09-04
  */
 
+import { randomUUID } from 'crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { and, eq } from 'drizzle-orm'
+import { getSession } from '@/lib/auth'
+import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getUserEntityPermissions } from '@/lib/permissions/utils'
+import { db } from '@/db'
+import { workflow, workflowBlocks, workspace } from '@/db/schema'
 import { templateManager } from '@/lib/templates/template-manager'
 import { configurationAssistant } from '@/lib/workflow-wizard/configuration-assistant'
+import { wizardAnalytics } from '@/lib/workflow-wizard/wizard-analytics'
 import type {
   BusinessGoal,
   UserContext,
   WorkflowTemplate,
 } from '@/lib/workflow-wizard/wizard-engine'
 
-// Initialize structured logger
-const logger = createLogger('WorkflowCreationAPI')
+// Initialize structured logger with comprehensive context tracking
+const logger = createLogger('WorkflowCreationAPI', {
+  service: 'workflow-wizard',
+  component: 'creation-api',
+  version: '2.0.0'
+})
+
+/**
+ * Rate limiting configuration with creation-specific limits
+ */
+const RATE_LIMIT_CONFIG = {
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  maxRequests: 10, // Conservative limit for resource-intensive operations
+}
+
+/**
+ * Simple rate limiter implementation
+ */
+class RateLimiter {
+  private requests = new Map<string, Array<number>>()
+
+  isRateLimited(key: string, config: { windowMs: number; maxRequests: number }): boolean {
+    const now = Date.now()
+    const userRequests = this.requests.get(key) || []
+    
+    // Clean up old requests outside the window
+    const recentRequests = userRequests.filter(time => now - time < config.windowMs)
+    
+    if (recentRequests.length >= config.maxRequests) {
+      return true
+    }
+    
+    recentRequests.push(now)
+    this.requests.set(key, recentRequests)
+    return false
+  }
+}
+
+const rateLimiter = new RateLimiter()
 
 /**
  * Request validation schema
@@ -224,15 +269,58 @@ interface CreationMetrics {
 
 /**
  * POST /api/workflow-wizard/creation
- * Create workflow from wizard configuration
+ * Create workflow from wizard configuration with enterprise security
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now()
-  const requestId = crypto.randomUUID().slice(0, 8)
+  const requestId = randomUUID().slice(0, 8)
 
   logger.info(`[${requestId}] Workflow creation request received`)
 
   try {
+    // Authentication check - required for workflow creation
+    let userId: string | null = null
+    let hasWorkspaceAccess = false
+
+    // Check for internal JWT token first (for server-side calls)
+    const authHeader = request.headers.get('authorization')
+    let isInternalCall = false
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1]
+      isInternalCall = await verifyInternalToken(token)
+    }
+
+    if (!isInternalCall) {
+      const session = await getSession()
+      if (!session?.user?.id) {
+        logger.warn(`[${requestId}] Unauthorized workflow creation attempt`)
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'Authentication required for workflow creation'
+          },
+        }, { status: 401 })
+      }
+
+      userId = session.user.id
+    }
+
+    // Rate limiting check - stricter for creation operations
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rateLimitKey = `creation:${userId || clientIP}`
+    
+    if (rateLimiter.isRateLimited(rateLimitKey, RATE_LIMIT_CONFIG)) {
+      logger.warn(`[${requestId}] Rate limit exceeded for workflow creation`, { userId, clientIP })
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many workflow creation requests. Please try again later.'
+        },
+      }, { status: 429 })
+    }
     // Parse and validate request body
     const body = await request.json()
     const validationResult = WorkflowCreationRequestSchema.safeParse(body)
@@ -262,13 +350,51 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       wizardSession,
     } = validationResult.data
 
+    // Validate workspace access if not internal call
+    if (!isInternalCall) {
+      if (userId !== userContext.userId) {
+        logger.warn(`[${requestId}] User ID mismatch in workflow creation request`, {
+          sessionUserId: userId,
+          contextUserId: userContext.userId,
+        })
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'USER_MISMATCH',
+            message: 'User context does not match authenticated user'
+          },
+        }, { status: 403 })
+      }
+
+      // Check workspace permissions
+      const userPermission = await getUserEntityPermissions(userId, 'workspace', workspaceId)
+      if (userPermission !== 'write' && userPermission !== 'admin') {
+        logger.warn(`[${requestId}] Insufficient workspace permissions for workflow creation`, {
+          userId,
+          workspaceId,
+          permission: userPermission,
+        })
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'INSUFFICIENT_PERMISSIONS',
+            message: 'Write permissions required for workflow creation in this workspace'
+          },
+        }, { status: 403 })
+      }
+
+      hasWorkspaceAccess = true
+    }
+
     logger.info(`[${requestId}] Creating workflow from wizard`, {
+      userId,
       goalId: goal.id,
       templateId: template.id,
-      userId: userContext.userId,
       workspaceId,
       configurationKeys: Object.keys(configuration),
       wizardSessionId: wizardSession?.sessionId,
+      isInternalCall,
+      hasWorkspaceAccess,
     })
 
     // Initialize metrics tracking
@@ -460,11 +586,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         })
       }
 
-      // Step 5: Create final workflow object
-      const workflowId = crypto.randomUUID()
-      const now = new Date().toISOString()
+      // Step 5: Create final workflow object with database persistence
+      const workflowId = randomUUID()
+      const starterId = randomUUID()
+      const now = new Date()
+      const nowISO = now.toISOString()
 
-      const workflow = {
+      const workflowData = {
         id: workflowId,
         name: customization.workflowName || template.title,
         description: customization.description || template.description,
@@ -479,10 +607,92 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         connections: template.connections,
         variables: customization.variables || {},
         integrations: template.requiredCredentials || [],
-        createdAt: now,
-        updatedAt: now,
+        createdAt: nowISO,
+        updatedAt: nowISO,
         estimatedExecutionTime: template.averageSetupTime * 60,
         tags: [...(goal.tags || []), ...(template.tags || [])],
+      }
+
+      // Persist workflow to database with transaction safety
+      try {
+        await db.transaction(async (tx) => {
+          // Create the workflow record
+          await tx.insert(workflow).values({
+            id: workflowId,
+            userId: userContext.userId,
+            workspaceId: workspaceId || null,
+            folderId: null, // Could be derived from configuration
+            name: workflowData.name,
+            description: workflowData.description,
+            color: '#3972F6', // Default color, could be customizable
+            lastSynced: now,
+            createdAt: now,
+            updatedAt: now,
+            isDeployed: false,
+            collaborators: [],
+            runCount: 0,
+            variables: workflowData.variables,
+            isPublished: false,
+            marketplaceData: null,
+          })
+
+          // Create the starter block
+          await tx.insert(workflowBlocks).values({
+            id: starterId,
+            workflowId: workflowId,
+            type: 'starter',
+            name: 'Start',
+            positionX: '100',
+            positionY: '100',
+            enabled: true,
+            horizontalHandles: true,
+            isWide: false,
+            advancedMode: false,
+            triggerMode: false,
+            height: '95',
+            subBlocks: {
+              startWorkflow: {
+                id: 'startWorkflow',
+                type: 'dropdown',
+                value: 'manual',
+              },
+              // Add other default starter configuration
+            },
+            outputs: {
+              response: {
+                type: {
+                  input: 'any',
+                },
+              },
+            },
+            createdAt: now,
+            updatedAt: now,
+          })
+
+          logger.info(`[${requestId}] Workflow persisted to database successfully`, {
+            workflowId,
+            starterId,
+          })
+        })
+      } catch (dbError) {
+        logger.error(`[${requestId}] Database transaction failed during workflow creation`, {
+          error: dbError instanceof Error ? dbError.message : 'Unknown database error',
+          workflowId,
+        })
+        
+        return NextResponse.json({
+          success: false,
+          error: {
+            code: 'DATABASE_ERROR',
+            message: 'Failed to persist workflow to database',
+            details: dbError instanceof Error ? dbError.message : 'Unknown error',
+          },
+          meta: {
+            requestId,
+            timestamp: nowISO,
+            processingTime: Date.now() - startTime,
+          },
+        }, { status: 500 })
       }
 
       // Generate documentation if requested
@@ -557,12 +767,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         )
       }
 
+      // Track analytics event for workflow creation
+      if (wizardSession?.sessionId) {
+        await wizardAnalytics.trackEvent({
+          type: 'workflow_created',
+          sessionId: wizardSession.sessionId,
+          userId: userContext.userId,
+          workspaceId,
+          goalId: goal.id,
+          templateId: template.id,
+          metadata: {
+            workflowId: workflowData.id,
+            processingTime: metrics.totalCreationTime,
+            blocksCreated: metrics.blocksCreated,
+            optimizationsApplied: metrics.optimizationsApplied,
+            abTestVariant: wizardSession.abTestVariant,
+          },
+          timestamp: nowISO,
+        })
+      }
+
       logger.info(`[${requestId}] Workflow created successfully`, {
-        workflowId: workflow.id,
-        workflowName: workflow.name,
+        workflowId: workflowData.id,
+        workflowName: workflowData.name,
         totalTime: metrics.totalCreationTime,
         blocksCreated: metrics.blocksCreated,
         optimizationsApplied: metrics.optimizationsApplied,
+        hasAnalytics: !!wizardSession?.sessionId,
       })
 
       return NextResponse.json(responseData)
@@ -584,8 +815,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 500 }
       )
     }
-  } catch (error) {
+  } catch (error: any) {
     const processingTime = Date.now() - startTime
+
+    if (error instanceof z.ZodError) {
+      logger.warn(`[${requestId}] Invalid workflow creation parameters`, {
+        errors: error.errors,
+        processingTime,
+      })
+      
+      return NextResponse.json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST_DATA',
+          message: 'Invalid request data',
+          details: error.errors,
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          processingTime,
+        },
+      }, { status: 400 })
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
     logger.error(`[${requestId}] Workflow creation failed`, {
@@ -594,18 +847,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       processingTime,
     })
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create workflow',
-        meta: {
-          requestId,
-          timestamp: new Date().toISOString(),
-          processingTime,
-        },
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'CREATION_FAILED',
+        message: 'Failed to create workflow from wizard configuration',
+        details: errorMessage,
       },
-      { status: 500 }
-    )
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+        processingTime,
+      },
+    }, { status: 500 })
   }
 }
 
