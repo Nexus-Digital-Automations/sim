@@ -988,6 +988,23 @@
       "auto_research_created": false
     },
     {
+      "id": "task_1757012417257_t2opwzdsi",
+      "title": "Research contextual intent recognition systems and ML approaches for AI help engines",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T19:00:17.257Z",
+      "auto_research_created": false,
+      "description": "No description provided"
+    },
+    {
       "id": "task_1757012402475_i0oitlx4y",
       "title": "Research comprehensive NLP frameworks and implementation patterns for AI help engines",
       "mode": "DEVELOPMENT",
@@ -1097,23 +1114,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1757012143808_35f84xq4e",
-      "title": "Research AI help engine security patterns and best practices",
-      "description": "Comprehensive research on AI security threats, architecture patterns, privacy protection, and operational security for enterprise AI help systems. Focus areas: 1) AI security threats (prompt injection, data poisoning, model extraction, adversarial attacks, privacy leakage, bias), 2) Security architecture patterns (input sanitization, output filtering, secure model serving, zero-trust, encryption, multi-tenancy), 3) Privacy protection (differential privacy, federated learning, anonymization, consent management, GDPR compliance, data retention), 4) Operational security (model versioning, monitoring, incident response, security testing, access control, audit logging). Deliverables: threat model, architecture recommendations, implementation guidelines, privacy frameworks, monitoring procedures, secure development practices.",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T18:55:43.808Z",
-      "auto_research_created": false
-    },
-    {
       "id": "task_1757012142924_095sfzmhi",
       "title": "Research enterprise AI help deployment and monitoring strategies",
       "description": "Comprehensive research on enterprise deployment patterns, governance frameworks, monitoring strategies, and integration requirements for AI help systems",
@@ -1128,23 +1128,6 @@
       "requires_research": false,
       "subtasks": [],
       "created_at": "2025-09-04T18:55:42.925Z",
-      "auto_research_created": false
-    },
-    {
-      "id": "task_1757012142064_3ycth08ra",
-      "title": "Research ML personalization architectures for AI help engines",
-      "description": "Research personalization algorithms, user modeling, adaptive features, and implementation architectures for AI help systems",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": 1,
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T18:55:42.064Z",
       "auto_research_created": false
     },
     {
