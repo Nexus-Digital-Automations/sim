@@ -159,7 +159,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "important_files": [],
       "success_criteria": [],
@@ -167,7 +167,19 @@
       "requires_research": false,
       "subtasks": [],
       "created_at": "2025-09-03T21:10:44.946Z",
-      "auto_research_created": false
+      "auto_research_created": false,
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-04T06:37:46.193Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T06:37:46.193Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        }
+      ]
     },
     {
       "id": "task_1756933828963_xalzvmigm",
@@ -586,7 +598,10 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -704,7 +719,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T05:38:56.909Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T05:38:56.909Z",
@@ -719,7 +740,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T05:53:45.190Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T05:53:45.190Z",
@@ -734,12 +761,45 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T06:03:04.576Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T06:03:04.576Z",
       "sessionId": "session_1756965784575",
       "metadata": {}
+    },
+    "development_session_1756967899042_1_general_63eed25f": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T06:38:19.042Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T06:38:19.042Z",
+      "sessionId": "session_1756967899042",
+      "metadata": {
+        "renewedAt": "2025-09-04T06:38:25.218Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-04T06:38:25.218Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1756967899042_1_general_63eed25f"
     }
   },
   "settings": {
