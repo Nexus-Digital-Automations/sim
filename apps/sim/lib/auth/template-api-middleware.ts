@@ -1,37 +1,37 @@
 /**
  * Template API Middleware Integration
- * 
+ *
  * This module provides specific middleware functions for template API endpoints
  * with comprehensive security, validation, and authorization controls.
- * 
+ *
  * FEATURES:
  * - API-specific authentication flows
- * - Request validation and sanitization  
+ * - Request validation and sanitization
  * - Operation-specific authorization
  * - Security headers and CORS handling
  * - API rate limiting and throttling
  * - Request/response logging and monitoring
- * 
+ *
  * INTEGRATION:
  * - Seamlessly integrates with existing template APIs
  * - Backwards compatible with current authentication
  * - Enhanced security without breaking changes
  * - Comprehensive audit trail
- * 
+ *
  * @version 2.0.0
  * @author Template API Security Team
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { 
-  authenticateTemplateOperation,
-  type TemplateOperation,
-  type TemplateAuthResult,
-  auditTemplateOperation,
-  canManageTemplate,
-} from './template-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
+import {
+  auditTemplateOperation,
+  authenticateTemplateOperation,
+  canManageTemplate,
+  type TemplateAuthResult,
+  type TemplateOperation,
+} from './template-middleware'
 
 const logger = createLogger('TemplateAPIMiddleware')
 
@@ -49,7 +49,7 @@ export const ApiValidationSchemas = {
   templateId: z.object({
     templateId: z.string().uuid('Invalid template ID format'),
   }),
-  
+
   /**
    * Pagination parameters validation
    */
@@ -58,7 +58,7 @@ export const ApiValidationSchemas = {
     limit: z.coerce.number().min(1).max(100).optional().default(20),
     offset: z.coerce.number().min(0).optional(),
   }),
-  
+
   /**
    * Template search parameters validation
    */
@@ -68,13 +68,22 @@ export const ApiValidationSchemas = {
     tagIds: z.array(z.string().uuid()).optional(),
     status: z.enum(['draft', 'pending_review', 'approved', 'rejected', 'archived']).optional(),
     visibility: z.enum(['private', 'unlisted', 'public']).optional(),
-    sortBy: z.enum([
-      'name', 'createdAt', 'updatedAt', 'views', 'downloads', 
-      'rating', 'popularity', 'relevance'
-    ]).optional().default('popularity'),
+    sortBy: z
+      .enum([
+        'name',
+        'createdAt',
+        'updatedAt',
+        'views',
+        'downloads',
+        'rating',
+        'popularity',
+        'relevance',
+      ])
+      .optional()
+      .default('popularity'),
     sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
   }),
-  
+
   /**
    * Template creation/update validation
    */
@@ -84,7 +93,10 @@ export const ApiValidationSchemas = {
     longDescription: z.string().max(10000).optional(),
     categoryId: z.string().uuid(),
     tagIds: z.array(z.string().uuid()).optional().default([]),
-    difficultyLevel: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional().default('intermediate'),
+    difficultyLevel: z
+      .enum(['beginner', 'intermediate', 'advanced', 'expert'])
+      .optional()
+      .default('intermediate'),
     visibility: z.enum(['private', 'unlisted', 'public']).optional().default('private'),
     workflowTemplate: z.record(z.any()),
     estimatedSetupTime: z.number().positive().optional(),
@@ -93,7 +105,7 @@ export const ApiValidationSchemas = {
     requiredIntegrations: z.array(z.string()).optional().default([]),
     supportedIntegrations: z.array(z.string()).optional().default([]),
   }),
-  
+
   /**
    * Template moderation actions
    */
@@ -102,7 +114,7 @@ export const ApiValidationSchemas = {
     reason: z.string().min(1).max(500).optional(),
     moderatorNotes: z.string().max(1000).optional(),
   }),
-  
+
   /**
    * Bulk operations validation
    */
@@ -123,15 +135,16 @@ export async function validateApiRequest<T>(
 ): Promise<{ success: true; data: T } | { success: false; error: string; details?: any }> {
   try {
     let rawData: any
-    
+
     switch (source) {
       case 'body':
         rawData = await request.json().catch(() => ({}))
         break
-      case 'query':
+      case 'query': {
         const { searchParams } = new URL(request.url)
         rawData = Object.fromEntries(searchParams.entries())
         break
+      }
       case 'params':
         // Params would be passed separately in context
         rawData = {}
@@ -139,10 +152,9 @@ export async function validateApiRequest<T>(
       default:
         return { success: false, error: 'Invalid validation source' }
     }
-    
+
     const validated = schema.parse(rawData)
     return { success: true, data: validated }
-    
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {
@@ -151,7 +163,7 @@ export async function validateApiRequest<T>(
         details: error.errors,
       }
     }
-    
+
     return {
       success: false,
       error: 'Request validation error',
@@ -173,11 +185,11 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  
+
   // API-specific headers
   response.headers.set('X-API-Version', '2.0')
   response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-  
+
   return response
 }
 
@@ -192,21 +204,24 @@ export function handleCORS(request: NextRequest): NextResponse | null {
     'http://localhost:3000',
     'http://localhost:3001',
   ].filter(Boolean)
-  
+
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 200 })
-    
+
     if (origin && allowedOrigins.includes(origin)) {
       response.headers.set('Access-Control-Allow-Origin', origin)
     }
-    
+
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+    response.headers.set(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With'
+    )
     response.headers.set('Access-Control-Max-Age', '86400')
-    
+
     return addSecurityHeaders(response)
   }
-  
+
   return null
 }
 
@@ -231,7 +246,7 @@ export async function withTemplateApiMiddleware(
 ): Promise<NextResponse> {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
-  
+
   try {
     logger.info(`[${requestId}] Template API request`, {
       method: request.method,
@@ -239,21 +254,22 @@ export async function withTemplateApiMiddleware(
       url: request.url,
       userAgent: request.headers.get('user-agent'),
     })
-    
+
     // Handle CORS preflight
     const corsResponse = handleCORS(request)
     if (corsResponse) {
       return corsResponse
     }
-    
+
     // Extract template ID if needed
     let templateId: string | undefined
     if (options.templateIdSource) {
       switch (options.templateIdSource) {
-        case 'query':
+        case 'query': {
           const { searchParams } = new URL(request.url)
           templateId = searchParams.get('templateId') || searchParams.get('id') || undefined
           break
+        }
         case 'body':
           try {
             const body = await request.json()
@@ -269,7 +285,7 @@ export async function withTemplateApiMiddleware(
           break
       }
     }
-    
+
     // Validate template ID requirement
     if (options.requireTemplateId && !templateId) {
       return NextResponse.json(
@@ -281,7 +297,7 @@ export async function withTemplateApiMiddleware(
         { status: 400 }
       )
     }
-    
+
     // Request validation
     if (options.validateRequest) {
       const validation = await validateApiRequest(
@@ -289,7 +305,7 @@ export async function withTemplateApiMiddleware(
         options.validateRequest,
         options.validationSource
       )
-      
+
       if (!validation.success) {
         return NextResponse.json(
           {
@@ -301,11 +317,11 @@ export async function withTemplateApiMiddleware(
           { status: 400 }
         )
       }
-      
       // Attach validated data to request
+
       ;(request as any).validatedData = validation.data
     }
-    
+
     // Authentication and authorization
     let authResult: TemplateAuthResult
     if (options.skipAuth) {
@@ -320,24 +336,27 @@ export async function withTemplateApiMiddleware(
       }
     } else {
       authResult = await authenticateTemplateOperation(request, operation, templateId)
-      
+
       if (!authResult.success) {
-        await auditTemplateOperation(
-          operation,
-          templateId,
-          authResult.context.userId,
-          false,
-          { error: authResult.error, requestId }
-        )
-        
+        await auditTemplateOperation(operation, templateId, authResult.context.userId, false, {
+          error: authResult.error,
+          requestId,
+        })
+
         return NextResponse.json(
           {
             success: false,
             error: authResult.error,
-            code: authResult.statusCode === 401 ? 'AUTHENTICATION_REQUIRED' : 
-                 authResult.statusCode === 403 ? 'INSUFFICIENT_PERMISSIONS' : 
-                 authResult.statusCode === 404 ? 'TEMPLATE_NOT_FOUND' :
-                 authResult.statusCode === 429 ? 'RATE_LIMIT_EXCEEDED' : 'SYSTEM_ERROR',
+            code:
+              authResult.statusCode === 401
+                ? 'AUTHENTICATION_REQUIRED'
+                : authResult.statusCode === 403
+                  ? 'INSUFFICIENT_PERMISSIONS'
+                  : authResult.statusCode === 404
+                    ? 'TEMPLATE_NOT_FOUND'
+                    : authResult.statusCode === 429
+                      ? 'RATE_LIMIT_EXCEEDED'
+                      : 'SYSTEM_ERROR',
             permissions: authResult.permissions,
             requestId,
           },
@@ -345,22 +364,19 @@ export async function withTemplateApiMiddleware(
         )
       }
     }
-    
+
     // Call the actual handler
     const response = await handler(request, authResult)
-    
+
     // Add security headers
     const secureResponse = addSecurityHeaders(response)
-    
+
     // Audit successful operation
-    await auditTemplateOperation(
-      operation,
-      templateId,
-      authResult.context.userId,
-      true,
-      { requestId, statusCode: response.status }
-    )
-    
+    await auditTemplateOperation(operation, templateId, authResult.context.userId, true, {
+      requestId,
+      statusCode: response.status,
+    })
+
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template API request completed in ${elapsed}ms`, {
       operation,
@@ -368,13 +384,12 @@ export async function withTemplateApiMiddleware(
       statusCode: response.status,
       userId: authResult.context.userId,
     })
-    
+
     return secureResponse
-    
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Template API error after ${elapsed}ms:`, error)
-    
+
     return NextResponse.json(
       {
         success: false,
@@ -396,16 +411,12 @@ export async function withTemplateApiMiddleware(
 export function withTemplateListMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'list',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'list', handler, {
       validateRequest: ApiValidationSchemas.search.merge(ApiValidationSchemas.pagination),
       validationSource: 'query',
       skipAuth: false, // Allow public access but authenticate when possible
-    }
-  )
+    })
 }
 
 /**
@@ -414,15 +425,11 @@ export function withTemplateListMiddleware(
 export function withTemplateDetailsMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'read',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'read', handler, {
       templateIdSource: 'params',
       requireTemplateId: true,
-    }
-  )
+    })
 }
 
 /**
@@ -431,15 +438,11 @@ export function withTemplateDetailsMiddleware(
 export function withTemplateCreateMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'create',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'create', handler, {
       validateRequest: ApiValidationSchemas.templateData,
       validationSource: 'body',
-    }
-  )
+    })
 }
 
 /**
@@ -448,17 +451,13 @@ export function withTemplateCreateMiddleware(
 export function withTemplateUpdateMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'update',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'update', handler, {
       templateIdSource: 'params',
       requireTemplateId: true,
       validateRequest: ApiValidationSchemas.templateData.partial(),
       validationSource: 'body',
-    }
-  )
+    })
 }
 
 /**
@@ -467,15 +466,11 @@ export function withTemplateUpdateMiddleware(
 export function withTemplateDeleteMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'delete',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'delete', handler, {
       templateIdSource: 'params',
       requireTemplateId: true,
-    }
-  )
+    })
 }
 
 /**
@@ -484,17 +479,13 @@ export function withTemplateDeleteMiddleware(
 export function withTemplateModerationMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'moderate',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'moderate', handler, {
       templateIdSource: 'params',
       requireTemplateId: true,
       validateRequest: ApiValidationSchemas.moderationAction,
       validationSource: 'body',
-    }
-  )
+    })
 }
 
 /**
@@ -503,17 +494,13 @@ export function withTemplateModerationMiddleware(
 export function withTemplateApprovalMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'approve',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'approve', handler, {
       templateIdSource: 'params',
       requireTemplateId: true,
       validateRequest: ApiValidationSchemas.moderationAction,
       validationSource: 'body',
-    }
-  )
+    })
 }
 
 /**
@@ -522,15 +509,11 @@ export function withTemplateApprovalMiddleware(
 export function withTemplateBulkMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'admin',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'admin', handler, {
       validateRequest: ApiValidationSchemas.bulkOperation,
       validationSource: 'body',
-    }
-  )
+    })
 }
 
 /**
@@ -539,14 +522,10 @@ export function withTemplateBulkMiddleware(
 export function withTemplateAnalyticsMiddleware(
   handler: (request: NextRequest, auth: TemplateAuthResult) => Promise<NextResponse>
 ) {
-  return (request: NextRequest) => withTemplateApiMiddleware(
-    request,
-    'analytics',
-    handler,
-    {
+  return (request: NextRequest) =>
+    withTemplateApiMiddleware(request, 'analytics', handler, {
       templateIdSource: 'params',
-    }
-  )
+    })
 }
 
 // ========================
@@ -586,7 +565,7 @@ export function createErrorResponse(
     },
     { status: statusCode }
   )
-  
+
   return addSecurityHeaders(response)
 }
 
@@ -595,7 +574,7 @@ export function createErrorResponse(
  */
 export function createSuccessResponse(
   data: any,
-  statusCode: number = 200,
+  statusCode = 200,
   meta?: any,
   requestId?: string
 ): NextResponse {
@@ -609,7 +588,7 @@ export function createSuccessResponse(
     },
     { status: statusCode }
   )
-  
+
   return addSecurityHeaders(response)
 }
 
@@ -622,7 +601,7 @@ export async function validateTemplateOwnership(
   userRole: string
 ): Promise<{ canManage: boolean; reason?: string }> {
   const result = await canManageTemplate(userId, templateId)
-  
+
   logger.info('Template ownership validation', {
     templateId,
     userId,
@@ -630,6 +609,6 @@ export async function validateTemplateOwnership(
     canManage: result.canManage,
     reason: result.reason,
   })
-  
+
   return result
 }

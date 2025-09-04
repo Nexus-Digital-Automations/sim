@@ -1,16 +1,16 @@
 /**
  * Template Authentication & Authorization Middleware
- * 
+ *
  * This middleware provides comprehensive role-based access control for template management
  * operations, including creation, review, approval, and administration capabilities.
- * 
+ *
  * ROLE HIERARCHY:
  * - admin: Full access to all template operations and moderation
  * - moderator: Can review, approve, and moderate community templates
  * - reviewer: Can review templates and provide feedback
  * - creator: Can create and manage own templates
  * - user: Basic read access to approved public templates
- * 
+ *
  * FEATURES:
  * - Role-based permissions with inheritance
  * - Resource-specific authorization (own templates vs others)
@@ -18,16 +18,16 @@
  * - Rate limiting by role level
  * - Audit logging for security compliance
  * - Integration with existing auth system
- * 
+ *
  * @version 2.0.0
  * @author Template Management Team
  */
 
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
-import { AuthHelpers, getUserRole, type EnhancedUser } from '@/lib/auth/types'
+import { type EnhancedUser, getUserRole } from '@/lib/auth/types'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import { templates, user } from '@/db/schema'
@@ -102,38 +102,47 @@ export interface TemplateAuthResult {
 
 /**
  * Role-based permission matrix for template operations
- * 
+ *
  * Each role inherits permissions from lower roles in the hierarchy:
  * admin > moderator > reviewer > creator > user
  */
 const ROLE_PERMISSIONS: Record<TemplateRole, TemplateOperation[]> = {
   // Full administrative access
   admin: [
-    'read', 'list', 'create', 'update', 'delete', 
-    'approve', 'reject', 'moderate', 'feature', 
-    'analytics', 'admin'
+    'read',
+    'list',
+    'create',
+    'update',
+    'delete',
+    'approve',
+    'reject',
+    'moderate',
+    'feature',
+    'analytics',
+    'admin',
   ],
-  
+
   // Community moderation and template approval
   moderator: [
-    'read', 'list', 'create', 'update', 'delete',
-    'approve', 'reject', 'moderate', 'analytics'
+    'read',
+    'list',
+    'create',
+    'update',
+    'delete',
+    'approve',
+    'reject',
+    'moderate',
+    'analytics',
   ],
-  
+
   // Template review and feedback
-  reviewer: [
-    'read', 'list', 'create', 'update', 'analytics'
-  ],
-  
+  reviewer: ['read', 'list', 'create', 'update', 'analytics'],
+
   // Template creation and management
-  creator: [
-    'read', 'list', 'create', 'update'
-  ],
-  
+  creator: ['read', 'list', 'create', 'update'],
+
   // Basic read access
-  user: [
-    'read', 'list'
-  ]
+  user: ['read', 'list'],
 }
 
 /**
@@ -149,7 +158,6 @@ export function mapToTemplateRole(dbRole: string): TemplateRole {
       return 'reviewer'
     case 'creator':
       return 'creator'
-    case 'user':
     default:
       return 'user'
   }
@@ -164,43 +172,43 @@ export function hasPermission(
   context?: Partial<TemplatePermissionContext>
 ): boolean {
   const basePermissions = ROLE_PERMISSIONS[userRole] || []
-  
+
   // Check base role permissions
   if (!basePermissions.includes(operation)) {
     return false
   }
-  
+
   // Additional context-specific checks
   if (context) {
     // Own resource permissions - users can modify their own templates
     if (context.isOwner && ['update', 'delete'].includes(operation)) {
       return true
     }
-    
+
     // Status-based restrictions
     if (context.templateStatus) {
       // Only moderators+ can approve/reject
       if (['approve', 'reject'].includes(operation)) {
         return ['admin', 'moderator'].includes(userRole)
       }
-      
+
       // Draft templates can only be seen by owner and moderators+
       if (context.templateStatus === 'draft' && operation === 'read') {
         return context.isOwner || ['admin', 'moderator', 'reviewer'].includes(userRole)
       }
-      
+
       // Rejected templates restricted to owner and moderators
       if (context.templateStatus === 'rejected' && operation === 'read') {
         return context.isOwner || ['admin', 'moderator'].includes(userRole)
       }
     }
-    
+
     // Visibility-based restrictions
     if (context.templateVisibility === 'private' && operation === 'read') {
       return context.isOwner || ['admin', 'moderator'].includes(userRole)
     }
   }
-  
+
   return true
 }
 
@@ -212,14 +220,12 @@ export function getUserPermissions(
   context?: Partial<TemplatePermissionContext>
 ): TemplateOperation[] {
   const basePermissions = ROLE_PERMISSIONS[userRole] || []
-  
+
   if (!context) {
     return basePermissions
   }
-  
-  return basePermissions.filter(permission => 
-    hasPermission(userRole, permission, context)
-  )
+
+  return basePermissions.filter((permission) => hasPermission(userRole, permission, context))
 }
 
 // ========================
@@ -230,11 +236,11 @@ export function getUserPermissions(
  * Rate limits by role (requests per hour)
  */
 const ROLE_RATE_LIMITS: Record<TemplateRole, number> = {
-  admin: 10000,      // No practical limit for admins
-  moderator: 5000,   // High limit for moderators
-  reviewer: 2000,    // Moderate limit for reviewers
-  creator: 1000,     // Standard limit for creators
-  user: 500          // Conservative limit for users
+  admin: 10000, // No practical limit for admins
+  moderator: 5000, // High limit for moderators
+  reviewer: 2000, // Moderate limit for reviewers
+  creator: 1000, // Standard limit for creators
+  user: 500, // Conservative limit for users
 }
 
 /**
@@ -250,19 +256,19 @@ function checkRateLimit(userId: string, userRole: TemplateRole): boolean {
   const now = Date.now()
   const hourInMs = 60 * 60 * 1000
   const resetTime = now + hourInMs
-  
+
   const current = rateLimitStorage.get(userId)
-  
+
   if (!current || now > current.resetTime) {
     // Reset or initialize
     rateLimitStorage.set(userId, { count: 1, resetTime })
     return true
   }
-  
+
   if (current.count >= limit) {
     return false
   }
-  
+
   // Increment count
   rateLimitStorage.set(userId, { count: current.count + 1, resetTime: current.resetTime })
   return true
@@ -282,24 +288,24 @@ export async function authenticateTemplateOperation(
 ): Promise<TemplateAuthResult> {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
-  
+
   try {
     logger.info(`[${requestId}] Authenticating template operation`, {
       operation,
       templateId,
       userAgent: request.headers.get('user-agent'),
     })
-    
+
     // Authentication - support session, API key, and internal tokens
     let user: EnhancedUser | null = null
     let isInternalCall = false
-    
+
     const authHeader = request.headers.get('authorization')
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1]
       isInternalCall = await verifyInternalToken(token)
     }
-    
+
     if (!isInternalCall) {
       const session = await getSession()
       if (session?.user) {
@@ -309,7 +315,7 @@ export async function authenticateTemplateOperation(
         } as EnhancedUser
       }
     }
-    
+
     // For internal calls, allow all operations
     if (isInternalCall) {
       return {
@@ -322,7 +328,7 @@ export async function authenticateTemplateOperation(
         },
       }
     }
-    
+
     // Require authentication for most operations
     const publicOperations: TemplateOperation[] = ['read', 'list']
     if (!user && !publicOperations.includes(operation)) {
@@ -338,11 +344,11 @@ export async function authenticateTemplateOperation(
         },
       }
     }
-    
+
     const userId = user?.id
     const userRole = mapToTemplateRole(user?.role || 'user')
     const templateRole = userRole
-    
+
     // Rate limiting
     if (userId && !checkRateLimit(userId, userRole)) {
       logger.warn(`[${requestId}] Rate limit exceeded for user`, {
@@ -350,7 +356,7 @@ export async function authenticateTemplateOperation(
         userRole,
         operation,
       })
-      
+
       return {
         success: false,
         error: 'Rate limit exceeded',
@@ -364,7 +370,7 @@ export async function authenticateTemplateOperation(
         },
       }
     }
-    
+
     // Load template context if templateId provided
     let templateContext: Partial<TemplatePermissionContext> = {}
     if (templateId) {
@@ -378,7 +384,7 @@ export async function authenticateTemplateOperation(
         .from(templates)
         .where(eq(templates.id, templateId))
         .limit(1)
-      
+
       if (template.length === 0) {
         return {
           success: false,
@@ -393,7 +399,7 @@ export async function authenticateTemplateOperation(
           },
         }
       }
-      
+
       const templateData = template[0]
       templateContext = {
         templateStatus: templateData.status as TemplateStatus,
@@ -402,7 +408,7 @@ export async function authenticateTemplateOperation(
         isOwner: userId === templateData.createdByUserId,
       }
     }
-    
+
     // Build full permission context
     const context: TemplatePermissionContext = {
       templateId,
@@ -411,7 +417,7 @@ export async function authenticateTemplateOperation(
       userRole,
       ...templateContext,
     }
-    
+
     // Check permissions
     const hasPermissionResult = hasPermission(userRole, operation, context)
     if (!hasPermissionResult) {
@@ -422,7 +428,7 @@ export async function authenticateTemplateOperation(
         templateId,
         context,
       })
-      
+
       return {
         success: false,
         error: 'Insufficient permissions',
@@ -431,10 +437,10 @@ export async function authenticateTemplateOperation(
         context,
       }
     }
-    
+
     // Get all user permissions
     const permissions = getUserPermissions(userRole, context)
-    
+
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template operation authenticated successfully in ${elapsed}ms`, {
       userId,
@@ -443,18 +449,17 @@ export async function authenticateTemplateOperation(
       templateId,
       permissionsCount: permissions.length,
     })
-    
+
     return {
       success: true,
       user: user ? { ...user, templateRole } : undefined,
       permissions,
       context,
     }
-    
   } catch (error: any) {
     const elapsed = Date.now() - startTime
     logger.error(`[${requestId}] Template authentication error after ${elapsed}ms:`, error)
-    
+
     return {
       success: false,
       error: 'Authentication system error',
@@ -483,25 +488,31 @@ export function requireTemplatePermission(operation: TemplateOperation, template
       const { searchParams } = new URL(request.url)
       templateId = searchParams.get('templateId') || searchParams.get('id') || undefined
     }
-    
+
     const authResult = await authenticateTemplateOperation(request, operation, templateId)
-    
+
     if (!authResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: authResult.error,
-          code: authResult.statusCode === 401 ? 'AUTHENTICATION_REQUIRED' : 
-               authResult.statusCode === 403 ? 'INSUFFICIENT_PERMISSIONS' : 
-               authResult.statusCode === 404 ? 'TEMPLATE_NOT_FOUND' :
-               authResult.statusCode === 429 ? 'RATE_LIMIT_EXCEEDED' : 'SYSTEM_ERROR',
+          code:
+            authResult.statusCode === 401
+              ? 'AUTHENTICATION_REQUIRED'
+              : authResult.statusCode === 403
+                ? 'INSUFFICIENT_PERMISSIONS'
+                : authResult.statusCode === 404
+                  ? 'TEMPLATE_NOT_FOUND'
+                  : authResult.statusCode === 429
+                    ? 'RATE_LIMIT_EXCEEDED'
+                    : 'SYSTEM_ERROR',
           permissions: authResult.permissions,
         },
         { status: authResult.statusCode || 500 }
       )
     }
-    
     // Add auth result to request context for use in API handlers
+
     ;(request as any).templateAuth = authResult
     return null // Continue to next handler
   }
@@ -526,25 +537,25 @@ export const requireTemplateCreate = () => requireTemplatePermission('create')
 /**
  * Middleware for template read operations
  */
-export const requireTemplateRead = (templateId?: string) => 
+export const requireTemplateRead = (templateId?: string) =>
   requireTemplatePermission('read', templateId)
 
 /**
  * Middleware for template update operations
  */
-export const requireTemplateUpdate = (templateId?: string) => 
+export const requireTemplateUpdate = (templateId?: string) =>
   requireTemplatePermission('update', templateId)
 
 /**
  * Middleware for template delete operations
  */
-export const requireTemplateDelete = (templateId?: string) => 
+export const requireTemplateDelete = (templateId?: string) =>
   requireTemplatePermission('delete', templateId)
 
 /**
  * Middleware for template approval operations (moderator+)
  */
-export const requireTemplateApproval = (templateId?: string) => 
+export const requireTemplateApproval = (templateId?: string) =>
   requireTemplatePermission('approve', templateId)
 
 /**
@@ -582,28 +593,32 @@ export async function canManageTemplate(
       .from(templates)
       .where(eq(templates.id, templateId))
       .limit(1)
-    
+
     if (template.length === 0) {
       return { canManage: false, reason: 'Template not found' }
     }
-    
+
     const userRecord = await db
       .select({ role: user.role })
       .from(user)
       .where(eq(user.id, userId))
       .limit(1)
-    
+
     if (userRecord.length === 0) {
       return { canManage: false, reason: 'User not found' }
     }
-    
+
     const userRole = mapToTemplateRole(userRecord[0].role)
     const isOwner = template[0].createdByUserId === userId
     const isModeratorOrAdmin = ['admin', 'moderator'].includes(userRole)
-    
+
     return {
       canManage: isOwner || isModeratorOrAdmin,
-      reason: isOwner ? 'Owner' : isModeratorOrAdmin ? 'Privileged role' : 'Insufficient permissions',
+      reason: isOwner
+        ? 'Owner'
+        : isModeratorOrAdmin
+          ? 'Privileged role'
+          : 'Insufficient permissions',
     }
   } catch (error) {
     logger.error('Error checking template management permissions:', error)
@@ -630,7 +645,7 @@ export async function auditTemplateOperation(
       timestamp: new Date().toISOString(),
       metadata,
     })
-    
+
     // In production, send to audit log service or database
     // await auditService.log({
     //   operation,

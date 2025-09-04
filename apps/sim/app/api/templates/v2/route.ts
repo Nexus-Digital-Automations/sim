@@ -18,20 +18,17 @@
  */
 
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm'
-import { type NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-import { getSession } from '@/lib/auth'
-import { verifyInternalToken } from '@/lib/auth/internal'
-import { 
-  withTemplateListMiddleware,
-  withTemplateCreateMiddleware,
-  type TemplateAuthResult,
-  getValidatedData,
-  createSuccessResponse,
+import {
   createErrorResponse,
+  createSuccessResponse,
+  getValidatedData,
+  type TemplateAuthResult,
+  withTemplateCreateMiddleware,
+  withTemplateListMiddleware,
 } from '@/lib/auth/template-api-middleware'
-import { auditTemplateOperation } from '@/lib/auth/template-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
@@ -302,7 +299,7 @@ async function recordSearchAnalytics(data: z.infer<typeof SearchAnalyticsSchema>
  * Features:
  * - Full-text search across all template content
  * - Hierarchical category filtering
- * - Advanced tag-based filtering  
+ * - Advanced tag-based filtering
  * - Rating and quality filters
  * - Business value and ROI filtering
  * - Integration requirement filtering
@@ -320,7 +317,7 @@ async function getTemplatesHandler(request: NextRequest, auth: TemplateAuthResul
     if (!validatedParams) {
       return createErrorResponse('Request validation failed', 400, undefined, requestId)
     }
-    
+
     const params = validatedParams
     const userId = auth.context.userId
 
@@ -348,13 +345,13 @@ async function getTemplatesHandler(request: NextRequest, auth: TemplateAuthResul
 
     // Enhanced visibility filtering based on user role
     const visibilityConditions = []
-    
+
     // Public templates are visible to everyone
     visibilityConditions.push(eq(templates.visibility, 'public'))
-    
+
     // Unlisted templates are visible to everyone with the link
     visibilityConditions.push(eq(templates.visibility, 'unlisted'))
-    
+
     // Private templates are only visible to owners, admins, and moderators
     if (userId) {
       if (['admin', 'moderator'].includes(auth.context.userRole)) {
@@ -363,14 +360,11 @@ async function getTemplatesHandler(request: NextRequest, auth: TemplateAuthResul
       } else {
         // Regular users can only see their own private templates
         visibilityConditions.push(
-          and(
-            eq(templates.visibility, 'private'),
-            eq(templates.createdByUserId, userId)
-          )
+          and(eq(templates.visibility, 'private'), eq(templates.createdByUserId, userId))
         )
       }
     }
-    
+
     conditions.push(or(...visibilityConditions))
 
     // Category filtering
@@ -767,21 +761,11 @@ async function getTemplatesHandler(request: NextRequest, auth: TemplateAuthResul
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
-      return createErrorResponse(
-        'Invalid query parameters',
-        400,
-        error.errors,
-        requestId
-      )
+      return createErrorResponse('Invalid query parameters', 400, error.errors, requestId)
     }
 
     logger.error(`[${requestId}] Template discovery error after ${elapsed}ms:`, error)
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('Internal server error', 500, undefined, requestId)
   }
 }
 
@@ -811,7 +795,7 @@ async function createTemplateHandler(request: NextRequest, auth: TemplateAuthRes
     if (!validatedData) {
       return createErrorResponse('Request validation failed', 400, undefined, requestId)
     }
-    
+
     const data = validatedData
     const userId = auth.context.userId!
 
@@ -944,21 +928,11 @@ async function createTemplateHandler(request: NextRequest, auth: TemplateAuthRes
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid template data:`, error.errors)
-      return createErrorResponse(
-        'Invalid template data',
-        400,
-        error.errors,
-        requestId
-      )
+      return createErrorResponse('Invalid template data', 400, error.errors, requestId)
     }
 
     logger.error(`[${requestId}] Template creation error after ${elapsed}ms:`, error)
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('Internal server error', 500, undefined, requestId)
   }
 }
 

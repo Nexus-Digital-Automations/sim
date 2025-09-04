@@ -3195,9 +3195,201 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933946746_egbh0ooez",
+      "title": "Create comprehensive template library system with business automation categories",
+      "description": "Implement a comprehensive template library system to compete with n8n, including categorized templates for:\n\n**TEMPLATE CATEGORIES:**\n1. **Business Automation**: CRM workflows, marketing campaigns, sales pipelines, lead management\n2. **Data Processing & ETL**: Data transformation pipelines, database synchronization, API data collection\n3. **DevOps & CI/CD**: Deployment automation, testing workflows, monitoring and alerting\n4. **Social Media Management**: Content publishing, engagement tracking, cross-platform posting\n5. **E-commerce Automation**: Order processing, inventory management, customer service workflows\n6. **Financial & Accounting**: Invoice processing, payment automation, financial reporting\n\n**TECHNICAL IMPLEMENTATION:**\n1. **Database Schema**: Extend schema with template categories, tags, usage tracking, ratings\n2. **Template Storage**: JSONB workflow templates with metadata, version control, usage analytics\n3. **Discovery System**: Search, filtering, recommendations based on user behavior and industry\n4. **Template Management**: Creation, editing, publishing, versioning, and quality control\n5. **Integration Points**: Seamless template instantiation in workflow editor\n\n**SUCCESS CRITERIA:**\n- 50+ high-quality templates across all categories\n- Template discovery and search functionality\n- One-click template instantiation\n- Template usage analytics and optimization\n- Community rating and review system\n- Template versioning and updates",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/blocks/registry.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:12:26.750Z",
+      "auto_research_created": true,
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-04T17:14:40.423Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756944532359_1_general_ead55683",
+          "role": "primary",
+          "assignedAt": "2025-09-04T00:09:48.669Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T05:38:51.754Z",
+          "reason": "Task stale for 329 minutes"
+        },
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T05:53:10.906Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756964336908_1_general_3e8ec071"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T07:54:36.158Z",
+          "reason": "Task stale for 121 minutes"
+        },
+        {
+          "agentId": "--agent",
+          "role": "primary",
+          "assignedAt": "2025-09-04T09:18:09.183Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756977466828_1_general_3595d04a"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T10:09:14.499Z",
+          "reason": "Task stale for 51 minutes"
+        },
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T17:14:40.423Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1757006001591_1_general_109b4e99"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:05:53.971Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T18:05:53.971Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757009791224_roeam5f51",
+      "title": "Research: Implement comprehensive video tutorials and interactive guides system",
+      "description": "Research and analysis required for implementing: \"Implement comprehensive video tutorials and interactive guides system\"\n\n**Implementation Task Details:**\nCreate a world-class video tutorial system with interactive guides, video management, CDN delivery, analytics, and integration with the help context system based on research findings. Focus on creating engaging educational experiences that reduce time-to-value and accelerate user learning.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757009791224_1xv0aq123\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1757009791224_roeam5f51.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1757009791224_roeam5f51.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:16:31.225Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1757009791224_1xv0aq123",
+      "assigned_agent": "development_session_1757009857843_1_general_2d371c42",
+      "started_at": "2025-09-04T18:18:03.101Z",
+      "claimed_by": "development_session_1757009857843_1_general_2d371c42",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757009857843_1_general_2d371c42",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:18:03.101Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:21:05.140Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T18:21:05.141Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757009959620_ufg6yhama",
+      "title": "Research: Implement vector embeddings for semantic help content matching",
+      "description": "Research and analysis required for implementing: \"Implement vector embeddings for semantic help content matching\"\n\n**Implementation Task Details:**\nCreate vector embedding system for semantic help content matching, content similarity analysis, contextual help retrieval, semantic search capabilities, and integration with existing help content based on research specifications\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757009959620_vrvfrxtnm\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1757009959620_ufg6yhama.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1757009959620_ufg6yhama.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:19:19.620Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1757009959620_vrvfrxtnm",
+      "assigned_agent": "development_session_1757009788960_1_general_18cbdb0d",
+      "started_at": "2025-09-04T18:19:46.151Z",
+      "claimed_by": "development_session_1757009788960_1_general_18cbdb0d",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757009788960_1_general_18cbdb0d",
+          "role": "primary",
+          "assignedAt": "2025-09-04T18:19:46.151Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T18:22:45.662Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T18:22:45.663Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "./TODO.json"
     }
   ],
-  "total_completed": 67,
-  "last_completion": "2025-09-04T17:14:31.774Z",
+  "total_completed": 70,
+  "last_completion": "2025-09-04T18:22:45.663Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

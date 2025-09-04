@@ -17,18 +17,15 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getSession } from '@/lib/auth'
-import { verifyInternalToken } from '@/lib/auth/internal'
-import { 
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  getValidatedData,
+  type TemplateAuthResult,
+  withTemplateDeleteMiddleware,
   withTemplateDetailsMiddleware,
   withTemplateUpdateMiddleware,
-  withTemplateDeleteMiddleware,
-  type TemplateAuthResult,
-  getValidatedData,
-  createSuccessResponse,
-  createErrorResponse,
 } from '@/lib/auth/template-api-middleware'
-import { auditTemplateOperation } from '@/lib/auth/template-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
@@ -374,21 +371,11 @@ async function getTemplateHandler(request: NextRequest, auth: TemplateAuthResult
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
-      return createErrorResponse(
-        'Invalid query parameters',
-        400,
-        error.errors,
-        requestId
-      )
+      return createErrorResponse('Invalid query parameters', 400, error.errors, requestId)
     }
 
     logger.error(`[${requestId}] Template fetch error after ${elapsed}ms:`, error)
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('Internal server error', 500, undefined, requestId)
   }
 }
 
@@ -435,10 +422,15 @@ async function updateTemplateHandler(request: NextRequest, auth: TemplateAuthRes
     }
 
     const template = existingTemplate[0]
-    
+
     // Permission check is already handled by middleware, but verify ownership for non-admin users
     if (!auth.context.isOwner && !['admin', 'moderator'].includes(auth.context.userRole)) {
-      return createErrorResponse('Insufficient permissions to update template', 403, undefined, requestId)
+      return createErrorResponse(
+        'Insufficient permissions to update template',
+        403,
+        undefined,
+        requestId
+      )
     }
 
     // Prepare update data
@@ -582,21 +574,11 @@ async function updateTemplateHandler(request: NextRequest, auth: TemplateAuthRes
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid update data:`, error.errors)
-      return createErrorResponse(
-        'Invalid update data',
-        400,
-        error.errors,
-        requestId
-      )
+      return createErrorResponse('Invalid update data', 400, error.errors, requestId)
     }
 
     logger.error(`[${requestId}] Template update error after ${elapsed}ms:`, error)
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('Internal server error', 500, undefined, requestId)
   }
 }
 
@@ -639,15 +621,20 @@ async function deleteTemplateHandler(request: NextRequest, auth: TemplateAuthRes
     }
 
     const template = existingTemplate[0]
-    
+
     // Permission check is already handled by middleware, but verify ownership for non-admin users
     if (!auth.context.isOwner && !['admin', 'moderator'].includes(auth.context.userRole)) {
-      return createErrorResponse('Insufficient permissions to delete template', 403, undefined, requestId)
+      return createErrorResponse(
+        'Insufficient permissions to delete template',
+        403,
+        undefined,
+        requestId
+      )
     }
 
     // Enhanced safety checks for template deletion
     const safetyChecks = []
-    
+
     // Check significant usage
     if (template.downloadCount && template.downloadCount > 100) {
       safetyChecks.push({
@@ -656,7 +643,7 @@ async function deleteTemplateHandler(request: NextRequest, auth: TemplateAuthRes
         severity: 'warning',
       })
     }
-    
+
     // Check if template is public and popular
     if (template.visibility === 'public' && template.downloadCount && template.downloadCount > 50) {
       safetyChecks.push({
@@ -664,9 +651,13 @@ async function deleteTemplateHandler(request: NextRequest, auth: TemplateAuthRes
         severity: 'warning',
       })
     }
-    
+
     // For non-admin users, prevent deletion of templates with high usage
-    if (!['admin'].includes(auth.context.userRole) && template.downloadCount && template.downloadCount > 100) {
+    if (
+      !['admin'].includes(auth.context.userRole) &&
+      template.downloadCount &&
+      template.downloadCount > 100
+    ) {
       return createErrorResponse(
         'Cannot delete template with significant usage',
         400,
@@ -715,12 +706,7 @@ async function deleteTemplateHandler(request: NextRequest, auth: TemplateAuthRes
     const elapsed = Date.now() - startTime
 
     logger.error(`[${requestId}] Template deletion error after ${elapsed}ms:`, error)
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      requestId
-    )
+    return createErrorResponse('Internal server error', 500, undefined, requestId)
   }
 }
 
