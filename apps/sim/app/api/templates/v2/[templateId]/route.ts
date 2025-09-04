@@ -24,9 +24,9 @@ import { db } from '@/db'
 import {
   templateCategories,
   templateFavorites,
+  templates,
   templateTagAssociations,
   templateTags,
-  templates,
   templateUsageAnalytics,
   user,
 } from '@/db/schema'
@@ -249,7 +249,9 @@ export async function GET(request: NextRequest, { params }: { params: { template
         lastModifiedAt: templates.lastModifiedAt,
 
         // Conditional fields
-        ...(queryParams.includeWorkflowTemplate ? { workflowTemplate: templates.workflowTemplate } : {}),
+        ...(queryParams.includeWorkflowTemplate
+          ? { workflowTemplate: templates.workflowTemplate }
+          : {}),
 
         // Category info
         ...(queryParams.includeCategory
@@ -301,10 +303,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
     const results = await query.where(eq(templates.id, templateId)).limit(1)
 
     if (results.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = results[0]
@@ -436,20 +435,14 @@ export async function PUT(request: NextRequest, { params }: { params: { template
       .limit(1)
 
     if (existingTemplate.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = existingTemplate[0]
 
     // Check permissions
     if (template.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     // Prepare update data
@@ -461,7 +454,7 @@ export async function PUT(request: NextRequest, { params }: { params: { template
     // Handle name and slug updates
     if (data.name && data.name !== template.name) {
       const newSlug = generateSlug(data.name)
-      
+
       // Check if new slug would conflict
       const slugExists = await db
         .select({ id: templates.id })
@@ -490,20 +483,28 @@ export async function PUT(request: NextRequest, { params }: { params: { template
     if (data.templateVersion !== undefined) updateData.templateVersion = data.templateVersion
     if (data.minSimVersion !== undefined) updateData.minSimVersion = data.minSimVersion
     if (data.difficultyLevel !== undefined) updateData.difficultyLevel = data.difficultyLevel
-    if (data.estimatedSetupTime !== undefined) updateData.estimatedSetupTime = data.estimatedSetupTime
-    if (data.estimatedExecutionTime !== undefined) updateData.estimatedExecutionTime = data.estimatedExecutionTime
+    if (data.estimatedSetupTime !== undefined)
+      updateData.estimatedSetupTime = data.estimatedSetupTime
+    if (data.estimatedExecutionTime !== undefined)
+      updateData.estimatedExecutionTime = data.estimatedExecutionTime
     if (data.visibility !== undefined) updateData.visibility = data.visibility
     if (data.isFeatured !== undefined) updateData.isFeatured = data.isFeatured
     if (data.metaTitle !== undefined) updateData.metaTitle = data.metaTitle
     if (data.metaDescription !== undefined) updateData.metaDescription = data.metaDescription
     if (data.coverImageUrl !== undefined) updateData.coverImageUrl = data.coverImageUrl
     if (data.previewImages !== undefined) updateData.previewImages = data.previewImages
-    if (data.estimatedCostSavings !== undefined) updateData.estimatedCostSavings = data.estimatedCostSavings
-    if (data.estimatedTimeSavings !== undefined) updateData.estimatedTimeSavings = data.estimatedTimeSavings
-    if (data.businessValueDescription !== undefined) updateData.businessValueDescription = data.businessValueDescription
-    if (data.requiredIntegrations !== undefined) updateData.requiredIntegrations = data.requiredIntegrations
-    if (data.supportedIntegrations !== undefined) updateData.supportedIntegrations = data.supportedIntegrations
-    if (data.technicalRequirements !== undefined) updateData.technicalRequirements = data.technicalRequirements
+    if (data.estimatedCostSavings !== undefined)
+      updateData.estimatedCostSavings = data.estimatedCostSavings
+    if (data.estimatedTimeSavings !== undefined)
+      updateData.estimatedTimeSavings = data.estimatedTimeSavings
+    if (data.businessValueDescription !== undefined)
+      updateData.businessValueDescription = data.businessValueDescription
+    if (data.requiredIntegrations !== undefined)
+      updateData.requiredIntegrations = data.requiredIntegrations
+    if (data.supportedIntegrations !== undefined)
+      updateData.supportedIntegrations = data.supportedIntegrations
+    if (data.technicalRequirements !== undefined)
+      updateData.technicalRequirements = data.technicalRequirements
 
     // Handle workflow template update with sanitization
     if (data.workflowTemplate) {
@@ -519,10 +520,7 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         .limit(1)
 
       if (categoryExists.length === 0) {
-        return NextResponse.json(
-          { success: false, error: 'Category not found' },
-          { status: 400 }
-        )
+        return NextResponse.json({ success: false, error: 'Category not found' }, { status: 400 })
       }
       updateData.categoryId = data.categoryId
     }
@@ -537,7 +535,9 @@ export async function PUT(request: NextRequest, { params }: { params: { template
     // Update tags if provided
     if (data.tagIds !== undefined) {
       // Remove existing tag associations
-      await db.delete(templateTagAssociations).where(eq(templateTagAssociations.templateId, templateId))
+      await db
+        .delete(templateTagAssociations)
+        .where(eq(templateTagAssociations.templateId, templateId))
 
       // Add new tag associations
       if (data.tagIds.length > 0) {
@@ -552,7 +552,9 @@ export async function PUT(request: NextRequest, { params }: { params: { template
 
     // Record update analytics
     await recordUsageAnalytics(templateId, 'update', userId, {
-      fieldsUpdated: Object.keys(updateData).filter(key => key !== 'updatedAt' && key !== 'lastModifiedAt'),
+      fieldsUpdated: Object.keys(updateData).filter(
+        (key) => key !== 'updatedAt' && key !== 'lastModifiedAt'
+      ),
       tagUpdated: data.tagIds !== undefined,
     })
 
@@ -565,7 +567,9 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         id: templateId,
         name: updateData.name || template.name,
         slug: updateData.slug || template.slug,
-        fieldsUpdated: Object.keys(updateData).filter(key => key !== 'updatedAt' && key !== 'lastModifiedAt'),
+        fieldsUpdated: Object.keys(updateData).filter(
+          (key) => key !== 'updatedAt' && key !== 'lastModifiedAt'
+        ),
         message: 'Template updated successfully',
       },
       meta: {
@@ -637,20 +641,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
       .limit(1)
 
     if (existingTemplate.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = existingTemplate[0]
 
     // Check permissions
     if (template.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     // Check if template has significant usage (safety check)

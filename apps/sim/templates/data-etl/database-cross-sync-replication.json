@@ -21,7 +21,16 @@
       "rating": 0.0,
       "difficulty": "advanced"
     },
-    "tags": ["database", "sync", "replication", "etl", "real-time", "postgresql", "mysql", "mongodb"],
+    "tags": [
+      "database",
+      "sync",
+      "replication",
+      "etl",
+      "real-time",
+      "postgresql",
+      "mysql",
+      "mongodb"
+    ],
     "integrations": ["postgresql", "mysql", "mongodb", "slack", "email"],
     "workflow_definition": {
       "blocks": [

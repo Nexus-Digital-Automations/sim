@@ -58,7 +58,7 @@ function parseVersion(version: string): { major: number; minor: number; patch: n
 function compareVersions(a: string, b: string): number {
   const versionA = parseVersion(a)
   const versionB = parseVersion(b)
-  
+
   if (versionA.major !== versionB.major) {
     return versionA.major - versionB.major
   }
@@ -82,24 +82,24 @@ function calculateWorkflowDiff(sourceWorkflow: any, targetWorkflow: any): any {
     breakingChanges: [],
     improvements: [],
   }
-  
+
   const sourceBlocks = sourceWorkflow?.blocks || []
   const targetBlocks = targetWorkflow?.blocks || []
-  
+
   // Calculate block differences
   diff.blocksAdded = Math.max(0, targetBlocks.length - sourceBlocks.length)
   diff.blocksRemoved = Math.max(0, sourceBlocks.length - targetBlocks.length)
-  
+
   // Calculate connection differences
   const sourceConnections = sourceWorkflow?.connections || []
   const targetConnections = targetWorkflow?.connections || []
   diff.connectionsChanged = Math.abs(targetConnections.length - sourceConnections.length)
-  
+
   // Calculate variable differences
   const sourceVars = Object.keys(sourceWorkflow?.variables || {})
   const targetVars = Object.keys(targetWorkflow?.variables || {})
   diff.variablesChanged = Math.abs(targetVars.length - sourceVars.length)
-  
+
   return diff
 }
 
@@ -135,7 +135,7 @@ async function recordVersionAnalytics(
  * GET /api/templates/v2/[templateId]/versions/[versionId] - Get specific version details
  */
 export async function GET(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: { templateId: string; versionId: string } }
 ) {
   const requestId = crypto.randomUUID().slice(0, 8)
@@ -166,10 +166,7 @@ export async function GET(
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
@@ -189,13 +186,10 @@ export async function GET(
     // For now, since we don't have a separate versions table, we'll work with the current version
     // In production, you'd query the template_versions table
     const currentVersion = template.templateVersion || '1.0.0'
-    
+
     // Check if requested version exists (for now, only current version is available)
     if (versionId !== 'current' && versionId !== currentVersion) {
-      return NextResponse.json(
-        { success: false, error: 'Version not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Version not found' }, { status: 404 })
     }
 
     const versionData = {
@@ -207,7 +201,7 @@ export async function GET(
       createdAt: template.updatedAt || template.createdAt,
       createdByUserId: template.createdByUserId,
       status: template.status,
-      
+
       ...(queryParams.includeWorkflow && {
         workflowTemplate: template.workflowTemplate,
       }),
@@ -237,9 +231,10 @@ export async function GET(
       const metrics = metricsData[0] || {}
       versionData.metrics = {
         totalUsage: Number(metrics.totalUsage) || 0,
-        successRate: Number(metrics.totalUsage) > 0 
-          ? Math.round((Number(metrics.successfulExecutions) / Number(metrics.totalUsage)) * 100)
-          : 0,
+        successRate:
+          Number(metrics.totalUsage) > 0
+            ? Math.round((Number(metrics.successfulExecutions) / Number(metrics.totalUsage)) * 100)
+            : 0,
         errorRate: Math.round((Number(metrics.errorRate) || 0) * 10) / 10,
         avgExecutionTime: Math.round(Number(metrics.avgExecutionTime) || 0),
         uniqueUsers: Number(metrics.uniqueUsers) || 0,
@@ -316,7 +311,7 @@ export async function GET(
  * POST /api/templates/v2/[templateId]/versions/[versionId]/rollback - Rollback to specific version
  */
 export async function POST(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: { templateId: string; versionId: string } }
 ) {
   const requestId = crypto.randomUUID().slice(0, 8)
@@ -355,20 +350,14 @@ export async function POST(
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
 
     // Check permissions
     if (template.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     const currentVersion = template.templateVersion || '1.0.0'
@@ -434,10 +423,10 @@ export async function POST(
     // 1. Fetch the target version from template_versions table
     // 2. Restore the workflow template, metadata, and configurations
     // 3. Update the current template record
-    
+
     // For now, we'll simulate a rollback by creating a "rollback" version
     const rollbackVersion = `${currentVersion}-rollback-${Date.now()}`
-    
+
     // Record rollback analytics
     await recordVersionAnalytics(templateId, 'version_rollback', userId, {
       fromVersion: currentVersion,

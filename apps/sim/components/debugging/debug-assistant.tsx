@@ -15,7 +15,7 @@
  * @author Claude Development System
  */
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import {
   AlertTriangle,

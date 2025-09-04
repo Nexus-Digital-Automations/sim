@@ -1,24 +1,24 @@
 /**
  * Workflow Template Integration Button
- * 
+ *
  * Provides quick access to templates from within the workflow editor.
  * Features context-aware suggestions and seamless integration.
  */
 
 'use client'
 
-import { useCallback, useState, useMemo } from 'react'
-import { Book, Plus, Sparkles } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
+import { Book, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { Template } from '@/lib/templates/types'
+import { TemplateIntegrationService } from '@/lib/templates/workflow-integration'
+import { cn } from '@/lib/utils'
+import { useCollaborativeWorkflow } from '@/hooks/use-collaborative-workflow'
+import { useWorkflowStore } from '@/stores/workflows/workflow/store'
 import { TemplateBrowser } from './template-browser'
 import { TemplatePreviewModal } from './template-preview-modal'
-import { TemplateIntegrationService } from '@/lib/templates/workflow-integration'
-import { useWorkflowStore } from '@/stores/workflows/workflow/store'
-import { useCollaborativeWorkflow } from '@/hooks/use-collaborative-workflow'
-import type { Template } from '@/lib/templates/types'
 
 const logger = createLogger('WorkflowTemplateButton')
 
@@ -49,21 +49,18 @@ export function WorkflowTemplateButton({
 
   // Workflow state and actions
   const { blocks, edges } = useWorkflowStore()
-  const {
-    collaborativeAddBlock,
-    collaborativeAddEdge,
-    collaborativeUpdateBlockPosition,
-  } = useCollaborativeWorkflow()
+  const { collaborativeAddBlock, collaborativeAddEdge, collaborativeUpdateBlockPosition } =
+    useCollaborativeWorkflow()
 
   // Generate workflow context for intelligent suggestions
   const workflowContext = useMemo(() => {
     const blockTypes = Object.values(blocks).map((block) => block.type)
     const uniqueBlockTypes = [...new Set(blockTypes)]
-    
+
     // Analyze workflow complexity
     const blockCount = Object.keys(blocks).length
     const edgeCount = edges?.length || 0
-    
+
     let complexity: 'simple' | 'moderate' | 'complex' = 'simple'
     if (blockCount > 15 || edgeCount > 20) {
       complexity = 'complex'
@@ -73,19 +70,19 @@ export function WorkflowTemplateButton({
 
     // Infer categories based on block types
     const categories: string[] = []
-    if (uniqueBlockTypes.some(type => ['email', 'slack', 'discord'].includes(type))) {
+    if (uniqueBlockTypes.some((type) => ['email', 'slack', 'discord'].includes(type))) {
       categories.push('communication')
     }
-    if (uniqueBlockTypes.some(type => ['database', 'sql', 'mongodb'].includes(type))) {
+    if (uniqueBlockTypes.some((type) => ['database', 'sql', 'mongodb'].includes(type))) {
       categories.push('data-processing')
     }
-    if (uniqueBlockTypes.some(type => ['condition', 'loop', 'parallel'].includes(type))) {
+    if (uniqueBlockTypes.some((type) => ['condition', 'loop', 'parallel'].includes(type))) {
       categories.push('workflow-control')
     }
 
     // Infer integrations
-    const integrations = uniqueBlockTypes.filter(type => 
-      !['starter', 'condition', 'loop', 'parallel', 'delay', 'javascript'].includes(type)
+    const integrations = uniqueBlockTypes.filter(
+      (type) => !['starter', 'condition', 'loop', 'parallel', 'delay', 'javascript'].includes(type)
     )
 
     return {
@@ -177,16 +174,12 @@ export function WorkflowTemplateButton({
         }
 
         // Apply template using integration service
-        const result = await TemplateIntegrationService.applyTemplate(
-          template,
-          workflowState,
-          {
-            ...options,
-            preserveExisting: options.mode !== 'replace',
-            autoConnect: true,
-            generateUniqueIds: true,
-          }
-        )
+        const result = await TemplateIntegrationService.applyTemplate(template, workflowState, {
+          ...options,
+          preserveExisting: options.mode !== 'replace',
+          autoConnect: true,
+          generateUniqueIds: true,
+        })
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to apply template')
@@ -207,7 +200,7 @@ export function WorkflowTemplateButton({
 
         // For now, we'll log the success and let the parent component handle
         // the actual state updates through the workflow store
-        
+
         logger.info('Template integration completed', {
           templateId: template.id,
           workflowId,
@@ -300,7 +293,8 @@ export function WorkflowTemplateButton({
   }
 
   // Determine if we should show the sparkles icon for smart suggestions
-  const hasSmartSuggestions = workflowContext.blockTypes.length > 2 || workflowContext.categories.length > 0
+  const hasSmartSuggestions =
+    workflowContext.blockTypes.length > 2 || workflowContext.categories.length > 0
 
   return (
     <>
@@ -316,7 +310,7 @@ export function WorkflowTemplateButton({
               onClick={handleOpenBrowser}
               disabled={isApplying}
               className={cn(
-                'h-12 w-12 rounded-[11px] border bg-card text-card-foreground shadow-xs hover:bg-secondary relative',
+                'relative h-12 w-12 rounded-[11px] border bg-card text-card-foreground shadow-xs hover:bg-secondary',
                 className
               )}
             >
@@ -326,7 +320,7 @@ export function WorkflowTemplateButton({
                 <>
                   <Book className='h-5 w-5' />
                   {hasSmartSuggestions && (
-                    <Sparkles className='absolute -top-1 -right-1 h-3 w-3 text-blue-500' />
+                    <Sparkles className='-top-1 -right-1 absolute h-3 w-3 text-blue-500' />
                   )}
                 </>
               )}

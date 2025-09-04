@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Info } from 'lucide-react'
 import { Label, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'

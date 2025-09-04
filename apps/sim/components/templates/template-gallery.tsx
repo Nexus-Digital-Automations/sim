@@ -24,7 +24,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {

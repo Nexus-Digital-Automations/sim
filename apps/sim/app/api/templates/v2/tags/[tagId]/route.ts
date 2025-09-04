@@ -19,7 +19,7 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateTags, templateTagAssociations, templates, user } from '@/db/schema'
+import { templates, templateTagAssociations, templateTags, user } from '@/db/schema'
 
 const logger = createLogger('IndividualTagAPI')
 
@@ -36,7 +36,10 @@ const TagDetailsSchema = z.object({
 const UpdateTagSchema = z.object({
   name: z.string().min(1).max(50).optional(),
   description: z.string().max(500).optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
   tagType: z.enum(['skill', 'integration', 'industry', 'use_case', 'general']).optional(),
   displayName: z.string().max(100).optional(),
   isActive: z.boolean().optional(),
@@ -126,7 +129,7 @@ export async function GET(request: NextRequest, { params }: { params: { tagId: s
         createdAt: templateTags.createdAt,
         updatedAt: templateTags.updatedAt,
         createdByUserId: templateTags.createdByUserId,
-        
+
         // Creator info
         createdByUserName: user.name,
         createdByUserImage: user.image,
@@ -139,10 +142,7 @@ export async function GET(request: NextRequest, { params }: { params: { tagId: s
     const tagResults = await tagQuery
 
     if (tagResults.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Tag not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Tag not found' }, { status: 404 })
     }
 
     const tag = tagResults[0]
@@ -201,9 +201,12 @@ export async function GET(request: NextRequest, { params }: { params: { tagId: s
         averageRating: Math.round((Number(analytics.avgRating) || 0) * 10) / 10,
         totalDownloads: Number(analytics.totalDownloads) || 0,
         recentTemplates: Number(analytics.recentTemplates) || 0,
-        adoptionRate: Number(analytics.totalTemplates) > 0 
-          ? Math.round((Number(analytics.activeTemplates) / Number(analytics.totalTemplates)) * 100)
-          : 0,
+        adoptionRate:
+          Number(analytics.totalTemplates) > 0
+            ? Math.round(
+                (Number(analytics.activeTemplates) / Number(analytics.totalTemplates)) * 100
+              )
+            : 0,
       }
     }
 
@@ -286,10 +289,7 @@ export async function PUT(request: NextRequest, { params }: { params: { tagId: s
       .limit(1)
 
     if (existingTag.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Tag not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Tag not found' }, { status: 404 })
     }
 
     const tag = existingTag[0]
@@ -301,11 +301,9 @@ export async function PUT(request: NextRequest, { params }: { params: { tagId: s
         { success: false, error: 'Cannot modify system tags' },
         { status: 403 }
       )
-    } else if (tag.createdByUserId && tag.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+    }
+    if (tag.createdByUserId && tag.createdByUserId !== userId) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     // Prepare update data
@@ -316,7 +314,7 @@ export async function PUT(request: NextRequest, { params }: { params: { tagId: s
     // Handle name and slug updates
     if (data.name && data.name !== tag.name) {
       const newSlug = generateTagSlug(data.name)
-      
+
       // Check if new slug would conflict
       const slugExists = await db
         .select({ id: templateTags.id })
@@ -363,7 +361,7 @@ export async function PUT(request: NextRequest, { params }: { params: { tagId: s
         id: tagId,
         name: updateData.name || tag.name,
         slug: updateData.slug || tag.slug,
-        fieldsUpdated: Object.keys(updateData).filter(key => key !== 'updatedAt'),
+        fieldsUpdated: Object.keys(updateData).filter((key) => key !== 'updatedAt'),
         message: 'Tag updated successfully',
       },
       meta: {
@@ -435,10 +433,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { tagId
       .limit(1)
 
     if (existingTag.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Tag not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Tag not found' }, { status: 404 })
     }
 
     const tag = existingTag[0]
@@ -449,11 +444,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { tagId
         { success: false, error: 'Cannot delete system tags' },
         { status: 403 }
       )
-    } else if (tag.createdByUserId && tag.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+    }
+    if (tag.createdByUserId && tag.createdByUserId !== userId) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     // Check if tag is in use
@@ -547,8 +540,8 @@ export async function POST(request: NextRequest, { params }: { params: { tagId: 
       )
     }
 
-    const sourceTag = tags.find(t => t.id === tagId)!
-    const targetTag = tags.find(t => t.id === data.targetTagId)!
+    const sourceTag = tags.find((t) => t.id === tagId)!
+    const targetTag = tags.find((t) => t.id === data.targetTagId)!
 
     // Check permissions
     if (sourceTag.isSystemTag || targetTag.isSystemTag) {

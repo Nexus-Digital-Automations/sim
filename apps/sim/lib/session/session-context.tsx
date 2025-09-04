@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { client } from '@/lib/auth-client'
 

@@ -1,17 +1,17 @@
 /**
  * Template Integration Components
- * 
+ *
  * Comprehensive template integration system for the Sim workflow editor.
  * Provides seamless browsing, preview, and application of workflow templates.
- * 
+ *
  * Components:
  * - TemplateBrowser: Browse and search templates with context-aware suggestions
  * - TemplatePreviewModal: Preview templates with variable configuration and conflict resolution
  * - WorkflowTemplateButton: Control bar button for template access
- * 
+ *
  * Services:
  * - TemplateIntegrationService: Core template application logic
- * 
+ *
  * Features:
  * - Context-aware template suggestions based on current workflow
  * - One-click template instantiation with smart defaults
@@ -22,20 +22,18 @@
  * - Real-time collaboration support
  */
 
+// Types for template integration
+export type {
+  ConflictAnalysis,
+  TemplateApplicationOptions,
+  TemplateApplicationResult,
+} from '@/lib/templates/workflow-integration'
+// Re-export the integration service for advanced use cases
+export { TemplateIntegrationService } from '@/lib/templates/workflow-integration'
 // Core components
 export { TemplateBrowser } from './template-browser'
 export { TemplatePreviewModal } from './template-preview-modal'
 export { WorkflowTemplateButton } from './workflow-template-button'
-
-// Types for template integration
-export type {
-  TemplateApplicationOptions,
-  TemplateApplicationResult,
-  ConflictAnalysis,
-} from '@/lib/templates/workflow-integration'
-
-// Re-export the integration service for advanced use cases
-export { TemplateIntegrationService } from '@/lib/templates/workflow-integration'
 
 // Type definitions for component props
 export interface TemplateIntegrationContextType {

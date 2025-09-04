@@ -14,7 +14,10 @@ const logger = createLogger('OrganizationWorkspacesAPI')
  * - ?available=true - Only workspaces where user can invite others (admin permissions)
  * - ?member=userId - Workspaces where specific member has access
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 

@@ -21,7 +21,15 @@
       "rating": 0.0,
       "difficulty": "intermediate"
     },
-    "tags": ["api", "aggregation", "multi-source", "rest", "data-collection", "etl", "normalization"],
+    "tags": [
+      "api",
+      "aggregation",
+      "multi-source",
+      "rest",
+      "data-collection",
+      "etl",
+      "normalization"
+    ],
     "integrations": ["rest_api", "redis", "postgresql", "slack", "webhook"],
     "workflow_definition": {
       "blocks": [
@@ -305,7 +313,12 @@
           "type": "error_handler",
           "name": "Handle Aggregation Errors",
           "configuration": {
-            "error_types": ["api_timeout", "rate_limit_exceeded", "data_validation", "database_error"],
+            "error_types": [
+              "api_timeout",
+              "rate_limit_exceeded",
+              "data_validation",
+              "database_error"
+            ],
             "retry_policy": {
               "max_retries": 2,
               "backoff_strategy": "exponential",

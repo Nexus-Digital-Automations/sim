@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createLogger } from '@/lib/logs/console/logger'

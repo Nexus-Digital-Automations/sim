@@ -1,6 +1,6 @@
 // Assuming custom icons exist for Sim specific things, otherwise use Lucide
 
-import * as React from 'react'
+import type * as React from 'react'
 import { memo } from 'react'
 import {
   // For header icon

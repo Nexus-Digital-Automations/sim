@@ -31,7 +31,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { AnimatePresence, motion } from 'framer-motion'

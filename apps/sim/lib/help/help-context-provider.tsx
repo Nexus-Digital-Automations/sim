@@ -13,7 +13,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/console/logger'

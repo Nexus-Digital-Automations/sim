@@ -149,7 +149,7 @@
                   {
                     "type": "button",
                     "text": {
-                      "type": "plain_text", 
+                      "type": "plain_text",
                       "text": "Acknowledge"
                     },
                     "action_id": "acknowledge_alert"
@@ -206,7 +206,7 @@
         },
         {
           "id": "metrics_storage",
-          "type": "postgresql", 
+          "type": "postgresql",
           "name": "Store Quality Metrics",
           "configuration": {
             "connection": "{{metrics_database_connection}}",

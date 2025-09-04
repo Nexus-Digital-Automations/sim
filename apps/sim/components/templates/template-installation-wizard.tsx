@@ -29,9 +29,8 @@
 
 'use client'
 
-import * as React from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import type * as React from 'react'
+import { useCallback, useState } from 'react'
 import {
   AlertCircle,
   ArrowLeft,
@@ -39,11 +38,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
-  Copy,
-  Download,
   Eye,
-  FileText,
-  HelpCircle,
   Loader2,
   Play,
   Settings,
@@ -57,18 +52,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-
 // Import template types
 import type {
   Template,
@@ -81,15 +75,15 @@ import { cn } from '@/lib/utils'
 /**
  * Installation Wizard Step Configuration
  */
-export type InstallationStep = 
-  | 'overview'        // Template overview and information
-  | 'customize'       // Basic customization options
-  | 'credentials'     // Credential setup and mapping
-  | 'configuration'   // Advanced configuration
-  | 'validate'        // Validation and dependency checks
-  | 'preview'         // Preview before installation
-  | 'install'         // Installation process
-  | 'complete'        // Installation complete with next steps
+export type InstallationStep =
+  | 'overview' // Template overview and information
+  | 'customize' // Basic customization options
+  | 'credentials' // Credential setup and mapping
+  | 'configuration' // Advanced configuration
+  | 'validate' // Validation and dependency checks
+  | 'preview' // Preview before installation
+  | 'install' // Installation process
+  | 'complete' // Installation complete with next steps
 
 /**
  * Installation Wizard Props Interface
@@ -106,13 +100,20 @@ export interface TemplateInstallationWizardProps {
   /** Initial customization options */
   initialCustomization?: Partial<TemplateCustomization>
   /** Installation callback */
-  onInstall: (template: Template, customization: TemplateCustomization, options: TemplateInstantiationOptions) => Promise<void>
+  onInstall: (
+    template: Template,
+    customization: TemplateCustomization,
+    options: TemplateInstantiationOptions
+  ) => Promise<void>
   /** Cancel callback */
   onCancel: () => void
   /** Preview callback */
   onPreview?: (template: Template, customization: TemplateCustomization) => void
   /** Validation callback */
-  onValidate?: (template: Template, customization: TemplateCustomization) => Promise<TemplateValidationResult>
+  onValidate?: (
+    template: Template,
+    customization: TemplateCustomization
+  ) => Promise<TemplateValidationResult>
   /** Show wizard state */
   open: boolean
   /** Custom CSS class */
@@ -186,7 +187,7 @@ const StepProgressIndicator: React.FC<{
             >
               <div
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-medium',
+                  'flex h-8 w-8 items-center justify-center rounded-full border-2 font-medium text-sm',
                   isActive && 'border-blue-500 bg-blue-500 text-white',
                   isCompleted && !isActive && 'border-green-500 bg-green-500 text-white',
                   !isActive && !isCompleted && 'border-muted-foreground'
@@ -198,7 +199,7 @@ const StepProgressIndicator: React.FC<{
                   <span>{index + 1}</span>
                 )}
               </div>
-              <span className='text-xs font-medium'>{stepLabels[step]}</span>
+              <span className='font-medium text-xs'>{stepLabels[step]}</span>
             </div>
           )
         })}
@@ -220,7 +221,7 @@ const OverviewStep: React.FC<WizardStepProps> = ({ template, onNext }) => {
       <div className='text-center'>
         <div className='mb-4 flex items-center justify-center'>
           <div
-            className='flex h-16 w-16 items-center justify-center rounded-lg text-2xl font-bold text-white'
+            className='flex h-16 w-16 items-center justify-center rounded-lg font-bold text-2xl text-white'
             style={{ backgroundColor: template.color }}
           >
             {template.icon || '📄'}
@@ -313,9 +314,19 @@ const OverviewStep: React.FC<WizardStepProps> = ({ template, onNext }) => {
 /**
  * Template Customization Step Component
  */
-const CustomizeStep: React.FC<WizardStepProps> = ({ template, state, onStateChange, onNext, onPrevious }) => {
-  const [workflowName, setWorkflowName] = useState(state.customization.workflowName || template.name)
-  const [description, setDescription] = useState(state.customization.description || template.description || '')
+const CustomizeStep: React.FC<WizardStepProps> = ({
+  template,
+  state,
+  onStateChange,
+  onNext,
+  onPrevious,
+}) => {
+  const [workflowName, setWorkflowName] = useState(
+    state.customization.workflowName || template.name
+  )
+  const [description, setDescription] = useState(
+    state.customization.description || template.description || ''
+  )
 
   const handleNext = useCallback(() => {
     onStateChange({
@@ -323,7 +334,7 @@ const CustomizeStep: React.FC<WizardStepProps> = ({ template, state, onStateChan
         ...state.customization,
         workflowName,
         description,
-      }
+      },
     })
     onNext()
   }, [workflowName, description, state.customization, onStateChange, onNext])
@@ -332,9 +343,7 @@ const CustomizeStep: React.FC<WizardStepProps> = ({ template, state, onStateChan
     <div className='space-y-6'>
       <div className='text-center'>
         <h2 className='mb-2 font-bold text-2xl'>Customize Your Workflow</h2>
-        <p className='text-muted-foreground'>
-          Personalize the template to fit your specific needs
-        </p>
+        <p className='text-muted-foreground'>Personalize the template to fit your specific needs</p>
       </div>
 
       <div className='space-y-4'>
@@ -373,7 +382,10 @@ const CustomizeStep: React.FC<WizardStepProps> = ({ template, state, onStateChan
         <CardContent>
           <div className='space-y-4'>
             <div className='rounded-lg border p-4 text-center text-muted-foreground text-sm'>
-              <p>This template uses default values. Advanced configuration is available in the next step.</p>
+              <p>
+                This template uses default values. Advanced configuration is available in the next
+                step.
+              </p>
             </div>
           </div>
         </CardContent>
@@ -405,7 +417,7 @@ const InstallationProgress: React.FC<{
     <div className='space-y-6 text-center'>
       <div>
         <div
-          className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg text-2xl font-bold text-white'
+          className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg font-bold text-2xl text-white'
           style={{ backgroundColor: template.color }}
         >
           {progress < 100 ? (
@@ -441,16 +453,14 @@ const InstallationProgress: React.FC<{
 /**
  * Installation Complete Step Component
  */
-const CompleteStep: React.FC<WizardStepProps & { onViewWorkflow?: () => void; onCreateAnother?: () => void }> = ({
-  template,
-  onViewWorkflow,
-  onCreateAnother,
-}) => {
+const CompleteStep: React.FC<
+  WizardStepProps & { onViewWorkflow?: () => void; onCreateAnother?: () => void }
+> = ({ template, onViewWorkflow, onCreateAnother }) => {
   return (
     <div className='space-y-6 text-center'>
       <div>
         <div
-          className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg text-2xl font-bold text-white'
+          className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg font-bold text-2xl text-white'
           style={{ backgroundColor: template.color }}
         >
           <CheckCircle2 className='h-8 w-8 text-white' />
@@ -546,7 +556,7 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
 
   // State update helper
   const updateState = useCallback((updates: Partial<InstallationState>) => {
-    setState(current => ({ ...current, ...updates }))
+    setState((current) => ({ ...current, ...updates }))
   }, [])
 
   // Navigation handlers
@@ -554,7 +564,7 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
     const currentIndex = steps.indexOf(state.currentStep)
     if (currentIndex < steps.length - 1) {
       const nextStep = steps[currentIndex + 1]
-      setState(current => ({
+      setState((current) => ({
         ...current,
         currentStep: nextStep,
         completedSteps: new Set([...current.completedSteps, current.currentStep]),
@@ -566,13 +576,13 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
     const currentIndex = steps.indexOf(state.currentStep)
     if (currentIndex > 0) {
       const previousStep = steps[currentIndex - 1]
-      setState(current => ({ ...current, currentStep: previousStep }))
+      setState((current) => ({ ...current, currentStep: previousStep }))
     }
   }, [steps, state.currentStep])
 
   // Installation handler
   const handleInstall = useCallback(async () => {
-    setState(current => ({
+    setState((current) => ({
       ...current,
       currentStep: 'install',
       installing: true,
@@ -591,27 +601,27 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
       ]
 
       for (let i = 0; i < progressSteps.length; i++) {
-        setState(current => ({
+        setState((current) => ({
           ...current,
           installProgress: ((i + 1) / progressSteps.length) * 100,
           installStatus: progressSteps[i],
         }))
-        
+
         // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
 
       // Call the actual installation function
       await onInstall(template, state.customization, state.options)
 
-      setState(current => ({
+      setState((current) => ({
         ...current,
         currentStep: 'complete',
         installing: false,
         completedSteps: new Set([...current.completedSteps, 'install']),
       }))
     } catch (error) {
-      setState(current => ({
+      setState((current) => ({
         ...current,
         installing: false,
         errors: { install: error instanceof Error ? error.message : 'Installation failed' },
@@ -650,13 +660,7 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
           />
         )
       case 'complete':
-        return (
-          <CompleteStep
-            {...stepProps}
-            onViewWorkflow={onCancel}
-            onCreateAnother={onCancel}
-          />
-        )
+        return <CompleteStep {...stepProps} onViewWorkflow={onCancel} onCreateAnother={onCancel} />
       default:
         return <OverviewStep {...stepProps} />
     }
@@ -664,14 +668,12 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
 
   return (
     <Dialog open={open} onOpenChange={onCancel}>
-      <DialogContent className={cn('max-w-4xl max-h-[90vh] overflow-auto', className)}>
+      <DialogContent className={cn('max-h-[90vh] max-w-4xl overflow-auto', className)}>
         <DialogHeader>
           <div className='flex items-center justify-between'>
             <div>
               <DialogTitle>Install Template</DialogTitle>
-              <DialogDescription>
-                Set up "{template.name}" in your workspace
-              </DialogDescription>
+              <DialogDescription>Set up "{template.name}" in your workspace</DialogDescription>
             </div>
             {state.currentStep !== 'install' && state.currentStep !== 'complete' && (
               <Button variant='outline' size='sm' onClick={onCancel}>
@@ -691,18 +693,14 @@ export const TemplateInstallationWizard: React.FC<TemplateInstallationWizardProp
           />
 
           {/* Current Step Content */}
-          <div className='min-h-[400px]'>
-            {renderCurrentStep()}
-          </div>
+          <div className='min-h-[400px]'>{renderCurrentStep()}</div>
 
           {/* Error Display */}
           {Object.keys(state.errors).length > 0 && (
             <Alert variant='destructive'>
               <AlertCircle className='h-4 w-4' />
               <AlertTitle>Installation Error</AlertTitle>
-              <AlertDescription>
-                {Object.values(state.errors)[0]}
-              </AlertDescription>
+              <AlertDescription>{Object.values(state.errors)[0]}</AlertDescription>
             </Alert>
           )}
         </div>

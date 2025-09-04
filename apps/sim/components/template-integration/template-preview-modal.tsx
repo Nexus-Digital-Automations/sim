@@ -1,9 +1,9 @@
 /**
  * Template Preview Modal Component
- * 
+ *
  * Provides detailed template preview with workflow visualization,
  * variable mapping, and customization options before application.
- * 
+ *
  * Features:
  * - Visual workflow preview
  * - Template variable mapping
@@ -14,25 +14,16 @@
 
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
-  ArrowRight,
   Book,
-  Check,
-  ChevronDown,
-  ChevronRight,
   Code,
-  Copy,
-  Download,
-  Edit3,
-  ExternalLink,
   Eye,
   GitBranch,
   Info,
   Loader2,
   Settings,
   Star,
-  Tag,
   User,
   Wand2,
   X,
@@ -51,18 +42,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { Template } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('TemplatePreviewModal')
 
@@ -199,13 +184,13 @@ export function TemplatePreviewModal({
     const errors: Record<string, string> = {}
     previewData.variables.forEach((variable) => {
       const value = variables[variable.key]
-      
+
       if (variable.required && (!value || value === '')) {
         errors[variable.key] = `${variable.name} is required`
         return
       }
 
-      if (value && variable.type === 'number' && isNaN(Number(value))) {
+      if (value && variable.type === 'number' && Number.isNaN(Number(value))) {
         errors[variable.key] = `${variable.name} must be a number`
         return
       }
@@ -232,15 +217,12 @@ export function TemplatePreviewModal({
   }, [])
 
   // Handle conflict resolution change
-  const handleConflictResolutionChange = useCallback(
-    (conflictKey: string, resolution: string) => {
-      setConflictResolutions((prev) => ({
-        ...prev,
-        [conflictKey]: { ...prev[conflictKey], resolution },
-      }))
-    },
-    []
-  )
+  const handleConflictResolutionChange = useCallback((conflictKey: string, resolution: string) => {
+    setConflictResolutions((prev) => ({
+      ...prev,
+      [conflictKey]: { ...prev[conflictKey], resolution },
+    }))
+  }, [])
 
   // Toggle section expansion
   const toggleSection = useCallback((sectionId: string) => {
@@ -363,7 +345,7 @@ export function TemplatePreviewModal({
             />
           )}
 
-          {error && <p className='text-sm text-red-500'>{error}</p>}
+          {error && <p className='text-red-500 text-sm'>{error}</p>}
         </div>
       )
     },
@@ -392,10 +374,8 @@ export function TemplatePreviewModal({
               </div>
               <div>
                 <DialogTitle className='mb-1 text-xl'>{template.name}</DialogTitle>
-                <DialogDescription className='max-w-2xl'>
-                  {template.description}
-                </DialogDescription>
-                <div className='mt-2 flex items-center gap-4 text-sm text-muted-foreground'>
+                <DialogDescription className='max-w-2xl'>{template.description}</DialogDescription>
+                <div className='mt-2 flex items-center gap-4 text-muted-foreground text-sm'>
                   <div className='flex items-center gap-1'>
                     <User className='h-4 w-4' />
                     <span>{template.author}</span>
@@ -422,11 +402,11 @@ export function TemplatePreviewModal({
                   variant='outline'
                   size='sm'
                   onClick={handleStarToggle}
-                  className={cn(template.isStarred && 'bg-yellow-50 border-yellow-200')}
+                  className={cn(template.isStarred && 'border-yellow-200 bg-yellow-50')}
                 >
                   <Star
                     className={cn(
-                      'h-4 w-4 mr-1',
+                      'mr-1 h-4 w-4',
                       template.isStarred && 'fill-current text-yellow-500'
                     )}
                   />
@@ -446,7 +426,7 @@ export function TemplatePreviewModal({
 
           {/* Template tags */}
           {template.tags && template.tags.length > 0 && (
-            <div className='flex flex-wrap gap-2 mt-3'>
+            <div className='mt-3 flex flex-wrap gap-2'>
               {template.tags.map((tag) => (
                 <Badge key={tag} variant='secondary'>
                   {tag}
@@ -461,8 +441,8 @@ export function TemplatePreviewModal({
           {loading ? (
             <div className='flex flex-1 items-center justify-center'>
               <div className='text-center'>
-                <Loader2 className='h-8 w-8 animate-spin mx-auto mb-4' />
-                <p className='text-sm text-muted-foreground'>Loading template preview...</p>
+                <Loader2 className='mx-auto mb-4 h-8 w-8 animate-spin' />
+                <p className='text-muted-foreground text-sm'>Loading template preview...</p>
               </div>
             </div>
           ) : (
@@ -470,22 +450,22 @@ export function TemplatePreviewModal({
               <div className='w-64 shrink-0 border-r bg-muted/30 p-4'>
                 <TabsList orientation='vertical' className='grid w-full gap-1'>
                   <TabsTrigger value='overview' className='justify-start'>
-                    <Eye className='h-4 w-4 mr-2' />
+                    <Eye className='mr-2 h-4 w-4' />
                     Overview
                   </TabsTrigger>
                   <TabsTrigger value='blocks' className='justify-start'>
-                    <GitBranch className='h-4 w-4 mr-2' />
+                    <GitBranch className='mr-2 h-4 w-4' />
                     Workflow
                   </TabsTrigger>
                   {previewData?.variables.length > 0 && (
                     <TabsTrigger value='variables' className='justify-start'>
-                      <Settings className='h-4 w-4 mr-2' />
+                      <Settings className='mr-2 h-4 w-4' />
                       Configure
                     </TabsTrigger>
                   )}
                   {previewData?.conflicts && previewData.conflicts.length > 0 && (
                     <TabsTrigger value='conflicts' className='justify-start'>
-                      <Zap className='h-4 w-4 mr-2' />
+                      <Zap className='mr-2 h-4 w-4' />
                       Conflicts
                       <Badge variant='destructive' className='ml-2 text-xs'>
                         {previewData.conflicts.length}
@@ -510,27 +490,27 @@ export function TemplatePreviewModal({
                             <CardContent className='space-y-4'>
                               <div className='grid grid-cols-2 gap-4'>
                                 <div>
-                                  <p className='text-2xl font-bold'>
+                                  <p className='font-bold text-2xl'>
                                     {previewData.statistics.blockCount}
                                   </p>
-                                  <p className='text-sm text-muted-foreground'>Blocks</p>
+                                  <p className='text-muted-foreground text-sm'>Blocks</p>
                                 </div>
                                 <div>
-                                  <p className='text-2xl font-bold'>
+                                  <p className='font-bold text-2xl'>
                                     {previewData.statistics.connectionCount}
                                   </p>
-                                  <p className='text-sm text-muted-foreground'>Connections</p>
+                                  <p className='text-muted-foreground text-sm'>Connections</p>
                                 </div>
                               </div>
                               <div>
                                 <p className='font-medium'>{previewData.statistics.complexity}</p>
-                                <p className='text-sm text-muted-foreground'>Complexity</p>
+                                <p className='text-muted-foreground text-sm'>Complexity</p>
                               </div>
                               <div>
                                 <p className='font-medium'>
                                   {previewData.statistics.estimatedSetupTime}
                                 </p>
-                                <p className='text-sm text-muted-foreground'>Setup Time</p>
+                                <p className='text-muted-foreground text-sm'>Setup Time</p>
                               </div>
                             </CardContent>
                           </Card>
@@ -553,7 +533,7 @@ export function TemplatePreviewModal({
                                     />
                                     <div>
                                       <p className='font-medium'>Merge with current workflow</p>
-                                      <p className='text-sm text-muted-foreground'>
+                                      <p className='text-muted-foreground text-sm'>
                                         Add template blocks to existing workflow
                                       </p>
                                     </div>
@@ -568,7 +548,7 @@ export function TemplatePreviewModal({
                                     />
                                     <div>
                                       <p className='font-medium'>Replace current workflow</p>
-                                      <p className='text-sm text-muted-foreground'>
+                                      <p className='text-muted-foreground text-sm'>
                                         Replace all blocks with template
                                       </p>
                                     </div>
@@ -583,7 +563,7 @@ export function TemplatePreviewModal({
                                     />
                                     <div>
                                       <p className='font-medium'>Insert at cursor position</p>
-                                      <p className='text-sm text-muted-foreground'>
+                                      <p className='text-muted-foreground text-sm'>
                                         Insert template at specific location
                                       </p>
                                     </div>
@@ -602,7 +582,7 @@ export function TemplatePreviewModal({
                             <CardTitle className='text-sm'>Description</CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <p className='text-sm leading-relaxed whitespace-pre-wrap'>
+                            <p className='whitespace-pre-wrap text-sm leading-relaxed'>
                               {template.longDescription}
                             </p>
                           </CardContent>
@@ -633,7 +613,7 @@ export function TemplatePreviewModal({
                                     </div>
                                     <div className='flex-1'>
                                       <p className='font-medium text-sm'>{block.name}</p>
-                                      <p className='text-xs text-muted-foreground capitalize'>
+                                      <p className='text-muted-foreground text-xs capitalize'>
                                         {block.type.replace(/([A-Z])/g, ' $1').trim()}
                                       </p>
                                     </div>
@@ -677,13 +657,13 @@ export function TemplatePreviewModal({
                             {previewData.conflicts.map((conflict, index) => (
                               <div
                                 key={index}
-                                className='rounded-lg border border-orange-200 p-4 bg-orange-50/50'
+                                className='rounded-lg border border-orange-200 bg-orange-50/50 p-4'
                               >
                                 <div className='mb-3'>
                                   <p className='font-medium text-sm'>{conflict.description}</p>
                                 </div>
                                 <div className='space-y-2'>
-                                  <p className='text-xs text-muted-foreground'>Resolution:</p>
+                                  <p className='text-muted-foreground text-xs'>Resolution:</p>
                                   <select
                                     className='w-full rounded border bg-background px-3 py-2 text-sm'
                                     value={
@@ -719,7 +699,7 @@ export function TemplatePreviewModal({
         {/* Footer */}
         <div className='flex-shrink-0 border-t px-6 py-4'>
           <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+            <div className='flex items-center gap-2 text-muted-foreground text-sm'>
               <Info className='h-4 w-4' />
               <span>
                 {Object.keys(validationErrors).length > 0
@@ -736,7 +716,7 @@ export function TemplatePreviewModal({
                 disabled={Object.keys(validationErrors).length > 0 || loading}
                 className='min-w-32'
               >
-                <Wand2 className='h-4 w-4 mr-2' />
+                <Wand2 className='mr-2 h-4 w-4' />
                 Apply Template
               </Button>
             </div>

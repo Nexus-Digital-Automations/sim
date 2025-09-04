@@ -20,13 +20,7 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import {
-  templateCategories,
-  templateFavorites,
-  templates,
-  templateUsageAnalytics,
-  user,
-} from '@/db/schema'
+import { templateFavorites, templates, templateUsageAnalytics } from '@/db/schema'
 
 const logger = createLogger('TemplateFavoritesAPI')
 
@@ -128,10 +122,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
       .limit(1)
 
     if (templateExists.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     // Check if favorited by user
@@ -144,10 +135,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
       })
       .from(templateFavorites)
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
       .limit(1)
 
@@ -223,10 +211,7 @@ export async function POST(request: NextRequest, { params }: { params: { templat
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
@@ -244,10 +229,7 @@ export async function POST(request: NextRequest, { params }: { params: { templat
       .select({ templateId: templateFavorites.templateId })
       .from(templateFavorites)
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
       .limit(1)
 
@@ -361,10 +343,7 @@ export async function PUT(request: NextRequest, { params }: { params: { template
       })
       .from(templateFavorites)
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
       .limit(1)
 
@@ -382,10 +361,7 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         notes: data.notes,
       })
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
       .returning()
 
@@ -469,10 +445,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
       })
       .from(templateFavorites)
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
       .limit(1)
 
@@ -489,10 +462,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
     await db
       .delete(templateFavorites)
       .where(
-        and(
-          eq(templateFavorites.templateId, templateId),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templateId), eq(templateFavorites.userId, userId))
       )
 
     // Update template like count

@@ -434,8 +434,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Check for conflicts
     const conflicts = await checkLockConflicts(
-      workflowId, 
-      elements.map(({ elementType, elementId }) => ({ elementType, elementId })), 
+      workflowId,
+      elements.map(({ elementType, elementId }) => ({ elementType, elementId })),
       userId
     )
 

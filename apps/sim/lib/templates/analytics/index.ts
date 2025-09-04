@@ -7,7 +7,7 @@
  *
  * Key Features:
  * - Real-time template performance monitoring
- * - User engagement and behavior analytics  
+ * - User engagement and behavior analytics
  * - Template success and failure rate tracking
  * - Creator analytics and revenue tracking
  * - Community health and growth metrics
@@ -28,98 +28,93 @@
  * @created 2025-09-04
  */
 
-// Core Analytics Services
-export { TemplateAnalyticsTracker, templateAnalyticsTracker } from './template-analytics-tracker'
-export { TemplateMonitoringService, templateMonitoringService } from './template-monitoring-service'
-export { TemplatePerformanceAnalyzer, templatePerformanceAnalyzer } from './template-performance-analyzer'
-
+export { ABTestingFramework, abTestingFramework } from './ab-testing-framework'
+// Dashboards
+export { AdminDashboardService, adminDashboardService } from './admin-dashboard-service'
+export { AnalyticsDashboardBuilder, analyticsDashboardBuilder } from './analytics-dashboard-builder'
+export { AnomalyDetectionService, anomalyDetectionService } from './anomaly-detection-service'
+// Business Intelligence
+export {
+  BusinessIntelligenceService,
+  businessIntelligenceService,
+} from './business-intelligence-service'
+export {
+  CommunityEngagementMonitor,
+  communityEngagementMonitor,
+} from './community-engagement-monitor'
+export { CommunityGrowthTracker, communityGrowthTracker } from './community-growth-tracker'
+// Community Analytics
+export { CommunityHealthAnalyzer, communityHealthAnalyzer } from './community-health-analyzer'
 // Creator Analytics
 export { CreatorAnalyticsService, creatorAnalyticsService } from './creator-analytics-service'
 export { CreatorDashboardService, creatorDashboardService } from './creator-dashboard-service'
 export { CreatorRevenueTracker, creatorRevenueTracker } from './creator-revenue-tracker'
-
-// User Analytics  
-export { UserEngagementAnalyzer, userEngagementAnalyzer } from './user-engagement-analyzer'
-export { UserBehaviorAnalytics, userBehaviorAnalytics } from './user-behavior-analytics'
-export { UserJourneyTracker, userJourneyTracker } from './user-journey-tracker'
-
-// Community Analytics
-export { CommunityHealthAnalyzer, communityHealthAnalyzer } from './community-health-analyzer'
-export { CommunityGrowthTracker, communityGrowthTracker } from './community-growth-tracker'
-export { CommunityEngagementMonitor, communityEngagementMonitor } from './community-engagement-monitor'
-
-// Business Intelligence
-export { BusinessIntelligenceService, businessIntelligenceService } from './business-intelligence-service'
-export { RevenueAnalyticsService, revenueAnalyticsService } from './revenue-analytics-service'
-export { MarketplaceAnalyticsService, marketplaceAnalyticsService } from './marketplace-analytics-service'
-
+export { ExecutiveDashboardService, executiveDashboardService } from './executive-dashboard-service'
+export {
+  MarketplaceAnalyticsService,
+  marketplaceAnalyticsService,
+} from './marketplace-analytics-service'
 // Advanced Analytics
 export { PredictiveAnalyticsEngine, predictiveAnalyticsEngine } from './predictive-analytics-engine'
-export { AnomalyDetectionService, anomalyDetectionService } from './anomaly-detection-service'
-export { ABTestingFramework, abTestingFramework } from './ab-testing-framework'
-
-// Dashboards
-export { AdminDashboardService, adminDashboardService } from './admin-dashboard-service'
-export { ExecutiveDashboardService, executiveDashboardService } from './executive-dashboard-service'
-export { AnalyticsDashboardBuilder, analyticsDashboardBuilder } from './analytics-dashboard-builder'
-
+export { RevenueAnalyticsService, revenueAnalyticsService } from './revenue-analytics-service'
+// Core Analytics Services
+export { TemplateAnalyticsTracker, templateAnalyticsTracker } from './template-analytics-tracker'
+export { TemplateMonitoringService, templateMonitoringService } from './template-monitoring-service'
+export {
+  TemplatePerformanceAnalyzer,
+  templatePerformanceAnalyzer,
+} from './template-performance-analyzer'
 // Type Definitions
 export type {
-  // Core Analytics Types
-  TemplateAnalyticsEvent,
-  TemplateAnalyticsMetrics,
-  TemplatePerformanceReport,
-  
-  // Monitoring Types
-  TemplateMonitoringConfig,
-  TemplateHealthStatus,
-  PerformanceAlert,
-  
+  ABTestConfig,
+  AlertConfiguration,
+  // Dashboard Types
+  AnalyticsDashboardConfig,
+  // Reporting Types
+  AnalyticsReport,
+  AnalyticsTimeRange,
+  AnomalyAlert,
+  // Business Intelligence Types
+  BusinessIntelligenceReport,
+  CommunityEngagementData,
+  CommunityGrowthMetrics,
+  // Community Analytics Types
+  CommunityHealthReport,
   // Creator Analytics Types
   CreatorAnalyticsData,
   CreatorPerformanceMetrics,
   CreatorRevenueData,
-  
-  // User Analytics Types
-  UserEngagementProfile,
-  UserBehaviorInsights,
-  UserJourneyData,
-  
-  // Community Analytics Types
-  CommunityHealthReport,
-  CommunityGrowthMetrics,
-  CommunityEngagementData,
-  
-  // Business Intelligence Types
-  BusinessIntelligenceReport,
-  RevenueAnalyticsReport,
+  DashboardVisualization,
+  DashboardWidgetConfig,
   MarketplaceInsights,
-  
+  MetricAggregation,
+  MonitoringConfiguration,
+  PerformanceAlert,
+  PerformanceSnapshot,
   // Advanced Analytics Types
   PredictiveModel,
-  AnomalyAlert,
-  ABTestConfig,
-  
-  // Dashboard Types
-  AnalyticsDashboardConfig,
-  DashboardWidgetConfig,
-  DashboardVisualization,
-  
+  RevenueAnalyticsReport,
   // Configuration Types
   TemplateAnalyticsConfig,
-  MonitoringConfiguration,
-  AlertConfiguration,
-  
+  // Core Analytics Types
+  TemplateAnalyticsEvent,
+  TemplateAnalyticsMetrics,
+  TemplateHealthStatus,
+  // Monitoring Types
+  TemplateMonitoringConfig,
+  TemplatePerformanceReport,
   // Time Series Types
   TimeSeriesData,
-  AnalyticsTimeRange,
-  MetricAggregation,
-  
-  // Reporting Types
-  AnalyticsReport,
-  PerformanceSnapshot,
   TrendAnalysis,
+  UserBehaviorInsights,
+  // User Analytics Types
+  UserEngagementProfile,
+  UserJourneyData,
 } from './types'
+export { UserBehaviorAnalytics, userBehaviorAnalytics } from './user-behavior-analytics'
+// User Analytics
+export { UserEngagementAnalyzer, userEngagementAnalyzer } from './user-engagement-analyzer'
+export { UserJourneyTracker, userJourneyTracker } from './user-journey-tracker'
 
 /**
  * Comprehensive Template Analytics Manager
@@ -193,7 +188,7 @@ export class TemplateAnalyticsManager {
             errorRate: 0.05,
             responseTime: 2000,
             lowUsage: 0.1,
-          }
+          },
         },
         ...config,
       }
@@ -267,9 +262,10 @@ export class TemplateAnalyticsManager {
       this.initialized = true
       console.log('🎉 Template Analytics System initialization complete!')
       console.log(`📊 Analytics retention period: ${defaultConfig.retentionDays} days`)
-      console.log(`⚡ Real-time tracking: ${defaultConfig.enableRealTimeTracking ? 'Enabled' : 'Disabled'}`)
+      console.log(
+        `⚡ Real-time tracking: ${defaultConfig.enableRealTimeTracking ? 'Enabled' : 'Disabled'}`
+      )
       console.log(`🎯 A/B Testing: ${defaultConfig.enableABTesting ? 'Enabled' : 'Disabled'}`)
-
     } catch (error) {
       console.error('❌ Template Analytics System initialization failed:', error)
       throw error
@@ -281,12 +277,15 @@ export class TemplateAnalyticsManager {
    */
   getHealthStatus(): {
     overall: 'healthy' | 'degraded' | 'down'
-    services: Record<string, {
-      status: 'healthy' | 'degraded' | 'down'
-      metrics?: any
-      performance?: any
-      alerts?: number
-    }>
+    services: Record<
+      string,
+      {
+        status: 'healthy' | 'degraded' | 'down'
+        metrics?: any
+        performance?: any
+        alerts?: number
+      }
+    >
     systemMetrics: {
       eventsProcessed: number
       activeServices: number
@@ -304,7 +303,7 @@ export class TemplateAnalyticsManager {
       try {
         const status = service.getHealthStatus ? service.getHealthStatus() : { status: 'healthy' }
         serviceStatuses[name] = status
-        
+
         if (status.status === 'degraded') degradedCount++
         if (status.status === 'down') downCount++
       } catch (error) {
@@ -328,7 +327,7 @@ export class TemplateAnalyticsManager {
         activeServices: this.services.size,
         memoryUsage: process.memoryUsage().heapUsed,
         uptime: process.uptime(),
-      }
+      },
     }
   }
 
@@ -394,25 +393,30 @@ export class TemplateAnalyticsManager {
     }
 
     switch (type) {
-      case 'template':
+      case 'template': {
         const performanceAnalyzer = this.services.get('performanceAnalyzer')
         return performanceAnalyzer?.generateReport(timeRange, options)
+      }
 
-      case 'creator':
+      case 'creator': {
         const creatorAnalytics = this.services.get('creatorAnalytics')
         return creatorAnalytics?.generateReport(timeRange, options)
+      }
 
-      case 'user':
+      case 'user': {
         const userAnalytics = this.services.get('userAnalytics')
         return userAnalytics?.generateReport(timeRange, options)
+      }
 
-      case 'community':
+      case 'community': {
         const communityAnalytics = this.services.get('communityAnalytics')
         return communityAnalytics?.generateReport(timeRange, options)
+      }
 
-      case 'business':
+      case 'business': {
         const businessIntelligence = this.services.get('businessIntelligence')
         return businessIntelligence?.generateReport(timeRange, options)
+      }
 
       default:
         throw new Error(`Unknown report type: ${type}`)
@@ -451,9 +455,11 @@ export class TemplateAnalyticsManager {
 
     this.services.forEach((service, name) => {
       if (service.shutdown && typeof service.shutdown === 'function') {
-        shutdownPromises.push(service.shutdown().catch((error: any) => {
-          console.error(`Failed to shutdown ${name}:`, error)
-        }))
+        shutdownPromises.push(
+          service.shutdown().catch((error: any) => {
+            console.error(`Failed to shutdown ${name}:`, error)
+          })
+        )
       }
     })
 

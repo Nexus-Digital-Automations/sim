@@ -21,24 +21,17 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { 
-  Template, 
-  TemplateSearchQuery, 
-  TemplateSearchResults, 
-  TemplateRecommendation 
-} from '../types'
-
-// Import all discovery services
-import { semanticSearchService } from './semantic-search-service'
-import { 
+import type { Template, TemplateSearchQuery, TemplateSearchResults } from '../types'
+import {
+  type AdvancedRecommendation,
   advancedRecommendationEngine,
   type BusinessContext,
-  type AdvancedRecommendation 
 } from './advanced-recommendation-engine'
 import { realTimeAnalyticsService } from './real-time-analytics-service'
-import { searchOptimizationService } from './search-optimization-service'
 import { templateRecommendationEngine } from './recommendation-engine'
-import { templateAnalyticsService } from './analytics-service'
+import { searchOptimizationService } from './search-optimization-service'
+// Import all discovery services
+import { semanticSearchService } from './semantic-search-service'
 
 // Initialize structured logger
 const logger = createLogger('UnifiedDiscoveryService')
@@ -51,7 +44,7 @@ export interface UnifiedDiscoveryRequest {
   userId?: string
   sessionId?: string
   organizationId?: string
-  
+
   // Business context
   businessContext?: BusinessContext
   goals?: {
@@ -59,17 +52,17 @@ export interface UnifiedDiscoveryRequest {
     timeline: 'immediate' | 'short' | 'medium' | 'long'
     priority: 'low' | 'medium' | 'high' | 'critical'
   }
-  
+
   // Discovery preferences
   discoveryMode: 'search' | 'recommend' | 'explore' | 'hybrid'
   personalizationLevel: 'none' | 'basic' | 'advanced' | 'ai_powered'
-  
+
   // Performance and optimization
   enableCaching?: boolean
   includeAnalytics?: boolean
   enableABTesting?: boolean
   abTestVariant?: string
-  
+
   // Response customization
   includeExplanations?: boolean
   includeRankingFactors?: boolean
@@ -84,28 +77,28 @@ export interface UnifiedDiscoveryResponse {
   // Core results
   templates: Template[]
   recommendations: AdvancedRecommendation[]
-  
+
   // Search results (if search was performed)
   searchResults?: TemplateSearchResults
-  
+
   // Analytics and insights
   analytics?: {
     totalProcessingTime: number
     searchTime?: number
     recommendationTime?: number
     cacheHitRate: number
-    
+
     // Query insights
     queryAnalysis?: any
     searchIntent?: string
     confidence?: number
-    
+
     // Performance metrics
     relevanceScore: number
     diversityScore: number
     personalizedScore: number
   }
-  
+
   // Optimization data
   optimization?: {
     abTestVariant?: string
@@ -113,7 +106,7 @@ export interface UnifiedDiscoveryResponse {
     performanceBoosts: string[]
     suggestions: string[]
   }
-  
+
   // Real-time insights
   insights?: {
     trendingNow: string[]
@@ -121,7 +114,7 @@ export interface UnifiedDiscoveryResponse {
     businessInsights: string[]
     discoveryTips: string[]
   }
-  
+
   // Metadata
   meta: {
     requestId: string
@@ -138,24 +131,24 @@ export interface DiscoveryPerformanceMetrics {
   requestId: string
   userId?: string
   discoveryMode: string
-  
+
   // Timing metrics
   totalTime: number
   searchTime?: number
   recommendationTime?: number
   analyticsTime?: number
-  
+
   // Quality metrics
   resultCount: number
   relevanceScore: number
   diversityScore: number
   userSatisfaction?: number
-  
+
   // User behavior
   clickThroughRate?: number
   conversionRate?: number
   dwellTime?: number
-  
+
   // Context
   businessContext?: BusinessContext
   abTestVariant?: string
@@ -202,15 +195,17 @@ export class UnifiedDiscoveryService {
    * @param request - Unified discovery request configuration
    * @returns Promise<UnifiedDiscoveryResponse> - Comprehensive discovery results
    */
-  async discover(request: UnifiedDiscoveryRequest & {
-    // Support for both search and recommendation requests
-    searchQuery?: TemplateSearchQuery
-    recommendationOptions?: {
-      excludeUsed?: boolean
-      includeExperimental?: boolean
-      focusArea?: string
+  async discover(
+    request: UnifiedDiscoveryRequest & {
+      // Support for both search and recommendation requests
+      searchQuery?: TemplateSearchQuery
+      recommendationOptions?: {
+        excludeUsed?: boolean
+        includeExperimental?: boolean
+        focusArea?: string
+      }
     }
-  }): Promise<UnifiedDiscoveryResponse> {
+  ): Promise<UnifiedDiscoveryResponse> {
     const operationId = `unified_discovery_${Date.now()}`
 
     logger.info(`[${this.requestId}] Starting unified discovery`, {
@@ -224,10 +219,12 @@ export class UnifiedDiscoveryService {
       const servicesUsed: string[] = []
       const optimizations: string[] = []
       const performanceBoosts: string[] = []
-      
+
       // Step 1: Analyze request and select optimal service strategy
       const strategy = await this.selectDiscoveryStrategy(request)
-      optimizations.push(`Strategy: ${strategy.primaryService} with ${strategy.supportingServices.join(', ')}`)
+      optimizations.push(
+        `Strategy: ${strategy.primaryService} with ${strategy.supportingServices.join(', ')}`
+      )
 
       // Step 2: Execute primary discovery service
       const primaryResults = await this.executePrimaryDiscovery(request, strategy)
@@ -248,10 +245,10 @@ export class UnifiedDiscoveryService {
       }
 
       // Step 6: Generate analytics and insights
-      const analytics = request.includeAnalytics 
+      const analytics = request.includeAnalytics
         ? await this.generateAnalytics(request, personalizedResults)
         : undefined
-      
+
       if (analytics) {
         servicesUsed.push('analytics')
       }
@@ -266,11 +263,12 @@ export class UnifiedDiscoveryService {
         userId: request.userId,
         discoveryMode: request.discoveryMode,
         totalTime: Date.now() - this.startTime,
-        resultCount: personalizedResults.templates.length + personalizedResults.recommendations.length,
+        resultCount:
+          personalizedResults.templates.length + personalizedResults.recommendations.length,
         relevanceScore: analytics?.relevanceScore || 0,
         diversityScore: analytics?.diversityScore || 0,
         businessContext: request.businessContext,
-        abTestVariant: request.abTestVariant
+        abTestVariant: request.abTestVariant,
       })
 
       // Prepare unified response
@@ -283,15 +281,15 @@ export class UnifiedDiscoveryService {
           abTestVariant: request.abTestVariant,
           optimizationApplied: optimizations,
           performanceBoosts,
-          suggestions: await this.generateOptimizationSuggestions(request, personalizedResults)
+          suggestions: await this.generateOptimizationSuggestions(request, personalizedResults),
         },
         insights,
         meta: {
           requestId: this.requestId,
           timestamp: new Date(),
           processingServices: servicesUsed,
-          version: this.version
-        }
+          version: this.version,
+        },
       }
 
       const processingTime = Date.now() - this.startTime
@@ -337,17 +335,14 @@ export class UnifiedDiscoveryService {
 
     try {
       // Use search optimization service for advanced search
-      const optimizedResults = await searchOptimizationService.optimizedSearch(
-        query,
-        {
-          userId: request.userId,
-          sessionId: request.sessionId,
-          abTestVariant: request.abTestVariant,
-          includeRankingFactors: request.includeRankingFactors,
-          enableExplanations: request.includeExplanations,
-          performanceTracking: true
-        }
-      )
+      const optimizedResults = await searchOptimizationService.optimizedSearch(query, {
+        userId: request.userId,
+        sessionId: request.sessionId,
+        abTestVariant: request.abTestVariant,
+        includeRankingFactors: request.includeRankingFactors,
+        enableExplanations: request.includeExplanations,
+        performanceTracking: true,
+      })
 
       // Apply business context if provided
       if (request.businessContext) {
@@ -409,7 +404,7 @@ export class UnifiedDiscoveryService {
           {
             limit: request.maxResults,
             industryFocus: request.businessContext?.industry,
-            experienceLevel: request.businessContext?.technicalLevel
+            experienceLevel: request.businessContext?.technicalLevel,
           }
         )
       } else {
@@ -422,7 +417,7 @@ export class UnifiedDiscoveryService {
             excludeUsed: request.recommendationOptions?.excludeUsed,
             includeExperimental: request.recommendationOptions?.includeExperimental,
             focusArea: request.recommendationOptions?.focusArea,
-            abTestVariant: request.abTestVariant
+            abTestVariant: request.abTestVariant,
           }
         )
       }
@@ -439,7 +434,8 @@ export class UnifiedDiscoveryService {
       logger.info(`[${this.requestId}] AI-powered recommendations completed`, {
         operationId,
         recommendationCount: recommendations.length,
-        avgConfidence: recommendations.reduce((sum, r) => sum + r.confidenceLevel, 0) / recommendations.length,
+        avgConfidence:
+          recommendations.reduce((sum, r) => sum + r.confidenceLevel, 0) / recommendations.length,
         processingTime,
       })
 
@@ -462,11 +458,9 @@ export class UnifiedDiscoveryService {
    * @param options - Dashboard options
    * @returns Promise<any> - Live dashboard data
    */
-  async getLiveDiscoveryDashboard(options: {
-    timeWindow?: number
-    includeAnalytics?: boolean
-    includePredictions?: boolean
-  } = {}) {
+  async getLiveDiscoveryDashboard(
+    options: { timeWindow?: number; includeAnalytics?: boolean; includePredictions?: boolean } = {}
+  ) {
     const operationId = `dashboard_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting live discovery dashboard`, {
@@ -478,15 +472,17 @@ export class UnifiedDiscoveryService {
       const dashboardData = await realTimeAnalyticsService.getLiveDashboardData({
         includeAlerts: true,
         includePredictions: options.includePredictions,
-        timeWindow: options.timeWindow
+        timeWindow: options.timeWindow,
       })
 
       // Add search-specific analytics
       const searchAnalytics = await searchOptimizationService.getSearchAnalytics({
-        timeWindow: options.timeWindow ? Math.floor(options.timeWindow / (24 * 60 * 60 * 1000)) : 30,
+        timeWindow: options.timeWindow
+          ? Math.floor(options.timeWindow / (24 * 60 * 60 * 1000))
+          : 30,
         includePerformanceTrends: true,
         includeQueryAnalysis: true,
-        includeABTestResults: true
+        includeABTestResults: true,
       })
 
       const enhancedDashboard = {
@@ -495,8 +491,8 @@ export class UnifiedDiscoveryService {
         meta: {
           requestId: this.requestId,
           timestamp: new Date(),
-          processingTime: Date.now() - this.startTime
-        }
+          processingTime: Date.now() - this.startTime,
+        },
       }
 
       const processingTime = Date.now() - this.startTime
@@ -530,25 +526,25 @@ export class UnifiedDiscoveryService {
         return {
           primaryService: 'search_optimization',
           supportingServices: ['semantic_search', 'recommendations'],
-          strategy: 'search_focused'
+          strategy: 'search_focused',
         }
       case 'recommend':
         return {
           primaryService: 'advanced_recommendations',
           supportingServices: ['semantic_search', 'analytics'],
-          strategy: 'recommendation_focused'
+          strategy: 'recommendation_focused',
         }
       case 'explore':
         return {
           primaryService: 'semantic_search',
           supportingServices: ['recommendations', 'trending'],
-          strategy: 'exploration_focused'
+          strategy: 'exploration_focused',
         }
       default: // hybrid
         return {
           primaryService: 'advanced_recommendations',
           supportingServices: ['search_optimization', 'semantic_search', 'analytics'],
-          strategy: 'hybrid_approach'
+          strategy: 'hybrid_approach',
         }
     }
   }
@@ -568,7 +564,7 @@ export class UnifiedDiscoveryService {
           return {
             templates: searchResults.data,
             recommendations: [],
-            searchResults
+            searchResults,
           }
         }
         return { templates: [], recommendations: [] }
@@ -578,7 +574,7 @@ export class UnifiedDiscoveryService {
           const recommendations = await this.aiPoweredRecommendations(request.userId, request)
           return {
             templates: [],
-            recommendations
+            recommendations,
           }
         }
         return { templates: [], recommendations: [] }
@@ -590,12 +586,12 @@ export class UnifiedDiscoveryService {
             {
               userId: request.userId,
               limit: request.maxResults || 20,
-              minSimilarity: 0.3
+              minSimilarity: 0.3,
             }
           )
           return {
-            templates: semanticResults.map(r => r.template),
-            recommendations: []
+            templates: semanticResults.map((r) => r.template),
+            recommendations: [],
           }
         }
         return { templates: [], recommendations: [] }
@@ -624,7 +620,7 @@ export class UnifiedDiscoveryService {
               request.userId,
               { limit: Math.floor((request.maxResults || 20) / 2) }
             )
-            return { recommendations: recs.map(r => ({ ...r } as AdvancedRecommendation)) }
+            return { recommendations: recs.map((r) => ({ ...r }) as AdvancedRecommendation) }
           }
           break
         case 'semantic_search':
@@ -633,29 +629,32 @@ export class UnifiedDiscoveryService {
               request.businessContext.useCase,
               { userId: request.userId, limit: 5 }
             )
-            return { templates: semanticResults.map(r => r.template) }
+            return { templates: semanticResults.map((r) => r.template) }
           }
           break
-        case 'trending':
+        case 'trending': {
           const trendingRecs = await templateRecommendationEngine.getTrendingTemplates({
             limit: 5,
-            categories: request.businessContext?.industry ? [request.businessContext.industry] : undefined
+            categories: request.businessContext?.industry
+              ? [request.businessContext.industry]
+              : undefined,
           })
-          return { recommendations: trendingRecs.map(r => ({ ...r } as AdvancedRecommendation)) }
+          return { recommendations: trendingRecs.map((r) => ({ ...r }) as AdvancedRecommendation) }
+        }
       }
       return { templates: [], recommendations: [] }
     })
 
     const supportingResults = await Promise.all(supportingPromises)
-    
-    supportingResults.forEach(result => {
+
+    supportingResults.forEach((result) => {
       if (result.templates) supportingTemplates.push(...result.templates)
       if (result.recommendations) supportingRecommendations.push(...result.recommendations)
     })
 
     return {
       templates: supportingTemplates,
-      recommendations: supportingRecommendations
+      recommendations: supportingRecommendations,
     }
   }
 
@@ -670,24 +669,24 @@ export class UnifiedDiscoveryService {
   }> {
     // Combine and deduplicate templates
     const templateMap = new Map<string, Template>()
-    
+
     primary.templates?.forEach((t: Template) => templateMap.set(t.id, t))
     supporting.templates?.forEach((t: Template) => templateMap.set(t.id, t))
-    
+
     // Combine and deduplicate recommendations
     const recommendationMap = new Map<string, AdvancedRecommendation>()
-    
-    primary.recommendations?.forEach((r: AdvancedRecommendation) => 
+
+    primary.recommendations?.forEach((r: AdvancedRecommendation) =>
       recommendationMap.set(r.template.id, r)
     )
-    supporting.recommendations?.forEach((r: AdvancedRecommendation) => 
+    supporting.recommendations?.forEach((r: AdvancedRecommendation) =>
       recommendationMap.set(r.template.id, r)
     )
 
     return {
       templates: Array.from(templateMap.values()),
       recommendations: Array.from(recommendationMap.values()),
-      searchResults: primary.searchResults
+      searchResults: primary.searchResults,
     }
   }
 
@@ -712,16 +711,17 @@ export class UnifiedDiscoveryService {
     results: any
   ): Promise<UnifiedDiscoveryResponse['analytics']> {
     const relevanceScores = results.recommendations.map((r: AdvancedRecommendation) => r.score)
-    const avgRelevanceScore = relevanceScores.length > 0 
-      ? relevanceScores.reduce((a: number, b: number) => a + b, 0) / relevanceScores.length
-      : 0
+    const avgRelevanceScore =
+      relevanceScores.length > 0
+        ? relevanceScores.reduce((a: number, b: number) => a + b, 0) / relevanceScores.length
+        : 0
 
     return {
       totalProcessingTime: Date.now() - this.startTime,
       cacheHitRate: 0, // Placeholder
       relevanceScore: avgRelevanceScore,
       diversityScore: 0.7, // Placeholder
-      personalizedScore: request.personalizationLevel !== 'none' ? 0.8 : 0
+      personalizedScore: request.personalizationLevel !== 'none' ? 0.8 : 0,
     }
   }
 
@@ -731,18 +731,22 @@ export class UnifiedDiscoveryService {
   ): Promise<UnifiedDiscoveryResponse['insights']> {
     return {
       trendingNow: ['AI Automation', 'Data Processing', 'API Integration'],
-      personalizedInsights: request.userId ? [
-        'You tend to prefer high-quality templates',
-        'Marketing automation matches your interests'
-      ] : [],
-      businessInsights: request.businessContext ? [
-        `Templates in ${request.businessContext.industry} are trending`,
-        `Consider ${request.businessContext.technicalLevel} complexity templates`
-      ] : [],
+      personalizedInsights: request.userId
+        ? [
+            'You tend to prefer high-quality templates',
+            'Marketing automation matches your interests',
+          ]
+        : [],
+      businessInsights: request.businessContext
+        ? [
+            `Templates in ${request.businessContext.industry} are trending`,
+            `Consider ${request.businessContext.technicalLevel} complexity templates`,
+          ]
+        : [],
       discoveryTips: [
         'Try using more specific search terms for better results',
-        'Explore different categories to discover new automation opportunities'
-      ]
+        'Explore different categories to discover new automation opportunities',
+      ],
     }
   }
 

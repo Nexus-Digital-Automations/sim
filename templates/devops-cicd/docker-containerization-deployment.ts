@@ -1,9 +1,9 @@
 /**
  * Docker Containerization and Deployment Template
- * 
+ *
  * Enterprise-grade Docker containerization workflow with multi-stage builds,
  * security scanning, and automated deployment to container registries.
- * 
+ *
  * Features:
  * - Multi-stage Dockerfile optimization
  * - Security vulnerability scanning
@@ -12,20 +12,21 @@
  * - Rollback capabilities
  */
 
-import { WorkflowTemplate, Block } from '../shared/types';
+import type { WorkflowTemplate } from '../shared/types'
 
 export const dockerContainerizationTemplate: WorkflowTemplate = {
   id: 'docker-containerization-deployment',
   name: 'Docker Containerization & Deployment',
-  description: 'Comprehensive Docker containerization workflow with security scanning and automated deployment',
+  description:
+    'Comprehensive Docker containerization workflow with security scanning and automated deployment',
   category: 'devops-cicd',
   subcategories: ['deployment-automation', 'containerization'],
   difficulty: 'intermediate',
   estimatedTime: '15-30 minutes',
-  
+
   // Required integrations and services
   integrations: ['docker', 'docker-registry', 'security-scanner', 'notification-service'],
-  
+
   // Template metadata
   metadata: {
     author: 'Sim Platform',
@@ -35,60 +36,60 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
     usageCount: 0,
     rating: 0,
   },
-  
+
   // Workflow configuration parameters
   parameters: {
     applicationName: {
       type: 'string',
       required: true,
       description: 'Name of the application to containerize',
-      placeholder: 'my-web-app'
+      placeholder: 'my-web-app',
     },
     dockerfilePath: {
       type: 'string',
       required: true,
       description: 'Path to Dockerfile',
       placeholder: './Dockerfile',
-      default: './Dockerfile'
+      default: './Dockerfile',
     },
     registryUrl: {
       type: 'string',
       required: true,
       description: 'Container registry URL',
-      placeholder: 'registry.company.com'
+      placeholder: 'registry.company.com',
     },
     imageTag: {
       type: 'string',
       required: false,
       description: 'Docker image tag (defaults to git commit hash)',
-      placeholder: 'latest'
+      placeholder: 'latest',
     },
     buildArgs: {
       type: 'object',
       required: false,
       description: 'Build arguments for Docker build',
-      placeholder: '{"NODE_ENV": "production"}'
+      placeholder: '{"NODE_ENV": "production"}',
     },
     targetEnvironment: {
       type: 'select',
       required: true,
       options: ['development', 'staging', 'production'],
-      description: 'Target deployment environment'
+      description: 'Target deployment environment',
     },
     enableSecurityScan: {
       type: 'boolean',
       required: false,
       default: true,
-      description: 'Enable container security vulnerability scanning'
+      description: 'Enable container security vulnerability scanning',
     },
     notificationChannels: {
       type: 'array',
       required: false,
       description: 'Notification channels for deployment status',
-      items: { type: 'string' }
-    }
+      items: { type: 'string' },
+    },
   },
-  
+
   // Workflow blocks and steps
   blocks: [
     // Block 1: Environment Setup and Validation
@@ -97,14 +98,14 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
       type: 'validation',
       name: 'Environment Setup & Validation',
       description: 'Validate environment and prepare for containerization',
-      
+
       inputs: {
         applicationName: '${parameters.applicationName}',
         dockerfilePath: '${parameters.dockerfilePath}',
         registryUrl: '${parameters.registryUrl}',
-        targetEnvironment: '${parameters.targetEnvironment}'
+        targetEnvironment: '${parameters.targetEnvironment}',
       },
-      
+
       actions: [
         {
           name: 'validate-dockerfile',
@@ -112,8 +113,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           config: {
             path: '${inputs.dockerfilePath}',
             mustExist: true,
-            errorMessage: 'Dockerfile not found at specified path'
-          }
+            errorMessage: 'Dockerfile not found at specified path',
+          },
         },
         {
           name: 'validate-registry-access',
@@ -121,51 +122,51 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           config: {
             registryUrl: '${inputs.registryUrl}',
             credentials: '${secrets.docker_registry_credentials}',
-            timeout: 30000
-          }
+            timeout: 30000,
+          },
         },
         {
           name: 'set-image-tag',
           type: 'variable-set',
           config: {
             variable: 'imageTag',
-            value: '${parameters.imageTag || git.commitHash || "latest"}'
-          }
+            value: '${parameters.imageTag || git.commitHash || "latest"}',
+          },
         },
         {
           name: 'create-build-context',
           type: 'docker-context-create',
           config: {
             contextPath: '.',
-            excludePatterns: ['.git', 'node_modules', '*.log']
-          }
-        }
+            excludePatterns: ['.git', 'node_modules', '*.log'],
+          },
+        },
       ],
-      
+
       outputs: {
         imageTag: '${actions.set-image-tag.value}',
         buildContext: '${actions.create-build-context.contextId}',
-        registryValidated: '${actions.validate-registry-access.success}'
-      }
+        registryValidated: '${actions.validate-registry-access.success}',
+      },
     },
-    
+
     // Block 2: Multi-stage Docker Build
     {
       id: 'docker-build',
       type: 'build',
       name: 'Multi-stage Docker Build',
       description: 'Build Docker image with multi-stage optimization',
-      
+
       dependsOn: ['env-setup'],
-      
+
       inputs: {
         applicationName: '${parameters.applicationName}',
         dockerfilePath: '${parameters.dockerfilePath}',
         buildArgs: '${parameters.buildArgs}',
         imageTag: '${blocks.env-setup.outputs.imageTag}',
-        buildContext: '${blocks.env-setup.outputs.buildContext}'
+        buildContext: '${blocks.env-setup.outputs.buildContext}',
       },
-      
+
       actions: [
         {
           name: 'docker-build',
@@ -175,17 +176,17 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             context: '${inputs.buildContext}',
             tags: [
               '${inputs.applicationName}:${inputs.imageTag}',
-              '${inputs.applicationName}:latest'
+              '${inputs.applicationName}:latest',
             ],
             buildArgs: '${inputs.buildArgs}',
             platform: 'linux/amd64',
             buildOptions: {
               noCache: false,
               squash: true,
-              target: 'production'
+              target: 'production',
             },
-            logLevel: 'info'
-          }
+            logLevel: 'info',
+          },
         },
         {
           name: 'image-inspection',
@@ -193,8 +194,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           config: {
             imageId: '${actions.docker-build.imageId}',
             includeConfig: true,
-            includeManifest: true
-          }
+            includeManifest: true,
+          },
         },
         {
           name: 'size-optimization-check',
@@ -203,34 +204,34 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             imageId: '${actions.docker-build.imageId}',
             warnThreshold: '500MB',
             errorThreshold: '1GB',
-            generateReport: true
-          }
-        }
+            generateReport: true,
+          },
+        },
       ],
-      
+
       outputs: {
         imageId: '${actions.docker-build.imageId}',
         imageName: '${inputs.applicationName}:${inputs.imageTag}',
         imageSize: '${actions.size-optimization-check.size}',
-        buildReport: '${actions.size-optimization-check.report}'
-      }
+        buildReport: '${actions.size-optimization-check.report}',
+      },
     },
-    
+
     // Block 3: Security Vulnerability Scanning
     {
       id: 'security-scan',
       type: 'security',
       name: 'Container Security Scanning',
       description: 'Scan Docker image for security vulnerabilities',
-      
+
       dependsOn: ['docker-build'],
       condition: '${parameters.enableSecurityScan === true}',
-      
+
       inputs: {
         imageId: '${blocks.docker-build.outputs.imageId}',
-        imageName: '${blocks.docker-build.outputs.imageName}'
+        imageName: '${blocks.docker-build.outputs.imageName}',
       },
-      
+
       actions: [
         {
           name: 'vulnerability-scan',
@@ -242,8 +243,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             severity: ['UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
             exitCode: 1,
             timeout: 600000,
-            cacheDir: '/tmp/.trivycache'
-          }
+            cacheDir: '/tmp/.trivycache',
+          },
         },
         {
           name: 'security-report-generation',
@@ -253,8 +254,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             format: 'html',
             includeFixed: true,
             includeUnfixed: true,
-            groupBySeverity: true
-          }
+            groupBySeverity: true,
+          },
         },
         {
           name: 'security-gate-check',
@@ -264,37 +265,38 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             allowedSeverities: ['UNKNOWN', 'LOW', 'MEDIUM'],
             maxCritical: 0,
             maxHigh: 5,
-            failOnError: true
-          }
-        }
+            failOnError: true,
+          },
+        },
       ],
-      
+
       outputs: {
         vulnerabilityCount: '${actions.vulnerability-scan.vulnerabilityCount}',
         securityReport: '${actions.security-report-generation.reportPath}',
-        securityGatePassed: '${actions.security-gate-check.passed}'
-      }
+        securityGatePassed: '${actions.security-gate-check.passed}',
+      },
     },
-    
+
     // Block 4: Container Registry Push
     {
       id: 'registry-push',
       type: 'deployment',
       name: 'Push to Container Registry',
       description: 'Tag and push Docker image to container registry',
-      
+
       dependsOn: ['docker-build', 'security-scan'],
-      condition: '${blocks.security-scan.outputs.securityGatePassed === true || parameters.enableSecurityScan === false}',
-      
+      condition:
+        '${blocks.security-scan.outputs.securityGatePassed === true || parameters.enableSecurityScan === false}',
+
       inputs: {
         imageId: '${blocks.docker-build.outputs.imageId}',
         imageName: '${blocks.docker-build.outputs.imageName}',
         registryUrl: '${parameters.registryUrl}',
         applicationName: '${parameters.applicationName}',
         imageTag: '${blocks.env-setup.outputs.imageTag}',
-        targetEnvironment: '${parameters.targetEnvironment}'
+        targetEnvironment: '${parameters.targetEnvironment}',
       },
-      
+
       actions: [
         {
           name: 'docker-tag',
@@ -304,9 +306,9 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             targetTags: [
               '${inputs.registryUrl}/${inputs.applicationName}:${inputs.imageTag}',
               '${inputs.registryUrl}/${inputs.applicationName}:${inputs.targetEnvironment}',
-              '${inputs.registryUrl}/${inputs.applicationName}:latest'
-            ]
-          }
+              '${inputs.registryUrl}/${inputs.applicationName}:latest',
+            ],
+          },
         },
         {
           name: 'docker-push',
@@ -316,8 +318,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             registry: '${inputs.registryUrl}',
             credentials: '${secrets.docker_registry_credentials}',
             retryAttempts: 3,
-            parallel: false
-          }
+            parallel: false,
+          },
         },
         {
           name: 'manifest-generation',
@@ -327,35 +329,35 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             imageName: '${inputs.applicationName}',
             tag: '${inputs.imageTag}',
             platforms: ['linux/amd64'],
-            generateSbom: true
-          }
-        }
+            generateSbom: true,
+          },
+        },
       ],
-      
+
       outputs: {
         registryImages: '${actions.docker-tag.targetTags}',
         pushSuccess: '${actions.docker-push.success}',
         manifestDigest: '${actions.manifest-generation.digest}',
-        sbomPath: '${actions.manifest-generation.sbomPath}'
-      }
+        sbomPath: '${actions.manifest-generation.sbomPath}',
+      },
     },
-    
+
     // Block 5: Deployment Verification
     {
       id: 'deployment-verification',
       type: 'verification',
       name: 'Deployment Verification',
       description: 'Verify successful deployment and image availability',
-      
+
       dependsOn: ['registry-push'],
-      
+
       inputs: {
         registryUrl: '${parameters.registryUrl}',
         applicationName: '${parameters.applicationName}',
         imageTag: '${blocks.env-setup.outputs.imageTag}',
-        manifestDigest: '${blocks.registry-push.outputs.manifestDigest}'
+        manifestDigest: '${blocks.registry-push.outputs.manifestDigest}',
       },
-      
+
       actions: [
         {
           name: 'registry-verification',
@@ -365,8 +367,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             imageName: '${inputs.applicationName}',
             tag: '${inputs.imageTag}',
             verifyDigest: '${inputs.manifestDigest}',
-            timeout: 60000
-          }
+            timeout: 60000,
+          },
         },
         {
           name: 'image-pull-test',
@@ -374,8 +376,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           config: {
             imageUrl: '${inputs.registryUrl}/${inputs.applicationName}:${inputs.imageTag}',
             credentials: '${secrets.docker_registry_credentials}',
-            cleanup: true
-          }
+            cleanup: true,
+          },
         },
         {
           name: 'deployment-metadata',
@@ -387,29 +389,29 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
               registryUrl: '${inputs.registryUrl}',
               manifestDigest: '${inputs.manifestDigest}',
               deploymentTime: '${now()}',
-              environment: '${parameters.targetEnvironment}'
+              environment: '${parameters.targetEnvironment}',
             },
-            outputFormat: 'json'
-          }
-        }
+            outputFormat: 'json',
+          },
+        },
       ],
-      
+
       outputs: {
         verificationSuccess: '${actions.registry-verification.success}',
         pullTestSuccess: '${actions.image-pull-test.success}',
-        deploymentMetadata: '${actions.deployment-metadata.metadata}'
-      }
+        deploymentMetadata: '${actions.deployment-metadata.metadata}',
+      },
     },
-    
+
     // Block 6: Notification and Cleanup
     {
       id: 'notification-cleanup',
       type: 'notification',
       name: 'Deployment Notification & Cleanup',
       description: 'Send deployment notifications and perform cleanup',
-      
+
       dependsOn: ['deployment-verification'],
-      
+
       inputs: {
         applicationName: '${parameters.applicationName}',
         imageTag: '${blocks.env-setup.outputs.imageTag}',
@@ -417,9 +419,9 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
         deploymentSuccess: '${blocks.deployment-verification.outputs.verificationSuccess}',
         notificationChannels: '${parameters.notificationChannels}',
         securityReport: '${blocks.security-scan.outputs.securityReport}',
-        buildReport: '${blocks.docker-build.outputs.buildReport}'
+        buildReport: '${blocks.docker-build.outputs.buildReport}',
       },
-      
+
       actions: [
         {
           name: 'deployment-notification',
@@ -430,12 +432,9 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
               title: 'Docker Deployment ${inputs.deploymentSuccess ? "Successful" : "Failed"}',
               body: 'Application: ${inputs.applicationName}\nTag: ${inputs.imageTag}\nEnvironment: ${inputs.targetEnvironment}',
               color: '${inputs.deploymentSuccess ? "green" : "red"}',
-              attachments: [
-                '${inputs.securityReport}',
-                '${inputs.buildReport}'
-              ]
-            }
-          }
+              attachments: ['${inputs.securityReport}', '${inputs.buildReport}'],
+            },
+          },
         },
         {
           name: 'local-cleanup',
@@ -444,8 +443,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
             removeUntaggedImages: true,
             removeDanglingImages: true,
             pruneBuildCache: true,
-            maxAge: '24h'
-          }
+            maxAge: '24h',
+          },
         },
         {
           name: 'rollback-preparation',
@@ -455,43 +454,45 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
               applicationName: '${inputs.applicationName}',
               imageTag: '${inputs.imageTag}',
               registryUrl: '${parameters.registryUrl}',
-              environment: '${inputs.targetEnvironment}'
+              environment: '${inputs.targetEnvironment}',
             },
-            rollbackInstructions: 'To rollback, deploy previous image tag or use emergency rollback template'
-          }
-        }
+            rollbackInstructions:
+              'To rollback, deploy previous image tag or use emergency rollback template',
+          },
+        },
       ],
-      
+
       outputs: {
         notificationSent: '${actions.deployment-notification.success}',
         cleanupCompleted: '${actions.local-cleanup.success}',
-        rollbackData: '${actions.rollback-preparation.rollbackData}'
-      }
-    }
+        rollbackData: '${actions.rollback-preparation.rollbackData}',
+      },
+    },
   ],
-  
+
   // Error handling configuration
   errorHandling: {
     onFailure: 'cleanup',
     retryPolicy: {
       maxAttempts: 2,
       backoffStrategy: 'exponential',
-      retryableErrors: ['network', 'timeout', 'rate-limit']
+      retryableErrors: ['network', 'timeout', 'rate-limit'],
     },
     notifications: {
       onError: true,
-      channels: '${parameters.notificationChannels}'
-    }
+      channels: '${parameters.notificationChannels}',
+    },
   },
-  
+
   // Template documentation and examples
   documentation: {
-    overview: 'This template provides a comprehensive Docker containerization workflow with security scanning and automated deployment to container registries.',
+    overview:
+      'This template provides a comprehensive Docker containerization workflow with security scanning and automated deployment to container registries.',
     prerequisites: [
       'Docker installed and configured',
       'Container registry credentials configured',
       'Application with valid Dockerfile',
-      'Security scanner (Trivy) available'
+      'Security scanner (Trivy) available',
     ],
     examples: [
       {
@@ -501,8 +502,8 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           dockerfilePath: './Dockerfile',
           registryUrl: 'registry.company.com',
           targetEnvironment: 'production',
-          buildArgs: { NODE_ENV: 'production' }
-        }
+          buildArgs: { NODE_ENV: 'production' },
+        },
       },
       {
         name: 'Python API Service',
@@ -511,23 +512,26 @@ export const dockerContainerizationTemplate: WorkflowTemplate = {
           dockerfilePath: './docker/Dockerfile',
           registryUrl: 'gcr.io/my-project',
           targetEnvironment: 'staging',
-          enableSecurityScan: true
-        }
-      }
+          enableSecurityScan: true,
+        },
+      },
     ],
     troubleshooting: [
       {
         issue: 'Docker build fails due to missing dependencies',
-        solution: 'Check Dockerfile for correct package installation commands and base image compatibility'
+        solution:
+          'Check Dockerfile for correct package installation commands and base image compatibility',
       },
       {
         issue: 'Security scan fails with high-severity vulnerabilities',
-        solution: 'Update base image and dependencies, or configure security gate to allow specific vulnerabilities'
+        solution:
+          'Update base image and dependencies, or configure security gate to allow specific vulnerabilities',
       },
       {
         issue: 'Registry push fails with authentication error',
-        solution: 'Verify docker_registry_credentials secret is correctly configured with valid credentials'
-      }
-    ]
-  }
-};
+        solution:
+          'Verify docker_registry_credentials secret is correctly configured with valid credentials',
+      },
+    ],
+  },
+}

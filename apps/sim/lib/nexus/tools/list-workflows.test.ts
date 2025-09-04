@@ -60,13 +60,16 @@ describe('ListWorkflows Tool', () => {
       const { getSession } = await import('@/lib/auth')
       vi.mocked(getSession).mockResolvedValue(createMockSession())
 
-      const result = await listWorkflows.execute({
-        workspaceId: 'test-workspace-id',
-        limit: 10,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: 'test-workspace-id',
+          limit: 10,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.message).toContain('workspaceId')
@@ -76,14 +79,17 @@ describe('ListWorkflows Tool', () => {
       const { getSession } = await import('@/lib/auth')
       vi.mocked(getSession).mockResolvedValue(createMockSession())
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        limit: -1, // Invalid limit
-        offset: -5, // Invalid offset
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          limit: -1, // Invalid limit
+          offset: -5, // Invalid offset
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.message).toContain('Invalid input')
@@ -93,16 +99,19 @@ describe('ListWorkflows Tool', () => {
       const { getSession } = await import('@/lib/auth')
       vi.mocked(getSession).mockResolvedValue(createMockSession())
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        // @ts-expect-error - Testing invalid enum value
-        status: 'invalid-status',
-        // @ts-expect-error - Testing invalid enum value
-        sortBy: 'invalid-sort',
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          // @ts-expect-error - Testing invalid enum value
+          status: 'invalid-status',
+          // @ts-expect-error - Testing invalid enum value
+          sortBy: 'invalid-sort',
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.message).toContain('Invalid input')
@@ -114,37 +123,52 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession(user))
 
       // Mock database to track query parameters
-      const mockSelect = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue([]),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const mockSelect = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue([]),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       const { db } = await import('@/db')
       vi.mocked(db).select = mockSelect
 
-      await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       // Verify default values were applied
       expect(mockSelect).toHaveBeenCalled()
@@ -156,12 +180,15 @@ describe('ListWorkflows Tool', () => {
       const { getSession } = await import('@/lib/auth')
       vi.mocked(getSession).mockResolvedValue(null)
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.message).toContain('Authentication required')
@@ -174,34 +201,49 @@ describe('ListWorkflows Tool', () => {
 
       // Mock database to return empty results for unauthorized access
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue([]),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue([]),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows).toHaveLength(0)
@@ -218,34 +260,49 @@ describe('ListWorkflows Tool', () => {
       )
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(userWorkflows),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(userWorkflows),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows.length).toBeGreaterThan(0)
@@ -266,35 +323,50 @@ describe('ListWorkflows Tool', () => {
       ]
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(publishedWorkflows),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(publishedWorkflows),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        status: 'published',
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          status: 'published',
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows).toHaveLength(2)
@@ -308,35 +380,50 @@ describe('ListWorkflows Tool', () => {
       ]
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(folderWorkflows),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(folderWorkflows),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        folderId,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          folderId,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows[0].folder?.id).toBe(folderId)
@@ -345,52 +432,73 @@ describe('ListWorkflows Tool', () => {
     it('should search workflows by name and description', async () => {
       const searchTerm = 'automation'
       const matchingWorkflows = [
-        createMockWorkflow({
-          name: 'Automation Workflow',
-          userId: testEnvironment.users[0].id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        createMockWorkflow({
-          description: 'Workflow for automation tasks',
-          userId: testEnvironment.users[0].id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
+        createMockWorkflow(
+          {
+            name: 'Automation Workflow',
+            userId: testEnvironment.users[0].id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        ),
+        createMockWorkflow(
+          {
+            description: 'Workflow for automation tasks',
+            userId: testEnvironment.users[0].id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        ),
       ]
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(matchingWorkflows),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(matchingWorkflows),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        searchTerm,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          searchTerm,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows).toHaveLength(2)
@@ -398,55 +506,76 @@ describe('ListWorkflows Tool', () => {
 
     it('should sort workflows by different criteria', async () => {
       const workflows = [
-        createMockWorkflow({
-          name: 'A Workflow',
-          createdAt: new Date('2024-01-01'),
-          userId: testEnvironment.users[0].id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        createMockWorkflow({
-          name: 'B Workflow',
-          createdAt: new Date('2024-01-02'),
-          userId: testEnvironment.users[0].id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
+        createMockWorkflow(
+          {
+            name: 'A Workflow',
+            createdAt: new Date('2024-01-01'),
+            userId: testEnvironment.users[0].id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        ),
+        createMockWorkflow(
+          {
+            name: 'B Workflow',
+            createdAt: new Date('2024-01-02'),
+            userId: testEnvironment.users[0].id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        ),
       ]
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(workflows),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(workflows),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        sortBy: 'name',
-        sortOrder: 'asc',
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          sortBy: 'name',
+          sortOrder: 'asc',
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows[0].name).toBe('A Workflow')
@@ -460,46 +589,64 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession(user))
 
       const workflows = Array.from({ length: 25 }, (_, i) =>
-        createMockWorkflow({
-          name: `Workflow ${i}`,
-          userId: user.id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        createMockWorkflow(
+          {
+            name: `Workflow ${i}`,
+            userId: user.id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
       )
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValueOnce({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(workflows.slice(0, 10)),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValueOnce(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(workflows.slice(0, 10)),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        limit: 10,
-        offset: 0,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          limit: 10,
+          offset: 0,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.workflows).toHaveLength(10)
@@ -523,42 +670,60 @@ describe('ListWorkflows Tool', () => {
       // Mock the count query
       vi.mocked(db).select = vi
         .fn()
-        .mockReturnValueOnce({
-          where: vi.fn().mockResolvedValue([{ count: totalWorkflows }]),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
-        .mockReturnValueOnce({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                offset: vi.fn().mockResolvedValue(currentPage),
-              }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockResolvedValue([{ count: totalWorkflows }]),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockReturnValue(
+              {
+                orderBy: vi.fn().mockReturnValue(
+                  {
+                    limit: vi.fn().mockReturnValue(
+                      {
+                        offset: vi.fn().mockResolvedValue(currentPage),
+                      },
+                      {
+                        toolCallId: 'test-call-id',
+                        messages: [],
+                      }
+                    ),
+                  },
+                  {
+                    toolCallId: 'test-call-id',
+                    messages: [],
+                  }
+                ),
+              },
+              {
+                toolCallId: 'test-call-id',
+                messages: [],
+              }
+            ),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-        limit: 10,
-        offset: 0,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+          limit: 10,
+          offset: 0,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
       expect(result.data.pagination.total).toBe(totalWorkflows)
@@ -572,35 +737,50 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession(user))
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue([]),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue([]),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       const { result, duration } = await PerformanceTestHelper.measureAsync(() =>
-        listWorkflows.execute({
-          workspaceId: testEnvironment.workspace.id,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        listWorkflows.execute(
+          {
+            workspaceId: testEnvironment.workspace.id,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
       )
 
       NexusTestAssertions.assertSuccess(result)
@@ -618,36 +798,51 @@ describe('ListWorkflows Tool', () => {
       )
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue(largeWorkflowSet.slice(0, 50)),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue(largeWorkflowSet.slice(0, 50)),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       const { result, duration } = await PerformanceTestHelper.measureAsync(() =>
-        listWorkflows.execute({
-          workspaceId: testEnvironment.workspace.id,
-          limit: 50,
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        listWorkflows.execute(
+          {
+            workspaceId: testEnvironment.workspace.id,
+            limit: 50,
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
       )
 
       NexusTestAssertions.assertSuccess(result)
@@ -663,19 +858,25 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession(user))
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockImplementation(() => {
-        throw new Error('Database connection failed')
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockImplementation(
+        () => {
+          throw new Error('Database connection failed')
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.message).toContain('Database connection failed')
@@ -688,36 +889,51 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession(user))
 
       const { db } = await import('@/db')
-      vi.mocked(db).select = vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              offset: vi.fn().mockResolvedValue([
-                { id: 'test', name: null }, // Missing required fields
-              ]),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockReturnValue(
+        {
+          where: vi.fn().mockReturnValue(
+            {
+              orderBy: vi.fn().mockReturnValue(
+                {
+                  limit: vi.fn().mockReturnValue(
+                    {
+                      offset: vi.fn().mockResolvedValue([
+                        { id: 'test', name: null }, // Missing required fields
+                      ]),
+                    },
+                    {
+                      toolCallId: 'test-call-id',
+                      messages: [],
+                    }
+                  ),
+                },
+                {
+                  toolCallId: 'test-call-id',
+                  messages: [],
+                }
+              ),
+            },
+            {
+              toolCallId: 'test-call-id',
+              messages: [],
+            }
+          ),
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       // Should handle gracefully and return what it can
       NexusTestAssertions.assertSuccess(result)
@@ -730,19 +946,25 @@ describe('ListWorkflows Tool', () => {
 
       const { db } = await import('@/db')
       const testError = new Error('Test database error')
-      vi.mocked(db).select = vi.fn().mockImplementation(() => {
-        throw testError
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      vi.mocked(db).select = vi.fn().mockImplementation(
+        () => {
+          throw testError
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertError(result)
       expect(result.metadata).toHaveProperty('operationId')
@@ -762,40 +984,58 @@ describe('ListWorkflows Tool', () => {
       const { db } = await import('@/db')
       vi.mocked(db).select = vi
         .fn()
-        .mockReturnValueOnce({
-          where: vi.fn().mockResolvedValue([{ count: 1 }]),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
-        .mockReturnValueOnce({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                offset: vi.fn().mockResolvedValue(mockWorkflows),
-              }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockResolvedValue([{ count: 1 }]),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockReturnValue(
+              {
+                orderBy: vi.fn().mockReturnValue(
+                  {
+                    limit: vi.fn().mockReturnValue(
+                      {
+                        offset: vi.fn().mockResolvedValue(mockWorkflows),
+                      },
+                      {
+                        toolCallId: 'test-call-id',
+                        messages: [],
+                      }
+                    ),
+                  },
+                  {
+                    toolCallId: 'test-call-id',
+                    messages: [],
+                  }
+                ),
+              },
+              {
+                toolCallId: 'test-call-id',
+                messages: [],
+              }
+            ),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
 
@@ -825,40 +1065,58 @@ describe('ListWorkflows Tool', () => {
       const { db } = await import('@/db')
       vi.mocked(db).select = vi
         .fn()
-        .mockReturnValueOnce({
-          where: vi.fn().mockResolvedValue([{ count: 1 }]),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
-        .mockReturnValueOnce({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                offset: vi.fn().mockResolvedValue([mockWorkflow]),
-              }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-            }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-          }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      }),
-        }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockResolvedValue([{ count: 1 }]),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
+        .mockReturnValueOnce(
+          {
+            where: vi.fn().mockReturnValue(
+              {
+                orderBy: vi.fn().mockReturnValue(
+                  {
+                    limit: vi.fn().mockReturnValue(
+                      {
+                        offset: vi.fn().mockResolvedValue([mockWorkflow]),
+                      },
+                      {
+                        toolCallId: 'test-call-id',
+                        messages: [],
+                      }
+                    ),
+                  },
+                  {
+                    toolCallId: 'test-call-id',
+                    messages: [],
+                  }
+                ),
+              },
+              {
+                toolCallId: 'test-call-id',
+                messages: [],
+              }
+            ),
+          },
+          {
+            toolCallId: 'test-call-id',
+            messages: [],
+          }
+        )
 
-      const result = await listWorkflows.execute({
-        workspaceId: testEnvironment.workspace.id,
-      }, {
-        toolCallId: 'test-call-id',
-        messages: []
-      })
+      const result = await listWorkflows.execute(
+        {
+          workspaceId: testEnvironment.workspace.id,
+        },
+        {
+          toolCallId: 'test-call-id',
+          messages: [],
+        }
+      )
 
       NexusTestAssertions.assertSuccess(result)
 

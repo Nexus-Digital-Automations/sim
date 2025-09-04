@@ -20,19 +20,10 @@
  * @version 1.0.0
  */
 
-import { and, avg, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
+import { and, avg, count, desc, eq, gte, sql, sum } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { 
-  templates, 
-  templateUsageAnalytics,
-  templateRatings,
-  templateFavorites,
-  marketplaceAnalyticsEvents,
-  userBehaviorProfile,
-  templatePerformanceMetrics
-} from '@/db/schema'
-import type { TemplateUsageAnalytics, TemplateMarketplaceAnalytics } from '../types'
+import { marketplaceAnalyticsEvents, templates } from '@/db/schema'
 
 // Initialize structured logger
 const logger = createLogger('RealTimeAnalyticsService')
@@ -208,7 +199,7 @@ export class RealTimeAnalyticsService {
       // Get active users in time window
       const activeUsersResult = await db
         .select({
-          count: sql<number>`COUNT(DISTINCT user_id)`.as('active_users')
+          count: sql<number>`COUNT(DISTINCT user_id)`.as('active_users'),
         })
         .from(marketplaceAnalyticsEvents)
         .where(
@@ -222,8 +213,12 @@ export class RealTimeAnalyticsService {
       const templateActivityResult = await db
         .select({
           viewCount: sum(sql`CASE WHEN event_type = 'template_view' THEN 1 ELSE 0 END`).as('views'),
-          downloadCount: sum(sql`CASE WHEN event_type = 'template_download' THEN 1 ELSE 0 END`).as('downloads'),
-          searchCount: sum(sql`CASE WHEN event_type = 'search_query' THEN 1 ELSE 0 END`).as('searches'),
+          downloadCount: sum(sql`CASE WHEN event_type = 'template_download' THEN 1 ELSE 0 END`).as(
+            'downloads'
+          ),
+          searchCount: sum(sql`CASE WHEN event_type = 'search_query' THEN 1 ELSE 0 END`).as(
+            'searches'
+          ),
         })
         .from(marketplaceAnalyticsEvents)
         .where(gte(marketplaceAnalyticsEvents.timestamp, windowStart))
@@ -232,7 +227,7 @@ export class RealTimeAnalyticsService {
       const topCategoriesResult = await db
         .select({
           category: sql<string>`properties->>'category'`.as('category'),
-          count: count(marketplaceAnalyticsEvents.id).as('count')
+          count: count(marketplaceAnalyticsEvents.id).as('count'),
         })
         .from(marketplaceAnalyticsEvents)
         .where(
@@ -251,13 +246,17 @@ export class RealTimeAnalyticsService {
         .select({
           templateId: marketplaceAnalyticsEvents.templateId,
           viewCount: count(sql`CASE WHEN event_type = 'template_view' THEN 1 END`).as('views'),
-          downloadCount: count(sql`CASE WHEN event_type = 'template_download' THEN 1 END`).as('downloads'),
-          recentActivity: count(sql`CASE WHEN timestamp > NOW() - INTERVAL '15 minutes' THEN 1 END`).as('recent'),
+          downloadCount: count(sql`CASE WHEN event_type = 'template_download' THEN 1 END`).as(
+            'downloads'
+          ),
+          recentActivity: count(
+            sql`CASE WHEN timestamp > NOW() - INTERVAL '15 minutes' THEN 1 END`
+          ).as('recent'),
           trendScore: sql<number>`(
             COUNT(CASE WHEN event_type = 'template_view' THEN 1 END) * 1.0 +
             COUNT(CASE WHEN event_type = 'template_download' THEN 1 END) * 3.0 +
             COUNT(CASE WHEN timestamp > NOW() - INTERVAL '15 minutes' THEN 1 END) * 5.0
-          )`.as('trend_score')
+          )`.as('trend_score'),
         })
         .from(marketplaceAnalyticsEvents)
         .where(
@@ -282,14 +281,14 @@ export class RealTimeAnalyticsService {
         searchQueries: Number(templateActivityResult[0]?.searchCount) || 0,
         conversionRate: conversionData.conversionRate,
         averageSessionDuration: sessionMetrics.averageDuration,
-        topCategories: topCategoriesResult.map(cat => ({
+        topCategories: topCategoriesResult.map((cat) => ({
           category: cat.category || 'Unknown',
-          count: cat.count
+          count: cat.count,
         })),
-        trendingTemplates: trendingTemplatesResult.map(template => ({
+        trendingTemplates: trendingTemplatesResult.map((template) => ({
           templateId: template.templateId || '',
-          score: Number(template.trendScore) || 0
-        }))
+          score: Number(template.trendScore) || 0,
+        })),
       }
 
       const processingTime = Date.now() - this.startTime
@@ -319,11 +318,9 @@ export class RealTimeAnalyticsService {
    * @param options - Dashboard configuration options
    * @returns Promise<LiveDashboardData> - Complete dashboard data
    */
-  async getLiveDashboardData(options: {
-    includeAlerts?: boolean
-    includePredictions?: boolean
-    timeWindow?: number
-  } = {}): Promise<LiveDashboardData> {
+  async getLiveDashboardData(
+    options: { includeAlerts?: boolean; includePredictions?: boolean; timeWindow?: number } = {}
+  ): Promise<LiveDashboardData> {
     const operationId = `dashboard_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting live dashboard data`, {
@@ -345,16 +342,14 @@ export class RealTimeAnalyticsService {
       const topPerformers = await this.getTopPerformers()
 
       // Get alerts if requested
-      const alerts = options.includeAlerts 
-        ? await this.getActiveAlerts()
-        : []
+      const alerts = options.includeAlerts ? await this.getActiveAlerts() : []
 
       const dashboardData: LiveDashboardData = {
         overview,
         realTimeMetrics,
         trends,
         topPerformers,
-        alerts
+        alerts,
       }
 
       const processingTime = Date.now() - this.startTime
@@ -383,11 +378,13 @@ export class RealTimeAnalyticsService {
    * @param options - Segmentation options
    * @returns Promise<UserSegment[]> - User behavior segments
    */
-  async getUserSegmentation(options: {
-    segmentationType?: 'behavior' | 'demographic' | 'engagement' | 'business'
-    minSegmentSize?: number
-    maxSegments?: number
-  } = {}): Promise<UserSegment[]> {
+  async getUserSegmentation(
+    options: {
+      segmentationType?: 'behavior' | 'demographic' | 'engagement' | 'business'
+      minSegmentSize?: number
+      maxSegments?: number
+    } = {}
+  ): Promise<UserSegment[]> {
     const operationId = `segmentation_${Date.now()}`
 
     logger.info(`[${this.requestId}] Getting user segmentation`, {
@@ -442,11 +439,13 @@ export class RealTimeAnalyticsService {
    * @param options - Prediction options
    * @returns Promise<PredictiveInsight[]> - Predictive analytics insights
    */
-  async getPredictiveInsights(options: {
-    insightTypes?: Array<'template_success' | 'user_churn' | 'category_growth' | 'seasonal_trend'>
-    timeHorizon?: '1d' | '7d' | '30d' | '90d'
-    minConfidence?: number
-  } = {}): Promise<PredictiveInsight[]> {
+  async getPredictiveInsights(
+    options: {
+      insightTypes?: Array<'template_success' | 'user_churn' | 'category_growth' | 'seasonal_trend'>
+      timeHorizon?: '1d' | '7d' | '30d' | '90d'
+      minConfidence?: number
+    } = {}
+  ): Promise<PredictiveInsight[]> {
     const operationId = `predictions_${Date.now()}`
 
     logger.info(`[${this.requestId}] Generating predictive insights`, {
@@ -470,15 +469,14 @@ export class RealTimeAnalyticsService {
       }
 
       // Sort by confidence and limit results
-      const sortedInsights = insights
-        .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, 20)
+      const sortedInsights = insights.sort((a, b) => b.confidence - a.confidence).slice(0, 20)
 
       const processingTime = Date.now() - this.startTime
       logger.info(`[${this.requestId}] Predictive insights generated`, {
         operationId,
         insightCount: sortedInsights.length,
-        avgConfidence: sortedInsights.reduce((sum, i) => sum + i.confidence, 0) / sortedInsights.length,
+        avgConfidence:
+          sortedInsights.reduce((sum, i) => sum + i.confidence, 0) / sortedInsights.length,
         processingTime,
       })
 
@@ -504,7 +502,9 @@ export class RealTimeAnalyticsService {
     const conversionData = await db
       .select({
         views: sum(sql`CASE WHEN event_type = 'template_view' THEN 1 ELSE 0 END`).as('views'),
-        downloads: sum(sql`CASE WHEN event_type = 'template_download' THEN 1 ELSE 0 END`).as('downloads'),
+        downloads: sum(sql`CASE WHEN event_type = 'template_download' THEN 1 ELSE 0 END`).as(
+          'downloads'
+        ),
       })
       .from(marketplaceAnalyticsEvents)
       .where(gte(marketplaceAnalyticsEvents.timestamp, windowStart))
@@ -516,7 +516,7 @@ export class RealTimeAnalyticsService {
     return {
       conversionRate,
       totalViews: views,
-      totalDownloads: downloads
+      totalDownloads: downloads,
     }
   }
 
@@ -531,7 +531,7 @@ export class RealTimeAnalyticsService {
         userId: marketplaceAnalyticsEvents.userId,
         firstEvent: sql<Date>`MIN(timestamp)`.as('first_event'),
         lastEvent: sql<Date>`MAX(timestamp)`.as('last_event'),
-        eventCount: count(marketplaceAnalyticsEvents.id).as('event_count')
+        eventCount: count(marketplaceAnalyticsEvents.id).as('event_count'),
       })
       .from(marketplaceAnalyticsEvents)
       .where(
@@ -545,10 +545,11 @@ export class RealTimeAnalyticsService {
     let totalDuration = 0
     let validSessions = 0
 
-    sessionData.forEach(session => {
+    sessionData.forEach((session) => {
       if (session.firstEvent && session.lastEvent && session.eventCount > 1) {
         const duration = session.lastEvent.getTime() - session.firstEvent.getTime()
-        if (duration > 0 && duration < 3600000) { // Less than 1 hour
+        if (duration > 0 && duration < 3600000) {
+          // Less than 1 hour
           totalDuration += duration
           validSessions++
         }
@@ -559,16 +560,21 @@ export class RealTimeAnalyticsService {
 
     return {
       averageDuration: averageDuration / 1000, // Convert to seconds
-      sessionCount: sessionData.length
+      sessionCount: sessionData.length,
     }
   }
 
   private async getOverviewStatistics(): Promise<LiveDashboardData['overview']> {
     const [totalTemplates, totalUsers, totalViews, avgRating] = await Promise.all([
       db.select({ count: count(templates.id) }).from(templates),
-      db.select({ count: sql<number>`COUNT(DISTINCT user_id)`.as('users') }).from(marketplaceAnalyticsEvents),
+      db
+        .select({ count: sql<number>`COUNT(DISTINCT user_id)`.as('users') })
+        .from(marketplaceAnalyticsEvents),
       db.select({ sum: sum(templates.viewCount) }).from(templates),
-      db.select({ avg: avg(templates.ratingAverage) }).from(templates).where(sql`${templates.ratingAverage} IS NOT NULL`)
+      db
+        .select({ avg: avg(templates.ratingAverage) })
+        .from(templates)
+        .where(sql`${templates.ratingAverage} IS NOT NULL`),
     ])
 
     // Calculate conversion rate from recent data
@@ -582,24 +588,24 @@ export class RealTimeAnalyticsService {
       totalViews: Number(totalViews[0]?.sum) || 0,
       totalDownloads: Number(recentConversion.totalDownloads) || 0,
       averageRating: Number(avgRating[0]?.avg) || 0,
-      conversionRate: recentConversion.conversionRate
+      conversionRate: recentConversion.conversionRate,
     }
   }
 
   private async getTrendAnalysis(): Promise<LiveDashboardData['trends']> {
     // Generate hourly activity for last 24 hours
     const hourlyActivity = await this.getHourlyActivity()
-    
+
     // Get category growth rates
     const categoryGrowth = await this.getCategoryGrowthRates()
-    
+
     // Calculate user engagement trends
     const userEngagement = await this.getUserEngagementTrends()
 
     return {
       hourlyActivity,
       categoryGrowth,
-      userEngagement
+      userEngagement,
     }
   }
 
@@ -609,7 +615,10 @@ export class RealTimeAnalyticsService {
       .select({
         id: templates.id,
         name: templates.name,
-        score: sql<number>`(${templates.downloadCount} * 2 + ${templates.viewCount} * 0.5 + ${templates.ratingAverage} * 100)`.as('score')
+        score:
+          sql<number>`(${templates.downloadCount} * 2 + ${templates.viewCount} * 0.5 + ${templates.ratingAverage} * 100)`.as(
+            'score'
+          ),
       })
       .from(templates)
       .orderBy(desc(sql`score`))
@@ -619,7 +628,7 @@ export class RealTimeAnalyticsService {
     const topCategories = await db
       .select({
         name: sql<string>`properties->>'category'`.as('category'),
-        score: count(marketplaceAnalyticsEvents.id).as('score')
+        score: count(marketplaceAnalyticsEvents.id).as('score'),
       })
       .from(marketplaceAnalyticsEvents)
       .where(
@@ -636,16 +645,16 @@ export class RealTimeAnalyticsService {
     const topCreators: any[] = []
 
     return {
-      templates: topTemplates.map(t => ({
+      templates: topTemplates.map((t) => ({
         id: t.id,
         name: t.name,
-        score: Number(t.score)
+        score: Number(t.score),
       })),
-      categories: topCategories.map(c => ({
+      categories: topCategories.map((c) => ({
         name: c.name || 'Unknown',
-        score: c.score
+        score: c.score,
       })),
-      creators: topCreators
+      creators: topCreators,
     }
   }
 
@@ -656,7 +665,7 @@ export class RealTimeAnalyticsService {
 
     // Check for performance issues
     const recentMetrics = await this.getRealTimeMetrics()
-    
+
     if (recentMetrics.conversionRate < 0.05) {
       alerts.push({
         id: `alert_conversion_${Date.now()}`,
@@ -664,7 +673,7 @@ export class RealTimeAnalyticsService {
         severity: 'high',
         message: `Low conversion rate detected: ${(recentMetrics.conversionRate * 100).toFixed(2)}%`,
         timestamp: new Date(),
-        data: { conversionRate: recentMetrics.conversionRate }
+        data: { conversionRate: recentMetrics.conversionRate },
       })
     }
 
@@ -675,7 +684,7 @@ export class RealTimeAnalyticsService {
         severity: 'medium',
         message: `Low active user count: ${recentMetrics.activeUsers} users in last hour`,
         timestamp: new Date(),
-        data: { activeUsers: recentMetrics.activeUsers }
+        data: { activeUsers: recentMetrics.activeUsers },
       })
     }
 
@@ -686,13 +695,13 @@ export class RealTimeAnalyticsService {
   private async getHourlyActivity(): Promise<Array<{ hour: number; count: number }>> {
     const activity = []
     const now = new Date()
-    
+
     for (let i = 23; i >= 0; i--) {
       const hour = new Date(now.getTime() - i * 60 * 60 * 1000).getHours()
       const count = Math.floor(Math.random() * 100) + 10 // Mock data
       activity.push({ hour, count })
     }
-    
+
     return activity
   }
 
@@ -700,19 +709,24 @@ export class RealTimeAnalyticsService {
     return [
       { category: 'Marketing Automation', growth: 0.15 },
       { category: 'Data Processing', growth: 0.12 },
-      { category: 'Customer Support', growth: 0.08 }
+      { category: 'Customer Support', growth: 0.08 },
     ]
   }
 
-  private async getUserEngagementTrends(): Promise<Array<{ metric: string; value: number; change: number }>> {
+  private async getUserEngagementTrends(): Promise<
+    Array<{ metric: string; value: number; change: number }>
+  > {
     return [
       { metric: 'Average Session Duration', value: 8.5, change: 0.12 },
       { metric: 'Templates per Session', value: 3.2, change: -0.05 },
-      { metric: 'Return Rate', value: 0.68, change: 0.08 }
+      { metric: 'Return Rate', value: 0.68, change: 0.08 },
     ]
   }
 
-  private async getBehavioralSegments(minSize: number, maxSegments: number): Promise<UserSegment[]> {
+  private async getBehavioralSegments(
+    minSize: number,
+    maxSegments: number
+  ): Promise<UserSegment[]> {
     // Mock behavioral segments - in production, this would use machine learning clustering
     return [
       {
@@ -723,8 +737,8 @@ export class RealTimeAnalyticsService {
         userCount: 234,
         averageEngagement: 9.2,
         conversionRate: 0.45,
-        revenueContribution: 0.60,
-        trends: { growth: 0.12, engagement: 0.08, retention: 0.85 }
+        revenueContribution: 0.6,
+        trends: { growth: 0.12, engagement: 0.08, retention: 0.85 },
       },
       {
         segmentId: 'casual_browsers',
@@ -735,12 +749,15 @@ export class RealTimeAnalyticsService {
         averageEngagement: 4.1,
         conversionRate: 0.15,
         revenueContribution: 0.25,
-        trends: { growth: 0.05, engagement: -0.02, retention: 0.45 }
-      }
+        trends: { growth: 0.05, engagement: -0.02, retention: 0.45 },
+      },
     ]
   }
 
-  private async getEngagementSegments(minSize: number, maxSegments: number): Promise<UserSegment[]> {
+  private async getEngagementSegments(
+    minSize: number,
+    maxSegments: number
+  ): Promise<UserSegment[]> {
     return this.getBehavioralSegments(minSize, maxSegments) // Placeholder
   }
 
@@ -768,22 +785,34 @@ export class RealTimeAnalyticsService {
             currentValue: 1250,
             predictedValue: 1680,
             change: 430,
-            changePercent: 0.34
+            changePercent: 0.34,
           },
           factors: [
-            { factor: 'Trending Category', influence: 0.35, description: 'AI automation is growing rapidly' },
-            { factor: 'Author Reputation', influence: 0.25, description: 'Created by top-rated author' },
-            { factor: 'Template Quality', influence: 0.40, description: 'High rating and low complexity' }
+            {
+              factor: 'Trending Category',
+              influence: 0.35,
+              description: 'AI automation is growing rapidly',
+            },
+            {
+              factor: 'Author Reputation',
+              influence: 0.25,
+              description: 'Created by top-rated author',
+            },
+            {
+              factor: 'Template Quality',
+              influence: 0.4,
+              description: 'High rating and low complexity',
+            },
           ],
           recommendations: [
             'Feature this template in the marketplace',
             'Create similar templates in the same category',
-            'Promote through targeted recommendations'
+            'Promote through targeted recommendations',
           ],
-          generatedAt: new Date()
+          generatedAt: new Date(),
         })
         break
-        
+
       case 'category_growth':
         insights.push({
           insightId: `insight_category_${Date.now()}`,
@@ -795,24 +824,36 @@ export class RealTimeAnalyticsService {
             currentValue: 145,
             predictedValue: 190,
             change: 45,
-            changePercent: 0.31
+            changePercent: 0.31,
           },
           factors: [
-            { factor: 'Market Demand', influence: 0.45, description: 'Increasing business automation needs' },
-            { factor: 'Creator Interest', influence: 0.30, description: 'More creators building marketing tools' },
-            { factor: 'User Adoption', influence: 0.25, description: 'High success rate with existing templates' }
+            {
+              factor: 'Market Demand',
+              influence: 0.45,
+              description: 'Increasing business automation needs',
+            },
+            {
+              factor: 'Creator Interest',
+              influence: 0.3,
+              description: 'More creators building marketing tools',
+            },
+            {
+              factor: 'User Adoption',
+              influence: 0.25,
+              description: 'High success rate with existing templates',
+            },
           ],
           recommendations: [
             'Invest in marketing automation template development',
             'Create creator incentives for this category',
-            'Develop specialized tools for marketing workflows'
+            'Develop specialized tools for marketing workflows',
           ],
-          generatedAt: new Date()
+          generatedAt: new Date(),
         })
         break
     }
 
-    return insights.filter(i => i.confidence >= minConfidence)
+    return insights.filter((i) => i.confidence >= minConfidence)
   }
 }
 

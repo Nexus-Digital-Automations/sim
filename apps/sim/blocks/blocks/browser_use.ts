@@ -1,6 +1,6 @@
 import { BrowserUseIcon } from '../../components/icons'
-import type { BlockConfig } from '../types'
 import type { BrowserUseResponse } from '../../tools/browser_use/types'
+import type { BlockConfig } from '../types'
 
 export const BrowserUseBlock: BlockConfig<BrowserUseResponse> = {
   type: 'browser_use',

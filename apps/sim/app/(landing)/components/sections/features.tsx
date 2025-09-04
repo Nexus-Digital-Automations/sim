@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CodeXml, WorkflowIcon } from 'lucide-react'

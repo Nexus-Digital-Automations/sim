@@ -1,9 +1,9 @@
 /**
  * Template Browser Component for Workflow Editor
- * 
+ *
  * Provides seamless template browsing and integration within the workflow editor.
  * Features context-aware suggestions, real-time search, and one-click instantiation.
- * 
+ *
  * Based on research from: research-create-comprehensive-template-library-system-with-business-automation-categories-1757006080425.md
  */
 
@@ -17,7 +17,6 @@ import {
   Eye,
   Filter,
   Lightbulb,
-  Loader2,
   Plus,
   Search,
   Star,
@@ -45,10 +44,10 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logs/console/logger'
-import type { Template, TemplateSearchQuery } from '@/lib/templates/types'
 import { TEMPLATE_CATEGORIES } from '@/lib/templates/categories'
+import type { Template, TemplateSearchQuery } from '@/lib/templates/types'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('TemplateBrowser')
 
@@ -111,7 +110,8 @@ export function TemplateBrowser({
         minRating: undefined,
         hasDescription: true,
       },
-      sortBy: sortBy === 'relevance' ? 'relevance' : sortBy === 'popularity' ? 'views' : 'createdAt',
+      sortBy:
+        sortBy === 'relevance' ? 'relevance' : sortBy === 'popularity' ? 'views' : 'createdAt',
       sortOrder: sortBy === 'recent' ? 'desc' : 'desc',
       page: 1,
       limit: 20,
@@ -274,7 +274,7 @@ export function TemplateBrowser({
 
         <CardContent className='pt-0'>
           <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-4 text-xs text-muted-foreground'>
+            <div className='flex items-center gap-4 text-muted-foreground text-xs'>
               {template.stars > 0 && (
                 <div className='flex items-center gap-1'>
                   <Star className='h-3 w-3 fill-current text-yellow-400' />
@@ -309,7 +309,7 @@ export function TemplateBrowser({
                   handleTemplateAction(template, 'instant')
                 }}
               >
-                <Plus className='h-3 w-3 mr-1' />
+                <Plus className='mr-1 h-3 w-3' />
                 Add
               </Button>
             </div>
@@ -339,7 +339,7 @@ export function TemplateBrowser({
   const renderCategorySection = useCallback(
     (category: TemplateCategory, templates: Template[]) => {
       const isExpanded = expandedCategories.has(category.id)
-      
+
       return (
         <div key={category.id} className='space-y-3'>
           <div
@@ -411,7 +411,7 @@ export function TemplateBrowser({
           {/* Search and filters */}
           <div className='mt-4 flex gap-3'>
             <div className='relative flex-1'>
-              <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+              <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
               <Input
                 placeholder='Search templates, categories, or features...'
                 value={searchQuery}
@@ -445,7 +445,7 @@ export function TemplateBrowser({
               >
                 All Templates
               </Button>
-              
+
               {categories.map((category) => (
                 <Button
                   key={category.id}
@@ -454,7 +454,7 @@ export function TemplateBrowser({
                   className='h-8 w-full justify-start'
                   onClick={() => handleCategorySelect(category.id)}
                 >
-                  <div className='flex items-center justify-between w-full'>
+                  <div className='flex w-full items-center justify-between'>
                     <span className='truncate'>{category.name}</span>
                     {category.count !== undefined && (
                       <Badge variant='secondary' className='text-xs'>
@@ -527,9 +527,9 @@ export function TemplateBrowser({
                   </div>
                 ) : (
                   <div className='flex flex-col items-center justify-center py-12 text-center'>
-                    <Search className='h-12 w-12 text-muted-foreground mb-4' />
-                    <h3 className='font-medium text-lg mb-2'>No templates found</h3>
-                    <p className='text-muted-foreground mb-4'>
+                    <Search className='mb-4 h-12 w-12 text-muted-foreground' />
+                    <h3 className='mb-2 font-medium text-lg'>No templates found</h3>
+                    <p className='mb-4 text-muted-foreground'>
                       Try adjusting your search terms or browse different categories
                     </p>
                     <Button variant='outline' onClick={() => setSearchQuery('')}>

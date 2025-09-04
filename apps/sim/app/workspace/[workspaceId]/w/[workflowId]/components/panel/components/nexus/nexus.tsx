@@ -7,7 +7,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useChat } from 'ai/react'
 import {

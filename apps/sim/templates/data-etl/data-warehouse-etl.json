@@ -172,7 +172,7 @@
     "configuration": {
       "required_credentials": [
         "source_connections",
-        "target_connections", 
+        "target_connections",
         "metadata_connection",
         "email_smtp"
       ],
@@ -189,7 +189,7 @@
           "description": "Configuration for dimension table processing with SCD support"
         },
         "fact_config": {
-          "type": "object", 
+          "type": "object",
           "description": "Configuration for fact table processing and dimension lookups"
         },
         "quality_tests": {

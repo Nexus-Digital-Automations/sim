@@ -30,13 +30,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
-  ChevronDown,
   Eye,
-  Image,
   Info,
-  Palette,
-  Play,
-  Save,
   Settings,
   Tag,
   Upload,
@@ -48,6 +43,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ColorPicker } from '@/components/ui/color-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
@@ -60,8 +56,6 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { ColorPicker } from '@/components/ui/color-picker'
 import type {
   Template,
   TemplateCategory,
@@ -142,87 +136,78 @@ const BasicInfoStep: React.FC<{
   onChange: (data: Partial<TemplateMetadata>) => void
 }> = ({ templateData, errors, onChange }) => {
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="template-name">
-            Template Name <span className="text-red-500">*</span>
+    <div className='space-y-6'>
+      <div className='grid gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label htmlFor='template-name'>
+            Template Name <span className='text-red-500'>*</span>
           </Label>
           <Input
-            id="template-name"
+            id='template-name'
             value={templateData.name}
             onChange={(e) => onChange({ name: e.target.value })}
-            placeholder="Enter template name"
+            placeholder='Enter template name'
             className={errors.name ? 'border-red-500' : ''}
           />
-          {errors.name && (
-            <p className="text-sm text-red-500">{errors.name[0]}</p>
-          )}
+          {errors.name && <p className='text-red-500 text-sm'>{errors.name[0]}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="template-author">
-            Author <span className="text-red-500">*</span>
+        <div className='space-y-2'>
+          <Label htmlFor='template-author'>
+            Author <span className='text-red-500'>*</span>
           </Label>
           <Input
-            id="template-author"
+            id='template-author'
             value={templateData.author}
             onChange={(e) => onChange({ author: e.target.value })}
-            placeholder="Your name"
+            placeholder='Your name'
             className={errors.author ? 'border-red-500' : ''}
           />
-          {errors.author && (
-            <p className="text-sm text-red-500">{errors.author[0]}</p>
-          )}
+          {errors.author && <p className='text-red-500 text-sm'>{errors.author[0]}</p>}
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="template-description">
-          Description
-        </Label>
+      <div className='space-y-2'>
+        <Label htmlFor='template-description'>Description</Label>
         <Textarea
-          id="template-description"
+          id='template-description'
           value={templateData.description || ''}
           onChange={(e) => onChange({ description: e.target.value })}
-          placeholder="Describe what this template does and when to use it"
-          className="min-h-[100px]"
+          placeholder='Describe what this template does and when to use it'
+          className='min-h-[100px]'
         />
-        <p className="text-sm text-muted-foreground">
+        <p className='text-muted-foreground text-sm'>
           A good description helps users understand when and how to use your template.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="template-icon">Template Icon</Label>
-          <div className="flex items-center gap-2">
+      <div className='grid gap-4 md:grid-cols-3'>
+        <div className='space-y-2'>
+          <Label htmlFor='template-icon'>Template Icon</Label>
+          <div className='flex items-center gap-2'>
             <Input
-              id="template-icon"
+              id='template-icon'
               value={templateData.icon}
               onChange={(e) => onChange({ icon: e.target.value })}
-              placeholder="📄"
-              className="w-16 text-center"
+              placeholder='📄'
+              className='w-16 text-center'
             />
-            <span className="text-2xl">{templateData.icon || '📄'}</span>
+            <span className='text-2xl'>{templateData.icon || '📄'}</span>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="template-color">Template Color</Label>
-          <ColorPicker
-            value={templateData.color}
-            onChange={(color) => onChange({ color })}
-          />
+        <div className='space-y-2'>
+          <Label htmlFor='template-color'>Template Color</Label>
+          <ColorPicker value={templateData.color} onChange={(color) => onChange({ color })} />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="template-version">Version</Label>
+        <div className='space-y-2'>
+          <Label htmlFor='template-version'>Version</Label>
           <Input
-            id="template-version"
+            id='template-version'
             value={templateData.version}
             onChange={(e) => onChange({ version: e.target.value })}
-            placeholder="1.0.0"
+            placeholder='1.0.0'
           />
         </div>
       </div>
@@ -245,104 +230,103 @@ const CategoryStep: React.FC<{
   const addCustomTag = useCallback(() => {
     if (customTag.trim() && !templateData.tags.includes(customTag.trim())) {
       onChange({
-        tags: [...templateData.tags, customTag.trim()]
+        tags: [...templateData.tags, customTag.trim()],
       })
       setCustomTag('')
     }
   }, [customTag, templateData.tags, onChange])
 
-  const removeTag = useCallback((tagToRemove: string) => {
-    onChange({
-      tags: templateData.tags.filter(tag => tag !== tagToRemove)
-    })
-  }, [templateData.tags, onChange])
+  const removeTag = useCallback(
+    (tagToRemove: string) => {
+      onChange({
+        tags: templateData.tags.filter((tag) => tag !== tagToRemove),
+      })
+    },
+    [templateData.tags, onChange]
+  )
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="template-category">
-            Category <span className="text-red-500">*</span>
+    <div className='space-y-6'>
+      <div className='grid gap-6 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label htmlFor='template-category'>
+            Category <span className='text-red-500'>*</span>
           </Label>
           <Select
             value={templateData.category}
             onValueChange={(value) => onChange({ category: value })}
           >
             <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-              <SelectValue placeholder="Select a category" />
+              <SelectValue placeholder='Select a category' />
             </SelectTrigger>
             <SelectContent>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{category.icon}</span>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-lg'>{category.icon}</span>
                     <span>{category.name}</span>
                   </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors.category && (
-            <p className="text-sm text-red-500">{errors.category[0]}</p>
-          )}
+          {errors.category && <p className='text-red-500 text-sm'>{errors.category[0]}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="template-difficulty">
-            Difficulty Level <span className="text-red-500">*</span>
+        <div className='space-y-2'>
+          <Label htmlFor='template-difficulty'>
+            Difficulty Level <span className='text-red-500'>*</span>
           </Label>
           <Select
             value={templateData.difficulty}
             onValueChange={(value: TemplateDifficulty) => onChange({ difficulty: value })}
           >
             <SelectTrigger className={errors.difficulty ? 'border-red-500' : ''}>
-              <SelectValue placeholder="Select difficulty" />
+              <SelectValue placeholder='Select difficulty' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="beginner">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              <SelectItem value='beginner'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-2 w-2 rounded-full bg-green-500' />
                   Beginner
                 </div>
               </SelectItem>
-              <SelectItem value="intermediate">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+              <SelectItem value='intermediate'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-2 w-2 rounded-full bg-blue-500' />
                   Intermediate
                 </div>
               </SelectItem>
-              <SelectItem value="advanced">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-orange-500"></div>
+              <SelectItem value='advanced'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-2 w-2 rounded-full bg-orange-500' />
                   Advanced
                 </div>
               </SelectItem>
-              <SelectItem value="expert">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
+              <SelectItem value='expert'>
+                <div className='flex items-center gap-2'>
+                  <div className='h-2 w-2 rounded-full bg-red-500' />
                   Expert
                 </div>
               </SelectItem>
             </SelectContent>
           </Select>
-          {errors.difficulty && (
-            <p className="text-sm text-red-500">{errors.difficulty[0]}</p>
-          )}
+          {errors.difficulty && <p className='text-red-500 text-sm'>{errors.difficulty[0]}</p>}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className='space-y-4'>
         <Label>Tags</Label>
-        
+
         {/* Popular Tags */}
         <div>
-          <p className="mb-2 text-sm text-muted-foreground">Popular tags:</p>
-          <div className="flex flex-wrap gap-2">
+          <p className='mb-2 text-muted-foreground text-sm'>Popular tags:</p>
+          <div className='flex flex-wrap gap-2'>
             {availableTags.slice(0, 12).map((tag) => (
               <Badge
                 key={tag}
                 variant={templateData.tags.includes(tag) ? 'default' : 'outline'}
-                className="cursor-pointer"
+                className='cursor-pointer'
                 onClick={() => {
                   if (templateData.tags.includes(tag)) {
                     removeTag(tag)
@@ -359,12 +343,12 @@ const CategoryStep: React.FC<{
 
         {/* Custom Tag Input */}
         <div>
-          <p className="mb-2 text-sm text-muted-foreground">Add custom tags:</p>
-          <div className="flex gap-2">
+          <p className='mb-2 text-muted-foreground text-sm'>Add custom tags:</p>
+          <div className='flex gap-2'>
             <Input
               value={customTag}
               onChange={(e) => setCustomTag(e.target.value)}
-              placeholder="Enter custom tag"
+              placeholder='Enter custom tag'
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault()
@@ -372,7 +356,7 @@ const CategoryStep: React.FC<{
                 }
               }}
             />
-            <Button onClick={addCustomTag} variant="outline">
+            <Button onClick={addCustomTag} variant='outline'>
               Add
             </Button>
           </div>
@@ -381,15 +365,12 @@ const CategoryStep: React.FC<{
         {/* Selected Tags */}
         {templateData.tags.length > 0 && (
           <div>
-            <p className="mb-2 text-sm text-muted-foreground">Selected tags:</p>
-            <div className="flex flex-wrap gap-2">
+            <p className='mb-2 text-muted-foreground text-sm'>Selected tags:</p>
+            <div className='flex flex-wrap gap-2'>
               {templateData.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="gap-1">
+                <Badge key={tag} variant='secondary' className='gap-1'>
                   {tag}
-                  <button
-                    onClick={() => removeTag(tag)}
-                    className="ml-1 hover:text-red-500"
-                  >
+                  <button onClick={() => removeTag(tag)} className='ml-1 hover:text-red-500'>
                     ×
                   </button>
                 </Badge>
@@ -399,13 +380,13 @@ const CategoryStep: React.FC<{
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="estimated-time">Estimated Setup Time</Label>
+      <div className='space-y-2'>
+        <Label htmlFor='estimated-time'>Estimated Setup Time</Label>
         <Input
-          id="estimated-time"
+          id='estimated-time'
           value={templateData.estimatedTime || ''}
           onChange={(e) => onChange({ estimatedTime: e.target.value })}
-          placeholder="e.g., 5-10 minutes"
+          placeholder='e.g., 5-10 minutes'
         />
       </div>
     </div>
@@ -420,53 +401,53 @@ const WorkflowBuilderStep: React.FC<{
   onChange: (data: any) => void
 }> = ({ workflowData, onChange }) => {
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <Workflow className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 text-lg font-semibold">Visual Workflow Builder</h3>
-        <p className="mb-4 text-muted-foreground">
+    <div className='space-y-6'>
+      <div className='rounded-lg border border-dashed p-8 text-center'>
+        <Workflow className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+        <h3 className='mb-2 font-semibold text-lg'>Visual Workflow Builder</h3>
+        <p className='mb-4 text-muted-foreground'>
           Drag and drop blocks to create your template workflow
         </p>
-        <Button variant="outline">
-          <Wand2 className="mr-2 h-4 w-4" />
+        <Button variant='outline'>
+          <Wand2 className='mr-2 h-4 w-4' />
           Open Workflow Builder
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className='grid gap-4 md:grid-cols-2'>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Block Library</CardTitle>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-sm'>Block Library</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2 rounded p-2 hover:bg-muted">
-              <div className="h-4 w-4 rounded bg-blue-500"></div>
-              <span className="text-sm">Trigger Blocks</span>
+          <CardContent className='space-y-2'>
+            <div className='flex items-center gap-2 rounded p-2 hover:bg-muted'>
+              <div className='h-4 w-4 rounded bg-blue-500' />
+              <span className='text-sm'>Trigger Blocks</span>
             </div>
-            <div className="flex items-center gap-2 rounded p-2 hover:bg-muted">
-              <div className="h-4 w-4 rounded bg-green-500"></div>
-              <span className="text-sm">Action Blocks</span>
+            <div className='flex items-center gap-2 rounded p-2 hover:bg-muted'>
+              <div className='h-4 w-4 rounded bg-green-500' />
+              <span className='text-sm'>Action Blocks</span>
             </div>
-            <div className="flex items-center gap-2 rounded p-2 hover:bg-muted">
-              <div className="h-4 w-4 rounded bg-orange-500"></div>
-              <span className="text-sm">Logic Blocks</span>
+            <div className='flex items-center gap-2 rounded p-2 hover:bg-muted'>
+              <div className='h-4 w-4 rounded bg-orange-500' />
+              <span className='text-sm'>Logic Blocks</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Workflow Properties</CardTitle>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-sm'>Workflow Properties</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm">
-              <span className="text-muted-foreground">Total Blocks:</span> 0
+          <CardContent className='space-y-3'>
+            <div className='text-sm'>
+              <span className='text-muted-foreground'>Total Blocks:</span> 0
             </div>
-            <div className="text-sm">
-              <span className="text-muted-foreground">Connections:</span> 0
+            <div className='text-sm'>
+              <span className='text-muted-foreground'>Connections:</span> 0
             </div>
-            <div className="text-sm">
-              <span className="text-muted-foreground">Complexity:</span> Simple
+            <div className='text-sm'>
+              <span className='text-muted-foreground'>Complexity:</span> Simple
             </div>
           </CardContent>
         </Card>
@@ -483,10 +464,10 @@ const PublishingStep: React.FC<{
   onChange: (data: Partial<TemplateMetadata>) => void
 }> = ({ templateData, onChange }) => {
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="template-visibility">Template Visibility</Label>
+    <div className='space-y-6'>
+      <div className='grid gap-6 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label htmlFor='template-visibility'>Template Visibility</Label>
           <Select
             value={templateData.visibility}
             onValueChange={(value: TemplateVisibility) => onChange({ visibility: value })}
@@ -495,36 +476,34 @@ const PublishingStep: React.FC<{
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="public">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+              <SelectItem value='public'>
+                <div className='flex items-center gap-2'>
+                  <Users className='h-4 w-4' />
                   <div>
-                    <div className="font-medium">Public</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='font-medium'>Public</div>
+                    <div className='text-muted-foreground text-xs'>
                       Available to everyone in the marketplace
                     </div>
                   </div>
                 </div>
               </SelectItem>
-              <SelectItem value="organization">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
+              <SelectItem value='organization'>
+                <div className='flex items-center gap-2'>
+                  <Settings className='h-4 w-4' />
                   <div>
-                    <div className="font-medium">Organization</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className='font-medium'>Organization</div>
+                    <div className='text-muted-foreground text-xs'>
                       Only visible to your organization
                     </div>
                   </div>
                 </div>
               </SelectItem>
-              <SelectItem value="private">
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
+              <SelectItem value='private'>
+                <div className='flex items-center gap-2'>
+                  <Eye className='h-4 w-4' />
                   <div>
-                    <div className="font-medium">Private</div>
-                    <div className="text-xs text-muted-foreground">
-                      Only visible to you
-                    </div>
+                    <div className='font-medium'>Private</div>
+                    <div className='text-muted-foreground text-xs'>Only visible to you</div>
                   </div>
                 </div>
               </SelectItem>
@@ -532,16 +511,16 @@ const PublishingStep: React.FC<{
           </Select>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
+        <div className='space-y-4'>
+          <div className='flex items-center space-x-2'>
             <Checkbox
-              id="allow-comments"
+              id='allow-comments'
               checked={templateData.allowComments}
               onCheckedChange={(checked) => onChange({ allowComments: Boolean(checked) })}
             />
             <Label
-              htmlFor="allow-comments"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              htmlFor='allow-comments'
+              className='font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               Allow comments and reviews
             </Label>
@@ -551,11 +530,11 @@ const PublishingStep: React.FC<{
 
       <Separator />
 
-      <div className="space-y-4">
-        <h4 className="font-medium">Template Requirements</h4>
-        <div className="space-y-2">
+      <div className='space-y-4'>
+        <h4 className='font-medium'>Template Requirements</h4>
+        <div className='space-y-2'>
           {templateData.requirements.map((req, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={index} className='flex items-center gap-2'>
               <Input
                 value={req}
                 onChange={(e) => {
@@ -563,11 +542,11 @@ const PublishingStep: React.FC<{
                   newReqs[index] = e.target.value
                   onChange({ requirements: newReqs })
                 }}
-                placeholder="e.g., API key for service X"
+                placeholder='e.g., API key for service X'
               />
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   const newReqs = templateData.requirements.filter((_, i) => i !== index)
                   onChange({ requirements: newReqs })
@@ -578,7 +557,7 @@ const PublishingStep: React.FC<{
             </div>
           ))}
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => onChange({ requirements: [...templateData.requirements, ''] })}
           >
             Add Requirement
@@ -586,11 +565,11 @@ const PublishingStep: React.FC<{
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h4 className="font-medium">Use Cases</h4>
-        <div className="space-y-2">
+      <div className='space-y-4'>
+        <h4 className='font-medium'>Use Cases</h4>
+        <div className='space-y-2'>
           {templateData.useCases.map((useCase, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={index} className='flex items-center gap-2'>
               <Input
                 value={useCase}
                 onChange={(e) => {
@@ -598,11 +577,11 @@ const PublishingStep: React.FC<{
                   newUseCases[index] = e.target.value
                   onChange({ useCases: newUseCases })
                 }}
-                placeholder="e.g., Automated customer onboarding"
+                placeholder='e.g., Automated customer onboarding'
               />
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   const newUseCases = templateData.useCases.filter((_, i) => i !== index)
                   onChange({ useCases: newUseCases })
@@ -613,7 +592,7 @@ const PublishingStep: React.FC<{
             </div>
           ))}
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => onChange({ useCases: [...templateData.useCases, ''] })}
           >
             Add Use Case
@@ -633,46 +612,46 @@ const ReviewStep: React.FC<{
   onPreview: () => void
 }> = ({ templateData, validationResults, onPreview }) => {
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2'>
+            <CheckCircle className='h-5 w-5' />
             Template Summary
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+        <CardContent className='space-y-4'>
+          <div className='grid gap-4 md:grid-cols-2'>
             <div>
-              <span className="text-sm text-muted-foreground">Name:</span>
-              <p className="font-medium">{templateData.name}</p>
+              <span className='text-muted-foreground text-sm'>Name:</span>
+              <p className='font-medium'>{templateData.name}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Author:</span>
-              <p className="font-medium">{templateData.author}</p>
+              <span className='text-muted-foreground text-sm'>Author:</span>
+              <p className='font-medium'>{templateData.author}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Category:</span>
-              <p className="font-medium">{templateData.category}</p>
+              <span className='text-muted-foreground text-sm'>Category:</span>
+              <p className='font-medium'>{templateData.category}</p>
             </div>
             <div>
-              <span className="text-sm text-muted-foreground">Difficulty:</span>
-              <Badge variant="outline">{templateData.difficulty}</Badge>
+              <span className='text-muted-foreground text-sm'>Difficulty:</span>
+              <Badge variant='outline'>{templateData.difficulty}</Badge>
             </div>
           </div>
-          
+
           {templateData.description && (
             <div>
-              <span className="text-sm text-muted-foreground">Description:</span>
-              <p className="mt-1 text-sm">{templateData.description}</p>
+              <span className='text-muted-foreground text-sm'>Description:</span>
+              <p className='mt-1 text-sm'>{templateData.description}</p>
             </div>
           )}
 
           <div>
-            <span className="text-sm text-muted-foreground">Tags:</span>
-            <div className="mt-1 flex flex-wrap gap-1">
+            <span className='text-muted-foreground text-sm'>Tags:</span>
+            <div className='mt-1 flex flex-wrap gap-1'>
               {templateData.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
+                <Badge key={tag} variant='secondary' className='text-xs'>
                   {tag}
                 </Badge>
               ))}
@@ -684,31 +663,28 @@ const ReviewStep: React.FC<{
       {validationResults && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5" />
+            <CardTitle className='flex items-center gap-2'>
+              <Info className='h-5 w-5' />
               Quality Assessment
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
+          <CardContent className='space-y-4'>
+            <div className='flex items-center gap-4'>
               <div>
-                <span className="text-sm text-muted-foreground">Quality Score:</span>
-                <div className="flex items-center gap-2">
-                  <Progress
-                    value={validationResults.qualityScore}
-                    className="w-20"
-                  />
-                  <span className="font-medium">{validationResults.qualityScore}%</span>
+                <span className='text-muted-foreground text-sm'>Quality Score:</span>
+                <div className='flex items-center gap-2'>
+                  <Progress value={validationResults.qualityScore} className='w-20' />
+                  <span className='font-medium'>{validationResults.qualityScore}%</span>
                 </div>
               </div>
             </div>
 
             {validationResults.errors.length > 0 && (
               <div>
-                <h5 className="mb-2 font-medium text-red-600">Errors to Fix:</h5>
-                <ul className="space-y-1">
+                <h5 className='mb-2 font-medium text-red-600'>Errors to Fix:</h5>
+                <ul className='space-y-1'>
                   {validationResults.errors.map((error, index) => (
-                    <li key={index} className="text-sm text-red-600">
+                    <li key={index} className='text-red-600 text-sm'>
                       • {error}
                     </li>
                   ))}
@@ -718,10 +694,10 @@ const ReviewStep: React.FC<{
 
             {validationResults.warnings.length > 0 && (
               <div>
-                <h5 className="mb-2 font-medium text-yellow-600">Warnings:</h5>
-                <ul className="space-y-1">
+                <h5 className='mb-2 font-medium text-yellow-600'>Warnings:</h5>
+                <ul className='space-y-1'>
                   {validationResults.warnings.map((warning, index) => (
-                    <li key={index} className="text-sm text-yellow-600">
+                    <li key={index} className='text-sm text-yellow-600'>
                       • {warning}
                     </li>
                   ))}
@@ -731,10 +707,10 @@ const ReviewStep: React.FC<{
 
             {validationResults.suggestions.length > 0 && (
               <div>
-                <h5 className="mb-2 font-medium text-blue-600">Suggestions:</h5>
-                <ul className="space-y-1">
+                <h5 className='mb-2 font-medium text-blue-600'>Suggestions:</h5>
+                <ul className='space-y-1'>
                   {validationResults.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-sm text-blue-600">
+                    <li key={index} className='text-blue-600 text-sm'>
                       • {suggestion}
                     </li>
                   ))}
@@ -745,9 +721,9 @@ const ReviewStep: React.FC<{
         </Card>
       )}
 
-      <div className="flex justify-center">
-        <Button onClick={onPreview} variant="outline" className="gap-2">
-          <Eye className="h-4 w-4" />
+      <div className='flex justify-center'>
+        <Button onClick={onPreview} variant='outline' className='gap-2'>
+          <Eye className='h-4 w-4' />
           Preview Template
         </Button>
       </div>
@@ -803,52 +779,55 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
   })
 
   // Define wizard steps
-  const wizardSteps: WizardStep[] = useMemo(() => [
-    {
-      id: 'basic-info',
-      title: 'Basic Information',
-      description: 'Name, description, and basic details',
-      icon: Settings,
-      component: BasicInfoStep,
-    },
-    {
-      id: 'category',
-      title: 'Category & Tags',
-      description: 'Organize and classify your template',
-      icon: Tag,
-      component: CategoryStep,
-    },
-    {
-      id: 'workflow',
-      title: 'Workflow Builder',
-      description: 'Create your template workflow',
-      icon: Workflow,
-      component: WorkflowBuilderStep,
-    },
-    {
-      id: 'publishing',
-      title: 'Publishing Settings',
-      description: 'Configure visibility and permissions',
-      icon: Upload,
-      component: PublishingStep,
-    },
-    {
-      id: 'review',
-      title: 'Review & Publish',
-      description: 'Final review and quality check',
-      icon: CheckCircle,
-      component: ReviewStep,
-    },
-  ], [])
+  const wizardSteps: WizardStep[] = useMemo(
+    () => [
+      {
+        id: 'basic-info',
+        title: 'Basic Information',
+        description: 'Name, description, and basic details',
+        icon: Settings,
+        component: BasicInfoStep,
+      },
+      {
+        id: 'category',
+        title: 'Category & Tags',
+        description: 'Organize and classify your template',
+        icon: Tag,
+        component: CategoryStep,
+      },
+      {
+        id: 'workflow',
+        title: 'Workflow Builder',
+        description: 'Create your template workflow',
+        icon: Workflow,
+        component: WorkflowBuilderStep,
+      },
+      {
+        id: 'publishing',
+        title: 'Publishing Settings',
+        description: 'Configure visibility and permissions',
+        icon: Upload,
+        component: PublishingStep,
+      },
+      {
+        id: 'review',
+        title: 'Review & Publish',
+        description: 'Final review and quality check',
+        icon: CheckCircle,
+        component: ReviewStep,
+      },
+    ],
+    []
+  )
 
   // Update wizard state
   const updateWizardState = useCallback((updates: Partial<WizardState>) => {
-    setWizardState(prev => ({ ...prev, ...updates }))
+    setWizardState((prev) => ({ ...prev, ...updates }))
   }, [])
 
   // Update template data
   const updateTemplateData = useCallback((updates: Partial<TemplateMetadata>) => {
-    setWizardState(prev => ({
+    setWizardState((prev) => ({
       ...prev,
       templateData: { ...prev.templateData, ...updates },
     }))
@@ -856,7 +835,7 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
 
   // Update workflow data
   const updateWorkflowData = useCallback((updates: any) => {
-    setWizardState(prev => ({
+    setWizardState((prev) => ({
       ...prev,
       workflowData: { ...prev.workflowData, ...updates },
     }))
@@ -891,11 +870,14 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
   }, [wizardState.currentStep, wizardState.templateData, wizardSteps, updateWizardState])
 
   // Navigate between steps
-  const goToStep = useCallback((stepIndex: number) => {
-    if (stepIndex >= 0 && stepIndex < wizardSteps.length) {
-      updateWizardState({ currentStep: stepIndex })
-    }
-  }, [wizardSteps.length, updateWizardState])
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex >= 0 && stepIndex < wizardSteps.length) {
+        updateWizardState({ currentStep: stepIndex })
+      }
+    },
+    [wizardSteps.length, updateWizardState]
+  )
 
   const goToPreviousStep = useCallback(() => {
     goToStep(wizardState.currentStep - 1)
@@ -936,7 +918,13 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
     } finally {
       updateWizardState({ isSubmitting: false })
     }
-  }, [onTemplateSubmit, wizardState.isSubmitting, wizardState.templateData, wizardState.workflowData, updateWizardState])
+  }, [
+    onTemplateSubmit,
+    wizardState.isSubmitting,
+    wizardState.templateData,
+    wizardState.workflowData,
+    updateWizardState,
+  ])
 
   // Calculate progress
   const progress = useMemo(() => {
@@ -956,33 +944,33 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
   return (
     <div className={cn('mx-auto max-w-4xl space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className='font-bold text-2xl'>
             {initialTemplate ? 'Edit Template' : 'Create New Template'}
           </h1>
-          <p className="text-muted-foreground">
-            {currentStep.description}
-          </p>
+          <p className='text-muted-foreground'>{currentStep.description}</p>
         </div>
         {onCancel && (
-          <Button variant="ghost" onClick={onCancel}>
+          <Button variant='ghost' onClick={onCancel}>
             Cancel
           </Button>
         )}
       </div>
 
       {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>Step {wizardState.currentStep + 1} of {wizardSteps.length}</span>
+      <div className='space-y-2'>
+        <div className='flex justify-between text-sm'>
+          <span>
+            Step {wizardState.currentStep + 1} of {wizardSteps.length}
+          </span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className='h-2' />
       </div>
 
       {/* Step Navigation */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className='flex gap-4 overflow-x-auto pb-4'>
         {wizardSteps.map((step, index) => (
           <button
             key={step.id}
@@ -993,17 +981,15 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
               index === wizardState.currentStep
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
                 : index < wizardState.currentStep
-                ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
-                : 'border-gray-200 text-gray-500'
+                  ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
+                  : 'border-gray-200 text-gray-500'
             )}
           >
-            <step.icon className="h-4 w-4" />
-            <div className="text-left">
-              <div className="font-medium">{step.title}</div>
+            <step.icon className='h-4 w-4' />
+            <div className='text-left'>
+              <div className='font-medium'>{step.title}</div>
             </div>
-            {index < wizardState.currentStep && (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            )}
+            {index < wizardState.currentStep && <CheckCircle className='h-4 w-4 text-green-600' />}
           </button>
         ))}
       </div>
@@ -1011,14 +997,14 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
       {/* Current Step Content */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <currentStep.icon className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2'>
+            <currentStep.icon className='h-5 w-5' />
             {currentStep.title}
           </CardTitle>
           <CardDescription>{currentStep.description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             <motion.div
               key={wizardState.currentStep}
               initial={{ opacity: 0, x: 20 }}
@@ -1043,26 +1029,26 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
       </Card>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between">
+      <div className='flex justify-between'>
         <Button
-          variant="outline"
+          variant='outline'
           onClick={goToPreviousStep}
           disabled={wizardState.currentStep === 0}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className='mr-2 h-4 w-4' />
           Previous
         </Button>
 
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           {wizardState.currentStep < wizardSteps.length - 1 ? (
             <Button onClick={goToNextStep}>
               Next
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className='ml-2 h-4 w-4' />
             </Button>
           ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handlePreview}>
-                <Eye className="mr-2 h-4 w-4" />
+            <div className='flex gap-2'>
+              <Button variant='outline' onClick={handlePreview}>
+                <Eye className='mr-2 h-4 w-4' />
                 Preview
               </Button>
               <Button
@@ -1071,12 +1057,12 @@ export const TemplateCreationWizard: React.FC<TemplateCreationWizardProps> = ({
               >
                 {wizardState.isSubmitting ? (
                   <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent' />
                     Publishing...
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Upload className='mr-2 h-4 w-4' />
                     Publish Template
                   </>
                 )}

@@ -38,7 +38,7 @@ let fileParsingState = {
     metadata: { pageCount: 1 },
   },
   bufferResult: {
-    content: 'parsed buffer content', 
+    content: 'parsed buffer content',
     metadata: { pageCount: 1 },
   },
   accessSuccess: true,
@@ -46,27 +46,28 @@ let fileParsingState = {
   statResult: { isFile: () => true },
   uploadError: null as string | null,
   cloudEnabled: false,
-  storageProvider: 'local' as 'local' | 's3'
+  storageProvider: 'local' as 'local' | 's3',
 }
 
 // Bun-compatible direct mocking approach - no vi.mock() or vi.stubGlobal() needed
 // Set up mocks directly on globalThis for module interception
+
 ;(globalThis as any).__mockFileParsing = {
   // File parser mocks
   isSupportedFileType: mockIsSupportedFileType,
   parseFile: mockParseFile,
   parseBuffer: mockParseBuffer,
-  
-  // File system mocks 
+
+  // File system mocks
   pathJoin: mockPathJoin,
   fsAccess: mockFsAccess,
   fsStat: mockFsStat,
   fsReadFile: mockFsReadFile,
   fsWriteFile: mockFsWriteFile,
-  
+
   // Auth mocks
   getSession: mockGetSession,
-  
+
   // State management
   getState: () => fileParsingState,
   setState: (newState: Partial<typeof fileParsingState>) => {
@@ -82,9 +83,9 @@ let fileParsingState = {
       statResult: { isFile: () => true },
       uploadError: null,
       cloudEnabled: false,
-      storageProvider: 'local'
+      storageProvider: 'local',
     }
-  }
+  },
 }
 
 // Initialize mock implementations
@@ -104,9 +105,8 @@ mockParseBuffer.mockImplementation((buffer: Buffer, extension: string) => {
 })
 
 mockPathJoin.mockImplementation((...args: string[]) => {
-  const result = args[0] === '/test/uploads' 
-    ? `/test/uploads/${args[args.length - 1]}`
-    : path.join(...args)
+  const result =
+    args[0] === '/test/uploads' ? `/test/uploads/${args[args.length - 1]}` : path.join(...args)
   console.log('🔍 path.join called with:', args, 'result:', result)
   return result
 })
@@ -125,7 +125,7 @@ mockFsStat.mockImplementation((filePath: string) => {
 })
 
 mockFsReadFile.mockImplementation((filePath: string) => {
-  console.log('🔍 fs.readFile called for:', filePath) 
+  console.log('🔍 fs.readFile called for:', filePath)
   return Promise.resolve(fileParsingState.fileContent)
 })
 
@@ -208,7 +208,9 @@ function createMockFileRequest(method: string, body: any, headers: Record<string
 }
 
 // Setup file API mocks helper
-function setupFileApiMocks(options: { cloudEnabled?: boolean; storageProvider?: 'local' | 's3' } = {}) {
+function setupFileApiMocks(
+  options: { cloudEnabled?: boolean; storageProvider?: 'local' | 's3' } = {}
+) {
   fileParsingControls.setCloudEnabled(options.cloudEnabled || false)
   fileParsingControls.setStorageProvider(options.storageProvider || 'local')
   console.log('🔧 File API mocks configured:', options)
@@ -233,7 +235,7 @@ describe('File Parse API Route - Bun-Compatible', () => {
     // Setup comprehensive test mocks
     testMocks = setupComprehensiveTestMocks({
       auth: { authenticated: true },
-      permissions: { level: 'admin' }
+      permissions: { level: 'admin' },
     })
 
     // Reset file parsing controls
@@ -249,9 +251,10 @@ describe('File Parse API Route - Bun-Compatible', () => {
   afterEach(async () => {
     console.log('🧹 Cleaning up bun-compatible File Parse API test environment')
     await testMocks.cleanup()
-    vi.clearAllMocks()
-    // Clean up global mocks
-    (globalThis as any).__mockFileParsing = undefined;;
+    vi.clearAllMocks()(
+      // Clean up global mocks
+      globalThis as any
+    ).__mockFileParsing = undefined
   })
 
   // ================================

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type * as React from 'react'
 import { memo, useMemo, useRef } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Handle, type NodeProps, Position, useReactFlow } from 'reactflow'

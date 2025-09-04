@@ -1,16 +1,16 @@
 /**
  * Template-Workflow Integration Service
- * 
+ *
  * Handles the complex process of integrating templates into existing workflows,
  * including conflict resolution, variable substitution, and position optimization.
- * 
+ *
  * Features:
  * - Smart conflict detection and resolution
  * - Variable substitution and validation
  * - Position optimization and auto-layout
  * - Undo/redo support for template operations
  * - Real-time validation and error handling
- * 
+ *
  * Based on research specifications from template library system design.
  */
 
@@ -89,7 +89,7 @@ export class TemplateIntegrationService {
     options: Partial<TemplateApplicationOptions> = {}
   ): Promise<ConflictAnalysis> {
     const startTime = Date.now()
-    
+
     try {
       logger.info('Analyzing conflicts for template integration', {
         templateId: template.id,
@@ -146,10 +146,9 @@ export class TemplateIntegrationService {
           Object.values(workflowState.blocks).forEach((existingBlock) => {
             const existingPos = existingBlock.position
             const distance = Math.sqrt(
-              Math.pow(templatePos.x - existingPos.x, 2) + 
-              Math.pow(templatePos.y - existingPos.y, 2)
+              (templatePos.x - existingPos.x) ** 2 + (templatePos.y - existingPos.y) ** 2
             )
-            
+
             if (distance < positionTolerance) {
               conflicts.push({
                 type: 'position_conflict',
@@ -169,7 +168,7 @@ export class TemplateIntegrationService {
         templateState.edges.forEach((edge) => {
           const sourceExists = templateState.blocks[edge.source]
           const targetExists = templateState.blocks[edge.target]
-          
+
           if (!sourceExists || !targetExists) {
             conflicts.push({
               type: 'dependency_conflict',
@@ -184,7 +183,9 @@ export class TemplateIntegrationService {
       }
 
       const canAutoResolve = conflicts.every((conflict) => conflict.autoResolvable)
-      const requiresUserInput = conflicts.some((conflict) => conflict.severity === 'high' && !conflict.autoResolvable)
+      const requiresUserInput = conflicts.some(
+        (conflict) => conflict.severity === 'high' && !conflict.autoResolvable
+      )
 
       logger.info('Conflict analysis completed', {
         templateId: template.id,
@@ -214,7 +215,7 @@ export class TemplateIntegrationService {
     options: TemplateApplicationOptions
   ): Promise<TemplateApplicationResult> {
     const startTime = Date.now()
-    
+
     try {
       logger.info('Applying template to workflow', {
         templateId: template.id,
@@ -263,22 +264,30 @@ export class TemplateIntegrationService {
       }
 
       // Process template variables
-      const processedTemplateState = this.processTemplateVariables(templateState, options.variables)
-
-      // Generate unique IDs if needed
-      const { blocks: processedBlocks, idMapping } = options.generateUniqueIds !== false
-        ? this.generateUniqueIds(processedTemplateState.blocks, newWorkflowState.blocks)
-        : { blocks: processedTemplateState.blocks, idMapping: new Map() }
-
-      // Resolve conflicts and apply blocks
-      const { resolvedBlocks, conflictsResolved } = await this.resolveConflicts(
-        processedBlocks,
-        newWorkflowState.blocks,
-        options.conflicts
+      const processedTemplateState = TemplateIntegrationService.processTemplateVariables(
+        templateState,
+        options.variables
       )
 
+      // Generate unique IDs if needed
+      const { blocks: processedBlocks, idMapping } =
+        options.generateUniqueIds !== false
+          ? TemplateIntegrationService.generateUniqueIds(
+              processedTemplateState.blocks,
+              newWorkflowState.blocks
+            )
+          : { blocks: processedTemplateState.blocks, idMapping: new Map() }
+
+      // Resolve conflicts and apply blocks
+      const { resolvedBlocks, conflictsResolved } =
+        await TemplateIntegrationService.resolveConflicts(
+          processedBlocks,
+          newWorkflowState.blocks,
+          options.conflicts
+        )
+
       // Calculate positions
-      const positionedBlocks = this.calculateOptimalPositions(
+      const positionedBlocks = TemplateIntegrationService.calculateOptimalPositions(
         resolvedBlocks,
         newWorkflowState.blocks,
         options.position,
@@ -294,7 +303,7 @@ export class TemplateIntegrationService {
 
       // Process and apply edges
       if (processedTemplateState.edges) {
-        const processedEdges = this.processTemplateEdges(
+        const processedEdges = TemplateIntegrationService.processTemplateEdges(
           processedTemplateState.edges,
           idMapping,
           newWorkflowState.blocks
@@ -304,7 +313,7 @@ export class TemplateIntegrationService {
           // Generate unique edge ID
           const edgeId = `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
           const newEdge = { ...edge, id: edgeId }
-          
+
           newWorkflowState.edges = newWorkflowState.edges || []
           newWorkflowState.edges.push(newEdge)
           result.appliedEdges.push(edgeId)
@@ -314,7 +323,7 @@ export class TemplateIntegrationService {
 
       // Auto-connect if enabled
       if (options.autoConnect && options.mode === 'merge') {
-        await this.autoConnectBlocks(newWorkflowState, result.appliedBlocks)
+        await TemplateIntegrationService.autoConnectBlocks(newWorkflowState, result.appliedBlocks)
       }
 
       // Update statistics
@@ -358,7 +367,7 @@ export class TemplateIntegrationService {
     variables: Record<string, any>
   ): WorkflowState {
     const processedState = JSON.parse(JSON.stringify(templateState))
-    
+
     // Recursive function to replace variables in any object/string
     const replaceVariables = (obj: any): any => {
       if (typeof obj === 'string') {
@@ -366,9 +375,11 @@ export class TemplateIntegrationService {
         return obj.replace(/\{\{(\w+)\}\}/g, (match, key) => {
           return variables[key] !== undefined ? variables[key] : match
         })
-      } else if (Array.isArray(obj)) {
+      }
+      if (Array.isArray(obj)) {
         return obj.map(replaceVariables)
-      } else if (obj && typeof obj === 'object') {
+      }
+      if (obj && typeof obj === 'object') {
         const result: any = {}
         for (const [key, value] of Object.entries(obj)) {
           result[key] = replaceVariables(value)
@@ -404,7 +415,7 @@ export class TemplateIntegrationService {
 
       idMapping.set(oldId, newId)
       existingIds.add(newId)
-      
+
       newBlocks[newId] = {
         ...block,
         id: newId,
@@ -436,15 +447,15 @@ export class TemplateIntegrationService {
                 const originalName = block.name
                 let counter = 1
                 let newName = `${block.name} (${counter})`
-                
+
                 while (existingNames.has(newName)) {
                   counter++
                   newName = `${originalName} (${counter})`
                 }
-                
+
                 block.name = newName
                 existingNames.add(newName)
-                
+
                 conflictsResolved.push({
                   type: 'name_conflict',
                   description: `Renamed "${originalName}" to "${newName}"`,
@@ -471,10 +482,10 @@ export class TemplateIntegrationService {
     blocks: Record<string, any>,
     existingBlocks: Record<string, any>,
     insertPosition?: { x: number; y: number },
-    mode: string = 'merge'
+    mode = 'merge'
   ): Record<string, any> {
     const positionedBlocks = { ...blocks }
-    
+
     if (mode === 'replace' || Object.keys(existingBlocks).length === 0) {
       // For replace mode or empty workflow, use template's original positions
       return positionedBlocks
@@ -483,10 +494,10 @@ export class TemplateIntegrationService {
     // Calculate bounds of existing workflow
     const existingPositions = Object.values(existingBlocks).map((block: any) => block.position)
     const bounds = {
-      minX: Math.min(...existingPositions.map(pos => pos.x)),
-      maxX: Math.max(...existingPositions.map(pos => pos.x)),
-      minY: Math.min(...existingPositions.map(pos => pos.y)),
-      maxY: Math.max(...existingPositions.map(pos => pos.y)),
+      minX: Math.min(...existingPositions.map((pos) => pos.x)),
+      maxX: Math.max(...existingPositions.map((pos) => pos.x)),
+      minY: Math.min(...existingPositions.map((pos) => pos.y)),
+      maxY: Math.max(...existingPositions.map((pos) => pos.y)),
     }
 
     // Calculate offset for template blocks
@@ -497,10 +508,10 @@ export class TemplateIntegrationService {
       // Use specific position
       const templatePositions = Object.values(blocks).map((block: any) => block.position)
       const templateBounds = {
-        minX: Math.min(...templatePositions.map(pos => pos.x)),
-        minY: Math.min(...templatePositions.map(pos => pos.y)),
+        minX: Math.min(...templatePositions.map((pos) => pos.x)),
+        minY: Math.min(...templatePositions.map((pos) => pos.y)),
       }
-      
+
       offsetX = insertPosition.x - templateBounds.minX
       offsetY = insertPosition.y - templateBounds.minY
     } else {
@@ -549,20 +560,20 @@ export class TemplateIntegrationService {
   ): Promise<void> {
     // This is a simplified auto-connection algorithm
     // In a real implementation, this would be more sophisticated
-    
+
     const allBlocks = workflowState.blocks
-    const existingBlockIds = Object.keys(allBlocks).filter(id => !appliedBlockIds.includes(id))
-    
+    const existingBlockIds = Object.keys(allBlocks).filter((id) => !appliedBlockIds.includes(id))
+
     if (existingBlockIds.length === 0) return
 
     // Find a good connection point (e.g., the rightmost existing block)
-    const existingBlocks = existingBlockIds.map(id => allBlocks[id])
-    const rightmostBlock = existingBlocks.reduce((rightmost, block) => 
+    const existingBlocks = existingBlockIds.map((id) => allBlocks[id])
+    const rightmostBlock = existingBlocks.reduce((rightmost, block) =>
       block.position.x > rightmost.position.x ? block : rightmost
     )
 
     // Find the leftmost template block
-    const templateBlocks = appliedBlockIds.map(id => allBlocks[id])
+    const templateBlocks = appliedBlockIds.map((id) => allBlocks[id])
     const leftmostTemplateBlock = templateBlocks.reduce((leftmost, block) =>
       block.position.x < leftmost.position.x ? block : leftmost
     )
@@ -600,7 +611,7 @@ export class TemplateIntegrationService {
     }
 
     const templateState = template.state as WorkflowState
-    
+
     if (!templateState.blocks || Object.keys(templateState.blocks).length === 0) {
       errors.push('Template has no blocks')
     }
@@ -653,9 +664,13 @@ export class TemplateIntegrationService {
       estimatedSetupTime: string
     }
   }> {
-    const conflicts = await this.analyzeConflicts(template, workflowState, options)
+    const conflicts = await TemplateIntegrationService.analyzeConflicts(
+      template,
+      workflowState,
+      options
+    )
     const templateState = template.state as WorkflowState
-    
+
     const blocksToAdd = Object.keys(templateState.blocks || {}).length
     const edgesToAdd = (templateState.edges || []).length
     const existingBlocks = Object.keys(workflowState.blocks).length
@@ -675,15 +690,16 @@ export class TemplateIntegrationService {
     const baseTime = Math.max(2, blocksToAdd * 0.5) // Minimum 2 minutes, 30s per block
     const variableTime = variableCount * 1 // 1 minute per variable
     const conflictTime = conflictCount * 2 // 2 minutes per conflict
-    
+
     const totalMinutes = Math.ceil(baseTime + variableTime + conflictTime)
-    const estimatedSetupTime = totalMinutes < 60 
-      ? `${totalMinutes} min` 
-      : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
+    const estimatedSetupTime =
+      totalMinutes < 60
+        ? `${totalMinutes} min`
+        : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
 
     // Create a preview of the combined workflow (without actually modifying the original)
     const preview: WorkflowState = JSON.parse(JSON.stringify(workflowState))
-    
+
     if (options.mode === 'replace') {
       preview.blocks = templateState.blocks || {}
       preview.edges = templateState.edges || []

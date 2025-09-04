@@ -25,7 +25,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logs/console/logger'

@@ -46,9 +46,9 @@ vi.mock('@/db', () => ({
 // Mock drizzle-orm with proper return types
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((field: any, value: any) => ({ field, value })),
-  sql: vi.fn((strings: TemplateStringsArray, ...values: any[]) => ({ 
-    sql: strings.join('?'), 
-    values 
+  sql: vi.fn((strings: TemplateStringsArray, ...values: any[]) => ({
+    sql: strings.join('?'),
+    values,
   })),
   and: vi.fn((...conditions: any[]) => ({ and: conditions })),
 }))
@@ -78,7 +78,7 @@ describe('RateLimiter', () => {
       const mockLimit = vi.fn().mockResolvedValue([] as UserRateLimit[])
       const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
-      
+
       vi.mocked(db.select).mockReturnValue({ from: mockFrom })
 
       // Mock insert query chain with proper typing
@@ -91,11 +91,11 @@ describe('RateLimiter', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-      
+
       const mockReturning = vi.fn().mockResolvedValue([mockRateLimit])
       const mockOnConflictDoUpdate = vi.fn().mockReturnValue({ returning: mockReturning })
       const mockValues = vi.fn().mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate })
-      
+
       vi.mocked(db.insert).mockReturnValue({ values: mockValues })
 
       const result = await rateLimiter.checkRateLimit(testUserId, 'free', 'api', false)
@@ -110,7 +110,7 @@ describe('RateLimiter', () => {
       const mockLimit = vi.fn().mockResolvedValue([] as UserRateLimit[])
       const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
-      
+
       vi.mocked(db.select).mockReturnValue({ from: mockFrom })
 
       // Mock insert query chain with proper typing
@@ -123,11 +123,11 @@ describe('RateLimiter', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-      
+
       const mockReturning = vi.fn().mockResolvedValue([mockRateLimit])
       const mockOnConflictDoUpdate = vi.fn().mockReturnValue({ returning: mockReturning })
       const mockValues = vi.fn().mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate })
-      
+
       vi.mocked(db.insert).mockReturnValue({ values: mockValues })
 
       const result = await rateLimiter.checkRateLimit(testUserId, 'free', 'api', true)
@@ -145,7 +145,7 @@ describe('RateLimiter', () => {
         const mockLimit = vi.fn().mockResolvedValue([] as UserRateLimit[])
         const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
         const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
-        
+
         vi.mocked(db.select).mockReturnValue({ from: mockFrom })
 
         // Mock insert query chain with proper typing
@@ -158,11 +158,11 @@ describe('RateLimiter', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         }
-        
+
         const mockReturning = vi.fn().mockResolvedValue([mockRateLimit])
         const mockOnConflictDoUpdate = vi.fn().mockReturnValue({ returning: mockReturning })
         const mockValues = vi.fn().mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate })
-        
+
         vi.mocked(db.insert).mockReturnValue({ values: mockValues })
 
         const result = await rateLimiter.checkRateLimit(testUserId, 'free', triggerType, false)
@@ -188,7 +188,7 @@ describe('RateLimiter', () => {
       const mockLimit = vi.fn().mockResolvedValue([] as UserRateLimit[])
       const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
-      
+
       vi.mocked(db.select).mockReturnValue({ from: mockFrom })
 
       const status = await rateLimiter.getRateLimitStatus(testUserId, 'free', 'api', false)

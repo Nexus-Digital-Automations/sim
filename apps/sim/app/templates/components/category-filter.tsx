@@ -30,7 +30,7 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronRight, Filter, Folder, FolderOpen, Search, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'

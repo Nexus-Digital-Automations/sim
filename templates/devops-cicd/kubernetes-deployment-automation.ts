@@ -13,7 +13,7 @@
  * - Automated rollback on failure
  */
 
-import { WorkflowTemplate, Block } from '../shared/types';
+import type { WorkflowTemplate } from '../shared/types';
 
 export const kubernetesDeploymentTemplate: WorkflowTemplate = {
   id: 'kubernetes-deployment-automation',

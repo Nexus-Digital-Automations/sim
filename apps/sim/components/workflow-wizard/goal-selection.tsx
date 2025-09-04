@@ -24,7 +24,7 @@
  * @created 2025-09-04
  */
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,

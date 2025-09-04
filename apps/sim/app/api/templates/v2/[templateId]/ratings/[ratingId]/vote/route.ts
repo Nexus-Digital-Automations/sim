@@ -24,7 +24,6 @@ import {
   templateRatingVotes,
   templates,
   templateUsageAnalytics,
-  user,
 } from '@/db/schema'
 
 const logger = createLogger('TemplateRatingVotesAPI')
@@ -81,15 +80,15 @@ async function updateRatingVoteCounts(ratingId: string) {
 function calculateHelpfulnessScore(helpfulCount: number, unhelpfulCount: number): number {
   const totalVotes = helpfulCount + unhelpfulCount
   if (totalVotes === 0) return 0
-  
+
   // Wilson score confidence interval for positive feedback
   const p = helpfulCount / totalVotes
   const n = totalVotes
   const z = 1.96 // 95% confidence interval
-  
+
   const denominator = 1 + (z * z) / n
   const numerator = p + (z * z) / (2 * n) - z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n)
-  
+
   return Math.max(0, numerator / denominator) * 100
 }
 
@@ -164,19 +163,11 @@ export async function GET(
       })
       .from(templateRatings)
       .innerJoin(templates, eq(templateRatings.templateId, templates.id))
-      .where(
-        and(
-          eq(templateRatings.id, ratingId),
-          eq(templates.id, templateId)
-        )
-      )
+      .where(and(eq(templateRatings.id, ratingId), eq(templates.id, templateId)))
       .limit(1)
 
     if (ratingData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Rating not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Rating not found' }, { status: 404 })
     }
 
     const rating = ratingData[0]
@@ -205,10 +196,7 @@ export async function GET(
       })
       .from(templateRatingVotes)
       .where(
-        and(
-          eq(templateRatingVotes.ratingId, ratingId),
-          eq(templateRatingVotes.userId, userId)
-        )
+        and(eq(templateRatingVotes.ratingId, ratingId), eq(templateRatingVotes.userId, userId))
       )
       .limit(1)
 
@@ -216,10 +204,7 @@ export async function GET(
     const voteData = userVote[0] || null
 
     // Calculate helpfulness score
-    const helpfulnessScore = calculateHelpfulnessScore(
-      rating.helpfulCount,
-      rating.unhelpfulCount
-    )
+    const helpfulnessScore = calculateHelpfulnessScore(rating.helpfulCount, rating.unhelpfulCount)
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Vote status retrieved in ${elapsed}ms`)
@@ -309,19 +294,11 @@ export async function POST(
       })
       .from(templateRatings)
       .innerJoin(templates, eq(templateRatings.templateId, templates.id))
-      .where(
-        and(
-          eq(templateRatings.id, ratingId),
-          eq(templates.id, templateId)
-        )
-      )
+      .where(and(eq(templateRatings.id, ratingId), eq(templates.id, templateId)))
       .limit(1)
 
     if (ratingData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Rating not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Rating not found' }, { status: 404 })
     }
 
     const rating = ratingData[0]
@@ -349,10 +326,7 @@ export async function POST(
       })
       .from(templateRatingVotes)
       .where(
-        and(
-          eq(templateRatingVotes.ratingId, ratingId),
-          eq(templateRatingVotes.userId, userId)
-        )
+        and(eq(templateRatingVotes.ratingId, ratingId), eq(templateRatingVotes.userId, userId))
       )
       .limit(1)
 
@@ -368,10 +342,7 @@ export async function POST(
         await db
           .delete(templateRatingVotes)
           .where(
-            and(
-              eq(templateRatingVotes.ratingId, ratingId),
-              eq(templateRatingVotes.userId, userId)
-            )
+            and(eq(templateRatingVotes.ratingId, ratingId), eq(templateRatingVotes.userId, userId))
           )
 
         voteAction = 'remove'
@@ -390,10 +361,7 @@ export async function POST(
             createdAt: now,
           })
           .where(
-            and(
-              eq(templateRatingVotes.ratingId, ratingId),
-              eq(templateRatingVotes.userId, userId)
-            )
+            and(eq(templateRatingVotes.ratingId, ratingId), eq(templateRatingVotes.userId, userId))
           )
 
         voteAction = 'update'
@@ -460,10 +428,12 @@ export async function POST(
           totalVotes: updatedCounts.helpfulCount + updatedCounts.unhelpfulCount,
           helpfulnessScore: Math.round(helpfulnessScore),
         },
-        message: 
-          voteAction === 'create' ? 'Vote cast successfully' :
-          voteAction === 'update' ? 'Vote updated successfully' :
-          'Vote removed successfully',
+        message:
+          voteAction === 'create'
+            ? 'Vote cast successfully'
+            : voteAction === 'update'
+              ? 'Vote updated successfully'
+              : 'Vote removed successfully',
       },
       meta: {
         requestId,

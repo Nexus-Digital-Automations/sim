@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
+import { WorkflowTemplateButton } from '@/components/template-integration'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -39,7 +40,6 @@ import {
   ExportControls,
   TemplateModal,
 } from '@/app/workspace/[workspaceId]/w/[workflowId]/components/control-bar/components'
-import { WorkflowTemplateButton } from '@/components/template-integration'
 import { useWorkflowExecution } from '@/app/workspace/[workspaceId]/w/[workflowId]/hooks/use-workflow-execution'
 import {
   getKeyboardShortcutText,

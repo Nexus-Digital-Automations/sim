@@ -1,0 +1,49 @@
+[2025-09-04T17:47:27.920Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:47:27.921Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:47:27.922Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:47:27.922Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:47:27.922Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:47:27.922Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:47:27.922Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:47:31.139Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:47:31.140Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:47:31.140Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:47:31.140Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:47:31.140Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:47:31.141Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:47:31.141Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:48:54.709Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:48:54.711Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:48:54.711Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:48:54.711Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:48:54.711Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:48:54.711Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:48:54.711Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:49:13.821Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:49:13.822Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:49:13.822Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:49:13.822Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:49:13.823Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:49:13.823Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:49:13.823Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:49:28.167Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:49:28.168Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:49:28.168Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:49:28.168Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:49:28.168Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:49:28.169Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:49:28.169Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:50:17.228Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:50:17.229Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:50:17.229Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:50:17.229Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:50:17.229Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:50:17.229Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:50:17.230Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:50:20.969Z] [INFO] Post-tool targeted file tracking hook started
+[2025-09-04T17:50:20.970Z] [INFO] Hook called from: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:50:20.970Z] [INFO] Script location: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:50:20.970Z] [INFO] Process args: /opt/homebrew/Cellar/node@22/22.19.0/bin/node /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2/post-tool-linter-hook.js
+[2025-09-04T17:50:20.971Z] [INFO] Using Claude working directory from env: /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/templates/data-etl
+[2025-09-04T17:50:20.971Z] [INFO] Detected active project directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2
+[2025-09-04T17:50:20.971Z] [INFO] Claude Code working directory: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook-2

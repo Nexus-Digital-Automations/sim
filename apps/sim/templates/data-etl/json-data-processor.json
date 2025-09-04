@@ -21,7 +21,14 @@
       "rating": 0.0,
       "difficulty": "intermediate"
     },
-    "tags": ["json", "data-processing", "schema-inference", "nested-data", "transformation", "validation"],
+    "tags": [
+      "json",
+      "data-processing",
+      "schema-inference",
+      "nested-data",
+      "transformation",
+      "validation"
+    ],
     "integrations": ["file", "s3", "mongodb", "elasticsearch", "postgresql"],
     "workflow_definition": {
       "blocks": [
@@ -210,11 +217,7 @@
       }
     },
     "configuration": {
-      "required_credentials": [
-        "postgresql_connection",
-        "mongodb_connection", 
-        "slack_webhook"
-      ],
+      "required_credentials": ["postgresql_connection", "mongodb_connection", "slack_webhook"],
       "environment_variables": {
         "json_input_directory": "/data/input/json",
         "archive_directory": "/data/archive",
@@ -268,7 +271,7 @@
       "setup_guide": "1. Configure input directory for JSON files\\n2. Set up database connections (PostgreSQL/MongoDB)\\n3. Define transformation rules and field mappings\\n4. Configure schema output and archival directories\\n5. Set up notification channels\\n6. Test with sample JSON files\\n7. Monitor processing and schema confidence",
       "use_cases": [
         "API response data processing and normalization",
-        "Log file analysis and structured data extraction", 
+        "Log file analysis and structured data extraction",
         "Configuration file processing and validation",
         "Survey data transformation and analysis",
         "IoT sensor data processing from JSON formats"

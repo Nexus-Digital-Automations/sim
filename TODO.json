@@ -443,10 +443,7 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "development/reports/",
-        "development/research-reports/"
-      ],
+      "important_files": ["development/reports/", "development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -623,10 +620,7 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": [
-        "apps/sim/app/api/__test-utils__/",
-        "apps/sim/app/api/**/*.test.ts"
-      ],
+      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -744,13 +738,7 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T17:13:21.592Z",
       "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
+      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T17:13:21.592Z",

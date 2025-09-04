@@ -12,20 +12,20 @@
  * Usage:
  * ```typescript
  * import { unifiedDiscoveryService } from '@/lib/templates/discovery'
- * 
+ *
  * // Comprehensive discovery
  * const results = await unifiedDiscoveryService.discover({
  *   discoveryMode: 'hybrid',
  *   userId: 'user-123',
  *   businessContext: { industry: 'marketing', useCase: 'email automation' }
  * })
- * 
+ *
  * // Intelligent search
  * const searchResults = await unifiedDiscoveryService.intelligentSearch({
  *   search: 'email automation templates',
  *   sortBy: 'relevance'
  * })
- * 
+ *
  * // AI-powered recommendations
  * const recommendations = await unifiedDiscoveryService.aiPoweredRecommendations('user-123')
  * ```
@@ -34,76 +34,69 @@
  * @version 1.0.0
  */
 
-// Main unified service (recommended for new implementations)
-export { 
-  unifiedDiscoveryService,
-  UnifiedDiscoveryService,
-  type UnifiedDiscoveryRequest,
-  type UnifiedDiscoveryResponse,
-  type DiscoveryPerformanceMetrics
-} from './unified-discovery-service'
-
-// Advanced AI services
-export { 
-  semanticSearchService,
-  SemanticSearchService,
-  type SemanticSearchResult,
-  type SemanticSearchConfig
-} from './semantic-search-service'
-
-export { 
-  advancedRecommendationEngine,
-  AdvancedRecommendationEngine,
-  type BusinessContext,
-  type UserRecommendationProfile,
-  type AdvancedRecommendation,
-  type RecommendationConfig
-} from './advanced-recommendation-engine'
-
-export { 
-  realTimeAnalyticsService,
-  RealTimeAnalyticsService,
-  type RealTimeMetrics,
-  type LiveDashboardData,
-  type UserSegment,
-  type PredictiveInsight
-} from './real-time-analytics-service'
-
-export { 
-  searchOptimizationService,
-  SearchOptimizationService,
-  type QueryAnalysis,
-  type SearchPerformanceMetrics,
-  type OptimizedSearchResult,
-  type SearchOptimizationConfig
-} from './search-optimization-service'
-
-// Legacy services (maintained for backward compatibility)
-export { 
-  templateRecommendationEngine,
-  TemplateRecommendationEngine
-} from './recommendation-engine'
-
-export { 
-  templateAnalyticsService,
-  TemplateAnalyticsService,
-  type TemplateAnalyticsEvent,
-  type AnalyticsEventData
-} from './analytics-service'
-
 // Re-export types from the main types module
 export type {
   Template,
+  TemplateMarketplaceAnalytics,
+  TemplateRecommendation,
   TemplateSearchQuery,
   TemplateSearchResults,
-  TemplateRecommendation,
   TemplateUsageAnalytics,
-  TemplateMarketplaceAnalytics
 } from '../types'
+export {
+  type AdvancedRecommendation,
+  AdvancedRecommendationEngine,
+  advancedRecommendationEngine,
+  type BusinessContext,
+  type RecommendationConfig,
+  type UserRecommendationProfile,
+} from './advanced-recommendation-engine'
+export {
+  type AnalyticsEventData,
+  type TemplateAnalyticsEvent,
+  TemplateAnalyticsService,
+  templateAnalyticsService,
+} from './analytics-service'
+export {
+  type LiveDashboardData,
+  type PredictiveInsight,
+  RealTimeAnalyticsService,
+  type RealTimeMetrics,
+  realTimeAnalyticsService,
+  type UserSegment,
+} from './real-time-analytics-service'
+// Legacy services (maintained for backward compatibility)
+export {
+  TemplateRecommendationEngine,
+  templateRecommendationEngine,
+} from './recommendation-engine'
+export {
+  type OptimizedSearchResult,
+  type QueryAnalysis,
+  type SearchOptimizationConfig,
+  SearchOptimizationService,
+  type SearchPerformanceMetrics,
+  searchOptimizationService,
+} from './search-optimization-service'
+// Advanced AI services
+export {
+  type SemanticSearchConfig,
+  type SemanticSearchResult,
+  SemanticSearchService,
+  semanticSearchService,
+} from './semantic-search-service'
+// Main unified service (recommended for new implementations)
+export {
+  type DiscoveryPerformanceMetrics,
+  type UnifiedDiscoveryRequest,
+  type UnifiedDiscoveryResponse,
+  UnifiedDiscoveryService,
+  unifiedDiscoveryService,
+} from './unified-discovery-service'
 
 /**
  * Discovery System Configuration
- * 
+ *
  * Centralized configuration for all discovery services
  */
 export interface DiscoverySystemConfig {
@@ -116,7 +109,7 @@ export interface DiscoverySystemConfig {
     abTesting: boolean
     personalization: boolean
   }
-  
+
   // Performance settings
   performance: {
     cacheEnabled: boolean
@@ -124,7 +117,7 @@ export interface DiscoverySystemConfig {
     maxConcurrentRequests: number
     timeoutMs: number
   }
-  
+
   // AI/ML settings
   ai: {
     embeddingModel: string
@@ -132,7 +125,7 @@ export interface DiscoverySystemConfig {
     minSimilarityThreshold: number
     enableMLRanking: boolean
   }
-  
+
   // Analytics settings
   analytics: {
     enableTracking: boolean
@@ -152,26 +145,26 @@ export const DEFAULT_DISCOVERY_CONFIG: DiscoverySystemConfig = {
     realTimeAnalytics: true,
     searchOptimization: true,
     abTesting: true,
-    personalization: true
+    personalization: true,
   },
   performance: {
     cacheEnabled: true,
     cacheExpiryMinutes: 30,
     maxConcurrentRequests: 100,
-    timeoutMs: 30000
+    timeoutMs: 30000,
   },
   ai: {
     embeddingModel: 'text-embedding-ada-002',
     embeddingDimensions: 256,
     minSimilarityThreshold: 0.2,
-    enableMLRanking: true
+    enableMLRanking: true,
   },
   analytics: {
     enableTracking: true,
     enableRealTimeMetrics: true,
     retentionDays: 90,
-    enablePredictions: true
-  }
+    enablePredictions: true,
+  },
 }
 
 /**
@@ -196,7 +189,7 @@ export async function checkDiscoverySystemHealth(): Promise<{
 }> {
   // Basic health check implementation
   // In production, this would perform actual service health checks
-  
+
   return {
     status: 'healthy',
     services: {
@@ -204,15 +197,15 @@ export async function checkDiscoverySystemHealth(): Promise<{
       semantic: 'up',
       recommendations: 'up',
       analytics: 'up',
-      optimization: 'up'
+      optimization: 'up',
     },
     metrics: {
       totalRequests: 0, // Would be actual metrics
       averageResponseTime: 0,
       errorRate: 0,
-      cacheHitRate: 0
+      cacheHitRate: 0,
     },
-    timestamp: new Date()
+    timestamp: new Date(),
   }
 }
 
@@ -224,17 +217,17 @@ export async function initializeDiscoverySystem(
 ): Promise<void> {
   const finalConfig = {
     ...DEFAULT_DISCOVERY_CONFIG,
-    ...config
+    ...config,
   }
-  
+
   console.log('🚀 Initializing Template Discovery System', {
     config: finalConfig,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
-  
+
   // Initialize services with configuration
   // In production, this would set up service configurations, caching, etc.
-  
+
   console.log('✅ Template Discovery System initialized successfully')
 }
 
@@ -256,10 +249,13 @@ export const quickStart = {
    * Search for templates with intelligent optimization
    */
   search: async (query: string, userId?: string) => {
-    return unifiedDiscoveryService.intelligentSearch({
-      search: query,
-      sortBy: 'relevance'
-    }, { userId })
+    return unifiedDiscoveryService.intelligentSearch(
+      {
+        search: query,
+        sortBy: 'relevance',
+      },
+      { userId }
+    )
   },
 
   /**
@@ -268,25 +264,21 @@ export const quickStart = {
   recommend: async (userId: string, businessContext?: BusinessContext) => {
     return unifiedDiscoveryService.aiPoweredRecommendations(userId, {
       businessContext,
-      personalizationLevel: 'ai_powered'
+      personalizationLevel: 'ai_powered',
     })
   },
 
   /**
    * Comprehensive discovery (search + recommendations + insights)
    */
-  discover: async (
-    query: string, 
-    userId: string, 
-    businessContext?: BusinessContext
-  ) => {
+  discover: async (query: string, userId: string, businessContext?: BusinessContext) => {
     return unifiedDiscoveryService.discover({
       discoveryMode: 'hybrid',
       userId,
       businessContext,
       searchQuery: { search: query },
       includeAnalytics: true,
-      includeExplanations: true
+      includeExplanations: true,
     })
   },
 
@@ -296,9 +288,9 @@ export const quickStart = {
   dashboard: async () => {
     return unifiedDiscoveryService.getLiveDiscoveryDashboard({
       includeAnalytics: true,
-      includePredictions: true
+      includePredictions: true,
     })
-  }
+  },
 }
 
 // Export default as unified service for convenience

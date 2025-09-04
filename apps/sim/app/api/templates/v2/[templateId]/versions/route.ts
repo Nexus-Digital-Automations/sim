@@ -14,14 +14,13 @@
  * @created 2025-09-04
  */
 
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, templateUsageAnalytics, user } from '@/db/schema'
+import { templates, templateUsageAnalytics } from '@/db/schema'
 
 const logger = createLogger('TemplateVersioningAPI')
 
@@ -45,17 +44,17 @@ const CreateVersionSchema = z.object({
   version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Must be semantic version (e.g., 1.2.3)'),
   changelog: z.string().min(10).max(2000),
   migrationNotes: z.string().max(2000).optional(),
-  
+
   // Breaking changes indicator
   hasBreakingChanges: z.boolean().optional().default(false),
-  
+
   // Compatibility
   minPlatformVersion: z.string().optional(),
   maxPlatformVersion: z.string().optional(),
-  
+
   // Updated workflow
   workflowTemplate: z.record(z.any()),
-  
+
   // Technical requirements
   technicalRequirements: z.string().max(2000).optional(),
   requiredIntegrations: z.array(z.string()).optional().default([]),
@@ -87,7 +86,7 @@ function parseVersion(version: string): { major: number; minor: number; patch: n
 function compareVersions(a: string, b: string): number {
   const versionA = parseVersion(a)
   const versionB = parseVersion(b)
-  
+
   if (versionA.major !== versionB.major) {
     return versionA.major - versionB.major
   }
@@ -101,13 +100,13 @@ function compareVersions(a: string, b: string): number {
  * Determine version type from changelog and changes
  */
 function determineVersionType(
-  currentVersion: string, 
-  newVersion: string, 
+  currentVersion: string,
+  newVersion: string,
   hasBreakingChanges: boolean
 ): 'major' | 'minor' | 'patch' {
   const current = parseVersion(currentVersion)
   const new_ = parseVersion(newVersion)
-  
+
   if (new_.major > current.major || hasBreakingChanges) return 'major'
   if (new_.minor > current.minor) return 'minor'
   return 'patch'
@@ -118,7 +117,7 @@ function determineVersionType(
  */
 function sanitizeWorkflowTemplate(workflowTemplate: any): any {
   const sanitized = JSON.parse(JSON.stringify(workflowTemplate))
-  
+
   const sensitivePatterns = [
     /api[_-]?key/i,
     /secret/i,
@@ -158,11 +157,11 @@ function calculateWorkflowDiff(oldWorkflow: any, newWorkflow: any): any {
     connectionsChanged: 0,
     variablesChanged: 0,
   }
-  
+
   // Basic change detection
   const oldStr = JSON.stringify(oldWorkflow, null, 2)
   const newStr = JSON.stringify(newWorkflow, null, 2)
-  
+
   if (oldStr !== newStr) {
     changes.blocksChanged = Math.abs(
       (newWorkflow.blocks?.length || 0) - (oldWorkflow.blocks?.length || 0)
@@ -171,11 +170,11 @@ function calculateWorkflowDiff(oldWorkflow: any, newWorkflow: any): any {
       (newWorkflow.connections?.length || 0) - (oldWorkflow.connections?.length || 0)
     )
     changes.variablesChanged = Math.abs(
-      Object.keys(newWorkflow.variables || {}).length - 
-      Object.keys(oldWorkflow.variables || {}).length
+      Object.keys(newWorkflow.variables || {}).length -
+        Object.keys(oldWorkflow.variables || {}).length
     )
   }
-  
+
   return changes
 }
 
@@ -204,7 +203,7 @@ async function recordVersionAnalytics(
 }
 
 // ========================
-// API ENDPOINTS  
+// API ENDPOINTS
 // ========================
 
 /**
@@ -237,10 +236,7 @@ export async function GET(request: NextRequest, { params }: { params: { template
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
@@ -268,13 +264,13 @@ export async function GET(request: NextRequest, { params }: { params: { template
       workflowTemplate: queryParams.includeDetails ? template.workflowTemplate : undefined,
       createdAt: new Date().toISOString(),
       createdByUserId: template.createdByUserId,
-      
+
       ...(queryParams.includeMetrics && {
         metrics: {
           deploymentCount: 0, // Would be calculated from usage analytics
-          successRate: 0,     // Would be calculated from execution analytics
+          successRate: 0, // Would be calculated from execution analytics
           averageExecutionTime: 0, // Would be calculated from performance data
-        }
+        },
       }),
     }
 
@@ -299,9 +295,10 @@ export async function GET(request: NextRequest, { params }: { params: { template
       const metrics = metricsData[0] || {}
       versionMetrics = {
         totalUsage: Number(metrics.totalUsage) || 0,
-        successRate: Number(metrics.totalUsage) > 0 
-          ? Math.round((Number(metrics.successfulExecutions) / Number(metrics.totalUsage)) * 100)
-          : 0,
+        successRate:
+          Number(metrics.totalUsage) > 0
+            ? Math.round((Number(metrics.successfulExecutions) / Number(metrics.totalUsage)) * 100)
+            : 0,
         avgExecutionTime: Math.round(Number(metrics.avgExecutionTime) || 0),
         uniqueUsers: Number(metrics.uniqueUsers) || 0,
       }
@@ -409,20 +406,14 @@ export async function POST(request: NextRequest, { params }: { params: { templat
       .limit(1)
 
     if (templateData.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Template not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
     }
 
     const template = templateData[0]
 
     // Check permissions
     if (template.createdByUserId !== userId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      )
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
     const currentVersion = template.templateVersion || '1.0.0'
@@ -482,24 +473,27 @@ export async function POST(request: NextRequest, { params }: { params: { templat
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Version ${data.version} created successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        templateId,
-        version: data.version,
-        previousVersion: currentVersion,
-        versionType,
-        changelog: data.changelog,
-        hasBreakingChanges: data.hasBreakingChanges,
-        workflowDiff,
-        requiresReview: versionType === 'major' && data.hasBreakingChanges,
-        message: 'New version created successfully',
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          templateId,
+          version: data.version,
+          previousVersion: currentVersion,
+          versionType,
+          changelog: data.changelog,
+          hasBreakingChanges: data.hasBreakingChanges,
+          workflowDiff,
+          requiresReview: versionType === 'major' && data.hasBreakingChanges,
+          message: 'New version created successfully',
+        },
+        meta: {
+          requestId,
+          processingTime: elapsed,
+        },
       },
-      meta: {
-        requestId,
-        processingTime: elapsed,
-      },
-    }, { status: 201 })
+      { status: 201 }
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 

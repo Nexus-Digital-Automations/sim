@@ -10,7 +10,7 @@
  * - SEO optimization with tag-based content organization
  *
  * @version 2.0.0
- * @author Sim Template Library Team  
+ * @author Sim Template Library Team
  * @created 2025-09-04
  */
 
@@ -22,7 +22,7 @@ import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateTags, templateTagAssociations, templates, user } from '@/db/schema'
+import { templates, templateTagAssociations, templateTags, user } from '@/db/schema'
 
 const logger = createLogger('TemplateTagsAPI')
 
@@ -80,7 +80,10 @@ const CreateTagSchema = z.object({
 const UpdateTagSchema = z.object({
   name: z.string().min(1).max(50).optional(),
   description: z.string().max(500).optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
   tagType: z.enum(['skill', 'integration', 'industry', 'use_case', 'general']).optional(),
   displayName: z.string().max(100).optional(),
   isActive: z.boolean().optional(),
@@ -122,7 +125,7 @@ async function calculateTrendScore(tagId: string): Promise<number> {
     ]
 
     let trendScore = 0
-    
+
     for (const period of periods) {
       const usageData = await db
         .select({ count: count(templateTagAssociations.templateId) })
@@ -283,7 +286,7 @@ export async function GET(request: NextRequest) {
         weeklyGrowth: templateTags.weeklyGrowth,
         createdAt: templateTags.createdAt,
         updatedAt: templateTags.updatedAt,
-        
+
         // Author info for user-created tags
         ...(params.includeUsageStats
           ? {
@@ -354,7 +357,7 @@ export async function GET(request: NextRequest) {
     // Add trend data if requested
     if (params.includeTrendData && results.length > 0) {
       const tagIds = results.map((tag) => tag.id)
-      
+
       // Get recent creation trends for each tag
       const trendData = await db
         .select({
@@ -376,10 +379,13 @@ export async function GET(request: NextRequest) {
         (acc, trend) => {
           const recentUsage = Number(trend.recentUsage)
           const previousUsage = Number(trend.previousUsage)
-          const growthRate = previousUsage > 0 
-            ? ((recentUsage - previousUsage) / previousUsage) * 100 
-            : recentUsage > 0 ? 100 : 0
-          
+          const growthRate =
+            previousUsage > 0
+              ? ((recentUsage - previousUsage) / previousUsage) * 100
+              : recentUsage > 0
+                ? 100
+                : 0
+
           acc[trend.tagId] = {
             recentUsage,
             previousUsage,
@@ -485,7 +491,7 @@ export async function POST(request: NextRequest) {
 
     // Generate slug and check for uniqueness
     const slug = generateTagSlug(data.name)
-    
+
     const existingTag = await db
       .select({ id: templateTags.id, name: templateTags.name })
       .from(templateTags)

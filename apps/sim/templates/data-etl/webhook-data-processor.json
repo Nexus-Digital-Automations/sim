@@ -1,0 +1,397 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "webhook-data-processor-v1.0",
+    "name": "Real-Time Webhook Data Processing Pipeline",
+    "description": "High-performance webhook data processing template with automatic payload parsing, validation, transformation, and intelligent routing. Handles high-volume webhook traffic with retry mechanisms and dead letter queues.",
+    "category": "data-etl",
+    "subcategories": ["webhook", "real-time", "event-processing", "api-integration"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "intermediate"
+    },
+    "tags": ["webhook", "real-time", "event-processing", "data-integration", "high-throughput"],
+    "integrations": ["webhook", "kafka", "redis", "postgresql", "slack"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "webhook_receiver",
+          "type": "webhook",
+          "name": "Webhook Event Receiver",
+          "configuration": {
+            "endpoint": "/webhook/data-processor",
+            "methods": ["POST", "PUT"],
+            "authentication": {
+              "type": "signature",
+              "header": "X-Webhook-Signature",
+              "secret": "{{webhook_secret}}"
+            },
+            "rate_limiting": {
+              "requests_per_minute": 1000,
+              "burst_size": 100
+            },
+            "response": {
+              "success": { "status": 200, "body": { "status": "accepted", "message": "Event received" } },
+              "error": { "status": 400, "body": { "status": "error", "message": "Invalid payload" } }
+            }
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "payload_validator",
+          "type": "javascript",
+          "name": "Validate Webhook Payload",
+          "configuration": {
+            "code": "// Comprehensive webhook payload validation\nconst payload = inputs.webhook_payload || {};\nconst headers = inputs.webhook_headers || {};\nconst validationRules = inputs.validation_rules || {};\n\n// Enhanced payload structure\nconst enhancedPayload = {\n  original_payload: payload,\n  metadata: {\n    received_at: new Date().toISOString(),\n    source_ip: headers['x-forwarded-for'] || headers['x-real-ip'] || 'unknown',\n    user_agent: headers['user-agent'] || 'unknown',\n    content_type: headers['content-type'] || 'unknown',\n    webhook_id: generateWebhookId(),\n    processing_status: 'pending'\n  },\n  validation_results: {\n    is_valid: false,\n    errors: [],\n    warnings: []\n  }\n};\n\nfunction generateWebhookId() {\n  return `wh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n}\n\n// Payload validation logic\nconst validationErrors = [];\nconst validationWarnings = [];\n\n// Required fields validation\nif (validationRules.required_fields) {\n  for (const field of validationRules.required_fields) {\n    if (!payload.hasOwnProperty(field) || payload[field] === null || payload[field] === undefined) {\n      validationErrors.push(`Missing required field: ${field}`);\n    }\n  }\n}\n\n// Data type validation\nif (validationRules.field_types) {\n  for (const [field, expectedType] of Object.entries(validationRules.field_types)) {\n    if (payload.hasOwnProperty(field) && payload[field] !== null) {\n      const actualType = Array.isArray(payload[field]) ? 'array' : typeof payload[field];\n      if (actualType !== expectedType) {\n        validationErrors.push(`Type mismatch for field ${field}: expected ${expectedType}, got ${actualType}`);\n      }\n    }\n  }\n}\n\n// Custom validation rules\nif (validationRules.custom_validations) {\n  for (const validation of validationRules.custom_validations) {\n    try {\n      const result = evaluateCustomValidation(payload, validation);\n      if (!result.passed) {\n        if (validation.severity === 'error') {\n          validationErrors.push(result.message);\n        } else {\n          validationWarnings.push(result.message);\n        }\n      }\n    } catch (error) {\n      validationErrors.push(`Custom validation error: ${error.message}`);\n    }\n  }\n}\n\n// Event source validation\nif (validationRules.allowed_sources && headers['x-webhook-source']) {\n  if (!validationRules.allowed_sources.includes(headers['x-webhook-source'])) {\n    validationErrors.push(`Unauthorized webhook source: ${headers['x-webhook-source']}`);\n  }\n}\n\n// Timestamp validation\nif (payload.timestamp) {\n  const eventTime = new Date(payload.timestamp);\n  const now = new Date();\n  const ageMinutes = (now - eventTime) / (1000 * 60);\n  \n  if (ageMinutes > 60) { // Event older than 1 hour\n    validationWarnings.push(`Event is ${Math.round(ageMinutes)} minutes old`);\n  }\n  \n  if (ageMinutes < -5) { // Event from future (clock skew tolerance)\n    validationErrors.push(`Event timestamp is in the future: ${payload.timestamp}`);\n  }\n}\n\nfunction evaluateCustomValidation(data, rule) {\n  switch (rule.type) {\n    case 'range_check':\n      const value = data[rule.field];\n      if (typeof value === 'number' && (value < rule.min || value > rule.max)) {\n        return { passed: false, message: `${rule.field} value ${value} is outside range ${rule.min}-${rule.max}` };\n      }\n      break;\n      \n    case 'format_check':\n      const stringValue = data[rule.field];\n      if (typeof stringValue === 'string' && rule.pattern) {\n        const regex = new RegExp(rule.pattern);\n        if (!regex.test(stringValue)) {\n          return { passed: false, message: `${rule.field} does not match required format` };\n        }\n      }\n      break;\n      \n    case 'dependency_check':\n      if (data[rule.primary_field] && !data[rule.dependent_field]) {\n        return { passed: false, message: `${rule.dependent_field} is required when ${rule.primary_field} is present` };\n      }\n      break;\n      \n    case 'uniqueness_check':\n      // This would typically check against a database or cache\n      // For now, just validate the field exists\n      if (!data[rule.field]) {\n        return { passed: false, message: `Uniqueness field ${rule.field} is missing` };\n      }\n      break;\n  }\n  \n  return { passed: true };\n}\n\n// Update validation results\nenhancedPayload.validation_results.errors = validationErrors;\nenhancedPayload.validation_results.warnings = validationWarnings;\nenhancedPayload.validation_results.is_valid = validationErrors.length === 0;\nenhancedPayload.metadata.processing_status = enhancedPayload.validation_results.is_valid ? 'validated' : 'invalid';\n\n// Classify webhook event\nif (enhancedPayload.validation_results.is_valid) {\n  enhancedPayload.classification = classifyWebhookEvent(payload, headers);\n}\n\nfunction classifyWebhookEvent(payload, headers) {\n  const classification = {\n    event_type: 'unknown',\n    priority: 'medium',\n    category: 'general',\n    processing_route: 'default'\n  };\n  \n  // Event type detection\n  if (payload.event || payload.event_type) {\n    classification.event_type = payload.event || payload.event_type;\n  } else if (payload.action) {\n    classification.event_type = payload.action;\n  }\n  \n  // Priority classification\n  const highPriorityEvents = ['error', 'alert', 'critical', 'urgent', 'failure'];\n  const lowPriorityEvents = ['info', 'debug', 'test', 'health_check'];\n  \n  if (highPriorityEvents.some(event => classification.event_type.toLowerCase().includes(event))) {\n    classification.priority = 'high';\n  } else if (lowPriorityEvents.some(event => classification.event_type.toLowerCase().includes(event))) {\n    classification.priority = 'low';\n  }\n  \n  // Category classification\n  if (payload.user_id || payload.customer_id) {\n    classification.category = 'user_event';\n  } else if (payload.transaction_id || payload.payment_id) {\n    classification.category = 'transaction_event';\n  } else if (payload.system_id || payload.service_name) {\n    classification.category = 'system_event';\n  }\n  \n  // Processing route determination\n  classification.processing_route = `${classification.category}_${classification.priority}`;\n  \n  return classification;\n}\n\nreturn {\n  enhanced_payload: enhancedPayload,\n  should_process: enhancedPayload.validation_results.is_valid,\n  should_queue: !enhancedPayload.validation_results.is_valid && validationErrors.length < 3,\n  should_reject: validationErrors.length >= 3\n};"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "event_router",
+          "type": "router",
+          "name": "Route Events by Classification",
+          "configuration": {
+            "routing_rules": [
+              {
+                "condition": "{{enhanced_payload.classification.priority === 'high'}}",
+                "route": "high_priority_processor",
+                "description": "High priority events for immediate processing"
+              },
+              {
+                "condition": "{{enhanced_payload.classification.category === 'transaction_event'}}",
+                "route": "transaction_processor",
+                "description": "Financial transaction events"
+              },
+              {
+                "condition": "{{enhanced_payload.classification.category === 'user_event'}}",
+                "route": "user_event_processor",
+                "description": "User behavior and interaction events"
+              },
+              {
+                "condition": "{{enhanced_payload.classification.event_type === 'health_check'}}",
+                "route": "health_check_handler",
+                "description": "System health check events"
+              }
+            ],
+            "default_route": "standard_processor",
+            "parallel_processing": true
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "high_priority_processor",
+          "type": "javascript",
+          "name": "Process High Priority Events",
+          "configuration": {
+            "code": "// High priority event processing with immediate actions\nconst enhancedPayload = inputs.enhanced_payload || {};\nconst payload = enhancedPayload.original_payload || {};\nconst classification = enhancedPayload.classification || {};\n\n// Process high priority events with special handling\nconst processingResult = {\n  webhook_id: enhancedPayload.metadata.webhook_id,\n  processing_timestamp: new Date().toISOString(),\n  priority_level: 'high',\n  processing_actions: [],\n  alerts_triggered: [],\n  data_transformations: {}\n};\n\n// Immediate alert conditions\nconst alertConditions = [\n  { field: 'error_count', operator: 'greater_than', value: 10, alert_type: 'error_spike' },\n  { field: 'response_time', operator: 'greater_than', value: 5000, alert_type: 'performance_degradation' },\n  { field: 'status', operator: 'equals', value: 'critical', alert_type: 'system_critical' }\n];\n\nfor (const condition of alertConditions) {\n  if (payload[condition.field] !== undefined) {\n    const value = payload[condition.field];\n    let shouldAlert = false;\n    \n    switch (condition.operator) {\n      case 'greater_than':\n        shouldAlert = value > condition.value;\n        break;\n      case 'less_than':\n        shouldAlert = value < condition.value;\n        break;\n      case 'equals':\n        shouldAlert = value === condition.value;\n        break;\n    }\n    \n    if (shouldAlert) {\n      processingResult.alerts_triggered.push({\n        alert_type: condition.alert_type,\n        field: condition.field,\n        value: value,\n        threshold: condition.value,\n        severity: 'high'\n      });\n    }\n  }\n}\n\n// Real-time data transformations\nprocessingResult.data_transformations = {\n  normalized_timestamp: payload.timestamp ? new Date(payload.timestamp).toISOString() : new Date().toISOString(),\n  event_id: payload.id || payload.event_id || enhancedPayload.metadata.webhook_id,\n  source_system: payload.source || enhancedPayload.metadata.user_agent,\n  processed_at: new Date().toISOString(),\n  priority_score: calculatePriorityScore(payload, classification)\n};\n\nfunction calculatePriorityScore(data, classification) {\n  let score = 50; // Base score\n  \n  // Adjust based on event type\n  const criticalEvents = ['error', 'failure', 'critical', 'alert'];\n  if (criticalEvents.some(event => classification.event_type.toLowerCase().includes(event))) {\n    score += 30;\n  }\n  \n  // Adjust based on data values\n  if (data.error_count && data.error_count > 5) score += 20;\n  if (data.severity === 'critical') score += 25;\n  if (data.user_count && data.user_count > 1000) score += 15;\n  \n  return Math.min(100, score);\n}\n\n// Immediate processing actions\nprocessingResult.processing_actions.push({\n  action: 'cache_event',\n  target: 'redis',\n  key: `high_priority:${processingResult.webhook_id}`,\n  ttl: 3600\n});\n\nprocessingResult.processing_actions.push({\n  action: 'queue_for_analysis',\n  target: 'kafka',\n  topic: 'high-priority-events',\n  partition_key: classification.category\n});\n\nif (processingResult.alerts_triggered.length > 0) {\n  processingResult.processing_actions.push({\n    action: 'trigger_notifications',\n    channels: ['slack', 'pagerduty'],\n    urgency: 'immediate'\n  });\n}\n\nreturn {\n  processing_result: processingResult,\n  requires_immediate_action: processingResult.alerts_triggered.length > 0,\n  cache_key: `high_priority:${processingResult.webhook_id}`,\n  next_steps: processingResult.processing_actions\n};"
+          },
+          "position": { "x": 700, "y": 50 }
+        },
+        {
+          "id": "standard_processor",
+          "type": "javascript",
+          "name": "Standard Event Processor",
+          "configuration": {
+            "code": "// Standard webhook event processing pipeline\nconst enhancedPayload = inputs.enhanced_payload || {};\nconst payload = enhancedPayload.original_payload || {};\nconst classification = enhancedPayload.classification || {};\n\nconst processingResult = {\n  webhook_id: enhancedPayload.metadata.webhook_id,\n  processing_timestamp: new Date().toISOString(),\n  priority_level: classification.priority || 'medium',\n  transformed_data: {},\n  enrichments: {},\n  quality_metrics: {}\n};\n\n// Standard data transformations\nprocessingResult.transformed_data = {\n  event_id: payload.id || payload.event_id || enhancedPayload.metadata.webhook_id,\n  event_type: classification.event_type,\n  event_category: classification.category,\n  event_timestamp: payload.timestamp || enhancedPayload.metadata.received_at,\n  source_ip: enhancedPayload.metadata.source_ip,\n  user_agent: enhancedPayload.metadata.user_agent,\n  raw_payload_size: JSON.stringify(payload).length,\n  processing_latency_ms: Date.now() - new Date(enhancedPayload.metadata.received_at).getTime()\n};\n\n// Copy relevant payload fields\nconst relevantFields = ['user_id', 'session_id', 'transaction_id', 'amount', 'status', 'metadata'];\nfor (const field of relevantFields) {\n  if (payload.hasOwnProperty(field)) {\n    processingResult.transformed_data[field] = payload[field];\n  }\n}\n\n// Data enrichment\nprocessingResult.enrichments = {\n  processing_route: classification.processing_route,\n  geographical_info: extractGeographicalInfo(enhancedPayload.metadata.source_ip),\n  device_info: parseUserAgent(enhancedPayload.metadata.user_agent),\n  business_context: inferBusinessContext(payload)\n};\n\nfunction extractGeographicalInfo(ip) {\n  // In a real implementation, this would use a GeoIP service\n  return {\n    ip_address: ip,\n    country: 'Unknown',\n    region: 'Unknown',\n    city: 'Unknown'\n  };\n}\n\nfunction parseUserAgent(userAgent) {\n  // Simple user agent parsing\n  return {\n    raw_user_agent: userAgent,\n    is_mobile: /Mobile|Android|iPhone/i.test(userAgent),\n    is_bot: /bot|crawl|spider/i.test(userAgent),\n    browser: extractBrowser(userAgent)\n  };\n}\n\nfunction extractBrowser(userAgent) {\n  if (/Chrome/i.test(userAgent)) return 'Chrome';\n  if (/Firefox/i.test(userAgent)) return 'Firefox';\n  if (/Safari/i.test(userAgent)) return 'Safari';\n  if (/Edge/i.test(userAgent)) return 'Edge';\n  return 'Unknown';\n}\n\nfunction inferBusinessContext(data) {\n  const context = {\n    business_unit: 'unknown',\n    customer_segment: 'unknown',\n    revenue_impact: 'none'\n  };\n  \n  // Infer business context from data\n  if (data.user_id) {\n    context.business_unit = 'customer_operations';\n    context.customer_segment = data.subscription_tier || 'standard';\n  }\n  \n  if (data.transaction_id || data.amount) {\n    context.business_unit = 'financial_operations';\n    context.revenue_impact = data.amount > 100 ? 'high' : 'low';\n  }\n  \n  return context;\n}\n\n// Data quality metrics\nprocessingResult.quality_metrics = {\n  completeness_score: calculateCompletenessScore(payload),\n  timeliness_score: calculateTimelinessScore(payload.timestamp, enhancedPayload.metadata.received_at),\n  validity_score: enhancedPayload.validation_results.is_valid ? 100 : 0,\n  consistency_score: calculateConsistencyScore(payload)\n};\n\nfunction calculateCompletenessScore(data) {\n  const expectedFields = ['id', 'timestamp', 'event_type', 'data'];\n  const presentFields = expectedFields.filter(field => data.hasOwnProperty(field) && data[field] !== null);\n  return Math.round((presentFields.length / expectedFields.length) * 100);\n}\n\nfunction calculateTimelinessScore(eventTimestamp, receivedAt) {\n  if (!eventTimestamp) return 50; // Neutral score if no timestamp\n  \n  const eventTime = new Date(eventTimestamp);\n  const receiveTime = new Date(receivedAt);\n  const delayMinutes = (receiveTime - eventTime) / (1000 * 60);\n  \n  if (delayMinutes < 1) return 100;\n  if (delayMinutes < 5) return 90;\n  if (delayMinutes < 15) return 70;\n  if (delayMinutes < 60) return 50;\n  return 20;\n}\n\nfunction calculateConsistencyScore(data) {\n  // Simple consistency checks\n  let score = 100;\n  \n  // Check for data type consistency\n  if (data.user_id && typeof data.user_id !== 'string') score -= 20;\n  if (data.amount && typeof data.amount !== 'number') score -= 20;\n  if (data.timestamp && isNaN(Date.parse(data.timestamp))) score -= 30;\n  \n  return Math.max(0, score);\n}\n\nreturn {\n  processing_result: processingResult,\n  storage_ready: true,\n  quality_threshold_met: processingResult.quality_metrics.completeness_score >= 80\n};"
+          },
+          "position": { "x": 700, "y": 150 }
+        },
+        {
+          "id": "event_storage",
+          "type": "postgresql",
+          "name": "Store Processed Events",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "dynamic_insert",
+            "table": "webhook_events",
+            "create_table_if_not_exists": true,
+            "schema": {
+              "webhook_id": "VARCHAR(50) PRIMARY KEY",
+              "event_id": "VARCHAR(100)",
+              "event_type": "VARCHAR(50)",
+              "event_category": "VARCHAR(50)",
+              "event_timestamp": "TIMESTAMP",
+              "processing_timestamp": "TIMESTAMP DEFAULT NOW()",
+              "priority_level": "VARCHAR(20)",
+              "source_ip": "VARCHAR(45)",
+              "user_agent": "TEXT",
+              "transformed_data": "JSONB",
+              "enrichments": "JSONB",
+              "quality_metrics": "JSONB",
+              "processing_latency_ms": "INTEGER"
+            },
+            "indexes": [
+              "CREATE INDEX IF NOT EXISTS idx_webhook_events_timestamp ON webhook_events(event_timestamp)",
+              "CREATE INDEX IF NOT EXISTS idx_webhook_events_type ON webhook_events(event_type)",
+              "CREATE INDEX IF NOT EXISTS idx_webhook_events_priority ON webhook_events(priority_level)"
+            ]
+          },
+          "position": { "x": 900, "y": 100 }
+        },
+        {
+          "id": "event_cache",
+          "type": "redis",
+          "name": "Cache Recent Events",
+          "configuration": {
+            "connection": "{{redis_connection}}",
+            "operations": [
+              {
+                "command": "SETEX",
+                "key": "webhook:{{webhook_id}}",
+                "value": "{{JSON.stringify(processing_result)}}",
+                "ttl": 3600
+              },
+              {
+                "command": "LPUSH",
+                "key": "webhook:recent_events",
+                "value": "{{webhook_id}}"
+              },
+              {
+                "command": "LTRIM",
+                "key": "webhook:recent_events",
+                "start": 0,
+                "stop": 999
+              },
+              {
+                "command": "HINCRBY",
+                "key": "webhook:stats:{{date('Y-m-d')}}",
+                "field": "{{event_type}}",
+                "increment": 1
+              },
+              {
+                "command": "EXPIRE",
+                "key": "webhook:stats:{{date('Y-m-d')}}",
+                "seconds": 604800
+              }
+            ]
+          },
+          "position": { "x": 900, "y": 200 }
+        },
+        {
+          "id": "event_streaming",
+          "type": "kafka",
+          "name": "Stream to Analytics",
+          "configuration": {
+            "connection": "{{kafka_connection}}",
+            "operation": "produce",
+            "topic": "webhook-events-stream",
+            "key": "{{webhook_id}}",
+            "value": "{{JSON.stringify(processing_result)}}",
+            "partition_strategy": "hash",
+            "delivery_guarantee": "at_least_once",
+            "batch_size": 100,
+            "compression": "gzip"
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "metrics_tracker",
+          "type": "system_monitor",
+          "name": "Track Processing Metrics",
+          "configuration": {
+            "metrics": {
+              "webhooks_processed": 1,
+              "processing_latency_ms": "{{processing_result.transformed_data.processing_latency_ms}}",
+              "quality_score": "{{processing_result.quality_metrics.completeness_score}}",
+              "high_priority_events": "{{priority_level === 'high' ? 1 : 0}}",
+              "validation_errors": "{{enhanced_payload.validation_results.errors.length}}",
+              "event_type": "{{processing_result.transformed_data.event_type}}",
+              "storage_success": 1,
+              "cache_success": 1
+            },
+            "alerts": [
+              {
+                "condition": "{{processing_latency_ms > 5000}}",
+                "message": "High processing latency: {{processing_latency_ms}}ms",
+                "severity": "warning"
+              },
+              {
+                "condition": "{{validation_errors > 5}}",
+                "message": "High validation error rate in webhook processing",
+                "severity": "error"
+              }
+            ]
+          },
+          "position": { "x": 1100, "y": 200 }
+        },
+        {
+          "id": "notification_handler",
+          "type": "condition",
+          "name": "Check Notification Requirements",
+          "configuration": {
+            "condition": "{{requires_immediate_action || processing_result.priority_level === 'high'}}",
+            "true_path": "send_alerts",
+            "false_path": "end_processing"
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "send_alerts",
+          "type": "slack",
+          "name": "Send Event Alerts",
+          "configuration": {
+            "channel": "{{alert_channel}}",
+            "message": "🚨 High Priority Webhook Event\\n\\n**Event ID**: {{processing_result.webhook_id}}\\n**Type**: {{processing_result.transformed_data.event_type}}\\n**Priority**: {{processing_result.priority_level}}\\n**Processing Time**: {{processing_result.transformed_data.processing_latency_ms}}ms\\n\\n{{#if alerts_triggered}}**Alerts**:\\n{{#each alerts_triggered}}• {{alert_type}}: {{field}} = {{value}} (threshold: {{threshold}})\\n{{/each}}{{/if}}\\n**Quality Score**: {{processing_result.quality_metrics.completeness_score}}/100",
+            "condition": "{{requires_immediate_action}}"
+          },
+          "position": { "x": 1500, "y": 100 }
+        },
+        {
+          "id": "dead_letter_queue",
+          "type": "kafka",
+          "name": "Dead Letter Queue",
+          "configuration": {
+            "connection": "{{kafka_connection}}",
+            "operation": "produce",
+            "topic": "webhook-events-dlq",
+            "key": "{{enhanced_payload.metadata.webhook_id}}",
+            "value": "{{JSON.stringify({original_payload: enhanced_payload.original_payload, validation_errors: enhanced_payload.validation_results.errors, failed_at: now()})}}",
+            "condition": "{{should_reject}}"
+          },
+          "position": { "x": 500, "y": 300 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "webhook_receiver",
+          "to": "payload_validator",
+          "condition": null
+        },
+        {
+          "from": "payload_validator",
+          "to": "event_router",
+          "condition": "{{should_process}}"
+        },
+        {
+          "from": "payload_validator",
+          "to": "dead_letter_queue",
+          "condition": "{{should_reject}}"
+        },
+        {
+          "from": "event_router",
+          "to": "high_priority_processor",
+          "condition": "{{enhanced_payload.classification.priority === 'high'}}"
+        },
+        {
+          "from": "event_router",
+          "to": "standard_processor",
+          "condition": "{{enhanced_payload.classification.priority !== 'high'}}"
+        },
+        {
+          "from": "high_priority_processor",
+          "to": "event_storage",
+          "condition": null
+        },
+        {
+          "from": "standard_processor",
+          "to": "event_storage",
+          "condition": "{{storage_ready}}"
+        },
+        {
+          "from": "event_storage",
+          "to": "event_cache",
+          "condition": null
+        },
+        {
+          "from": "event_cache",
+          "to": "event_streaming",
+          "condition": null
+        },
+        {
+          "from": "event_streaming",
+          "to": "metrics_tracker",
+          "condition": null
+        },
+        {
+          "from": "metrics_tracker",
+          "to": "notification_handler",
+          "condition": null
+        },
+        {
+          "from": "notification_handler",
+          "to": "send_alerts",
+          "condition": "{{requires_immediate_action}}"
+        }
+      ],
+      "variables": {
+        "total_webhooks_processed": 0,
+        "high_priority_count": 0,
+        "avg_processing_latency": 0,
+        "validation_error_rate": 0
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "webhook_secret",
+        "postgresql_connection",
+        "redis_connection",
+        "kafka_connection",
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "webhook_endpoint": "/webhook/data-processor",
+        "alert_channel": "#webhook-alerts",
+        "max_payload_size_mb": 10,
+        "processing_timeout_seconds": 30
+      },
+      "custom_parameters": {
+        "validation_rules": {
+          "type": "object",
+          "default": {
+            "required_fields": ["timestamp", "event_type"],
+            "field_types": {},
+            "custom_validations": [],
+            "allowed_sources": []
+          },
+          "description": "Webhook payload validation rules"
+        },
+        "high_priority_threshold": {
+          "type": "integer",
+          "default": 80,
+          "description": "Priority score threshold for high priority processing"
+        },
+        "enable_dead_letter_queue": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dead letter queue for failed events"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_processing_time_ms": 0,
+        "throughput_events_per_second": 0,
+        "validation_success_rate": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure webhook endpoint and authentication\\n2. Set up database connections for event storage\\n3. Configure Redis for caching and Kafka for streaming\\n4. Define validation rules and processing routes\\n5. Set up notification channels for alerts\\n6. Test with sample webhook payloads\\n7. Monitor performance and adjust thresholds",
+      "use_cases": [
+        "Payment processing webhook integration",
+        "User activity event streaming from mobile apps",
+        "System monitoring and alerting via webhooks",
+        "E-commerce order status updates",
+        "Social media integration event processing"
+      ],
+      "troubleshooting": {
+        "high_latency": "Check database connection pool and optimize queries",
+        "validation_failures": "Review validation rules and payload structure",
+        "missing_events": "Check dead letter queue and webhook authentication",
+        "cache_issues": "Monitor Redis memory usage and connection stability"
+      }
+    }
+  }
+}

@@ -29,11 +29,10 @@
 
 'use client'
 
-import * as React from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import type * as React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  ChevronDown,
   Filter,
   Grid3X3,
   Heart,
@@ -48,7 +47,6 @@ import {
   View,
   Zap,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -60,31 +58,22 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-
-// Import existing template components
-import { TemplateGallery } from './template-gallery'
-import { TemplateSearchFilters } from './template-search-filters'
-import { TemplateCategoryNavigation } from './template-category-navigation'
-
 // Import template types
 import type {
+  TemplateSearchFilters as SearchFilters,
   Template,
   TemplateCategory,
-  TemplateSearchFilters as SearchFilters,
   TemplateSearchQuery,
   TemplateSearchResults,
 } from '@/lib/templates/types'
 import { cn } from '@/lib/utils'
+import { TemplateCategoryNavigation } from './template-category-navigation'
+// Import existing template components
+import { TemplateGallery } from './template-gallery'
+import { TemplateSearchFilters } from './template-search-filters'
 
 /**
  * Template Browser Props Interface
@@ -131,28 +120,28 @@ interface TemplateBrowserState {
   activeCategory: string | null
   sortBy: string
   sortOrder: 'asc' | 'desc'
-  
+
   // View configuration
   viewMode: 'grid' | 'list' | 'compact'
   showFilters: boolean
-  
+
   // Data and loading states
   templates: Template[]
   categories: TemplateCategory[]
   searchResults: TemplateSearchResults | null
   loading: boolean
   error: string | null
-  
+
   // User interaction states
   selectedTemplates: Set<string>
   favoriteTemplates: Set<string>
   recentlyViewed: Template[]
-  
+
   // Discovery features
   trendingTemplates: Template[]
   recommendedTemplates: Template[]
   featuredTemplates: Template[]
-  
+
   // Pagination and infinite scroll
   hasNextPage: boolean
   isLoadingMore: boolean
@@ -191,29 +180,38 @@ const useTemplateBrowserState = (props: TemplateBrowserProps) => {
 
   // Action creators for clean state updates
   const actions = {
-    setSearchQuery: (query: string) => setState(s => ({ ...s, searchQuery: query })),
-    setFilters: (filters: Partial<SearchFilters>) => setState(s => ({ ...s, filters: { ...s.filters, ...filters } })),
-    setActiveCategory: (category: string | null) => setState(s => ({ ...s, activeCategory: category })),
-    setSorting: (sortBy: string, sortOrder: 'asc' | 'desc') => setState(s => ({ ...s, sortBy, sortOrder })),
-    setViewMode: (viewMode: 'grid' | 'list' | 'compact') => setState(s => ({ ...s, viewMode })),
-    toggleFilters: () => setState(s => ({ ...s, showFilters: !s.showFilters })),
-    setTemplates: (templates: Template[]) => setState(s => ({ ...s, templates })),
-    appendTemplates: (templates: Template[]) => setState(s => ({ ...s, templates: [...s.templates, ...templates] })),
-    setLoading: (loading: boolean) => setState(s => ({ ...s, loading })),
-    setError: (error: string | null) => setState(s => ({ ...s, error })),
-    toggleTemplateSelection: (templateId: string) => setState(s => {
-      const newSelected = new Set(s.selectedTemplates)
-      if (newSelected.has(templateId)) {
-        newSelected.delete(templateId)
-      } else {
-        newSelected.add(templateId)
-      }
-      return { ...s, selectedTemplates: newSelected }
-    }),
-    addToRecentlyViewed: (template: Template) => setState(s => ({
-      ...s,
-      recentlyViewed: [template, ...s.recentlyViewed.filter(t => t.id !== template.id)].slice(0, 10)
-    })),
+    setSearchQuery: (query: string) => setState((s) => ({ ...s, searchQuery: query })),
+    setFilters: (filters: Partial<SearchFilters>) =>
+      setState((s) => ({ ...s, filters: { ...s.filters, ...filters } })),
+    setActiveCategory: (category: string | null) =>
+      setState((s) => ({ ...s, activeCategory: category })),
+    setSorting: (sortBy: string, sortOrder: 'asc' | 'desc') =>
+      setState((s) => ({ ...s, sortBy, sortOrder })),
+    setViewMode: (viewMode: 'grid' | 'list' | 'compact') => setState((s) => ({ ...s, viewMode })),
+    toggleFilters: () => setState((s) => ({ ...s, showFilters: !s.showFilters })),
+    setTemplates: (templates: Template[]) => setState((s) => ({ ...s, templates })),
+    appendTemplates: (templates: Template[]) =>
+      setState((s) => ({ ...s, templates: [...s.templates, ...templates] })),
+    setLoading: (loading: boolean) => setState((s) => ({ ...s, loading })),
+    setError: (error: string | null) => setState((s) => ({ ...s, error })),
+    toggleTemplateSelection: (templateId: string) =>
+      setState((s) => {
+        const newSelected = new Set(s.selectedTemplates)
+        if (newSelected.has(templateId)) {
+          newSelected.delete(templateId)
+        } else {
+          newSelected.add(templateId)
+        }
+        return { ...s, selectedTemplates: newSelected }
+      }),
+    addToRecentlyViewed: (template: Template) =>
+      setState((s) => ({
+        ...s,
+        recentlyViewed: [template, ...s.recentlyViewed.filter((t) => t.id !== template.id)].slice(
+          0,
+          10
+        ),
+      })),
   }
 
   return [state, actions] as const
@@ -368,52 +366,58 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
   })
 
   // Handle view mode changes
-  const handleViewModeChange = useCallback((mode: 'grid' | 'list' | 'compact') => {
-    actions.setViewMode(mode)
-    onViewModeChange?.(mode)
-  }, [actions, onViewModeChange])
+  const handleViewModeChange = useCallback(
+    (mode: 'grid' | 'list' | 'compact') => {
+      actions.setViewMode(mode)
+      onViewModeChange?.(mode)
+    },
+    [actions, onViewModeChange]
+  )
 
   // Simulate template search (in real implementation, this would call an API)
-  const searchTemplates = useCallback(async (query: TemplateSearchQuery) => {
-    actions.setLoading(true)
-    actions.setError(null)
+  const searchTemplates = useCallback(
+    async (query: TemplateSearchQuery) => {
+      actions.setLoading(true)
+      actions.setError(null)
 
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 300))
+      try {
+        // Simulate API call delay
+        await new Promise((resolve) => setTimeout(resolve, 300))
 
-      // Mock search results - in real implementation, this would be an API call
-      const mockResults: TemplateSearchResults = {
-        data: [], // This would be populated from the API
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0,
-          hasNext: false,
-          hasPrev: false,
-        },
-        facets: {
-          categories: [],
-          tags: [],
-          authors: [],
-          difficulty: [],
-        },
-        meta: {
-          requestId: `req_${Date.now()}`,
-          processingTime: Math.random() * 100,
-          searchQuery: query,
-        },
+        // Mock search results - in real implementation, this would be an API call
+        const mockResults: TemplateSearchResults = {
+          data: [], // This would be populated from the API
+          pagination: {
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          },
+          facets: {
+            categories: [],
+            tags: [],
+            authors: [],
+            difficulty: [],
+          },
+          meta: {
+            requestId: `req_${Date.now()}`,
+            processingTime: Math.random() * 100,
+            searchQuery: query,
+          },
+        }
+
+        actions.setTemplates(mockResults.data)
+        setState((s) => ({ ...s, searchResults: mockResults }))
+      } catch (error) {
+        actions.setError(error instanceof Error ? error.message : 'Search failed')
+      } finally {
+        actions.setLoading(false)
       }
-
-      actions.setTemplates(mockResults.data)
-      setState(s => ({ ...s, searchResults: mockResults }))
-    } catch (error) {
-      actions.setError(error instanceof Error ? error.message : 'Search failed')
-    } finally {
-      actions.setLoading(false)
-    }
-  }, [actions])
+    },
+    [actions]
+  )
 
   // Perform search when query or filters change
   useEffect(() => {
@@ -431,30 +435,46 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
     }
 
     searchTemplates(query)
-  }, [state.searchQuery, state.filters, state.sortBy, state.sortOrder, state.currentPage, searchTemplates])
+  }, [
+    state.searchQuery,
+    state.filters,
+    state.sortBy,
+    state.sortOrder,
+    state.currentPage,
+    searchTemplates,
+  ])
 
   // Handle template interactions
-  const handleTemplateSelect = useCallback((template: Template) => {
-    actions.addToRecentlyViewed(template)
-    onTemplatePreview?.(template)
-  }, [actions, onTemplatePreview])
+  const handleTemplateSelect = useCallback(
+    (template: Template) => {
+      actions.addToRecentlyViewed(template)
+      onTemplatePreview?.(template)
+    },
+    [actions, onTemplatePreview]
+  )
 
-  const handleTemplateInstall = useCallback(async (templateId: string) => {
-    const template = state.templates.find(t => t.id === templateId)
-    if (template && onTemplateInstall) {
-      await onTemplateInstall(template)
-    }
-  }, [state.templates, onTemplateInstall])
+  const handleTemplateInstall = useCallback(
+    async (templateId: string) => {
+      const template = state.templates.find((t) => t.id === templateId)
+      if (template && onTemplateInstall) {
+        await onTemplateInstall(template)
+      }
+    },
+    [state.templates, onTemplateInstall]
+  )
 
-  const handleTemplateFavorite = useCallback(async (templateId: string, isFavorited: boolean) => {
-    if (onTemplateFavorite) {
-      await onTemplateFavorite(templateId, isFavorited)
-    }
-  }, [onTemplateFavorite])
+  const handleTemplateFavorite = useCallback(
+    async (templateId: string, isFavorited: boolean) => {
+      if (onTemplateFavorite) {
+        await onTemplateFavorite(templateId, isFavorited)
+      }
+    },
+    [onTemplateFavorite]
+  )
 
   // Bulk operations handlers
   const handleBulkInstall = useCallback(async () => {
-    const selectedTemplates = state.templates.filter(t => state.selectedTemplates.has(t.id))
+    const selectedTemplates = state.templates.filter((t) => state.selectedTemplates.has(t.id))
     for (const template of selectedTemplates) {
       if (onTemplateInstall) {
         await onTemplateInstall(template)
@@ -494,10 +514,7 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
           </div>
 
           {/* View Mode Selector */}
-          <ViewModeSelector
-            currentMode={state.viewMode}
-            onChange={handleViewModeChange}
-          />
+          <ViewModeSelector currentMode={state.viewMode} onChange={handleViewModeChange} />
 
           {/* Filters Toggle */}
           <Button
@@ -540,7 +557,7 @@ export const TemplateBrowser: React.FC<TemplateBrowserProps> = ({
           <QuickActionsBar
             selectedCount={state.selectedTemplates.size}
             onBulkInstall={handleBulkInstall}
-            onClearSelection={() => setState(s => ({ ...s, selectedTemplates: new Set() }))}
+            onClearSelection={() => setState((s) => ({ ...s, selectedTemplates: new Set() }))}
           />
         )}
       </div>

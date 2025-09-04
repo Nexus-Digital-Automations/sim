@@ -4,8 +4,8 @@
  * @vitest-environment node
  */
 import type { Server as HttpServer } from 'http'
-import type { Server as SocketIOServer } from 'socket.io'
 import { createServer } from 'http'
+import type { Server as SocketIOServer } from 'socket.io'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLogger, type Logger } from '@/lib/logs/console/logger'
 import { createSocketIOServer } from '@/socket-server/config/socket'

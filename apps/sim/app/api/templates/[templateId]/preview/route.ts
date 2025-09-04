@@ -1,11 +1,11 @@
 /**
  * Template Preview API Endpoint
- * 
+ *
  * Provides detailed template preview data including blocks, variables,
  * conflict analysis, and application statistics.
  */
 
-import { NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { TemplateIntegrationService } from '@/lib/templates/workflow-integration'
 
@@ -17,10 +17,7 @@ interface TemplatePreviewRequest {
   includeVariables?: boolean
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { templateId: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { templateId: string } }) {
   try {
     const { templateId } = params
     const body: TemplatePreviewRequest = await request.json()
@@ -60,7 +57,10 @@ export async function POST(
           workflowState = workflowData.state || workflowState
         }
       } catch (error) {
-        logger.warn('Failed to fetch workflow state for preview', { error, workflowId: body.workflowId })
+        logger.warn('Failed to fetch workflow state for preview', {
+          error,
+          workflowId: body.workflowId,
+        })
       }
     }
 
@@ -129,7 +129,7 @@ export async function POST(
     // Calculate statistics
     const blockCount = Object.keys(blocks).length
     const connectionCount = edges.length
-    
+
     let complexity: 'simple' | 'moderate' | 'complex' = 'simple'
     if (blockCount > 15 || connectionCount > 20) {
       complexity = 'complex'
@@ -141,10 +141,11 @@ export async function POST(
     const variableTime = variables.length * 1
     const conflictTime = conflicts.length * 2
     const totalMinutes = Math.ceil(baseTime + variableTime + conflictTime)
-    
-    const estimatedSetupTime = totalMinutes < 60 
-      ? `${totalMinutes} min` 
-      : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
+
+    const estimatedSetupTime =
+      totalMinutes < 60
+        ? `${totalMinutes} min`
+        : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
 
     const previewData = {
       blocks: Object.values(blocks).map((block: any) => ({
@@ -182,9 +183,6 @@ export async function POST(
       templateId: params.templateId,
     })
 
-    return Response.json(
-      { error: 'Failed to generate template preview' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Failed to generate template preview' }, { status: 500 })
   }
 }

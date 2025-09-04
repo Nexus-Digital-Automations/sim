@@ -18,7 +18,10 @@ const logger = createLogger('OrganizationMembersAPI')
  * GET /api/organizations/[id]/members
  * Get organization members with optional usage data
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -125,7 +128,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  * POST /api/organizations/[id]/members
  * Invite new member to organization
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 

@@ -8,16 +8,13 @@
  * @author Claude Development System
  */
 
-// Export all icons from the icons module
-export * from './icons'
-
-// Export UI components
-export * from './ui'
-
 // Export branded layout component
 export { default as BrandedLayout } from './branded-layout'
-
+export * from './emails'
 // Export other component modules
 export * from './help'
+// Export all icons from the icons module
+export * from './icons'
 export * from './social'
-export * from './emails'
+// Export UI components
+export * from './ui'

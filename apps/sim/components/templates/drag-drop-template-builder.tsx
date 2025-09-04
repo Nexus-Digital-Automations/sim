@@ -23,25 +23,16 @@
 
 'use client'
 
-import * as React from 'react'
+import type * as React from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { DndProvider, useDrag, useDrop } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
-  Copy,
-  Download,
-  Eye,
-  Grid3X3,
   History,
   Home,
   Layers,
-  Lock,
-  Move,
   Play,
-  Plus,
   Redo,
   Save,
   Search,
@@ -53,14 +44,16 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
+import { DndProvider, useDrag, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
@@ -207,9 +200,7 @@ const DEFAULT_BLOCK_TYPES: BlockType[] = [
       { id: 'true', name: 'True Path', type: 'any' },
       { id: 'false', name: 'False Path', type: 'any' },
     ],
-    settings: [
-      { id: 'condition', name: 'Condition', type: 'string', default: 'value > 0' },
-    ],
+    settings: [{ id: 'condition', name: 'Condition', type: 'string', default: 'value > 0' }],
   },
   {
     id: 'data-transform',
@@ -253,16 +244,16 @@ const DraggableBlockType: React.FC<{
       )}
       style={{ borderColor: blockType.color }}
     >
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         <div
-          className="flex h-8 w-8 items-center justify-center rounded"
+          className='flex h-8 w-8 items-center justify-center rounded'
           style={{ backgroundColor: `${blockType.color}20`, color: blockType.color }}
         >
-          <IconComponent className="h-4 w-4" />
+          <IconComponent className='h-4 w-4' />
         </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm truncate">{blockType.name}</h4>
-          <p className="text-xs text-muted-foreground truncate">{blockType.description}</p>
+        <div className='min-w-0 flex-1'>
+          <h4 className='truncate font-medium text-sm'>{blockType.name}</h4>
+          <p className='truncate text-muted-foreground text-xs'>{blockType.description}</p>
         </div>
       </div>
     </div>
@@ -310,44 +301,44 @@ const WorkflowBlockComponent: React.FC<{
       <Card
         className={cn(
           'min-w-[180px] transition-all',
-          isSelected && 'ring-2 ring-blue-500 shadow-lg'
+          isSelected && 'shadow-lg ring-2 ring-blue-500'
         )}
       >
-        <CardHeader className="pb-2" style={{ borderTopColor: blockType.color }}>
-          <div className="flex items-center gap-2">
+        <CardHeader className='pb-2' style={{ borderTopColor: blockType.color }}>
+          <div className='flex items-center gap-2'>
             <div
-              className="flex h-6 w-6 items-center justify-center rounded"
+              className='flex h-6 w-6 items-center justify-center rounded'
               style={{ backgroundColor: `${blockType.color}20`, color: blockType.color }}
             >
-              <IconComponent className="h-4 w-4" />
+              <IconComponent className='h-4 w-4' />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm truncate">{block.name}</h4>
+            <div className='min-w-0 flex-1'>
+              <h4 className='truncate font-medium text-sm'>{block.name}</h4>
             </div>
             {isSelected && (
               <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                size='sm'
+                variant='ghost'
+                className='h-6 w-6 p-0 text-red-500 hover:text-red-600'
                 onClick={(e) => {
                   e.stopPropagation()
                   onDelete(block.id)
                 }}
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className='h-3 w-3' />
               </Button>
             )}
           </div>
         </CardHeader>
-        
-        <CardContent className="pt-0">
+
+        <CardContent className='pt-0'>
           {/* Input Connections */}
           {blockType.inputs.length > 0 && (
-            <div className="mb-2 space-y-1">
+            <div className='mb-2 space-y-1'>
               {blockType.inputs.map((input) => (
-                <div key={input.id} className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full border bg-white"></div>
-                  <span className="text-xs text-muted-foreground">{input.name}</span>
+                <div key={input.id} className='flex items-center gap-2'>
+                  <div className='h-2 w-2 rounded-full border bg-white' />
+                  <span className='text-muted-foreground text-xs'>{input.name}</span>
                 </div>
               ))}
             </div>
@@ -355,14 +346,14 @@ const WorkflowBlockComponent: React.FC<{
 
           {/* Output Connections */}
           {blockType.outputs.length > 0 && (
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {blockType.outputs.map((output) => (
-                <div key={output.id} className="flex items-center justify-end gap-2">
-                  <span className="text-xs text-muted-foreground">{output.name}</span>
+                <div key={output.id} className='flex items-center justify-end gap-2'>
+                  <span className='text-muted-foreground text-xs'>{output.name}</span>
                   <div
-                    className="h-2 w-2 rounded-full"
+                    className='h-2 w-2 rounded-full'
                     style={{ backgroundColor: blockType.color }}
-                  ></div>
+                  />
                 </div>
               ))}
             </div>
@@ -426,10 +417,13 @@ const BuilderCanvas: React.FC<{
   })
 
   const blockTypeMap = useMemo(() => {
-    return blockTypes.reduce((acc, type) => {
-      acc[type.id] = type
-      return acc
-    }, {} as Record<string, BlockType>)
+    return blockTypes.reduce(
+      (acc, type) => {
+        acc[type.id] = type
+        return acc
+      },
+      {} as Record<string, BlockType>
+    )
   }, [blockTypes])
 
   return (
@@ -438,10 +432,7 @@ const BuilderCanvas: React.FC<{
         drop(node)
         canvasRef.current = node
       }}
-      className={cn(
-        'relative h-full w-full overflow-hidden bg-gray-50',
-        isOver && 'bg-blue-50'
-      )}
+      className={cn('relative h-full w-full overflow-hidden bg-gray-50', isOver && 'bg-blue-50')}
       style={{
         backgroundImage: `
           radial-gradient(circle, #e5e5e5 1px, transparent 1px)
@@ -451,32 +442,32 @@ const BuilderCanvas: React.FC<{
       }}
     >
       {/* Grid Pattern */}
-      <div className="absolute inset-0 pointer-events-none">
-        <svg className="h-full w-full">
+      <div className='pointer-events-none absolute inset-0'>
+        <svg className='h-full w-full'>
           <defs>
             <pattern
-              id="grid"
+              id='grid'
               width={20 * viewport.zoom}
               height={20 * viewport.zoom}
-              patternUnits="userSpaceOnUse"
+              patternUnits='userSpaceOnUse'
               x={viewport.pan.x}
               y={viewport.pan.y}
             >
               <path
                 d={`M ${20 * viewport.zoom} 0 L 0 0 0 ${20 * viewport.zoom}`}
-                fill="none"
-                stroke="#e5e5e5"
-                strokeWidth="1"
+                fill='none'
+                stroke='#e5e5e5'
+                strokeWidth='1'
               />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
+          <rect width='100%' height='100%' fill='url(#grid)' />
         </svg>
       </div>
 
       {/* Workflow Blocks */}
       <div
-        className="relative"
+        className='relative'
         style={{
           transform: `scale(${viewport.zoom}) translate(${viewport.pan.x}px, ${viewport.pan.y}px)`,
           transformOrigin: '0 0',
@@ -501,17 +492,17 @@ const BuilderCanvas: React.FC<{
       </div>
 
       {/* Canvas Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
+      <div className='absolute top-4 right-4 flex flex-col gap-2'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                size="sm"
-                variant="outline"
-                className="h-8 w-8 p-0"
+                size='sm'
+                variant='outline'
+                className='h-8 w-8 p-0'
                 onClick={() => onViewportChange({ zoom: Math.min(viewport.zoom * 1.2, 2) })}
               >
-                <ZoomIn className="h-4 w-4" />
+                <ZoomIn className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Zoom In</TooltipContent>
@@ -522,12 +513,12 @@ const BuilderCanvas: React.FC<{
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                size="sm"
-                variant="outline"
-                className="h-8 w-8 p-0"
+                size='sm'
+                variant='outline'
+                className='h-8 w-8 p-0'
                 onClick={() => onViewportChange({ zoom: Math.max(viewport.zoom * 0.8, 0.2) })}
               >
-                <ZoomOut className="h-4 w-4" />
+                <ZoomOut className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Zoom Out</TooltipContent>
@@ -538,12 +529,12 @@ const BuilderCanvas: React.FC<{
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                size="sm"
-                variant="outline"
-                className="h-8 w-8 p-0"
+                size='sm'
+                variant='outline'
+                className='h-8 w-8 p-0'
                 onClick={() => onViewportChange({ zoom: 1, pan: { x: 0, y: 0 } })}
               >
-                <Home className="h-4 w-4" />
+                <Home className='h-4 w-4' />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Reset View</TooltipContent>
@@ -553,8 +544,8 @@ const BuilderCanvas: React.FC<{
 
       {/* Drop Zone Indicator */}
       {isOver && (
-        <div className="absolute inset-0 flex items-center justify-center bg-blue-100/50 backdrop-blur-sm">
-          <div className="rounded-lg bg-blue-500 px-4 py-2 text-white shadow-lg">
+        <div className='absolute inset-0 flex items-center justify-center bg-blue-100/50 backdrop-blur-sm'>
+          <div className='rounded-lg bg-blue-500 px-4 py-2 text-white shadow-lg'>
             Drop block here to add to workflow
           </div>
         </div>
@@ -575,21 +566,22 @@ const BlockLibrary: React.FC<{
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   const categories = useMemo(() => {
-    const categorySet = new Set(blockTypes.map(block => block.category))
+    const categorySet = new Set(blockTypes.map((block) => block.category))
     return [
       { id: 'all', name: 'All Blocks', count: blockTypes.length },
-      ...Array.from(categorySet).map(category => ({
+      ...Array.from(categorySet).map((category) => ({
         id: category,
         name: category.charAt(0).toUpperCase() + category.slice(1),
-        count: blockTypes.filter(block => block.category === category).length,
+        count: blockTypes.filter((block) => block.category === category).length,
       })),
     ]
   }, [blockTypes])
 
   const filteredBlocks = useMemo(() => {
-    return blockTypes.filter(block => {
-      const matchesSearch = block.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           block.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return blockTypes.filter((block) => {
+      const matchesSearch =
+        block.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        block.description.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === 'all' || block.category === selectedCategory
       return matchesSearch && matchesCategory
     })
@@ -603,50 +595,60 @@ const BlockLibrary: React.FC<{
           animate={{ width: 320, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex h-full flex-col border-r bg-white"
+          className='flex h-full flex-col border-r bg-white'
         >
-          <div className="flex items-center justify-between border-b p-4">
-            <h3 className="font-semibold">Block Library</h3>
-            <Button size="sm" variant="ghost" onClick={onToggle}>
-              <ChevronLeft className="h-4 w-4" />
+          <div className='flex items-center justify-between border-b p-4'>
+            <h3 className='font-semibold'>Block Library</h3>
+            <Button size='sm' variant='ghost' onClick={onToggle}>
+              <ChevronLeft className='h-4 w-4' />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-hidden">
-            <div className="space-y-4 p-4">
+          <div className='flex-1 overflow-hidden'>
+            <div className='space-y-4 p-4'>
               {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className='relative'>
+                <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
                 <Input
-                  placeholder="Search blocks..."
+                  placeholder='Search blocks...'
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className='pl-10'
                 />
               </div>
 
               {/* Categories */}
               <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                  <TabsTrigger value="trigger" className="text-xs">Triggers</TabsTrigger>
-                  <TabsTrigger value="action" className="text-xs">Actions</TabsTrigger>
+                <TabsList className='grid w-full grid-cols-3'>
+                  <TabsTrigger value='all' className='text-xs'>
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger value='trigger' className='text-xs'>
+                    Triggers
+                  </TabsTrigger>
+                  <TabsTrigger value='action' className='text-xs'>
+                    Actions
+                  </TabsTrigger>
                 </TabsList>
-                <TabsList className="mt-2 grid w-full grid-cols-2">
-                  <TabsTrigger value="logic" className="text-xs">Logic</TabsTrigger>
-                  <TabsTrigger value="data" className="text-xs">Data</TabsTrigger>
+                <TabsList className='mt-2 grid w-full grid-cols-2'>
+                  <TabsTrigger value='logic' className='text-xs'>
+                    Logic
+                  </TabsTrigger>
+                  <TabsTrigger value='data' className='text-xs'>
+                    Data
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
             {/* Block List */}
-            <ScrollArea className="h-full">
-              <div className="space-y-2 p-4">
+            <ScrollArea className='h-full'>
+              <div className='space-y-2 p-4'>
                 {filteredBlocks.map((blockType) => (
                   <DraggableBlockType key={blockType.id} blockType={blockType} />
                 ))}
                 {filteredBlocks.length === 0 && (
-                  <div className="py-8 text-center text-muted-foreground">
+                  <div className='py-8 text-center text-muted-foreground'>
                     No blocks found matching your criteria
                   </div>
                 )}
@@ -669,22 +671,28 @@ const PropertiesPanel: React.FC<{
   onToggle: () => void
   onBlockUpdate: (blockId: string, updates: Partial<WorkflowBlock>) => void
 }> = ({ selectedBlock, blockType, isOpen, onToggle, onBlockUpdate }) => {
-  const handleSettingChange = useCallback((settingId: string, value: any) => {
-    if (selectedBlock) {
-      onBlockUpdate(selectedBlock.id, {
-        settings: {
-          ...selectedBlock.settings,
-          [settingId]: value,
-        },
-      })
-    }
-  }, [selectedBlock, onBlockUpdate])
+  const handleSettingChange = useCallback(
+    (settingId: string, value: any) => {
+      if (selectedBlock) {
+        onBlockUpdate(selectedBlock.id, {
+          settings: {
+            ...selectedBlock.settings,
+            [settingId]: value,
+          },
+        })
+      }
+    },
+    [selectedBlock, onBlockUpdate]
+  )
 
-  const handleNameChange = useCallback((name: string) => {
-    if (selectedBlock) {
-      onBlockUpdate(selectedBlock.id, { name })
-    }
-  }, [selectedBlock, onBlockUpdate])
+  const handleNameChange = useCallback(
+    (name: string) => {
+      if (selectedBlock) {
+        onBlockUpdate(selectedBlock.id, { name })
+      }
+    },
+    [selectedBlock, onBlockUpdate]
+  )
 
   return (
     <AnimatePresence>
@@ -694,38 +702,38 @@ const PropertiesPanel: React.FC<{
           animate={{ width: 320, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex h-full flex-col border-l bg-white"
+          className='flex h-full flex-col border-l bg-white'
         >
-          <div className="flex items-center justify-between border-b p-4">
-            <h3 className="font-semibold">Properties</h3>
-            <Button size="sm" variant="ghost" onClick={onToggle}>
-              <ChevronRight className="h-4 w-4" />
+          <div className='flex items-center justify-between border-b p-4'>
+            <h3 className='font-semibold'>Properties</h3>
+            <Button size='sm' variant='ghost' onClick={onToggle}>
+              <ChevronRight className='h-4 w-4' />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className='flex-1 overflow-hidden'>
             {selectedBlock && blockType ? (
-              <ScrollArea className="h-full">
-                <div className="space-y-6 p-4">
+              <ScrollArea className='h-full'>
+                <div className='space-y-6 p-4'>
                   {/* Block Info */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
+                  <div className='space-y-3'>
+                    <div className='flex items-center gap-2'>
                       <div
-                        className="flex h-8 w-8 items-center justify-center rounded"
+                        className='flex h-8 w-8 items-center justify-center rounded'
                         style={{ backgroundColor: `${blockType.color}20`, color: blockType.color }}
                       >
-                        <blockType.icon className="h-4 w-4" />
+                        <blockType.icon className='h-4 w-4' />
                       </div>
                       <div>
-                        <h4 className="font-medium">{blockType.name}</h4>
-                        <p className="text-xs text-muted-foreground">{blockType.description}</p>
+                        <h4 className='font-medium'>{blockType.name}</h4>
+                        <p className='text-muted-foreground text-xs'>{blockType.description}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="block-name">Block Name</Label>
+                    <div className='space-y-2'>
+                      <Label htmlFor='block-name'>Block Name</Label>
                       <Input
-                        id="block-name"
+                        id='block-name'
                         value={selectedBlock.name}
                         onChange={(e) => handleNameChange(e.target.value)}
                       />
@@ -736,10 +744,10 @@ const PropertiesPanel: React.FC<{
 
                   {/* Block Settings */}
                   {blockType.settings.length > 0 && (
-                    <div className="space-y-4">
-                      <h5 className="font-medium">Settings</h5>
+                    <div className='space-y-4'>
+                      <h5 className='font-medium'>Settings</h5>
                       {blockType.settings.map((setting) => (
-                        <div key={setting.id} className="space-y-2">
+                        <div key={setting.id} className='space-y-2'>
                           <Label htmlFor={setting.id}>{setting.name}</Label>
                           {setting.type === 'string' && (
                             <Input
@@ -753,12 +761,12 @@ const PropertiesPanel: React.FC<{
                               id={setting.id}
                               value={selectedBlock.settings[setting.id] || setting.default}
                               onChange={(e) => handleSettingChange(setting.id, e.target.value)}
-                              className="w-full rounded border px-3 py-2"
+                              className='w-full rounded border px-3 py-2'
                             >
-                              <option value="GET">GET</option>
-                              <option value="POST">POST</option>
-                              <option value="PUT">PUT</option>
-                              <option value="DELETE">DELETE</option>
+                              <option value='GET'>GET</option>
+                              <option value='POST'>POST</option>
+                              <option value='PUT'>PUT</option>
+                              <option value='DELETE'>DELETE</option>
                             </select>
                           )}
                         </div>
@@ -769,18 +777,22 @@ const PropertiesPanel: React.FC<{
                   <Separator />
 
                   {/* Block Connections */}
-                  <div className="space-y-4">
-                    <h5 className="font-medium">Connections</h5>
-                    
+                  <div className='space-y-4'>
+                    <h5 className='font-medium'>Connections</h5>
+
                     {blockType.inputs.length > 0 && (
                       <div>
-                        <h6 className="mb-2 text-sm font-medium text-muted-foreground">Inputs</h6>
-                        <div className="space-y-1">
+                        <h6 className='mb-2 font-medium text-muted-foreground text-sm'>Inputs</h6>
+                        <div className='space-y-1'>
                           {blockType.inputs.map((input) => (
-                            <div key={input.id} className="flex items-center gap-2 text-sm">
-                              <div className="h-2 w-2 rounded-full border bg-white"></div>
+                            <div key={input.id} className='flex items-center gap-2 text-sm'>
+                              <div className='h-2 w-2 rounded-full border bg-white' />
                               <span>{input.name}</span>
-                              {input.required && <Badge variant="secondary" className="text-xs">Required</Badge>}
+                              {input.required && (
+                                <Badge variant='secondary' className='text-xs'>
+                                  Required
+                                </Badge>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -789,14 +801,14 @@ const PropertiesPanel: React.FC<{
 
                     {blockType.outputs.length > 0 && (
                       <div>
-                        <h6 className="mb-2 text-sm font-medium text-muted-foreground">Outputs</h6>
-                        <div className="space-y-1">
+                        <h6 className='mb-2 font-medium text-muted-foreground text-sm'>Outputs</h6>
+                        <div className='space-y-1'>
                           {blockType.outputs.map((output) => (
-                            <div key={output.id} className="flex items-center gap-2 text-sm">
+                            <div key={output.id} className='flex items-center gap-2 text-sm'>
                               <div
-                                className="h-2 w-2 rounded-full"
+                                className='h-2 w-2 rounded-full'
                                 style={{ backgroundColor: blockType.color }}
-                              ></div>
+                              />
                               <span>{output.name}</span>
                             </div>
                           ))}
@@ -807,10 +819,10 @@ const PropertiesPanel: React.FC<{
                 </div>
               </ScrollArea>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Layers className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  <p className="text-sm">Select a block to view its properties</p>
+              <div className='flex h-full items-center justify-center text-muted-foreground'>
+                <div className='text-center'>
+                  <Layers className='mx-auto mb-2 h-8 w-8 opacity-50' />
+                  <p className='text-sm'>Select a block to view its properties</p>
                 </div>
               </div>
             )}
@@ -854,80 +866,93 @@ export const DragDropTemplateBuilder: React.FC<DragDropTemplateBuilderProps> = (
   }, [])
 
   // Add block to workflow
-  const handleBlockAdd = useCallback((blockType: BlockType, position: { x: number; y: number }) => {
-    if (readOnly) return
+  const handleBlockAdd = useCallback(
+    (blockType: BlockType, position: { x: number; y: number }) => {
+      if (readOnly) return
 
-    const newBlock: WorkflowBlock = {
-      id: generateBlockId(),
-      type: blockType.id,
-      name: blockType.name,
-      position,
-      settings: blockType.settings.reduce((acc, setting) => {
-        acc[setting.id] = setting.default
-        return acc
-      }, {} as Record<string, any>),
-      connections: [],
-    }
+      const newBlock: WorkflowBlock = {
+        id: generateBlockId(),
+        type: blockType.id,
+        name: blockType.name,
+        position,
+        settings: blockType.settings.reduce(
+          (acc, setting) => {
+            acc[setting.id] = setting.default
+            return acc
+          },
+          {} as Record<string, any>
+        ),
+        connections: [],
+      }
 
-    setBlocks(prev => {
-      const updated = [...prev, newBlock]
-      onChange?.(updated)
-      return updated
-    })
-  }, [readOnly, generateBlockId, onChange])
+      setBlocks((prev) => {
+        const updated = [...prev, newBlock]
+        onChange?.(updated)
+        return updated
+      })
+    },
+    [readOnly, generateBlockId, onChange]
+  )
 
   // Move block
-  const handleBlockMove = useCallback((blockId: string, position: { x: number; y: number }) => {
-    if (readOnly) return
+  const handleBlockMove = useCallback(
+    (blockId: string, position: { x: number; y: number }) => {
+      if (readOnly) return
 
-    setBlocks(prev => {
-      const updated = prev.map(block =>
-        block.id === blockId ? { ...block, position } : block
-      )
-      onChange?.(updated)
-      return updated
-    })
-  }, [readOnly, onChange])
+      setBlocks((prev) => {
+        const updated = prev.map((block) => (block.id === blockId ? { ...block, position } : block))
+        onChange?.(updated)
+        return updated
+      })
+    },
+    [readOnly, onChange]
+  )
 
   // Select block
   const handleBlockSelect = useCallback((blockId: string) => {
-    setViewport(prev => ({
+    setViewport((prev) => ({
       ...prev,
       selectedBlocks: [blockId],
     }))
   }, [])
 
   // Delete block
-  const handleBlockDelete = useCallback((blockId: string) => {
-    if (readOnly) return
+  const handleBlockDelete = useCallback(
+    (blockId: string) => {
+      if (readOnly) return
 
-    setBlocks(prev => {
-      const updated = prev.filter(block => block.id !== blockId)
-      onChange?.(updated)
-      return updated
-    })
-    setViewport(prev => ({
-      ...prev,
-      selectedBlocks: prev.selectedBlocks.filter(id => id !== blockId),
-    }))
-  }, [readOnly, onChange])
+      setBlocks((prev) => {
+        const updated = prev.filter((block) => block.id !== blockId)
+        onChange?.(updated)
+        return updated
+      })
+      setViewport((prev) => ({
+        ...prev,
+        selectedBlocks: prev.selectedBlocks.filter((id) => id !== blockId),
+      }))
+    },
+    [readOnly, onChange]
+  )
 
   // Update block
-  const handleBlockUpdate = useCallback((blockId: string, updates: Partial<WorkflowBlock>) => {
-    if (readOnly) return
+  const handleBlockUpdate = useCallback(
+    (blockId: string, updates: Partial<WorkflowBlock>) => {
+      if (readOnly) return
 
-    setBlocks(prev => {
-      const updated = prev.map(block =>
-        block.id === blockId ? { ...block, ...updates } : block
-      )
-      onChange?.(updated)
-      return updated
-    })
-  }, [readOnly, onChange])
+      setBlocks((prev) => {
+        const updated = prev.map((block) =>
+          block.id === blockId ? { ...block, ...updates } : block
+        )
+        onChange?.(updated)
+        return updated
+      })
+    },
+    [readOnly, onChange]
+  )
 
   // Toggle sidebar
   const toggleSidebar = useCallback((sidebar: 'library' | 'properties') => {
-    setSidebarStates(prev => ({
+    setSidebarStates((prev) => ({
       ...prev,
       [sidebar]: !prev[sidebar],
     }))
@@ -935,50 +960,50 @@ export const DragDropTemplateBuilder: React.FC<DragDropTemplateBuilderProps> = (
 
   // Update viewport
   const handleViewportChange = useCallback((updates: Partial<ViewportState>) => {
-    setViewport(prev => ({ ...prev, ...updates }))
+    setViewport((prev) => ({ ...prev, ...updates }))
   }, [])
 
   // Get selected block and block type
   const selectedBlock = useMemo(() => {
-    return blocks.find(block => viewport.selectedBlocks.includes(block.id))
+    return blocks.find((block) => viewport.selectedBlocks.includes(block.id))
   }, [blocks, viewport.selectedBlocks])
 
   const selectedBlockType = useMemo(() => {
-    return selectedBlock ? blockTypes.find(type => type.id === selectedBlock.type) : undefined
+    return selectedBlock ? blockTypes.find((type) => type.id === selectedBlock.type) : undefined
   }, [selectedBlock, blockTypes])
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={cn('flex h-full flex-col', className)}>
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b bg-white p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+        <div className='flex items-center justify-between border-b bg-white p-4'>
+          <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-2'>
               <Button
-                size="sm"
-                variant="outline"
+                size='sm'
+                variant='outline'
                 onClick={() => toggleSidebar('library')}
                 className={sidebarStates.library ? 'bg-muted' : ''}
               >
-                <Layers className="mr-2 h-4 w-4" />
+                <Layers className='mr-2 h-4 w-4' />
                 Blocks
               </Button>
-              <Button size="sm" variant="outline" disabled>
-                <Undo className="mr-2 h-4 w-4" />
+              <Button size='sm' variant='outline' disabled>
+                <Undo className='mr-2 h-4 w-4' />
                 Undo
               </Button>
-              <Button size="sm" variant="outline" disabled>
-                <Redo className="mr-2 h-4 w-4" />
+              <Button size='sm' variant='outline' disabled>
+                <Redo className='mr-2 h-4 w-4' />
                 Redo
               </Button>
             </div>
-            
+
             {templateMetadata && (
-              <div className="flex items-center gap-2">
-                <Separator orientation="vertical" className="h-6" />
-                <div className="text-sm">
-                  <span className="font-medium">{templateMetadata.name}</span>
-                  <Badge variant="outline" className="ml-2">
+              <div className='flex items-center gap-2'>
+                <Separator orientation='vertical' className='h-6' />
+                <div className='text-sm'>
+                  <span className='font-medium'>{templateMetadata.name}</span>
+                  <Badge variant='outline' className='ml-2'>
                     {templateMetadata.difficulty}
                   </Badge>
                 </div>
@@ -986,33 +1011,33 @@ export const DragDropTemplateBuilder: React.FC<DragDropTemplateBuilderProps> = (
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {onTest && (
-              <Button size="sm" variant="outline" onClick={() => onTest(blocks)}>
-                <Play className="mr-2 h-4 w-4" />
+              <Button size='sm' variant='outline' onClick={() => onTest(blocks)}>
+                <Play className='mr-2 h-4 w-4' />
                 Test
               </Button>
             )}
             {onSave && (
-              <Button size="sm" onClick={() => onSave(blocks)}>
-                <Save className="mr-2 h-4 w-4" />
+              <Button size='sm' onClick={() => onSave(blocks)}>
+                <Save className='mr-2 h-4 w-4' />
                 Save
               </Button>
             )}
             <Button
-              size="sm"
-              variant="outline"
+              size='sm'
+              variant='outline'
               onClick={() => toggleSidebar('properties')}
               className={sidebarStates.properties ? 'bg-muted' : ''}
             >
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className='mr-2 h-4 w-4' />
               Properties
             </Button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className='flex flex-1 overflow-hidden'>
           {/* Block Library Sidebar */}
           <BlockLibrary
             blockTypes={blockTypes}
@@ -1021,7 +1046,7 @@ export const DragDropTemplateBuilder: React.FC<DragDropTemplateBuilderProps> = (
           />
 
           {/* Canvas Area */}
-          <div className="flex-1">
+          <div className='flex-1'>
             <BuilderCanvas
               blocks={blocks}
               blockTypes={blockTypes}
@@ -1045,14 +1070,14 @@ export const DragDropTemplateBuilder: React.FC<DragDropTemplateBuilderProps> = (
         </div>
 
         {/* Status Bar */}
-        <div className="flex items-center justify-between border-t bg-gray-50 px-4 py-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
+        <div className='flex items-center justify-between border-t bg-gray-50 px-4 py-2 text-muted-foreground text-sm'>
+          <div className='flex items-center gap-4'>
             <span>Blocks: {blocks.length}</span>
             <span>Zoom: {Math.round(viewport.zoom * 100)}%</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {readOnly && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant='outline' className='text-xs'>
                 Read Only
               </Badge>
             )}

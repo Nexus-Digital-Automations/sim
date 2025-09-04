@@ -19,18 +19,11 @@
  * @version 1.0.0
  */
 
-import { cosineDistance, desc, eq, gte, sql } from 'drizzle-orm'
+import { desc, eq, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { 
-  templates, 
-  templateEmbeddings,
-  templateRatings,
-  templateUsageAnalytics,
-  templateTagAssociations,
-  templateTags
-} from '@/db/schema'
-import type { Template, TemplateSearchQuery, TemplateSearchResults } from '../types'
+import { templateEmbeddings, templates, templateTagAssociations, templateTags } from '@/db/schema'
+import type { Template } from '../types'
 
 // Initialize structured logger with semantic search context
 const logger = createLogger('SemanticSearchService')
@@ -55,15 +48,15 @@ export interface SemanticSearchConfig {
   contentWeight: number // 0-1
   usageWeight: number // 0-1
   metadataWeight: number // 0-1
-  
+
   // Search thresholds
   minSimilarityScore: number
   maxResults: number
-  
+
   // Embedding model configuration
   embeddingModel: string
   embeddingDimensions: number
-  
+
   // Clustering parameters
   enableClustering: boolean
   clusterThreshold: number
@@ -81,7 +74,7 @@ const DEFAULT_SEMANTIC_CONFIG: SemanticSearchConfig = {
   embeddingModel: 'text-embedding-ada-002', // OpenAI embeddings model
   embeddingDimensions: 256, // Content embedding dimensions
   enableClustering: true,
-  clusterThreshold: 0.7
+  clusterThreshold: 0.7,
 }
 
 /**
@@ -151,20 +144,16 @@ export class SemanticSearchService {
     try {
       // Step 1: Generate query embedding
       const queryEmbedding = await this.generateQueryEmbedding(query)
-      
+
       // Step 2: Perform vector similarity search
       const candidates = await this.performVectorSearch(queryEmbedding, options, limit * 2)
-      
+
       // Step 3: Calculate multi-dimensional similarity scores
-      const scoredResults = await this.calculateSimilarityScores(
-        query,
-        queryEmbedding,
-        candidates
-      )
-      
+      const scoredResults = await this.calculateSimilarityScores(query, queryEmbedding, candidates)
+
       // Step 4: Apply semantic filtering and ranking
       const rankedResults = await this.rankSemanticResults(scoredResults, options)
-      
+
       // Step 5: Enrich with contextual metadata
       const enrichedResults = await this.enrichSemanticResults(rankedResults, options)
 
@@ -172,7 +161,8 @@ export class SemanticSearchService {
       logger.info(`[${this.requestId}] Semantic search completed`, {
         operationId,
         resultCount: enrichedResults.length,
-        avgSimilarity: enrichedResults.reduce((sum, r) => sum + r.combinedScore, 0) / enrichedResults.length,
+        avgSimilarity:
+          enrichedResults.reduce((sum, r) => sum + r.combinedScore, 0) / enrichedResults.length,
         processingTime,
       })
 
@@ -248,12 +238,19 @@ export class SemanticSearchService {
           createdAt: templates.createdAt,
           updatedAt: templates.updatedAt,
           // Calculate similarity scores
-          contentSimilarity: sql<number>`1 - (${templateEmbeddings.contentEmbedding} <=> ${baseEmbedding[0].contentEmbedding})`.as('content_similarity'),
-          usageSimilarity: baseEmbedding[0].usageEmbedding 
-            ? sql<number>`1 - (${templateEmbeddings.usageEmbedding} <=> ${baseEmbedding[0].usageEmbedding})`.as('usage_similarity')
+          contentSimilarity:
+            sql<number>`1 - (${templateEmbeddings.contentEmbedding} <=> ${baseEmbedding[0].contentEmbedding})`.as(
+              'content_similarity'
+            ),
+          usageSimilarity: baseEmbedding[0].usageEmbedding
+            ? sql<number>`1 - (${templateEmbeddings.usageEmbedding} <=> ${baseEmbedding[0].usageEmbedding})`.as(
+                'usage_similarity'
+              )
             : sql<number>`0`.as('usage_similarity'),
           metadataSimilarity: baseEmbedding[0].metadataEmbedding
-            ? sql<number>`1 - (${templateEmbeddings.metadataEmbedding} <=> ${baseEmbedding[0].metadataEmbedding})`.as('metadata_similarity')
+            ? sql<number>`1 - (${templateEmbeddings.metadataEmbedding} <=> ${baseEmbedding[0].metadataEmbedding})`.as(
+                'metadata_similarity'
+              )
             : sql<number>`0`.as('metadata_similarity'),
         })
         .from(templates)
@@ -276,7 +273,7 @@ export class SemanticSearchService {
       const minSimilarity = options.minSimilarity || this.config.minSimilarityScore
       const semanticResults: SemanticSearchResult[] = results
         .map((result) => {
-          const combinedScore = 
+          const combinedScore =
             this.config.contentWeight * (result.contentSimilarity || 0) +
             this.config.usageWeight * (result.usageSimilarity || 0) +
             this.config.metadataWeight * (result.metadataSimilarity || 0)
@@ -301,7 +298,8 @@ export class SemanticSearchService {
       logger.info(`[${this.requestId}] Similar templates found`, {
         operationId,
         similarTemplateCount: semanticResults.length,
-        avgSimilarity: semanticResults.reduce((sum, r) => sum + r.combinedScore, 0) / semanticResults.length,
+        avgSimilarity:
+          semanticResults.reduce((sum, r) => sum + r.combinedScore, 0) / semanticResults.length,
         processingTime,
       })
 
@@ -324,17 +322,21 @@ export class SemanticSearchService {
    * @param options - Clustering options and filters
    * @returns Promise<{clusterId: number, templates: Template[], centroid: number[]}[]>
    */
-  async getSemanticClusters(options: {
-    minClusterSize?: number
-    maxClusters?: number
-    clusterType?: 'content' | 'usage' | 'metadata'
-  } = {}): Promise<Array<{
-    clusterId: number
-    templates: Template[]
-    clusterSize: number
-    representativeTemplate: Template
-    avgRating: number
-  }>> {
+  async getSemanticClusters(
+    options: {
+      minClusterSize?: number
+      maxClusters?: number
+      clusterType?: 'content' | 'usage' | 'metadata'
+    } = {}
+  ): Promise<
+    Array<{
+      clusterId: number
+      templates: Template[]
+      clusterSize: number
+      representativeTemplate: Template
+      avgRating: number
+    }>
+  > {
     const operationId = `semantic_clusters_${Date.now()}`
     const clusterType = options.clusterType || 'content'
 
@@ -345,11 +347,12 @@ export class SemanticSearchService {
     })
 
     try {
-      const clusterField = clusterType === 'content' 
-        ? templateEmbeddings.contentCluster
-        : clusterType === 'usage' 
-        ? templateEmbeddings.usageCluster
-        : templateEmbeddings.metadataCluster
+      const clusterField =
+        clusterType === 'content'
+          ? templateEmbeddings.contentCluster
+          : clusterType === 'usage'
+            ? templateEmbeddings.usageCluster
+            : templateEmbeddings.metadataCluster
 
       const clusters = await db
         .select({
@@ -373,7 +376,7 @@ export class SemanticSearchService {
       const clusterMap = new Map<number, Template[]>()
       clusters.forEach((template) => {
         if (!template.clusterId) return
-        
+
         if (!clusterMap.has(template.clusterId)) {
           clusterMap.set(template.clusterId, [])
         }
@@ -383,7 +386,7 @@ export class SemanticSearchService {
       // Filter and format clusters
       const minSize = options.minClusterSize || 3
       const maxClusters = options.maxClusters || 20
-      
+
       const formattedClusters = Array.from(clusterMap.entries())
         .filter(([, templates]) => templates.length >= minSize)
         .slice(0, maxClusters)
@@ -392,7 +395,8 @@ export class SemanticSearchService {
           templates,
           clusterSize: templates.length,
           representativeTemplate: templates[0], // Highest rated template in cluster
-          avgRating: templates.reduce((sum, t) => sum + (t.ratingAverage || 0), 0) / templates.length,
+          avgRating:
+            templates.reduce((sum, t) => sum + (t.ratingAverage || 0), 0) / templates.length,
         }))
         .sort((a, b) => b.avgRating - a.avgRating)
 
@@ -461,7 +465,9 @@ export class SemanticSearchService {
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
         // Calculate similarity distance
-        distance: sql<number>`${templateEmbeddings.contentEmbedding} <=> ${embeddingVector}`.as('distance'),
+        distance: sql<number>`${templateEmbeddings.contentEmbedding} <=> ${embeddingVector}`.as(
+          'distance'
+        ),
       })
       .from(templates)
       .leftJoin(templateEmbeddings, eq(templates.id, templateEmbeddings.templateId))
@@ -479,9 +485,7 @@ export class SemanticSearchService {
         .where(sql`${templateTags.name} = ANY(${options.tags})`)
     }
 
-    const results = await query
-      .orderBy(sql`distance`)
-      .limit(limit)
+    const results = await query.orderBy(sql`distance`).limit(limit)
 
     return results
   }
@@ -498,13 +502,13 @@ export class SemanticSearchService {
     const scoredResults = candidates.map((candidate) => {
       // Convert distance to similarity (1 - distance)
       const contentSimilarity = Math.max(0, 1 - (candidate.distance || 1))
-      
+
       // Mock usage and metadata similarities - in production, these would be calculated
       // using the respective embedding types
       const usageSimilarity = contentSimilarity * (0.8 + Math.random() * 0.2)
       const metadataSimilarity = contentSimilarity * (0.7 + Math.random() * 0.3)
 
-      const combinedScore = 
+      const combinedScore =
         this.config.contentWeight * contentSimilarity +
         this.config.usageWeight * usageSimilarity +
         this.config.metadataWeight * metadataSimilarity
@@ -535,7 +539,7 @@ export class SemanticSearchService {
   ): Promise<SemanticSearchResult[]> {
     // Apply minimum similarity threshold
     const minSimilarity = options.minSimilarity || this.config.minSimilarityScore
-    const filteredResults = results.filter(r => r.combinedScore >= minSimilarity)
+    const filteredResults = results.filter((r) => r.combinedScore >= minSimilarity)
 
     // Sort by combined score with quality boosts
     const rankedResults = filteredResults.sort((a, b) => {

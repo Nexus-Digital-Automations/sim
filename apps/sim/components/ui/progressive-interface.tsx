@@ -14,7 +14,7 @@
  * @author Claude Development System
  */
 
-import * as React from 'react'
+import type * as React from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,

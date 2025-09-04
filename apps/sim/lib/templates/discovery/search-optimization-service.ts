@@ -20,20 +20,11 @@
  * @version 1.0.0
  */
 
-import { and, avg, count, desc, eq, gte, ilike, or, sql } from 'drizzle-orm'
+import { desc, ilike, or } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { 
-  templates, 
-  templateEmbeddings,
-  templateUsageAnalytics,
-  templateRatings,
-  templateTags,
-  templateTagAssociations,
-  templateCategories,
-  marketplaceAnalyticsEvents
-} from '@/db/schema'
-import type { TemplateSearchQuery, TemplateSearchResults, Template } from '../types'
+import { templates } from '@/db/schema'
+import type { Template, TemplateSearchQuery, TemplateSearchResults } from '../types'
 import { semanticSearchService } from './semantic-search-service'
 
 // Initialize structured logger
@@ -66,23 +57,23 @@ export interface SearchPerformanceMetrics {
   queryId: string
   query: string
   timestamp: Date
-  
+
   // Performance metrics
   searchTime: number
   resultCount: number
   clickThroughRate: number
   conversionRate: number
-  
+
   // Relevance metrics
   averageRelevanceScore: number
   topResultRelevance: number
   userSatisfactionScore?: number
-  
+
   // User behavior
   clickPosition: number[] // Positions of clicked results
   dwellTime: number[] // Time spent on clicked results
   bounceRate: number
-  
+
   // Context
   userId?: string
   sessionId: string
@@ -130,18 +121,18 @@ export interface SearchOptimizationConfig {
   freshnessWeight: number
   personalizedWeight: number
   diversityWeight: number
-  
+
   // Performance settings
   enableQueryExpansion: boolean
   enableSpellChecking: boolean
   enablePersonalization: boolean
   enableCaching: boolean
   cacheExpiryMinutes: number
-  
+
   // A/B testing
   enableABTesting: boolean
   testVariants: string[]
-  
+
   // Machine learning
   enableMLRanking: boolean
   retrainThreshold: number
@@ -167,31 +158,31 @@ export class SearchOptimizationService {
   constructor(requestId?: string, config?: Partial<SearchOptimizationConfig>) {
     this.requestId = requestId || crypto.randomUUID().slice(0, 8)
     this.startTime = Date.now()
-    
+
     // Default configuration optimized for template search
     this.config = {
       textRelevanceWeight: 0.25,
-      semanticSimilarityWeight: 0.20,
+      semanticSimilarityWeight: 0.2,
       popularityWeight: 0.15,
       qualityWeight: 0.15,
-      freshnessWeight: 0.10,
-      personalizedWeight: 0.10,
+      freshnessWeight: 0.1,
+      personalizedWeight: 0.1,
       diversityWeight: 0.05,
-      
+
       enableQueryExpansion: true,
       enableSpellChecking: true,
       enablePersonalization: true,
       enableCaching: true,
       cacheExpiryMinutes: 30,
-      
+
       enableABTesting: true,
       testVariants: ['default', 'semantic_boost', 'quality_first'],
-      
+
       enableMLRanking: true,
       retrainThreshold: 1000, // Retrain after 1000 search interactions
       feedbackLearningRate: 0.01,
-      
-      ...config
+
+      ...config,
     }
 
     logger.info(`[${this.requestId}] SearchOptimizationService initialized`, {
@@ -226,16 +217,18 @@ export class SearchOptimizationService {
       enableExplanations?: boolean
       performanceTracking?: boolean
     } = {}
-  ): Promise<TemplateSearchResults & {
-    optimizationMetrics?: {
-      queryAnalysis: QueryAnalysis
-      searchTime: number
-      optimizationTime: number
-      cacheHit: boolean
-      abTestVariant?: string
+  ): Promise<
+    TemplateSearchResults & {
+      optimizationMetrics?: {
+        queryAnalysis: QueryAnalysis
+        searchTime: number
+        optimizationTime: number
+        cacheHit: boolean
+        abTestVariant?: string
+      }
+      rankedResults?: OptimizedSearchResult[]
     }
-    rankedResults?: OptimizedSearchResult[]
-  }> {
+  > {
     const operationId = `optimized_search_${Date.now()}`
     const searchStartTime = Date.now()
 
@@ -250,7 +243,7 @@ export class SearchOptimizationService {
       // Step 1: Query Analysis and Understanding
       const queryAnalysis = await this.analyzeQuery(query.search || '', {
         userId: options.userId,
-        context: query.filters
+        context: query.filters,
       })
 
       // Step 2: Query Expansion and Optimization
@@ -290,7 +283,9 @@ export class SearchOptimizationService {
           resultCount: optimizedResults.length,
           clickThroughRate: 0, // Will be updated with user feedback
           conversionRate: 0, // Will be updated with user feedback
-          averageRelevanceScore: optimizedResults.reduce((sum, r) => sum + r.relevanceScore, 0) / optimizedResults.length,
+          averageRelevanceScore:
+            optimizedResults.reduce((sum, r) => sum + r.relevanceScore, 0) /
+            optimizedResults.length,
           topResultRelevance: optimizedResults[0]?.relevanceScore || 0,
           clickPosition: [],
           dwellTime: [],
@@ -300,16 +295,16 @@ export class SearchOptimizationService {
           userContext: {
             previousQueries: [],
             viewedTemplates: [],
-            preferredCategories: []
-          }
+            preferredCategories: [],
+          },
         })
       }
 
       // Prepare response
-      const baseResults = optimizedResults.map(result => ({
+      const baseResults = optimizedResults.map((result) => ({
         ...result,
         // Convert OptimizedSearchResult back to Template for compatibility
-        metadata: result.state?.metadata
+        metadata: result.state?.metadata,
       })) as Template[]
 
       const response: TemplateSearchResults & {
@@ -329,7 +324,7 @@ export class SearchOptimizationService {
           requestId: this.requestId,
           processingTime: Date.now() - this.startTime,
           searchQuery: query,
-        }
+        },
       }
 
       // Add optimization metrics if requested
@@ -339,7 +334,7 @@ export class SearchOptimizationService {
           searchTime: Date.now() - searchStartTime,
           optimizationTime: Date.now() - this.startTime,
           cacheHit: false,
-          abTestVariant: options.abTestVariant
+          abTestVariant: options.abTestVariant,
         }
         response.rankedResults = optimizedResults
       }
@@ -349,7 +344,8 @@ export class SearchOptimizationService {
         operationId,
         resultCount: optimizedResults.length,
         queryIntent: queryAnalysis.intent,
-        avgRelevanceScore: optimizedResults.reduce((sum, r) => sum + r.relevanceScore, 0) / optimizedResults.length,
+        avgRelevanceScore:
+          optimizedResults.reduce((sum, r) => sum + r.relevanceScore, 0) / optimizedResults.length,
         processingTime,
       })
 
@@ -395,10 +391,10 @@ export class SearchOptimizationService {
     try {
       // Store feedback for machine learning
       await this.storeFeedbackForML(feedback)
-      
+
       // Update search performance metrics
       await this.updateSearchMetrics(feedback)
-      
+
       // Trigger model retraining if threshold reached
       if (await this.shouldRetrain()) {
         await this.triggerModelRetraining()
@@ -424,12 +420,14 @@ export class SearchOptimizationService {
    * @param options - Analytics options
    * @returns Promise<SearchOptimizationAnalytics>
    */
-  async getSearchAnalytics(options: {
-    timeWindow?: number // days
-    includePerformanceTrends?: boolean
-    includeQueryAnalysis?: boolean
-    includeABTestResults?: boolean
-  } = {}): Promise<{
+  async getSearchAnalytics(
+    options: {
+      timeWindow?: number // days
+      includePerformanceTrends?: boolean
+      includeQueryAnalysis?: boolean
+      includeABTestResults?: boolean
+    } = {}
+  ): Promise<{
     overview: {
       totalSearches: number
       averageSearchTime: number
@@ -474,35 +472,47 @@ export class SearchOptimizationService {
           averageSearchTime: 245, // milliseconds
           averageCTR: 0.34,
           averageConversionRate: 0.12,
-          averageSatisfaction: 4.2
+          averageSatisfaction: 4.2,
         },
         topQueries: [
           { query: 'email automation', frequency: 1250, ctr: 0.42, satisfaction: 4.5 },
           { query: 'data processing', frequency: 980, ctr: 0.38, satisfaction: 4.1 },
-          { query: 'api integration', frequency: 875, ctr: 0.35, satisfaction: 4.3 }
+          { query: 'api integration', frequency: 875, ctr: 0.35, satisfaction: 4.3 },
         ],
         optimizationSuggestions: [
           'Increase semantic similarity weight for better content matching',
           'Add more synonyms for technical terms to improve query expansion',
           'Implement better spell checking for domain-specific terminology',
-          'Consider boosting newer templates to improve discovery of fresh content'
-        ]
+          'Consider boosting newer templates to improve discovery of fresh content',
+        ],
       }
 
       if (options.includePerformanceTrends) {
-        analytics['performanceTrends'] = Array.from({ length: 30 }, (_, i) => ({
+        analytics.performanceTrends = Array.from({ length: 30 }, (_, i) => ({
           date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           searches: Math.floor(Math.random() * 200) + 400,
           avgTime: Math.floor(Math.random() * 100) + 200,
-          ctr: 0.3 + Math.random() * 0.2
+          ctr: 0.3 + Math.random() * 0.2,
         }))
       }
 
       if (options.includeABTestResults) {
-        analytics['abTestResults'] = [
+        analytics.abTestResults = [
           { variant: 'default', searches: 5140, ctr: 0.32, conversion: 0.11, significance: 0.95 },
-          { variant: 'semantic_boost', searches: 5140, ctr: 0.36, conversion: 0.13, significance: 0.98 },
-          { variant: 'quality_first', searches: 5140, ctr: 0.34, conversion: 0.12, significance: 0.85 }
+          {
+            variant: 'semantic_boost',
+            searches: 5140,
+            ctr: 0.36,
+            conversion: 0.13,
+            significance: 0.98,
+          },
+          {
+            variant: 'quality_first',
+            searches: 5140,
+            ctr: 0.34,
+            conversion: 0.12,
+            significance: 0.85,
+          },
         ]
       }
 
@@ -536,7 +546,7 @@ export class SearchOptimizationService {
   ): Promise<QueryAnalysis> {
     // Implement advanced query analysis
     const normalizedQuery = query.toLowerCase().trim()
-    
+
     // Intent detection based on query patterns
     let intent: QueryAnalysis['intent'] = 'find_specific'
     let confidence = 0.7
@@ -553,23 +563,23 @@ export class SearchOptimizationService {
     }
 
     // Extract terms (simplified implementation)
-    const terms = query.split(' ').filter(t => t.length > 2)
-    
+    const terms = query.split(' ').filter((t) => t.length > 2)
+
     return {
       originalQuery: query,
       normalizedQuery,
       intent,
       confidence,
       extractedTerms: {
-        categories: terms.filter(t => ['marketing', 'sales', 'data', 'api'].includes(t)),
-        tags: terms.filter(t => ['automation', 'integration', 'processing'].includes(t)),
-        technicalTerms: terms.filter(t => ['api', 'webhook', 'json', 'csv'].includes(t)),
-        businessTerms: terms.filter(t => ['crm', 'email', 'customer', 'lead'].includes(t)),
-        actionWords: terms.filter(t => ['create', 'send', 'process', 'sync'].includes(t))
+        categories: terms.filter((t) => ['marketing', 'sales', 'data', 'api'].includes(t)),
+        tags: terms.filter((t) => ['automation', 'integration', 'processing'].includes(t)),
+        technicalTerms: terms.filter((t) => ['api', 'webhook', 'json', 'csv'].includes(t)),
+        businessTerms: terms.filter((t) => ['crm', 'email', 'customer', 'lead'].includes(t)),
+        actionWords: terms.filter((t) => ['create', 'send', 'process', 'sync'].includes(t)),
       },
       suggestedExpansions: this.generateQueryExpansions(terms),
       spellingCorrections: [],
-      synonyms: this.findSynonyms(terms)
+      synonyms: this.findSynonyms(terms),
     }
   }
 
@@ -577,7 +587,7 @@ export class SearchOptimizationService {
     const expandedTerms = [
       analysis.normalizedQuery,
       ...analysis.suggestedExpansions,
-      ...analysis.synonyms
+      ...analysis.synonyms,
     ].join(' ')
 
     return {
@@ -585,8 +595,8 @@ export class SearchOptimizationService {
       // Add extracted categories and tags as filters
       filters: {
         categories: analysis.extractedTerms.categories,
-        tags: [...analysis.extractedTerms.tags, ...analysis.extractedTerms.technicalTerms]
-      }
+        tags: [...analysis.extractedTerms.tags, ...analysis.extractedTerms.technicalTerms],
+      },
     }
   }
 
@@ -598,21 +608,21 @@ export class SearchOptimizationService {
     // Combine results from multiple search approaches
     const [textResults, semanticResults] = await Promise.all([
       this.executeTextSearch(query),
-      this.executeSemanticSearch(query, options)
+      this.executeSemanticSearch(query, options),
     ])
 
     // Merge and deduplicate results
     const resultMap = new Map<string, Template>()
-    
-    textResults.forEach(result => resultMap.set(result.id, result))
-    semanticResults.forEach(result => resultMap.set(result.id, result))
+
+    textResults.forEach((result) => resultMap.set(result.id, result))
+    semanticResults.forEach((result) => resultMap.set(result.id, result))
 
     return Array.from(resultMap.values())
   }
 
   private async executeTextSearch(query: TemplateSearchQuery): Promise<Template[]> {
     const searchTerm = `%${query.search}%`
-    
+
     const results = await db
       .select({
         id: templates.id,
@@ -626,31 +636,26 @@ export class SearchOptimizationService {
         updatedAt: templates.updatedAt,
       })
       .from(templates)
-      .where(
-        or(
-          ilike(templates.name, searchTerm),
-          ilike(templates.description, searchTerm)
-        )
-      )
+      .where(or(ilike(templates.name, searchTerm), ilike(templates.description, searchTerm)))
       .orderBy(desc(templates.downloadCount))
       .limit(100)
 
     return results as Template[]
   }
 
-  private async executeSemanticSearch(query: TemplateSearchQuery, options: any): Promise<Template[]> {
+  private async executeSemanticSearch(
+    query: TemplateSearchQuery,
+    options: any
+  ): Promise<Template[]> {
     if (!query.search) return []
 
-    const semanticResults = await semanticSearchService.semanticSearch(
-      query.search,
-      {
-        userId: options.userId,
-        limit: 50,
-        minSimilarity: 0.2
-      }
-    )
+    const semanticResults = await semanticSearchService.semanticSearch(query.search, {
+      userId: options.userId,
+      limit: 50,
+      minSimilarity: 0.2,
+    })
 
-    return semanticResults.map(r => r.template)
+    return semanticResults.map((r) => r.template)
   }
 
   private async calculateAdvancedRelevance(
@@ -664,36 +669,36 @@ export class SearchOptimizationService {
       const popularityScore = this.calculatePopularityScore(template)
       const qualityScore = this.calculateQualityScore(template)
       const freshnessScore = this.calculateFreshnessScore(template)
-      
+
       const rankingFactors: RankingFactor[] = [
         {
           factor: 'Text Relevance',
           weight: this.config.textRelevanceWeight,
           score: textRelevance,
           contribution: textRelevance * this.config.textRelevanceWeight,
-          description: 'How well the template matches the search query'
+          description: 'How well the template matches the search query',
         },
         {
           factor: 'Popularity',
           weight: this.config.popularityWeight,
           score: popularityScore,
           contribution: popularityScore * this.config.popularityWeight,
-          description: 'Template download count and usage statistics'
+          description: 'Template download count and usage statistics',
         },
         {
           factor: 'Quality',
           weight: this.config.qualityWeight,
           score: qualityScore,
           contribution: qualityScore * this.config.qualityWeight,
-          description: 'Template rating and review scores'
+          description: 'Template rating and review scores',
         },
         {
           factor: 'Freshness',
           weight: this.config.freshnessWeight,
           score: freshnessScore,
           contribution: freshnessScore * this.config.freshnessWeight,
-          description: 'How recently the template was created or updated'
-        }
+          description: 'How recently the template was created or updated',
+        },
       ]
 
       const relevanceScore = rankingFactors.reduce((sum, factor) => sum + factor.contribution, 0)
@@ -707,7 +712,9 @@ export class SearchOptimizationService {
         trendingScore: 0,
         diversityPenalty: 0,
         finalScore: relevanceScore,
-        explanations: [`Ranked #${index + 1} based on relevance score: ${relevanceScore.toFixed(3)}`]
+        explanations: [
+          `Ranked #${index + 1} based on relevance score: ${relevanceScore.toFixed(3)}`,
+        ],
       } as OptimizedSearchResult
     })
   }
@@ -722,9 +729,9 @@ export class SearchOptimizationService {
     }
 
     // Apply personalization boosts based on user preferences
-    return results.map(result => {
+    return results.map((result) => {
       let personalizedBoost = 0
-      
+
       // This would typically use user preference data
       // For now, apply simple mock personalization
       if (result.ratingAverage && result.ratingAverage > 4.0) {
@@ -739,8 +746,8 @@ export class SearchOptimizationService {
         finalScore,
         explanations: [
           ...result.explanations,
-          personalizedBoost > 0 ? `Personalization boost: +${personalizedBoost.toFixed(3)}` : ''
-        ].filter(Boolean)
+          personalizedBoost > 0 ? `Personalization boost: +${personalizedBoost.toFixed(3)}` : '',
+        ].filter(Boolean),
       }
     })
   }
@@ -767,7 +774,7 @@ export class SearchOptimizationService {
 
     for (const result of results) {
       let diversityPenalty = 0
-      
+
       if (result.categoryId && usedCategories.has(result.categoryId)) {
         diversityPenalty = this.config.diversityWeight * 0.5
       }
@@ -780,8 +787,8 @@ export class SearchOptimizationService {
         finalScore,
         explanations: [
           ...result.explanations,
-          diversityPenalty > 0 ? `Diversity penalty: -${diversityPenalty.toFixed(3)}` : ''
-        ].filter(Boolean)
+          diversityPenalty > 0 ? `Diversity penalty: -${diversityPenalty.toFixed(3)}` : '',
+        ].filter(Boolean),
       })
 
       if (result.categoryId) {
@@ -799,16 +806,18 @@ export class SearchOptimizationService {
     const description = (template.description || '').toLowerCase()
 
     let score = 0
-    
+
     // Exact matches in name
     if (name.includes(query)) {
       score += 1.0
     }
-    
+
     // Partial matches in name
     const queryWords = query.split(' ')
     const nameWords = name.split(' ')
-    const nameMatches = queryWords.filter(word => nameWords.some(nameWord => nameWord.includes(word)))
+    const nameMatches = queryWords.filter((word) =>
+      nameWords.some((nameWord) => nameWord.includes(word))
+    )
     score += (nameMatches.length / queryWords.length) * 0.8
 
     // Description matches
@@ -822,16 +831,16 @@ export class SearchOptimizationService {
   private calculatePopularityScore(template: Template): number {
     // Normalize download count (assuming max of 10000 downloads)
     const downloadScore = Math.min(1.0, (template.downloadCount || 0) / 10000)
-    
+
     // Normalize view count (assuming max of 100000 views)
     const viewScore = Math.min(1.0, (template.viewCount || 0) / 100000)
 
-    return (downloadScore * 0.6 + viewScore * 0.4)
+    return downloadScore * 0.6 + viewScore * 0.4
   }
 
   private calculateQualityScore(template: Template): number {
     if (!template.ratingAverage) return 0.5
-    
+
     // Convert 5-star rating to 0-1 scale
     return template.ratingAverage / 5.0
   }
@@ -840,7 +849,7 @@ export class SearchOptimizationService {
     const now = Date.now()
     const created = template.createdAt.getTime()
     const daysSinceCreated = (now - created) / (24 * 60 * 60 * 1000)
-    
+
     // Templates are "fresh" for 90 days
     return Math.max(0, Math.min(1.0, (90 - daysSinceCreated) / 90))
   }
@@ -848,8 +857,8 @@ export class SearchOptimizationService {
   private generateQueryExpansions(terms: string[]): string[] {
     // Simple query expansion - in production, this would use a thesaurus or ML model
     const expansions: string[] = []
-    
-    terms.forEach(term => {
+
+    terms.forEach((term) => {
       switch (term) {
         case 'email':
           expansions.push('mail', 'notification', 'message')
@@ -862,20 +871,20 @@ export class SearchOptimizationService {
           break
       }
     })
-    
+
     return expansions
   }
 
   private findSynonyms(terms: string[]): string[] {
     // Simple synonym mapping - in production, use a comprehensive thesaurus
     const synonymMap: Record<string, string[]> = {
-      'automation': ['workflow', 'process', 'system'],
-      'integration': ['connection', 'sync', 'link'],
-      'processing': ['handling', 'manipulation', 'transformation']
+      automation: ['workflow', 'process', 'system'],
+      integration: ['connection', 'sync', 'link'],
+      processing: ['handling', 'manipulation', 'transformation'],
     }
 
     const synonyms: string[] = []
-    terms.forEach(term => {
+    terms.forEach((term) => {
       if (synonymMap[term]) {
         synonyms.push(...synonymMap[term])
       }

@@ -20,23 +20,10 @@
  * @version 2.0.0
  */
 
-import { and, avg, count, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { 
-  templates, 
-  templateEmbeddings,
-  templateUsageAnalytics,
-  templateRatings,
-  templateFavorites,
-  templateCollectionItems,
-  templateCollections,
-  userBehaviorProfile,
-  templateCategories,
-  templateTags,
-  templateTagAssociations,
-  user
-} from '@/db/schema'
+import { templateFavorites, templates, templateTagAssociations, templateTags } from '@/db/schema'
 import type { Template, TemplateRecommendation } from '../types'
 import { semanticSearchService } from './semantic-search-service'
 
@@ -82,17 +69,17 @@ export interface RecommendationConfig {
   semanticWeight: number
   popularityWeight: number
   diversityWeight: number
-  
+
   // Personalization parameters
   personalizedBoost: number
   noveltyBoost: number
   trendingBoost: number
   qualityThreshold: number
-  
+
   // Exploration vs exploitation
   explorationRate: number
   contextualBanditEnabled: boolean
-  
+
   // Business rules
   enforceBusinessRules: boolean
   respectUserLimits: boolean
@@ -148,24 +135,24 @@ export class AdvancedRecommendationEngine {
     this.requestId = requestId || crypto.randomUUID().slice(0, 8)
     this.startTime = Date.now()
     this.contextualBandits = new Map()
-    
+
     // Default configuration optimized for business automation templates
     this.config = {
       collaborativeWeight: 0.25,
       contentBasedWeight: 0.25,
       semanticWeight: 0.25,
       popularityWeight: 0.15,
-      diversityWeight: 0.10,
-      personalizedBoost: 0.20,
+      diversityWeight: 0.1,
+      personalizedBoost: 0.2,
       noveltyBoost: 0.15,
-      trendingBoost: 0.10,
+      trendingBoost: 0.1,
       qualityThreshold: 3.5,
       explorationRate: 0.1,
       contextualBanditEnabled: true,
       enforceBusinessRules: true,
       respectUserLimits: true,
       enableABTesting: true,
-      ...config
+      ...config,
     }
 
     logger.info(`[${this.requestId}] AdvancedRecommendationEngine initialized`, {
@@ -216,34 +203,45 @@ export class AdvancedRecommendationEngine {
     try {
       // Step 1: Build comprehensive user profile
       const userProfile = await this.buildUserRecommendationProfile(userId)
-      
+
       // Step 2: Select optimal algorithm mix using contextual bandits
       const algorithmWeights = this.config.contextualBanditEnabled
         ? await this.selectContextualAlgorithms(userId, businessContext)
         : this.config
 
       // Step 3: Generate recommendations from each algorithm
-      const [
-        collaborativeRecs,
-        contentBasedRecs,
-        semanticRecs,
-        trendingRecs,
-        businessRecs
-      ] = await Promise.all([
-        this.getCollaborativeRecommendations(userId, userProfile, limit * 2),
-        this.getContentBasedRecommendations(userId, userProfile, businessContext, limit * 2),
-        this.getSemanticRecommendations(userId, userProfile, businessContext, limit * 2),
-        this.getTrendingRecommendations(userProfile, businessContext, limit),
-        this.getBusinessContextRecommendations(userId, businessContext, limit)
-      ])
+      const [collaborativeRecs, contentBasedRecs, semanticRecs, trendingRecs, businessRecs] =
+        await Promise.all([
+          this.getCollaborativeRecommendations(userId, userProfile, limit * 2),
+          this.getContentBasedRecommendations(userId, userProfile, businessContext, limit * 2),
+          this.getSemanticRecommendations(userId, userProfile, businessContext, limit * 2),
+          this.getTrendingRecommendations(userProfile, businessContext, limit),
+          this.getBusinessContextRecommendations(userId, businessContext, limit),
+        ])
 
       // Step 4: Apply hybrid fusion with dynamic weighting
       const fusedRecommendations = await this.fuseRecommendations([
-        { recommendations: collaborativeRecs, weight: algorithmWeights.collaborativeWeight, type: 'collaborative' },
-        { recommendations: contentBasedRecs, weight: algorithmWeights.contentBasedWeight, type: 'content' },
-        { recommendations: semanticRecs, weight: algorithmWeights.semanticWeight, type: 'semantic' },
-        { recommendations: trendingRecs, weight: algorithmWeights.popularityWeight, type: 'trending' },
-        { recommendations: businessRecs, weight: 0.1, type: 'business' }
+        {
+          recommendations: collaborativeRecs,
+          weight: algorithmWeights.collaborativeWeight,
+          type: 'collaborative',
+        },
+        {
+          recommendations: contentBasedRecs,
+          weight: algorithmWeights.contentBasedWeight,
+          type: 'content',
+        },
+        {
+          recommendations: semanticRecs,
+          weight: algorithmWeights.semanticWeight,
+          type: 'semantic',
+        },
+        {
+          recommendations: trendingRecs,
+          weight: algorithmWeights.popularityWeight,
+          type: 'trending',
+        },
+        { recommendations: businessRecs, weight: 0.1, type: 'business' },
       ])
 
       // Step 5: Apply personalization and business rules
@@ -267,7 +265,7 @@ export class AdvancedRecommendationEngine {
         userProfile,
         businessContext,
         options
-      ).then(recs => recs.slice(0, limit))
+      ).then((recs) => recs.slice(0, limit))
 
       // Step 8: Track recommendations for bandit optimization
       if (this.config.contextualBanditEnabled) {
@@ -283,7 +281,9 @@ export class AdvancedRecommendationEngine {
       logger.info(`[${this.requestId}] Advanced recommendations generated`, {
         operationId,
         recommendationCount: finalRecommendations.length,
-        avgConfidence: finalRecommendations.reduce((sum, r) => sum + r.confidenceLevel, 0) / finalRecommendations.length,
+        avgConfidence:
+          finalRecommendations.reduce((sum, r) => sum + r.confidenceLevel, 0) /
+          finalRecommendations.length,
         algorithmMix: Object.entries(algorithmWeights).map(([k, v]) => `${k}: ${v}`),
         processingTime,
       })
@@ -337,49 +337,54 @@ export class AdvancedRecommendationEngine {
       // Build business context from goals
       const businessContext: BusinessContext = {
         useCase: goals.primaryGoal,
-        urgency: goals.timeline === 'immediate' ? 'critical' : 
-                goals.timeline === 'short' ? 'high' :
-                goals.timeline === 'medium' ? 'medium' : 'low',
-        technicalLevel: options.experienceLevel as any || 'intermediate',
-        industry: options.industryFocus
+        urgency:
+          goals.timeline === 'immediate'
+            ? 'critical'
+            : goals.timeline === 'short'
+              ? 'high'
+              : goals.timeline === 'medium'
+                ? 'medium'
+                : 'low',
+        technicalLevel: (options.experienceLevel as any) || 'intermediate',
+        industry: options.industryFocus,
       }
 
       // Get goal-specific template categories
-      const relevantCategories = await this.identifyRelevantCategories(goals.primaryGoal, goals.secondaryGoals)
-      
-      // Generate recommendations with goal alignment
-      const recommendations = await this.getPersonalizedRecommendations(
-        userId,
-        businessContext,
-        {
-          ...options,
-          focusArea: goals.primaryGoal
-        }
+      const relevantCategories = await this.identifyRelevantCategories(
+        goals.primaryGoal,
+        goals.secondaryGoals
       )
 
+      // Generate recommendations with goal alignment
+      const recommendations = await this.getPersonalizedRecommendations(userId, businessContext, {
+        ...options,
+        focusArea: goals.primaryGoal,
+      })
+
       // Score recommendations based on goal alignment
-      const goalAlignedRecs = recommendations.map(rec => ({
+      const goalAlignedRecs = recommendations.map((rec) => ({
         ...rec,
         businessAlignment: this.calculateGoalAlignment(rec, goals, relevantCategories),
         contextualFactors: [
           ...rec.contextualFactors,
           `Primary goal: ${goals.primaryGoal}`,
           `Timeline: ${goals.timeline}`,
-          `Risk tolerance: ${goals.riskTolerance}`
-        ]
+          `Risk tolerance: ${goals.riskTolerance}`,
+        ],
       }))
 
       // Re-rank based on goal alignment
-      goalAlignedRecs.sort((a, b) => 
-        (b.businessAlignment * 0.4 + b.score * 0.6) - 
-        (a.businessAlignment * 0.4 + a.score * 0.6)
+      goalAlignedRecs.sort(
+        (a, b) =>
+          b.businessAlignment * 0.4 + b.score * 0.6 - (a.businessAlignment * 0.4 + a.score * 0.6)
       )
 
       const processingTime = Date.now() - this.startTime
       logger.info(`[${this.requestId}] Goal-based recommendations completed`, {
         operationId,
         recommendationCount: goalAlignedRecs.length,
-        avgBusinessAlignment: goalAlignedRecs.reduce((sum, r) => sum + r.businessAlignment, 0) / goalAlignedRecs.length,
+        avgBusinessAlignment:
+          goalAlignedRecs.reduce((sum, r) => sum + r.businessAlignment, 0) / goalAlignedRecs.length,
         processingTime,
       })
 
@@ -428,26 +433,37 @@ export class AdvancedRecommendationEngine {
       switch (assistType) {
         case 'similar':
           // Find templates with similar structure or purpose
-          recommendations = await this.findSimilarCreationPatterns(userId, currentTemplate, options.limit)
+          recommendations = await this.findSimilarCreationPatterns(
+            userId,
+            currentTemplate,
+            options.limit
+          )
           break
-          
+
         case 'complementary':
           // Find templates that work well together
-          recommendations = await this.findComplementaryTemplates(userId, currentTemplate, options.limit)
+          recommendations = await this.findComplementaryTemplates(
+            userId,
+            currentTemplate,
+            options.limit
+          )
           break
-          
+
         case 'inspirational':
           // Find creative and innovative templates for inspiration
-          recommendations = await this.findInspirationalTemplates(userId, currentTemplate, options.limit)
+          recommendations = await this.findInspirationalTemplates(
+            userId,
+            currentTemplate,
+            options.limit
+          )
           break
       }
 
       // Add creation-specific context
-      recommendations.forEach(rec => {
+      recommendations.forEach((rec) => {
         rec.contextualFactors.push(`Creation assist: ${assistType}`)
-        rec.expectedOutcome.learningCurve = 
-          assistType === 'similar' ? 'easy' : 
-          assistType === 'complementary' ? 'moderate' : 'steep'
+        rec.expectedOutcome.learningCurve =
+          assistType === 'similar' ? 'easy' : assistType === 'complementary' ? 'moderate' : 'steep'
       })
 
       const processingTime = Date.now() - this.startTime
@@ -478,7 +494,7 @@ export class AdvancedRecommendationEngine {
       this.getUserFavorites(userId),
       this.getUserCollections(userId),
       this.getUserRatings(userId),
-      this.getUserUsagePatterns(userId)
+      this.getUserUsagePatterns(userId),
     ])
 
     // Analyze preferences from user behavior
@@ -496,7 +512,7 @@ export class AdvancedRecommendationEngine {
       explorationTendency: this.calculateExplorationTendency(favorites, usage),
       qualityPreference: this.calculateQualityPreference(ratings, favorites),
       collaborationLevel: this.calculateCollaborationLevel(collections),
-      learningStyle: this.inferLearningStyle(favorites, usage)
+      learningStyle: this.inferLearningStyle(favorites, usage),
     }
   }
 
@@ -506,19 +522,19 @@ export class AdvancedRecommendationEngine {
   ): Promise<RecommendationConfig> {
     // Get or initialize bandit arms for this user context
     const contextKey = this.getContextKey(userId, context)
-    
+
     if (!this.contextualBandits.has(contextKey)) {
       this.initializeBanditArms(contextKey)
     }
 
     const arms = this.contextualBandits.get(contextKey)!
-    
+
     // Select arms using Thompson Sampling
     const selectedWeights = this.thompsonSampling(arms)
 
     return {
       ...this.config,
-      ...selectedWeights
+      ...selectedWeights,
     }
   }
 
@@ -529,7 +545,7 @@ export class AdvancedRecommendationEngine {
   ): Promise<AdvancedRecommendation[]> {
     // Find users with similar preferences
     const similarUsers = await this.findSimilarUsers(userId, profile)
-    
+
     if (similarUsers.length === 0) {
       return []
     }
@@ -546,20 +562,29 @@ export class AdvancedRecommendationEngine {
         viewCount: templates.viewCount,
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
-        relevanceScore: count(templateFavorites.id).as('relevance_score')
+        relevanceScore: count(templateFavorites.id).as('relevance_score'),
       })
       .from(templates)
       .leftJoin(templateFavorites, eq(templates.id, templateFavorites.templateId))
       .where(
         and(
-          inArray(templateFavorites.userId, similarUsers.map(u => u.userId)),
+          inArray(
+            templateFavorites.userId,
+            similarUsers.map((u) => u.userId)
+          ),
           sql`${templates.id} NOT IN (SELECT template_id FROM template_favorites WHERE user_id = ${userId})`
         )
       )
       .groupBy(
-        templates.id, templates.name, templates.description, templates.categoryId,
-        templates.ratingAverage, templates.downloadCount, templates.viewCount,
-        templates.createdAt, templates.updatedAt
+        templates.id,
+        templates.name,
+        templates.description,
+        templates.categoryId,
+        templates.ratingAverage,
+        templates.downloadCount,
+        templates.viewCount,
+        templates.createdAt,
+        templates.updatedAt
       )
       .orderBy(desc(count(templateFavorites.id)))
       .limit(limit)
@@ -576,10 +601,10 @@ export class AdvancedRecommendationEngine {
       algorithmUsed: ['collaborative_filtering'],
       contextualFactors: ['Users with similar preferences liked this template'],
       expectedOutcome: {
-        successProbability: 0.7 + (template.relevanceScore * 0.05),
+        successProbability: 0.7 + template.relevanceScore * 0.05,
         timeToValue: '1-2 hours',
-        learningCurve: 'moderate' as const
-      }
+        learningCurve: 'moderate' as const,
+      },
     }))
   }
 
@@ -603,7 +628,9 @@ export class AdvancedRecommendationEngine {
         updatedAt: templates.updatedAt,
       })
       .from(templates)
-      .where(sql`${templates.id} NOT IN (SELECT template_id FROM template_favorites WHERE user_id = ${userId})`)
+      .where(
+        sql`${templates.id} NOT IN (SELECT template_id FROM template_favorites WHERE user_id = ${userId})`
+      )
 
     // Filter by preferred categories
     if (profile.preferredCategories.length > 0) {
@@ -636,8 +663,8 @@ export class AdvancedRecommendationEngine {
       expectedOutcome: {
         successProbability: 0.75,
         timeToValue: '30-60 minutes',
-        learningCurve: 'easy' as const
-      }
+        learningCurve: 'easy' as const,
+      },
     }))
   }
 
@@ -649,16 +676,13 @@ export class AdvancedRecommendationEngine {
   ): Promise<AdvancedRecommendation[]> {
     // Use semantic search for broader matching
     const semanticQuery = this.buildSemanticQuery(profile, context)
-    
-    const semanticResults = await semanticSearchService.semanticSearch(
-      semanticQuery,
-      {
-        userId,
-        limit,
-        minSimilarity: 0.3,
-        includeUsagePatterns: true
-      }
-    )
+
+    const semanticResults = await semanticSearchService.semanticSearch(semanticQuery, {
+      userId,
+      limit,
+      minSimilarity: 0.3,
+      includeUsagePatterns: true,
+    })
 
     return semanticResults.map((result, index) => ({
       template: result.template,
@@ -674,8 +698,8 @@ export class AdvancedRecommendationEngine {
       expectedOutcome: {
         successProbability: 0.6 + result.combinedScore * 0.2,
         timeToValue: '45-90 minutes',
-        learningCurve: 'moderate' as const
-      }
+        learningCurve: 'moderate' as const,
+      },
     }))
   }
 
@@ -701,7 +725,7 @@ export class AdvancedRecommendationEngine {
           ${templates.viewCount} * 0.3 + 
           ${templates.ratingAverage} * 100 * 0.1 +
           CASE WHEN ${templates.createdAt} > NOW() - INTERVAL '30 days' THEN 200 ELSE 0 END
-        )`.as('trend_score')
+        )`.as('trend_score'),
       })
       .from(templates)
       .where(
@@ -727,8 +751,8 @@ export class AdvancedRecommendationEngine {
       expectedOutcome: {
         successProbability: 0.65,
         timeToValue: '1-3 hours',
-        learningCurve: 'moderate' as const
-      }
+        learningCurve: 'moderate' as const,
+      },
     }))
   }
 
@@ -759,11 +783,11 @@ export class AdvancedRecommendationEngine {
     // Add business context filtering via tags or categories
     if (context.industry || context.useCase || context.department) {
       const contextTerms = [context.industry, context.useCase, context.department].filter(Boolean)
-      
+
       query = query
         .leftJoin(templateTagAssociations, eq(templates.id, templateTagAssociations.templateId))
         .leftJoin(templateTags, eq(templateTagAssociations.tagId, templateTags.id))
-        .where(sql`${templateTags.name} ILIKE ANY(${contextTerms.map(term => `%${term}%`)})`)
+        .where(sql`${templateTags.name} ILIKE ANY(${contextTerms.map((term) => `%${term}%`)})`)
     }
 
     const businessTemplates = await query
@@ -784,8 +808,8 @@ export class AdvancedRecommendationEngine {
       expectedOutcome: {
         successProbability: 0.8,
         timeToValue: '30-90 minutes',
-        learningCurve: 'easy' as const
-      }
+        learningCurve: 'easy' as const,
+      },
     }))
   }
 
@@ -813,7 +837,7 @@ export class AdvancedRecommendationEngine {
     algorithmResults.forEach(({ recommendations, weight, type }) => {
       recommendations.forEach((rec, index) => {
         const templateId = rec.template.id
-        const rankScore = 1 - (index / recommendations.length)
+        const rankScore = 1 - index / recommendations.length
         const algorithmScore = rankScore * weight
 
         if (templateScores.has(templateId)) {
@@ -831,8 +855,7 @@ export class AdvancedRecommendationEngine {
       })
     })
 
-    return Array.from(templateScores.values())
-      .sort((a, b) => b.score - a.score)
+    return Array.from(templateScores.values()).sort((a, b) => b.score - a.score)
   }
 
   private async applyPersonalizationLayer(
@@ -842,7 +865,7 @@ export class AdvancedRecommendationEngine {
     context: BusinessContext
   ): Promise<AdvancedRecommendation[]> {
     // Apply personalization boosts based on user profile
-    return recommendations.map(rec => {
+    return recommendations.map((rec) => {
       let personalizedScore = rec.score
 
       // Boost for preferred categories
@@ -851,14 +874,17 @@ export class AdvancedRecommendationEngine {
       }
 
       // Boost for quality preference alignment
-      if (rec.template.ratingAverage && rec.template.ratingAverage >= profile.qualityPreference * 5) {
+      if (
+        rec.template.ratingAverage &&
+        rec.template.ratingAverage >= profile.qualityPreference * 5
+      ) {
         personalizedScore += this.config.personalizedBoost * 0.3
       }
 
       return {
         ...rec,
         personalizedScore,
-        score: personalizedScore
+        score: personalizedScore,
       }
     })
   }
@@ -880,10 +906,10 @@ export class AdvancedRecommendationEngine {
       }
 
       const adjustedScore = Math.max(0.1, rec.score - diversityPenalty)
-      
+
       diverseRecs.push({
         ...rec,
-        score: adjustedScore
+        score: adjustedScore,
       })
 
       usedCategories.add(rec.template.categoryId || '')
@@ -900,9 +926,12 @@ export class AdvancedRecommendationEngine {
   ): Promise<AdvancedRecommendation[]> {
     // Apply final business rules and constraints
     return recommendations
-      .filter(rec => {
+      .filter((rec) => {
         // Quality threshold
-        if (rec.template.ratingAverage && rec.template.ratingAverage < this.config.qualityThreshold) {
+        if (
+          rec.template.ratingAverage &&
+          rec.template.ratingAverage < this.config.qualityThreshold
+        ) {
           return false
         }
 
@@ -917,7 +946,7 @@ export class AdvancedRecommendationEngine {
         // Final ranking combines multiple factors
         const scoreA = a.score * 0.6 + a.businessAlignment * 0.3 + a.noveltyScore * 0.1
         const scoreB = b.score * 0.6 + b.businessAlignment * 0.3 + b.noveltyScore * 0.1
-        
+
         return scoreB - scoreA
       })
   }
@@ -940,34 +969,75 @@ export class AdvancedRecommendationEngine {
       ...profile.preferredTags.slice(0, 3),
       context.useCase,
       context.industry,
-      context.department
+      context.department,
     ].filter(Boolean)
 
     return terms.join(' ')
   }
 
   // Additional placeholder methods for completeness
-  private async getUserFavorites(userId: string): Promise<any[]> { return [] }
-  private async getUserCollections(userId: string): Promise<any[]> { return [] }
-  private async getUserRatings(userId: string): Promise<any[]> { return [] }
-  private async getUserUsagePatterns(userId: string): Promise<any> { return {} }
-  private extractPreferredCategories(...args: any[]): string[] { return [] }
-  private extractPreferredTags(...args: any[]): string[] { return [] }
-  private extractComplexityPreferences(...args: any[]): string[] { return [] }
-  private calculateExplorationTendency(...args: any[]): number { return 0.5 }
-  private calculateQualityPreference(...args: any[]): number { return 0.8 }
-  private calculateCollaborationLevel(...args: any[]): number { return 0.6 }
-  private inferLearningStyle(...args: any[]): 'visual' | 'hands-on' | 'documentation' | 'guided' { return 'hands-on' }
-  private async findSimilarUsers(userId: string, profile: UserRecommendationProfile): Promise<any[]> { return [] }
-  private getContextKey(userId: string, context: BusinessContext): string { return `${userId}_${JSON.stringify(context)}` }
-  private initializeBanditArms(contextKey: string): void { }
-  private thompsonSampling(arms: RecommendationArm[]): any { return this.config }
-  private async trackRecommendationGeneration(...args: any[]): Promise<void> { }
-  private calculateGoalAlignment(...args: any[]): number { return 0.7 }
-  private async identifyRelevantCategories(...args: any[]): Promise<string[]> { return [] }
-  private async findSimilarCreationPatterns(...args: any[]): Promise<AdvancedRecommendation[]> { return [] }
-  private async findComplementaryTemplates(...args: any[]): Promise<AdvancedRecommendation[]> { return [] }
-  private async findInspirationalTemplates(...args: any[]): Promise<AdvancedRecommendation[]> { return [] }
+  private async getUserFavorites(userId: string): Promise<any[]> {
+    return []
+  }
+  private async getUserCollections(userId: string): Promise<any[]> {
+    return []
+  }
+  private async getUserRatings(userId: string): Promise<any[]> {
+    return []
+  }
+  private async getUserUsagePatterns(userId: string): Promise<any> {
+    return {}
+  }
+  private extractPreferredCategories(...args: any[]): string[] {
+    return []
+  }
+  private extractPreferredTags(...args: any[]): string[] {
+    return []
+  }
+  private extractComplexityPreferences(...args: any[]): string[] {
+    return []
+  }
+  private calculateExplorationTendency(...args: any[]): number {
+    return 0.5
+  }
+  private calculateQualityPreference(...args: any[]): number {
+    return 0.8
+  }
+  private calculateCollaborationLevel(...args: any[]): number {
+    return 0.6
+  }
+  private inferLearningStyle(...args: any[]): 'visual' | 'hands-on' | 'documentation' | 'guided' {
+    return 'hands-on'
+  }
+  private async findSimilarUsers(
+    userId: string,
+    profile: UserRecommendationProfile
+  ): Promise<any[]> {
+    return []
+  }
+  private getContextKey(userId: string, context: BusinessContext): string {
+    return `${userId}_${JSON.stringify(context)}`
+  }
+  private initializeBanditArms(contextKey: string): void {}
+  private thompsonSampling(arms: RecommendationArm[]): any {
+    return this.config
+  }
+  private async trackRecommendationGeneration(...args: any[]): Promise<void> {}
+  private calculateGoalAlignment(...args: any[]): number {
+    return 0.7
+  }
+  private async identifyRelevantCategories(...args: any[]): Promise<string[]> {
+    return []
+  }
+  private async findSimilarCreationPatterns(...args: any[]): Promise<AdvancedRecommendation[]> {
+    return []
+  }
+  private async findComplementaryTemplates(...args: any[]): Promise<AdvancedRecommendation[]> {
+    return []
+  }
+  private async findInspirationalTemplates(...args: any[]): Promise<AdvancedRecommendation[]> {
+    return []
+  }
 }
 
 // Export singleton instance for convenience

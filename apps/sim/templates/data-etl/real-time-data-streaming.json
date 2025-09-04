@@ -301,7 +301,7 @@
     "configuration": {
       "required_credentials": [
         "kafka_connection",
-        "redis_connection", 
+        "redis_connection",
         "postgresql_connection",
         "websocket_endpoint",
         "slack_webhook"
@@ -327,7 +327,7 @@
           "description": "Windowing configuration for aggregations"
         },
         "validation_config": {
-          "type": "object", 
+          "type": "object",
           "default": {
             "required_fields": ["timestamp", "event_type"],
             "timestamp_field": "timestamp",
@@ -363,7 +363,7 @@
       "setup_guide": "1. Set up Kafka cluster and create topics\\n2. Configure Redis for real-time caching\\n3. Set up PostgreSQL for persistent storage\\n4. Configure WebSocket endpoint for real-time updates\\n5. Define validation and transformation rules\\n6. Set up anomaly detection thresholds\\n7. Test with sample stream data",
       "use_cases": [
         "IoT sensor data processing and analytics",
-        "Financial transaction monitoring and fraud detection", 
+        "Financial transaction monitoring and fraud detection",
         "Social media sentiment analysis and trending",
         "Application performance monitoring and alerting",
         "E-commerce user behavior tracking and personalization"
