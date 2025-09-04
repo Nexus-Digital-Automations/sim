@@ -31,37 +31,6 @@
       ]
     },
     {
-      "id": "task_1757002660077_p0x41rc7q",
-      "title": "Implement comprehensive community marketplace integration workflows and testing infrastructure",
-      "mode": "DEVELOPMENT",
-      "category": "missing-feature",
-      "priority": "critical",
-      "status": "in_progress",
-      "dependencies": [],
-      "important_files": [
-        "development/reports/research-complete-community-marketplace-with-social-features-and-integration-discovery-1757002072081.md"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": true,
-      "subtasks": [],
-      "created_at": "2025-09-04T16:17:40.080Z",
-      "auto_research_created": true,
-      "description": "No description provided",
-      "assigned_agent": "development_session_1757002653525_1_general_7aeee533",
-      "started_at": "2025-09-04T16:21:36.699Z",
-      "claimed_by": "development_session_1757002653525_1_general_7aeee533",
-      "agent_assignment_history": [
-        {
-          "agentId": "development_session_1757002653525_1_general_7aeee533",
-          "role": "primary",
-          "assignedAt": "2025-09-04T16:21:36.699Z",
-          "reassignReason": null,
-          "claimPriority": "normal"
-        }
-      ]
-    },
-    {
       "id": "task_1757002656331_r8xreuopi",
       "title": "Implement comprehensive marketplace API endpoints for template sharing and discovery",
       "mode": "DEVELOPMENT",

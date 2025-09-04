@@ -10,21 +10,19 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { 
-  marketplaceIntegrationEngine, 
+import {
   initializeMarketplaceIntegrations,
-  MarketplaceIntegrationEngine 
+  marketplaceIntegrationEngine,
 } from './marketplace-integration-workflows'
-import { 
-  marketplaceTestingEngine, 
-  initializeMarketplaceTestingInfrastructure,
-  MarketplaceTestingEngine 
-} from './marketplace-testing-infrastructure'
-import { 
-  marketplaceSecurityEngine, 
+import {
+  initializeMarketplaceSecurityModeration,
   marketplaceModerationEngine,
-  initializeMarketplaceSecurityModeration 
+  marketplaceSecurityEngine,
 } from './marketplace-security-moderation'
+import {
+  initializeMarketplaceTestingInfrastructure,
+  marketplaceTestingEngine,
+} from './marketplace-testing-infrastructure'
 
 const logger = createLogger('MarketplaceInitialization')
 
@@ -40,7 +38,7 @@ export interface MarketplaceConfiguration {
   environment: 'development' | 'staging' | 'production'
   debug: boolean
   version: string
-  
+
   // Feature flags
   features: {
     socialFeatures: boolean
@@ -51,7 +49,7 @@ export interface MarketplaceConfiguration {
     crossPlatformDeployment: boolean
     realTimeNotifications: boolean
   }
-  
+
   // Integration settings
   integrations: {
     github: boolean
@@ -62,7 +60,7 @@ export interface MarketplaceConfiguration {
     azure: boolean
     gcp: boolean
   }
-  
+
   // Security configuration
   security: {
     scanningEnabled: boolean
@@ -75,7 +73,7 @@ export interface MarketplaceConfiguration {
       low: number
     }
   }
-  
+
   // Testing configuration
   testing: {
     suites: string[]
@@ -92,7 +90,7 @@ export interface MarketplaceConfiguration {
       }
     }
   }
-  
+
   // Monitoring and analytics
   monitoring: {
     enabled: boolean
@@ -100,7 +98,7 @@ export interface MarketplaceConfiguration {
     alerts: boolean
     retention: number
   }
-  
+
   // External services
   external: {
     database: {
@@ -191,7 +189,7 @@ export class MarketplaceInitializationEngine {
     this.configuration = this.mergeWithDefaults(configuration || {})
     logger.info('Marketplace Initialization Engine created', {
       environment: this.configuration.environment,
-      version: this.configuration.version
+      version: this.configuration.version,
     })
   }
 
@@ -200,12 +198,12 @@ export class MarketplaceInitializationEngine {
    */
   async initialize(): Promise<MarketplaceInitializationResult> {
     const startTime = Date.now()
-    
+
     logger.info('🚀 Starting marketplace system initialization...', {
       environment: this.configuration.environment,
       features: Object.keys(this.configuration.features).filter(
-        key => this.configuration.features[key as keyof typeof this.configuration.features]
-      )
+        (key) => this.configuration.features[key as keyof typeof this.configuration.features]
+      ),
     })
 
     const result: MarketplaceInitializationResult = {
@@ -214,12 +212,12 @@ export class MarketplaceInitializationEngine {
         integrations: false,
         testing: false,
         security: false,
-        moderation: false
+        moderation: false,
       },
       errors: [],
       warnings: [],
       configuration: this.configuration,
-      startupTime: 0
+      startupTime: 0,
     }
 
     try {
@@ -259,14 +257,13 @@ export class MarketplaceInitializationEngine {
       logger.info('🎉 Marketplace system initialization completed successfully!', {
         startupTime: result.startupTime,
         components: result.components,
-        environment: this.configuration.environment
+        environment: this.configuration.environment,
       })
-
     } catch (error) {
       logger.error('💥 Marketplace system initialization failed', {
         error: error.message,
         stack: error.stack,
-        phase: this.getCurrentPhase(result.components)
+        phase: this.getCurrentPhase(result.components),
       })
 
       result.errors.push(error.message)
@@ -304,11 +301,10 @@ export class MarketplaceInitializationEngine {
       this.systemStatus = null
 
       logger.info('✅ Marketplace system shutdown completed successfully')
-
     } catch (error) {
       logger.error('💥 Error during marketplace system shutdown', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
 
       throw error
@@ -359,21 +355,21 @@ export class MarketplaceInitializationEngine {
         moderation: await this.checkModerationHealth(),
         database: await this.checkDatabaseHealth(),
         cache: await this.checkCacheHealth(),
-        storage: await this.checkStorageHealth()
+        storage: await this.checkStorageHealth(),
       },
       metrics: {
         uptime: process.uptime(),
         requests: 0, // Would be tracked from actual metrics
         errors: 0, // Would be tracked from actual metrics
-        responseTime: 0 // Would be measured
+        responseTime: 0, // Would be measured
       },
-      lastChecked: new Date()
+      lastChecked: new Date(),
     }
 
     // Determine overall system health
     const componentStatuses = Object.values(status.components)
-    const unhealthyCount = componentStatuses.filter(c => c.status === 'unhealthy').length
-    const degradedCount = componentStatuses.filter(c => c.status === 'degraded').length
+    const unhealthyCount = componentStatuses.filter((c) => c.status === 'unhealthy').length
+    const degradedCount = componentStatuses.filter((c) => c.status === 'degraded').length
 
     if (unhealthyCount > 0) {
       status.overall = 'unhealthy'
@@ -386,7 +382,7 @@ export class MarketplaceInitializationEngine {
     logger.debug('🩺 Health check completed', {
       overall: status.overall,
       unhealthy: unhealthyCount,
-      degraded: degradedCount
+      degraded: degradedCount,
     })
 
     return status
@@ -397,15 +393,14 @@ export class MarketplaceInitializationEngine {
   private async initializeIntegrationWorkflows(): Promise<void> {
     try {
       initializeMarketplaceIntegrations()
-      
+
       // Validate integration system is working
-      const workflows = Array.from(marketplaceIntegrationEngine['workflows'].keys())
+      const workflows = Array.from(marketplaceIntegrationEngine.workflows.keys())
       if (workflows.length === 0) {
         throw new Error('No integration workflows registered')
       }
 
       logger.info('Integration workflows registered', { workflows })
-
     } catch (error) {
       logger.error('Failed to initialize integration workflows', { error: error.message })
       throw error
@@ -415,15 +410,14 @@ export class MarketplaceInitializationEngine {
   private async initializeTestingInfrastructure(): Promise<void> {
     try {
       initializeMarketplaceTestingInfrastructure()
-      
+
       // Validate testing system is working
-      const testSuites = Array.from(marketplaceTestingEngine['testSuites'].keys())
+      const testSuites = Array.from(marketplaceTestingEngine.testSuites.keys())
       if (testSuites.length === 0) {
         throw new Error('No test suites registered')
       }
 
       logger.info('Test suites registered', { testSuites })
-
     } catch (error) {
       logger.error('Failed to initialize testing infrastructure', { error: error.message })
       throw error
@@ -433,20 +427,19 @@ export class MarketplaceInitializationEngine {
   private async initializeSecurityModeration(): Promise<void> {
     try {
       initializeMarketplaceSecurityModeration()
-      
+
       // Validate security and moderation systems
-      const scanners = Array.from(marketplaceSecurityEngine['scanners'].keys())
-      const moderators = Array.from(marketplaceModerationEngine['moderators'].keys())
-      
+      const scanners = Array.from(marketplaceSecurityEngine.scanners.keys())
+      const moderators = Array.from(marketplaceModerationEngine.moderators.keys())
+
       if (scanners.length === 0 || moderators.length === 0) {
         throw new Error('Security scanners or moderators not properly initialized')
       }
 
       logger.info('Security and moderation systems initialized', {
         scanners,
-        moderators
+        moderators,
       })
-
     } catch (error) {
       logger.error('Failed to initialize security and moderation', { error: error.message })
       throw error
@@ -456,19 +449,18 @@ export class MarketplaceInitializationEngine {
   private async performHealthChecks(): Promise<void> {
     try {
       const status = await this.performHealthCheck()
-      
+
       if (status.overall === 'unhealthy') {
         throw new Error('System health check failed - critical components unhealthy')
       }
-      
+
       if (status.overall === 'degraded') {
         logger.warn('System health degraded - some components need attention', {
           degradedComponents: Object.entries(status.components)
             .filter(([_, comp]) => comp.status !== 'healthy')
-            .map(([name, comp]) => ({ name, status: comp.status, message: comp.message }))
+            .map(([name, comp]) => ({ name, status: comp.status, message: comp.message })),
         })
       }
-
     } catch (error) {
       logger.error('Health check failed during initialization', { error: error.message })
       throw error
@@ -496,7 +488,6 @@ export class MarketplaceInitializationEngine {
         logger.info('Real-time notification service started')
         // WebSocket notification service would be started here
       }
-
     } catch (error) {
       logger.error('Failed to start background services', { error: error.message })
       throw error
@@ -506,21 +497,21 @@ export class MarketplaceInitializationEngine {
   private async checkIntegrationsHealth(): Promise<ComponentStatus> {
     try {
       const activeExecutions = marketplaceIntegrationEngine.getActiveExecutions()
-      
+
       return {
         status: 'healthy',
         message: 'Integration workflows operational',
         lastChecked: new Date(),
         metrics: {
           activeExecutions: activeExecutions.length,
-          totalWorkflows: Array.from(marketplaceIntegrationEngine['workflows'].keys()).length
-        }
+          totalWorkflows: Array.from(marketplaceIntegrationEngine.workflows.keys()).length,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Integration system error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
@@ -528,63 +519,63 @@ export class MarketplaceInitializationEngine {
   private async checkTestingHealth(): Promise<ComponentStatus> {
     try {
       const activeExecutions = marketplaceTestingEngine.getActiveExecutions()
-      
+
       return {
         status: 'healthy',
         message: 'Testing infrastructure operational',
         lastChecked: new Date(),
         metrics: {
           activeTests: activeExecutions.length,
-          totalTestSuites: Array.from(marketplaceTestingEngine['testSuites'].keys()).length
-        }
+          totalTestSuites: Array.from(marketplaceTestingEngine.testSuites.keys()).length,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Testing system error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
 
   private async checkSecurityHealth(): Promise<ComponentStatus> {
     try {
-      const scanners = Array.from(marketplaceSecurityEngine['scanners'].keys())
-      
+      const scanners = Array.from(marketplaceSecurityEngine.scanners.keys())
+
       return {
         status: 'healthy',
         message: 'Security systems operational',
         lastChecked: new Date(),
         metrics: {
-          activeScanners: scanners.length
-        }
+          activeScanners: scanners.length,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Security system error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
 
   private async checkModerationHealth(): Promise<ComponentStatus> {
     try {
-      const moderators = Array.from(marketplaceModerationEngine['moderators'].keys())
-      
+      const moderators = Array.from(marketplaceModerationEngine.moderators.keys())
+
       return {
         status: 'healthy',
         message: 'Moderation systems operational',
         lastChecked: new Date(),
         metrics: {
-          activeModerators: moderators.length
-        }
+          activeModerators: moderators.length,
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Moderation system error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
@@ -598,14 +589,14 @@ export class MarketplaceInitializationEngine {
         lastChecked: new Date(),
         metrics: {
           connections: 0, // Would be actual connection count
-          responseTime: 0 // Would be actual response time
-        }
+          responseTime: 0, // Would be actual response time
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Database error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
@@ -619,14 +610,14 @@ export class MarketplaceInitializationEngine {
         lastChecked: new Date(),
         metrics: {
           hitRate: 0, // Would be actual hit rate
-          memory: 0 // Would be actual memory usage
-        }
+          memory: 0, // Would be actual memory usage
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Cache error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
@@ -640,24 +631,24 @@ export class MarketplaceInitializationEngine {
         lastChecked: new Date(),
         metrics: {
           usage: 0, // Would be actual storage usage
-          availability: 100 // Would be actual availability percentage
-        }
+          availability: 100, // Would be actual availability percentage
+        },
       }
     } catch (error) {
       return {
         status: 'unhealthy',
         message: `Storage error: ${error.message}`,
-        lastChecked: new Date()
+        lastChecked: new Date(),
       }
     }
   }
 
   private mergeWithDefaults(config: Partial<MarketplaceConfiguration>): MarketplaceConfiguration {
     const defaults: MarketplaceConfiguration = {
-      environment: process.env.NODE_ENV as any || 'development',
+      environment: (process.env.NODE_ENV as any) || 'development',
       debug: process.env.NODE_ENV === 'development',
       version: '1.0.0',
-      
+
       features: {
         socialFeatures: true,
         templateValidation: true,
@@ -665,9 +656,9 @@ export class MarketplaceInitializationEngine {
         performanceMonitoring: true,
         autoModeration: true,
         crossPlatformDeployment: true,
-        realTimeNotifications: true
+        realTimeNotifications: true,
       },
-      
+
       integrations: {
         github: true,
         gitlab: true,
@@ -675,9 +666,9 @@ export class MarketplaceInitializationEngine {
         kubernetes: false,
         aws: false,
         azure: false,
-        gcp: false
+        gcp: false,
       },
-      
+
       security: {
         scanningEnabled: true,
         moderationEnabled: true,
@@ -686,53 +677,53 @@ export class MarketplaceInitializationEngine {
           critical: 80,
           high: 60,
           medium: 40,
-          low: 20
-        }
+          low: 20,
+        },
       },
-      
+
       testing: {
         suites: ['unit', 'integration', 'e2e', 'performance', 'security'],
         coverage: {
           threshold: 85,
-          enforce: true
+          enforce: true,
         },
         performance: {
           enabled: true,
           thresholds: {
             responseTime: 2000,
             throughput: 1000,
-            errorRate: 0.01
-          }
-        }
+            errorRate: 0.01,
+          },
+        },
       },
-      
+
       monitoring: {
         enabled: true,
         realTime: true,
         alerts: true,
-        retention: 90
+        retention: 90,
       },
-      
+
       external: {
         database: {
           url: process.env.DATABASE_URL || 'postgresql://localhost:5432/sim_marketplace',
           poolSize: 10,
-          timeout: 30000
+          timeout: 30000,
         },
         redis: {
           url: process.env.REDIS_URL || 'redis://localhost:6379',
-          cluster: false
+          cluster: false,
         },
         storage: {
           provider: 'local',
-          bucket: 'marketplace-assets'
+          bucket: 'marketplace-assets',
         },
         notifications: {
           email: true,
           slack: false,
-          webhook: false
-        }
-      }
+          webhook: false,
+        },
+      },
     }
 
     return this.deepMerge(defaults, config)
@@ -740,7 +731,7 @@ export class MarketplaceInitializationEngine {
 
   private deepMerge(target: any, source: any): any {
     const result = { ...target }
-    
+
     for (const key in source) {
       if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
         result[key] = this.deepMerge(target[key] || {}, source[key])
@@ -748,7 +739,7 @@ export class MarketplaceInitializationEngine {
         result[key] = source[key]
       }
     }
-    
+
     return result
   }
 
@@ -777,7 +768,7 @@ export async function initializeMarketplaceSystem(
   if (configuration) {
     globalMarketplaceSystem.updateConfiguration(configuration)
   }
-  
+
   return globalMarketplaceSystem.initialize()
 }
 
@@ -800,9 +791,9 @@ export function getMarketplaceSystemStatus(): MarketplaceSystemStatus | null {
  */
 export function isMarketplaceSystemReady(): boolean {
   const status = globalMarketplaceSystem.getSystemStatus()
-  return globalMarketplaceSystem.isInitialized() && 
-         status !== null && 
-         status.overall !== 'unhealthy'
+  return (
+    globalMarketplaceSystem.isInitialized() && status !== null && status.overall !== 'unhealthy'
+  )
 }
 
 // ====================================================================
@@ -823,7 +814,7 @@ export function createDevelopmentConfiguration(): Partial<MarketplaceConfigurati
       performanceMonitoring: false,
       autoModeration: false,
       crossPlatformDeployment: false,
-      realTimeNotifications: true
+      realTimeNotifications: true,
     },
     security: {
       scanningEnabled: false,
@@ -833,16 +824,24 @@ export function createDevelopmentConfiguration(): Partial<MarketplaceConfigurati
         critical: 90,
         high: 70,
         medium: 50,
-        low: 30
-      }
+        low: 30,
+      },
     },
     testing: {
       suites: ['unit'], // Only unit tests in development
       coverage: {
         threshold: 70, // Lower threshold for development
-        enforce: false
-      }
-    }
+        enforce: false,
+      },
+      performance: {
+        enabled: false,
+        thresholds: {
+          responseTime: 5000, // More lenient for development
+          throughput: 100,
+          errorRate: 0.05,
+        },
+      },
+    },
   }
 }
 
@@ -860,7 +859,7 @@ export function createProductionConfiguration(): Partial<MarketplaceConfiguratio
       performanceMonitoring: true,
       autoModeration: true,
       crossPlatformDeployment: true,
-      realTimeNotifications: true
+      realTimeNotifications: true,
     },
     security: {
       scanningEnabled: true,
@@ -870,58 +869,71 @@ export function createProductionConfiguration(): Partial<MarketplaceConfiguratio
         critical: 70,
         high: 50,
         medium: 30,
-        low: 10
-      }
+        low: 10,
+      },
     },
     testing: {
       suites: ['unit', 'integration', 'e2e', 'performance', 'security'],
       coverage: {
         threshold: 90, // High threshold for production
-        enforce: true
-      }
+        enforce: true,
+      },
+      performance: {
+        enabled: true,
+        thresholds: {
+          responseTime: 2000,
+          throughput: 1000,
+          errorRate: 0.01,
+        },
+      },
     },
     monitoring: {
       enabled: true,
       realTime: true,
       alerts: true,
-      retention: 365 // One year retention for production
-    }
+      retention: 365, // One year retention for production
+    },
   }
 }
 
 /**
  * Validate marketplace configuration
  */
-export function validateMarketplaceConfiguration(
-  config: MarketplaceConfiguration
-): { valid: boolean; errors: string[] } {
+export function validateMarketplaceConfiguration(config: MarketplaceConfiguration): {
+  valid: boolean
+  errors: string[]
+} {
   const errors: string[] = []
-  
+
   // Validate environment
   if (!['development', 'staging', 'production'].includes(config.environment)) {
     errors.push('Invalid environment: must be development, staging, or production')
   }
-  
+
   // Validate coverage threshold
   if (config.testing.coverage.threshold < 0 || config.testing.coverage.threshold > 100) {
     errors.push('Invalid coverage threshold: must be between 0 and 100')
   }
-  
+
   // Validate risk thresholds
   const { riskThresholds } = config.security
-  if (riskThresholds.low > riskThresholds.medium ||
-      riskThresholds.medium > riskThresholds.high ||
-      riskThresholds.high > riskThresholds.critical) {
-    errors.push('Invalid risk thresholds: must be in ascending order (low < medium < high < critical)')
+  if (
+    riskThresholds.low > riskThresholds.medium ||
+    riskThresholds.medium > riskThresholds.high ||
+    riskThresholds.high > riskThresholds.critical
+  ) {
+    errors.push(
+      'Invalid risk thresholds: must be in ascending order (low < medium < high < critical)'
+    )
   }
-  
+
   // Validate database URL
   if (!config.external.database.url) {
     errors.push('Database URL is required')
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   }
 }

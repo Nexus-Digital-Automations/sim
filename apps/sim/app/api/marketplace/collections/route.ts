@@ -22,15 +22,15 @@
  * @implements Advanced Collection Management Architecture
  */
 
-import { and, desc, eq, sql, inArray, or, gte, ilike } from 'drizzle-orm'
+import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templates,
-  templateCollections,
-  templateCollectionItems,
   templateCategories,
+  templateCollectionItems,
+  templateCollections,
+  templates,
   user,
 } from '@/db/schema'
 
@@ -160,10 +160,7 @@ export async function GET(request: NextRequest) {
       )
     } else if (visibility === 'all' && userId) {
       conditions.push(
-        or(
-          eq(templateCollections.isPublic, true),
-          eq(templateCollections.createdByUserId, userId)
-        )
+        or(eq(templateCollections.isPublic, true), eq(templateCollections.createdByUserId, userId))
       )
     } else {
       conditions.push(eq(templateCollections.isPublic, true))
@@ -212,7 +209,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit
 
     // Get collections with creator info and like status
-    let queryBuilder = db
+    const queryBuilder = db
       .select({
         id: templateCollections.id,
         name: templateCollections.name,
@@ -230,7 +227,7 @@ export async function GET(request: NextRequest) {
         likeCount: templateCollections.likeCount,
         createdAt: templateCollections.createdAt,
         updatedAt: templateCollections.updatedAt,
-        
+
         // Item count
         itemCount: sql<number>`
           COALESCE(
@@ -238,17 +235,18 @@ export async function GET(request: NextRequest) {
             0
           )
         `,
-        
+
         // Like status if user provided
-        ...(userId && includeLikes && {
-          isLiked: sql<boolean>`
+        ...(userId &&
+          includeLikes && {
+            isLiked: sql<boolean>`
             EXISTS(
               SELECT 1 FROM collection_likes 
               WHERE collection_id = ${templateCollections.id} 
               AND user_id = ${userId}
             )
           `,
-        }),
+          }),
       })
       .from(templateCollections)
       .leftJoin(user, eq(templateCollections.createdByUserId, user.id))
@@ -270,10 +268,10 @@ export async function GET(request: NextRequest) {
     // Add templates if requested
     let collectionsWithTemplates = collections
     if (includeTemplates && collections.length > 0) {
-      const collectionIds = collections.map(c => c.id)
+      const collectionIds = collections.map((c) => c.id)
       const templatesInCollections = await getTemplatesInCollections(collectionIds)
-      
-      collectionsWithTemplates = collections.map(collection => ({
+
+      collectionsWithTemplates = collections.map((collection) => ({
         ...collection,
         templates: templatesInCollections[collection.id] || [],
       }))
@@ -348,16 +346,7 @@ export async function POST(request: NextRequest) {
   try {
     const creation: CollectionCreation = await request.json()
 
-    const {
-      name,
-      description,
-      isPublic,
-      coverImage,
-      color,
-      icon,
-      templateIds,
-      userId,
-    } = creation
+    const { name, description, isPublic, coverImage, color, icon, templateIds, userId } = creation
 
     // Validate required fields
     if (!name || !userId) {
@@ -386,10 +375,7 @@ export async function POST(request: NextRequest) {
       .select({ id: templateCollections.id })
       .from(templateCollections)
       .where(
-        and(
-          eq(templateCollections.createdByUserId, userId),
-          eq(templateCollections.slug, slug)
-        )
+        and(eq(templateCollections.createdByUserId, userId), eq(templateCollections.slug, slug))
       )
       .limit(1)
 
@@ -547,7 +533,11 @@ export async function PUT(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const { collectionId, userId, ...updates }: CollectionUpdate & { collectionId: string; userId: string } = await request.json()
+    const {
+      collectionId,
+      userId,
+      ...updates
+    }: CollectionUpdate & { collectionId: string; userId: string } = await request.json()
 
     if (!collectionId || !userId) {
       return NextResponse.json(
@@ -751,7 +741,11 @@ export async function DELETE(request: NextRequest) {
 /**
  * Get collection by ID with optional template details
  */
-async function getCollectionById(collectionId: string, userId?: string | null, includeTemplates = false) {
+async function getCollectionById(
+  collectionId: string,
+  userId?: string | null,
+  includeTemplates = false
+) {
   // Get collection with creator info
   const collection = await db
     .select({
@@ -771,7 +765,7 @@ async function getCollectionById(collectionId: string, userId?: string | null, i
       likeCount: templateCollections.likeCount,
       createdAt: templateCollections.createdAt,
       updatedAt: templateCollections.updatedAt,
-      
+
       // Like status if user provided
       ...(userId && {
         isLiked: sql<boolean>`
@@ -852,24 +846,27 @@ async function getTemplatesInCollections(collectionIds: string[]) {
     .orderBy(templateCollectionItems.sortOrder, templates.name)
 
   // Group templates by collection ID
-  return templatesQuery.reduce((acc, template) => {
-    if (!acc[template.collectionId]) {
-      acc[template.collectionId] = []
-    }
-    acc[template.collectionId].push({
-      id: template.templateId,
-      name: template.templateName,
-      description: template.templateDescription,
-      categoryName: template.categoryName,
-      ratingAverage: template.ratingAverage,
-      downloadCount: template.downloadCount,
-      color: template.color,
-      icon: template.icon,
-      sortOrder: template.sortOrder,
-      addedAt: template.addedAt,
-    })
-    return acc
-  }, {} as Record<string, any[]>)
+  return templatesQuery.reduce(
+    (acc, template) => {
+      if (!acc[template.collectionId]) {
+        acc[template.collectionId] = []
+      }
+      acc[template.collectionId].push({
+        id: template.templateId,
+        name: template.templateName,
+        description: template.templateDescription,
+        categoryName: template.categoryName,
+        ratingAverage: template.ratingAverage,
+        downloadCount: template.downloadCount,
+        color: template.color,
+        icon: template.icon,
+        sortOrder: template.sortOrder,
+        addedAt: template.addedAt,
+      })
+      return acc
+    },
+    {} as Record<string, any[]>
+  )
 }
 
 /**

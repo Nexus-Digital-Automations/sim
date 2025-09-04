@@ -22,17 +22,16 @@
  * @implements Advanced Template Publishing Architecture
  */
 
-import { and, desc, eq, sql, inArray, or, gte } from 'drizzle-orm'
+import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templates,
   templateCategories,
-  templateTags,
-  templateTagAssignments,
   templatePricing,
-  user,
+  templates,
+  templateTagAssignments,
+  templateTags,
   workflows,
 } from '@/db/schema'
 
@@ -161,28 +160,28 @@ export async function GET(request: NextRequest) {
         difficultyLevel: templates.difficultyLevel,
         estimatedSetupTime: templates.estimatedSetupTime,
         license: templates.license,
-        
+
         // Metrics
         viewCount: templates.viewCount,
         downloadCount: templates.downloadCount,
         ratingAverage: templates.ratingAverage,
         ratingCount: templates.ratingCount,
-        
+
         // Visual
         color: templates.color,
         icon: templates.icon,
-        
+
         // Timestamps
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
         publishedAt: templates.publishedAt,
-        
+
         // Category info
         categoryName: templateCategories.name,
         categorySlug: templateCategories.slug,
         categoryColor: templateCategories.color,
         categoryIcon: templateCategories.icon,
-        
+
         // Analytics if requested
         ...(includeAnalytics && {
           todayViews: sql<number>`
@@ -249,9 +248,9 @@ export async function GET(request: NextRequest) {
     const totalCount = totalCountResult[0]?.count || 0
 
     // Get template tags
-    const templateIds = managedTemplates.map(t => t.id)
+    const templateIds = managedTemplates.map((t) => t.id)
     let templateTags: Record<string, any[]> = {}
-    
+
     if (templateIds.length > 0) {
       const tagQuery = await db
         .select({
@@ -265,16 +264,19 @@ export async function GET(request: NextRequest) {
         .innerJoin(templateTags, eq(templateTagAssignments.tagId, templateTags.id))
         .where(inArray(templateTagAssignments.templateId, templateIds))
 
-      templateTags = tagQuery.reduce((acc, tag) => {
-        if (!acc[tag.templateId]) acc[tag.templateId] = []
-        acc[tag.templateId].push({
-          name: tag.tagName,
-          displayName: tag.tagDisplayName,
-          color: tag.tagColor,
-          type: tag.tagType,
-        })
-        return acc
-      }, {} as Record<string, any[]>)
+      templateTags = tagQuery.reduce(
+        (acc, tag) => {
+          if (!acc[tag.templateId]) acc[tag.templateId] = []
+          acc[tag.templateId].push({
+            name: tag.tagName,
+            displayName: tag.tagDisplayName,
+            color: tag.tagColor,
+            type: tag.tagType,
+          })
+          return acc
+        },
+        {} as Record<string, any[]>
+      )
     }
 
     // Get pricing info if requested
@@ -285,20 +287,23 @@ export async function GET(request: NextRequest) {
         .from(templatePricing)
         .where(inArray(templatePricing.templateId, templateIds))
 
-      templatePricingInfo = pricingQuery.reduce((acc, pricing) => {
-        acc[pricing.templateId] = {
-          pricingType: pricing.pricingType,
-          basePrice: pricing.basePrice,
-          currency: pricing.currency,
-          creatorSharePercentage: pricing.creatorSharePercentage,
-          platformFeePercentage: pricing.platformFeePercentage,
-        }
-        return acc
-      }, {} as Record<string, any>)
+      templatePricingInfo = pricingQuery.reduce(
+        (acc, pricing) => {
+          acc[pricing.templateId] = {
+            pricingType: pricing.pricingType,
+            basePrice: pricing.basePrice,
+            currency: pricing.currency,
+            creatorSharePercentage: pricing.creatorSharePercentage,
+            platformFeePercentage: pricing.platformFeePercentage,
+          }
+          return acc
+        },
+        {} as Record<string, any>
+      )
     }
 
     // Format results
-    const formattedTemplates = managedTemplates.map(template => ({
+    const formattedTemplates = managedTemplates.map((template) => ({
       ...template,
       tags: templateTags[template.id] || [],
       ...(includePricing && {
@@ -509,13 +514,13 @@ export async function POST(request: NextRequest) {
       industryTags: industryTags || [],
       useCaseTags: useCaseTags || [],
       integrationsUsed: extractedIntegrations,
-      
+
       // Initialize metrics
       viewCount: 0,
       downloadCount: 0,
       ratingAverage: 0,
       ratingCount: 0,
-      
+
       // Set timestamps
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -622,7 +627,11 @@ export async function PUT(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const { templateId, userId, ...updates }: TemplateUpdate & { templateId: string; userId: string } = await request.json()
+    const {
+      templateId,
+      userId,
+      ...updates
+    }: TemplateUpdate & { templateId: string; userId: string } = await request.json()
 
     if (!templateId || !userId) {
       return NextResponse.json(
@@ -693,10 +702,7 @@ export async function PUT(request: NextRequest) {
     const { tags, ...templateUpdateData } = updateData
 
     // Update template
-    await db
-      .update(templates)
-      .set(templateUpdateData)
-      .where(eq(templates.id, templateId))
+    await db.update(templates).set(templateUpdateData).where(eq(templates.id, templateId))
 
     // Update tags if provided
     if (tags) {
@@ -704,7 +710,7 @@ export async function PUT(request: NextRequest) {
       await db
         .delete(templateTagAssignments)
         .where(eq(templateTagAssignments.templateId, templateId))
-      
+
       // Add new tags
       if (tags.length > 0) {
         await addTemplateTags(templateId, tags)
@@ -811,7 +817,7 @@ export async function DELETE(request: NextRequest) {
     if (permanent) {
       // Permanent deletion - remove all related data
       await db.delete(templates).where(eq(templates.id, templateId))
-      
+
       logger.info(`[${requestId}] Template permanently deleted`, {
         templateId,
         templateName: template[0].name,
@@ -876,7 +882,7 @@ export async function DELETE(request: NextRequest) {
 async function addTemplateTags(templateId: string, tagNames: string[]) {
   for (const tagName of tagNames) {
     // Get or create tag
-    let tag = await db
+    const tag = await db
       .select({ id: templateTags.id })
       .from(templateTags)
       .where(eq(templateTags.name, tagName))
@@ -1031,7 +1037,7 @@ function extractIntegrationsFromWorkflow(workflowContent: any): string[] {
     }
 
     const integrations = new Set<string>()
-    
+
     // Look for blocks with integration types
     if (workflowContent.blocks) {
       for (const block of workflowContent.blocks) {
@@ -1053,13 +1059,36 @@ function extractIntegrationsFromWorkflow(workflowContent: any): string[] {
 /**
  * Extract keywords from workflow content and metadata
  */
-function extractKeywordsFromWorkflow(workflowContent: any, name: string, description: string): string[] {
+function extractKeywordsFromWorkflow(
+  workflowContent: any,
+  name: string,
+  description: string
+): string[] {
   const keywords = new Set<string>()
-  
+
   // Extract from name and description
   const text = `${name} ${description}`.toLowerCase()
-  const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were']
-  
+  const commonWords = [
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'is',
+    'are',
+    'was',
+    'were',
+  ]
+
   const words = text.match(/\b\w{3,}\b/g) || []
   for (const word of words) {
     if (!commonWords.includes(word)) {

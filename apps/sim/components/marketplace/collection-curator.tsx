@@ -33,23 +33,16 @@
 
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, Reorder, motion } from 'framer-motion'
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   Archive,
   ArrowLeft,
-  BookOpen,
-  ChevronDown,
-  ChevronRight,
   Copy,
-  Download,
   Edit3,
   Eye,
-  Filter,
   FolderOpen,
   Grid3X3,
-  Heart,
-  Image,
-  Layout,
   Link2,
   List,
   Lock,
@@ -59,22 +52,15 @@ import {
   Plus,
   Save,
   Search,
-  Settings,
-  Share2,
   Star,
-  Tag,
   Trash2,
   TrendingUp,
-  Users,
-  X,
   Zap,
 } from 'lucide-react'
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { useRouter } from 'next/navigation'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -102,7 +88,6 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { Template, TemplateCollection, User } from '@/lib/templates/types'
@@ -275,7 +260,9 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
       try {
         // Load analytics if enabled
         if (showAnalytics) {
-          const analyticsResponse = await fetch(`/api/marketplace/collections/${collection.id}/analytics`)
+          const analyticsResponse = await fetch(
+            `/api/marketplace/collections/${collection.id}/analytics`
+          )
           if (analyticsResponse.ok) {
             const analyticsData = await analyticsResponse.json()
             setCollectionAnalytics(analyticsData.data)
@@ -305,11 +292,12 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
     if (!searchQuery.trim()) return availableTemplates
 
     const query = searchQuery.toLowerCase()
-    return availableTemplates.filter(template =>
-      template.name.toLowerCase().includes(query) ||
-      template.description.toLowerCase().includes(query) ||
-      template.category.toLowerCase().includes(query) ||
-      template.tags?.some(tag => tag.toLowerCase().includes(query))
+    return availableTemplates.filter(
+      (template) =>
+        template.name.toLowerCase().includes(query) ||
+        template.description.toLowerCase().includes(query) ||
+        template.category.toLowerCase().includes(query) ||
+        template.tags?.some((tag) => tag.toLowerCase().includes(query))
     )
   }, [availableTemplates, searchQuery])
 
@@ -317,54 +305,62 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
    * Handle collection data updates
    */
   const updateCollectionData = useCallback((updates: Partial<TemplateCollection>) => {
-    setCollectionData(prev => ({ ...prev, ...updates }))
+    setCollectionData((prev) => ({ ...prev, ...updates }))
   }, [])
 
   /**
    * Handle drag end
    */
-  const handleDragEnd = useCallback((result: any) => {
-    if (!result.destination) return
+  const handleDragEnd = useCallback(
+    (result: any) => {
+      if (!result.destination) return
 
-    const templates = Array.from(collectionData.templates || [])
-    const [reorderedItem] = templates.splice(result.source.index, 1)
-    templates.splice(result.destination.index, 0, reorderedItem)
+      const templates = Array.from(collectionData.templates || [])
+      const [reorderedItem] = templates.splice(result.source.index, 1)
+      templates.splice(result.destination.index, 0, reorderedItem)
 
-    updateCollectionData({ templates })
-    setDraggedItem(null)
-  }, [collectionData.templates, updateCollectionData])
+      updateCollectionData({ templates })
+      setDraggedItem(null)
+    },
+    [collectionData.templates, updateCollectionData]
+  )
 
   /**
    * Add templates to collection
    */
-  const addTemplatesToCollection = useCallback((templates: Template[]) => {
-    const existingIds = new Set(collectionData.templates?.map(t => t.id) || [])
-    const newTemplates = templates.filter(t => !existingIds.has(t.id))
-    
-    if (newTemplates.length > 0) {
-      updateCollectionData({
-        templates: [...(collectionData.templates || []), ...newTemplates]
-      })
-    }
-  }, [collectionData.templates, updateCollectionData])
+  const addTemplatesToCollection = useCallback(
+    (templates: Template[]) => {
+      const existingIds = new Set(collectionData.templates?.map((t) => t.id) || [])
+      const newTemplates = templates.filter((t) => !existingIds.has(t.id))
+
+      if (newTemplates.length > 0) {
+        updateCollectionData({
+          templates: [...(collectionData.templates || []), ...newTemplates],
+        })
+      }
+    },
+    [collectionData.templates, updateCollectionData]
+  )
 
   /**
    * Remove templates from collection
    */
-  const removeTemplatesFromCollection = useCallback((templateIds: string[]) => {
-    const updatedTemplates = collectionData.templates?.filter(
-      template => !templateIds.includes(template.id)
-    ) || []
-    
-    updateCollectionData({ templates: updatedTemplates })
-    setSelectedTemplates(new Set())
-  }, [collectionData.templates, updateCollectionData])
+  const removeTemplatesFromCollection = useCallback(
+    (templateIds: string[]) => {
+      const updatedTemplates =
+        collectionData.templates?.filter((template) => !templateIds.includes(template.id)) || []
+
+      updateCollectionData({ templates: updatedTemplates })
+      setSelectedTemplates(new Set())
+    },
+    [collectionData.templates, updateCollectionData]
+  )
 
   /**
    * Handle template selection toggle
    */
   const toggleTemplateSelection = useCallback((templateId: string) => {
-    setSelectedTemplates(prev => {
+    setSelectedTemplates((prev) => {
       const newSelection = new Set(prev)
       if (newSelection.has(templateId)) {
         newSelection.delete(templateId)
@@ -378,13 +374,16 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
   /**
    * Handle bulk selection
    */
-  const handleBulkSelection = useCallback((selectAll: boolean) => {
-    if (selectAll) {
-      setSelectedTemplates(new Set(collectionData.templates?.map(t => t.id) || []))
-    } else {
-      setSelectedTemplates(new Set())
-    }
-  }, [collectionData.templates])
+  const handleBulkSelection = useCallback(
+    (selectAll: boolean) => {
+      if (selectAll) {
+        setSelectedTemplates(new Set(collectionData.templates?.map((t) => t.id) || []))
+      } else {
+        setSelectedTemplates(new Set())
+      }
+    },
+    [collectionData.templates]
+  )
 
   /**
    * Handle collection save
@@ -399,9 +398,10 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
       if (onSave) {
         await onSave(collectionData as TemplateCollection)
       } else {
-        const endpoint = mode === 'create'
-          ? '/api/marketplace/collections'
-          : `/api/marketplace/collections/${collection?.id}`
+        const endpoint =
+          mode === 'create'
+            ? '/api/marketplace/collections'
+            : `/api/marketplace/collections/${collection?.id}`
 
         const response = await fetch(endpoint, {
           method: mode === 'create' ? 'POST' : 'PUT',
@@ -427,22 +427,28 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
   /**
    * Apply smart suggestion
    */
-  const applySuggestion = useCallback((suggestion: SmartSuggestion) => {
-    addTemplatesToCollection(suggestion.templates)
-  }, [addTemplatesToCollection])
+  const applySuggestion = useCallback(
+    (suggestion: SmartSuggestion) => {
+      addTemplatesToCollection(suggestion.templates)
+    },
+    [addTemplatesToCollection]
+  )
 
   /**
    * Handle theme change
    */
-  const handleThemeChange = useCallback((theme: CollectionTheme) => {
-    updateCollectionData({
-      theme: {
-        primaryColor: theme.primaryColor,
-        secondaryColor: theme.secondaryColor,
-        backgroundColor: theme.backgroundColor,
-      }
-    })
-  }, [updateCollectionData])
+  const handleThemeChange = useCallback(
+    (theme: CollectionTheme) => {
+      updateCollectionData({
+        theme: {
+          primaryColor: theme.primaryColor,
+          secondaryColor: theme.secondaryColor,
+          backgroundColor: theme.backgroundColor,
+        },
+      })
+    },
+    [updateCollectionData]
+  )
 
   return (
     <TooltipProvider>
@@ -455,14 +461,13 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                 <ArrowLeft className='h-4 w-4' />
               </Button>
               <div>
-                <h1 className='text-xl font-semibold'>
+                <h1 className='font-semibold text-xl'>
                   {mode === 'create' ? 'Create Collection' : 'Edit Collection'}
                 </h1>
                 <p className='text-muted-foreground text-sm'>
-                  {mode === 'create' 
+                  {mode === 'create'
                     ? 'Organize templates into curated collections'
-                    : 'Manage and organize your template collection'
-                  }
+                    : 'Manage and organize your template collection'}
                 </p>
               </div>
             </div>
@@ -496,7 +501,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
         </div>
 
         <div className='mx-auto max-w-7xl p-6'>
-          <div className='grid grid-cols-1 lg:grid-cols-4 gap-8'>
+          <div className='grid grid-cols-1 gap-8 lg:grid-cols-4'>
             {/* Sidebar - Collection Settings */}
             <div className='lg:col-span-1'>
               <Card>
@@ -529,7 +534,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                     <Label>Visibility</Label>
                     <Select
                       value={collectionData.visibility}
-                      onValueChange={(value: 'public' | 'private' | 'unlisted') => 
+                      onValueChange={(value: 'public' | 'private' | 'unlisted') =>
                         updateCollectionData({ visibility: value })
                       }
                     >
@@ -585,7 +590,9 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                         <Label>Allow Collaborators</Label>
                         <Switch
                           checked={collectionData.allowCollaborators || false}
-                          onCheckedChange={(checked) => updateCollectionData({ allowCollaborators: checked })}
+                          onCheckedChange={(checked) =>
+                            updateCollectionData({ allowCollaborators: checked })
+                          }
                         />
                       </div>
                     </div>
@@ -633,21 +640,21 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
               {smartSuggestions.length > 0 && (
                 <Card className='mt-6'>
                   <CardHeader>
-                    <CardTitle className='text-sm flex items-center gap-2'>
+                    <CardTitle className='flex items-center gap-2 text-sm'>
                       <Zap className='h-4 w-4' />
                       Smart Suggestions
                     </CardTitle>
                   </CardHeader>
                   <CardContent className='space-y-3'>
                     {smartSuggestions.slice(0, 3).map((suggestion, index) => (
-                      <div key={index} className='border rounded-lg p-3 space-y-2'>
+                      <div key={index} className='space-y-2 rounded-lg border p-3'>
                         <div className='flex items-center justify-between'>
                           <p className='font-medium text-sm'>{suggestion.reason}</p>
                           <Badge variant='outline' className='text-xs'>
                             {(suggestion.confidence * 100).toFixed(0)}%
                           </Badge>
                         </div>
-                        <p className='text-xs text-muted-foreground'>
+                        <p className='text-muted-foreground text-xs'>
                           {suggestion.templates.length} templates
                         </p>
                         <Button
@@ -680,13 +687,13 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                     {/* Bulk Actions */}
                     {selectedTemplates.size > 0 && (
                       <div className='flex items-center gap-2'>
-                        <Badge variant='secondary'>
-                          {selectedTemplates.size} selected
-                        </Badge>
+                        <Badge variant='secondary'>{selectedTemplates.size} selected</Badge>
                         <Button
                           size='sm'
                           variant='outline'
-                          onClick={() => removeTemplatesFromCollection(Array.from(selectedTemplates))}
+                          onClick={() =>
+                            removeTemplatesFromCollection(Array.from(selectedTemplates))
+                          }
                         >
                           <Trash2 className='mr-2 h-4 w-4' />
                           Remove
@@ -703,7 +710,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                   </div>
 
                   {collectionData.templates && collectionData.templates.length > 0 && (
-                    <div className='flex items-center gap-2 mt-4'>
+                    <div className='mt-4 flex items-center gap-2'>
                       <Checkbox
                         checked={selectedTemplates.size === collectionData.templates.length}
                         onCheckedChange={(checked) => handleBulkSelection(!!checked)}
@@ -715,10 +722,10 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
 
                 <CardContent>
                   {!collectionData.templates || collectionData.templates.length === 0 ? (
-                    <div className='text-center py-12'>
-                      <Archive className='h-12 w-12 text-gray-400 mx-auto mb-4' />
-                      <h3 className='font-medium mb-2'>No Templates Yet</h3>
-                      <p className='text-muted-foreground text-sm mb-4'>
+                    <div className='py-12 text-center'>
+                      <Archive className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+                      <h3 className='mb-2 font-medium'>No Templates Yet</h3>
+                      <p className='mb-4 text-muted-foreground text-sm'>
                         Start building your collection by adding templates
                       </p>
                       <Button onClick={() => setShowTemplateSelector(true)}>
@@ -735,12 +742,16 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                             ref={provided.innerRef}
                             className={cn(
                               'space-y-4',
-                              snapshot.isDraggingOver && 'bg-blue-50 rounded-lg p-4'
+                              snapshot.isDraggingOver && 'rounded-lg bg-blue-50 p-4'
                             )}
                           >
                             <AnimatePresence>
                               {collectionData.templates.map((template, index) => (
-                                <Draggable key={template.id} draggableId={template.id} index={index}>
+                                <Draggable
+                                  key={template.id}
+                                  draggableId={template.id}
+                                  index={index}
+                                >
                                   {(provided, snapshot) => (
                                     <motion.div
                                       ref={provided.innerRef}
@@ -750,9 +761,10 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                                       animate={{ opacity: 1, y: 0 }}
                                       exit={{ opacity: 0, y: -20 }}
                                       className={cn(
-                                        'flex items-center gap-4 p-4 bg-white border rounded-lg transition-all',
-                                        snapshot.isDragging && 'shadow-lg rotate-1',
-                                        selectedTemplates.has(template.id) && 'border-blue-300 bg-blue-50'
+                                        'flex items-center gap-4 rounded-lg border bg-white p-4 transition-all',
+                                        snapshot.isDragging && 'rotate-1 shadow-lg',
+                                        selectedTemplates.has(template.id) &&
+                                          'border-blue-300 bg-blue-50'
                                       )}
                                     >
                                       <Checkbox
@@ -762,24 +774,24 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
 
                                       <div
                                         {...provided.dragHandleProps}
-                                        className='cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600'
+                                        className='cursor-grab text-gray-400 hover:text-gray-600 active:cursor-grabbing'
                                       >
                                         <Move className='h-4 w-4' />
                                       </div>
 
                                       <div
-                                        className='h-10 w-10 rounded-lg flex items-center justify-center text-white text-sm font-bold'
+                                        className='flex h-10 w-10 items-center justify-center rounded-lg font-bold text-sm text-white'
                                         style={{ backgroundColor: template.color }}
                                       >
                                         {template.icon || '📄'}
                                       </div>
 
-                                      <div className='flex-1 min-w-0'>
-                                        <p className='font-medium truncate'>{template.name}</p>
-                                        <p className='text-sm text-muted-foreground truncate'>
+                                      <div className='min-w-0 flex-1'>
+                                        <p className='truncate font-medium'>{template.name}</p>
+                                        <p className='truncate text-muted-foreground text-sm'>
                                           {template.description}
                                         </p>
-                                        <div className='flex items-center gap-2 mt-1'>
+                                        <div className='mt-1 flex items-center gap-2'>
                                           <Badge variant='outline' className='text-xs'>
                                             {template.category}
                                           </Badge>
@@ -823,7 +835,9 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
-                                              onClick={() => removeTemplatesFromCollection([template.id])}
+                                              onClick={() =>
+                                                removeTemplatesFromCollection([template.id])
+                                              }
                                               className='text-red-600'
                                             >
                                               <Trash2 className='mr-2 h-4 w-4' />
@@ -851,7 +865,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
 
         {/* Template Selector Dialog */}
         <Dialog open={showTemplateSelector} onOpenChange={setShowTemplateSelector}>
-          <DialogContent className='max-w-4xl max-h-[80vh] overflow-y-auto'>
+          <DialogContent className='max-h-[80vh] max-w-4xl overflow-y-auto'>
             <DialogHeader>
               <DialogTitle>Add Templates to Collection</DialogTitle>
               <DialogDescription>
@@ -861,7 +875,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
 
             <div className='space-y-4'>
               <div className='relative'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+                <Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-gray-400' />
                 <Input
                   placeholder='Search templates...'
                   value={searchQuery}
@@ -870,30 +884,32 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                 />
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto'>
+              <div className='grid max-h-96 grid-cols-1 gap-4 overflow-y-auto md:grid-cols-2'>
                 {filteredTemplates.map((template) => {
-                  const isAlreadyInCollection = collectionData.templates?.some(t => t.id === template.id)
-                  
+                  const isAlreadyInCollection = collectionData.templates?.some(
+                    (t) => t.id === template.id
+                  )
+
                   return (
                     <Card
                       key={template.id}
                       className={cn(
                         'cursor-pointer transition-all hover:shadow-md',
-                        isAlreadyInCollection && 'opacity-50 pointer-events-none'
+                        isAlreadyInCollection && 'pointer-events-none opacity-50'
                       )}
                       onClick={() => !isAlreadyInCollection && addTemplatesToCollection([template])}
                     >
                       <CardContent className='p-4'>
                         <div className='flex items-center gap-3'>
                           <div
-                            className='h-8 w-8 rounded flex items-center justify-center text-white text-xs font-bold'
+                            className='flex h-8 w-8 items-center justify-center rounded font-bold text-white text-xs'
                             style={{ backgroundColor: template.color }}
                           >
                             {template.icon || '📄'}
                           </div>
-                          <div className='flex-1 min-w-0'>
-                            <p className='font-medium text-sm truncate'>{template.name}</p>
-                            <p className='text-xs text-muted-foreground truncate'>
+                          <div className='min-w-0 flex-1'>
+                            <p className='truncate font-medium text-sm'>{template.name}</p>
+                            <p className='truncate text-muted-foreground text-xs'>
                               {template.description}
                             </p>
                           </div>
@@ -923,9 +939,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Collection Theme</DialogTitle>
-              <DialogDescription>
-                Choose a theme for your collection
-              </DialogDescription>
+              <DialogDescription>Choose a theme for your collection</DialogDescription>
             </DialogHeader>
 
             <div className='grid grid-cols-2 gap-4'>
@@ -934,7 +948,8 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                   key={theme.id}
                   className={cn(
                     'cursor-pointer transition-all hover:shadow-md',
-                    collectionData.theme?.primaryColor === theme.primaryColor && 'ring-2 ring-blue-500'
+                    collectionData.theme?.primaryColor === theme.primaryColor &&
+                      'ring-2 ring-blue-500'
                   )}
                   onClick={() => handleThemeChange(theme)}
                   style={{
@@ -944,7 +959,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
                 >
                   <CardContent className='p-4 text-center'>
                     <div
-                      className='h-8 w-8 rounded-full mx-auto mb-2'
+                      className='mx-auto mb-2 h-8 w-8 rounded-full'
                       style={{ backgroundColor: theme.primaryColor }}
                     />
                     <p className='font-medium text-sm'>{theme.name}</p>
@@ -954,9 +969,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
             </div>
 
             <DialogFooter>
-              <Button onClick={() => setShowThemeEditor(false)}>
-                Apply Theme
-              </Button>
+              <Button onClick={() => setShowThemeEditor(false)}>Apply Theme</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -967,50 +980,46 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
             <DialogContent className='max-w-4xl'>
               <DialogHeader>
                 <DialogTitle>Collection Analytics</DialogTitle>
-                <DialogDescription>
-                  Performance metrics for your collection
-                </DialogDescription>
+                <DialogDescription>Performance metrics for your collection</DialogDescription>
               </DialogHeader>
 
-              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+              <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                 <Card>
                   <CardContent className='p-4 text-center'>
-                    <div className='text-2xl font-bold text-blue-600'>
+                    <div className='font-bold text-2xl text-blue-600'>
                       {collectionAnalytics.totalViews}
                     </div>
-                    <p className='text-sm text-muted-foreground'>Total Views</p>
+                    <p className='text-muted-foreground text-sm'>Total Views</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className='p-4 text-center'>
-                    <div className='text-2xl font-bold text-green-600'>
+                    <div className='font-bold text-2xl text-green-600'>
                       {collectionAnalytics.totalLikes}
                     </div>
-                    <p className='text-sm text-muted-foreground'>Likes</p>
+                    <p className='text-muted-foreground text-sm'>Likes</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className='p-4 text-center'>
-                    <div className='text-2xl font-bold text-purple-600'>
+                    <div className='font-bold text-2xl text-purple-600'>
                       {collectionAnalytics.totalShares}
                     </div>
-                    <p className='text-sm text-muted-foreground'>Shares</p>
+                    <p className='text-muted-foreground text-sm'>Shares</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className='p-4 text-center'>
-                    <div className='text-2xl font-bold text-orange-600'>
+                    <div className='font-bold text-2xl text-orange-600'>
                       {collectionAnalytics.templatesUsed}
                     </div>
-                    <p className='text-sm text-muted-foreground'>Templates Used</p>
+                    <p className='text-muted-foreground text-sm'>Templates Used</p>
                   </CardContent>
                 </Card>
               </div>
 
               <DialogFooter>
-                <Button onClick={() => setShowAnalyticsDashboard(false)}>
-                  Close
-                </Button>
+                <Button onClick={() => setShowAnalyticsDashboard(false)}>Close</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

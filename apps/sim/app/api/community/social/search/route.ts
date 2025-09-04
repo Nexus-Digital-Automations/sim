@@ -43,20 +43,24 @@ import { db } from '@/db'
 const SearchQuerySchema = z.object({
   query: z.string().min(1).max(200),
   searchType: z.enum(['users', 'templates', 'activities', 'comments', 'all']).default('all'),
-  filters: z.object({
-    categories: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-    dateRange: z.object({
-      from: z.string().datetime().optional(),
-      to: z.string().datetime().optional(),
-    }).optional(),
-    engagementMin: z.number().min(0).optional(),
-    reputationMin: z.number().min(0).optional(),
-    verified: z.boolean().optional(),
-    location: z.string().optional(),
-    language: z.string().optional(),
-    contentType: z.array(z.string()).optional(),
-  }).optional(),
+  filters: z
+    .object({
+      categories: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
+      dateRange: z
+        .object({
+          from: z.string().datetime().optional(),
+          to: z.string().datetime().optional(),
+        })
+        .optional(),
+      engagementMin: z.number().min(0).optional(),
+      reputationMin: z.number().min(0).optional(),
+      verified: z.boolean().optional(),
+      location: z.string().optional(),
+      language: z.string().optional(),
+      contentType: z.array(z.string()).optional(),
+    })
+    .optional(),
   sort: z.enum(['relevance', 'recent', 'popular', 'trending']).default('relevance'),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
@@ -65,7 +69,9 @@ const SearchQuerySchema = z.object({
 })
 
 const DiscoveryQuerySchema = z.object({
-  discoveryType: z.enum(['trending', 'recommended', 'similar', 'popular', 'new']).default('recommended'),
+  discoveryType: z
+    .enum(['trending', 'recommended', 'similar', 'popular', 'new'])
+    .default('recommended'),
   baseId: z.string().optional(), // For similarity-based discovery
   baseType: z.enum(['user', 'template', 'activity']).optional(),
   categories: z.array(z.string()).optional(),
@@ -84,7 +90,9 @@ const SuggestionsQuerySchema = z.object({
 })
 
 const TrendingQuerySchema = z.object({
-  trendingType: z.enum(['hashtags', 'topics', 'users', 'templates', 'activities']).default('topics'),
+  trendingType: z
+    .enum(['hashtags', 'topics', 'users', 'templates', 'activities'])
+    .default('topics'),
   timeframe: z.enum(['1h', '6h', '1d', '3d', '1w']).default('1d'),
   limit: z.number().min(1).max(50).default(20),
   minThreshold: z.number().min(0).optional(),
@@ -110,13 +118,13 @@ export async function GET(request: NextRequest) {
 
     // Type conversions for schema validation
     const processedParams: Record<string, any> = { ...queryParams }
-    
+
     // Handle nested filters object
     if (processedParams.filters && typeof processedParams.filters === 'string') {
       try {
         processedParams.filters = JSON.parse(processedParams.filters)
       } catch {
-        delete processedParams.filters
+        processedParams.filters = undefined
       }
     }
 
@@ -131,10 +139,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert numeric fields
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
-    if (processedParams.includeAggregations) processedParams.includeAggregations = processedParams.includeAggregations === 'true'
-    if (processedParams.personalized) processedParams.personalized = processedParams.personalized === 'true'
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.includeAggregations)
+      processedParams.includeAggregations = processedParams.includeAggregations === 'true'
+    if (processedParams.personalized)
+      processedParams.personalized = processedParams.personalized === 'true'
 
     const params = SearchQuerySchema.parse(processedParams)
     console.log('[SocialSearch] Search parameters validated:', params)
@@ -172,7 +184,9 @@ export async function GET(request: NextRequest) {
     }
 
     const executionTime = Date.now() - startTime
-    console.log(`[SocialSearch] Search completed with ${searchResults.results.length} results in ${executionTime}ms`)
+    console.log(
+      `[SocialSearch] Search completed with ${searchResults.results.length} results in ${executionTime}ms`
+    )
 
     return NextResponse.json({
       data: searchResults.results,
@@ -216,7 +230,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Search failed',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -265,7 +282,9 @@ export async function POST(request: NextRequest) {
     }
 
     const executionTime = Date.now() - startTime
-    console.log(`[SocialSearch] Discovery completed with ${discoveryResults.results.length} results in ${executionTime}ms`)
+    console.log(
+      `[SocialSearch] Discovery completed with ${discoveryResults.results.length} results in ${executionTime}ms`
+    )
 
     return NextResponse.json({
       data: discoveryResults.results,
@@ -305,7 +324,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Discovery failed',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -377,7 +399,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Suggestions failed',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -413,28 +438,28 @@ async function executeUniversalSearch(
     // Search users if requested
     if (params.searchType === 'users' || params.searchType === 'all') {
       const userResults = await searchUsers(params, currentUserId, searchContext)
-      results.push(...userResults.map(r => ({ ...r, resultType: 'user' })))
+      results.push(...userResults.map((r) => ({ ...r, resultType: 'user' })))
       resultTypes.users = userResults.length
     }
 
     // Search templates if requested
     if (params.searchType === 'templates' || params.searchType === 'all') {
       const templateResults = await searchTemplates(params, currentUserId, searchContext)
-      results.push(...templateResults.map(r => ({ ...r, resultType: 'template' })))
+      results.push(...templateResults.map((r) => ({ ...r, resultType: 'template' })))
       resultTypes.templates = templateResults.length
     }
 
     // Search activities if requested
     if (params.searchType === 'activities' || params.searchType === 'all') {
       const activityResults = await searchActivities(params, currentUserId, searchContext)
-      results.push(...activityResults.map(r => ({ ...r, resultType: 'activity' })))
+      results.push(...activityResults.map((r) => ({ ...r, resultType: 'activity' })))
       resultTypes.activities = activityResults.length
     }
 
     // Search comments if requested
     if (params.searchType === 'comments' || params.searchType === 'all') {
       const commentResults = await searchComments(params, currentUserId, searchContext)
-      results.push(...commentResults.map(r => ({ ...r, resultType: 'comment' })))
+      results.push(...commentResults.map((r) => ({ ...r, resultType: 'comment' })))
       resultTypes.comments = commentResults.length
     }
 
@@ -475,7 +500,11 @@ async function executeUniversalSearch(
 /**
  * Search users with advanced filtering and ranking
  */
-async function searchUsers(params: any, currentUserId?: string, searchContext?: any): Promise<any[]> {
+async function searchUsers(
+  params: any,
+  currentUserId?: string,
+  searchContext?: any
+): Promise<any[]> {
   try {
     console.log('[SocialSearch] Searching users:', params.query)
 
@@ -484,16 +513,19 @@ async function searchUsers(params: any, currentUserId?: string, searchContext?: 
     const queryValues: any[] = []
 
     // Build text search conditions
-    const textSearchCondition = searchTerms.map((term, index) => 
-      `(LOWER(u.name) LIKE $${queryValues.length + index + 1} OR 
+    const textSearchCondition = searchTerms
+      .map(
+        (term, index) =>
+          `(LOWER(u.name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.display_name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.bio) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.title) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cup.company) LIKE $${queryValues.length + index + 1})`
-    ).join(' AND ')
-    
+      )
+      .join(' AND ')
+
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map(term => `%${term}%`))
+    queryValues.push(...searchTerms.map((term) => `%${term}%`))
 
     // Apply filters
     if (params.filters?.verified) {
@@ -555,9 +587,13 @@ async function searchUsers(params: any, currentUserId?: string, searchContext?: 
         ur.reputation_level,
         COALESCE(follower_counts.follower_count, 0) as follower_count,
         COALESCE(template_counts.template_count, 0) as template_count,
-        ${currentUserId ? `
+        ${
+          currentUserId
+            ? `
         CASE WHEN user_follows.follower_id IS NOT NULL THEN true ELSE false END as is_following
-        ` : 'false as is_following'}
+        `
+            : 'false as is_following'
+        }
       FROM "user" u
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
@@ -572,17 +608,21 @@ async function searchUsers(params: any, currentUserId?: string, searchContext?: 
         WHERE status = 'approved'
         GROUP BY created_by_user_id
       ) template_counts ON u.id = template_counts.created_by_user_id
-      ${currentUserId ? `
+      ${
+        currentUserId
+          ? `
       LEFT JOIN community_user_follows user_follows 
         ON u.id = user_follows.following_id AND user_follows.follower_id = '${currentUserId}'
-      ` : ''}
+      `
+          : ''
+      }
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${orderClause}
       LIMIT 50
     `
 
     const result = await db.execute(sql.raw(query))
-    
+
     return result.map((row: any) => ({
       id: row.id,
       name: row.name,
@@ -618,23 +658,30 @@ async function searchUsers(params: any, currentUserId?: string, searchContext?: 
 /**
  * Search templates with social context
  */
-async function searchTemplates(params: any, currentUserId?: string, searchContext?: any): Promise<any[]> {
+async function searchTemplates(
+  params: any,
+  currentUserId?: string,
+  searchContext?: any
+): Promise<any[]> {
   try {
     console.log('[SocialSearch] Searching templates:', params.query)
 
     const searchTerms = params.query.toLowerCase().split(' ').filter(Boolean)
-    const whereConditions: string[] = ['t.status = \'approved\'', 't.visibility = \'public\'']
+    const whereConditions: string[] = ["t.status = 'approved'", "t.visibility = 'public'"]
     const queryValues: any[] = []
 
     // Build text search conditions
-    const textSearchCondition = searchTerms.map((term, index) => 
-      `(LOWER(t.name) LIKE $${queryValues.length + index + 1} OR 
+    const textSearchCondition = searchTerms
+      .map(
+        (term, index) =>
+          `(LOWER(t.name) LIKE $${queryValues.length + index + 1} OR 
         LOWER(t.description) LIKE $${queryValues.length + index + 1} OR 
         LOWER(t.category) LIKE $${queryValues.length + index + 1})`
-    ).join(' AND ')
-    
+      )
+      .join(' AND ')
+
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map(term => `%${term}%`))
+    queryValues.push(...searchTerms.map((term) => `%${term}%`))
 
     // Apply category filters
     if (params.filters?.categories?.length > 0) {
@@ -688,15 +735,21 @@ async function searchTemplates(params: any, currentUserId?: string, searchContex
         cup.display_name as creator_display_name,
         cup.is_verified as creator_is_verified,
         ur.total_points as creator_reputation,
-        ${currentUserId ? `
+        ${
+          currentUserId
+            ? `
         CASE WHEN template_likes.user_id IS NOT NULL THEN true ELSE false END as is_liked,
         CASE WHEN bookmarks.user_id IS NOT NULL THEN true ELSE false END as is_bookmarked
-        ` : 'false as is_liked, false as is_bookmarked'}
+        `
+            : 'false as is_liked, false as is_bookmarked'
+        }
       FROM templates t
       INNER JOIN "user" u ON t.created_by_user_id = u.id
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
-      ${currentUserId ? `
+      ${
+        currentUserId
+          ? `
       LEFT JOIN (
         SELECT target_id, user_id
         FROM community_activity_engagement
@@ -707,14 +760,16 @@ async function searchTemplates(params: any, currentUserId?: string, searchContex
         FROM community_activity_engagement
         WHERE target_type = 'template' AND engagement_type = 'bookmark' AND user_id = '${currentUserId}'
       ) bookmarks ON t.id = bookmarks.target_id
-      ` : ''}
+      `
+          : ''
+      }
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${orderClause}
       LIMIT 50
     `
 
     const result = await db.execute(sql.raw(query))
-    
+
     return result.map((row: any) => ({
       id: row.id,
       name: row.name,
@@ -751,22 +806,32 @@ async function searchTemplates(params: any, currentUserId?: string, searchContex
 /**
  * Search activities with engagement context
  */
-async function searchActivities(params: any, currentUserId?: string, searchContext?: any): Promise<any[]> {
+async function searchActivities(
+  params: any,
+  currentUserId?: string,
+  searchContext?: any
+): Promise<any[]> {
   try {
     console.log('[SocialSearch] Searching activities:', params.query)
 
     const searchTerms = params.query.toLowerCase().split(' ').filter(Boolean)
-    const whereConditions: string[] = ['cua.is_hidden = false', "cua.visibility IN ('public', 'community')"]
+    const whereConditions: string[] = [
+      'cua.is_hidden = false',
+      "cua.visibility IN ('public', 'community')",
+    ]
     const queryValues: any[] = []
 
     // Build text search conditions
-    const textSearchCondition = searchTerms.map((term, index) => 
-      `(LOWER(cua.target_title) LIKE $${queryValues.length + index + 1} OR 
+    const textSearchCondition = searchTerms
+      .map(
+        (term, index) =>
+          `(LOWER(cua.target_title) LIKE $${queryValues.length + index + 1} OR 
         LOWER(cua.activity_data::text) LIKE $${queryValues.length + index + 1})`
-    ).join(' AND ')
-    
+      )
+      .join(' AND ')
+
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map(term => `%${term}%`))
+    queryValues.push(...searchTerms.map((term) => `%${term}%`))
 
     // Apply content type filters
     if (params.filters?.contentType?.length > 0) {
@@ -826,7 +891,7 @@ async function searchActivities(params: any, currentUserId?: string, searchConte
     `
 
     const result = await db.execute(sql.raw(query))
-    
+
     return result.map((row: any) => ({
       id: row.id,
       userId: row.user_id,
@@ -862,7 +927,11 @@ async function searchActivities(params: any, currentUserId?: string, searchConte
 /**
  * Search comments with thread context
  */
-async function searchComments(params: any, currentUserId?: string, searchContext?: any): Promise<any[]> {
+async function searchComments(
+  params: any,
+  currentUserId?: string,
+  searchContext?: any
+): Promise<any[]> {
   try {
     console.log('[SocialSearch] Searching comments:', params.query)
 
@@ -871,12 +940,12 @@ async function searchComments(params: any, currentUserId?: string, searchContext
     const queryValues: any[] = []
 
     // Build text search conditions
-    const textSearchCondition = searchTerms.map((term, index) => 
-      `LOWER(cc.content) LIKE $${queryValues.length + index + 1}`
-    ).join(' AND ')
-    
+    const textSearchCondition = searchTerms
+      .map((term, index) => `LOWER(cc.content) LIKE $${queryValues.length + index + 1}`)
+      .join(' AND ')
+
     whereConditions.push(`(${textSearchCondition})`)
-    queryValues.push(...searchTerms.map(term => `%${term}%`))
+    queryValues.push(...searchTerms.map((term) => `%${term}%`))
 
     // Apply date filters
     if (params.filters?.dateRange?.from) {
@@ -920,7 +989,7 @@ async function searchComments(params: any, currentUserId?: string, searchContext
     `
 
     const result = await db.execute(sql.raw(query))
-    
+
     return result.map((row: any) => ({
       id: row.id,
       userId: row.user_id,
@@ -987,7 +1056,7 @@ async function executeDiscovery(
 async function generateSuggestions(params: any, currentUserId?: string): Promise<any[]> {
   try {
     const query = params.query.toLowerCase()
-    
+
     switch (params.suggestionType) {
       case 'users':
         return await getUserSuggestions(query, params.limit, currentUserId)
@@ -1009,7 +1078,11 @@ async function generateSuggestions(params: any, currentUserId?: string): Promise
 /**
  * Get user suggestions for autocomplete
  */
-async function getUserSuggestions(query: string, limit: number, currentUserId?: string): Promise<any[]> {
+async function getUserSuggestions(
+  query: string,
+  limit: number,
+  currentUserId?: string
+): Promise<any[]> {
   try {
     const result = await db.execute(sql`
       SELECT 
@@ -1053,14 +1126,22 @@ async function getUserSuggestions(query: string, limit: number, currentUserId?: 
 /**
  * Apply universal ranking across different content types
  */
-function applyUniversalRanking(results: any[], params: any, currentUserId?: string, searchContext?: any): any[] {
+function applyUniversalRanking(
+  results: any[],
+  params: any,
+  currentUserId?: string,
+  searchContext?: any
+): any[] {
   // Implement cross-content-type ranking algorithm
   // This is simplified for now
   return results.sort((a, b) => {
     if (a.searchRelevance !== b.searchRelevance) {
       return b.searchRelevance - a.searchRelevance
     }
-    return new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime()
+    return (
+      new Date(b.createdAt || b.created_at).getTime() -
+      new Date(a.createdAt || a.created_at).getTime()
+    )
   })
 }
 
@@ -1072,13 +1153,13 @@ async function getSearchContext(userId: string): Promise<any> {
     const [blockedUsers, preferences, interests] = await Promise.all([
       getUserBlockedUsers(userId),
       getUserSearchPreferences(userId),
-      getUserInterests(userId)
+      getUserInterests(userId),
     ])
 
     return {
       blockedUsers,
       preferences,
-      interests
+      interests,
     }
   } catch (error) {
     console.error('[SocialSearch] Error getting search context:', error)
@@ -1141,9 +1222,15 @@ async function recordSearchQuery(userId: string, params: any, resultCount: numbe
   console.log(`[SocialSearch] Recording search query for user ${userId}: ${params.query}`)
 }
 
-async function recordDiscoveryInteraction(userId: string, params: any, resultCount: number): Promise<void> {
+async function recordDiscoveryInteraction(
+  userId: string,
+  params: any,
+  resultCount: number
+): Promise<void> {
   // Would implement discovery analytics
-  console.log(`[SocialSearch] Recording discovery interaction for user ${userId}: ${params.discoveryType}`)
+  console.log(
+    `[SocialSearch] Recording discovery interaction for user ${userId}: ${params.discoveryType}`
+  )
 }
 
 function calculateQueryComplexity(params: any): number {
