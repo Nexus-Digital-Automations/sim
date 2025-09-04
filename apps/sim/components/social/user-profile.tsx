@@ -25,7 +25,8 @@
 
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Calendar,
   Crown,
@@ -41,7 +42,6 @@ import {
   Star,
   TrendingUp,
   Users,
-  Zap,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -63,8 +63,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -85,7 +83,7 @@ export interface UserProfileData {
   isVerified?: boolean
   isFollowing?: boolean
   isFollower?: boolean
-  
+
   // Reputation and achievements
   reputation: {
     totalPoints: number
@@ -93,7 +91,7 @@ export interface UserProfileData {
     badges: Badge[]
     achievements: Achievement[]
   }
-  
+
   // Social statistics
   stats: {
     followersCount: number
@@ -106,7 +104,7 @@ export interface UserProfileData {
     averageRating: number
     contributionStreak: number
   }
-  
+
   // Activity data
   recentActivity?: ActivitySummary[]
   topTemplates?: TemplateSummary[]
@@ -192,7 +190,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   onFollowAction,
 }) => {
   const router = useRouter()
-  
+
   // State management
   const [profile, setProfile] = useState<UserProfileData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -207,7 +205,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
    */
   const loadProfile = useCallback(async () => {
     const operationId = `profile-load-${userId}-${Date.now()}`
-    
+
     try {
       console.log(`[UserProfile][${operationId}] Loading user profile`, {
         userId,
@@ -263,14 +261,18 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       setIsFollowLoading(true)
 
       // Optimistic update
-      setProfile(prev => prev ? {
-        ...prev,
-        isFollowing: !prev.isFollowing,
-        stats: {
-          ...prev.stats,
-          followersCount: prev.stats.followersCount + (prev.isFollowing ? -1 : 1),
-        },
-      } : null)
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFollowing: !prev.isFollowing,
+              stats: {
+                ...prev.stats,
+                followersCount: prev.stats.followersCount + (prev.isFollowing ? -1 : 1),
+              },
+            }
+          : null
+      )
 
       const response = await fetch('/api/community/social/follows', {
         method: profile.isFollowing ? 'DELETE' : 'POST',
@@ -289,21 +291,25 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
       // Update with server response
       if (result.data) {
-        setProfile(prev => prev ? {
-          ...prev,
-          ...result.data,
-        } : null)
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...result.data,
+              }
+            : null
+        )
       }
 
       toast.success(profile.isFollowing ? 'Unfollowed successfully' : 'Following!')
-      
+
       // Fire callback
       onFollowAction?.(userId, !profile.isFollowing)
 
       console.log(`[UserProfile][${operationId}] ${action} action completed successfully`)
     } catch (error) {
       console.error(`[UserProfile][${operationId}] ${action} action failed:`, error)
-      
+
       // Revert optimistic update
       await loadProfile()
       toast.error(`Failed to ${action} user`)
@@ -342,7 +348,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   const getUserAvatarUrl = (size = 120) => {
     if (profile?.image) return profile.image
     const name = profile?.displayName || profile?.name || 'User'
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const initials = name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     return `https://ui-avatars.com/api/?name=${initials}&size=${size}&background=6366F1&color=ffffff`
   }
 
@@ -356,18 +367,18 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       <div className={cn('user-profile', className)}>
         <Card>
           <CardHeader>
-            <div className="animate-pulse space-y-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-20 w-20 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-24" />
+            <div className='animate-pulse space-y-4'>
+              <div className='flex items-center gap-4'>
+                <Skeleton className='h-20 w-20 rounded-full' />
+                <div className='space-y-2'>
+                  <Skeleton className='h-6 w-40' />
+                  <Skeleton className='h-4 w-32' />
+                  <Skeleton className='h-4 w-24' />
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
+              <div className='flex gap-2'>
+                <Skeleton className='h-9 w-24' />
+                <Skeleton className='h-9 w-24' />
               </div>
             </div>
           </CardHeader>
@@ -380,11 +391,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({
     return (
       <div className={cn('user-profile', className)}>
         <Card>
-          <CardContent className="flex h-64 items-center justify-center">
-            <div className="text-center">
-              <Users className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 font-semibold">User not found</h3>
-              <p className="text-sm text-muted-foreground">
+          <CardContent className='flex h-64 items-center justify-center'>
+            <div className='text-center'>
+              <Users className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+              <h3 className='mb-2 font-semibold'>User not found</h3>
+              <p className='text-muted-foreground text-sm'>
                 The requested user profile could not be found.
               </p>
             </div>
@@ -399,71 +410,65 @@ export const UserProfile: React.FC<UserProfileProps> = ({
       {/* Profile Header */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className='flex flex-col gap-6 sm:flex-row sm:items-start'>
             {/* Avatar and Basic Info */}
-            <div className="flex flex-col items-center gap-4 sm:flex-row">
-              <div className="relative">
+            <div className='flex flex-col items-center gap-4 sm:flex-row'>
+              <div className='relative'>
                 <img
                   src={getUserAvatarUrl(120)}
                   alt={`${profile.displayName || profile.name}'s profile picture`}
-                  className="h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24"
+                  className='h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24'
                 />
                 {profile.isVerified && (
-                  <div className="absolute -right-1 -bottom-1 rounded-full bg-blue-500 p-1">
-                    <Star className="h-4 w-4 fill-white text-white" />
+                  <div className='-right-1 -bottom-1 absolute rounded-full bg-blue-500 p-1'>
+                    <Star className='h-4 w-4 fill-white text-white' />
                   </div>
                 )}
               </div>
 
-              <div className="text-center sm:text-left">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold">
-                    {profile.displayName || profile.name}
-                  </h1>
-                  {profile.reputation.level >= 10 && (
-                    <Crown className="h-5 w-5 text-yellow-500" />
-                  )}
+              <div className='text-center sm:text-left'>
+                <div className='flex items-center gap-2'>
+                  <h1 className='font-bold text-2xl'>{profile.displayName || profile.name}</h1>
+                  {profile.reputation.level >= 10 && <Crown className='h-5 w-5 text-yellow-500' />}
                 </div>
-                
-                <p className="text-muted-foreground">@{profile.name}</p>
-                
-                {profile.bio && (
-                  <p className="mt-2 max-w-md text-sm">{profile.bio}</p>
-                )}
+
+                <p className='text-muted-foreground'>@{profile.name}</p>
+
+                {profile.bio && <p className='mt-2 max-w-md text-sm'>{profile.bio}</p>}
 
                 {/* Profile Metadata */}
-                <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <div className='mt-3 flex flex-wrap gap-4 text-muted-foreground text-sm'>
                   {profile.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
+                    <div className='flex items-center gap-1'>
+                      <MapPin className='h-4 w-4' />
                       <span>{profile.location}</span>
                     </div>
                   )}
-                  
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
+
+                  <div className='flex items-center gap-1'>
+                    <Calendar className='h-4 w-4' />
                     <span>Joined {formatDate(profile.joinedAt)}</span>
                   </div>
                 </div>
 
                 {/* External Links */}
                 {(profile.website || profile.twitter || profile.github) && (
-                  <div className="mt-3 flex gap-3">
+                  <div className='mt-3 flex gap-3'>
                     {profile.website && (
-                      <Button variant="ghost" size="sm" className="h-auto p-1" asChild>
-                        <a href={profile.website} target="_blank" rel="noopener noreferrer">
-                          <Link2 className="h-4 w-4" />
+                      <Button variant='ghost' size='sm' className='h-auto p-1' asChild>
+                        <a href={profile.website} target='_blank' rel='noopener noreferrer'>
+                          <Link2 className='h-4 w-4' />
                         </a>
                       </Button>
                     )}
                     {profile.twitter && (
-                      <Button variant="ghost" size="sm" className="h-auto p-1" asChild>
+                      <Button variant='ghost' size='sm' className='h-auto p-1' asChild>
                         <a
                           href={`https://twitter.com/${profile.twitter}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target='_blank'
+                          rel='noopener noreferrer'
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className='h-4 w-4' />
                         </a>
                       </Button>
                     )}
@@ -473,16 +478,16 @@ export const UserProfile: React.FC<UserProfileProps> = ({
             </div>
 
             {/* Actions and Stats */}
-            <div className="flex flex-1 flex-col gap-4 sm:items-end">
+            <div className='flex flex-1 flex-col gap-4 sm:items-end'>
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className='flex gap-2'>
                 {isOwnProfile ? (
                   <>
                     {enableEditing && (
                       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Edit3 className="mr-2 h-4 w-4" />
+                          <Button variant='outline' size='sm'>
+                            <Edit3 className='mr-2 h-4 w-4' />
                             Edit Profile
                           </Button>
                         </DialogTrigger>
@@ -494,15 +499,15 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                             </DialogDescription>
                           </DialogHeader>
                           {/* Profile editing form would go here */}
-                          <div className="py-4 text-center text-muted-foreground">
+                          <div className='py-4 text-center text-muted-foreground'>
                             Profile editing form coming soon...
                           </div>
                         </DialogContent>
                       </Dialog>
                     )}
-                    
-                    <Button variant="outline" size="sm">
-                      <Settings className="mr-2 h-4 w-4" />
+
+                    <Button variant='outline' size='sm'>
+                      <Settings className='mr-2 h-4 w-4' />
                       Settings
                     </Button>
                   </>
@@ -511,39 +516,37 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                     {enableFollowing && (
                       <Button
                         variant={profile.isFollowing ? 'outline' : 'default'}
-                        size="sm"
+                        size='sm'
                         onClick={handleFollowAction}
                         disabled={isFollowLoading}
                       >
-                        <Users className="mr-2 h-4 w-4" />
+                        <Users className='mr-2 h-4 w-4' />
                         {isFollowLoading
                           ? 'Loading...'
                           : profile.isFollowing
-                          ? 'Following'
-                          : 'Follow'}
+                            ? 'Following'
+                            : 'Follow'}
                       </Button>
                     )}
-                    
-                    <Button variant="outline" size="sm">
-                      <MessageCircle className="mr-2 h-4 w-4" />
+
+                    <Button variant='outline' size='sm'>
+                      <MessageCircle className='mr-2 h-4 w-4' />
                       Message
                     </Button>
-                    
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
+                        <Button variant='ghost' size='sm'>
+                          <MoreHorizontal className='h-4 w-4' />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align='end'>
                         <DropdownMenuItem>
-                          <Share2 className="mr-2 h-4 w-4" />
+                          <Share2 className='mr-2 h-4 w-4' />
                           Share Profile
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          Report User
-                        </DropdownMenuItem>
+                        <DropdownMenuItem className='text-red-600'>Report User</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>
@@ -551,27 +554,27 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               </div>
 
               {/* Quick Stats */}
-              <div className="flex gap-6 text-center">
+              <div className='flex gap-6 text-center'>
                 <div>
-                  <div className="text-lg font-semibold">{profile.stats.followersCount}</div>
-                  <div className="text-xs text-muted-foreground">Followers</div>
+                  <div className='font-semibold text-lg'>{profile.stats.followersCount}</div>
+                  <div className='text-muted-foreground text-xs'>Followers</div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold">{profile.stats.followingCount}</div>
-                  <div className="text-xs text-muted-foreground">Following</div>
+                  <div className='font-semibold text-lg'>{profile.stats.followingCount}</div>
+                  <div className='text-muted-foreground text-xs'>Following</div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold">{profile.stats.templatesCreated}</div>
-                  <div className="text-xs text-muted-foreground">Templates</div>
+                  <div className='font-semibold text-lg'>{profile.stats.templatesCreated}</div>
+                  <div className='text-muted-foreground text-xs'>Templates</div>
                 </div>
               </div>
 
               {/* Reputation Level */}
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+              <div className='flex items-center gap-2'>
+                <Badge variant='secondary' className='bg-purple-100 text-purple-800'>
                   Level {profile.reputation.level}
                 </Badge>
-                <span className="text-sm text-muted-foreground">
+                <span className='text-muted-foreground text-sm'>
                   {profile.reputation.totalPoints.toLocaleString()} points
                 </span>
               </div>
@@ -582,44 +585,46 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 
       {/* Profile Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="collections">Collections</TabsTrigger>
-          <TabsTrigger value="achievements">Achievements</TabsTrigger>
+        <TabsList className='grid w-full grid-cols-4'>
+          <TabsTrigger value='overview'>Overview</TabsTrigger>
+          <TabsTrigger value='templates'>Templates</TabsTrigger>
+          <TabsTrigger value='collections'>Collections</TabsTrigger>
+          <TabsTrigger value='achievements'>Achievements</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value='overview' className='space-y-6'>
           {showDetailedStats && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className='grid gap-6 md:grid-cols-2'>
               {/* Detailed Statistics */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
+                  <CardTitle className='flex items-center gap-2'>
+                    <TrendingUp className='h-5 w-5' />
                     Statistics
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
+                <CardContent className='space-y-4'>
+                  <div className='flex justify-between'>
                     <span>Total Downloads</span>
-                    <span className="font-medium">{profile.stats.totalDownloads.toLocaleString()}</span>
+                    <span className='font-medium'>
+                      {profile.stats.totalDownloads.toLocaleString()}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>Total Likes</span>
-                    <span className="font-medium">{profile.stats.totalLikes.toLocaleString()}</span>
+                    <span className='font-medium'>{profile.stats.totalLikes.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>Average Rating</span>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{profile.stats.averageRating.toFixed(1)}</span>
+                    <div className='flex items-center gap-1'>
+                      <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
+                      <span className='font-medium'>{profile.stats.averageRating.toFixed(1)}</span>
                     </div>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>Contribution Streak</span>
-                    <span className="font-medium">{profile.stats.contributionStreak} days</span>
+                    <span className='font-medium'>{profile.stats.contributionStreak} days</span>
                   </div>
                 </CardContent>
               </Card>
@@ -627,23 +632,23 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               {/* Recent Badges */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="h-5 w-5" />
+                  <CardTitle className='flex items-center gap-2'>
+                    <Star className='h-5 w-5' />
                     Recent Badges
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className='space-y-3'>
                     {profile.reputation.badges.slice(0, 3).map((badge) => (
-                      <div key={badge.id} className="flex items-center gap-3">
+                      <div key={badge.id} className='flex items-center gap-3'>
                         <div className={cn('rounded-full p-2', getBadgeColor(badge.rarity))}>
-                          <span className="text-lg">{badge.icon}</span>
+                          <span className='text-lg'>{badge.icon}</span>
                         </div>
-                        <div className="flex-1">
-                          <div className="font-medium">{badge.name}</div>
-                          <div className="text-sm text-muted-foreground">{badge.description}</div>
+                        <div className='flex-1'>
+                          <div className='font-medium'>{badge.name}</div>
+                          <div className='text-muted-foreground text-sm'>{badge.description}</div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className='text-muted-foreground text-xs'>
                           {formatDate(badge.earnedAt)}
                         </div>
                       </div>
@@ -661,17 +666,17 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                 <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className='space-y-3'>
                   {profile.recentActivity.slice(0, 5).map((activity) => (
-                    <div key={activity.id} className="flex items-center gap-3 py-2">
-                      <div className="h-2 w-2 rounded-full bg-blue-500" />
-                      <div className="flex-1">
-                        <span className="text-sm">{activity.description}</span>
+                    <div key={activity.id} className='flex items-center gap-3 py-2'>
+                      <div className='h-2 w-2 rounded-full bg-blue-500' />
+                      <div className='flex-1'>
+                        <span className='text-sm'>{activity.description}</span>
                         {activity.targetTitle && (
-                          <span className="ml-1 text-sm font-medium">"{activity.targetTitle}"</span>
+                          <span className='ml-1 font-medium text-sm'>"{activity.targetTitle}"</span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className='text-muted-foreground text-xs'>
                         {formatDate(activity.createdAt)}
                       </div>
                     </div>
@@ -683,61 +688,71 @@ export const UserProfile: React.FC<UserProfileProps> = ({
         </TabsContent>
 
         {/* Templates Tab */}
-        <TabsContent value="templates">
+        <TabsContent value='templates'>
           <Card>
             <CardHeader>
               <CardTitle>Templates ({profile.stats.templatesCreated})</CardTitle>
             </CardHeader>
             <CardContent>
               {profile.topTemplates && profile.topTemplates.length > 0 ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
                   {profile.topTemplates.map((template) => (
-                    <div key={template.id} className="group cursor-pointer rounded-lg border p-4 transition-colors hover:bg-gray-50">
-                      <div className="mb-3">
-                        <h3 className="font-medium group-hover:text-blue-600">{template.name}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{template.description}</p>
+                    <div
+                      key={template.id}
+                      className='group cursor-pointer rounded-lg border p-4 transition-colors hover:bg-gray-50'
+                    >
+                      <div className='mb-3'>
+                        <h3 className='font-medium group-hover:text-blue-600'>{template.name}</h3>
+                        <p className='line-clamp-2 text-muted-foreground text-sm'>
+                          {template.description}
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <div className='flex items-center justify-between text-sm'>
+                        <div className='flex items-center gap-3'>
+                          <div className='flex items-center gap-1'>
+                            <Star className='h-3 w-3 fill-yellow-400 text-yellow-400' />
                             <span>{template.rating.toFixed(1)}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="h-3 w-3" />
+                          <div className='flex items-center gap-1'>
+                            <Heart className='h-3 w-3' />
                             <span>{template.likes}</span>
                           </div>
                         </div>
-                        <span className="text-muted-foreground">{template.downloads} downloads</span>
+                        <span className='text-muted-foreground'>
+                          {template.downloads} downloads
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-muted-foreground">
-                  No templates created yet
-                </div>
+                <div className='text-center text-muted-foreground'>No templates created yet</div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Collections Tab */}
-        <TabsContent value="collections">
+        <TabsContent value='collections'>
           <Card>
             <CardHeader>
               <CardTitle>Collections ({profile.stats.collectionsCount})</CardTitle>
             </CardHeader>
             <CardContent>
               {profile.collections && profile.collections.length > 0 ? (
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {profile.collections.map((collection) => (
-                    <div key={collection.id} className="group cursor-pointer rounded-lg border p-4 transition-colors hover:bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-medium group-hover:text-blue-600">{collection.name}</h3>
-                          <p className="text-sm text-muted-foreground">{collection.description}</p>
-                          <div className="mt-2 flex items-center gap-4 text-sm">
+                    <div
+                      key={collection.id}
+                      className='group cursor-pointer rounded-lg border p-4 transition-colors hover:bg-gray-50'
+                    >
+                      <div className='flex items-start justify-between'>
+                        <div className='flex-1'>
+                          <h3 className='font-medium group-hover:text-blue-600'>
+                            {collection.name}
+                          </h3>
+                          <p className='text-muted-foreground text-sm'>{collection.description}</p>
+                          <div className='mt-2 flex items-center gap-4 text-sm'>
                             <span>{collection.templateCount} templates</span>
                             <span>{collection.followers} followers</span>
                             <Badge variant={collection.isPublic ? 'default' : 'secondary'}>
@@ -745,7 +760,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                             </Badge>
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className='text-muted-foreground text-xs'>
                           Updated {formatDate(collection.updatedAt)}
                         </div>
                       </div>
@@ -753,37 +768,35 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-muted-foreground">
-                  No collections created yet
-                </div>
+                <div className='text-center text-muted-foreground'>No collections created yet</div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Achievements Tab */}
-        <TabsContent value="achievements" className="space-y-6">
+        <TabsContent value='achievements' className='space-y-6'>
           {/* Badges */}
           <Card>
             <CardHeader>
               <CardTitle>Badges ({profile.reputation.badges.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className='grid gap-4 md:grid-cols-2'>
                 {profile.reputation.badges.map((badge) => (
-                  <div key={badge.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div key={badge.id} className='flex items-center gap-3 rounded-lg border p-3'>
                     <div className={cn('rounded-full p-3', getBadgeColor(badge.rarity))}>
-                      <span className="text-2xl">{badge.icon}</span>
+                      <span className='text-2xl'>{badge.icon}</span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{badge.name}</span>
-                        <Badge variant="outline" className={getBadgeColor(badge.rarity)}>
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium'>{badge.name}</span>
+                        <Badge variant='outline' className={getBadgeColor(badge.rarity)}>
                           {badge.rarity}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{badge.description}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className='text-muted-foreground text-sm'>{badge.description}</p>
+                      <p className='text-muted-foreground text-xs'>
                         Earned {formatDate(badge.earnedAt)}
                       </p>
                     </div>
@@ -799,26 +812,26 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               <CardTitle>Achievement Progress</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {profile.reputation.achievements.map((achievement) => (
-                  <div key={achievement.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{achievement.title}</span>
-                      <span className="text-sm text-muted-foreground">
+                  <div key={achievement.id} className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                      <span className='font-medium'>{achievement.title}</span>
+                      <span className='text-muted-foreground text-sm'>
                         {achievement.progress}/{achievement.maxProgress}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                    <div className="h-2 rounded-full bg-gray-200">
+                    <p className='text-muted-foreground text-sm'>{achievement.description}</p>
+                    <div className='h-2 rounded-full bg-gray-200'>
                       <div
-                        className="h-2 rounded-full bg-blue-600 transition-all"
+                        className='h-2 rounded-full bg-blue-600 transition-all'
                         style={{
                           width: `${(achievement.progress / achievement.maxProgress) * 100}%`,
                         }}
                       />
                     </div>
                     {achievement.completedAt && (
-                      <p className="text-xs text-green-600">
+                      <p className='text-green-600 text-xs'>
                         ✓ Completed {formatDate(achievement.completedAt)}
                       </p>
                     )}

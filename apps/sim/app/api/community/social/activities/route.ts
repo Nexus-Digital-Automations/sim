@@ -30,7 +30,7 @@ import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
-import { getUserRole, AuthHelpers } from '@/lib/auth/types'
+import { AuthHelpers } from '@/lib/auth/types'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -96,8 +96,10 @@ export async function GET(request: NextRequest) {
     // Convert string parameters to proper types for validation schema compatibility
     // Type conversions ensure schema validation receives expected types
     const processedParams: Record<string, any> = { ...queryParams }
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)  
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
     if (processedParams.includeEngagement)
       processedParams.includeEngagement = (processedParams.includeEngagement as string) === 'true'
 
@@ -302,7 +304,8 @@ export async function GET(request: NextRequest) {
     // Execute main activity query with proper parameter binding
     // Database results return direct array, not .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         cua.id,
         cua.user_id,
@@ -367,7 +370,8 @@ export async function GET(request: NextRequest) {
       ORDER BY ${orderByClause}
       LIMIT ${currentUserId ? params.limit : params.limit} 
       OFFSET ${currentUserId ? params.offset : params.offset}
-    `))
+    `)
+    )
 
     // Get total count for pagination
     const countQuery = `
@@ -378,15 +382,17 @@ export async function GET(request: NextRequest) {
     `
 
     const countValues = queryValues.slice(0, -2) // Remove limit and offset
-    // Execute count query for pagination metadata  
+    // Execute count query for pagination metadata
     // Access result directly as array, not via .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const countResult = await db.execute(sql.raw(`
+    const countResult = await db.execute(
+      sql.raw(`
       SELECT COUNT(*) as total
       FROM community_user_activities cua
       ${joinConditions}
       WHERE ${whereConditions.join(' AND ')}
-    `))
+    `)
+    )
     const totalActivities = (countResult[0] as any)?.total || 0
 
     // Format activities from database result array
@@ -461,7 +467,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve activities',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -602,7 +611,8 @@ export async function POST(request: NextRequest) {
     // Retrieve created activity with user details
     // Database result is direct array, not nested in .rows
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const activityResult = await db.execute(sql.raw(`
+    const activityResult = await db.execute(
+      sql.raw(`
       SELECT 
         cua.id, cua.user_id, cua.activity_type, cua.activity_data,
         cua.target_type, cua.target_id, cua.target_title, cua.visibility,
@@ -615,7 +625,8 @@ export async function POST(request: NextRequest) {
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
       WHERE cua.id = '${activityId}'
-    `))
+    `)
+    )
     const activityRow = activityResult[0] as any
 
     const createdActivity = {
@@ -690,7 +701,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create activity',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -741,9 +755,7 @@ export async function PUT(request: NextRequest) {
 
     // Check permissions (user can update own activities, moderators can update any)
     // Using safe role access patterns for type-safe authorization checks
-    const canUpdate =
-      activityUserId === userId ||
-      AuthHelpers.canModerate(session.user)
+    const canUpdate = activityUserId === userId || AuthHelpers.canModerate(session.user)
 
     if (!canUpdate) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
@@ -791,12 +803,14 @@ export async function PUT(request: NextRequest) {
     `
 
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       UPDATE community_user_activities 
       SET ${updateFields.join(', ')}
       WHERE id = '${activityId}'
       RETURNING id, updated_at
-    `))
+    `)
+    )
 
     const executionTime = Date.now() - startTime
     console.log(
@@ -829,7 +843,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update activity',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

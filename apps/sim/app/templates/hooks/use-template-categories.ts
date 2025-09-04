@@ -3,7 +3,7 @@
  * Provides template category management and navigation functionality
  */
 
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TEMPLATE_CATEGORIES } from '@/lib/templates/categories'
 import type { TemplateCategory } from '@/lib/templates/types'
 
@@ -17,21 +17,21 @@ export interface UseTemplateCategoriesReturn {
   categories: TemplateCategory[]
   categoriesMap: Map<string, TemplateCategory>
   rootCategories: TemplateCategory[]
-  
+
   // Selection state
   selectedCategory: string | null
   selectedPath: TemplateCategory[]
-  
+
   // Loading state
   loading: boolean
   error: string | null
-  
+
   // Actions
   selectCategory: (categoryId: string | null) => void
   expandCategory: (categoryId: string) => void
   collapseCategory: (categoryId: string) => void
   toggleCategory: (categoryId: string) => void
-  
+
   // Utilities
   getCategoryById: (categoryId: string) => TemplateCategory | undefined
   getCategoryPath: (categoryId: string) => TemplateCategory[]
@@ -60,16 +60,17 @@ export function useTemplateCategories(
    * Process categories with template counts and filtering
    */
   const processedCategories = useMemo(() => {
-    let processed = Object.values(TEMPLATE_CATEGORIES).map(category => ({
+    let processed = Object.values(TEMPLATE_CATEGORIES).map((category) => ({
       ...category,
-      templateCount: templateCounts[category.id] || 0
+      templateCount: templateCounts[category.id] || 0,
     }))
 
     // Filter empty categories if not included
     if (!includeEmpty) {
-      processed = processed.filter(category => 
-        category.templateCount > 0 || 
-        category.subcategories?.some(child => templateCounts[child.id] > 0)
+      processed = processed.filter(
+        (category) =>
+          category.templateCount > 0 ||
+          category.subcategories?.some((child) => templateCounts[child.id] > 0)
       )
     }
 
@@ -81,16 +82,16 @@ export function useTemplateCategories(
    */
   const categoriesMap = useMemo(() => {
     const map = new Map<string, TemplateCategory>()
-    
+
     const addToMap = (categories: TemplateCategory[]) => {
-      categories.forEach(category => {
+      categories.forEach((category) => {
         map.set(category.id, category)
         if (category.subcategories) {
           addToMap(category.subcategories)
         }
       })
     }
-    
+
     addToMap(processedCategories)
     return map
   }, [processedCategories])
@@ -99,7 +100,7 @@ export function useTemplateCategories(
    * Get root level categories
    */
   const rootCategories = useMemo(() => {
-    return processedCategories.filter(category => !category.parentId)
+    return processedCategories.filter((category) => !category.parentId)
   }, [processedCategories])
 
   /**
@@ -107,18 +108,18 @@ export function useTemplateCategories(
    */
   const selectedPath = useMemo(() => {
     if (!selectedCategory) return []
-    
+
     const path: TemplateCategory[] = []
     let currentId = selectedCategory
-    
+
     while (currentId) {
       const category = categoriesMap.get(currentId)
       if (!category) break
-      
+
       path.unshift(category)
       currentId = category.parentId || ''
     }
-    
+
     return path
   }, [selectedCategory, categoriesMap])
 
@@ -133,19 +134,18 @@ export function useTemplateCategories(
       setError(null)
 
       const response = await fetch('/api/templates/category-counts')
-      
+
       if (!response.ok) {
         throw new Error(`Failed to load category counts: ${response.statusText}`)
       }
 
       const data = await response.json()
-      
+
       if (data.error) {
         throw new Error(data.error)
       }
 
       setTemplateCounts(data.counts || {})
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load category counts'
       setError(errorMessage)
@@ -158,30 +158,33 @@ export function useTemplateCategories(
   /**
    * Select a category
    */
-  const selectCategory = useCallback((categoryId: string | null) => {
-    setSelectedCategory(categoryId)
-    
-    // Auto-expand parent categories
-    if (categoryId) {
-      const category = categoriesMap.get(categoryId)
-      if (category?.parentId) {
-        setExpandedCategories(prev => new Set([...prev, category.parentId!]))
+  const selectCategory = useCallback(
+    (categoryId: string | null) => {
+      setSelectedCategory(categoryId)
+
+      // Auto-expand parent categories
+      if (categoryId) {
+        const category = categoriesMap.get(categoryId)
+        if (category?.parentId) {
+          setExpandedCategories((prev) => new Set([...prev, category.parentId!]))
+        }
       }
-    }
-  }, [categoriesMap])
+    },
+    [categoriesMap]
+  )
 
   /**
    * Expand a category
    */
   const expandCategory = useCallback((categoryId: string) => {
-    setExpandedCategories(prev => new Set([...prev, categoryId]))
+    setExpandedCategories((prev) => new Set([...prev, categoryId]))
   }, [])
 
   /**
    * Collapse a category
    */
   const collapseCategory = useCallback((categoryId: string) => {
-    setExpandedCategories(prev => {
+    setExpandedCategories((prev) => {
       const next = new Set(prev)
       next.delete(categoryId)
       return next
@@ -191,53 +194,68 @@ export function useTemplateCategories(
   /**
    * Toggle category expansion
    */
-  const toggleCategory = useCallback((categoryId: string) => {
-    if (expandedCategories.has(categoryId)) {
-      collapseCategory(categoryId)
-    } else {
-      expandCategory(categoryId)
-    }
-  }, [expandedCategories, collapseCategory, expandCategory])
+  const toggleCategory = useCallback(
+    (categoryId: string) => {
+      if (expandedCategories.has(categoryId)) {
+        collapseCategory(categoryId)
+      } else {
+        expandCategory(categoryId)
+      }
+    },
+    [expandedCategories, collapseCategory, expandCategory]
+  )
 
   /**
    * Get category by ID
    */
-  const getCategoryById = useCallback((categoryId: string): TemplateCategory | undefined => {
-    return categoriesMap.get(categoryId)
-  }, [categoriesMap])
+  const getCategoryById = useCallback(
+    (categoryId: string): TemplateCategory | undefined => {
+      return categoriesMap.get(categoryId)
+    },
+    [categoriesMap]
+  )
 
   /**
    * Get path to a category
    */
-  const getCategoryPath = useCallback((categoryId: string): TemplateCategory[] => {
-    const path: TemplateCategory[] = []
-    let currentId = categoryId
-    
-    while (currentId) {
-      const category = categoriesMap.get(currentId)
-      if (!category) break
-      
-      path.unshift(category)
-      currentId = category.parentId || ''
-    }
-    
-    return path
-  }, [categoriesMap])
+  const getCategoryPath = useCallback(
+    (categoryId: string): TemplateCategory[] => {
+      const path: TemplateCategory[] = []
+      let currentId = categoryId
+
+      while (currentId) {
+        const category = categoriesMap.get(currentId)
+        if (!category) break
+
+        path.unshift(category)
+        currentId = category.parentId || ''
+      }
+
+      return path
+    },
+    [categoriesMap]
+  )
 
   /**
    * Get children of a category
    */
-  const getCategoryChildren = useCallback((categoryId: string): TemplateCategory[] => {
-    const category = categoriesMap.get(categoryId)
-    return category?.subcategories || []
-  }, [categoriesMap])
+  const getCategoryChildren = useCallback(
+    (categoryId: string): TemplateCategory[] => {
+      const category = categoriesMap.get(categoryId)
+      return category?.subcategories || []
+    },
+    [categoriesMap]
+  )
 
   /**
    * Check if category is expanded
    */
-  const isExpanded = useCallback((categoryId: string): boolean => {
-    return expandedCategories.has(categoryId)
-  }, [expandedCategories])
+  const isExpanded = useCallback(
+    (categoryId: string): boolean => {
+      return expandedCategories.has(categoryId)
+    },
+    [expandedCategories]
+  )
 
   /**
    * Refresh category data
@@ -261,26 +279,26 @@ export function useTemplateCategories(
     categories: processedCategories,
     categoriesMap,
     rootCategories,
-    
+
     // Selection state
     selectedCategory,
     selectedPath,
-    
+
     // Loading state
     loading,
     error,
-    
+
     // Actions
     selectCategory,
     expandCategory,
     collapseCategory,
     toggleCategory,
-    
+
     // Utilities
     getCategoryById,
     getCategoryPath,
     getCategoryChildren,
     isExpanded,
-    refresh
+    refresh,
   }
 }

@@ -12,7 +12,10 @@ const CreateOrganizationSchema = z.object({
     .string()
     .min(1)
     .max(50)
-    .regex(/^[a-z0-9-_]+$/, 'Slug can only contain lowercase letters, numbers, hyphens, and underscores')
+    .regex(
+      /^[a-z0-9-_]+$/,
+      'Slug can only contain lowercase letters, numbers, hyphens, and underscores'
+    )
     .trim()
     .optional(),
 })
@@ -34,7 +37,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       const rawBody = await request.json()
       const validatedData = CreateOrganizationSchema.parse(rawBody)
-      
+
       if (validatedData.name) {
         organizationName = validatedData.name
       }
@@ -47,7 +50,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           {
             error: 'Invalid request data',
-            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+            details: error.errors.map((err) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
           },
           { status: 400 }
         )

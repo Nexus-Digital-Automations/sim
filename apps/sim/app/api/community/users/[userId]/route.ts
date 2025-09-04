@@ -376,7 +376,10 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to retrieve user profile',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -542,7 +545,10 @@ export async function PUT(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to update profile',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -661,7 +667,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     return NextResponse.json(
       {
         error: 'Failed to delete profile',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

@@ -25,7 +25,7 @@ import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templates, templateRatings, templateStars, user } from '@/db/schema'
+import { templates, user } from '@/db/schema'
 
 const logger = createLogger('TemplateSubmissionAPI')
 

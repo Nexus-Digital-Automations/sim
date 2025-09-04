@@ -159,7 +159,9 @@ export function WorkflowMonitoringPanel({
       // Update state
       setMonitoringData({
         liveExecutions,
-        currentExecution: liveExecutions.find((exec: LiveExecutionStatus) => exec.status === 'running'),
+        currentExecution: liveExecutions.find(
+          (exec: LiveExecutionStatus) => exec.status === 'running'
+        ),
         recentMetrics: metricsData.data?.metrics || [],
         activeAlerts:
           alertsData.data?.alerts?.filter(
@@ -439,7 +441,7 @@ export function WorkflowMonitoringPanel({
       tasksAutomated: 0,
       roinPercentage: 0,
     }
-    
+
     const systemHealth = monitoringData.systemHealth || { status: 'healthy' as const }
     const detectedAnomalies = monitoringData.detectedAnomalies || []
     const realtimeEvents = monitoringData.realtimeEvents || []
@@ -517,8 +519,7 @@ export function WorkflowMonitoringPanel({
                       : 'text-red-600'
                 }`}
               >
-                {systemHealth.status.charAt(0).toUpperCase() +
-                  systemHealth.status.slice(1)}
+                {systemHealth.status.charAt(0).toUpperCase() + systemHealth.status.slice(1)}
               </span>
             </div>
 

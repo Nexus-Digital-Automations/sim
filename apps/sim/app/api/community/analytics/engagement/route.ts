@@ -204,7 +204,11 @@ export async function GET(request: NextRequest) {
 
     // Execute engagement analytics query with proper parameter substitution
     // Using sql.raw() for complex analytical query with dynamic time ranges
-    const result = await db.execute(sql.raw(engagementQuery.replace('$1', String(params.limit)).replace('$2', String(params.offset))))
+    const result = await db.execute(
+      sql.raw(
+        engagementQuery.replace('$1', String(params.limit)).replace('$2', String(params.offset))
+      )
+    )
 
     // Get total count
     const countQuery = `
@@ -290,7 +294,7 @@ export async function GET(request: NextRequest) {
     // Proper error type casting for TypeScript compliance
     // Handle both Error instances and unknown error types safely
     const errorMessage = (error as Error).message || 'Internal server error'
-    
+
     return NextResponse.json(
       {
         error: 'Failed to retrieve engagement analytics',

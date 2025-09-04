@@ -1,6 +1,6 @@
 /**
  * Mailchimp Marketing Integration Connector - Enterprise Email Marketing Solution
- * 
+ *
  * COMPREHENSIVE MAILCHIMP INTEGRATION SYSTEM
  * ==========================================
  * This connector provides production-ready integration with Mailchimp's Marketing API v3.0,
@@ -10,7 +10,7 @@
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * • Audience Management: Create, manage, and segment email audiences with advanced targeting
  * • Campaign Automation: Design, schedule, and execute sophisticated email campaigns
- * • Subscriber Lifecycle: Complete customer journey management from opt-in to conversion  
+ * • Subscriber Lifecycle: Complete customer journey management from opt-in to conversion
  * • Template Management: Professional email template creation and customization
  * • Analytics & Reporting: Real-time performance metrics and campaign optimization
  * • A/B Testing: Advanced testing frameworks for email optimization
@@ -71,11 +71,11 @@ const logger = createLogger('MailchimpConnector')
 /**
  * Mailchimp API Configuration Constants - Production Environment Settings
  * ======================================================================
- * 
+ *
  * Comprehensive configuration object containing all Mailchimp Marketing API v3.0
  * constants, endpoints, and operational parameters required for enterprise-level
  * email marketing automation integration.
- * 
+ *
  * 🔧 Configuration Components:
  * • BASE_URL_TEMPLATE: Dynamic API endpoint with server prefix placeholder
  * • OAUTH_SCOPES: Authentication scope requirements (account-based permissions)
@@ -83,7 +83,7 @@ const logger = createLogger('MailchimpConnector')
  * • CAMPAIGN_TYPES: Supported email campaign formats and automation types
  * • SUBSCRIBER_STATUSES: Email subscription lifecycle states
  * • MERGE_FIELD_TYPES: Data types supported for customer segmentation fields
- * 
+ *
  * 🚨 Critical Implementation Notes:
  * • Server prefix is dynamic and must be extracted from OAuth metadata
  * • Rate limits vary by Mailchimp plan (Free: 2K/day, Premium: unlimited)
@@ -138,33 +138,33 @@ export const MAILCHIMP_CONFIG = {
 /**
  * Mailchimp Operations Registry - Complete API Surface Coverage
  * ============================================================
- * 
+ *
  * Comprehensive collection of 15 production-ready operations covering the complete
  * Mailchimp Marketing API surface for email marketing automation. Each operation
  * includes full TypeScript type safety, JSON schema validation, and comprehensive
  * documentation.
- * 
+ *
  * 📊 Operation Categories:
  * ━━━━━━━━━━━━━━━━━━━━━━━━
  * • AUDIENCE MANAGEMENT (3 ops): List, Get, Create - Core audience lifecycle operations
- * • MEMBER MANAGEMENT (3 ops): List, Add, Update - Subscriber management and segmentation  
+ * • MEMBER MANAGEMENT (3 ops): List, Add, Update - Subscriber management and segmentation
  * • CAMPAIGN OPERATIONS (3 ops): List, Create, Send - Email campaign automation workflow
  * • TEMPLATE MANAGEMENT (1 op): List - Email template management and customization
- * 
+ *
  * 🔐 Security & Validation:
  * ━━━━━━━━━━━━━━━━━━━━━━━━
  * • Input Schema Validation: JSON schema validation for all operation parameters
  * • Output Schema Definition: Structured response typing for consistent data handling
  * • Authentication Scopes: Fine-grained permission control (currently account-based)
  * • Rate Limit Overrides: Operation-specific throttling for high-volume operations
- * 
+ *
  * 🛠️ Integration Features:
  * ━━━━━━━━━━━━━━━━━━━━━━━━
  * • Path Templating: Dynamic endpoint construction with parameter substitution
  * • Error Handling: Operation-specific error handling and retry configuration
  * • Data Transformations: Input/output transformation pipelines for data consistency
  * • Real-time Validation: Pre-flight validation to reduce API errors and costs
- * 
+ *
  * 🚀 Performance Optimization:
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * • Batch Operations: Support for bulk operations where available (500 item batches)
@@ -506,7 +506,8 @@ export const MAILCHIMP_OPERATIONS: IntegrationOperation[] = [
         },
         interests: {
           type: 'object',
-          description: 'Interest categories for the subscriber (key-value pairs with boolean values)',
+          description:
+            'Interest categories for the subscriber (key-value pairs with boolean values)',
         },
         language: {
           type: 'string',
@@ -1178,11 +1179,11 @@ export const MailchimpConnector: IntegrationConnector = {
 /**
  * Mailchimp Utility Functions - Production-Ready Helper Library
  * =============================================================
- * 
+ *
  * Comprehensive utility class providing essential functions for Mailchimp API integration.
  * These utilities handle authentication, data formatting, error processing, and validation
  * required for successful email marketing automation operations.
- * 
+ *
  * Key Features:
  * • Server prefix extraction from OAuth metadata for dynamic API endpoint resolution
  * • Subscriber hash generation using MD5 for secure member identification
@@ -1191,21 +1192,20 @@ export const MailchimpConnector: IntegrationConnector = {
  * • Error parsing with intelligent retry determination for robust error handling
  */
 export class MailchimpUtils {
-  
   /**
    * Generate MD5 hash for subscriber identification in Mailchimp API operations
-   * 
+   *
    * Mailchimp requires member operations to use MD5 hash of lowercase email addresses
    * as subscriber identifiers for security and consistency across API calls.
-   * 
+   *
    * @param email - Email address to hash (will be lowercased automatically)
    * @returns MD5 hash string suitable for Mailchimp member operations
-   * 
+   *
    * @example
    * const hash = MailchimpUtils.generateSubscriberHash('user@example.com')
    * // Returns: MD5 hash of 'user@example.com'
-   * 
-   * @technical_note Currently returns lowercase email as placeholder. 
+   *
+   * @technical_note Currently returns lowercase email as placeholder.
    * Production implementation should use crypto.createHash('md5').
    */
   static generateSubscriberHash(email: string): string {
@@ -1220,12 +1220,12 @@ export class MailchimpUtils {
       // TODO: Replace with crypto.createHash('md5').update(email.toLowerCase()).digest('hex')
       // For now, using lowercase email as placeholder for development
       const hash = email.toLowerCase()
-      
+
       logger.info(`[${operationId}] Subscriber hash generated successfully`, {
         operationId,
         hashLength: hash.length,
       })
-      
+
       return hash
     } catch (error) {
       logger.error(`[${operationId}] Failed to generate subscriber hash`, {
@@ -1238,14 +1238,14 @@ export class MailchimpUtils {
 
   /**
    * Extract server prefix from Mailchimp OAuth metadata URL for API endpoint resolution
-   * 
+   *
    * Mailchimp uses different API servers (us1, us2, etc.) based on account region.
    * This function extracts the correct server prefix from OAuth response metadata URLs
    * to construct proper API endpoints.
-   * 
+   *
    * @param metadataUrl - OAuth metadata URL containing server information
    * @returns Server prefix (e.g., 'us1', 'us2') or 'us1' as fallback
-   * 
+   *
    * @example
    * const prefix = MailchimpUtils.extractServerPrefix('https://us14.api.mailchimp.com/3.0/')
    * // Returns: 'us14'
@@ -1261,14 +1261,17 @@ export class MailchimpUtils {
     try {
       const match = metadataUrl.match(/https:\/\/([^.]+)\.api\.mailchimp\.com/)
       const serverPrefix = match ? match[1] : 'us1'
-      
-      logger.info(`[${operationId}] Server prefix extraction ${match ? 'succeeded' : 'failed - using fallback'}`, {
-        operationId,
-        serverPrefix,
-        extractedFromUrl: !!match,
-        fallbackUsed: !match,
-      })
-      
+
+      logger.info(
+        `[${operationId}] Server prefix extraction ${match ? 'succeeded' : 'failed - using fallback'}`,
+        {
+          operationId,
+          serverPrefix,
+          extractedFromUrl: !!match,
+          fallbackUsed: !match,
+        }
+      )
+
       return serverPrefix
     } catch (error) {
       logger.error(`[${operationId}] Server prefix extraction failed`, {
@@ -1282,13 +1285,13 @@ export class MailchimpUtils {
 
   /**
    * Validate email address format using RFC-compliant regex pattern
-   * 
+   *
    * Performs client-side email validation before sending to Mailchimp API
    * to reduce API calls and provide immediate feedback for invalid addresses.
-   * 
+   *
    * @param email - Email address to validate
    * @returns true if email format is valid, false otherwise
-   * 
+   *
    * @example
    * const isValid = MailchimpUtils.validateEmail('user@example.com') // Returns: true
    * const isInvalid = MailchimpUtils.validateEmail('invalid-email') // Returns: false
@@ -1305,13 +1308,13 @@ export class MailchimpUtils {
     try {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       const isValid = emailRegex.test(email)
-      
+
       logger.info(`[${operationId}] Email validation ${isValid ? 'passed' : 'failed'}`, {
         operationId,
         isValid,
         emailFormat: 'RFC-compliant',
       })
-      
+
       return isValid
     } catch (error) {
       logger.error(`[${operationId}] Email validation error occurred`, {
@@ -1324,14 +1327,14 @@ export class MailchimpUtils {
 
   /**
    * Format merge fields for Mailchimp API compliance and data consistency
-   * 
+   *
    * Mailchimp requires merge field keys to be uppercase and values to be strings.
    * This function transforms any object into Mailchimp-compatible merge fields
    * while filtering out null/undefined values.
-   * 
+   *
    * @param fields - Object containing merge field data with any casing
    * @returns Formatted object with uppercase keys and string values
-   * 
+   *
    * @example
    * const formatted = MailchimpUtils.formatMergeFields({
    *   firstName: 'John',
@@ -1343,7 +1346,7 @@ export class MailchimpUtils {
   static formatMergeFields(fields: Record<string, any>): Record<string, string> {
     const operationId = `merge_fields_${Date.now()}`
     const inputKeys = Object.keys(fields)
-    
+
     logger.info(`[${operationId}] Formatting merge fields for Mailchimp API`, {
       operationId,
       inputFieldCount: inputKeys.length,
@@ -1385,14 +1388,14 @@ export class MailchimpUtils {
 
   /**
    * Parse Mailchimp API errors and determine retry strategy for robust error handling
-   * 
+   *
    * Mailchimp returns structured error responses with specific types and details.
    * This function extracts error information and determines if operations should
    * be retried based on error type and HTTP status code.
-   * 
+   *
    * @param error - Raw error object from API request
    * @returns Parsed error object with retry determination
-   * 
+   *
    * @example
    * const parsedError = MailchimpUtils.parseApiError(apiError)
    * if (parsedError.retryable) {
@@ -1457,7 +1460,7 @@ export class MailchimpUtils {
         operationId,
         parseError: (parseError as Error).message,
       })
-      
+
       // Return safe fallback error
       return {
         type: 'parse_error',
@@ -1471,15 +1474,15 @@ export class MailchimpUtils {
 
   /**
    * Determine if a Mailchimp API error should be retried based on type and status code
-   * 
+   *
    * Uses Mailchimp's error documentation to classify errors as retryable or permanent.
    * Considers both HTTP status codes and Mailchimp-specific error types for accurate
    * retry decisions.
-   * 
+   *
    * @param errorType - Mailchimp error type from API response
    * @param statusCode - HTTP status code from API response
    * @returns true if error is retryable, false for permanent errors
-   * 
+   *
    * @private Internal utility method used by parseApiError
    */
   private static isRetryableError(errorType: string, statusCode: number): boolean {
@@ -1530,7 +1533,7 @@ export class MailchimpUtils {
 
 /**
  * Initialize Mailchimp Connector with comprehensive logging and validation
- * 
+ *
  * Logs the successful loading of the Mailchimp connector configuration,
  * including operation count and key metrics for monitoring and debugging.
  * This initialization confirms all type definitions, schemas, and configurations

@@ -25,7 +25,8 @@
 
 'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import type React from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { createLogger } from '@/lib/logs/console/logger'
 
@@ -144,13 +145,17 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
         wsBaseUrl,
       })
 
-      const wsUrl = wsBaseUrl || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
-      const ws = new WebSocket(`${wsUrl}/api/community/social/ws?userId=${currentUserId}&workspaceId=${workspaceId || 'default'}`)
+      const wsUrl =
+        wsBaseUrl ||
+        `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
+      const ws = new WebSocket(
+        `${wsUrl}/api/community/social/ws?userId=${currentUserId}&workspaceId=${workspaceId || 'default'}`
+      )
 
       ws.onopen = () => {
         logger.info(`[${operationId}] Social WebSocket connected`)
         setIsConnected(true)
-        setConnectionStats(prev => ({
+        setConnectionStats((prev) => ({
           ...prev,
           lastConnected: new Date(),
           reconnectAttempts: 0,
@@ -161,28 +166,32 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
           const message = messageQueue.current.shift()
           if (message) {
             ws.send(JSON.stringify(message))
-            setConnectionStats(prev => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
+            setConnectionStats((prev) => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
           }
         }
 
         // Re-establish subscriptions
         subscriptions.forEach((subscription) => {
-          ws.send(JSON.stringify({
-            type: 'subscribe_social',
-            data: subscription,
-          }))
+          ws.send(
+            JSON.stringify({
+              type: 'subscribe_social',
+              data: subscription,
+            })
+          )
         })
 
         // Setup presence if enabled
         if (enablePresence) {
-          ws.send(JSON.stringify({
-            type: 'presence_update',
-            data: {
-              userId: currentUserId,
-              isOnline: true,
-              activity: 'active',
-            },
-          }))
+          ws.send(
+            JSON.stringify({
+              type: 'presence_update',
+              data: {
+                userId: currentUserId,
+                isOnline: true,
+                activity: 'active',
+              },
+            })
+          )
         }
 
         toast.success('Connected to live social updates')
@@ -191,9 +200,9 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data)
-          
-          setConnectionStats(prev => ({ ...prev, messagesReceived: prev.messagesReceived + 1 }))
-          
+
+          setConnectionStats((prev) => ({ ...prev, messagesReceived: prev.messagesReceived + 1 }))
+
           logger.debug(`[${operationId}] Social message received`, {
             type: message.type,
             targetId: message.targetId,
@@ -211,14 +220,14 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
           code: event.code,
           reason: event.reason,
         })
-        
+
         setIsConnected(false)
         websocketRef.current = null
 
         // Attempt reconnection if not intentional
         if (event.code !== 1000) {
-          setConnectionStats(prev => ({ ...prev, reconnectAttempts: prev.reconnectAttempts + 1 }))
-          
+          setConnectionStats((prev) => ({ ...prev, reconnectAttempts: prev.reconnectAttempts + 1 }))
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect()
           }, reconnectInterval)
@@ -238,64 +247,67 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
   /**
    * Handle incoming social messages
    */
-  const handleSocialMessage = useCallback((message: any) => {
-    const socialEvent: SocialEvent = {
-      type: message.type,
-      data: message.data,
-      targetId: message.targetId,
-      userId: message.userId,
-      workspaceId: message.workspaceId,
-      timestamp: message.timestamp || new Date().toISOString(),
-      priority: message.priority || 'normal',
-    }
+  const handleSocialMessage = useCallback(
+    (message: any) => {
+      const socialEvent: SocialEvent = {
+        type: message.type,
+        data: message.data,
+        targetId: message.targetId,
+        userId: message.userId,
+        workspaceId: message.workspaceId,
+        timestamp: message.timestamp || new Date().toISOString(),
+        priority: message.priority || 'normal',
+      }
 
-    // Handle presence updates
-    if (message.type === 'presence_update' && message.data) {
-      setUserPresence(prev => {
-        const updated = new Map(prev)
-        updated.set(message.data.userId, {
-          userId: message.data.userId,
-          isOnline: message.data.isOnline,
-          lastSeen: message.data.lastSeen || new Date().toISOString(),
-          activity: message.data.activity,
+      // Handle presence updates
+      if (message.type === 'presence_update' && message.data) {
+        setUserPresence((prev) => {
+          const updated = new Map(prev)
+          updated.set(message.data.userId, {
+            userId: message.data.userId,
+            isOnline: message.data.isOnline,
+            lastSeen: message.data.lastSeen || new Date().toISOString(),
+            activity: message.data.activity,
+          })
+          return updated
         })
-        return updated
+      }
+
+      // Handle notifications
+      if (message.type === 'notification_received' && enableNotifications && message.data) {
+        // Show notification if not from current user
+        if (message.userId !== currentUserId) {
+          toast.info(message.data.title, {
+            description: message.data.message,
+          })
+        }
+      }
+
+      // Route to subscription callbacks
+      subscriptionCallbacks.current.forEach((callback) => {
+        try {
+          callback(socialEvent)
+        } catch (error) {
+          logger.error('Error in subscription callback', { error })
+        }
       })
-    }
-
-    // Handle notifications
-    if (message.type === 'notification_received' && enableNotifications && message.data) {
-      // Show notification if not from current user
-      if (message.userId !== currentUserId) {
-        toast.info(message.data.title, {
-          description: message.data.message,
-        })
-      }
-    }
-
-    // Route to subscription callbacks
-    subscriptionCallbacks.current.forEach((callback) => {
-      try {
-        callback(socialEvent)
-      } catch (error) {
-        logger.error('Error in subscription callback', { error })
-      }
-    })
-  }, [currentUserId, enableNotifications])
+    },
+    [currentUserId, enableNotifications]
+  )
 
   /**
    * Subscribe to social events
    */
   const subscribe = useCallback((subscription: SocialSubscription) => {
     const operationId = `social-subscribe-${subscription.id}-${Date.now()}`
-    
+
     logger.info(`[${operationId}] Creating social subscription`, {
       subscriptionId: subscription.id,
       type: subscription.type,
       filters: subscription.filters,
     })
 
-    setSubscriptions(prev => {
+    setSubscriptions((prev) => {
       const updated = new Map(prev)
       updated.set(subscription.id, subscription)
       return updated
@@ -303,11 +315,13 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
 
     // Send subscription to server if connected
     if (websocketRef.current?.readyState === WebSocket.OPEN) {
-      websocketRef.current.send(JSON.stringify({
-        type: 'subscribe_social',
-        data: subscription,
-      }))
-      setConnectionStats(prev => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
+      websocketRef.current.send(
+        JSON.stringify({
+          type: 'subscribe_social',
+          data: subscription,
+        })
+      )
+      setConnectionStats((prev) => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
     }
 
     logger.debug(`[${operationId}] Social subscription created`)
@@ -318,10 +332,10 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
    */
   const unsubscribe = useCallback((subscriptionId: string) => {
     const operationId = `social-unsubscribe-${subscriptionId}-${Date.now()}`
-    
+
     logger.info(`[${operationId}] Removing social subscription`, { subscriptionId })
 
-    setSubscriptions(prev => {
+    setSubscriptions((prev) => {
       const updated = new Map(prev)
       updated.delete(subscriptionId)
       return updated
@@ -331,11 +345,13 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
 
     // Send unsubscribe to server if connected
     if (websocketRef.current?.readyState === WebSocket.OPEN) {
-      websocketRef.current.send(JSON.stringify({
-        type: 'unsubscribe_social',
-        data: { subscriptionId },
-      }))
-      setConnectionStats(prev => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
+      websocketRef.current.send(
+        JSON.stringify({
+          type: 'unsubscribe_social',
+          data: { subscriptionId },
+        })
+      )
+      setConnectionStats((prev) => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
     }
 
     logger.debug(`[${operationId}] Social subscription removed`)
@@ -351,7 +367,7 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
     }
 
     const operationId = `social-send-${event.type}-${Date.now()}`
-    
+
     logger.debug(`[${operationId}] Sending social event`, {
       type: event.type,
       targetId: event.targetId,
@@ -359,11 +375,13 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
     })
 
     if (websocketRef.current?.readyState === WebSocket.OPEN) {
-      websocketRef.current.send(JSON.stringify({
-        type: 'social_event',
-        data: socialEvent,
-      }))
-      setConnectionStats(prev => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
+      websocketRef.current.send(
+        JSON.stringify({
+          type: 'social_event',
+          data: socialEvent,
+        })
+      )
+      setConnectionStats((prev) => ({ ...prev, messagesSent: prev.messagesSent + 1 }))
     } else {
       // Queue message if not connected
       messageQueue.current.push(socialEvent)
@@ -373,9 +391,12 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
   /**
    * Get user presence
    */
-  const getUserPresence = useCallback((userId: string): UserPresence | null => {
-    return userPresence.get(userId) || null
-  }, [userPresence])
+  const getUserPresence = useCallback(
+    (userId: string): UserPresence | null => {
+      return userPresence.get(userId) || null
+    },
+    [userPresence]
+  )
 
   // Establish connection on mount
   useEffect(() => {
@@ -388,7 +409,7 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
       }
-      
+
       if (websocketRef.current) {
         websocketRef.current.close(1000) // Intentional disconnect
       }
@@ -440,9 +461,7 @@ export const RealTimeSocialProvider: React.FC<RealTimeSocialProviderProps> = ({
   }
 
   return (
-    <RealTimeSocialContext.Provider value={contextValue}>
-      {children}
-    </RealTimeSocialContext.Provider>
+    <RealTimeSocialContext.Provider value={contextValue}>{children}</RealTimeSocialContext.Provider>
   )
 }
 
@@ -508,7 +527,7 @@ export const useUserPresence = (userId: string) => {
     }
 
     updatePresence()
-    
+
     // Update every 5 seconds
     const interval = setInterval(updatePresence, 5000)
     return () => clearInterval(interval)
@@ -522,7 +541,7 @@ export const useUserPresence = (userId: string) => {
  */
 export const useSocialConnectionStatus = () => {
   const { isConnected, connectionStats } = useRealTimeSocial()
-  
+
   return {
     isConnected,
     stats: connectionStats,

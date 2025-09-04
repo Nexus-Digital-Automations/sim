@@ -29,7 +29,7 @@ import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
-import { getUserRole, AuthHelpers } from '@/lib/auth/types'
+import { AuthHelpers } from '@/lib/auth/types'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -82,9 +82,12 @@ export async function GET(request: NextRequest) {
     // Convert string parameters to proper types for validation schema
     // Handle type conversions to prevent TypeScript validation errors
     const processedParams: Record<string, any> = { ...queryParams }
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
-    if (processedParams.maxDepth) processedParams.maxDepth = Number.parseInt(processedParams.maxDepth as string)
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.maxDepth)
+      processedParams.maxDepth = Number.parseInt(processedParams.maxDepth as string)
     if (processedParams.includeReplies)
       processedParams.includeReplies = (processedParams.includeReplies as string) === 'true'
 
@@ -247,7 +250,8 @@ export async function GET(request: NextRequest) {
     // Execute comments query with proper parameter binding
     // Database results return direct array, not .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       WITH RECURSIVE comment_tree AS (
         -- Base case: top-level comments or specified parent
         SELECT 
@@ -348,7 +352,8 @@ export async function GET(request: NextRequest) {
       SELECT * FROM comment_tree
       ORDER BY depth ASC, ${sortColumn} ${sortDirection}
       LIMIT ${params.limit} OFFSET ${params.offset}
-    `))
+    `)
+    )
 
     // Get total count
     const countQuery = `
@@ -360,11 +365,13 @@ export async function GET(request: NextRequest) {
     // Execute count query for pagination metadata
     // Access result directly as array, not via .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const countResult = await db.execute(sql.raw(`
+    const countResult = await db.execute(
+      sql.raw(`
       SELECT COUNT(*) as total
       FROM community_comments cc
       WHERE ${whereConditions.join(' AND ')}
-    `))
+    `)
+    )
     const totalComments = (countResult[0] as any)?.total || 0
 
     // Build comment tree structure
@@ -463,7 +470,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve comments',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -641,7 +651,8 @@ export async function POST(request: NextRequest) {
     // Retrieve created comment with user details
     // Database result is direct array, not nested in .rows
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const commentResult = await db.execute(sql.raw(`
+    const commentResult = await db.execute(
+      sql.raw(`
       SELECT 
         cc.id, cc.user_id, cc.target_id, cc.target_type, cc.parent_id,
         cc.content, cc.like_count, cc.reply_count, cc.is_pinned, cc.is_edited,
@@ -654,7 +665,8 @@ export async function POST(request: NextRequest) {
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
       WHERE cc.id = '${commentId}'
-    `))
+    `)
+    )
     const commentRow = commentResult[0] as any
 
     const createdComment = {
@@ -722,7 +734,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create comment',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -768,9 +783,7 @@ export async function PUT(request: NextRequest) {
 
     const comment = commentCheck[0] as any
     // Check permissions using safe role access patterns for type-safe authorization checks
-    const canEdit =
-      comment.user_id === userId ||
-      AuthHelpers.canModerate(session.user)
+    const canEdit = comment.user_id === userId || AuthHelpers.canModerate(session.user)
 
     if (!canEdit) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
@@ -822,7 +835,8 @@ export async function PUT(request: NextRequest) {
     // Retrieve updated comment with user details
     // Database result is direct array, not nested in .rows
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const updatedResult = await db.execute(sql.raw(`
+    const updatedResult = await db.execute(
+      sql.raw(`
       SELECT 
         cc.id, cc.user_id, cc.target_id, cc.target_type, cc.parent_id,
         cc.content, cc.like_count, cc.reply_count, cc.is_pinned, cc.is_edited,
@@ -835,7 +849,8 @@ export async function PUT(request: NextRequest) {
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
       WHERE cc.id = '${commentId}'
-    `))
+    `)
+    )
     const updatedRow = updatedResult[0] as any
 
     const updatedComment = {
@@ -891,7 +906,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update comment',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -937,9 +955,7 @@ export async function DELETE(request: NextRequest) {
 
     const comment = commentCheck[0] as any
     // Check permissions using safe role access patterns for type-safe authorization checks
-    const canDelete =
-      comment.user_id === userId ||
-      AuthHelpers.canModerate(session.user)
+    const canDelete = comment.user_id === userId || AuthHelpers.canModerate(session.user)
 
     if (!canDelete) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
@@ -996,7 +1012,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to delete comment',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -1042,21 +1061,31 @@ async function validateCommentTarget(targetType: string, targetId: string, userI
     }
 
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
-      ${targetType === 'activity' ? `
+    const result = await db.execute(
+      sql.raw(`
+      ${
+        targetType === 'activity'
+          ? `
         SELECT cua.id, cua.visibility, cua.user_id
         FROM community_user_activities cua
         WHERE cua.id = '${targetId}' AND cua.is_hidden = false
-      ` : targetType === 'template' ? `
+      `
+          : targetType === 'template'
+            ? `
         SELECT t.id, t.visibility, t.created_by_user_id as user_id
         FROM templates t
         WHERE t.id = '${targetId}' AND t.status = 'approved'
-      ` : targetType === 'collection' ? `
+      `
+            : targetType === 'collection'
+              ? `
         SELECT tc.id, tc.visibility, tc.user_id
         FROM template_collections tc
         WHERE tc.id = '${targetId}'
-      ` : 'SELECT NULL LIMIT 0'}
-    `))
+      `
+              : 'SELECT NULL LIMIT 0'
+      }
+    `)
+    )
 
     // Check target existence - direct array access, not .rows
     if (result.length === 0) {
@@ -1116,17 +1145,25 @@ async function updateTargetCommentCount(targetType: string, targetId: string, de
     }
 
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    await db.execute(sql.raw(`
-      ${targetType === 'activity' ? `
+    await db.execute(
+      sql.raw(`
+      ${
+        targetType === 'activity'
+          ? `
         UPDATE community_user_activities 
         SET comment_count = GREATEST(0, comment_count + ${delta}), updated_at = NOW()
         WHERE id = '${targetId}'
-      ` : targetType === 'template' ? `
+      `
+          : targetType === 'template'
+            ? `
         UPDATE templates 
         SET comment_count = GREATEST(0, comment_count + ${delta}), updated_at = NOW()
         WHERE id = '${targetId}'
-      ` : 'SELECT 1 WHERE 1=0'}
-    `))
+      `
+            : 'SELECT 1 WHERE 1=0'
+      }
+    `)
+    )
   } catch (error) {
     console.error('[Comments] Failed to update target comment count:', error)
   }

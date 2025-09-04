@@ -187,7 +187,9 @@ export function getAllCapabilities(): string[] {
 /**
  * Helper function to validate execution parameters
  */
-export function validateExecutionParams(params: Partial<import('./types').ExecuteWorkflowParams>): string[] {
+export function validateExecutionParams(
+  params: Partial<import('./types').ExecuteWorkflowParams>
+): string[] {
   const errors: string[] = []
 
   if (!params.workflowId) {
@@ -219,7 +221,9 @@ export function validateExecutionParams(params: Partial<import('./types').Execut
 /**
  * Helper function to validate monitoring parameters
  */
-export function validateMonitoringParams(params: Partial<import('./types').MonitorWorkflowsParams>): string[] {
+export function validateMonitoringParams(
+  params: Partial<import('./types').MonitorWorkflowsParams>
+): string[] {
   const errors: string[] = []
 
   if (!params.action) {

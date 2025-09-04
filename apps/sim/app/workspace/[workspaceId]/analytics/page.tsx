@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react'
 import { Activity, AlertTriangle, BarChart3, Users, Zap } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,7 +26,6 @@ import type {
   MonitoringApiResponse,
   WorkflowAnalytics,
 } from '@/lib/monitoring/types'
-import { toast } from 'sonner'
 
 type AnalyticsPageProps = {}
 
@@ -159,7 +159,9 @@ export default function AnalyticsPage({}: AnalyticsPageProps) {
         throw new Error(data.error?.message || 'Failed to fetch business metrics')
       }
     } catch (error) {
-      toast.error(`Failed to fetch business metrics: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(
+        `Failed to fetch business metrics: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -185,7 +187,9 @@ export default function AnalyticsPage({}: AnalyticsPageProps) {
         throw new Error(data.error?.message || 'Failed to fetch workflow analytics')
       }
     } catch (error) {
-      toast.error(`Failed to fetch workflow analytics: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(
+        `Failed to fetch workflow analytics: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 

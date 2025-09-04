@@ -10,7 +10,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { MarketplaceTemplate, WorkflowExecutionResult, DeploymentPlatform } from './marketplace-integration-workflows'
+import type { DeploymentPlatform, MarketplaceTemplate } from './marketplace-integration-workflows'
 
 const logger = createLogger('MarketplaceTestingInfrastructure')
 
@@ -21,7 +21,7 @@ const logger = createLogger('MarketplaceTestingInfrastructure')
 /**
  * Test categories for marketplace components
  */
-export type TestCategory = 
+export type TestCategory =
   | 'unit'
   | 'integration'
   | 'e2e'
@@ -34,18 +34,12 @@ export type TestCategory =
 /**
  * Test execution environments
  */
-export type TestEnvironment = 
-  | 'local'
-  | 'ci'
-  | 'staging'
-  | 'production'
-  | 'isolated'
-  | 'docker'
+export type TestEnvironment = 'local' | 'ci' | 'staging' | 'production' | 'isolated' | 'docker'
 
 /**
  * Test execution status
  */
-export type TestStatus = 
+export type TestStatus =
   | 'pending'
   | 'running'
   | 'passed'
@@ -57,11 +51,7 @@ export type TestStatus =
 /**
  * Test priority levels
  */
-export type TestPriority = 
-  | 'critical'
-  | 'high'
-  | 'medium'
-  | 'low'
+export type TestPriority = 'critical' | 'high' | 'medium' | 'low'
 
 /**
  * Comprehensive test suite definition
@@ -72,7 +62,7 @@ export interface TestSuite {
   description: string
   category: TestCategory
   priority: TestPriority
-  
+
   // Test configuration
   configuration: {
     environment: TestEnvironment
@@ -81,10 +71,10 @@ export interface TestSuite {
     parallel: boolean
     dependencies: string[]
   }
-  
+
   // Test cases
   tests: TestCase[]
-  
+
   // Setup and teardown
   hooks: {
     beforeAll?: string[]
@@ -92,14 +82,14 @@ export interface TestSuite {
     beforeEach?: string[]
     afterEach?: string[]
   }
-  
+
   // Execution requirements
   requirements: {
     resources: ResourceRequirements
     permissions: string[]
     environment: Record<string, string>
   }
-  
+
   // Reporting configuration
   reporting: {
     formats: ReportFormat[]
@@ -117,7 +107,7 @@ export interface TestCase {
   name: string
   description: string
   priority: TestPriority
-  
+
   // Test implementation
   implementation: {
     type: 'function' | 'script' | 'api' | 'ui' | 'custom'
@@ -125,7 +115,7 @@ export interface TestCase {
     parameters: Record<string, any>
     assertions: TestAssertion[]
   }
-  
+
   // Test data and fixtures
   data: {
     input: any
@@ -133,7 +123,7 @@ export interface TestCase {
     fixtures: string[]
     mocks: MockConfiguration[]
   }
-  
+
   // Execution configuration
   execution: {
     timeout: number
@@ -141,7 +131,7 @@ export interface TestCase {
     skipCondition?: string
     runCondition?: string
   }
-  
+
   // Metadata
   metadata: {
     tags: string[]
@@ -197,13 +187,7 @@ export interface ResourceRequirements {
 /**
  * Test report formats
  */
-export type ReportFormat = 
-  | 'junit'
-  | 'html'
-  | 'json'
-  | 'markdown'
-  | 'pdf'
-  | 'csv'
+export type ReportFormat = 'junit' | 'html' | 'json' | 'markdown' | 'pdf' | 'csv'
 
 /**
  * Report destination configuration
@@ -222,22 +206,22 @@ export interface TestExecutionResult {
   suiteId: string
   executionId: string
   environment: TestEnvironment
-  
+
   // Execution timing
   startTime: Date
   endTime: Date
   duration: number
-  
+
   // Overall results
   totalTests: number
   passed: number
   failed: number
   skipped: number
   errors: number
-  
+
   // Detailed results
   testResults: TestCaseResult[]
-  
+
   // Performance metrics
   performance: {
     averageExecutionTime: number
@@ -246,7 +230,7 @@ export interface TestExecutionResult {
     memoryUsage: number
     cpuUsage: number
   }
-  
+
   // Quality metrics
   quality: {
     coverage: number
@@ -254,11 +238,11 @@ export interface TestExecutionResult {
     maintainability: number
     security: number
   }
-  
+
   // Artifacts and reports
   artifacts: TestArtifact[]
   reports: GeneratedReport[]
-  
+
   // Error summary
   errors: TestError[]
   warnings: string[]
@@ -272,19 +256,19 @@ export interface TestCaseResult {
   name: string
   status: TestStatus
   duration: number
-  
+
   // Assertion results
   assertions: AssertionResult[]
-  
+
   // Output and logs
   output: any
   logs: string[]
   screenshots: string[]
-  
+
   // Error information
   error?: TestError
   stackTrace?: string
-  
+
   // Metrics
   metrics: {
     executionTime: number
@@ -377,7 +361,7 @@ export class MarketplaceTestingEngine {
     logger.info(`Registering test suite: ${suite.id}`, {
       name: suite.name,
       category: suite.category,
-      testCount: suite.tests.length
+      testCount: suite.tests.length,
     })
 
     this.validateTestSuite(suite)
@@ -400,7 +384,7 @@ export class MarketplaceTestingEngine {
     logger.info(`Starting test suite execution: ${suiteId}`, {
       executionId,
       environment,
-      options
+      options,
     })
 
     try {
@@ -424,15 +408,14 @@ export class MarketplaceTestingEngine {
         executionId,
         passed: result.passed,
         failed: result.failed,
-        duration: result.duration
+        duration: result.duration,
       })
 
       return result
-
     } catch (error) {
       logger.error(`Test suite execution failed: ${suiteId}`, {
         executionId,
-        error: error.message
+        error: error.message,
       })
 
       throw error
@@ -449,8 +432,9 @@ export class MarketplaceTestingEngine {
   ): Promise<Map<string, TestExecutionResult>> {
     logger.info(`Executing test category: ${category}`, { environment })
 
-    const categoryTests = Array.from(this.testSuites.values())
-      .filter(suite => suite.category === category)
+    const categoryTests = Array.from(this.testSuites.values()).filter(
+      (suite) => suite.category === category
+    )
 
     const results = new Map<string, TestExecutionResult>()
 
@@ -494,17 +478,19 @@ export class MarketplaceTestingEngine {
       }
 
       logger.info(`Executing ${category} tests...`)
-      
+
       try {
         const categoryResults = await this.executeTestCategory(category, environment, {
           ...options,
-          parallel: category === 'unit' // Run unit tests in parallel
+          parallel: category === 'unit', // Run unit tests in parallel
         })
         results.set(category, categoryResults)
 
         // Analyze results and decide whether to continue
-        const totalFailures = Array.from(categoryResults.values())
-          .reduce((sum, result) => sum + result.failed, 0)
+        const totalFailures = Array.from(categoryResults.values()).reduce(
+          (sum, result) => sum + result.failed,
+          0
+        )
 
         if (totalFailures > 0 && options?.stopOnCriticalFailure) {
           logger.warn(`Stopping comprehensive tests due to failures in ${category}`)
@@ -521,7 +507,7 @@ export class MarketplaceTestingEngine {
     logger.info('Comprehensive marketplace test execution completed', {
       duration: comprehensiveResult.duration,
       totalTests: comprehensiveResult.totalTests,
-      overallPassRate: comprehensiveResult.overallPassRate
+      overallPassRate: comprehensiveResult.overallPassRate,
     })
 
     return comprehensiveResult
@@ -537,15 +523,15 @@ export class MarketplaceTestingEngine {
   ): Promise<TestExecutionResult> {
     logger.info('Starting API endpoint tests', {
       baseUrl,
-      endpointCount: endpoints.length
+      endpointCount: endpoints.length,
     })
 
     // Generate dynamic test suite for API endpoints
     const apiTestSuite = this.generateAPITestSuite(baseUrl, endpoints, options)
-    
+
     return this.executeTestSuite(apiTestSuite.id, 'isolated', {
       parallel: true,
-      timeout: options?.timeout || 30000
+      timeout: options?.timeout || 30000,
     })
   }
 
@@ -559,15 +545,15 @@ export class MarketplaceTestingEngine {
   ): Promise<TestExecutionResult> {
     logger.info('Starting frontend component tests', {
       baseUrl,
-      componentCount: components.length
+      componentCount: components.length,
     })
 
     // Generate dynamic test suite for frontend components
     const frontendTestSuite = this.generateFrontendTestSuite(baseUrl, components, options)
-    
+
     return this.executeTestSuite(frontendTestSuite.id, 'isolated', {
       parallel: false, // Browser tests should run sequentially
-      timeout: options?.timeout || 60000
+      timeout: options?.timeout || 60000,
     })
   }
 
@@ -579,14 +565,14 @@ export class MarketplaceTestingEngine {
     options?: WorkflowTestOptions
   ): Promise<TestExecutionResult> {
     logger.info('Starting integration workflow tests', {
-      workflowCount: workflows.length
+      workflowCount: workflows.length,
     })
 
     const workflowTestSuite = this.generateWorkflowTestSuite(workflows, options)
-    
+
     return this.executeTestSuite(workflowTestSuite.id, 'staging', {
       parallel: false,
-      timeout: options?.timeout || 120000
+      timeout: options?.timeout || 120000,
     })
   }
 
@@ -594,9 +580,10 @@ export class MarketplaceTestingEngine {
    * Get test execution history
    */
   getExecutionHistory(limit?: number): TestExecutionResult[] {
-    const history = Array.from(this.executionHistory.values())
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-    
+    const history = Array.from(this.executionHistory.values()).sort(
+      (a, b) => b.startTime.getTime() - a.startTime.getTime()
+    )
+
     return limit ? history.slice(0, limit) : history
   }
 
@@ -618,7 +605,7 @@ export class MarketplaceTestingEngine {
 
     await execution.cancel()
     this.activeExecutions.delete(executionId)
-    
+
     logger.info(`Test execution cancelled: ${executionId}`)
     return true
   }
@@ -630,7 +617,7 @@ export class MarketplaceTestingEngine {
     const totalTests = results.reduce((sum, r) => sum + r.totalTests, 0)
     const totalPassed = results.reduce((sum, r) => sum + r.passed, 0)
     const totalFailed = results.reduce((sum, r) => sum + r.failed, 0)
-    
+
     const passRate = totalTests > 0 ? (totalPassed / totalTests) * 100 : 0
     const reliability = this.calculateReliability(results)
     const maintainability = this.calculateMaintainability(results)
@@ -642,7 +629,7 @@ export class MarketplaceTestingEngine {
       maintainability,
       coverage,
       totalTests,
-      recommendations: this.generateQualityRecommendations(results)
+      recommendations: this.generateQualityRecommendations(results),
     }
   }
 
@@ -678,7 +665,7 @@ export class MarketplaceTestingEngine {
 
   private orderTestsByPriority(suites: TestSuite[]): TestSuite[] {
     const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 }
-    
+
     return suites.sort((a, b) => {
       return priorityOrder[a.priority] - priorityOrder[b.priority]
     })
@@ -725,7 +712,7 @@ export class MarketplaceTestingEngine {
         passed: categoryPassed,
         failed: categoryFailed,
         skipped: categorySkipped,
-        passRate: categoryTests > 0 ? (categoryPassed / categoryTests) * 100 : 0
+        passRate: categoryTests > 0 ? (categoryPassed / categoryTests) * 100 : 0,
       })
     }
 
@@ -739,8 +726,10 @@ export class MarketplaceTestingEngine {
       skipped: totalSkipped,
       overallPassRate: totalTests > 0 ? (totalPassed / totalTests) * 100 : 0,
       categoryResults,
-      qualityMetrics: this.generateQualityMetrics(Array.from(results.values()).flatMap(m => Array.from(m.values()))),
-      recommendations: this.generateTestingRecommendations(results)
+      qualityMetrics: this.generateQualityMetrics(
+        Array.from(results.values()).flatMap((m) => Array.from(m.values()))
+      ),
+      recommendations: this.generateTestingRecommendations(results),
     }
   }
 
@@ -787,17 +776,19 @@ export class MarketplaceTestingEngine {
 
   private generateQualityRecommendations(results: TestExecutionResult[]): string[] {
     const recommendations: string[] = []
-    
-    const avgPassRate = results.reduce((sum, r) => sum + (r.passed / r.totalTests), 0) / results.length * 100
-    
+
+    const avgPassRate =
+      (results.reduce((sum, r) => sum + r.passed / r.totalTests, 0) / results.length) * 100
+
     if (avgPassRate < 90) {
       recommendations.push('Improve test pass rate by addressing failing test cases')
     }
-    
-    if (results.some(r => r.duration > 300000)) { // 5 minutes
+
+    if (results.some((r) => r.duration > 300000)) {
+      // 5 minutes
       recommendations.push('Optimize slow-running test suites to reduce execution time')
     }
-    
+
     return recommendations
   }
 
@@ -808,7 +799,7 @@ export class MarketplaceTestingEngine {
     return [
       'Implement continuous testing in CI/CD pipeline',
       'Add more integration tests for critical workflows',
-      'Improve test data management and fixtures'
+      'Improve test data management and fixtures',
     ]
   }
 
@@ -825,21 +816,28 @@ export class MarketplaceTestingEngine {
         timeout: 30000,
         retries: 2,
         parallel: true,
-        dependencies: []
+        dependencies: [],
       },
       tests: [], // Would be populated with actual unit tests
       hooks: {},
       requirements: {
-        resources: { cpu: 1, memory: 512, disk: 100, network: false, database: false, external: [] },
+        resources: {
+          cpu: 1,
+          memory: 512,
+          disk: 100,
+          network: false,
+          database: false,
+          external: [],
+        },
         permissions: [],
-        environment: {}
+        environment: {},
       },
       reporting: {
         formats: ['junit', 'html'],
         destinations: [{ type: 'file', target: './test-results', format: 'junit' }],
         includeArtifacts: true,
-        includeMetrics: true
-      }
+        includeMetrics: true,
+      },
     }
   }
 
@@ -855,24 +853,31 @@ export class MarketplaceTestingEngine {
         timeout: 60000,
         retries: 1,
         parallel: false,
-        dependencies: ['marketplace_unit_tests']
+        dependencies: ['marketplace_unit_tests'],
       },
       tests: [], // Would be populated with actual integration tests
       hooks: {},
       requirements: {
-        resources: { cpu: 2, memory: 1024, disk: 500, network: true, database: true, external: ['github', 'docker'] },
+        resources: {
+          cpu: 2,
+          memory: 1024,
+          disk: 500,
+          network: true,
+          database: true,
+          external: ['github', 'docker'],
+        },
         permissions: ['api_access', 'database_read', 'database_write'],
-        environment: { DATABASE_URL: 'test_db', API_KEY: 'test_key' }
+        environment: { DATABASE_URL: 'test_db', API_KEY: 'test_key' },
       },
       reporting: {
         formats: ['junit', 'html', 'json'],
         destinations: [
           { type: 'file', target: './test-results', format: 'junit' },
-          { type: 'url', target: 'https://api.sim.dev/test-results', format: 'json' }
+          { type: 'url', target: 'https://api.sim.dev/test-results', format: 'json' },
         ],
         includeArtifacts: true,
-        includeMetrics: true
-      }
+        includeMetrics: true,
+      },
     }
   }
 
@@ -888,21 +893,28 @@ export class MarketplaceTestingEngine {
         timeout: 120000,
         retries: 1,
         parallel: false,
-        dependencies: ['marketplace_integration_tests']
+        dependencies: ['marketplace_integration_tests'],
       },
       tests: [], // Would be populated with actual E2E tests
       hooks: {},
       requirements: {
-        resources: { cpu: 2, memory: 2048, disk: 1000, network: true, database: true, external: ['browser', 'selenium'] },
+        resources: {
+          cpu: 2,
+          memory: 2048,
+          disk: 1000,
+          network: true,
+          database: true,
+          external: ['browser', 'selenium'],
+        },
         permissions: ['full_access'],
-        environment: { BROWSER: 'chrome', HEADLESS: 'true' }
+        environment: { BROWSER: 'chrome', HEADLESS: 'true' },
       },
       reporting: {
         formats: ['html', 'json'],
         destinations: [{ type: 'file', target: './test-results/e2e', format: 'html' }],
         includeArtifacts: true,
-        includeMetrics: true
-      }
+        includeMetrics: true,
+      },
     }
   }
 
@@ -918,21 +930,28 @@ export class MarketplaceTestingEngine {
         timeout: 300000,
         retries: 0,
         parallel: false,
-        dependencies: []
+        dependencies: [],
       },
       tests: [], // Would be populated with actual performance tests
       hooks: {},
       requirements: {
-        resources: { cpu: 4, memory: 4096, disk: 2000, network: true, database: true, external: ['load_generator'] },
+        resources: {
+          cpu: 4,
+          memory: 4096,
+          disk: 2000,
+          network: true,
+          database: true,
+          external: ['load_generator'],
+        },
         permissions: ['performance_monitoring'],
-        environment: { LOAD_LEVEL: 'medium', DURATION: '300' }
+        environment: { LOAD_LEVEL: 'medium', DURATION: '300' },
       },
       reporting: {
         formats: ['html', 'json', 'csv'],
         destinations: [{ type: 'file', target: './test-results/performance', format: 'html' }],
         includeArtifacts: true,
-        includeMetrics: true
-      }
+        includeMetrics: true,
+      },
     }
   }
 
@@ -948,24 +967,36 @@ export class MarketplaceTestingEngine {
         timeout: 180000,
         retries: 0,
         parallel: false,
-        dependencies: []
+        dependencies: [],
       },
       tests: [], // Would be populated with actual security tests
       hooks: {},
       requirements: {
-        resources: { cpu: 2, memory: 2048, disk: 1000, network: true, database: false, external: ['security_scanner'] },
+        resources: {
+          cpu: 2,
+          memory: 2048,
+          disk: 1000,
+          network: true,
+          database: false,
+          external: ['security_scanner'],
+        },
         permissions: ['security_testing'],
-        environment: { SCAN_LEVEL: 'comprehensive', REPORT_VULNERABILITIES: 'true' }
+        environment: { SCAN_LEVEL: 'comprehensive', REPORT_VULNERABILITIES: 'true' },
       },
       reporting: {
         formats: ['json', 'pdf'],
         destinations: [
           { type: 'file', target: './test-results/security', format: 'json' },
-          { type: 'email', target: 'security@sim.dev', format: 'pdf', condition: 'critical_findings' }
+          {
+            type: 'email',
+            target: 'security@sim.dev',
+            format: 'pdf',
+            condition: 'critical_findings',
+          },
         ],
         includeArtifacts: true,
-        includeMetrics: true
-      }
+        includeMetrics: true,
+      },
     }
   }
 }
@@ -995,7 +1026,7 @@ class TestExecution {
   async execute(): Promise<TestExecutionResult> {
     logger.info(`Executing test suite: ${this.suite.id}`, {
       executionId: this.executionId,
-      testCount: this.suite.tests.length
+      testCount: this.suite.tests.length,
     })
 
     try {
@@ -1014,11 +1045,10 @@ class TestExecution {
 
       // Generate execution result
       return this.generateResult()
-
     } catch (error) {
       logger.error(`Test suite execution failed: ${this.suite.id}`, {
         executionId: this.executionId,
-        error: error.message
+        error: error.message,
       })
 
       throw error
@@ -1043,9 +1073,9 @@ class TestExecution {
   // Private methods
 
   private async executeTestsInParallel(): Promise<void> {
-    const promises = this.suite.tests.map(test => this.executeTestCase(test))
+    const promises = this.suite.tests.map((test) => this.executeTestCase(test))
     const results = await Promise.allSettled(promises)
-    
+
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
         this.testResults.push(result.value)
@@ -1065,9 +1095,9 @@ class TestExecution {
             message: result.reason?.message || 'Unknown error',
             details: result.reason,
             recoverable: false,
-            timestamp: new Date()
+            timestamp: new Date(),
           },
-          metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 }
+          metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 },
         })
       }
     })
@@ -1097,9 +1127,9 @@ class TestExecution {
             message: error.message,
             details: error,
             recoverable: false,
-            timestamp: new Date()
+            timestamp: new Date(),
           },
-          metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 }
+          metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 },
         })
       }
     }
@@ -1124,7 +1154,7 @@ class TestExecution {
       await this.executeHooks(this.suite.hooks.afterEach)
 
       const duration = Date.now() - startTime
-      const passed = assertions.every(a => a.passed)
+      const passed = assertions.every((a) => a.passed)
 
       return {
         testId: test.id,
@@ -1138,10 +1168,9 @@ class TestExecution {
         metrics: {
           executionTime: duration,
           memoryUsage: 0, // Would be measured
-          networkRequests: 0 // Would be counted
-        }
+          networkRequests: 0, // Would be counted
+        },
       }
-
     } catch (error) {
       return {
         testId: test.id,
@@ -1157,9 +1186,9 @@ class TestExecution {
           message: error.message,
           details: error,
           recoverable: false,
-          timestamp: new Date()
+          timestamp: new Date(),
         },
-        metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 }
+        metrics: { executionTime: 0, memoryUsage: 0, networkRequests: 0 },
       }
     }
   }
@@ -1184,7 +1213,8 @@ class TestExecution {
           expected: assertion.expected,
           actual,
           passed,
-          message: assertion.message || `${assertion.field} ${assertion.type} ${assertion.expected}`
+          message:
+            assertion.message || `${assertion.field} ${assertion.type} ${assertion.expected}`,
         })
       } catch (error) {
         results.push({
@@ -1193,7 +1223,7 @@ class TestExecution {
           expected: assertion.expected,
           actual: undefined,
           passed: false,
-          message: `Assertion error: ${error.message}`
+          message: `Assertion error: ${error.message}`,
         })
       }
     }
@@ -1242,10 +1272,10 @@ class TestExecution {
     const endTime = new Date()
     const duration = endTime.getTime() - this.startTime.getTime()
 
-    const passed = this.testResults.filter(r => r.status === 'passed').length
-    const failed = this.testResults.filter(r => r.status === 'failed').length
-    const skipped = this.testResults.filter(r => r.status === 'skipped').length
-    const errors = this.testResults.filter(r => r.status === 'error').length
+    const passed = this.testResults.filter((r) => r.status === 'passed').length
+    const failed = this.testResults.filter((r) => r.status === 'failed').length
+    const skipped = this.testResults.filter((r) => r.status === 'skipped').length
+    const errors = this.testResults.filter((r) => r.status === 'error').length
 
     return {
       suiteId: this.suite.id,
@@ -1258,37 +1288,41 @@ class TestExecution {
       passed,
       failed,
       skipped,
-      errors,
       testResults: this.testResults,
       performance: {
-        averageExecutionTime: this.testResults.reduce((sum, r) => sum + r.duration, 0) / this.testResults.length,
+        averageExecutionTime:
+          this.testResults.reduce((sum, r) => sum + r.duration, 0) / this.testResults.length,
         slowestTest: this.findSlowestTest(),
         fastestTest: this.findFastestTest(),
         memoryUsage: 0, // Would be measured
-        cpuUsage: 0 // Would be measured
+        cpuUsage: 0, // Would be measured
       },
       quality: {
         coverage: 0, // Would be calculated
         reliability: 0, // Would be calculated
         maintainability: 0, // Would be calculated
-        security: 0 // Would be calculated
+        security: 0, // Would be calculated
       },
       artifacts: [], // Would be populated with actual artifacts
       reports: [], // Would be populated with generated reports
-      errors: this.testResults.filter(r => r.error).map(r => r.error!),
-      warnings: [] // Would be populated with warnings
+      errors: this.testResults.filter((r) => r.error).map((r) => r.error!),
+      warnings: [], // Would be populated with warnings
     }
   }
 
   private findSlowestTest(): string {
-    const slowest = this.testResults.reduce((prev, current) => 
-      current.duration > prev.duration ? current : prev, this.testResults[0])
+    const slowest = this.testResults.reduce(
+      (prev, current) => (current.duration > prev.duration ? current : prev),
+      this.testResults[0]
+    )
     return slowest?.name || 'none'
   }
 
   private findFastestTest(): string {
-    const fastest = this.testResults.reduce((prev, current) => 
-      current.duration < prev.duration ? current : prev, this.testResults[0])
+    const fastest = this.testResults.reduce(
+      (prev, current) => (current.duration < prev.duration ? current : prev),
+      this.testResults[0]
+    )
     return fastest?.name || 'none'
   }
 }
@@ -1466,11 +1500,11 @@ export const marketplaceTestingEngine = new MarketplaceTestingEngine()
  */
 export function initializeMarketplaceTestingInfrastructure(): void {
   logger.info('Initializing Marketplace Testing Infrastructure...')
-  
+
   // The engine is already initialized with built-in test suites
-  
+
   logger.info('Marketplace Testing Infrastructure initialized successfully', {
-    testSuitesRegistered: Array.from(marketplaceTestingEngine['testSuites'].keys()),
-    engineActive: true
+    testSuitesRegistered: Array.from(marketplaceTestingEngine.testSuites.keys()),
+    engineActive: true,
   })
 }

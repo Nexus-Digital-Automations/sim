@@ -28,17 +28,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  Calendar,
-  Filter,
-  RotateCcw,
-  Search,
-  Star,
-  Tag,
-  TrendingUp,
-  User,
-  X,
-} from 'lucide-react'
+import { Calendar, Filter, RotateCcw, Search, Star, Tag, TrendingUp, User, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
@@ -58,7 +48,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -235,81 +224,96 @@ export function AdvancedSearchDialog({
   /**
    * Handle difficulty selection toggle
    */
-  const toggleDifficulty = useCallback((difficulty: string) => {
-    setSelectedDifficulties((prev) => {
-      const isSelected = prev.includes(difficulty)
-      const newDifficulties = isSelected
-        ? prev.filter((d) => d !== difficulty)
-        : [...prev, difficulty]
+  const toggleDifficulty = useCallback(
+    (difficulty: string) => {
+      setSelectedDifficulties((prev) => {
+        const isSelected = prev.includes(difficulty)
+        const newDifficulties = isSelected
+          ? prev.filter((d) => d !== difficulty)
+          : [...prev, difficulty]
 
-      // Update form
-      form.setValue('difficulty', newDifficulties as any)
-      return newDifficulties
-    })
-  }, [form])
+        // Update form
+        form.setValue('difficulty', newDifficulties as any)
+        return newDifficulties
+      })
+    },
+    [form]
+  )
 
   /**
    * Handle tag selection from suggestions
    */
-  const addTag = useCallback((tag: string) => {
-    if (!selectedTags.includes(tag)) {
-      const newTags = [...selectedTags, tag]
-      setSelectedTags(newTags)
-      form.setValue('tags', newTags.join(', '))
-    }
-  }, [selectedTags, form])
+  const addTag = useCallback(
+    (tag: string) => {
+      if (!selectedTags.includes(tag)) {
+        const newTags = [...selectedTags, tag]
+        setSelectedTags(newTags)
+        form.setValue('tags', newTags.join(', '))
+      }
+    },
+    [selectedTags, form]
+  )
 
   /**
    * Remove tag from selection
    */
-  const removeTag = useCallback((tagToRemove: string) => {
-    const newTags = selectedTags.filter((tag) => tag !== tagToRemove)
-    setSelectedTags(newTags)
-    form.setValue('tags', newTags.join(', '))
-  }, [selectedTags, form])
+  const removeTag = useCallback(
+    (tagToRemove: string) => {
+      const newTags = selectedTags.filter((tag) => tag !== tagToRemove)
+      setSelectedTags(newTags)
+      form.setValue('tags', newTags.join(', '))
+    },
+    [selectedTags, form]
+  )
 
   /**
    * Handle rating change
    */
-  const handleRatingChange = useCallback((value: number[]) => {
-    setRatingRange(value)
-    form.setValue('minRating', value[0])
-  }, [form])
+  const handleRatingChange = useCallback(
+    (value: number[]) => {
+      setRatingRange(value)
+      form.setValue('minRating', value[0])
+    },
+    [form]
+  )
 
   /**
    * Apply filters and close dialog
    */
-  const handleApplyFilters = useCallback((formData: AdvancedSearchFormData) => {
-    logger.info('Applying advanced search filters', { formData })
+  const handleApplyFilters = useCallback(
+    (formData: AdvancedSearchFormData) => {
+      logger.info('Applying advanced search filters', { formData })
 
-    // Convert form data to filters
-    const newFilters: TemplateSearchFilters = {
-      difficulty: formData.difficulty.length > 0 ? formData.difficulty : undefined,
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
-      minRating: formData.minRating > 0 ? formData.minRating : undefined,
-      hasDescription: formData.hasDescription || undefined,
-      createdAfter: formData.createdAfter || undefined,
-      createdBefore: formData.createdBefore || undefined,
-      author: formData.author || undefined,
-      category: formData.category || undefined,
-      minDownloads: formData.minDownloads > 0 ? formData.minDownloads : undefined,
-      maxDownloads: formData.maxDownloads || undefined,
-      isVerified: formData.isVerified || undefined,
-      isFeatured: formData.isFeatured || undefined,
-      hasPreview: formData.hasPreview || undefined,
-    }
-
-    // Remove undefined values
-    Object.keys(newFilters).forEach((key) => {
-      if ((newFilters as any)[key] === undefined) {
-        delete (newFilters as any)[key]
+      // Convert form data to filters
+      const newFilters: TemplateSearchFilters = {
+        difficulty: formData.difficulty.length > 0 ? formData.difficulty : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        minRating: formData.minRating > 0 ? formData.minRating : undefined,
+        hasDescription: formData.hasDescription || undefined,
+        createdAfter: formData.createdAfter || undefined,
+        createdBefore: formData.createdBefore || undefined,
+        author: formData.author || undefined,
+        category: formData.category || undefined,
+        minDownloads: formData.minDownloads > 0 ? formData.minDownloads : undefined,
+        maxDownloads: formData.maxDownloads || undefined,
+        isVerified: formData.isVerified || undefined,
+        isFeatured: formData.isFeatured || undefined,
+        hasPreview: formData.hasPreview || undefined,
       }
-    })
 
-    onFiltersChange(newFilters)
-    onSearch?.()
-    onOpenChange(false)
-  }, [selectedTags, onFiltersChange, onSearch, onOpenChange])
+      // Remove undefined values
+      Object.keys(newFilters).forEach((key) => {
+        if ((newFilters as any)[key] === undefined) {
+          delete (newFilters as any)[key]
+        }
+      })
+
+      onFiltersChange(newFilters)
+      onSearch?.()
+      onOpenChange(false)
+    },
+    [selectedTags, onFiltersChange, onSearch, onOpenChange]
+  )
 
   /**
    * Reset all filters
@@ -324,10 +328,10 @@ export function AdvancedSearchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className='flex max-h-[80vh] max-w-4xl flex-col overflow-hidden'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <Filter className='h-5 w-5' />
             Advanced Search
           </DialogTitle>
           <DialogDescription>
@@ -335,26 +339,26 @@ export function AdvancedSearchDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className='flex-1 overflow-y-auto'>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleApplyFilters)}
-              className="space-y-6 p-1"
-              id="advanced-search-form"
+              className='space-y-6 p-1'
+              id='advanced-search-form'
             >
               {/* Search Text */}
               <FormField
                 control={form.control}
-                name="searchText"
+                name='searchText'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Search className="h-4 w-4" />
+                    <FormLabel className='flex items-center gap-2'>
+                      <Search className='h-4 w-4' />
                       Search Text
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter keywords, template names, or descriptions..."
+                        placeholder='Enter keywords, template names, or descriptions...'
                         {...field}
                       />
                     </FormControl>
@@ -365,27 +369,27 @@ export function AdvancedSearchDialog({
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                 {/* Category Selection */}
                 <FormField
                   control={form.control}
-                  name="category"
+                  name='category'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
+                            <SelectValue placeholder='Select a category' />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value=''>All Categories</SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                               {category.templateCount && (
-                                <span className="text-muted-foreground ml-2">
+                                <span className='ml-2 text-muted-foreground'>
                                   ({category.templateCount})
                                 </span>
                               )}
@@ -400,18 +404,15 @@ export function AdvancedSearchDialog({
                 {/* Author Filter */}
                 <FormField
                   control={form.control}
-                  name="author"
+                  name='author'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
+                      <FormLabel className='flex items-center gap-2'>
+                        <User className='h-4 w-4' />
                         Author
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Filter by author name..."
-                          {...field}
-                        />
+                        <Input placeholder='Filter by author name...' {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -419,16 +420,16 @@ export function AdvancedSearchDialog({
               </div>
 
               {/* Difficulty Level */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Difficulty Level</Label>
-                <div className="flex flex-wrap gap-2">
+              <div className='space-y-3'>
+                <Label className='font-medium text-sm'>Difficulty Level</Label>
+                <div className='flex flex-wrap gap-2'>
                   {DIFFICULTY_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      type="button"
+                      type='button'
                       onClick={() => toggleDifficulty(option.value)}
                       className={cn(
-                        'px-3 py-2 rounded-lg border transition-colors text-sm',
+                        'rounded-lg border px-3 py-2 text-sm transition-colors',
                         selectedDifficulties.includes(option.value)
                           ? 'border-primary bg-primary text-primary-foreground'
                           : 'border-border hover:bg-accent'
@@ -441,37 +442,37 @@ export function AdvancedSearchDialog({
               </div>
 
               {/* Rating Filter */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Star className="h-4 w-4" />
+              <div className='space-y-3'>
+                <Label className='flex items-center gap-2 font-medium text-sm'>
+                  <Star className='h-4 w-4' />
                   Minimum Rating: {ratingRange[0]}/5
                 </Label>
-                <div className="px-3">
+                <div className='px-3'>
                   <Slider
                     min={0}
                     max={5}
                     step={0.5}
                     value={ratingRange}
                     onValueChange={handleRatingChange}
-                    className="w-full"
+                    className='w-full'
                   />
                 </div>
               </div>
 
               {/* Tags */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
+              <div className='space-y-3'>
+                <Label className='flex items-center gap-2 font-medium text-sm'>
+                  <Tag className='h-4 w-4' />
                   Tags
                 </Label>
                 <FormField
                   control={form.control}
-                  name="tags"
+                  name='tags'
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Input
-                          placeholder="Enter tags separated by commas..."
+                          placeholder='Enter tags separated by commas...'
                           {...field}
                           onChange={(e) => {
                             field.onChange(e)
@@ -486,19 +487,19 @@ export function AdvancedSearchDialog({
                     </FormItem>
                   )}
                 />
-                
+
                 {/* Selected Tags */}
                 {selectedTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className='flex flex-wrap gap-2'>
                     {selectedTags.map((tag) => (
                       <Badge
                         key={tag}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                        variant='secondary'
+                        className='cursor-pointer hover:bg-destructive hover:text-destructive-foreground'
                         onClick={() => removeTag(tag)}
                       >
                         {tag}
-                        <X className="ml-1 h-3 w-3" />
+                        <X className='ml-1 h-3 w-3' />
                       </Badge>
                     ))}
                   </div>
@@ -507,15 +508,15 @@ export function AdvancedSearchDialog({
                 {/* Popular Tags from Facets */}
                 {facets?.tags && facets.tags.length > 0 && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-2">Popular tags:</p>
-                    <div className="flex flex-wrap gap-1">
+                    <p className='mb-2 text-muted-foreground text-xs'>Popular tags:</p>
+                    <div className='flex flex-wrap gap-1'>
                       {facets.tags.slice(0, 10).map((tag) => (
                         <Button
                           key={tag.name}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-6 text-xs"
+                          type='button'
+                          variant='outline'
+                          size='sm'
+                          className='h-6 text-xs'
                           onClick={() => addTag(tag.name)}
                           disabled={selectedTags.includes(tag.name)}
                         >
@@ -528,21 +529,18 @@ export function AdvancedSearchDialog({
               </div>
 
               {/* Date Range Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <FormField
                   control={form.control}
-                  name="createdAfter"
+                  name='createdAfter'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
+                      <FormLabel className='flex items-center gap-2'>
+                        <Calendar className='h-4 w-4' />
                         Created After
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                        />
+                        <Input type='date' {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -550,18 +548,15 @@ export function AdvancedSearchDialog({
 
                 <FormField
                   control={form.control}
-                  name="createdBefore"
+                  name='createdBefore'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
+                      <FormLabel className='flex items-center gap-2'>
+                        <Calendar className='h-4 w-4' />
                         Created Before
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                        />
+                        <Input type='date' {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -569,20 +564,20 @@ export function AdvancedSearchDialog({
               </div>
 
               {/* Download Range Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <FormField
                   control={form.control}
-                  name="minDownloads"
+                  name='minDownloads'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
+                      <FormLabel className='flex items-center gap-2'>
+                        <TrendingUp className='h-4 w-4' />
                         Minimum Downloads
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="0"
+                          type='number'
+                          min='0'
                           {...field}
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
@@ -593,16 +588,16 @@ export function AdvancedSearchDialog({
 
                 <FormField
                   control={form.control}
-                  name="maxDownloads"
+                  name='maxDownloads'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maximum Downloads</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="0"
+                          type='number'
+                          min='0'
                           {...field}
-                          onChange={(e) => 
+                          onChange={(e) =>
                             field.onChange(e.target.value ? Number(e.target.value) : undefined)
                           }
                         />
@@ -613,24 +608,21 @@ export function AdvancedSearchDialog({
               </div>
 
               {/* Boolean Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+                <div className='space-y-4'>
                   <FormField
                     control={form.control}
-                    name="hasDescription"
+                    name='hasDescription'
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Has Description</FormLabel>
+                      <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>Has Description</FormLabel>
                           <FormDescription>
                             Only show templates with detailed descriptions
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -638,43 +630,37 @@ export function AdvancedSearchDialog({
 
                   <FormField
                     control={form.control}
-                    name="hasPreview"
+                    name='hasPreview'
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Has Preview</FormLabel>
+                      <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>Has Preview</FormLabel>
                           <FormDescription>
                             Only show templates with preview images or demos
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   <FormField
                     control={form.control}
-                    name="isVerified"
+                    name='isVerified'
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Verified Templates</FormLabel>
+                      <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>Verified Templates</FormLabel>
                           <FormDescription>
                             Only show templates from verified authors
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -682,20 +668,17 @@ export function AdvancedSearchDialog({
 
                   <FormField
                     control={form.control}
-                    name="isFeatured"
+                    name='isFeatured'
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Featured Templates</FormLabel>
+                      <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                        <div className='space-y-0.5'>
+                          <FormLabel className='text-base'>Featured Templates</FormLabel>
                           <FormDescription>
                             Only show featured and highlighted templates
                           </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -708,27 +691,19 @@ export function AdvancedSearchDialog({
 
         <DialogFooter>
           <Button
-            type="button"
-            variant="outline"
+            type='button'
+            variant='outline'
             onClick={handleResetFilters}
-            className="flex items-center gap-2"
+            className='flex items-center gap-2'
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className='h-4 w-4' />
             Reset
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            form="advanced-search-form"
-            className="flex items-center gap-2"
-          >
-            <Search className="h-4 w-4" />
+          <Button type='submit' form='advanced-search-form' className='flex items-center gap-2'>
+            <Search className='h-4 w-4' />
             Apply Filters
           </Button>
         </DialogFooter>

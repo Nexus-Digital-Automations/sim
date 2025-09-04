@@ -473,7 +473,9 @@ except Exception as e:
             memoryUsage: 0,
             installedPackages: packageInstallation.installed,
             generatedFiles: [],
-            debugInfo: params.enableDebugging ? { workDir, error: error instanceof Error ? error.message : String(error) } : undefined,
+            debugInfo: params.enableDebugging
+              ? { workDir, error: error instanceof Error ? error.message : String(error) }
+              : undefined,
             securityReport: {
               packagesRequested: params.packages.length,
               packagesInstalled: packageInstallation.installed.length,

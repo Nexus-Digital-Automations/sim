@@ -34,7 +34,13 @@ const logger = createLogger('ToastHook')
 export interface ToastOptions {
   id?: string | number
   duration?: number
-  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right'
   dismissible?: boolean
   className?: string
   description?: string
@@ -66,10 +72,7 @@ export interface Toast {
   warning: (message: string, options?: ToastOptions) => string | number
   info: (message: string, options?: ToastOptions) => string | number
   loading: (message: string, options?: ToastOptions) => string | number
-  promise: <T>(
-    promise: Promise<T>,
-    options: PromiseToastOptions<T>
-  ) => Promise<T>
+  promise: <T>(promise: Promise<T>, options: PromiseToastOptions<T>) => Promise<T>
   dismiss: (id?: string | number) => void
   custom: (jsx: React.ReactNode, options?: ToastOptions) => string | number
 }
@@ -92,14 +95,18 @@ export function useToast(): { toast: Toast } {
       dismissible: options.dismissible ?? true,
       className: options.className,
       description: options.description,
-      action: options.action ? {
-        label: options.action.label,
-        onClick: options.action.onClick,
-      } : undefined,
-      cancel: options.cancel ? {
-        label: options.cancel.label,
-        onClick: options.cancel.onClick,
-      } : undefined,
+      action: options.action
+        ? {
+            label: options.action.label,
+            onClick: options.action.onClick,
+          }
+        : undefined,
+      cancel: options.cancel
+        ? {
+            label: options.cancel.label,
+            onClick: options.cancel.onClick,
+          }
+        : undefined,
       onDismiss: options.onDismiss,
       onAutoClose: options.onAutoClose,
     })
@@ -118,14 +125,18 @@ export function useToast(): { toast: Toast } {
       dismissible: options.dismissible ?? true,
       className: options.className,
       description: options.description,
-      action: options.action ? {
-        label: options.action.label,
-        onClick: options.action.onClick,
-      } : undefined,
-      cancel: options.cancel ? {
-        label: options.cancel.label,
-        onClick: options.cancel.onClick,
-      } : undefined,
+      action: options.action
+        ? {
+            label: options.action.label,
+            onClick: options.action.onClick,
+          }
+        : undefined,
+      cancel: options.cancel
+        ? {
+            label: options.cancel.label,
+            onClick: options.cancel.onClick,
+          }
+        : undefined,
       onDismiss: options.onDismiss,
       onAutoClose: options.onAutoClose,
     })
@@ -144,14 +155,18 @@ export function useToast(): { toast: Toast } {
       dismissible: options.dismissible ?? true,
       className: options.className,
       description: options.description,
-      action: options.action ? {
-        label: options.action.label,
-        onClick: options.action.onClick,
-      } : undefined,
-      cancel: options.cancel ? {
-        label: options.cancel.label,
-        onClick: options.cancel.onClick,
-      } : undefined,
+      action: options.action
+        ? {
+            label: options.action.label,
+            onClick: options.action.onClick,
+          }
+        : undefined,
+      cancel: options.cancel
+        ? {
+            label: options.cancel.label,
+            onClick: options.cancel.onClick,
+          }
+        : undefined,
       onDismiss: options.onDismiss,
       onAutoClose: options.onAutoClose,
     })
@@ -170,14 +185,18 @@ export function useToast(): { toast: Toast } {
       dismissible: options.dismissible ?? true,
       className: options.className,
       description: options.description,
-      action: options.action ? {
-        label: options.action.label,
-        onClick: options.action.onClick,
-      } : undefined,
-      cancel: options.cancel ? {
-        label: options.cancel.label,
-        onClick: options.cancel.onClick,
-      } : undefined,
+      action: options.action
+        ? {
+            label: options.action.label,
+            onClick: options.action.onClick,
+          }
+        : undefined,
+      cancel: options.cancel
+        ? {
+            label: options.cancel.label,
+            onClick: options.cancel.onClick,
+          }
+        : undefined,
       onDismiss: options.onDismiss,
       onAutoClose: options.onAutoClose,
     })
@@ -191,7 +210,7 @@ export function useToast(): { toast: Toast } {
 
     return sonnerToast.loading(message, {
       id: options.id,
-      duration: options.duration ?? Infinity, // Loading toasts don't auto-dismiss
+      duration: options.duration ?? Number.POSITIVE_INFINITY, // Loading toasts don't auto-dismiss
       position: options.position,
       dismissible: options.dismissible ?? true,
       className: options.className,
@@ -213,18 +232,20 @@ export function useToast(): { toast: Toast } {
     return sonnerToast.promise(promiseToHandle, {
       loading: options.loading ?? 'Loading...',
       success: (data) => {
-        const successMessage = typeof options.success === 'function' 
-          ? options.success(data) 
-          : options.success ?? 'Success!'
-        
+        const successMessage =
+          typeof options.success === 'function'
+            ? options.success(data)
+            : (options.success ?? 'Success!')
+
         logger.info('Promise toast succeeded', { successMessage, data })
         return successMessage
       },
       error: (err) => {
-        const errorMessage = typeof options.error === 'function'
-          ? options.error(err)
-          : options.error ?? 'Something went wrong'
-        
+        const errorMessage =
+          typeof options.error === 'function'
+            ? options.error(err)
+            : (options.error ?? 'Something went wrong')
+
         logger.error('Promise toast failed', { errorMessage, error: err })
         return errorMessage
       },
@@ -245,7 +266,7 @@ export function useToast(): { toast: Toast } {
    */
   const dismiss = (id?: string | number): void => {
     logger.info('Dismissing toast', { id })
-    
+
     if (id) {
       sonnerToast.dismiss(id)
     } else {
@@ -288,28 +309,28 @@ export function useToast(): { toast: Toast } {
  * Direct toast functions for convenience (alternative to hook)
  */
 export const toast = {
-  success: (message: string, options?: ToastOptions) => 
-    sonnerToast.success(message, options),
-  error: (message: string, options?: ToastOptions) => 
-    sonnerToast.error(message, options),
-  warning: (message: string, options?: ToastOptions) => 
-    sonnerToast.warning(message, options),
-  info: (message: string, options?: ToastOptions) => 
-    sonnerToast.info(message, options),
-  loading: (message: string, options?: ToastOptions) => 
-    sonnerToast.loading(message, options),
-  promise: <T>(promise: Promise<T>, options: PromiseToastOptions<T>) => 
+  success: (message: string, options?: ToastOptions) => sonnerToast.success(message, options),
+  error: (message: string, options?: ToastOptions) => sonnerToast.error(message, options),
+  warning: (message: string, options?: ToastOptions) => sonnerToast.warning(message, options),
+  info: (message: string, options?: ToastOptions) => sonnerToast.info(message, options),
+  loading: (message: string, options?: ToastOptions) => sonnerToast.loading(message, options),
+  promise: <T>(promise: Promise<T>, options: PromiseToastOptions<T>) =>
     sonnerToast.promise(promise, options),
   dismiss: (id?: string | number) => sonnerToast.dismiss(id),
-  custom: (jsx: React.ReactNode, options?: ToastOptions) => 
-    sonnerToast.custom(jsx, options),
+  custom: (jsx: React.ReactNode, options?: ToastOptions) => sonnerToast.custom(jsx, options),
 }
 
 /**
  * Toast context for application-wide configuration
  */
 export interface ToastConfig {
-  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right'
   theme?: 'light' | 'dark' | 'system'
   richColors?: boolean
   closeButton?: boolean
@@ -366,11 +387,7 @@ export const ToastUtils = {
   /**
    * Show operation result toast
    */
-  operationResult: (
-    success: boolean,
-    successMessage: string,
-    errorMessage?: string
-  ): void => {
+  operationResult: (success: boolean, successMessage: string, errorMessage?: string): void => {
     if (success) {
       toast.success(successMessage)
     } else {

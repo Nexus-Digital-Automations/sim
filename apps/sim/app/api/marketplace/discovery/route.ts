@@ -22,16 +22,16 @@
  * @implements Comprehensive Community Marketplace Research Report
  */
 
-import { and, desc, eq, gte, ilike, or, sql, inArray } from 'drizzle-orm'
+import { and, desc, eq, gte, ilike, inArray, or, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templates,
   templateCategories,
-  templateTags,
-  templateTagAssignments,
   templateFavorites,
+  templates,
+  templateTagAssignments,
+  templateTags,
   user,
 } from '@/db/schema'
 
@@ -164,10 +164,12 @@ export async function GET(request: NextRequest) {
         orderByClause = sortOrder === 'asc' ? templates.updatedAt : desc(templates.updatedAt)
         break
       case 'rating':
-        orderByClause = sortOrder === 'asc' ? templates.ratingAverage : desc(templates.ratingAverage)
+        orderByClause =
+          sortOrder === 'asc' ? templates.ratingAverage : desc(templates.ratingAverage)
         break
       case 'downloads':
-        orderByClause = sortOrder === 'asc' ? templates.downloadCount : desc(templates.downloadCount)
+        orderByClause =
+          sortOrder === 'asc' ? templates.downloadCount : desc(templates.downloadCount)
         break
       case 'trending':
         // Trending score from trending_scores table
@@ -238,22 +240,22 @@ export async function GET(request: NextRequest) {
         license: templates.license,
         status: templates.status,
         visibility: templates.visibility,
-        
+
         // Engagement metrics
         viewCount: templates.viewCount,
         downloadCount: templates.downloadCount,
         ratingAverage: templates.ratingAverage,
         ratingCount: templates.ratingCount,
-        
+
         // Visual properties
         color: templates.color,
         icon: templates.icon,
-        
+
         // Timestamps
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
         publishedAt: templates.publishedAt,
-        
+
         // Include metadata if requested
         ...(includeMetadata && {
           workflowTemplate: templates.workflowTemplate,
@@ -266,7 +268,7 @@ export async function GET(request: NextRequest) {
           industryTags: templates.industryTags,
           useCaseTags: templates.useCaseTags,
         }),
-        
+
         // Include favorite status if user is provided
         ...(userId && {
           isFavorited: sql<boolean>`
@@ -277,7 +279,7 @@ export async function GET(request: NextRequest) {
             ) THEN true ELSE false END
           `,
         }),
-        
+
         // Include social metrics if requested
         ...(includeSocial && {
           socialLikes: sql<number>`
@@ -299,17 +301,17 @@ export async function GET(request: NextRequest) {
             )
           `,
         }),
-        
+
         // Category information
         categoryName: templateCategories.name,
         categorySlug: templateCategories.slug,
         categoryColor: templateCategories.color,
         categoryIcon: templateCategories.icon,
-        
+
         // Creator information
         creatorName: user.name,
         creatorImage: user.image,
-        
+
         // Trending score
         trendingScore: sql<number>`
           COALESCE(
@@ -332,10 +334,7 @@ export async function GET(request: NextRequest) {
     if (onlyFavorites && userId) {
       queryBuilder = queryBuilder.innerJoin(
         templateFavorites,
-        and(
-          eq(templateFavorites.templateId, templates.id),
-          eq(templateFavorites.userId, userId)
-        )
+        and(eq(templateFavorites.templateId, templates.id), eq(templateFavorites.userId, userId))
       )
     }
 
@@ -368,7 +367,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(templateCategories, eq(templates.categoryId, templateCategories.id))
       .leftJoin(user, eq(templates.createdByUserId, user.id))
       .where(and(...conditions))
-    
+
     const totalCount = totalCountResult[0]?.count || 0
 
     // Fetch tags for each template if metadata is included
@@ -415,7 +414,7 @@ export async function GET(request: NextRequest) {
     let recommendations = []
     if (includeRecommendations && userId) {
       recommendations = await generatePersonalizedRecommendations(userId, {
-        excludeIds: results.map(t => t.id),
+        excludeIds: results.map((t) => t.id),
         limit: 5,
         categories,
         tags,
@@ -528,13 +527,15 @@ async function generatePersonalizedRecommendations(
       .limit(1)
 
     // Build recommendation conditions
-    const conditions = [
-      eq(templates.status, 'published'),
-      eq(templates.visibility, 'public'),
-    ]
+    const conditions = [eq(templates.status, 'published'), eq(templates.visibility, 'public')]
 
     if (excludeIds.length > 0) {
-      conditions.push(sql`${templates.id} NOT IN (${sql.join(excludeIds.map(id => sql`${id}`), sql`, `)})`)
+      conditions.push(
+        sql`${templates.id} NOT IN (${sql.join(
+          excludeIds.map((id) => sql`${id}`),
+          sql`, `
+        )})`
+      )
     }
 
     // Preference-based filtering

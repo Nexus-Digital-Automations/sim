@@ -306,7 +306,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to process interaction',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -330,8 +333,10 @@ export async function GET(request: NextRequest) {
     // Convert string parameters to proper types for validation schema
     // Handle type conversions to prevent TypeScript validation errors
     const processedParams: Record<string, any> = { ...queryParams }
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
     if (processedParams.includeUserData)
       processedParams.includeUserData = (processedParams.includeUserData as string) === 'true'
 
@@ -534,7 +539,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve interactions',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -731,12 +739,14 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
     `
 
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const metricsResult = await db.execute(sql.raw(`
+    const metricsResult = await db.execute(
+      sql.raw(`
       SELECT engagement_type, COUNT(*) as count
       FROM community_activity_engagement
       WHERE target_id = '${targetId}' AND target_type = '${targetType}'
       GROUP BY engagement_type
-    `))
+    `)
+    )
     // Process metrics from direct result array, not .rows property
     const counts = metricsResult.reduce((acc: any, row: any) => {
       acc[`${row.engagement_type}Count`] = Number.parseInt(row.count)
@@ -753,11 +763,13 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
       `
 
       // Fix: sql.raw() expects single parameter with values embedded directly in query
-      const userResult = await db.execute(sql.raw(`
+      const userResult = await db.execute(
+        sql.raw(`
         SELECT engagement_type
         FROM community_activity_engagement
         WHERE target_id = '${targetId}' AND target_type = '${targetType}' AND user_id = '${currentUserId}'
-      `))
+      `)
+      )
       userInteractions = userResult.reduce((acc: any, row: any) => {
         acc[`is${row.engagement_type.charAt(0).toUpperCase() + row.engagement_type.slice(1)}d`] =
           true

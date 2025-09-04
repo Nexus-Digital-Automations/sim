@@ -168,7 +168,8 @@ async function importTemplateToWorkflow(
     } catch (rollbackError) {
       logger.error('Import rollback failed', {
         importId,
-        rollbackError: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+        rollbackError:
+          rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
       })
     }
 

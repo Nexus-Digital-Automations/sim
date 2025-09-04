@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     // Using Record<string, any> to handle URL search params conversion from strings
     const url = new URL(request.url)
     const queryParams: Record<string, any> = {}
-    
+
     // Extract URL search parameters manually for better type safety
     for (const [key, value] of url.searchParams) {
       queryParams[key] = value
@@ -175,7 +175,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve metrics',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

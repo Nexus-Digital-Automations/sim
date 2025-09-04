@@ -97,13 +97,17 @@ export async function GET(request: NextRequest) {
         .map((tag) => tag.trim())
         .filter(Boolean)
     }
-    if (processedParams.isFeatured) processedParams.isFeatured = (processedParams.isFeatured as string) === 'true'
+    if (processedParams.isFeatured)
+      processedParams.isFeatured = (processedParams.isFeatured as string) === 'true'
     if (processedParams.includeTemplates)
       processedParams.includeTemplates = (processedParams.includeTemplates as string) === 'true'
     if (processedParams.includeCollaborators)
-      processedParams.includeCollaborators = (processedParams.includeCollaborators as string) === 'true'
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
+      processedParams.includeCollaborators =
+        (processedParams.includeCollaborators as string) === 'true'
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
 
     const params = CollectionQuerySchema.parse(processedParams)
     console.log('[Collections] Query parameters validated:', params)
@@ -267,7 +271,8 @@ export async function GET(request: NextRequest) {
     // Execute collections query with proper parameter binding
     // Database results return direct array, not .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         tc.id,
         tc.user_id,
@@ -335,7 +340,8 @@ export async function GET(request: NextRequest) {
       ${whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''}
       ORDER BY ${sortColumn} ${sortDirection} NULLS LAST
       LIMIT ${params.limit} OFFSET ${params.offset}
-    `))
+    `)
+    )
 
     // Get total count
     const countQuery = `
@@ -348,11 +354,13 @@ export async function GET(request: NextRequest) {
     // Execute count query for pagination metadata
     // Access result directly as array, not via .rows property
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const countResult = await db.execute(sql.raw(`
+    const countResult = await db.execute(
+      sql.raw(`
       SELECT COUNT(*) as total
       FROM template_collections tc
       ${whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''}
-    `))
+    `)
+    )
     const totalCollections = (countResult[0] as any)?.total || 0
 
     // Format collections from database result array
@@ -453,7 +461,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve collections',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -647,7 +658,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create collection',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -735,12 +749,14 @@ export async function PUT(request: NextRequest) {
     `
 
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    await db.execute(sql.raw(`
+    await db.execute(
+      sql.raw(`
       UPDATE template_collections 
       SET ${updateFields.join(', ')}
       WHERE id = '${collectionId}'
       RETURNING id, updated_at
-    `))
+    `)
+    )
 
     // Get updated collection
     const updatedCollection = await getCollectionById(collectionId, userId)
@@ -776,7 +792,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update collection',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -806,12 +825,12 @@ interface CollectionTemplate {
 
 /**
  * Get collection templates with explicit return type to prevent 'never[]' errors
- * 
+ *
  * ARRAY TYPE RESOLUTION APPROACH:
  * - Defines explicit interface for template objects
  * - Uses type assertion to guide TypeScript inference
  * - Returns properly typed array instead of inferred 'never[]'
- * 
+ *
  * Integration with Wave 2 enhancements:
  * - Leverages improved database query patterns from Subagent 1
  * - Uses safe parameter binding from Subagent 2
@@ -820,7 +839,8 @@ interface CollectionTemplate {
 async function getCollectionTemplates(collectionId: string): Promise<CollectionTemplate[]> {
   try {
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         t.id,
         t.name,
@@ -835,7 +855,8 @@ async function getCollectionTemplates(collectionId: string): Promise<CollectionT
       INNER JOIN templates t ON tci.template_id = t.id
       WHERE tci.collection_id = '${collectionId}' AND t.status = 'approved'
       ORDER BY tci.sort_order ASC, tci.added_at ASC
-    `))
+    `)
+    )
 
     // Map template results with explicit type assertion to prevent TypeScript array inference errors
     // TypeScript cannot infer complex object types from database query results
@@ -878,12 +899,12 @@ interface CollectionCollaborator {
 
 /**
  * Get collection collaborators with explicit return type to resolve TypeScript inference issues
- * 
+ *
  * COMPLEX ARRAY TYPE RESOLUTION:
  * - Defines detailed interface for nested user objects within collaborator array
  * - Prevents TypeScript from inferring 'never[]' due to complex nested structure
  * - Uses explicit type assertion for safe array element typing
- * 
+ *
  * Wave 2 Integration Benefits:
  * - Built on enhanced database connection patterns from Subagent 1
  * - Uses consistent SQL parameter handling from Subagent 2
@@ -893,7 +914,8 @@ interface CollectionCollaborator {
 async function getCollectionCollaborators(collectionId: string): Promise<CollectionCollaborator[]> {
   try {
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         cc.user_id,
         cc.role,
@@ -907,7 +929,8 @@ async function getCollectionCollaborators(collectionId: string): Promise<Collect
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       WHERE cc.collection_id = '${collectionId}'
       ORDER BY cc.added_at ASC
-    `))
+    `)
+    )
 
     // Map collaborator results with explicit type assertion to prevent TypeScript errors
     // Complex nested object structure requires explicit typing to avoid 'never[]' inference
@@ -942,7 +965,8 @@ async function checkCollectionPermission(
 ) {
   try {
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         tc.user_id,
         tc.visibility,
@@ -950,7 +974,8 @@ async function checkCollectionPermission(
       FROM template_collections tc
       LEFT JOIN collection_collaborators cc ON tc.id = cc.collection_id AND cc.user_id = '${userId}'
       WHERE tc.id = '${collectionId}'
-    `))
+    `)
+    )
 
     // Check collection existence - direct array access, not .rows
     if (result.length === 0) {
@@ -1001,7 +1026,8 @@ async function checkCollectionPermission(
 async function getCollectionById(collectionId: string, currentUserId?: string) {
   try {
     // Fix: sql.raw() expects single parameter with values embedded directly in query
-    const result = await db.execute(sql.raw(`
+    const result = await db.execute(
+      sql.raw(`
       SELECT 
         tc.*,
         u.name as creator_name,
@@ -1012,7 +1038,8 @@ async function getCollectionById(collectionId: string, currentUserId?: string) {
       INNER JOIN "user" u ON tc.user_id = u.id
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       WHERE tc.id = '${collectionId}'
-    `))
+    `)
+    )
 
     // Check collection result - direct array access, not .rows
     if (result.length === 0) {

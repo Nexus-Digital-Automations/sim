@@ -22,17 +22,10 @@
  * @implements Advanced Activity Feed Architecture
  */
 
-import { and, desc, eq, gte, sql, inArray, or } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import {
-  templates,
-  templateCategories,
-  templateCollections,
-  templateRatings,
-  user,
-} from '@/db/schema'
 
 const logger = createLogger('MarketplaceSocialFeedAPI')
 
@@ -81,7 +74,11 @@ export async function GET(request: NextRequest) {
 
     // Extract parameters
     const userId = searchParams.get('userId')
-    const feedType = (searchParams.get('feedType') || 'following') as 'following' | 'discover' | 'trending' | 'personalized'
+    const feedType = (searchParams.get('feedType') || 'following') as
+      | 'following'
+      | 'discover'
+      | 'trending'
+      | 'personalized'
     const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, Number.parseInt(searchParams.get('limit') || '20')))
     const maxAge = searchParams.get('maxAge') || '1w'
@@ -161,12 +158,16 @@ export async function GET(request: NextRequest) {
     // Calculate feed metadata
     const feedMetadata = {
       totalItems: activities.length,
-      averageEngagement: activities.reduce((sum, a) => sum + a.engagementScore, 0) / activities.length || 0,
-      activityTypes: [...new Set(activities.map(a => a.activityType))],
-      timeRange: activities.length > 0 ? {
-        oldest: activities[activities.length - 1]?.createdAt,
-        newest: activities[0]?.createdAt,
-      } : null,
+      averageEngagement:
+        activities.reduce((sum, a) => sum + a.engagementScore, 0) / activities.length || 0,
+      activityTypes: [...new Set(activities.map((a) => a.activityType))],
+      timeRange:
+        activities.length > 0
+          ? {
+              oldest: activities[activities.length - 1]?.createdAt,
+              newest: activities[0]?.createdAt,
+            }
+          : null,
     }
 
     const processingTime = Date.now() - startTime
@@ -174,7 +175,7 @@ export async function GET(request: NextRequest) {
     logger.info(`[${requestId}] Feed generated`, {
       feedType,
       activityCount: activities.length,
-      aggregatedItems: activities.filter(a => a.isAggregated).length,
+      aggregatedItems: activities.filter((a) => a.isAggregated).length,
       averageEngagement: feedMetadata.averageEngagement,
       processingTime,
     })
@@ -242,7 +243,7 @@ async function getFollowingFeed(userId: string, options: FeedOptions): Promise<A
 
   // Get age filter condition
   const ageCondition = getAgeFilterCondition(maxAge)
-  
+
   // Build type filters
   const typeConditions = buildTypeConditions(includeTypes, excludeTypes)
 
@@ -318,7 +319,7 @@ async function getFollowingFeed(userId: string, options: FeedOptions): Promise<A
 
   const results = await db.execute(query)
 
-  return results.rows.map(row => formatActivityItem(row))
+  return results.rows.map((row) => formatActivityItem(row))
 }
 
 /**
@@ -397,7 +398,7 @@ async function getDiscoverFeed(options: FeedOptions): Promise<ActivityItem[]> {
 
   const results = await db.execute(query)
 
-  return results.rows.map(row => formatActivityItem(row))
+  return results.rows.map((row) => formatActivityItem(row))
 }
 
 /**
@@ -480,7 +481,7 @@ async function getTrendingFeed(options: FeedOptions): Promise<ActivityItem[]> {
 
   const results = await db.execute(query)
 
-  return results.rows.map(row => formatActivityItem(row))
+  return results.rows.map((row) => formatActivityItem(row))
 }
 
 /**
@@ -489,9 +490,9 @@ async function getTrendingFeed(options: FeedOptions): Promise<ActivityItem[]> {
 async function getPersonalizedFeed(userId: string, options: FeedOptions): Promise<ActivityItem[]> {
   // For now, combine following feed with discover feed
   // In production, this would use ML models for personalization
-  
+
   const halfLimit = Math.ceil(options.limit / 2)
-  
+
   const [followingActivities, discoverActivities] = await Promise.all([
     getFollowingFeed(userId, { ...options, limit: halfLimit }),
     getDiscoverFeed({ ...options, limit: options.limit - halfLimit }),
@@ -499,10 +500,10 @@ async function getPersonalizedFeed(userId: string, options: FeedOptions): Promis
 
   // Merge and sort by personalization score
   const allActivities = [...followingActivities, ...discoverActivities]
-  
+
   // Apply personalization scoring (simplified)
   const personalizedActivities = allActivities
-    .map(activity => ({
+    .map((activity) => ({
       ...activity,
       personalizationScore: calculatePersonalizationScore(activity, userId),
     }))
@@ -611,7 +612,7 @@ function aggregateActivities(activities: ActivityItem[]): ActivityItem[] {
 
   for (const activity of activities) {
     const key = activity.aggregationKey
-    
+
     if (!key) {
       standaloneActivities.push(activity)
       continue
@@ -631,11 +632,13 @@ function aggregateActivities(activities: ActivityItem[]): ActivityItem[] {
     } else {
       const aggregated = {
         ...activity,
-        participants: [{
-          actorId: activity.actorId,
-          actorName: activity.actorName,
-          actorImage: activity.actorImage,
-        }],
+        participants: [
+          {
+            actorId: activity.actorId,
+            actorName: activity.actorName,
+            actorImage: activity.actorImage,
+          },
+        ],
         aggregatedCount: 1,
         isAggregated: false,
       }

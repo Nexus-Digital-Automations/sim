@@ -233,7 +233,9 @@ export default function TemplatesPage() {
   )
 
   // Helper function to map sort options to API format
-  function mapSortOptionToAPI(sort: SortOption): 'name' | 'createdAt' | 'updatedAt' | 'views' | 'stars' | 'rating' | 'relevance' | 'trending' {
+  function mapSortOptionToAPI(
+    sort: SortOption
+  ): 'name' | 'createdAt' | 'updatedAt' | 'views' | 'stars' | 'rating' | 'relevance' | 'trending' {
     switch (sort) {
       case 'relevance':
         return 'relevance'
@@ -590,12 +592,16 @@ export default function TemplatesPage() {
         filters={filters as any}
         onFiltersChange={handleFilterChange as any}
         categories={Object.values(TEMPLATE_CATEGORIES)}
-        facets={facets ? {
-          categories: facets.categories,
-          tags: facets.tags,
-          authors: facets.authors,
-          difficulties: facets.difficulty.map(d => ({ name: d.level, count: d.count }))
-        } : undefined}
+        facets={
+          facets
+            ? {
+                categories: facets.categories,
+                tags: facets.tags,
+                authors: facets.authors,
+                difficulties: facets.difficulty.map((d) => ({ name: d.level, count: d.count })),
+              }
+            : undefined
+        }
       />
 
       <TemplatePreviewDialog

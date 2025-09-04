@@ -15,7 +15,7 @@ const TeamsRequestSchema = z.object({
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID().slice(0, 8)
-  
+
   try {
     // Parse and validate request body
     const rawBody = await request.json()
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
       logger.debug(`[${requestId}] Processing teams request`, { credential, workflowId })
-      
+
       const authz = await authorizeCredentialUse(request as any, {
         credentialId: credential,
         workflowId,

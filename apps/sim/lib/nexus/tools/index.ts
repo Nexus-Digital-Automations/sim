@@ -52,10 +52,18 @@ export { updateWorkflow } from './update-workflow'
  */
 export const nexusToolset = {
   // Workflow Management
-  get listWorkflows() { return listWorkflows },
-  get createWorkflow() { return createWorkflow },
-  get getWorkflowDetails() { return getWorkflowDetails },
-  get updateWorkflow() { return updateWorkflow },
+  get listWorkflows() {
+    return listWorkflows
+  },
+  get createWorkflow() {
+    return createWorkflow
+  },
+  get getWorkflowDetails() {
+    return getWorkflowDetails
+  },
+  get updateWorkflow() {
+    return updateWorkflow
+  },
 
   // Tool metadata
   version: '1.0.0',
@@ -77,12 +85,7 @@ export const nexusToolset = {
   getToolsByCategory(category: string) {
     switch (category) {
       case 'workflow-management':
-        return [
-          listWorkflows,
-          createWorkflow,
-          getWorkflowDetails,
-          updateWorkflow,
-        ]
+        return [listWorkflows, createWorkflow, getWorkflowDetails, updateWorkflow]
       default:
         return []
     }

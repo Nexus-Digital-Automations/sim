@@ -3,9 +3,13 @@
  * Provides comprehensive template search functionality matching main page expectations
  */
 
-import { useCallback, useEffect, useState, useMemo } from 'react'
-import { useDebounce } from '@/hooks/use-debounce'
-import type { Template, TemplateSearchFilters, TemplateSearchQuery, TemplateSearchResults } from '@/lib/templates/types'
+import { useCallback, useEffect, useState } from 'react'
+import type {
+  Template,
+  TemplateSearchFilters,
+  TemplateSearchQuery,
+  TemplateSearchResults,
+} from '@/lib/templates/types'
 
 export interface UseTemplateSearchOptions {
   initialQuery?: string
@@ -42,10 +46,10 @@ export interface UseTemplateSearchReturn {
     trendingTags: string[]
     recommendedTemplates: Template[]
   } | null
-  
+
   // Pagination convenience properties
   hasNextPage: boolean
-  
+
   // Actions
   refetch: () => Promise<void>
   loadMore: () => Promise<void>
@@ -88,9 +92,9 @@ export function useTemplateSearch(searchQuery: TemplateSearchQuery): UseTemplate
    */
   const buildSearchParams = useCallback((query: TemplateSearchQuery): URLSearchParams => {
     const params = new URLSearchParams()
-    
+
     // Basic search parameters
-    if (query.search && query.search.trim()) {
+    if (query.search?.trim()) {
       params.set('search', query.search.trim())
     }
     if (query.category) {
@@ -112,15 +116,15 @@ export function useTemplateSearch(searchQuery: TemplateSearchQuery): UseTemplate
     // Filter parameters
     if (query.filters) {
       const filters = query.filters
-      
+
       if (filters.categories && filters.categories.length > 0) {
-        filters.categories.forEach(cat => params.append('categories', cat))
+        filters.categories.forEach((cat) => params.append('categories', cat))
       }
       if (filters.tags && filters.tags.length > 0) {
-        filters.tags.forEach(tag => params.append('tags', tag))
+        filters.tags.forEach((tag) => params.append('tags', tag))
       }
       if (filters.difficulty && filters.difficulty.length > 0) {
-        filters.difficulty.forEach(diff => params.append('difficulty', diff))
+        filters.difficulty.forEach((diff) => params.append('difficulty', diff))
       }
       if (filters.minRating !== undefined) {
         params.set('minRating', filters.minRating.toString())
@@ -153,42 +157,44 @@ export function useTemplateSearch(searchQuery: TemplateSearchQuery): UseTemplate
   /**
    * Execute search API call
    */
-  const executeSearch = useCallback(async (query: TemplateSearchQuery): Promise<void> => {
-    try {
-      setLoading(true)
-      setError(null)
+  const executeSearch = useCallback(
+    async (query: TemplateSearchQuery): Promise<void> => {
+      try {
+        setLoading(true)
+        setError(null)
 
-      const searchParams = buildSearchParams(query)
-      const response = await fetch(`/api/templates/search?${searchParams.toString()}`)
-      
-      if (!response.ok) {
-        throw new Error(`Search failed: ${response.statusText}`)
+        const searchParams = buildSearchParams(query)
+        const response = await fetch(`/api/templates/search?${searchParams.toString()}`)
+
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.statusText}`)
+        }
+
+        const data: TemplateSearchResults = await response.json()
+
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid search response format')
+        }
+
+        // Set search results
+        setTemplates(data.data || [])
+        setPagination(data.pagination || null)
+        setFacets(data.facets || null)
+        setAnalytics(data.analytics || null)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Search failed'
+        setError(errorMessage)
+        setTemplates([])
+        setPagination(null)
+        setFacets(null)
+        setAnalytics(null)
+        console.error('Template search error:', err)
+      } finally {
+        setLoading(false)
       }
-
-      const data: TemplateSearchResults = await response.json()
-      
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid search response format')
-      }
-
-      // Set search results
-      setTemplates(data.data || [])
-      setPagination(data.pagination || null)
-      setFacets(data.facets || null)
-      setAnalytics(data.analytics || null)
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Search failed'
-      setError(errorMessage)
-      setTemplates([])
-      setPagination(null)
-      setFacets(null)
-      setAnalytics(null)
-      console.error('Template search error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [buildSearchParams])
+    },
+    [buildSearchParams]
+  )
 
   /**
    * Refetch current search
@@ -205,29 +211,28 @@ export function useTemplateSearch(searchQuery: TemplateSearchQuery): UseTemplate
 
     const nextPageQuery: TemplateSearchQuery = {
       ...searchQuery,
-      page: (pagination.page || 1) + 1
+      page: (pagination.page || 1) + 1,
     }
 
     try {
       setLoading(true)
       const searchParams = buildSearchParams(nextPageQuery)
       const response = await fetch(`/api/templates/search?${searchParams.toString()}`)
-      
+
       if (!response.ok) {
         throw new Error(`Load more failed: ${response.statusText}`)
       }
 
       const data: TemplateSearchResults = await response.json()
-      
+
       if (!data || typeof data !== 'object') {
         throw new Error('Invalid load more response format')
       }
 
       // Append new templates to existing ones
-      setTemplates(prev => [...prev, ...(data.data || [])])
+      setTemplates((prev) => [...prev, ...(data.data || [])])
       setPagination(data.pagination || null)
       // Note: We don't update facets and analytics on load more as they should remain from initial search
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load more templates'
       setError(errorMessage)
@@ -255,12 +260,12 @@ export function useTemplateSearch(searchQuery: TemplateSearchQuery): UseTemplate
     error,
     facets,
     analytics,
-    
+
     // Pagination convenience
     hasNextPage,
-    
+
     // Actions
     refetch,
-    loadMore
+    loadMore,
   }
 }

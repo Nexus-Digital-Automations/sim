@@ -41,7 +41,9 @@ import { db } from '@/db'
 // ========================
 
 const FeedQuerySchema = z.object({
-  feedType: z.enum(['timeline', 'discover', 'trending', 'following', 'recommended']).default('timeline'),
+  feedType: z
+    .enum(['timeline', 'discover', 'trending', 'following', 'recommended'])
+    .default('timeline'),
   category: z.array(z.string()).optional(),
   activityTypes: z.array(z.string()).optional(),
   timeframe: z.enum(['1h', '6h', '1d', '3d', '1w', '1m']).default('1d'),
@@ -60,11 +62,13 @@ const FeedCustomizationSchema = z.object({
   categories: z.array(z.string()).optional(),
   activityTypes: z.array(z.string()).optional(),
   contentSources: z.array(z.string()).optional(),
-  engagementWeights: z.object({
-    likes: z.number().min(0).max(1).default(0.3),
-    comments: z.number().min(0).max(1).default(0.4),
-    shares: z.number().min(0).max(1).default(0.3),
-  }).optional(),
+  engagementWeights: z
+    .object({
+      likes: z.number().min(0).max(1).default(0.3),
+      comments: z.number().min(0).max(1).default(0.4),
+      shares: z.number().min(0).max(1).default(0.3),
+    })
+    .optional(),
   freshness: z.number().min(0).max(1).default(0.5),
   diversity: z.number().min(0).max(1).default(0.3),
   serendipity: z.number().min(0).max(1).default(0.2),
@@ -105,13 +109,20 @@ export async function GET(request: NextRequest) {
     if (processedParams.excludeUserIds && typeof processedParams.excludeUserIds === 'string') {
       processedParams.excludeUserIds = processedParams.excludeUserIds.split(',')
     }
-    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
-    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
-    if (processedParams.maxAge) processedParams.maxAge = Number.parseInt(processedParams.maxAge as string)
-    if (processedParams.minEngagement) processedParams.minEngagement = Number.parseFloat(processedParams.minEngagement as string)
-    if (processedParams.includeEngagement) processedParams.includeEngagement = processedParams.includeEngagement === 'true'
-    if (processedParams.includeUserData) processedParams.includeUserData = processedParams.includeUserData === 'true'
-    if (processedParams.diversityBoost) processedParams.diversityBoost = processedParams.diversityBoost === 'true'
+    if (processedParams.limit)
+      processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset)
+      processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.maxAge)
+      processedParams.maxAge = Number.parseInt(processedParams.maxAge as string)
+    if (processedParams.minEngagement)
+      processedParams.minEngagement = Number.parseFloat(processedParams.minEngagement as string)
+    if (processedParams.includeEngagement)
+      processedParams.includeEngagement = processedParams.includeEngagement === 'true'
+    if (processedParams.includeUserData)
+      processedParams.includeUserData = processedParams.includeUserData === 'true'
+    if (processedParams.diversityBoost)
+      processedParams.diversityBoost = processedParams.diversityBoost === 'true'
     if (processedParams.realTime) processedParams.realTime = processedParams.realTime === 'true'
 
     const params = FeedQuerySchema.parse(processedParams)
@@ -123,7 +134,9 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting
     const clientId = request.headers.get('x-forwarded-for') || currentUserId || 'anonymous'
-    const rateLimitResult = await ratelimit(params.realTime ? 200 : 100, '1m').limit(`feed_get:${clientId}`)
+    const rateLimitResult = await ratelimit(params.realTime ? 200 : 100, '1m').limit(
+      `feed_get:${clientId}`
+    )
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -194,7 +207,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve feed',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -276,7 +292,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to record interaction',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -351,7 +370,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update preferences',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -381,14 +403,18 @@ async function getPersonalizedFeed(
   cacheHit: boolean
 }> {
   try {
-    console.log(`[SocialFeed] Generating personalized feed for user ${currentUserId || 'anonymous'}`)
+    console.log(
+      `[SocialFeed] Generating personalized feed for user ${currentUserId || 'anonymous'}`
+    )
 
     // Get user network for personalization
-    const userNetwork = currentUserId ? await getUserNetwork(currentUserId) : { following: [], followers: [] }
+    const userNetwork = currentUserId
+      ? await getUserNetwork(currentUserId)
+      : { following: [], followers: [] }
 
     // Build base query for activities
-    let whereConditions = ['cua.is_hidden = false', 'cua.visibility IN (\'public\', \'community\')']
-    let queryValues: any[] = []
+    const whereConditions = ['cua.is_hidden = false', "cua.visibility IN ('public', 'community')"]
+    const queryValues: any[] = []
 
     // Apply time filtering
     const timeframHours = getTimeframeHours(params.timeframe)
@@ -431,8 +457,8 @@ async function getPersonalizedFeed(
         algorithm = 'trending_score'
         break
 
-      case 'following':
-        const followingIds = userNetwork.following.map(f => f.id)
+      case 'following': {
+        const followingIds = userNetwork.following.map((f) => f.id)
         if (followingIds.length > 0) {
           whereConditions.push(`cua.user_id = ANY($${queryValues.length + 1})`)
           queryValues.push(followingIds)
@@ -442,6 +468,7 @@ async function getPersonalizedFeed(
         }
         algorithm = 'chronological_following'
         break
+      }
 
       case 'recommended':
         rankingClause = `
@@ -451,7 +478,7 @@ async function getPersonalizedFeed(
             (EXTRACT(EPOCH FROM (NOW() - cua.created_at)) / 3600) * -0.1
           ) DESC
         `
-        queryValues.push(userNetwork.following.map(f => f.id))
+        queryValues.push(userNetwork.following.map((f) => f.id))
         algorithm = 'ml_recommended'
         break
 
@@ -466,7 +493,8 @@ async function getPersonalizedFeed(
         break
 
       default: // timeline
-        rankingClause = currentUserId ? `
+        rankingClause = currentUserId
+          ? `
           (
             CASE WHEN cua.user_id = $${queryValues.length + 1} THEN 3.0
                  WHEN cua.user_id = ANY($${queryValues.length + 2}) THEN 2.0 
@@ -474,10 +502,14 @@ async function getPersonalizedFeed(
             (cua.like_count * 0.3 + cua.comment_count * 0.4 + COALESCE(cua.share_count, 0) * 0.3) +
             (24 - EXTRACT(EPOCH FROM (NOW() - cua.created_at)) / 3600) * 0.05
           ) DESC
-        ` : 'cua.created_at DESC'
-        
+        `
+          : 'cua.created_at DESC'
+
         if (currentUserId) {
-          queryValues.push(currentUserId, userNetwork.following.map(f => f.id))
+          queryValues.push(
+            currentUserId,
+            userNetwork.following.map((f) => f.id)
+          )
         }
         algorithm = 'personalized_timeline'
         break
@@ -501,7 +533,9 @@ async function getPersonalizedFeed(
         cua.created_at,
         cua.updated_at,
         -- User information
-        ${params.includeUserData ? `
+        ${
+          params.includeUserData
+            ? `
         u.name as user_name,
         u.image as user_image,
         cup.display_name as user_display_name,
@@ -509,7 +543,8 @@ async function getPersonalizedFeed(
         cup.title as user_title,
         ur.total_points as user_reputation,
         ur.reputation_level as user_level
-        ` : `
+        `
+            : `
         null as user_name,
         null as user_image,
         null as user_display_name,
@@ -517,26 +552,37 @@ async function getPersonalizedFeed(
         null as user_title,
         null as user_reputation,
         null as user_level
-        `},
+        `
+        },
         -- Engagement information
-        ${params.includeEngagement && currentUserId ? `
+        ${
+          params.includeEngagement && currentUserId
+            ? `
         CASE WHEN cae_like.user_id IS NOT NULL THEN true ELSE false END as is_liked,
         CASE WHEN cae_bookmark.user_id IS NOT NULL THEN true ELSE false END as is_bookmarked,
         CASE WHEN cae_share.user_id IS NOT NULL THEN true ELSE false END as is_shared
-        ` : `
+        `
+            : `
         false as is_liked,
         false as is_bookmarked,
         false as is_shared
-        `},
+        `
+        },
         -- Ranking score for debugging
         (${rankingClause.replace(' DESC', '')}) as ranking_score
       FROM community_user_activities cua
-      ${params.includeUserData ? `
+      ${
+        params.includeUserData
+          ? `
       INNER JOIN "user" u ON cua.user_id = u.id
       LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
       LEFT JOIN user_reputation ur ON u.id = ur.user_id
-      ` : ''}
-      ${params.includeEngagement && currentUserId ? `
+      `
+          : ''
+      }
+      ${
+        params.includeEngagement && currentUserId
+          ? `
       LEFT JOIN community_activity_engagement cae_like 
         ON cua.id = cae_like.target_id 
         AND cae_like.target_type = 'activity' 
@@ -552,7 +598,9 @@ async function getPersonalizedFeed(
         AND cae_share.target_type = 'activity' 
         AND cae_share.engagement_type = 'share' 
         AND cae_share.user_id = '${currentUserId}'
-      ` : ''}
+      `
+          : ''
+      }
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${rankingClause}
       LIMIT $${queryValues.length + 1} OFFSET $${queryValues.length + 2}
@@ -577,16 +625,18 @@ async function getPersonalizedFeed(
     const activities = result.map((row: any) => ({
       id: row.id,
       userId: row.user_id,
-      user: params.includeUserData ? {
-        id: row.user_id,
-        name: row.user_name,
-        displayName: row.user_display_name,
-        image: row.user_image,
-        title: row.user_title,
-        isVerified: row.user_is_verified || false,
-        reputation: row.user_reputation || 0,
-        level: row.user_level || 1,
-      } : null,
+      user: params.includeUserData
+        ? {
+            id: row.user_id,
+            name: row.user_name,
+            displayName: row.user_display_name,
+            image: row.user_image,
+            title: row.user_title,
+            isVerified: row.user_is_verified || false,
+            reputation: row.user_reputation || 0,
+            level: row.user_level || 1,
+          }
+        : null,
       activityType: row.activity_type,
       activityData: row.activity_data || {},
       targetType: row.target_type,
@@ -608,7 +658,11 @@ async function getPersonalizedFeed(
     }))
 
     // Calculate quality metrics
-    const personalizationScore = calculatePersonalizationScore(activities, userNetwork, currentUserId)
+    const personalizationScore = calculatePersonalizationScore(
+      activities,
+      userNetwork,
+      currentUserId
+    )
     const diversityScore = calculateDiversityScore(activities)
     const freshnessScore = calculateFreshnessScore(activities)
 
@@ -640,7 +694,7 @@ async function getPersonalizedFeed(
 /**
  * Get user's network (following and followers)
  */
-async function getUserNetwork(userId: string): Promise<{ following: any[], followers: any[] }> {
+async function getUserNetwork(userId: string): Promise<{ following: any[]; followers: any[] }> {
   try {
     const networkResult = await db.execute(sql`
       SELECT 
@@ -713,7 +767,7 @@ async function getUserBlockedUsers(userId: string): Promise<string[]> {
 async function getFeedAnalytics(userId: string, timeframe: string): Promise<any> {
   try {
     const timeframHours = getTimeframeHours(timeframe)
-    
+
     const analyticsResult = await db.execute(sql`
       SELECT 
         COUNT(*) as total_interactions,
@@ -754,7 +808,7 @@ async function getFeedAnalytics(userId: string, timeframe: string): Promise<any>
 async function getTrendingTopics(timeframe: string): Promise<any[]> {
   try {
     const timeframHours = getTimeframeHours(timeframe)
-    
+
     // This would be more sophisticated in production with proper topic extraction
     const trendingResult = await db.execute(sql`
       SELECT 
@@ -787,7 +841,7 @@ async function getTrendingTopics(timeframe: string): Promise<any[]> {
 async function recordFeedInteraction(userId: string, interactionData: any): Promise<void> {
   try {
     const interactionId = `interaction_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
+
     await db.execute(sql`
       INSERT INTO community_activity_events (
         id, event_type, actor_user_id, content_type, content_id,
@@ -817,7 +871,10 @@ async function recordFeedInteraction(userId: string, interactionData: any): Prom
  */
 async function updateUserEngagementPatterns(userId: string, interactionData: any): Promise<void> {
   // This would update user preference models in production
-  console.log(`[SocialFeed] Updating engagement patterns for user ${userId}:`, interactionData.interactionType)
+  console.log(
+    `[SocialFeed] Updating engagement patterns for user ${userId}:`,
+    interactionData.interactionType
+  )
 }
 
 /**
@@ -890,13 +947,17 @@ function getInteractionWeight(interactionType: string): number {
 /**
  * Calculate personalization score
  */
-function calculatePersonalizationScore(activities: any[], userNetwork: any, userId?: string): number {
+function calculatePersonalizationScore(
+  activities: any[],
+  userNetwork: any,
+  userId?: string
+): number {
   if (!userId || activities.length === 0) return 0
-  
-  const followedUserActivities = activities.filter(a => 
+
+  const followedUserActivities = activities.filter((a) =>
     userNetwork.following.some((f: any) => f.id === a.userId)
   ).length
-  
+
   return Math.min(followedUserActivities / activities.length, 1)
 }
 
@@ -905,10 +966,10 @@ function calculatePersonalizationScore(activities: any[], userNetwork: any, user
  */
 function calculateDiversityScore(activities: any[]): number {
   if (activities.length === 0) return 0
-  
-  const uniqueTypes = new Set(activities.map(a => a.activityType)).size
-  const uniqueUsers = new Set(activities.map(a => a.userId)).size
-  
+
+  const uniqueTypes = new Set(activities.map((a) => a.activityType)).size
+  const uniqueUsers = new Set(activities.map((a) => a.userId)).size
+
   return Math.min((uniqueTypes + uniqueUsers) / (activities.length * 2), 1)
 }
 
@@ -917,12 +978,13 @@ function calculateDiversityScore(activities: any[]): number {
  */
 function calculateFreshnessScore(activities: any[]): number {
   if (activities.length === 0) return 0
-  
+
   const now = Date.now()
-  const avgAge = activities.reduce((sum, a) => {
-    const ageHours = (now - new Date(a.createdAt).getTime()) / (1000 * 60 * 60)
-    return sum + ageHours
-  }, 0) / activities.length
-  
-  return Math.max(0, 1 - (avgAge / 168)) // 1 week = 0 freshness
+  const avgAge =
+    activities.reduce((sum, a) => {
+      const ageHours = (now - new Date(a.createdAt).getTime()) / (1000 * 60 * 60)
+      return sum + ageHours
+    }, 0) / activities.length
+
+  return Math.max(0, 1 - avgAge / 168) // 1 week = 0 freshness
 }

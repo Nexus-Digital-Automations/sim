@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
     // when converting string query parameters to their appropriate types
     const url = new URL(request.url)
     const queryParams: Record<string, any> = {}
-    
+
     // Extract all URL search parameters into a properly typed object
     // This allows us to perform type conversions without TypeScript conflicts
     for (const [key, value] of url.searchParams) {
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     // Convert string parameters to their appropriate types
     // These conversions prevent TypeScript type assignment errors by ensuring
     // the correct data types are used throughout the application
-    
+
     // Convert numeric parameters - parseInt/parseFloat for proper number types
     if (queryParams.rating) {
       queryParams.rating = Number.parseFloat(queryParams.rating)
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (queryParams.offset) {
       queryParams.offset = Number.parseInt(queryParams.offset)
     }
-    
+
     // Convert boolean parameters - string comparison to boolean conversion
     // Query parameters come as strings, need explicit boolean conversion
     if (queryParams.includeMetadata) {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     if (queryParams.securityValidated) {
       queryParams.securityValidated = queryParams.securityValidated === 'true'
     }
-    
+
     // Convert array parameters - split comma-separated string into array
     // Tags come as comma-separated string, convert to string array for processing
     if (queryParams.tags) {
@@ -192,7 +192,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to search integrations',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

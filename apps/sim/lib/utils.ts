@@ -107,7 +107,7 @@ export function cn(...inputs: ClassValue[]) {
  *   // ... other properties
  * }
  */
-export function generateId(length: number = 21): string {
+export function generateId(length = 21): string {
   return nanoid(length)
 }
 

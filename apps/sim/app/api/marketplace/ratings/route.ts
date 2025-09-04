@@ -22,16 +22,11 @@
  * @implements Advanced Review and Rating Architecture
  */
 
-import { and, desc, eq, gte, sql, inArray, or, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import {
-  templates,
-  templateRatings,
-  templateRatingVotes,
-  user,
-} from '@/db/schema'
+import { templateRatings, templateRatingVotes, templates, user } from '@/db/schema'
 
 const logger = createLogger('MarketplaceRatingsAPI')
 
@@ -141,7 +136,9 @@ export async function GET(request: NextRequest) {
     } else if (filterBy === 'recommended') {
       conditions.push(eq(templateRatings.wouldRecommend, true))
     } else if (filterBy === 'detailed') {
-      conditions.push(sql`${templateRatings.content} IS NOT NULL AND LENGTH(${templateRatings.content}) > 50`)
+      conditions.push(
+        sql`${templateRatings.content} IS NOT NULL AND LENGTH(${templateRatings.content}) > 50`
+      )
     }
 
     // Build sorting
@@ -355,12 +352,7 @@ export async function POST(request: NextRequest) {
     const existingRating = await db
       .select({ id: templateRatings.id })
       .from(templateRatings)
-      .where(
-        and(
-          eq(templateRatings.templateId, templateId),
-          eq(templateRatings.userId, userId)
-        )
-      )
+      .where(and(eq(templateRatings.templateId, templateId), eq(templateRatings.userId, userId)))
       .limit(1)
 
     if (existingRating.length > 0) {
@@ -567,26 +559,21 @@ export async function PUT(request: NextRequest) {
       })
       .from(templateRatingVotes)
       .where(
-        and(
-          eq(templateRatingVotes.ratingId, ratingId),
-          eq(templateRatingVotes.userId, userId)
-        )
+        and(eq(templateRatingVotes.ratingId, ratingId), eq(templateRatingVotes.userId, userId))
       )
       .limit(1)
 
     if (existingVote.length > 0) {
       const currentVote = existingVote[0]
-      
+
       if (currentVote.isHelpful === isHelpful) {
         // Same vote - remove it (toggle off)
-        await db
-          .delete(templateRatingVotes)
-          .where(eq(templateRatingVotes.id, currentVote.id))
+        await db.delete(templateRatingVotes).where(eq(templateRatingVotes.id, currentVote.id))
 
         // Update rating counts
         const countChange = isHelpful ? -1 : -1
         const countField = isHelpful ? 'helpful_count' : 'unhelpful_count'
-        
+
         await db.execute(sql`
           UPDATE template_ratings 
           SET ${sql.identifier(countField)} = ${sql.identifier(countField)} + ${countChange}
@@ -605,7 +592,7 @@ export async function PUT(request: NextRequest) {
         // Update rating counts (remove old vote, add new vote)
         const oldField = currentVote.isHelpful ? 'helpful_count' : 'unhelpful_count'
         const newField = isHelpful ? 'helpful_count' : 'unhelpful_count'
-        
+
         await db.execute(sql`
           UPDATE template_ratings 
           SET 
@@ -627,7 +614,7 @@ export async function PUT(request: NextRequest) {
       // Update rating counts
       const countChange = 1
       const countField = isHelpful ? 'helpful_count' : 'unhelpful_count'
-      
+
       await db.execute(sql`
         UPDATE template_ratings 
         SET ${sql.identifier(countField)} = ${sql.identifier(countField)} + ${countChange}
@@ -726,12 +713,10 @@ async function getRatingStats(templateId: string) {
     averageValue: row.avg_value ? Number(row.avg_value) : null,
     totalHelpfulVotes: Number(row.total_helpful_votes),
     totalUnhelpfulVotes: Number(row.total_unhelpful_votes),
-    recommendationRate: Number(row.total_reviews) > 0 
-      ? Number(row.recommendations) / Number(row.total_reviews) 
-      : 0,
-    verificationRate: Number(row.total_reviews) > 0 
-      ? Number(row.verified_reviews) / Number(row.total_reviews) 
-      : 0,
+    recommendationRate:
+      Number(row.total_reviews) > 0 ? Number(row.recommendations) / Number(row.total_reviews) : 0,
+    verificationRate:
+      Number(row.total_reviews) > 0 ? Number(row.verified_reviews) / Number(row.total_reviews) : 0,
   }
 }
 
@@ -766,7 +751,7 @@ async function getRatingDistribution(templateId: string) {
   }
 
   const total = Object.values(result).reduce((sum, count) => sum + count, 0)
-  
+
   return {
     distribution: result,
     total,

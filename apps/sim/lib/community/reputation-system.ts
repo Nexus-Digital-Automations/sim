@@ -504,7 +504,9 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      const currentBadgeIds = new Set(currentBadges.map((row: { badge_id: string }) => row.badge_id))
+      const currentBadgeIds = new Set(
+        currentBadges.map((row: { badge_id: string }) => row.badge_id)
+      )
 
       // Get all available badges
       const availableBadges = await db.execute(sql`
@@ -851,7 +853,9 @@ export class CommunityReputationSystem {
         ORDER BY created_at DESC
       `)
 
-      const rapidGains = recentHistory.filter((row: { points_change: number }) => row.points_change > 100)
+      const rapidGains = recentHistory.filter(
+        (row: { points_change: number }) => row.points_change > 100
+      )
       if (rapidGains.length > 5) {
         flags.push('rapid_point_gain')
         suspicionScore += 30

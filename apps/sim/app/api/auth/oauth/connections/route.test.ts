@@ -91,9 +91,9 @@ vi.mock('crypto', async (importOriginal) => {
 import { jwtDecode } from 'jwt-decode'
 import { getSession } from '@/lib/auth'
 import { parseProvider } from '@/lib/oauth/oauth'
+import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 import { db } from '@/db'
 import { GET } from './route'
-import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 
 // Get mocked functions
 const mockParseProvider = parseProvider as ReturnType<typeof vi.fn>

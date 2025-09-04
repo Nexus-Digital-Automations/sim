@@ -3,7 +3,7 @@
  *
  * This module extends Better Auth types to include the role property that exists
  * in the database schema but is not included in the default Better Auth session types.
- * 
+ *
  * INTEGRATION WITH DATABASE SCHEMA:
  * - Aligns with user table definition in /apps/sim/db/schema.ts
  * - Includes role property for authorization checks (admin, user, moderator)
@@ -25,7 +25,7 @@
 
 /**
  * Generic User type that may or may not have role property
- * 
+ *
  * Represents any user object, whether from Better Auth or enhanced with role.
  * This provides flexibility while maintaining type safety.
  */
@@ -58,7 +58,7 @@ export interface EnhancedUser extends AnyUser {
 
 /**
  * Type guard to check if a user object has the role property
- * 
+ *
  * @param user - User object to check
  * @returns True if user has role property
  */
@@ -111,6 +111,5 @@ export const AuthHelpers = {
    */
   canModerate: (user: AnyUser | EnhancedUser | null | undefined): boolean => {
     return AuthHelpers.isAdminOrModerator(user)
-  }
+  },
 }
-

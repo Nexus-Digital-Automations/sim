@@ -24,12 +24,12 @@
 
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Activity,
   Bookmark,
   Comment,
-  Eye,
   Flag,
   Heart,
   MessageCircle,
@@ -44,7 +44,7 @@ import {
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -158,57 +158,62 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   /**
    * Initialize activity feed data
    */
-  const initializeActivityFeed = useCallback(async (resetPage = false) => {
-    try {
-      const currentPage = resetPage ? 1 : page
-      const operationId = `feed-init-${currentPage}-${activeFilter}-${Date.now()}`
-      
-      console.log(`[ActivityFeed][${operationId}] Initializing activity feed`, {
-        filter: activeFilter,
-        page: currentPage,
-        pageSize,
-        userId: currentUserId,
-      })
+  const initializeActivityFeed = useCallback(
+    async (resetPage = false) => {
+      try {
+        const currentPage = resetPage ? 1 : page
+        const operationId = `feed-init-${currentPage}-${activeFilter}-${Date.now()}`
 
-      setIsLoading(resetPage)
-      
-      const response = await fetch(
-        `/api/community/social/activities?filter=${activeFilter}&page=${currentPage}&limit=${pageSize}`,
-        {
-          headers: currentUserId ? { 'X-User-ID': currentUserId } : {},
+        console.log(`[ActivityFeed][${operationId}] Initializing activity feed`, {
+          filter: activeFilter,
+          page: currentPage,
+          pageSize,
+          userId: currentUserId,
+        })
+
+        setIsLoading(resetPage)
+
+        const response = await fetch(
+          `/api/community/social/activities?filter=${activeFilter}&page=${currentPage}&limit=${pageSize}`,
+          {
+            headers: currentUserId ? { 'X-User-ID': currentUserId } : {},
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch activities: ${response.statusText}`)
         }
-      )
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch activities: ${response.statusText}`)
+        const data = await response.json()
+        const newActivities = data.data || []
+
+        if (resetPage) {
+          setActivities(newActivities)
+          setPage(2)
+        } else {
+          setActivities((prev) => [...prev, ...newActivities])
+          setPage((prev) => prev + 1)
+        }
+
+        setHasMore(newActivities.length === pageSize)
+
+        console.log(`[ActivityFeed][${operationId}] Activity feed loaded successfully`, {
+          activitiesCount: newActivities.length,
+          totalActivities: resetPage
+            ? newActivities.length
+            : activities.length + newActivities.length,
+          hasMore: newActivities.length === pageSize,
+        })
+      } catch (error) {
+        console.error('[ActivityFeed] Failed to load activities:', error)
+        toast.error('Failed to load activity feed')
+      } finally {
+        setIsLoading(false)
+        setIsRefreshing(false)
       }
-
-      const data = await response.json()
-      const newActivities = data.data || []
-
-      if (resetPage) {
-        setActivities(newActivities)
-        setPage(2)
-      } else {
-        setActivities(prev => [...prev, ...newActivities])
-        setPage(prev => prev + 1)
-      }
-
-      setHasMore(newActivities.length === pageSize)
-
-      console.log(`[ActivityFeed][${operationId}] Activity feed loaded successfully`, {
-        activitiesCount: newActivities.length,
-        totalActivities: resetPage ? newActivities.length : activities.length + newActivities.length,
-        hasMore: newActivities.length === pageSize,
-      })
-    } catch (error) {
-      console.error('[ActivityFeed] Failed to load activities:', error)
-      toast.error('Failed to load activity feed')
-    } finally {
-      setIsLoading(false)
-      setIsRefreshing(false)
-    }
-  }, [activeFilter, page, pageSize, currentUserId, activities.length])
+    },
+    [activeFilter, page, pageSize, currentUserId, activities.length]
+  )
 
   /**
    * Setup WebSocket connection for real-time updates
@@ -240,29 +245,32 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           switch (update.type) {
             case 'activity_created':
               // Add new activity to the top of the feed
-              setActivities(prev => [update.data, ...prev])
+              setActivities((prev) => [update.data, ...prev])
               break
-            
+
             case 'activity_updated':
               // Update existing activity
-              setActivities(prev =>
-                prev.map(activity =>
+              setActivities((prev) =>
+                prev.map((activity) =>
                   activity.id === update.data.id ? { ...activity, ...update.data } : activity
                 )
               )
               break
-            
+
             case 'engagement_updated':
               // Update engagement metrics for specific activity
-              setActivities(prev =>
-                prev.map(activity =>
+              setActivities((prev) =>
+                prev.map((activity) =>
                   activity.id === update.activityId
-                    ? { ...activity, engagementMetrics: { ...activity.engagementMetrics, ...update.data } }
+                    ? {
+                        ...activity,
+                        engagementMetrics: { ...activity.engagementMetrics, ...update.data },
+                      }
                     : activity
                 )
               )
               break
-            
+
             default:
               console.log(`[ActivityFeed][${operationId}] Unknown update type:`, update.type)
           }
@@ -272,7 +280,9 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       }
 
       ws.onclose = () => {
-        console.log(`[ActivityFeed][${operationId}] WebSocket disconnected, attempting reconnection`)
+        console.log(
+          `[ActivityFeed][${operationId}] WebSocket disconnected, attempting reconnection`
+        )
         setWebsocket(null)
         // Attempt reconnection after 5 seconds
         setTimeout(setupWebSocket, 5000)
@@ -290,10 +300,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
    * Handle activity engagement (like, comment, share, bookmark)
    */
   const handleEngagement = useCallback(
-    async (
-      activityId: string,
-      engagementType: 'like' | 'comment' | 'share' | 'bookmark'
-    ) => {
+    async (activityId: string, engagementType: 'like' | 'comment' | 'share' | 'bookmark') => {
       if (!currentUserId) {
         toast.error('Please sign in to interact with activities')
         return
@@ -309,11 +316,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         })
 
         // Optimistic update
-        setActivities(prev =>
-          prev.map(activity => {
+        setActivities((prev) =>
+          prev.map((activity) => {
             if (activity.id === activityId) {
               const updatedMetrics = { ...activity.engagementMetrics }
-              
+
               switch (engagementType) {
                 case 'like':
                   updatedMetrics.isLiked = !updatedMetrics.isLiked
@@ -331,7 +338,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   updatedMetrics.commentCount += 1
                   break
               }
-              
+
               return { ...activity, engagementMetrics: updatedMetrics }
             }
             return activity
@@ -356,11 +363,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         }
 
         const result = await response.json()
-        
+
         // Update with server response if needed
         if (result.data?.engagementMetrics) {
-          setActivities(prev =>
-            prev.map(activity =>
+          setActivities((prev) =>
+            prev.map((activity) =>
               activity.id === activityId
                 ? { ...activity, engagementMetrics: result.data.engagementMetrics }
                 : activity
@@ -383,7 +390,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         console.log(`[ActivityFeed][${operationId}] Engagement processed successfully`)
       } catch (error) {
         console.error(`[ActivityFeed][${operationId}] Engagement failed:`, error)
-        
+
         // Revert optimistic update on error
         await initializeActivityFeed(true)
         toast.error(`Failed to ${engagementType} activity`)
@@ -398,7 +405,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const handleRefresh = useCallback(async () => {
     const operationId = `refresh-${Date.now()}`
     console.log(`[ActivityFeed][${operationId}] Refreshing activity feed`)
-    
+
     setIsRefreshing(true)
     await initializeActivityFeed(true)
     toast.success('Activity feed refreshed!')
@@ -458,7 +465,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     // Generate initials-based avatar or return placeholder
     const initials = (user.displayName || user.name)
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)
@@ -482,158 +489,161 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   /**
    * Render individual activity item
    */
-  const renderActivity = useCallback((activity: ActivityItem) => {
-    const ActivityIcon = getActivityIcon(activity.activityType)
+  const renderActivity = useCallback(
+    (activity: ActivityItem) => {
+      const ActivityIcon = getActivityIcon(activity.activityType)
 
-    return (
-      <Card key={activity.id} className="mb-4 transition-all hover:shadow-md">
-        <CardContent className="p-4">
-          {/* Activity Header */}
-          <div className="mb-3 flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img
-                  src={getUserAvatarUrl(activity.user, 40)}
-                  alt={activity.user.displayName || activity.user.name}
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-                {activity.user.isVerified && (
-                  <div className="absolute -right-1 -bottom-1 rounded-full bg-blue-500 p-0.5">
-                    <Star className="h-3 w-3 fill-white text-white" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">
-                    {activity.user.displayName || activity.user.name}
-                  </span>
-                  {activity.user.reputation && (
-                    <Badge variant="secondary" className="text-xs">
-                      Level {activity.user.reputation.level}
-                    </Badge>
+      return (
+        <Card key={activity.id} className='mb-4 transition-all hover:shadow-md'>
+          <CardContent className='p-4'>
+            {/* Activity Header */}
+            <div className='mb-3 flex items-start justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='relative'>
+                  <img
+                    src={getUserAvatarUrl(activity.user, 40)}
+                    alt={activity.user.displayName || activity.user.name}
+                    className='h-10 w-10 rounded-full object-cover'
+                  />
+                  {activity.user.isVerified && (
+                    <div className='-right-1 -bottom-1 absolute rounded-full bg-blue-500 p-0.5'>
+                      <Star className='h-3 w-3 fill-white text-white' />
+                    </div>
                   )}
-                  <span className="text-xs text-muted-foreground">
-                    {getTimeAgo(activity.createdAt)}
-                  </span>
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-600">
-                  <ActivityIcon className="h-4 w-4" />
-                  <span>{activity.activityData.actionText || 'performed an action'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Activity Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleEngagement(activity.id, 'bookmark')}>
-                  <Bookmark className="mr-2 h-4 w-4" />
-                  {activity.engagementMetrics.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEngagement(activity.id, 'share')}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Flag className="mr-2 h-4 w-4" />
-                  Report
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Activity Content */}
-          {activity.targetTitle && (
-            <div className="mb-3 rounded-lg bg-gray-50 p-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: activity.activityData.color || '#6366F1' }}
-                />
-                <span className="font-medium">{activity.targetTitle}</span>
-                {activity.activityData.rating && (
-                  <div className="ml-auto flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm">{activity.activityData.rating}</span>
+                <div className='flex-1'>
+                  <div className='flex items-center gap-2'>
+                    <span className='font-semibold'>
+                      {activity.user.displayName || activity.user.name}
+                    </span>
+                    {activity.user.reputation && (
+                      <Badge variant='secondary' className='text-xs'>
+                        Level {activity.user.reputation.level}
+                      </Badge>
+                    )}
+                    <span className='text-muted-foreground text-xs'>
+                      {getTimeAgo(activity.createdAt)}
+                    </span>
                   </div>
+                  <div className='flex items-center gap-1 text-gray-600 text-sm'>
+                    <ActivityIcon className='h-4 w-4' />
+                    <span>{activity.activityData.actionText || 'performed an action'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+                    <MoreHorizontal className='h-4 w-4' />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end'>
+                  <DropdownMenuItem onClick={() => handleEngagement(activity.id, 'bookmark')}>
+                    <Bookmark className='mr-2 h-4 w-4' />
+                    {activity.engagementMetrics.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEngagement(activity.id, 'share')}>
+                    <Share2 className='mr-2 h-4 w-4' />
+                    Share
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Flag className='mr-2 h-4 w-4' />
+                    Report
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Activity Content */}
+            {activity.targetTitle && (
+              <div className='mb-3 rounded-lg bg-gray-50 p-3'>
+                <div className='flex items-center gap-2'>
+                  <div
+                    className='h-2 w-2 rounded-full'
+                    style={{ backgroundColor: activity.activityData.color || '#6366F1' }}
+                  />
+                  <span className='font-medium'>{activity.targetTitle}</span>
+                  {activity.activityData.rating && (
+                    <div className='ml-auto flex items-center gap-1'>
+                      <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
+                      <span className='text-sm'>{activity.activityData.rating}</span>
+                    </div>
+                  )}
+                </div>
+                {activity.activityData.description && (
+                  <p className='mt-1 text-gray-600 text-sm'>{activity.activityData.description}</p>
                 )}
               </div>
-              {activity.activityData.description && (
-                <p className="mt-1 text-sm text-gray-600">{activity.activityData.description}</p>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Engagement Actions */}
-          <div className="flex items-center justify-between border-t pt-3">
-            <div className="flex items-center gap-4">
+            {/* Engagement Actions */}
+            <div className='flex items-center justify-between border-t pt-3'>
+              <div className='flex items-center gap-4'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className={cn(
+                    'gap-1 text-gray-600 hover:text-red-600',
+                    activity.engagementMetrics.isLiked && 'text-red-600'
+                  )}
+                  onClick={() => handleEngagement(activity.id, 'like')}
+                  aria-label={`${activity.engagementMetrics.isLiked ? 'Unlike' : 'Like'} this activity`}
+                >
+                  <Heart
+                    className={cn('h-4 w-4', activity.engagementMetrics.isLiked && 'fill-current')}
+                  />
+                  {activity.engagementMetrics.likeCount}
+                </Button>
+
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='gap-1 text-gray-600 hover:text-blue-600'
+                  aria-label='View comments'
+                >
+                  <MessageCircle className='h-4 w-4' />
+                  {activity.engagementMetrics.commentCount}
+                </Button>
+
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='gap-1 text-gray-600 hover:text-green-600'
+                  onClick={() => handleEngagement(activity.id, 'share')}
+                  aria-label='Share this activity'
+                >
+                  <Share2 className='h-4 w-4' />
+                  {activity.engagementMetrics.shareCount}
+                </Button>
+              </div>
+
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 className={cn(
-                  'gap-1 text-gray-600 hover:text-red-600',
-                  activity.engagementMetrics.isLiked && 'text-red-600'
+                  'gap-1 text-gray-600 hover:text-orange-600',
+                  activity.engagementMetrics.isBookmarked && 'text-orange-600'
                 )}
-                onClick={() => handleEngagement(activity.id, 'like')}
-                aria-label={`${activity.engagementMetrics.isLiked ? 'Unlike' : 'Like'} this activity`}
+                onClick={() => handleEngagement(activity.id, 'bookmark')}
+                aria-label={`${activity.engagementMetrics.isBookmarked ? 'Remove bookmark' : 'Bookmark'} this activity`}
               >
-                <Heart
-                  className={cn('h-4 w-4', activity.engagementMetrics.isLiked && 'fill-current')}
+                <Bookmark
+                  className={cn(
+                    'h-4 w-4',
+                    activity.engagementMetrics.isBookmarked && 'fill-current'
+                  )}
                 />
-                {activity.engagementMetrics.likeCount}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-gray-600 hover:text-blue-600"
-                aria-label="View comments"
-              >
-                <MessageCircle className="h-4 w-4" />
-                {activity.engagementMetrics.commentCount}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-gray-600 hover:text-green-600"
-                onClick={() => handleEngagement(activity.id, 'share')}
-                aria-label="Share this activity"
-              >
-                <Share2 className="h-4 w-4" />
-                {activity.engagementMetrics.shareCount}
               </Button>
             </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'gap-1 text-gray-600 hover:text-orange-600',
-                activity.engagementMetrics.isBookmarked && 'text-orange-600'
-              )}
-              onClick={() => handleEngagement(activity.id, 'bookmark')}
-              aria-label={`${activity.engagementMetrics.isBookmarked ? 'Remove bookmark' : 'Bookmark'} this activity`}
-            >
-              <Bookmark
-                className={cn(
-                  'h-4 w-4',
-                  activity.engagementMetrics.isBookmarked && 'fill-current'
-                )}
-              />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }, [handleEngagement])
+          </CardContent>
+        </Card>
+      )
+    },
+    [handleEngagement]
+  )
 
   // Effects
   useEffect(() => {
@@ -654,27 +664,25 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   return (
     <div className={cn('activity-feed', className)}>
       {/* Header with Controls */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className='mb-6 flex items-center justify-between'>
         <div>
-          <h2 className="text-xl font-semibold">Activity Feed</h2>
-          <p className="text-sm text-muted-foreground">
-            Stay updated with community activities
-          </p>
+          <h2 className='font-semibold text-xl'>Activity Feed</h2>
+          <p className='text-muted-foreground text-sm'>Stay updated with community activities</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={handleRefresh}
             disabled={isRefreshing}
-            aria-label="Refresh activity feed"
+            aria-label='Refresh activity feed'
           >
             <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
           </Button>
 
           {websocket && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
+            <Badge variant='secondary' className='bg-green-100 text-green-800'>
               Live
             </Badge>
           )}
@@ -683,37 +691,37 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
       {/* Activity Filters */}
       <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as any)}>
-        <TabsList className="mb-6 grid w-full grid-cols-4">
-          <TabsTrigger value="all">All Activity</TabsTrigger>
-          <TabsTrigger value="following">Following</TabsTrigger>
-          <TabsTrigger value="trending">
-            <TrendingUp className="mr-1 h-4 w-4" />
+        <TabsList className='mb-6 grid w-full grid-cols-4'>
+          <TabsTrigger value='all'>All Activity</TabsTrigger>
+          <TabsTrigger value='following'>Following</TabsTrigger>
+          <TabsTrigger value='trending'>
+            <TrendingUp className='mr-1 h-4 w-4' />
             Trending
           </TabsTrigger>
-          {currentUserId && <TabsTrigger value="my-activity">My Activity</TabsTrigger>}
+          {currentUserId && <TabsTrigger value='my-activity'>My Activity</TabsTrigger>}
         </TabsList>
 
         {/* Activity Feed Content */}
-        <TabsContent value={activeFilter} className="mt-0">
-          <ScrollArea className="h-[calc(100vh-300px)]" ref={feedRef}>
+        <TabsContent value={activeFilter} className='mt-0'>
+          <ScrollArea className='h-[calc(100vh-300px)]' ref={feedRef}>
             {isLoading && activities.length === 0 ? (
               // Loading skeletons
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="p-4">
-                    <div className="animate-pulse space-y-3">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="space-y-1">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-24" />
+                  <Card key={i} className='p-4'>
+                    <div className='animate-pulse space-y-3'>
+                      <div className='flex items-center gap-3'>
+                        <Skeleton className='h-10 w-10 rounded-full' />
+                        <div className='space-y-1'>
+                          <Skeleton className='h-4 w-32' />
+                          <Skeleton className='h-3 w-24' />
                         </div>
                       </div>
-                      <Skeleton className="h-16 rounded" />
-                      <div className="flex gap-4">
-                        <Skeleton className="h-8 w-16" />
-                        <Skeleton className="h-8 w-16" />
-                        <Skeleton className="h-8 w-16" />
+                      <Skeleton className='h-16 rounded' />
+                      <div className='flex gap-4'>
+                        <Skeleton className='h-8 w-16' />
+                        <Skeleton className='h-8 w-16' />
+                        <Skeleton className='h-8 w-16' />
                       </div>
                     </div>
                   </Card>
@@ -721,11 +729,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               </div>
             ) : activities.length === 0 ? (
               // Empty state
-              <div className="flex h-64 items-center justify-center text-center">
+              <div className='flex h-64 items-center justify-center text-center'>
                 <div>
-                  <Activity className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                  <h3 className="mb-2 font-semibold">No activity yet</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <Activity className='mx-auto mb-4 h-12 w-12 text-gray-400' />
+                  <h3 className='mb-2 font-semibold'>No activity yet</h3>
+                  <p className='text-muted-foreground text-sm'>
                     {activeFilter === 'following'
                       ? 'Follow community members to see their activity here'
                       : 'Be the first to create templates or engage with the community!'}
@@ -734,13 +742,13 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               </div>
             ) : (
               // Activity items
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {activities.map(renderActivity)}
-                
+
                 {/* Infinite scroll trigger */}
                 {enableInfiniteScroll && hasMore && (
-                  <div ref={loadingTriggerRef} className="flex justify-center py-4">
-                    <div className="animate-pulse text-sm text-muted-foreground">
+                  <div ref={loadingTriggerRef} className='flex justify-center py-4'>
+                    <div className='animate-pulse text-muted-foreground text-sm'>
                       Loading more activities...
                     </div>
                   </div>
@@ -748,8 +756,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
                 {/* End of feed indicator */}
                 {!hasMore && activities.length > 0 && (
-                  <div className="flex justify-center py-4">
-                    <p className="text-sm text-muted-foreground">
+                  <div className='flex justify-center py-4'>
+                    <p className='text-muted-foreground text-sm'>
                       You've reached the end of the activity feed
                     </p>
                   </div>

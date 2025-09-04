@@ -290,7 +290,10 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to retrieve reputation data',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -438,7 +441,10 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     return NextResponse.json(
       {
         error: 'Failed to recalculate reputation',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -474,7 +480,7 @@ export async function GET_HISTORY(
     for (const [key, value] of url.searchParams) {
       processedParams[key] = value
     }
-    
+
     if (processedParams.limit) {
       processedParams.limit = Number.parseInt(processedParams.limit)
     }
@@ -518,15 +524,15 @@ export async function GET_HISTORY(
 
     // Build history query using drizzle sql template
     let baseCondition = sql`user_id = ${userId}`
-    
+
     if (historyParams.changeType) {
       baseCondition = sql`${baseCondition} AND change_type = ${historyParams.changeType}`
     }
-    
+
     if (historyParams.startDate) {
       baseCondition = sql`${baseCondition} AND created_at >= ${historyParams.startDate}`
     }
-    
+
     if (historyParams.endDate) {
       baseCondition = sql`${baseCondition} AND created_at <= ${historyParams.endDate}`
     }
@@ -610,7 +616,10 @@ export async function GET_HISTORY(
     return NextResponse.json(
       {
         error: 'Failed to retrieve reputation history',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

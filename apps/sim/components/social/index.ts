@@ -25,28 +25,27 @@
 
 export { ActivityFeed, type ActivityFeedProps, type ActivityItem, type User } from './activity-feed'
 export {
-  UserProfile,
-  type UserProfileProps,
-  type UserProfileData,
-  type Badge,
-  type Achievement,
-  type ActivitySummary,
-  type TemplateSummary,
-  type CollectionSummary,
-} from './user-profile'
-export {
   FollowingManagement,
   type FollowingManagementProps,
-  type FollowUser,
   type FollowingStats,
+  type FollowUser,
 } from './following-management'
-export {
-  SocialInteractions,
-  type SocialInteractionsProps,
-  type EngagementMetrics,
-  type Comment,
-  type ShareOptions,
-} from './social-interactions'
-
 // Re-export existing social features platform
 export { SocialFeaturesPlatform, type SocialFeaturesPlatformProps } from './social-features'
+export {
+  type Comment,
+  type EngagementMetrics,
+  type ShareOptions,
+  SocialInteractions,
+  type SocialInteractionsProps,
+} from './social-interactions'
+export {
+  type Achievement,
+  type ActivitySummary,
+  type Badge,
+  type CollectionSummary,
+  type TemplateSummary,
+  UserProfile,
+  type UserProfileData,
+  type UserProfileProps,
+} from './user-profile'

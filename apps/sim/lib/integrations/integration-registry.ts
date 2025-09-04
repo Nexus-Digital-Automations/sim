@@ -32,7 +32,12 @@ import type {
 } from './index'
 
 // Re-export types for external consumption
-export type { IntegrationCategory, AuthMethod, IntegrationConnection, IntegrationConnector } from './index'
+export type {
+  AuthMethod,
+  IntegrationCategory,
+  IntegrationConnection,
+  IntegrationConnector,
+} from './index'
 
 const logger = createLogger('IntegrationRegistry')
 

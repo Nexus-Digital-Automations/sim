@@ -78,19 +78,17 @@ export async function executeWebhookJob(payload: WebhookExecutionPayload) {
 
     let decryptedEnvVars: Record<string, string> = {}
     if (userEnv) {
-      const variables = userEnv.variables as Record<string, string> | null || {}
-      const decryptionPromises = Object.entries(variables).map(
-        async ([key, encryptedValue]) => {
-          try {
-            const { decrypted } = await decryptSecret(encryptedValue as string)
-            return [key, decrypted] as const
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : String(error)
-            logger.error(`[${requestId}] Failed to decrypt environment variable "${key}":`, error)
-            throw new Error(`Failed to decrypt environment variable "${key}": ${errorMessage}`)
-          }
+      const variables = (userEnv.variables as Record<string, string> | null) || {}
+      const decryptionPromises = Object.entries(variables).map(async ([key, encryptedValue]) => {
+        try {
+          const { decrypted } = await decryptSecret(encryptedValue as string)
+          return [key, decrypted] as const
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          logger.error(`[${requestId}] Failed to decrypt environment variable "${key}":`, error)
+          throw new Error(`Failed to decrypt environment variable "${key}": ${errorMessage}`)
         }
-      )
+      })
 
       const decryptedPairs = await Promise.all(decryptionPromises)
       decryptedEnvVars = Object.fromEntries(decryptedPairs)
@@ -367,8 +365,11 @@ export async function executeWebhookJob(payload: WebhookExecutionPayload) {
         },
       })
     } catch (loggingError: unknown) {
-      const loggingErrorMessage = loggingError instanceof Error ? loggingError.message : String(loggingError)
-      logger.error(`[${requestId}] Failed to complete logging session`, { error: loggingErrorMessage })
+      const loggingErrorMessage =
+        loggingError instanceof Error ? loggingError.message : String(loggingError)
+      logger.error(`[${requestId}] Failed to complete logging session`, {
+        error: loggingErrorMessage,
+      })
     }
 
     throw error

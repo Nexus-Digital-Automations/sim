@@ -16,6 +16,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+
 // Authentication import - using placeholder for missing auth
 const getSession = async () => ({ user: { email: 'user@example.com' } })
 // Help analytics imports - using types and placeholder service
@@ -36,9 +37,22 @@ export interface EngagementMetrics {
 // Placeholder help analytics service
 const helpAnalytics = {
   trackHelpView: async (contentId: string, sessionId: string, context: any, userId?: string) => {},
-  trackSearchQuery: async (query: string, sessionId: string, resultCount: number, userId?: string) => {},
-  trackHelpInteraction: async (contentId: string, sessionId: string, interactionType: string, component: string, metadata: any, userId?: string) => {},
+  trackSearchQuery: async (
+    query: string,
+    sessionId: string,
+    resultCount: number,
+    userId?: string
+  ) => {},
+  trackHelpInteraction: async (
+    contentId: string,
+    sessionId: string,
+    interactionType: string,
+    component: string,
+    metadata: any,
+    userId?: string
+  ) => {},
 }
+
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('HelpAnalyticsAPI')
@@ -238,7 +252,7 @@ class AnalyticsProcessor {
               eventType: event.eventType,
               sessionId: event.sessionId,
               data: event.data,
-              userId: event.userId
+              userId: event.userId,
             })
         }
       }
@@ -750,11 +764,11 @@ export async function GET(request: NextRequest) {
       type: validationResult.data.type || 'user_engagement',
       timeRange: {
         start: validationResult.data.timeRange?.start || new Date().toISOString(),
-        end: validationResult.data.timeRange?.end || new Date().toISOString()
+        end: validationResult.data.timeRange?.end || new Date().toISOString(),
       },
       groupBy: validationResult.data.groupBy || 'day',
       limit: validationResult.data.limit || 100,
-      includeDetails: validationResult.data.includeDetails || false
+      includeDetails: validationResult.data.includeDetails || false,
     }
     const analyticsData = await analyticsProcessor.getAnalytics(queryData)
 

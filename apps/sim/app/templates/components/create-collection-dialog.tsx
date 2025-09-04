@@ -27,7 +27,7 @@
 
 import { useCallback, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertTriangle, FolderPlus, Globe, Lock, Loader2, Users, EyeOff } from 'lucide-react'
+import { AlertTriangle, EyeOff, FolderPlus, Globe, Loader2, Lock, Users } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -61,7 +61,6 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { createLogger } from '@/lib/logs/console/logger'
-import { cn } from '@/lib/utils'
 
 const logger = createLogger('CreateCollectionDialog')
 
@@ -72,30 +71,25 @@ const createCollectionSchema = z.object({
     .min(1, 'Collection name is required')
     .max(100, 'Collection name must be less than 100 characters')
     .regex(/^[a-zA-Z0-9\s\-_.,!?()&]+$/, 'Collection name contains invalid characters'),
-  description: z
-    .string()
-    .max(500, 'Description must be less than 500 characters')
-    .optional(),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
   visibility: z.enum(['private', 'unlisted', 'public']).default('public'),
   tags: z
     .array(z.string())
     .default([])
     .or(
-      z.string()
+      z
+        .string()
         .default('')
-        .transform((str) => 
-          str
-            .split(',')
-            .map((tag) => tag.trim())
-            .filter(Boolean)
-            .slice(0, 10) // Max 10 tags
+        .transform(
+          (str) =>
+            str
+              .split(',')
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+              .slice(0, 10) // Max 10 tags
         )
     ),
-  coverImage: z
-    .string()
-    .url('Please enter a valid image URL')
-    .optional()
-    .or(z.literal('')),
+  coverImage: z.string().url('Please enter a valid image URL').optional().or(z.literal('')),
   isCollaborative: z.boolean().default(false),
 })
 
@@ -220,9 +214,9 @@ export function CreateCollectionDialog({
         if (!response.ok) {
           const errorResult = await response.json()
           throw new Error(
-            errorResult.error || 
-            errorResult.message || 
-            `Failed to create collection: ${response.statusText}`
+            errorResult.error ||
+              errorResult.message ||
+              `Failed to create collection: ${response.statusText}`
           )
         }
 
@@ -256,7 +250,7 @@ export function CreateCollectionDialog({
       } catch (error) {
         const executionTime = Date.now() - startTime
         const errorMessage = error instanceof Error ? error.message : 'Failed to create collection'
-        
+
         setError(errorMessage)
         logger.error('Collection creation failed', {
           error: errorMessage,
@@ -296,33 +290,33 @@ export function CreateCollectionDialog({
    * Get visibility option details
    */
   const getVisibilityOption = useCallback((value: string) => {
-    return VISIBILITY_OPTIONS.find(option => option.value === value)
+    return VISIBILITY_OPTIONS.find((option) => option.value === value)
   }, [])
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FolderPlus className="h-5 w-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <FolderPlus className='h-5 w-5' />
             Create Collection
           </DialogTitle>
           <DialogDescription>
-            Create a new template collection to organize and share your favorite templates
-            with the community.
+            Create a new template collection to organize and share your favorite templates with the
+            community.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleCreateCollection as any)}
-            className="space-y-6"
-            id="create-collection-form"
+            className='space-y-6'
+            id='create-collection-form'
           >
             {/* Error Alert */}
             {error && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
+              <Alert variant='destructive'>
+                <AlertTriangle className='h-4 w-4' />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -330,13 +324,13 @@ export function CreateCollectionDialog({
             {/* Collection Name */}
             <FormField
               control={form.control}
-              name="name"
+              name='name'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Collection Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter a name for your collection"
+                      placeholder='Enter a name for your collection'
                       {...field}
                       disabled={isCreating}
                     />
@@ -352,14 +346,14 @@ export function CreateCollectionDialog({
             {/* Description */}
             <FormField
               control={form.control}
-              name="description"
+              name='description'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe what this collection is about..."
-                      className="resize-none"
+                      placeholder='Describe what this collection is about...'
+                      className='resize-none'
                       rows={3}
                       {...field}
                       disabled={isCreating}
@@ -376,7 +370,7 @@ export function CreateCollectionDialog({
             {/* Visibility Settings */}
             <FormField
               control={form.control}
-              name="visibility"
+              name='visibility'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Visibility</FormLabel>
@@ -387,7 +381,7 @@ export function CreateCollectionDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select visibility level" />
+                        <SelectValue placeholder='Select visibility level' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -395,11 +389,11 @@ export function CreateCollectionDialog({
                         const Icon = option.icon
                         return (
                           <SelectItem key={option.value} value={option.value}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4" />
+                            <div className='flex items-center gap-2'>
+                              <Icon className='h-4 w-4' />
                               <div>
-                                <div className="font-medium">{option.label}</div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className='font-medium'>{option.label}</div>
+                                <div className='text-muted-foreground text-xs'>
                                   {option.description}
                                 </div>
                               </div>
@@ -409,9 +403,7 @@ export function CreateCollectionDialog({
                       })}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {getVisibilityOption(visibility)?.description}
-                  </FormDescription>
+                  <FormDescription>{getVisibilityOption(visibility)?.description}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -420,15 +412,17 @@ export function CreateCollectionDialog({
             {/* Tags */}
             <FormField
               control={form.control}
-              name="tags"
+              name='tags'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tags (Optional)</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter tags separated by commas (e.g., automation, productivity, business)"
+                      placeholder='Enter tags separated by commas (e.g., automation, productivity, business)'
                       {...field}
-                      value={Array.isArray(field.value) ? field.value.join(', ') : (field.value || '')}
+                      value={
+                        Array.isArray(field.value) ? field.value.join(', ') : field.value || ''
+                      }
                       onChange={(e) => {
                         const value = e.target.value
                         field.onChange(value)
@@ -447,14 +441,14 @@ export function CreateCollectionDialog({
             {/* Cover Image */}
             <FormField
               control={form.control}
-              name="coverImage"
+              name='coverImage'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cover Image (Optional)</FormLabel>
                   <FormControl>
                     <Input
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
+                      type='url'
+                      placeholder='https://example.com/image.jpg'
                       {...field}
                       disabled={isCreating}
                     />
@@ -470,18 +464,18 @@ export function CreateCollectionDialog({
             {/* Collaborative Collection Toggle */}
             <FormField
               control={form.control}
-              name="isCollaborative"
+              name='isCollaborative'
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="flex items-center gap-2 text-base">
-                      <Users className="h-4 w-4" />
+                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                  <div className='space-y-0.5'>
+                    <FormLabel className='flex items-center gap-2 text-base'>
+                      <Users className='h-4 w-4' />
                       Collaborative Collection
                     </FormLabel>
                     <FormDescription>
                       Allow others to contribute templates to this collection.
                       {isCollaborative && visibility === 'private' && (
-                        <span className="block text-amber-600 text-sm mt-1">
+                        <span className='mt-1 block text-amber-600 text-sm'>
                           Note: Collaborators will be able to view private collections.
                         </span>
                       )}
@@ -502,27 +496,27 @@ export function CreateCollectionDialog({
 
         <DialogFooter>
           <Button
-            type="button"
-            variant="outline"
+            type='button'
+            variant='outline'
             onClick={() => handleDialogClose(false)}
             disabled={isCreating}
           >
             Cancel
           </Button>
           <Button
-            type="submit"
-            form="create-collection-form"
+            type='submit'
+            form='create-collection-form'
             disabled={isCreating}
-            className="min-w-32"
+            className='min-w-32'
           >
             {isCreating ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Creating...
               </>
             ) : (
               <>
-                <FolderPlus className="mr-2 h-4 w-4" />
+                <FolderPlus className='mr-2 h-4 w-4' />
                 Create Collection
               </>
             )}

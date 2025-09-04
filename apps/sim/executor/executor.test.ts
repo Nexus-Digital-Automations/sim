@@ -6,12 +6,11 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { BlockOutput } from '@/blocks/types'
 import { Executor } from '@/executor'
 import { BlockType } from '@/executor/consts'
 import type { ExecutionResult, StreamingExecution } from '@/executor/types'
-import type { SerializedBlock, SerializedWorkflow, SerializedConnection } from '@/serializer/types'
-import type { Position } from '@/stores/workflows/workflow/types'
-import type { ParamType, BlockOutput } from '@/blocks/types'
+import type { SerializedBlock, SerializedConnection, SerializedWorkflow } from '@/serializer/types'
 
 // Mock dependencies
 const mockLogger = {
@@ -247,12 +246,16 @@ describe('Executor', () => {
   })
 
   // Type guard for ExecutionResult
-  function isExecutionResult(result: ExecutionResult | StreamingExecution): result is ExecutionResult {
+  function isExecutionResult(
+    result: ExecutionResult | StreamingExecution
+  ): result is ExecutionResult {
     return 'success' in result && !('stream' in result)
   }
 
   // Type guard for StreamingExecution
-  function isStreamingExecution(result: ExecutionResult | StreamingExecution): result is StreamingExecution {
+  function isStreamingExecution(
+    result: ExecutionResult | StreamingExecution
+  ): result is StreamingExecution {
     return 'stream' in result && 'execution' in result
   }
 

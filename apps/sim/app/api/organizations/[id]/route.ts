@@ -17,23 +17,25 @@ const GetQuerySchema = z.object({
   include: z.enum(['seats']).optional(),
 })
 
-const UpdateOrganizationSchema = z.object({
-  name: z.string().min(1).max(100).trim().optional(),
-  slug: z
-    .string()
-    .min(1)
-    .max(50)
-    .regex(/^[a-z0-9-_]+$/, 'Slug can only contain lowercase letters, numbers, hyphens, and underscores')
-    .trim()
-    .optional(),
-  logo: z.string().url().nullable().optional(),
-  seats: z.number().min(1).max(1000).optional(),
-}).refine(
-  (data) => Object.keys(data).length > 0,
-  {
+const UpdateOrganizationSchema = z
+  .object({
+    name: z.string().min(1).max(100).trim().optional(),
+    slug: z
+      .string()
+      .min(1)
+      .max(50)
+      .regex(
+        /^[a-z0-9-_]+$/,
+        'Slug can only contain lowercase letters, numbers, hyphens, and underscores'
+      )
+      .trim()
+      .optional(),
+    logo: z.string().url().nullable().optional(),
+    seats: z.number().min(1).max(1000).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field is required for update',
-  }
-)
+  })
 
 /**
  * GET /api/organizations/[id]
@@ -51,7 +53,7 @@ export async function GET(
     }
 
     const { id: organizationId } = await params
-    
+
     // Validate query parameters
     const { searchParams } = new URL(request.url)
     try {
@@ -62,7 +64,10 @@ export async function GET(
         return NextResponse.json(
           {
             error: 'Invalid query parameters',
-            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+            details: error.errors.map((err) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
           },
           { status: 400 }
         )
@@ -156,7 +161,7 @@ export async function PUT(
     }
 
     const { id: organizationId } = await params
-    
+
     // Parse and validate request body
     let validatedData
     try {
@@ -168,14 +173,17 @@ export async function PUT(
         return NextResponse.json(
           {
             error: 'Invalid request data',
-            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+            details: error.errors.map((err) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
           },
           { status: 400 }
         )
       }
       return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
     }
-    
+
     const { name, slug, logo, seats } = validatedData
 
     // Verify user has admin access
@@ -198,7 +206,6 @@ export async function PUT(
 
     // Handle seat count update
     if (seats !== undefined) {
-
       const result = await updateOrganizationSeats(organizationId, seats, session.user.id)
 
       if (!result.success) {

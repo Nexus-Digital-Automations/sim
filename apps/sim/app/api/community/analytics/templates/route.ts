@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // URL search params are always strings, need conversion for proper typing
     const url = new URL(request.url)
     const queryParams: Record<string, any> = {}
-    
+
     // Extract URL search parameters manually for better type safety
     for (const [key, value] of url.searchParams) {
       queryParams[key] = value
@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Build base query conditions with type-safe filtering
-    let baseWhereClause = 't.status = \'approved\''
-    
+    let baseWhereClause = "t.status = 'approved'"
+
     // Add optional filters with proper SQL escaping
     if (params.category) {
       baseWhereClause += ` AND t.category = '${params.category.replace(/'/g, "''")}'`
@@ -217,7 +217,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve template analytics',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

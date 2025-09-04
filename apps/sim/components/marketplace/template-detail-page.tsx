@@ -30,7 +30,7 @@
 'use client'
 
 import type React from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -38,30 +38,26 @@ import {
   Calendar,
   ChevronDown,
   ChevronRight,
-  Clock,
   Code,
   Download,
   ExternalLink,
   Eye,
   GitBranch,
   Heart,
-  MessageCircle,
   MoreHorizontal,
-  Play,
   Share2,
   Star,
   ThumbsDown,
   ThumbsUp,
   TrendingUp,
   User,
-  Users,
   Zap,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,7 +69,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { Template, TemplateReview, User as UserType } from '@/lib/templates/types'
 import { cn } from '@/lib/utils'
 
@@ -202,17 +198,17 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
         // Main template data
         fetch(`/api/marketplace/templates/${templateId}?include=author,metrics,tags`),
         // Reviews and ratings
-        enableCommunityFeatures ? 
-          fetch(`/api/marketplace/templates/${templateId}/reviews?include=stats`) : 
-          Promise.resolve(null),
+        enableCommunityFeatures
+          ? fetch(`/api/marketplace/templates/${templateId}/reviews?include=stats`)
+          : Promise.resolve(null),
         // Analytics data
-        showAnalytics ?
-          fetch(`/api/marketplace/templates/${templateId}/analytics`) :
-          Promise.resolve(null),
+        showAnalytics
+          ? fetch(`/api/marketplace/templates/${templateId}/analytics`)
+          : Promise.resolve(null),
         // Version history
-        showVersionHistory ?
-          fetch(`/api/marketplace/templates/${templateId}/versions`) :
-          Promise.resolve(null),
+        showVersionHistory
+          ? fetch(`/api/marketplace/templates/${templateId}/versions`)
+          : Promise.resolve(null),
         // Similar templates
         fetch(`/api/marketplace/templates/${templateId}/similar?limit=6`),
       ])
@@ -251,7 +247,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
 
       // Check if user has starred this template
       if (currentUser) {
-        const starResponse = await fetch(`/api/marketplace/templates/${templateId}/star?userId=${currentUser.id}`)
+        const starResponse = await fetch(
+          `/api/marketplace/templates/${templateId}/star?userId=${currentUser.id}`
+        )
         if (starResponse.ok) {
           const starData = await starResponse.json()
           setIsStarred(starData.isStarred || false)
@@ -271,20 +269,13 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
           }),
         }).catch(console.error)
       }
-
     } catch (error) {
       console.error('Failed to load template data:', error)
       setError(error instanceof Error ? error.message : 'Failed to load template')
     } finally {
       setLoading(false)
     }
-  }, [
-    templateId,
-    currentUser,
-    enableCommunityFeatures,
-    showAnalytics,
-    showVersionHistory,
-  ])
+  }, [templateId, currentUser, enableCommunityFeatures, showAnalytics, showVersionHistory])
 
   /**
    * Handle template installation
@@ -324,7 +315,6 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
           userId: currentUser?.id,
         }),
       }).catch(console.error)
-
     } catch (error) {
       console.error('Installation failed:', error)
       setError('Installation failed. Please try again.')
@@ -349,10 +339,14 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
       if (response.ok) {
         setIsStarred(!isStarred)
         // Update template star count locally
-        setTemplate(prev => prev ? {
-          ...prev,
-          stars: prev.stars + (isStarred ? -1 : 1)
-        } : null)
+        setTemplate((prev) =>
+          prev
+            ? {
+                ...prev,
+                stars: prev.stars + (isStarred ? -1 : 1),
+              }
+            : null
+        )
       }
     } catch (error) {
       console.error('Failed to toggle star:', error)
@@ -378,10 +372,10 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
 
       if (response.ok) {
         const newReview = await response.json()
-        setReviews(prev => [newReview.data, ...prev])
+        setReviews((prev) => [newReview.data, ...prev])
         setUserReview('')
         setUserRating(0)
-        
+
         // Refresh review stats
         loadTemplateData()
       }
@@ -394,9 +388,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
    * Handle section toggle
    */
   const toggleSection = useCallback((sectionId: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [sectionId]: !prev[sectionId]
+      [sectionId]: !prev[sectionId],
     }))
   }, [])
 
@@ -415,16 +409,16 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
 
     eventSource.onmessage = (event) => {
       const update = JSON.parse(event.data)
-      
+
       switch (update.type) {
         case 'review_added':
-          setReviews(prev => [update.data, ...prev])
+          setReviews((prev) => [update.data, ...prev])
           break
         case 'rating_updated':
-          setTemplate(prev => prev ? { ...prev, ratingAverage: update.data.average } : null)
+          setTemplate((prev) => (prev ? { ...prev, ratingAverage: update.data.average } : null))
           break
         case 'stats_updated':
-          setTemplate(prev => prev ? { ...prev, ...update.data } : null)
+          setTemplate((prev) => (prev ? { ...prev, ...update.data } : null))
           break
       }
     }
@@ -442,29 +436,39 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
   // Get difficulty color
   const getDifficultyColor = useCallback((difficulty: string): string => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800 border-green-200'
-      case 'intermediate': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'advanced': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'expert': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'beginner':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'intermediate':
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'advanced':
+        return 'bg-orange-100 text-orange-800 border-orange-200'
+      case 'expert':
+        return 'bg-red-100 text-red-800 border-red-200'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }, [])
 
   // Render rating stars
-  const renderRating = useCallback((rating: number, showValue = true) => (
-    <div className='flex items-center gap-1'>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Star
-          key={index}
-          className={cn(
-            'h-4 w-4',
-            index < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-          )}
-        />
-      ))}
-      {showValue && <span className='ml-1 text-sm text-muted-foreground'>({rating.toFixed(1)})</span>}
-    </div>
-  ), [])
+  const renderRating = useCallback(
+    (rating: number, showValue = true) => (
+      <div className='flex items-center gap-1'>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Star
+            key={index}
+            className={cn(
+              'h-4 w-4',
+              index < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+            )}
+          />
+        ))}
+        {showValue && (
+          <span className='ml-1 text-muted-foreground text-sm'>({rating.toFixed(1)})</span>
+        )}
+      </div>
+    ),
+    []
+  )
 
   // Loading state
   if (loading) {
@@ -485,8 +489,10 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
         <div className='flex flex-col items-center gap-4 text-center'>
           <div className='text-6xl'>😞</div>
           <div>
-            <h2 className='text-xl font-semibold'>Template Not Found</h2>
-            <p className='text-muted-foreground'>{error || 'The requested template could not be found'}</p>
+            <h2 className='font-semibold text-xl'>Template Not Found</h2>
+            <p className='text-muted-foreground'>
+              {error || 'The requested template could not be found'}
+            </p>
           </div>
           <Button onClick={() => router.back()}>
             <ArrowLeft className='mr-2 h-4 w-4' />
@@ -499,15 +505,13 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
 
   return (
     <TooltipProvider>
-      <div className={cn('min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 pb-8', className)}>
+      <div
+        className={cn('min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 pb-8', className)}
+      >
         {/* Header */}
         <div className='border-b bg-white/80 p-4 backdrop-blur-sm'>
           <div className='mx-auto flex max-w-7xl items-center justify-between'>
-            <Button
-              variant='ghost'
-              onClick={onBack || (() => router.back())}
-              className='gap-2'
-            >
+            <Button variant='ghost' onClick={onBack || (() => router.back())} className='gap-2'>
               <ArrowLeft className='h-4 w-4' />
               Back to Templates
             </Button>
@@ -521,7 +525,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                 disabled={!currentUser}
                 className={cn(isStarred && 'border-yellow-400 bg-yellow-50')}
               >
-                <Heart className={cn('mr-2 h-4 w-4', isStarred && 'fill-yellow-400 text-yellow-400')} />
+                <Heart
+                  className={cn('mr-2 h-4 w-4', isStarred && 'fill-yellow-400 text-yellow-400')}
+                />
                 {isStarred ? 'Starred' : 'Star'}
                 <Badge variant='secondary' className='ml-2'>
                   {formatNumber(template.stars)}
@@ -536,7 +542,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)}>
+                  <DropdownMenuItem
+                    onClick={() => navigator.clipboard.writeText(window.location.href)}
+                  >
                     Copy Link
                   </DropdownMenuItem>
                   <DropdownMenuItem>Share on Twitter</DropdownMenuItem>
@@ -574,13 +582,13 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                   <div className='flex items-start justify-between'>
                     <div className='flex items-center gap-4'>
                       <div
-                        className='flex h-16 w-16 items-center justify-center rounded-xl text-2xl font-bold text-white'
+                        className='flex h-16 w-16 items-center justify-center rounded-xl font-bold text-2xl text-white'
                         style={{ backgroundColor: template.color }}
                       >
                         {template.icon || '📄'}
                       </div>
                       <div>
-                        <CardTitle className='text-2xl font-bold'>{template.name}</CardTitle>
+                        <CardTitle className='font-bold text-2xl'>{template.name}</CardTitle>
                         <p className='text-blue-100'>{template.description}</p>
                         <div className='mt-2 flex items-center gap-4 text-blue-200 text-sm'>
                           <div className='flex items-center gap-1'>
@@ -598,7 +606,7 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Template Status Badges */}
                     <div className='flex flex-col gap-2'>
                       {template.featured && (
@@ -614,7 +622,7 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         </Badge>
                       )}
                       {template.metadata?.difficulty && (
-                        <Badge variant='outline' className='bg-white/20 text-white border-white/30'>
+                        <Badge variant='outline' className='border-white/30 bg-white/20 text-white'>
                           {template.metadata.difficulty}
                         </Badge>
                       )}
@@ -624,13 +632,17 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
 
                 {/* Template Metrics */}
                 <CardContent className='p-6'>
-                  <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                  <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
                     <div className='text-center'>
-                      <div className='text-2xl font-bold text-blue-600'>{formatNumber(template.views || 0)}</div>
+                      <div className='font-bold text-2xl text-blue-600'>
+                        {formatNumber(template.views || 0)}
+                      </div>
                       <div className='text-muted-foreground text-sm'>Views</div>
                     </div>
                     <div className='text-center'>
-                      <div className='text-2xl font-bold text-green-600'>{formatNumber(template.downloadCount || 0)}</div>
+                      <div className='font-bold text-2xl text-green-600'>
+                        {formatNumber(template.downloadCount || 0)}
+                      </div>
                       <div className='text-muted-foreground text-sm'>Downloads</div>
                     </div>
                     <div className='text-center'>
@@ -642,7 +654,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                       </div>
                     </div>
                     <div className='text-center'>
-                      <div className='text-2xl font-bold text-purple-600'>{formatNumber(template.stars || 0)}</div>
+                      <div className='font-bold text-2xl text-purple-600'>
+                        {formatNumber(template.stars || 0)}
+                      </div>
                       <div className='text-muted-foreground text-sm'>Stars</div>
                     </div>
                   </div>
@@ -684,9 +698,11 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         <CardTitle>Use Cases</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <ul className='list-disc list-inside space-y-1'>
+                        <ul className='list-inside list-disc space-y-1'>
                           {template.metadata.useCases.map((useCase, index) => (
-                            <li key={index} className='text-sm'>{useCase}</li>
+                            <li key={index} className='text-sm'>
+                              {useCase}
+                            </li>
                           ))}
                         </ul>
                       </CardContent>
@@ -702,7 +718,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                       <CardContent>
                         <div className='flex flex-wrap gap-2'>
                           {template.metadata.requirements.map((req, index) => (
-                            <Badge key={index} variant='outline'>{req}</Badge>
+                            <Badge key={index} variant='outline'>
+                              {req}
+                            </Badge>
                           ))}
                         </div>
                       </CardContent>
@@ -717,23 +735,29 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                       <CardTitle>Template Information</CardTitle>
                     </CardHeader>
                     <CardContent className='space-y-4'>
-                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                         <div>
                           <label className='font-medium text-sm'>Category</label>
-                          <p className='text-sm text-muted-foreground'>{template.category}</p>
+                          <p className='text-muted-foreground text-sm'>{template.category}</p>
                         </div>
                         <div>
                           <label className='font-medium text-sm'>Version</label>
-                          <p className='text-sm text-muted-foreground'>{template.version || '1.0.0'}</p>
+                          <p className='text-muted-foreground text-sm'>
+                            {template.version || '1.0.0'}
+                          </p>
                         </div>
                         <div>
                           <label className='font-medium text-sm'>License</label>
-                          <p className='text-sm text-muted-foreground'>{template.metadata?.license || 'MIT'}</p>
+                          <p className='text-muted-foreground text-sm'>
+                            {template.metadata?.license || 'MIT'}
+                          </p>
                         </div>
                         <div>
                           <label className='font-medium text-sm'>Last Updated</label>
-                          <p className='text-sm text-muted-foreground'>
-                            {new Date(template.updatedAt || template.createdAt).toLocaleDateString()}
+                          <p className='text-muted-foreground text-sm'>
+                            {new Date(
+                              template.updatedAt || template.createdAt
+                            ).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -744,7 +768,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                           <label className='font-medium text-sm'>Tags</label>
                           <div className='mt-2 flex flex-wrap gap-2'>
                             {template.metadata.tags.map((tag, index) => (
-                              <Badge key={index} variant='secondary'>{tag}</Badge>
+                              <Badge key={index} variant='secondary'>
+                                {tag}
+                              </Badge>
                             ))}
                           </div>
                         </div>
@@ -763,12 +789,14 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                           <CardTitle>Review Summary</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                          <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                             <div>
                               <div className='text-center'>
-                                <div className='text-4xl font-bold'>{reviewStats.averageRating.toFixed(1)}</div>
+                                <div className='font-bold text-4xl'>
+                                  {reviewStats.averageRating.toFixed(1)}
+                                </div>
                                 {renderRating(reviewStats.averageRating, false)}
-                                <p className='text-muted-foreground text-sm mt-1'>
+                                <p className='mt-1 text-muted-foreground text-sm'>
                                   {reviewStats.totalReviews} reviews
                                 </p>
                               </div>
@@ -776,12 +804,16 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                             <div className='space-y-2'>
                               {[5, 4, 3, 2, 1].map((rating) => (
                                 <div key={rating} className='flex items-center gap-2'>
-                                  <span className='text-sm w-8'>{rating}★</span>
+                                  <span className='w-8 text-sm'>{rating}★</span>
                                   <Progress
-                                    value={(reviewStats.ratingDistribution[rating] || 0) / reviewStats.totalReviews * 100}
+                                    value={
+                                      ((reviewStats.ratingDistribution[rating] || 0) /
+                                        reviewStats.totalReviews) *
+                                      100
+                                    }
                                     className='flex-1'
                                   />
-                                  <span className='text-muted-foreground text-sm w-8'>
+                                  <span className='w-8 text-muted-foreground text-sm'>
                                     {reviewStats.ratingDistribution[rating] || 0}
                                   </span>
                                 </div>
@@ -811,7 +843,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                                   <Star
                                     className={cn(
                                       'h-6 w-6',
-                                      index < userRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      index < userRating
+                                        ? 'fill-yellow-400 text-yellow-400'
+                                        : 'text-gray-300'
                                     )}
                                   />
                                 </button>
@@ -899,25 +933,25 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         <CardTitle>Usage Analytics</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                        <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
                           <div className='text-center'>
-                            <div className='text-3xl font-bold text-blue-600'>
+                            <div className='font-bold text-3xl text-blue-600'>
                               {formatNumber(templateAnalytics.totalViews)}
                             </div>
                             <p className='text-muted-foreground text-sm'>Total Views</p>
-                            <div className='flex items-center justify-center gap-1 mt-1 text-xs text-green-600'>
-                              <TrendingUp className='h-3 w-3' />
-                              +{templateAnalytics.weeklyGrowth}% this week
+                            <div className='mt-1 flex items-center justify-center gap-1 text-green-600 text-xs'>
+                              <TrendingUp className='h-3 w-3' />+{templateAnalytics.weeklyGrowth}%
+                              this week
                             </div>
                           </div>
                           <div className='text-center'>
-                            <div className='text-3xl font-bold text-green-600'>
+                            <div className='font-bold text-3xl text-green-600'>
                               {formatNumber(templateAnalytics.totalDownloads)}
                             </div>
                             <p className='text-muted-foreground text-sm'>Total Downloads</p>
                           </div>
                           <div className='text-center'>
-                            <div className='text-3xl font-bold text-purple-600'>
+                            <div className='font-bold text-3xl text-purple-600'>
                               {formatNumber(templateAnalytics.totalInstantiations)}
                             </div>
                             <p className='text-muted-foreground text-sm'>Total Uses</p>
@@ -927,24 +961,30 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         <Separator className='my-6' />
 
                         <div>
-                          <h4 className='font-medium mb-3'>Performance Metrics</h4>
-                          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                          <h4 className='mb-3 font-medium'>Performance Metrics</h4>
+                          <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
                             <div>
-                              <p className='text-sm text-muted-foreground'>Average Setup Time</p>
-                              <p className='text-lg font-medium'>
+                              <p className='text-muted-foreground text-sm'>Average Setup Time</p>
+                              <p className='font-medium text-lg'>
                                 {templateAnalytics.performanceMetrics.averageSetupTime}m
                               </p>
                             </div>
                             <div>
-                              <p className='text-sm text-muted-foreground'>Success Rate</p>
-                              <p className='text-lg font-medium'>
-                                {(templateAnalytics.performanceMetrics.successRate * 100).toFixed(1)}%
+                              <p className='text-muted-foreground text-sm'>Success Rate</p>
+                              <p className='font-medium text-lg'>
+                                {(templateAnalytics.performanceMetrics.successRate * 100).toFixed(
+                                  1
+                                )}
+                                %
                               </p>
                             </div>
                             <div>
-                              <p className='text-sm text-muted-foreground'>User Satisfaction</p>
-                              <p className='text-lg font-medium'>
-                                {(templateAnalytics.performanceMetrics.userSatisfaction * 100).toFixed(1)}%
+                              <p className='text-muted-foreground text-sm'>User Satisfaction</p>
+                              <p className='font-medium text-lg'>
+                                {(
+                                  templateAnalytics.performanceMetrics.userSatisfaction * 100
+                                ).toFixed(1)}
+                                %
                               </p>
                             </div>
                           </div>
@@ -966,7 +1006,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                                 <GitBranch className='h-4 w-4 text-muted-foreground' />
                                 <span className='font-medium'>{version.version}</span>
                                 {version.isLatest && (
-                                  <Badge variant='default' className='text-xs'>Latest</Badge>
+                                  <Badge variant='default' className='text-xs'>
+                                    Latest
+                                  </Badge>
                                 )}
                               </div>
                               <span className='text-muted-foreground text-sm'>
@@ -979,12 +1021,12 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className='text-sm mb-3'>{version.description}</p>
+                          <p className='mb-3 text-sm'>{version.description}</p>
                           {version.changes.length > 0 && (
                             <div>
                               <button
                                 onClick={() => toggleSection(`version-${version.id}`)}
-                                className='flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700'
+                                className='flex items-center gap-2 font-medium text-blue-600 text-sm hover:text-blue-700'
                               >
                                 {expandedSections[`version-${version.id}`] ? (
                                   <ChevronDown className='h-4 w-4' />
@@ -1001,9 +1043,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                                     exit={{ height: 0, opacity: 0 }}
                                     className='mt-3 overflow-hidden'
                                   >
-                                    <ul className='list-disc list-inside space-y-1'>
+                                    <ul className='list-inside list-disc space-y-1'>
                                       {version.changes.map((change, index) => (
-                                        <li key={index} className='text-sm text-muted-foreground'>
+                                        <li key={index} className='text-muted-foreground text-sm'>
                                           {change}
                                         </li>
                                       ))}
@@ -1035,9 +1077,7 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                   <div className='flex items-center gap-3'>
                     <Avatar className='h-12 w-12'>
                       <AvatarImage src={template.authorAvatar} />
-                      <AvatarFallback>
-                        {template.author.charAt(0).toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarFallback>{template.author.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className='flex-1'>
                       <p className='font-medium'>{template.author}</p>
@@ -1087,20 +1127,20 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                     {similarTemplates.slice(0, 3).map((similarTemplate) => (
                       <div
                         key={similarTemplate.id}
-                        className='flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors'
+                        className='flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50'
                         onClick={() => onTemplateSelect?.(similarTemplate)}
                       >
                         <div
-                          className='flex h-8 w-8 items-center justify-center rounded text-white text-xs font-bold'
+                          className='flex h-8 w-8 items-center justify-center rounded font-bold text-white text-xs'
                           style={{ backgroundColor: similarTemplate.color }}
                         >
                           {similarTemplate.icon || '📄'}
                         </div>
-                        <div className='flex-1 min-w-0'>
-                          <p className='font-medium text-sm truncate'>{similarTemplate.name}</p>
+                        <div className='min-w-0 flex-1'>
+                          <p className='truncate font-medium text-sm'>{similarTemplate.name}</p>
                           <div className='flex items-center gap-1'>
                             {renderRating(similarTemplate.ratingAverage || 0, false)}
-                            <span className='text-xs text-muted-foreground'>
+                            <span className='text-muted-foreground text-xs'>
                               ({similarTemplate.ratingCount || 0})
                             </span>
                           </div>
@@ -1128,7 +1168,9 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span className='text-muted-foreground'>Last Updated</span>
-                    <span>{new Date(template.updatedAt || template.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(template.updatedAt || template.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span className='text-muted-foreground'>Total Views</span>

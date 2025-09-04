@@ -18,60 +18,51 @@
  * @created 2025-09-04
  */
 
-import { and, desc, eq, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
-import { db } from '@/db'
-import {
-  templates,
-  templateRatings,
-  templateStars,
-  templateCategories,
-  user,
-} from '@/db/schema'
 
 // TODO: These tables need to be added to schema.ts
 // For now, we'll use placeholder types to resolve TypeScript errors
 type TemplateSubmission = {
-  id: string;
-  assignedReviewerId: string;
-  submitterId: string;
-  status: string;
-  currentStage: number;
-  approvalWorkflow: any[];
-  isBreakingChange: boolean;
-  title: string;
-  priority: string;
-  templateId: string;
+  id: string
+  assignedReviewerId: string
+  submitterId: string
+  status: string
+  currentStage: number
+  approvalWorkflow: any[]
+  isBreakingChange: boolean
+  title: string
+  priority: string
+  templateId: string
 }
 
 type TemplateReview = {
-  id: string;
-  submissionId: string;
-  reviewerId: string;
-  decision: string;
-  reviewNotes: string;
-  reviewCriteria: any;
-  qualityScore: number;
-  timeSpentMinutes?: number;
-  actionItems: string[];
-  suggestedPriority?: string;
-  internalNotes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  submissionId: string
+  reviewerId: string
+  decision: string
+  reviewNotes: string
+  reviewCriteria: any
+  qualityScore: number
+  timeSpentMinutes?: number
+  actionItems: string[]
+  suggestedPriority?: string
+  internalNotes?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 type TemplateApproval = {
-  id: string;
-  submissionId: string;
-  approverId: string;
-  stage: number;
-  approvalType: string;
-  approvedAt: Date;
-  approvalNotes: string;
+  id: string
+  submissionId: string
+  approverId: string
+  stage: number
+  approvalType: string
+  approvedAt: Date
+  approvalNotes: string
 }
 
 const logger = createLogger('TemplateReviewAPI')
@@ -221,19 +212,19 @@ async function checkReviewPermission(
     // TODO: Replace with actual database queries when templateSubmissions/templateReviews tables are created
     // For now, return mock permission that allows reviews for demonstration
     logger.info('Mock review permission check', { submissionId, userId })
-    
+
     // In real implementation, would:
     // 1. Check if submission exists
     // 2. Verify user is not the submitter
     // 3. Check if user already reviewed
     // 4. Validate user has reviewer permissions
-    
+
     return { canReview: true, role: 'qualified_reviewer' }
   } catch (error: unknown) {
-    logger.error('Error checking review permission', { 
-      submissionId, 
-      userId, 
-      error: error instanceof Error ? error.message : 'Unknown error'
+    logger.error('Error checking review permission', {
+      submissionId,
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
     return { canReview: false, role: 'error', reason: 'Permission check failed' }
   }
@@ -286,13 +277,13 @@ async function updateSubmissionStatus(
       reviewerId: reviewData.reviewerId,
       reviewNotes: reviewData.reviewNotes,
     })
-    
+
     // In real implementation, would:
     // 1. Fetch current submission state from templateSubmissions
     // 2. Determine next workflow stage based on decision
     // 3. Update submission status and stage
     // 4. Create approval record if decision is 'approve'
-    
+
     return Promise.resolve()
   } catch (error: unknown) {
     logger.error('Failed to update submission status', {
@@ -348,7 +339,7 @@ export async function GET(request: NextRequest) {
           documentation: 5,
           codeQuality: 4,
           security: 4,
-          usability: 5
+          usability: 5,
         },
         qualityScore: 88,
         timeSpentMinutes: 30,
@@ -356,28 +347,32 @@ export async function GET(request: NextRequest) {
         createdAt: new Date(),
         updatedAt: new Date(),
         // Optional fields based on parameters
-        ...(params.includeSubmission ? {
-          submissionTitle: 'Mock Template Submission',
-          submissionStatus: 'under_review',
-          submissionPriority: 'medium'
-        } : {}),
-        ...(params.includeTemplate ? {
-          templateName: 'Mock Template',
-          templateDescription: 'A mock template for demonstration'
-        } : {})
-      }
+        ...(params.includeSubmission
+          ? {
+              submissionTitle: 'Mock Template Submission',
+              submissionStatus: 'under_review',
+              submissionPriority: 'medium',
+            }
+          : {}),
+        ...(params.includeTemplate
+          ? {
+              templateName: 'Mock Template',
+              templateDescription: 'A mock template for demonstration',
+            }
+          : {}),
+      },
     ]
 
     // Apply filtering
     let filteredResults = mockReviews
     if (params.submissionId) {
-      filteredResults = filteredResults.filter(r => r.submissionId === params.submissionId)
+      filteredResults = filteredResults.filter((r) => r.submissionId === params.submissionId)
     }
     if (params.reviewerId) {
-      filteredResults = filteredResults.filter(r => r.reviewerId === params.reviewerId)
+      filteredResults = filteredResults.filter((r) => r.reviewerId === params.reviewerId)
     }
     if (params.decision) {
-      filteredResults = filteredResults.filter(r => r.decision === params.decision)
+      filteredResults = filteredResults.filter((r) => r.decision === params.decision)
     }
 
     const total = filteredResults.length
@@ -425,8 +420,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    logger.error(`[${requestId}] Reviews fetch error after ${elapsed}ms:`, 
-      error instanceof Error ? error.message : 'Unknown error')
+    logger.error(
+      `[${requestId}] Reviews fetch error after ${elapsed}ms:`,
+      error instanceof Error ? error.message : 'Unknown error'
+    )
     return NextResponse.json(
       {
         success: false,
@@ -557,8 +554,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    logger.error(`[${requestId}] Review creation error after ${elapsed}ms:`, 
-      error instanceof Error ? error.message : 'Unknown error')
+    logger.error(
+      `[${requestId}] Review creation error after ${elapsed}ms:`,
+      error instanceof Error ? error.message : 'Unknown error'
+    )
     return NextResponse.json(
       {
         success: false,

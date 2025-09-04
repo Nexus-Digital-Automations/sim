@@ -91,7 +91,7 @@ export interface TemplateSubmissionProps {
 /**
  * Submission Step Types
  */
-type SubmissionStep = 
+type SubmissionStep =
   | 'workflow-select'
   | 'basic-info'
   | 'metadata'
@@ -257,12 +257,14 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
       setLoading(true)
       setError(null)
 
-      const [categoriesResponse, tagsResponse, workflowsResponse, draftResponse] = 
+      const [categoriesResponse, tagsResponse, workflowsResponse, draftResponse] =
         await Promise.all([
           fetch('/api/community/marketplace/categories'),
           fetch('/api/community/marketplace/tags'),
           workflowId ? Promise.resolve(null) : fetch(`/api/workflows?userId=${currentUserId}`),
-          draftTemplateId ? fetch(`/api/templates/drafts/${draftTemplateId}`) : Promise.resolve(null),
+          draftTemplateId
+            ? fetch(`/api/templates/drafts/${draftTemplateId}`)
+            : Promise.resolve(null),
         ])
 
       if (!categoriesResponse.ok) throw new Error('Failed to load categories')
@@ -277,7 +279,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
 
       setCategories(categoriesData.data || [])
       setAvailableTags(tagsData.data || [])
-      
+
       if (workflowsData?.data) {
         setWorkflows(workflowsData.data)
       }
@@ -302,39 +304,42 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
   /**
    * Save draft to server
    */
-  const saveDraft = useCallback(async (showNotification = true) => {
-    try {
-      setSaving(true)
-      
-      const response = await fetch('/api/templates/drafts', {
-        method: draft.id ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...draft,
-          userId: currentUserId,
-        }),
-      })
+  const saveDraft = useCallback(
+    async (showNotification = true) => {
+      try {
+        setSaving(true)
 
-      if (!response.ok) {
-        throw new Error('Failed to save draft')
-      }
+        const response = await fetch('/api/templates/drafts', {
+          method: draft.id ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...draft,
+            userId: currentUserId,
+          }),
+        })
 
-      const data = await response.json()
-      
-      if (!draft.id) {
-        setDraft(prev => ({ ...prev, id: data.id }))
-      }
+        if (!response.ok) {
+          throw new Error('Failed to save draft')
+        }
 
-      if (showNotification) {
-        // Show success notification
+        const data = await response.json()
+
+        if (!draft.id) {
+          setDraft((prev) => ({ ...prev, id: data.id }))
+        }
+
+        if (showNotification) {
+          // Show success notification
+        }
+      } catch (error) {
+        console.error('Draft save failed:', error)
+        setError('Failed to save draft')
+      } finally {
+        setSaving(false)
       }
-    } catch (error) {
-      console.error('Draft save failed:', error)
-      setError('Failed to save draft')
-    } finally {
-      setSaving(false)
-    }
-  }, [draft, currentUserId])
+    },
+    [draft, currentUserId]
+  )
 
   /**
    * Run quality checks on template
@@ -358,9 +363,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
 
       const data = await response.json()
       setQualityChecks(data.checks || [])
-      
+
       // Update draft with quality scores
-      setDraft(prev => ({ ...prev, qualityChecks: data.checks }))
+      setDraft((prev) => ({ ...prev, qualityChecks: data.checks }))
     } catch (error) {
       console.error('Quality check failed:', error)
       setError('Quality check failed')
@@ -417,7 +422,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
       }
 
       const data = await response.json()
-      
+
       // Clean up draft
       if (draft.id) {
         await fetch(`/api/templates/drafts/${draft.id}`, { method: 'DELETE' })
@@ -435,35 +440,44 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
   /**
    * Handle step navigation
    */
-  const handleStepChange = useCallback((step: SubmissionStep) => {
-    if (step !== currentStep) {
-      saveDraft(false) // Auto-save when changing steps
-      setCurrentStep(step)
-    }
-  }, [currentStep, saveDraft])
+  const handleStepChange = useCallback(
+    (step: SubmissionStep) => {
+      if (step !== currentStep) {
+        saveDraft(false) // Auto-save when changing steps
+        setCurrentStep(step)
+      }
+    },
+    [currentStep, saveDraft]
+  )
 
   /**
    * Handle form field updates
    */
   const updateDraft = useCallback((updates: Partial<TemplateDraft>) => {
-    setDraft(prev => ({ ...prev, ...updates }))
+    setDraft((prev) => ({ ...prev, ...updates }))
   }, [])
 
   /**
    * Add tag to template
    */
-  const addTag = useCallback((tagName: string) => {
-    if (!draft.tags.includes(tagName)) {
-      updateDraft({ tags: [...draft.tags, tagName] })
-    }
-  }, [draft.tags, updateDraft])
+  const addTag = useCallback(
+    (tagName: string) => {
+      if (!draft.tags.includes(tagName)) {
+        updateDraft({ tags: [...draft.tags, tagName] })
+      }
+    },
+    [draft.tags, updateDraft]
+  )
 
   /**
    * Remove tag from template
    */
-  const removeTag = useCallback((tagName: string) => {
-    updateDraft({ tags: draft.tags.filter(t => t !== tagName) })
-  }, [draft.tags, updateDraft])
+  const removeTag = useCallback(
+    (tagName: string) => {
+      updateDraft({ tags: draft.tags.filter((t) => t !== tagName) })
+    },
+    [draft.tags, updateDraft]
+  )
 
   // Initialize on mount
   useEffect(() => {
@@ -482,28 +496,31 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
   }, [draft, currentStep, saveDraft])
 
   // Calculate progress
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep)
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
   const progress = ((currentStepIndex + 1) / steps.length) * 100
 
   // Validation functions
-  const isStepValid = useCallback((step: SubmissionStep): boolean => {
-    switch (step) {
-      case 'workflow-select':
-        return !!draft.workflowId
-      case 'basic-info':
-        return !!(draft.name && draft.description && draft.category)
-      case 'metadata':
-        return draft.tags.length > 0 && draft.requirements.length > 0
-      case 'preview':
-        return qualityChecks.length > 0 && qualityChecks.every(c => c.status !== 'fail')
-      case 'publication':
-        return true
-      case 'review':
-        return true
-      default:
-        return false
-    }
-  }, [draft, qualityChecks])
+  const isStepValid = useCallback(
+    (step: SubmissionStep): boolean => {
+      switch (step) {
+        case 'workflow-select':
+          return !!draft.workflowId
+        case 'basic-info':
+          return !!(draft.name && draft.description && draft.category)
+        case 'metadata':
+          return draft.tags.length > 0 && draft.requirements.length > 0
+        case 'preview':
+          return qualityChecks.length > 0 && qualityChecks.every((c) => c.status !== 'fail')
+        case 'publication':
+          return true
+        case 'review':
+          return true
+        default:
+          return false
+      }
+    },
+    [draft, qualityChecks]
+  )
 
   const canProceed = isStepValid(currentStep)
   const canGoBack = currentStepIndex > 0
@@ -527,11 +544,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
         <div className='flex items-center justify-between'>
           <div>
             <h1 className='font-bold text-2xl text-gray-900'>Submit Template</h1>
-            <p className='text-gray-600 text-sm'>
-              Share your workflow template with the community
-            </p>
+            <p className='text-gray-600 text-sm'>Share your workflow template with the community</p>
           </div>
-          
+
           <div className='flex items-center gap-3'>
             {saving && (
               <div className='flex items-center gap-2 text-muted-foreground text-sm'>
@@ -539,11 +554,11 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                 Saving draft...
               </div>
             )}
-            
+
             <Button variant='outline' onClick={onCancel}>
               Cancel
             </Button>
-            
+
             <Button onClick={() => saveDraft()}>
               <Save className='mr-2 h-4 w-4' />
               Save Draft
@@ -582,10 +597,12 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                 )}
               </Button>
               {index < steps.length - 1 && (
-                <div className={cn(
-                  'mx-2 h-0.5 w-12 bg-gray-200',
-                  index < currentStepIndex && 'bg-green-500'
-                )} />
+                <div
+                  className={cn(
+                    'mx-2 h-0.5 w-12 bg-gray-200',
+                    index < currentStepIndex && 'bg-green-500'
+                  )}
+                />
               )}
             </div>
           ))}
@@ -598,12 +615,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
           <AlertTriangle className='h-4 w-4' />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
-          <Button
-            variant='outline'
-            size='sm'
-            className='mt-2'
-            onClick={() => setError(null)}
-          >
+          <Button variant='outline' size='sm' className='mt-2' onClick={() => setError(null)}>
             Dismiss
           </Button>
         </Alert>
@@ -655,7 +667,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                                 </p>
                                 <div className='mt-1 flex items-center gap-4 text-gray-500 text-xs'>
                                   <span>{workflow.blockCount || 0} blocks</span>
-                                  <span>Updated {new Date(workflow.updatedAt).toLocaleDateString()}</span>
+                                  <span>
+                                    Updated {new Date(workflow.updatedAt).toLocaleDateString()}
+                                  </span>
                                 </div>
                               </div>
                               {draft.workflowId === workflow.id && (
@@ -688,9 +702,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                 <Card>
                   <CardHeader>
                     <CardTitle>Basic Information</CardTitle>
-                    <CardDescription>
-                      Provide essential details about your template
-                    </CardDescription>
+                    <CardDescription>Provide essential details about your template</CardDescription>
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     <div className='space-y-2'>
@@ -751,7 +763,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                       <Label htmlFor='difficulty'>Difficulty Level</Label>
                       <RadioGroup
                         value={draft.difficulty}
-                        onValueChange={(value) => 
+                        onValueChange={(value) =>
                           updateDraft({ difficulty: value as TemplateDraft['difficulty'] })
                         }
                       >
@@ -789,8 +801,10 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         type='number'
                         placeholder='15'
                         value={draft.estimatedSetupTime || ''}
-                        onChange={(e) => 
-                          updateDraft({ estimatedSetupTime: Number.parseInt(e.target.value) || undefined })
+                        onChange={(e) =>
+                          updateDraft({
+                            estimatedSetupTime: Number.parseInt(e.target.value) || undefined,
+                          })
                         }
                         min={1}
                         max={480}
@@ -809,10 +823,18 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                   </CardHeader>
                   <CardContent className='space-y-3'>
                     <div className='space-y-2 text-sm'>
-                      <p><strong>Name:</strong> Use clear, action-oriented names</p>
-                      <p><strong>Description:</strong> Explain the business problem it solves</p>
-                      <p><strong>Category:</strong> Choose the most specific category</p>
-                      <p><strong>Difficulty:</strong> Be honest about complexity</p>
+                      <p>
+                        <strong>Name:</strong> Use clear, action-oriented names
+                      </p>
+                      <p>
+                        <strong>Description:</strong> Explain the business problem it solves
+                      </p>
+                      <p>
+                        <strong>Category:</strong> Choose the most specific category
+                      </p>
+                      <p>
+                        <strong>Difficulty:</strong> Be honest about complexity
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -836,17 +858,14 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                       <div className='mb-2 flex flex-wrap gap-2'>
                         {draft.tags.map((tag) => (
                           <Badge key={tag} variant='secondary' className='gap-1'>
-                            {availableTags.find(t => t.name === tag)?.displayName || tag}
-                            <X
-                              className='h-3 w-3 cursor-pointer'
-                              onClick={() => removeTag(tag)}
-                            />
+                            {availableTags.find((t) => t.name === tag)?.displayName || tag}
+                            <X className='h-3 w-3 cursor-pointer' onClick={() => removeTag(tag)} />
                           </Badge>
                         ))}
                       </div>
                       <div className='grid gap-2 md:grid-cols-3'>
                         {availableTags
-                          .filter(tag => !draft.tags.includes(tag.name))
+                          .filter((tag) => !draft.tags.includes(tag.name))
                           .slice(0, 12)
                           .map((tag) => (
                             <Button
@@ -896,9 +915,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <Button
                           variant='outline'
                           size='sm'
-                          onClick={() => 
-                            updateDraft({ requirements: [...draft.requirements, ''] })
-                          }
+                          onClick={() => updateDraft({ requirements: [...draft.requirements, ''] })}
                         >
                           <Plus className='mr-2 h-4 w-4' />
                           Add Requirement
@@ -936,9 +953,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <Button
                           variant='outline'
                           size='sm'
-                          onClick={() => 
-                            updateDraft({ useCases: [...draft.useCases, ''] })
-                          }
+                          onClick={() => updateDraft({ useCases: [...draft.useCases, ''] })}
                         >
                           <Plus className='mr-2 h-4 w-4' />
                           Add Use Case
@@ -999,7 +1014,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <TabsTrigger value='preview'>Template Preview</TabsTrigger>
                         <TabsTrigger value='quality'>Quality Checks</TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value='preview' className='space-y-4'>
                         {previewData ? (
                           <div className='space-y-4'>
@@ -1024,7 +1039,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                           </div>
                         )}
                       </TabsContent>
-                      
+
                       <TabsContent value='quality' className='space-y-4'>
                         {qualityChecks.length > 0 ? (
                           <div className='space-y-3'>
@@ -1038,14 +1053,18 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                                   check.status === 'fail' && 'border-red-200 bg-red-50'
                                 )}
                               >
-                                <div className={cn(
-                                  'rounded-full p-1',
-                                  check.status === 'pass' && 'bg-green-200 text-green-800',
-                                  check.status === 'warning' && 'bg-yellow-200 text-yellow-800',
-                                  check.status === 'fail' && 'bg-red-200 text-red-800'
-                                )}>
+                                <div
+                                  className={cn(
+                                    'rounded-full p-1',
+                                    check.status === 'pass' && 'bg-green-200 text-green-800',
+                                    check.status === 'warning' && 'bg-yellow-200 text-yellow-800',
+                                    check.status === 'fail' && 'bg-red-200 text-red-800'
+                                  )}
+                                >
                                   {check.status === 'pass' && <Check className='h-4 w-4' />}
-                                  {check.status === 'warning' && <AlertTriangle className='h-4 w-4' />}
+                                  {check.status === 'warning' && (
+                                    <AlertTriangle className='h-4 w-4' />
+                                  )}
                                   {check.status === 'fail' && <X className='h-4 w-4' />}
                                 </div>
                                 <div className='flex-1'>
@@ -1095,7 +1114,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                       <Label>Visibility</Label>
                       <RadioGroup
                         value={draft.visibility}
-                        onValueChange={(value) => 
+                        onValueChange={(value) =>
                           updateDraft({ visibility: value as TemplateDraft['visibility'] })
                         }
                       >
@@ -1161,7 +1180,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <Switch
                           id='requireAttribution'
                           checked={draft.requireAttribution}
-                          onCheckedChange={(checked) => updateDraft({ requireAttribution: checked })}
+                          onCheckedChange={(checked) =>
+                            updateDraft({ requireAttribution: checked })
+                          }
                         />
                       </div>
                     </div>
@@ -1179,12 +1200,12 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <Switch
                           id='publishImmediately'
                           checked={draft.publicationSettings.publishImmediately}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             updateDraft({
                               publicationSettings: {
                                 ...draft.publicationSettings,
-                                publishImmediately: checked
-                              }
+                                publishImmediately: checked,
+                              },
                             })
                           }
                         />
@@ -1194,12 +1215,12 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <Label>Moderation Level</Label>
                         <Select
                           value={draft.publicationSettings.moderationLevel}
-                          onValueChange={(value) => 
+                          onValueChange={(value) =>
                             updateDraft({
                               publicationSettings: {
                                 ...draft.publicationSettings,
-                                moderationLevel: value as 'basic' | 'strict' | 'enterprise'
-                              }
+                                moderationLevel: value as 'basic' | 'strict' | 'enterprise',
+                              },
                             })
                           }
                         >
@@ -1207,12 +1228,8 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='basic'>
-                              Basic - Automated checks only
-                            </SelectItem>
-                            <SelectItem value='strict'>
-                              Strict - Manual review required
-                            </SelectItem>
+                            <SelectItem value='basic'>Basic - Automated checks only</SelectItem>
+                            <SelectItem value='strict'>Strict - Manual review required</SelectItem>
                             <SelectItem value='enterprise'>
                               Enterprise - Full compliance review
                             </SelectItem>
@@ -1221,9 +1238,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                       </div>
                     </div>
                   </div>
-                  </CardContent>
-                </Card>
-              )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Review Step */}
             {currentStep === 'review' && (
@@ -1258,7 +1275,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <h4 className='mb-2 font-medium'>Publication Settings</h4>
                         <div className='space-y-2 text-sm'>
@@ -1276,7 +1293,9 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                           </div>
                           <div className='flex justify-between'>
                             <span className='text-muted-foreground'>Moderation:</span>
-                            <span className='capitalize'>{draft.publicationSettings.moderationLevel}</span>
+                            <span className='capitalize'>
+                              {draft.publicationSettings.moderationLevel}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1289,15 +1308,21 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <div className='flex items-center gap-4 text-sm'>
                           <div className='flex items-center gap-2'>
                             <div className='h-3 w-3 rounded-full bg-green-500' />
-                            <span>{qualityChecks.filter(c => c.status === 'pass').length} Passed</span>
+                            <span>
+                              {qualityChecks.filter((c) => c.status === 'pass').length} Passed
+                            </span>
                           </div>
                           <div className='flex items-center gap-2'>
                             <div className='h-3 w-3 rounded-full bg-yellow-500' />
-                            <span>{qualityChecks.filter(c => c.status === 'warning').length} Warnings</span>
+                            <span>
+                              {qualityChecks.filter((c) => c.status === 'warning').length} Warnings
+                            </span>
                           </div>
                           <div className='flex items-center gap-2'>
                             <div className='h-3 w-3 rounded-full bg-red-500' />
-                            <span>{qualityChecks.filter(c => c.status === 'fail').length} Failed</span>
+                            <span>
+                              {qualityChecks.filter((c) => c.status === 'fail').length} Failed
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1324,7 +1349,8 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         <div className='flex items-start gap-2'>
                           <Checkbox id='license' />
                           <Label htmlFor='license' className='text-sm leading-relaxed'>
-                            I confirm that I have the right to share this template under the selected license
+                            I confirm that I have the right to share this template under the
+                            selected license
                           </Label>
                         </div>
                         <div className='flex items-start gap-2'>

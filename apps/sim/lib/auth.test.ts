@@ -210,6 +210,7 @@ import {
 } from 'better-auth/plugins'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
+
 // TypeScript module resolution bypass for mocked dependencies
 const sendEmail = vi.fn() as any
 const quickValidateEmail = vi.fn() as any
@@ -218,10 +219,11 @@ const isTruthy = vi.fn() as any
 const createLogger = vi.fn() as any
 const db = {
   select: vi.fn(),
-  from: vi.fn(), 
+  from: vi.fn(),
   where: vi.fn(),
   limit: vi.fn(),
 } as any
+
 import { auth, getSession } from './auth'
 
 const mockBetterAuth = betterAuth as any
@@ -284,7 +286,7 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
     mockDb.from = vi.fn()
     mockDb.where = vi.fn()
     mockDb.limit = vi.fn()
-    
+
     // Reset other mocks
     mockSendEmail.mockReset()
     mockQuickValidateEmail.mockReset()

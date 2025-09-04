@@ -3,7 +3,7 @@
  *
  * Provides comprehensive logging functionality for the Sim platform including:
  * - Structured logging with context and metadata
- * - Performance tracking and timing information  
+ * - Performance tracking and timing information
  * - Error handling with stack traces and correlation IDs
  * - Integration with help system analytics
  * - Development and production environment awareness
@@ -29,7 +29,7 @@ export interface Logger {
 
 /**
  * Enhanced Logger Implementation
- * 
+ *
  * Provides structured logging with comprehensive context information
  * and integration with the help system analytics.
  */

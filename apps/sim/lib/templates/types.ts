@@ -919,17 +919,17 @@ export interface UserReputation {
 
 /**
  * Template Library Types - Complete Export Summary
- * 
+ *
  * This module provides comprehensive TypeScript type definitions for:
  * - Core template structures and metadata
- * - Search and discovery interfaces  
+ * - Search and discovery interfaces
  * - Community features (ratings, comments, collections)
  * - Template management and validation
  * - Analytics and performance tracking
  * - Enterprise governance features
  * - API response wrappers and event types
  * - Enhanced database schema integration
- * 
+ *
  * All types are directly exported from their definitions above.
  * Import any type directly: import { Template, TemplateTag, UserReputation } from './types'
  */

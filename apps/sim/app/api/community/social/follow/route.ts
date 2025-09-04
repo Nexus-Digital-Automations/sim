@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     `)
 
     let isFollowing = existingFollow.length > 0
-    let followId: string = ''
+    let followId = ''
     let pointsAwarded = 0
 
     if (followData.action === 'follow' && !isFollowing) {
@@ -325,7 +325,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to process follow action',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -355,7 +358,7 @@ export async function GET(request: NextRequest) {
     for (const [key, value] of url.searchParams) {
       processedParams[key] = value
     }
-    
+
     if (processedParams.limit) {
       processedParams.limit = Number.parseInt(processedParams.limit)
     }
@@ -619,7 +622,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve follow list',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

@@ -206,7 +206,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve profile',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -288,11 +291,13 @@ export async function PUT(request: NextRequest) {
     updateValues.push(userId) // For WHERE clause
 
     // Execute update
-    await db.execute(sql.raw(`
+    await db.execute(
+      sql.raw(`
       UPDATE community_user_profiles 
       SET ${updateFields.join(', ')}
       WHERE user_id = '${userId}'
-    `))
+    `)
+    )
 
     // Update user activity
     await db.execute(sql`
@@ -340,7 +345,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update profile',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -381,7 +389,9 @@ export async function POST(request: NextRequest) {
     const users = await searchUsers(searchParams, currentUserId)
 
     const executionTime = Date.now() - startTime
-    console.log(`[SocialProfiles] Found ${users.length} users in discovery search in ${executionTime}ms`)
+    console.log(
+      `[SocialProfiles] Found ${users.length} users in discovery search in ${executionTime}ms`
+    )
 
     return NextResponse.json({
       data: users,
@@ -415,7 +425,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to discover users',
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -525,11 +538,14 @@ async function getUserProfile(
         WHERE user_id = ${targetUserId}
       `)
 
-      profile.reputation = reputationResult.length > 0 ? reputationResult[0] : {
-        total_points: 0,
-        reputation_level: 1,
-        level_progress: 0,
-      }
+      profile.reputation =
+        reputationResult.length > 0
+          ? reputationResult[0]
+          : {
+              total_points: 0,
+              reputation_level: 1,
+              level_progress: 0,
+            }
     }
 
     // Get social stats if requested
@@ -540,15 +556,19 @@ async function getUserProfile(
           follower_counts.follower_count,
           follower_counts.following_count,
           -- Mutual follow status with current user
-          ${currentUserId ? `
+          ${
+            currentUserId
+              ? `
           CASE WHEN mutual_follow.follower_id IS NOT NULL THEN true ELSE false END as is_mutual_follow,
           CASE WHEN user_follows.follower_id IS NOT NULL THEN true ELSE false END as is_following,
           CASE WHEN follows_user.follower_id IS NOT NULL THEN true ELSE false END as follows_current_user
-          ` : `
+          `
+              : `
           false as is_mutual_follow,
           false as is_following,
           false as follows_current_user
-          `}
+          `
+          }
         FROM (SELECT 1) dummy
         LEFT JOIN (
           SELECT 
@@ -568,7 +588,9 @@ async function getUserProfile(
             GROUP BY follower_id
           ) following ON followers.following_id = following.follower_id
         ) follower_counts ON true
-        ${currentUserId ? `
+        ${
+          currentUserId
+            ? `
         LEFT JOIN community_user_follows mutual_follow 
           ON mutual_follow.follower_id = ${currentUserId} 
           AND mutual_follow.following_id = ${targetUserId}
@@ -583,16 +605,21 @@ async function getUserProfile(
         LEFT JOIN community_user_follows follows_user
           ON follows_user.follower_id = ${targetUserId} 
           AND follows_user.following_id = ${currentUserId}
-        ` : ''}
+        `
+            : ''
+        }
       `)
 
-      profile.socialStats = socialStatsResult.length > 0 ? socialStatsResult[0] : {
-        follower_count: 0,
-        following_count: 0,
-        is_mutual_follow: false,
-        is_following: false,
-        follows_current_user: false,
-      }
+      profile.socialStats =
+        socialStatsResult.length > 0
+          ? socialStatsResult[0]
+          : {
+              follower_count: 0,
+              following_count: 0,
+              is_mutual_follow: false,
+              is_following: false,
+              follows_current_user: false,
+            }
     }
 
     // Get content statistics if requested
@@ -644,15 +671,18 @@ async function getUserProfile(
         ) collection_stats ON collection_stats.user_id = ${targetUserId}
       `)
 
-      profile.contentStats = contentStatsResult.length > 0 ? contentStatsResult[0] : {
-        template_count: 0,
-        avg_template_rating: 0,
-        total_template_likes: 0,
-        review_count: 0,
-        helpful_reviews: 0,
-        activity_count: 0,
-        collection_count: 0,
-      }
+      profile.contentStats =
+        contentStatsResult.length > 0
+          ? contentStatsResult[0]
+          : {
+              template_count: 0,
+              avg_template_rating: 0,
+              total_template_likes: 0,
+              review_count: 0,
+              helpful_reviews: 0,
+              activity_count: 0,
+              collection_count: 0,
+            }
     }
 
     // Get badges if requested
@@ -746,21 +776,21 @@ function sanitizeProfileForViewer(profile: any, currentUserId?: string): any {
 
   // Remove sensitive fields if not owner
   if (!isOwner) {
-    delete sanitized.email
-    
+    sanitized.email = undefined
+
     // Apply privacy settings
-    if (!profile.show_email) delete sanitized.email
+    if (!profile.show_email) sanitized.email = undefined
     if (!profile.show_real_name) sanitized.name = profile.display_name || 'Anonymous'
-    if (!profile.show_location) delete sanitized.location
-    if (!profile.show_company) delete sanitized.company
-    
+    if (!profile.show_location) sanitized.location = undefined
+    if (!profile.show_company) sanitized.company = undefined
+
     // Remove private profile settings
-    delete sanitized.show_email
-    delete sanitized.show_real_name
-    delete sanitized.show_location
-    delete sanitized.show_company
-    delete sanitized.allow_direct_messages
-    delete sanitized.show_activity
+    sanitized.show_email = undefined
+    sanitized.show_real_name = undefined
+    sanitized.show_location = undefined
+    sanitized.show_company = undefined
+    sanitized.allow_direct_messages = undefined
+    sanitized.show_activity = undefined
   }
 
   return sanitized
@@ -773,8 +803,18 @@ function sanitizeProfileUpdateData(data: any): any {
   const sanitized = { ...data }
 
   // Trim string fields
-  const stringFields = ['displayName', 'bio', 'title', 'company', 'location', 'websiteUrl', 'githubUsername', 'linkedinUsername', 'twitterUsername']
-  stringFields.forEach(field => {
+  const stringFields = [
+    'displayName',
+    'bio',
+    'title',
+    'company',
+    'location',
+    'websiteUrl',
+    'githubUsername',
+    'linkedinUsername',
+    'twitterUsername',
+  ]
+  stringFields.forEach((field) => {
     if (sanitized[field] && typeof sanitized[field] === 'string') {
       sanitized[field] = sanitized[field].trim()
     }
@@ -782,7 +822,7 @@ function sanitizeProfileUpdateData(data: any): any {
 
   // Validate and clean arrays
   const arrayFields = ['specializations', 'skills', 'industries']
-  arrayFields.forEach(field => {
+  arrayFields.forEach((field) => {
     if (sanitized[field] && Array.isArray(sanitized[field])) {
       sanitized[field] = sanitized[field]
         .filter((item: any) => typeof item === 'string' && item.trim())
@@ -802,7 +842,9 @@ async function searchUsers(params: any, currentUserId?: string): Promise<any[]> 
     console.log('[SocialProfiles] Performing user discovery search')
 
     // Build WHERE conditions
-    const whereConditions: string[] = ["cup.profile_visibility = 'public' OR cup.profile_visibility = 'community'"]
+    const whereConditions: string[] = [
+      "cup.profile_visibility = 'public' OR cup.profile_visibility = 'community'",
+    ]
     const queryValues: any[] = []
 
     // Text search
@@ -948,5 +990,5 @@ async function searchUsers(params: any, currentUserId?: string): Promise<any[]> 
  * Convert camelCase to snake_case
  */
 function camelToSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 }

@@ -198,7 +198,10 @@ const testMocks: MockControls = {
     },
     throwError: (error: Error | string) => {
       mockState.databaseError = error
-      console.log('🔧 Database configured to throw:', error instanceof Error ? error.message : error)
+      console.log(
+        '🔧 Database configured to throw:',
+        error instanceof Error ? error.message : error
+      )
     },
   },
 }

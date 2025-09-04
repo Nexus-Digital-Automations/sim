@@ -22,7 +22,7 @@
  * @implements Community Social Features Architecture
  */
 
-import { and, eq, sql, desc, asc } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
@@ -90,8 +90,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const follower = users.find(u => u.id === userId)
-    const following = users.find(u => u.id === targetUserId)
+    const follower = users.find((u) => u.id === userId)
+    const following = users.find((u) => u.id === targetUserId)
 
     // Check if follow relationship already exists
     const existingFollow = await db
@@ -465,10 +465,7 @@ async function getFollowStatus(userId: string, targetUserId?: string | null) {
 /**
  * Get user's followers
  */
-async function getFollowers(
-  userId: string,
-  options: { page: number; limit: number }
-) {
+async function getFollowers(userId: string, options: { page: number; limit: number }) {
   const { page, limit } = options
   const offset = (page - 1) * limit
 
@@ -512,10 +509,7 @@ async function getFollowers(
 /**
  * Get users that a user is following
  */
-async function getFollowing(
-  userId: string,
-  options: { page: number; limit: number }
-) {
+async function getFollowing(userId: string, options: { page: number; limit: number }) {
   const { page, limit } = options
   const offset = (page - 1) * limit
 

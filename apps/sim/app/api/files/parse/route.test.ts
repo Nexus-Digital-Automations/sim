@@ -12,8 +12,6 @@ import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   type BunTestMocks,
-  createTestRequest,
-  defaultMockUser,
   setupComprehensiveTestMocks,
 } from '@/app/api/__test-utils__/bun-test-setup'
 
@@ -253,7 +251,7 @@ describe('File Parse API Route - Bun-Compatible', () => {
     await testMocks.cleanup()
     vi.clearAllMocks()
     // Clean up global mocks
-    delete (globalThis as any).__mockFileParsing
+    (globalThis as any).__mockFileParsing = undefined
   })
 
   // ================================
@@ -456,7 +454,7 @@ describe('Files Parse API - Path Traversal Security', () => {
   afterEach(async () => {
     await testMocks.cleanup()
     // Clean up global mocks
-    delete (globalThis as any).__mockFileParsing
+    (globalThis as any).__mockFileParsing = undefined
   })
 
   describe('Path Traversal Prevention', () => {

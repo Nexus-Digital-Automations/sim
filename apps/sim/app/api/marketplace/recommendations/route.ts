@@ -22,17 +22,17 @@
  * @implements Advanced ML Recommendation System
  */
 
-import { and, desc, eq, gte, sql, inArray, not } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, not, sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templates,
   templateCategories,
-  templateTags,
-  templateTagAssignments,
   templateFavorites,
   templateRatings,
+  templates,
+  templateTagAssignments,
+  templateTags,
   user,
 } from '@/db/schema'
 
@@ -177,10 +177,10 @@ export async function GET(request: NextRequest) {
 
     // Add tags if requested
     if (includeTags && recommendations.length > 0) {
-      const templateIds = recommendations.map(r => r.id)
+      const templateIds = recommendations.map((r) => r.id)
       const templateTagsData = await getTemplateTags(templateIds)
-      
-      recommendations = recommendations.map(rec => ({
+
+      recommendations = recommendations.map((rec) => ({
         ...rec,
         tags: templateTagsData[rec.id] || [],
       }))
@@ -192,13 +192,13 @@ export async function GET(request: NextRequest) {
       context,
       templateId,
       recommendationCount: recommendations.length,
-      algorithms: [...new Set(recommendations.map(r => r.recommendationAlgorithm))],
+      algorithms: [...new Set(recommendations.map((r) => r.recommendationAlgorithm))],
       processingTime: Date.now() - startTime,
     })
 
     logger.info(`[${requestId}] Recommendations generated`, {
       count: recommendations.length,
-      algorithms: [...new Set(recommendations.map(r => r.recommendationAlgorithm))],
+      algorithms: [...new Set(recommendations.map((r) => r.recommendationAlgorithm))],
       processingTime: Date.now() - startTime,
     })
 
@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
       metadata: {
         requestId,
         context,
-        algorithmsMixed: [...new Set(recommendations.map(r => r.recommendationAlgorithm))],
+        algorithmsMixed: [...new Set(recommendations.map((r) => r.recommendationAlgorithm))],
         processingTime: Date.now() - startTime,
         parameters: {
           userId: userId ? `${userId.slice(0, 8)}...` : null,
@@ -274,7 +274,7 @@ async function getSimilarTemplates(
   }
 
   const source = sourceTemplate[0]
-  
+
   // Build conditions for similar templates
   const conditions = [
     eq(templates.status, 'published'),
@@ -389,18 +389,20 @@ async function getSimilarTemplates(
     }
 
     // Integration overlap
-    const sourceIntegrations = source.integrationsUsed as string[] || []
-    const templateIntegrations = template.integrationsUsed as string[] || []
-    const commonIntegrations = sourceIntegrations.filter(i => templateIntegrations.includes(i))
+    const sourceIntegrations = (source.integrationsUsed as string[]) || []
+    const templateIntegrations = (template.integrationsUsed as string[]) || []
+    const commonIntegrations = sourceIntegrations.filter((i) => templateIntegrations.includes(i))
     if (commonIntegrations.length > 0) {
-      similarityFactors.push(`${commonIntegrations.length} shared integration${commonIntegrations.length > 1 ? 's' : ''}`)
+      similarityFactors.push(
+        `${commonIntegrations.length} shared integration${commonIntegrations.length > 1 ? 's' : ''}`
+      )
       score += commonIntegrations.length * 5
     }
 
     // Quality and popularity
-    score += (template.ratingAverage * template.ratingCount * 0.1)
+    score += template.ratingAverage * template.ratingCount * 0.1
     score += Math.log(template.downloadCount + 1) * 2
-    score += (template.trendingScore * 0.5)
+    score += template.trendingScore * 0.5
 
     const reason = includeReasons
       ? `Similar to your template: ${similarityFactors.join(', ')}`
@@ -442,10 +444,7 @@ async function getTrendingRecommendations(options: {
 }): Promise<RecommendationResult[]> {
   const { limit, excludeIds, minRating, categories, tags, includeReasons } = options
 
-  const conditions = [
-    eq(templates.status, 'published'),
-    eq(templates.visibility, 'public'),
-  ]
+  const conditions = [eq(templates.status, 'published'), eq(templates.visibility, 'public')]
 
   if (excludeIds.length > 0) {
     conditions.push(not(inArray(templates.id, excludeIds)))
@@ -490,7 +489,7 @@ async function getTrendingRecommendations(options: {
     queryBuilder = queryBuilder
       .innerJoin(templateTagAssignments, eq(templateTagAssignments.templateId, templates.id))
       .innerJoin(templateTags, eq(templateTagAssignments.tagId, templateTags.id))
-    
+
     conditions.push(inArray(templateTags.name, tags))
   }
 
@@ -571,10 +570,7 @@ async function getPersonalizedRecommendations(
     .from(templateFavorites)
     .where(eq(templateFavorites.userId, userId))
 
-  const conditions = [
-    eq(templates.status, 'published'),
-    eq(templates.visibility, 'public'),
-  ]
+  const conditions = [eq(templates.status, 'published'), eq(templates.visibility, 'public')]
 
   if (excludeIds.length > 0) {
     conditions.push(not(inArray(templates.id, excludeIds)))
@@ -632,7 +628,10 @@ async function getPersonalizedRecommendations(
               AND tr.user_id IN (
                 SELECT user_id 
                 FROM template_ratings 
-                WHERE template_id IN (${sql.join(userRatings.map(r => sql`${r.templateId}`), sql`, `)})
+                WHERE template_id IN (${sql.join(
+                  userRatings.map((r) => sql`${r.templateId}`),
+                  sql`, `
+                )})
                 AND rating >= 4
                 GROUP BY user_id
                 HAVING COUNT(*) >= 2
@@ -660,22 +659,23 @@ async function getPersonalizedRecommendations(
 
   return results.map((template, index) => {
     const reasons = []
-    
+
     if (prefs?.preferred_categories?.includes(template.categoryId)) {
       reasons.push('matches your favorite categories')
     }
-    
+
     if (template.ratingAverage >= 4.5) {
       reasons.push('highly rated by community')
     }
-    
+
     if (template.trendingScore > 50) {
       reasons.push('trending in your interests')
     }
-    
-    const reason = includeReasons && reasons.length > 0
-      ? `Recommended because it ${reasons.join(' and ')}`
-      : 'Personalized for you'
+
+    const reason =
+      includeReasons && reasons.length > 0
+        ? `Recommended because it ${reasons.join(' and ')}`
+        : 'Personalized for you'
 
     return {
       id: template.id,
@@ -735,7 +735,7 @@ async function getGeneralRecommendations(options: {
     if (userId) {
       const personalized = await getPersonalizedRecommendations(userId, {
         limit: limit - trending.length,
-        excludeIds: [...excludeIds, ...results.map(r => r.id)],
+        excludeIds: [...excludeIds, ...results.map((r) => r.id)],
         minRating,
         context: options.context,
         includeReasons,
@@ -745,7 +745,7 @@ async function getGeneralRecommendations(options: {
       // Quality-based recommendations for non-authenticated users
       const qualityBased = await getQualityBasedRecommendations({
         limit: limit - trending.length,
-        excludeIds: [...excludeIds, ...results.map(r => r.id)],
+        excludeIds: [...excludeIds, ...results.map((r) => r.id)],
         minRating,
         categories,
         tags,
@@ -776,10 +776,7 @@ async function getQualityBasedRecommendations(options: {
 }): Promise<RecommendationResult[]> {
   const { limit, excludeIds, minRating, categories, tags, includeReasons } = options
 
-  const conditions = [
-    eq(templates.status, 'published'),
-    eq(templates.visibility, 'public'),
-  ]
+  const conditions = [eq(templates.status, 'published'), eq(templates.visibility, 'public')]
 
   if (excludeIds.length > 0) {
     conditions.push(not(inArray(templates.id, excludeIds)))

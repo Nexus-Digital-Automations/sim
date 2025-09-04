@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     /**
      * SCHEMA INTEGRATION: Enhanced lifecycle management filtering
-     * 
+     *
      * Uses isActive field from enhanced templateTags schema to ensure only
      * available tags are returned. This field was added as part of schema
      * enhancement to support tag lifecycle management and administrative control.
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     /**
      * Usage-based filtering with statistical validation
-     * 
+     *
      * Leverages usageCount field for minimum threshold filtering, ensuring
      * only tags with sufficient template associations are returned. This
      * improves result relevance and reduces noise from unused tags.
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
 
     /**
      * SCHEMA INTEGRATION: Featured tag discovery enhancement
-     * 
+     *
      * Uses isFeatured field from enhanced schema to support promoted tag
      * discovery. This field enables administrative control over tag prominence
      * and improves user experience through curated tag recommendations.
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     /**
      * Advanced text search with display name targeting
-     * 
+     *
      * Implements case-insensitive search across displayName field using ILIKE
      * for PostgreSQL compatibility. Targets user-friendly display names rather
      * than internal tag names for better search experience.
@@ -139,25 +139,25 @@ export async function GET(request: NextRequest) {
 
     /**
      * ENHANCED QUERY CONSTRUCTION: Type-safe schema integration with statistical aggregations
-     * 
+     *
      * This query construction demonstrates proper integration with the enhanced templateTags
      * schema and templateTagAssignments relationship table. Key features:
-     * 
+     *
      * CORE FIELD SELECTION:
      * - All standard tag fields with proper schema field mapping
      * - Enhanced lifecycle fields (isActive, isFeatured) from schema extensions
      * - Statistical fields (usageCount, weeklyGrowth, trendScore) for analytics
-     * 
+     *
      * RELATIONSHIP INTEGRATION:
      * - templateTagAssignments join for accurate usage calculations
      * - templates table integration for advanced statistics
      * - Proper foreign key relationship handling with cascade protection
-     * 
+     *
      * CONDITIONAL STATISTICAL AGGREGATIONS:
      * - activeTemplateCount: Uses templateTagAssignments for published template counts
      * - avgTemplateRating: Calculates weighted average ratings across associated templates
      * - totalDownloads: Aggregates download counts for popularity metrics
-     * 
+     *
      * PERFORMANCE OPTIMIZATIONS:
      * - Conditional aggregation fields only when includeStats=true
      * - DISTINCT clauses prevent duplicate counting in many-to-many relationships
@@ -173,19 +173,19 @@ export async function GET(request: NextRequest) {
         slug: templateTags.slug,
         description: templateTags.description,
         color: templateTags.color,
-        
+
         // Enhanced schema lifecycle and analytics fields
         usageCount: templateTags.usageCount,
         weeklyGrowth: templateTags.weeklyGrowth,
         trendScore: templateTags.trendScore,
-        isActive: templateTags.isActive,          // Schema enhancement: lifecycle management
-        isFeatured: templateTags.isFeatured,      // Schema enhancement: promotional control
+        isActive: templateTags.isActive, // Schema enhancement: lifecycle management
+        isFeatured: templateTags.isFeatured, // Schema enhancement: promotional control
         isSystem: templateTags.isSystemTag,
-        
+
         // Audit fields for tracking
         createdAt: templateTags.createdAt,
         updatedAt: templateTags.updatedAt,
-        
+
         // CONDITIONAL STATISTICAL AGGREGATIONS: Advanced template relationship analysis
         ...(includeStats && {
           /**
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
             WHERE tta.tag_id = ${templateTags.id}
             AND t.status = 'published'
           )`,
-          
+
           /**
            * Average Template Rating: Calculates weighted average ratings across associated templates
            * Uses COALESCE to handle NULL values and filters to templates with actual ratings
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
             AND t.status = 'published'
             AND t.rating_count > 0
           )`,
-          
+
           /**
            * Total Downloads: Aggregates download counts for popularity metrics
            * Sums all downloads across templates associated with each tag for comprehensive
@@ -397,16 +397,16 @@ export async function POST(request: NextRequest) {
 
     /**
      * SCHEMA-INTEGRATED TAG CREATION: Enhanced field mapping with proper initialization
-     * 
+     *
      * This insert operation demonstrates proper integration with the enhanced templateTags
      * schema, including all lifecycle management fields and proper data type handling.
-     * 
+     *
      * KEY SCHEMA INTEGRATIONS:
      * - Proper UUID generation for primary key identification
      * - Enhanced lifecycle fields (isActive, isFeatured) with sensible defaults
      * - Statistical tracking fields initialized for future analytics
      * - Proper audit trail establishment with timestamp tracking
-     * 
+     *
      * FIELD MAPPING EXPLANATIONS:
      * - id: Generated UUID for unique tag identification
      * - name: Normalized internal identifier (lowercase, hyphenated)
@@ -427,29 +427,29 @@ export async function POST(request: NextRequest) {
       .insert(templateTags)
       .values({
         // Core identification fields
-        id: tagId,                                    // UUID primary key
-        name: normalizedName,                         // Normalized internal name
-        displayName,                                  // User-friendly display name
-        slug,                                         // URL-friendly slug
-        
+        id: tagId, // UUID primary key
+        name: normalizedName, // Normalized internal name
+        displayName, // User-friendly display name
+        slug, // URL-friendly slug
+
         // Content and presentation fields
-        description: description || null,             // Optional detailed description
-        color: color || '#3B82F6',                   // Visual theming color
-        
+        description: description || null, // Optional detailed description
+        color: color || '#3B82F6', // Visual theming color
+
         // Enhanced schema categorization and lifecycle fields
-        tagType: 'general',                          // Tag category (extensible)
-        isSystemTag: false,                          // User-created vs system-managed
-        isActive: true,                              // SCHEMA ENHANCEMENT: Lifecycle management
-        isFeatured: false,                           // SCHEMA ENHANCEMENT: Promotional control
-        
+        tagType: 'general', // Tag category (extensible)
+        isSystemTag: false, // User-created vs system-managed
+        isActive: true, // SCHEMA ENHANCEMENT: Lifecycle management
+        isFeatured: false, // SCHEMA ENHANCEMENT: Promotional control
+
         // Statistical tracking initialization
-        usageCount: 0,                               // Template association count
-        trendScore: '0',                             // Decimal field: popularity metric
-        weeklyGrowth: '0',                           // Decimal field: growth rate
-        
+        usageCount: 0, // Template association count
+        trendScore: '0', // Decimal field: popularity metric
+        weeklyGrowth: '0', // Decimal field: growth rate
+
         // Audit trail fields
-        createdAt: now,                              // Creation timestamp
-        updatedAt: now,                              // Last modification timestamp
+        createdAt: now, // Creation timestamp
+        updatedAt: now, // Last modification timestamp
       })
       .returning()
 

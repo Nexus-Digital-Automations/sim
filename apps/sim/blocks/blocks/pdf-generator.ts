@@ -49,8 +49,8 @@ export const PdfGeneratorBlock: BlockConfig<DocumentResponse> = {
       title: 'Upload Custom Template',
       type: 'file-upload',
       layout: 'half',
-      condition: { 
-        field: 'generationMode', 
+      condition: {
+        field: 'generationMode',
         value: 'template',
         and: { field: 'templateId', value: 'custom' },
       },

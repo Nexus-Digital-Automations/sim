@@ -16,8 +16,8 @@
  * @vitest-environment node
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // ================================
 // 🚨 CRITICAL: IMPORT MODULE MOCKS FIRST

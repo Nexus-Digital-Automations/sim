@@ -10,8 +10,6 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { IntegrationConnector, IntegrationOperation } from './index'
-import { globalIntegrationRegistry } from './integration-registry'
 
 const logger = createLogger('MarketplaceIntegrationWorkflows')
 
@@ -22,9 +20,9 @@ const logger = createLogger('MarketplaceIntegrationWorkflows')
 /**
  * Template deployment platforms supported by the marketplace
  */
-export type DeploymentPlatform = 
-  | 'github' 
-  | 'gitlab' 
+export type DeploymentPlatform =
+  | 'github'
+  | 'gitlab'
   | 'bitbucket'
   | 'azure_devops'
   | 'aws_codecommit'
@@ -37,7 +35,7 @@ export type DeploymentPlatform =
 /**
  * Template validation stages in the marketplace pipeline
  */
-export type ValidationStage = 
+export type ValidationStage =
   | 'syntax_check'
   | 'security_scan'
   | 'dependency_analysis'
@@ -49,7 +47,7 @@ export type ValidationStage =
 /**
  * Template installation methods
  */
-export type InstallationMethod = 
+export type InstallationMethod =
   | 'direct_copy'
   | 'git_clone'
   | 'package_download'
@@ -67,7 +65,7 @@ export interface MarketplaceTemplate {
   version: string
   category: string
   tags: string[]
-  
+
   // Source and deployment information
   source: {
     repository?: string
@@ -75,7 +73,7 @@ export interface MarketplaceTemplate {
     path?: string
     commit?: string
   }
-  
+
   // Installation configuration
   installation: {
     method: InstallationMethod
@@ -83,14 +81,14 @@ export interface MarketplaceTemplate {
     configuration: Record<string, any>
     postInstallSteps?: string[]
   }
-  
+
   // Validation and quality
   validation: {
     stages: ValidationStage[]
     requirements: ValidationRequirement[]
     customChecks?: string[]
   }
-  
+
   // Integration capabilities
   integrations: {
     supportedPlatforms: DeploymentPlatform[]
@@ -98,7 +96,7 @@ export interface MarketplaceTemplate {
     environmentVariables: EnvironmentVariable[]
     webhooks?: WebhookConfig[]
   }
-  
+
   // Marketplace metadata
   marketplace: {
     publishedAt: Date
@@ -109,7 +107,7 @@ export interface MarketplaceTemplate {
     featured: boolean
     verified: boolean
   }
-  
+
   // Creator information
   creator: {
     userId: string
@@ -197,18 +195,18 @@ export interface WorkflowExecutionResult {
   startTime: Date
   endTime: Date
   duration: number
-  
+
   // Stage results
   stages: WorkflowStageResult[]
-  
+
   // Output information
   outputs: Record<string, any>
   artifacts: WorkflowArtifact[]
-  
+
   // Error information
   errors: WorkflowError[]
   warnings: string[]
-  
+
   // Metrics and analytics
   metrics: {
     resourceUsage: ResourceUsage
@@ -317,7 +315,7 @@ export class MarketplaceIntegrationEngine {
     logger.info(`Registering workflow: ${workflow.id}`, {
       name: workflow.name,
       platform: workflow.platform,
-      version: workflow.version
+      version: workflow.version,
     })
 
     this.workflows.set(workflow.id, workflow)
@@ -338,7 +336,7 @@ export class MarketplaceIntegrationEngine {
     logger.info(`Starting template installation: ${templateId}`, {
       executionId,
       platform,
-      userId: context.userId
+      userId: context.userId,
     })
 
     try {
@@ -368,16 +366,15 @@ export class MarketplaceIntegrationEngine {
       logger.info(`Template installation completed: ${templateId}`, {
         executionId,
         success: result.success,
-        duration: result.duration
+        duration: result.duration,
       })
 
       return result
-
     } catch (error) {
       logger.error(`Template installation failed: ${templateId}`, {
         executionId,
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       })
 
       // Create failure result
@@ -392,19 +389,21 @@ export class MarketplaceIntegrationEngine {
         stages: [],
         outputs: {},
         artifacts: [],
-        errors: [{
-          stage: 'initialization',
-          code: 'EXECUTION_FAILED',
-          message: error.message,
-          retryable: false,
-          timestamp: new Date()
-        }],
+        errors: [
+          {
+            stage: 'initialization',
+            code: 'EXECUTION_FAILED',
+            message: error.message,
+            retryable: false,
+            timestamp: new Date(),
+          },
+        ],
         warnings: [],
         metrics: {
           resourceUsage: this.getEmptyResourceUsage(),
           performance: this.getEmptyPerformanceMetrics(),
-          qualityScore: 0
-        }
+          qualityScore: 0,
+        },
       }
 
       this.executionHistory.set(executionId, result)
@@ -425,7 +424,7 @@ export class MarketplaceIntegrationEngine {
 
     logger.info(`Starting template validation: ${template.id}`, {
       executionId,
-      stages: template.validation.stages
+      stages: template.validation.stages,
     })
 
     try {
@@ -442,11 +441,10 @@ export class MarketplaceIntegrationEngine {
       this.activeExecutions.delete(executionId)
 
       return result
-
     } catch (error) {
       logger.error(`Template validation failed: ${template.id}`, {
         executionId,
-        error: error.message
+        error: error.message,
       })
 
       throw error
@@ -463,7 +461,7 @@ export class MarketplaceIntegrationEngine {
   ): Promise<Map<DeploymentPlatform, WorkflowExecutionResult>> {
     logger.info(`Starting cross-platform deployment: ${templateId}`, {
       platforms,
-      userId: context.userId
+      userId: context.userId,
     })
 
     const results = new Map<DeploymentPlatform, WorkflowExecutionResult>()
@@ -473,13 +471,13 @@ export class MarketplaceIntegrationEngine {
       try {
         const result = await this.executeInstallation(templateId, platform, {
           ...context,
-          platform
+          platform,
         })
         results.set(platform, result)
       } catch (error) {
         logger.error(`Cross-platform deployment failed for ${platform}`, {
           templateId,
-          error: error.message
+          error: error.message,
         })
         // Continue with other platforms even if one fails
       }
@@ -489,7 +487,7 @@ export class MarketplaceIntegrationEngine {
 
     logger.info(`Cross-platform deployment completed: ${templateId}`, {
       totalPlatforms: platforms.length,
-      successfulPlatforms: Array.from(results.values()).filter(r => r.success).length
+      successfulPlatforms: Array.from(results.values()).filter((r) => r.success).length,
     })
 
     return results
@@ -520,7 +518,7 @@ export class MarketplaceIntegrationEngine {
 
     await execution.cancel()
     this.activeExecutions.delete(executionId)
-    
+
     logger.info(`Execution cancelled: ${executionId}`)
     return true
   }
@@ -530,7 +528,7 @@ export class MarketplaceIntegrationEngine {
    */
   getTemplateExecutionHistory(templateId: string): WorkflowExecutionResult[] {
     return Array.from(this.executionHistory.values())
-      .filter(result => result.templateId === templateId)
+      .filter((result) => result.templateId === templateId)
       .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
   }
 
@@ -549,7 +547,10 @@ export class MarketplaceIntegrationEngine {
     logger.info('Built-in workflows registered')
   }
 
-  private findWorkflow(platform: DeploymentPlatform | string, type: string): IntegrationWorkflow | undefined {
+  private findWorkflow(
+    platform: DeploymentPlatform | string,
+    type: string
+  ): IntegrationWorkflow | undefined {
     for (const workflow of this.workflows.values()) {
       if (workflow.platform === platform && workflow.type === type) {
         return workflow
@@ -573,7 +574,7 @@ export class MarketplaceIntegrationEngine {
       cpu: { usage: 0, peak: 0, average: 0 },
       memory: { usage: 0, peak: 0, average: 0 },
       disk: { usage: 0, reads: 0, writes: 0 },
-      network: { inbound: 0, outbound: 0, requests: 0 }
+      network: { inbound: 0, outbound: 0, requests: 0 },
     }
   }
 
@@ -584,7 +585,7 @@ export class MarketplaceIntegrationEngine {
       responseTime: 0,
       throughput: 0,
       errorRate: 0,
-      successRate: 0
+      successRate: 0,
     }
   }
 }
@@ -646,17 +647,13 @@ export class WorkflowExecution {
    * Execute the workflow
    */
   async execute(): Promise<WorkflowExecutionResult> {
-    try {
-      const result = await this.workflow.execute(this.template, this.context)
-      return {
-        ...result,
-        executionId: this.executionId,
-        startTime: this.startTime,
-        endTime: new Date(),
-        duration: Date.now() - this.startTime.getTime()
-      }
-    } catch (error) {
-      throw error
+    const result = await this.workflow.execute(this.template, this.context)
+    return {
+      ...result,
+      executionId: this.executionId,
+      startTime: this.startTime,
+      endTime: new Date(),
+      duration: Date.now() - this.startTime.getTime(),
     }
   }
 
@@ -710,9 +707,9 @@ class GitHubInstallationWorkflow extends IntegrationWorkflow {
       properties: {
         repository: { type: 'string' },
         branch: { type: 'string', default: 'main' },
-        accessToken: { type: 'string' }
+        accessToken: { type: 'string' },
       },
-      required: ['repository']
+      required: ['repository'],
     }
   }
 }
@@ -746,9 +743,9 @@ class GitLabInstallationWorkflow extends IntegrationWorkflow {
       properties: {
         projectId: { type: 'string' },
         branch: { type: 'string', default: 'main' },
-        accessToken: { type: 'string' }
+        accessToken: { type: 'string' },
       },
-      required: ['projectId']
+      required: ['projectId'],
     }
   }
 }
@@ -782,9 +779,9 @@ class DockerDeploymentWorkflow extends IntegrationWorkflow {
       properties: {
         registry: { type: 'string' },
         image: { type: 'string' },
-        tag: { type: 'string', default: 'latest' }
+        tag: { type: 'string', default: 'latest' },
       },
-      required: ['image']
+      required: ['image'],
     }
   }
 }
@@ -818,9 +815,9 @@ class KubernetesDeploymentWorkflow extends IntegrationWorkflow {
       properties: {
         namespace: { type: 'string', default: 'default' },
         cluster: { type: 'string' },
-        manifests: { type: 'array', items: { type: 'string' } }
+        manifests: { type: 'array', items: { type: 'string' } },
       },
-      required: ['cluster']
+      required: ['cluster'],
     }
   }
 }
@@ -853,8 +850,8 @@ class TemplateValidationWorkflow extends IntegrationWorkflow {
       type: 'object',
       properties: {
         validationRules: { type: 'array', items: { type: 'string' } },
-        strictMode: { type: 'boolean', default: false }
-      }
+        strictMode: { type: 'boolean', default: false },
+      },
     }
   }
 }
@@ -887,8 +884,8 @@ class SecurityScanWorkflow extends IntegrationWorkflow {
       type: 'object',
       properties: {
         scanners: { type: 'array', items: { type: 'string' } },
-        severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] }
-      }
+        severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+      },
     }
   }
 }
@@ -922,8 +919,8 @@ class PerformanceTestWorkflow extends IntegrationWorkflow {
       properties: {
         loadProfile: { type: 'string', enum: ['light', 'medium', 'heavy'] },
         duration: { type: 'number', default: 60 },
-        concurrency: { type: 'number', default: 10 }
-      }
+        concurrency: { type: 'number', default: 10 },
+      },
     }
   }
 }
@@ -936,11 +933,11 @@ export const marketplaceIntegrationEngine = new MarketplaceIntegrationEngine()
  */
 export function initializeMarketplaceIntegrations(): void {
   logger.info('Initializing Marketplace Integration System...')
-  
+
   // The engine is already initialized with built-in workflows
-  
+
   logger.info('Marketplace Integration System initialized successfully', {
-    workflowsRegistered: Array.from(marketplaceIntegrationEngine['workflows'].keys()),
-    engineActive: true
+    workflowsRegistered: Array.from(marketplaceIntegrationEngine.workflows.keys()),
+    engineActive: true,
   })
 }

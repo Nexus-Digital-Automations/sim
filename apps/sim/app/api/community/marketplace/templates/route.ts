@@ -257,10 +257,7 @@ export async function GET(request: NextRequest) {
     if (starred && userId) {
       countQueryBuilder = countQueryBuilder.leftJoin(
         templateStars,
-        and(
-          eq(templateStars.templateId, templates.id),
-          eq(templateStars.userId, userId)
-        )
+        and(eq(templateStars.templateId, templates.id), eq(templateStars.userId, userId))
       )
     }
 

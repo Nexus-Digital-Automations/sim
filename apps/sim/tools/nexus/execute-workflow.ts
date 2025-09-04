@@ -18,6 +18,7 @@ import { tool } from 'ai'
 import { and, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
+
 // Mock implementations for missing modules
 const getSession = async () => ({ user: { id: 'mock-user-id' } })
 const createLogger = (name: string) => ({
@@ -42,7 +43,14 @@ const db = {
   update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
 } as any
 
-const workflow = { id: 'id', name: 'name', workspaceId: 'workspaceId', isDeployed: 'isDeployed', deployedState: 'deployedState', userId: 'userId' } as any
+const workflow = {
+  id: 'id',
+  name: 'name',
+  workspaceId: 'workspaceId',
+  isDeployed: 'isDeployed',
+  deployedState: 'deployedState',
+  userId: 'userId',
+} as any
 const workflowBlocks = { workflowId: 'workflowId' } as any
 const workflowEdges = { workflowId: 'workflowId' } as any
 const workflowExecutionLogs = {
@@ -414,7 +422,14 @@ export const executeWorkflow = tool({
  * Executes the workflow and waits for completion
  */
 async function executeWorkflowSync(
-  workflow: { id: string; name: string; workspaceId: string | null; isDeployed: boolean; deployedState: unknown; userId: string },
+  workflow: {
+    id: string
+    name: string
+    workspaceId: string | null
+    isDeployed: boolean
+    deployedState: unknown
+    userId: string
+  },
   workflowState: WorkflowState,
   environment: ExecutionEnvironment,
   trigger: ExecutionTrigger,
@@ -472,7 +487,7 @@ async function executeWorkflowSync(
         logger.info(`[${operationId}] Executing node step ${executionStep}`, {
           nodeId: currentNode.id,
           nodeType: currentNode.type,
-          nodeName: String(currentNode.data?.name || "") || 'Unnamed',
+          nodeName: String(currentNode.data?.name || '') || 'Unnamed',
         })
       }
 
@@ -480,7 +495,7 @@ async function executeWorkflowSync(
       const nodeStartTime = Date.now()
       const traceSpan: TraceSpan = {
         id: nanoid(),
-        name: (String(currentNode.data?.name || "") as string) || currentNode.type,
+        name: (String(currentNode.data?.name || '') as string) || currentNode.type,
         type: currentNode.type,
         duration: 0,
         startTime: new Date(nodeStartTime).toISOString(),
@@ -519,7 +534,7 @@ async function executeWorkflowSync(
 
         logger.error(`[${operationId}] Node execution failed`, {
           nodeId: currentNode.id,
-          nodeName: String(currentNode.data?.name || ""),
+          nodeName: String(currentNode.data?.name || ''),
           error: nodeError.message,
         })
 
@@ -529,7 +544,7 @@ async function executeWorkflowSync(
           success: false,
           error: nodeError.message,
           errorBlockId: currentNode.id,
-          errorBlockName: String(currentNode.data?.name || "") || currentNode.type,
+          errorBlockName: String(currentNode.data?.name || '') || currentNode.type,
           executionTimeMs: Date.now() - startTime,
           traceSpans,
         }
@@ -600,7 +615,14 @@ async function executeWorkflowSync(
  * Starts execution and updates the database when complete
  */
 async function executeWorkflowAsync(
-  workflow: { id: string; name: string; workspaceId: string | null; isDeployed: boolean; deployedState: unknown; userId: string },
+  workflow: {
+    id: string
+    name: string
+    workspaceId: string | null
+    isDeployed: boolean
+    deployedState: unknown
+    userId: string
+  },
   workflowState: WorkflowState,
   environment: ExecutionEnvironment,
   trigger: ExecutionTrigger,
@@ -687,8 +709,12 @@ async function executeWorkflowAsync(
  * This is a simplified implementation - integrate with your actual node execution system
  */
 async function executeNode(
-  node: { id: string; type: string; data?: Record<string, unknown> }, 
-  context: { inputs: Record<string, unknown>; outputs: Record<string, unknown>; variables: Record<string, unknown> }, 
+  node: { id: string; type: string; data?: Record<string, unknown> },
+  context: {
+    inputs: Record<string, unknown>
+    outputs: Record<string, unknown>
+    variables: Record<string, unknown>
+  },
   enableDebug: boolean
 ): Promise<{ value: unknown; success: boolean; error?: string; [key: string]: unknown }> {
   // Simulate node execution based on type
@@ -721,7 +747,7 @@ async function executeNode(
         const url = (node.data?.url as string) || 'https://httpbin.org/get'
         const method = (node.data?.method as string) || 'GET'
         const headers = (node.data?.headers as Record<string, string>) || {}
-        
+
         const response = await fetch(url, {
           method,
           headers,

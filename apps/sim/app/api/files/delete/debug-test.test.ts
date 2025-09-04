@@ -1,6 +1,7 @@
 // Simple debug test to understand the import issue
-import { describe, expect, it } from 'vitest'
+
 import { NextRequest } from 'next/server'
+import { describe, expect, it } from 'vitest'
 import '@/app/api/__test-utils__/module-mocks'
 
 describe('Debug Route Import', () => {
@@ -27,7 +28,7 @@ describe('Debug Route Import', () => {
       const mockRequest = new NextRequest('http://localhost:3000/api/files/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filePath: '/test/path.txt' })
+        body: JSON.stringify({ filePath: '/test/path.txt' }),
       })
 
       console.log('Calling POST function...')

@@ -25,7 +25,8 @@
 
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Bookmark,
   Eye,
@@ -36,16 +37,11 @@ import {
   Reply,
   Send,
   Share2,
-  Smile,
-  ThumbsDown,
-  ThumbsUp,
-  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -58,10 +54,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -76,7 +70,7 @@ export interface EngagementMetrics {
   bookmarkCount: number
   viewCount?: number
   reactionCounts?: Record<string, number>
-  
+
   // User-specific engagement state
   isLiked?: boolean
   isBookmarked?: boolean
@@ -163,7 +157,7 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
       bookmarkCount: 0,
     }
   )
-  
+
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [showCommentDialog, setShowCommentDialog] = useState(false)
@@ -184,10 +178,14 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
     const operationId = `ws-engagement-${targetId}-${Date.now()}`
 
     try {
-      console.log(`[SocialInteractions][${operationId}] Setting up WebSocket for engagement updates`)
+      console.log(
+        `[SocialInteractions][${operationId}] Setting up WebSocket for engagement updates`
+      )
 
       const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/community/social/ws`
-      const ws = new WebSocket(`${wsUrl}?userId=${currentUserId}&type=engagement&targetId=${targetId}`)
+      const ws = new WebSocket(
+        `${wsUrl}?userId=${currentUserId}&type=engagement&targetId=${targetId}`
+      )
 
       ws.onopen = () => {
         console.log(`[SocialInteractions][${operationId}] WebSocket connected`)
@@ -200,11 +198,14 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
           console.log(`[SocialInteractions][${operationId}] Real-time engagement update:`, update)
 
           if (update.type === 'engagement_updated' && update.targetId === targetId) {
-            setMetrics(prev => ({ ...prev, ...update.data }))
+            setMetrics((prev) => ({ ...prev, ...update.data }))
             onEngagementChange?.({ ...metrics, ...update.data })
           }
         } catch (error) {
-          console.error(`[SocialInteractions][${operationId}] Error processing WebSocket message:`, error)
+          console.error(
+            `[SocialInteractions][${operationId}] Error processing WebSocket message:`,
+            error
+          )
         }
       }
 
@@ -244,9 +245,9 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
         })
 
         // Optimistic update
-        setMetrics(prev => {
+        setMetrics((prev) => {
           const updated = { ...prev }
-          
+
           switch (engagementType) {
             case 'like':
               updated.isLiked = !prev.isLiked
@@ -263,7 +264,7 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
               updated.viewCount = (prev.viewCount || 0) + 1
               break
           }
-          
+
           if (enableReactions && reaction) {
             updated.userReaction = reaction
             updated.reactionCounts = {
@@ -271,7 +272,7 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
               [reaction]: (prev.reactionCounts?.[reaction] || 0) + 1,
             }
           }
-          
+
           return updated
         })
 
@@ -312,25 +313,35 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
           share: 'Shared successfully!',
           view: 'View recorded',
         }
-        
+
         toast.success(messages[engagementType])
 
         console.log(`[SocialInteractions][${operationId}] Engagement processed successfully`)
       } catch (error) {
         console.error(`[SocialInteractions][${operationId}] Engagement failed:`, error)
-        
+
         // Revert optimistic update on error
-        setMetrics(initialMetrics || {
-          likeCount: 0,
-          commentCount: 0,
-          shareCount: 0,
-          bookmarkCount: 0,
-        })
-        
+        setMetrics(
+          initialMetrics || {
+            likeCount: 0,
+            commentCount: 0,
+            shareCount: 0,
+            bookmarkCount: 0,
+          }
+        )
+
         toast.error(`Failed to ${engagementType}`)
       }
     },
-    [currentUserId, targetId, targetType, metrics, initialMetrics, enableReactions, onEngagementChange]
+    [
+      currentUserId,
+      targetId,
+      targetType,
+      metrics,
+      initialMetrics,
+      enableReactions,
+      onEngagementChange,
+    ]
   )
 
   /**
@@ -343,9 +354,12 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
       console.log(`[SocialInteractions][${operationId}] Loading comments`)
       setIsLoadingComments(true)
 
-      const response = await fetch(`/api/community/social/comments?targetId=${targetId}&targetType=${targetType}`, {
-        headers: currentUserId ? { 'X-User-ID': currentUserId } : {},
-      })
+      const response = await fetch(
+        `/api/community/social/comments?targetId=${targetId}&targetType=${targetType}`,
+        {
+          headers: currentUserId ? { 'X-User-ID': currentUserId } : {},
+        }
+      )
 
       if (!response.ok) {
         throw new Error('Failed to load comments')
@@ -407,18 +421,18 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
       // Add comment to local state
       if (replyingTo) {
         // Add as reply to existing comment
-        setComments(prev => prev.map(c => 
-          c.id === replyingTo 
-            ? { ...c, replies: [...(c.replies || []), comment] }
-            : c
-        ))
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === replyingTo ? { ...c, replies: [...(c.replies || []), comment] } : c
+          )
+        )
       } else {
         // Add as top-level comment
-        setComments(prev => [comment, ...prev])
+        setComments((prev) => [comment, ...prev])
       }
 
       // Update comment count
-      setMetrics(prev => ({ ...prev, commentCount: prev.commentCount + 1, isCommented: true }))
+      setMetrics((prev) => ({ ...prev, commentCount: prev.commentCount + 1, isCommented: true }))
 
       // Clear form
       setNewComment('')
@@ -473,7 +487,12 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
   const getUserAvatarUrl = (user: Comment['user']) => {
     if (user.image) return user.image
     const name = user.displayName || user.name
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const initials = name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     return `https://ui-avatars.com/api/?name=${initials}&size=32&background=6366F1&color=ffffff`
   }
 
@@ -494,134 +513,149 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
   /**
    * Render comment item with replies
    */
-  const renderComment = useCallback((comment: Comment, depth = 0) => {
-    return (
-      <div key={comment.id} className={cn('space-y-3', depth > 0 && 'ml-8 border-l-2 border-gray-100 pl-4')}>
-        <div className="flex items-start gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={getUserAvatarUrl(comment.user)} alt={comment.user.displayName || comment.user.name} />
-            <AvatarFallback>
-              {(comment.user.displayName || comment.user.name).split(' ').map(n => n[0]).join('').slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">
-                {comment.user.displayName || comment.user.name}
-              </span>
-              {comment.user.isVerified && (
-                <Badge variant="secondary" className="text-xs">
-                  ✓
-                </Badge>
-              )}
-              <span className="text-xs text-muted-foreground">
-                {getTimeAgo(comment.createdAt)}
-              </span>
-              {comment.isEdited && (
-                <Badge variant="outline" className="text-xs">
-                  edited
-                </Badge>
-              )}
-              {comment.isPinned && (
-                <Badge variant="secondary" className="text-xs">
-                  pinned
-                </Badge>
-              )}
-            </div>
-            
-            <p className="text-sm mt-1">{comment.content}</p>
-            
-            <div className="flex items-center gap-3 mt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn('gap-1 text-xs h-auto p-1', comment.isLiked && 'text-red-600')}
-                onClick={() => {/* Handle comment like */}}
-              >
-                <Heart className={cn('h-3 w-3', comment.isLiked && 'fill-current')} />
-                {comment.likeCount > 0 && comment.likeCount}
-              </Button>
-              
-              {depth < maxCommentDepth && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-xs h-auto p-1"
-                  onClick={() => setReplyingTo(comment.id)}
-                >
-                  <Reply className="h-3 w-3" />
-                  Reply
-                </Button>
-              )}
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-auto w-auto p-1">
-                    <MoreHorizontal className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Flag className="mr-2 h-3 w-3" />
-                    Report
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            {/* Reply form */}
-            {replyingTo === comment.id && (
-              <div className="mt-3 space-y-2">
-                <Textarea
-                  placeholder={`Reply to ${comment.user.displayName || comment.user.name}...`}
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[60px]"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setReplyingTo(null)
-                      setNewComment('')
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmitComment}
-                    disabled={!newComment.trim() || isSubmittingComment}
-                  >
-                    {isSubmittingComment ? (
-                      <>
-                        <div className="mr-2 h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                        Posting...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="mr-2 h-3 w-3" />
-                        Reply
-                      </>
-                    )}
-                  </Button>
-                </div>
+  const renderComment = useCallback(
+    (comment: Comment, depth = 0) => {
+      return (
+        <div
+          key={comment.id}
+          className={cn('space-y-3', depth > 0 && 'ml-8 border-gray-100 border-l-2 pl-4')}
+        >
+          <div className='flex items-start gap-3'>
+            <Avatar className='h-8 w-8'>
+              <AvatarImage
+                src={getUserAvatarUrl(comment.user)}
+                alt={comment.user.displayName || comment.user.name}
+              />
+              <AvatarFallback>
+                {(comment.user.displayName || comment.user.name)
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-center gap-2'>
+                <span className='font-medium text-sm'>
+                  {comment.user.displayName || comment.user.name}
+                </span>
+                {comment.user.isVerified && (
+                  <Badge variant='secondary' className='text-xs'>
+                    ✓
+                  </Badge>
+                )}
+                <span className='text-muted-foreground text-xs'>
+                  {getTimeAgo(comment.createdAt)}
+                </span>
+                {comment.isEdited && (
+                  <Badge variant='outline' className='text-xs'>
+                    edited
+                  </Badge>
+                )}
+                {comment.isPinned && (
+                  <Badge variant='secondary' className='text-xs'>
+                    pinned
+                  </Badge>
+                )}
               </div>
-            )}
+
+              <p className='mt-1 text-sm'>{comment.content}</p>
+
+              <div className='mt-2 flex items-center gap-3'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className={cn('h-auto gap-1 p-1 text-xs', comment.isLiked && 'text-red-600')}
+                  onClick={() => {
+                    /* Handle comment like */
+                  }}
+                >
+                  <Heart className={cn('h-3 w-3', comment.isLiked && 'fill-current')} />
+                  {comment.likeCount > 0 && comment.likeCount}
+                </Button>
+
+                {depth < maxCommentDepth && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='h-auto gap-1 p-1 text-xs'
+                    onClick={() => setReplyingTo(comment.id)}
+                  >
+                    <Reply className='h-3 w-3' />
+                    Reply
+                  </Button>
+                )}
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant='ghost' size='sm' className='h-auto w-auto p-1'>
+                      <MoreHorizontal className='h-3 w-3' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end'>
+                    <DropdownMenuItem>
+                      <Flag className='mr-2 h-3 w-3' />
+                      Report
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Reply form */}
+              {replyingTo === comment.id && (
+                <div className='mt-3 space-y-2'>
+                  <Textarea
+                    placeholder={`Reply to ${comment.user.displayName || comment.user.name}...`}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className='min-h-[60px]'
+                  />
+                  <div className='flex justify-end gap-2'>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => {
+                        setReplyingTo(null)
+                        setNewComment('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size='sm'
+                      onClick={handleSubmitComment}
+                      disabled={!newComment.trim() || isSubmittingComment}
+                    >
+                      {isSubmittingComment ? (
+                        <>
+                          <div className='mr-2 h-3 w-3 animate-spin rounded-full border border-current border-t-transparent' />
+                          Posting...
+                        </>
+                      ) : (
+                        <>
+                          <Send className='mr-2 h-3 w-3' />
+                          Reply
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Render replies */}
+          {comment.replies && comment.replies.length > 0 && (
+            <div className='space-y-3'>
+              {comment.replies.map((reply) => renderComment(reply, depth + 1))}
+            </div>
+          )}
         </div>
-        
-        {/* Render replies */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="space-y-3">
-            {comment.replies.map(reply => renderComment(reply, depth + 1))}
-          </div>
-        )}
-      </div>
-    )
-  }, [replyingTo, newComment, isSubmittingComment, maxCommentDepth, handleSubmitComment])
+      )
+    },
+    [replyingTo, newComment, isSubmittingComment, maxCommentDepth, handleSubmitComment]
+  )
 
   // Setup WebSocket on mount
   useEffect(() => {
@@ -634,76 +668,71 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
   return (
     <div className={cn('social-interactions', className)}>
       {/* Main Interaction Buttons */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-4'>
           {/* Like Button */}
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             className={cn(
-              'gap-1 text-gray-600 hover:text-red-600 transition-all',
+              'gap-1 text-gray-600 transition-all hover:text-red-600',
               metrics.isLiked && 'text-red-600'
             )}
             onClick={() => handleEngagement('like')}
             disabled={!currentUserId}
           >
             <Heart
-              className={cn(
-                'h-4 w-4 transition-all',
-                metrics.isLiked && 'fill-current scale-110'
-              )}
+              className={cn('h-4 w-4 transition-all', metrics.isLiked && 'scale-110 fill-current')}
             />
-            {metrics.likeCount > 0 && (
-              <span className="tabular-nums">{metrics.likeCount}</span>
-            )}
+            {metrics.likeCount > 0 && <span className='tabular-nums'>{metrics.likeCount}</span>}
           </Button>
 
           {/* Comment Button */}
           <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
             <DialogTrigger asChild>
               <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-gray-600 hover:text-blue-600"
+                variant='ghost'
+                size='sm'
+                className='gap-1 text-gray-600 hover:text-blue-600'
                 onClick={() => loadComments()}
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className='h-4 w-4' />
                 {metrics.commentCount > 0 && (
-                  <span className="tabular-nums">{metrics.commentCount}</span>
+                  <span className='tabular-nums'>{metrics.commentCount}</span>
                 )}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogContent className='max-h-[80vh] max-w-2xl'>
               <DialogHeader>
                 <DialogTitle>Comments ({metrics.commentCount})</DialogTitle>
                 <DialogDescription>
                   Share your thoughts and engage with the community
                 </DialogDescription>
               </DialogHeader>
-              
-              <div className="space-y-4">
+
+              <div className='space-y-4'>
                 {/* Comment Form */}
                 {currentUserId && !replyingTo && (
-                  <div className="space-y-3">
+                  <div className='space-y-3'>
                     <Textarea
-                      placeholder="Write a comment..."
+                      placeholder='Write a comment...'
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[80px]"
+                      className='min-h-[80px]'
                     />
-                    <div className="flex justify-end">
+                    <div className='flex justify-end'>
                       <Button
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || isSubmittingComment}
                       >
                         {isSubmittingComment ? (
                           <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border border-current border-t-transparent" />
+                            <div className='mr-2 h-4 w-4 animate-spin rounded-full border border-current border-t-transparent' />
                             Posting...
                           </>
                         ) : (
                           <>
-                            <Send className="mr-2 h-4 w-4" />
+                            <Send className='mr-2 h-4 w-4' />
                             Post Comment
                           </>
                         )}
@@ -711,33 +740,35 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
                     </div>
                   </div>
                 )}
-                
+
                 <Separator />
-                
+
                 {/* Comments List */}
-                <ScrollArea className="h-96">
+                <ScrollArea className='h-96'>
                   {isLoadingComments ? (
-                    <div className="space-y-4">
+                    <div className='space-y-4'>
                       {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <Skeleton className="h-8 w-8 rounded-full" />
-                          <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-16 w-full" />
+                        <div key={i} className='flex items-start gap-3'>
+                          <Skeleton className='h-8 w-8 rounded-full' />
+                          <div className='flex-1 space-y-2'>
+                            <Skeleton className='h-4 w-24' />
+                            <Skeleton className='h-16 w-full' />
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : comments.length === 0 ? (
-                    <div className="flex h-32 items-center justify-center text-center">
+                    <div className='flex h-32 items-center justify-center text-center'>
                       <div>
-                        <MessageCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
-                        <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+                        <MessageCircle className='mx-auto mb-2 h-8 w-8 text-gray-400' />
+                        <p className='text-muted-foreground'>
+                          No comments yet. Be the first to comment!
+                        </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-6">
-                      {comments.map(comment => renderComment(comment))}
+                    <div className='space-y-6'>
+                      {comments.map((comment) => renderComment(comment))}
                     </div>
                   )}
                 </ScrollArea>
@@ -750,66 +781,64 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
             <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
               <DialogTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-gray-600 hover:text-green-600"
+                  variant='ghost'
+                  size='sm'
+                  className='gap-1 text-gray-600 hover:text-green-600'
                 >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className='h-4 w-4' />
                   {metrics.shareCount > 0 && (
-                    <span className="tabular-nums">{metrics.shareCount}</span>
+                    <span className='tabular-nums'>{metrics.shareCount}</span>
                   )}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className='sm:max-w-md'>
                 <DialogHeader>
                   <DialogTitle>Share</DialogTitle>
-                  <DialogDescription>
-                    Share this with your network
-                  </DialogDescription>
+                  <DialogDescription>Share this with your network</DialogDescription>
                 </DialogHeader>
-                
-                <div className="grid grid-cols-2 gap-3">
+
+                <div className='grid grid-cols-2 gap-3'>
                   {shareOptions.platforms.includes('twitter') && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => handleShare('twitter')}
-                      className="justify-start"
+                      className='justify-start'
                     >
                       🐦 Twitter
                     </Button>
                   )}
                   {shareOptions.platforms.includes('linkedin') && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => handleShare('linkedin')}
-                      className="justify-start"
+                      className='justify-start'
                     >
                       💼 LinkedIn
                     </Button>
                   )}
                   {shareOptions.platforms.includes('facebook') && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => handleShare('facebook')}
-                      className="justify-start"
+                      className='justify-start'
                     >
                       📘 Facebook
                     </Button>
                   )}
                   {shareOptions.platforms.includes('copy') && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => handleShare('copy')}
-                      className="justify-start"
+                      className='justify-start'
                     >
                       📋 Copy Link
                     </Button>
                   )}
                   {shareOptions.platforms.includes('email') && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => handleShare('email')}
-                      className="justify-start col-span-2"
+                      className='col-span-2 justify-start'
                     >
                       ✉️ Email
                     </Button>
@@ -821,17 +850,17 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
 
           {/* View Count */}
           {showDetailed && metrics.viewCount && metrics.viewCount > 0 && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Eye className="h-4 w-4" />
-              <span className="tabular-nums">{metrics.viewCount}</span>
+            <div className='flex items-center gap-1 text-muted-foreground text-sm'>
+              <Eye className='h-4 w-4' />
+              <span className='tabular-nums'>{metrics.viewCount}</span>
             </div>
           )}
         </div>
 
         {/* Bookmark Button */}
         <Button
-          variant="ghost"
-          size="sm"
+          variant='ghost'
+          size='sm'
           className={cn(
             'gap-1 text-gray-600 hover:text-orange-600',
             metrics.isBookmarked && 'text-orange-600'
@@ -839,33 +868,30 @@ export const SocialInteractions: React.FC<SocialInteractionsProps> = ({
           onClick={() => handleEngagement('bookmark')}
           disabled={!currentUserId}
         >
-          <Bookmark
-            className={cn(
-              'h-4 w-4',
-              metrics.isBookmarked && 'fill-current'
-            )}
-          />
+          <Bookmark className={cn('h-4 w-4', metrics.isBookmarked && 'fill-current')} />
           {showDetailed && metrics.bookmarkCount > 0 && (
-            <span className="tabular-nums">{metrics.bookmarkCount}</span>
+            <span className='tabular-nums'>{metrics.bookmarkCount}</span>
           )}
         </Button>
       </div>
 
       {/* Reactions (if enabled) */}
-      {enableReactions && metrics.reactionCounts && Object.keys(metrics.reactionCounts).length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {Object.entries(metrics.reactionCounts).map(([reaction, count]) => (
-            <Badge
-              key={reaction}
-              variant={metrics.userReaction === reaction ? 'default' : 'secondary'}
-              className="cursor-pointer"
-              onClick={() => handleEngagement('like', reaction)}
-            >
-              {reaction} {count}
-            </Badge>
-          ))}
-        </div>
-      )}
+      {enableReactions &&
+        metrics.reactionCounts &&
+        Object.keys(metrics.reactionCounts).length > 0 && (
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {Object.entries(metrics.reactionCounts).map(([reaction, count]) => (
+              <Badge
+                key={reaction}
+                variant={metrics.userReaction === reaction ? 'default' : 'secondary'}
+                className='cursor-pointer'
+                onClick={() => handleEngagement('like', reaction)}
+              >
+                {reaction} {count}
+              </Badge>
+            ))}
+          </div>
+        )}
     </div>
   )
 }

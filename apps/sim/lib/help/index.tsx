@@ -1,10 +1,10 @@
 /**
  * Help System - Main Export Index
- * 
+ *
  * Central export point for the complete Sim Help System. This file provides
  * easy access to all help system components, utilities, and services for
  * integration throughout the application.
- * 
+ *
  * @created 2025-09-04
  * @author Claude Development System
  */
@@ -16,8 +16,8 @@ import * as React from 'react'
 // ================================================================================================
 
 export type {
-  HelpAnalyticsEvent,
   EngagementMetrics,
+  HelpAnalyticsEvent,
 } from './help-analytics'
 // Analytics and Tracking
 export { HelpAnalyticsService } from './help-analytics'
@@ -34,12 +34,15 @@ export type {
   TourStep as HelpTourStep,
 } from './help-context-provider'
 // Context and State Management
-export { HelpContextProvider as HelpProvider, useHelp as useHelpContext } from './help-context-provider'
+export {
+  HelpContextProvider as HelpProvider,
+  useHelp as useHelpContext,
+} from './help-context-provider'
 
-// Import useHelp for local use
-import { useHelp, HelpContextProvider } from './help-context-provider'
-import { HelpContentManager } from './help-content-manager'
 import { HelpAnalyticsService } from './help-analytics'
+import { HelpContentManager } from './help-content-manager'
+// Import useHelp for local use
+import { HelpContextProvider, useHelp } from './help-context-provider'
 
 // ================================================================================================
 // UI COMPONENTS
@@ -71,7 +74,7 @@ export {
   HELP_CATEGORIES,
   HELP_CONTENT_TEMPLATES,
   helpContentLoader,
-  validateHelpContent
+  validateHelpContent,
 }
 
 // ================================================================================================
@@ -89,10 +92,10 @@ export function useHelpSystem(options?: {
   enableAnalytics?: boolean
 }) {
   const context = useHelp()
-  
+
   // Auto-detect component if not provided
   const component = options?.component || detectComponentFromPath()
-  
+
   // Initialize help context
   React.useEffect(() => {
     if (options?.autoStart !== false) {
@@ -103,12 +106,12 @@ export function useHelpSystem(options?: {
       })
     }
   }, [component, options?.autoStart])
-  
+
   return {
     ...context,
     showHelp: (contentId: string) => context.showHelpContent(contentId),
     startTour: (tourId: string) => context.startTour(tourId),
-    trackAction: (action: string, data?: any) => 
+    trackAction: (action: string, data?: any) =>
       options?.enableAnalytics !== false && context.trackInteraction(action, data),
   }
 }
@@ -118,20 +121,20 @@ export function useHelpSystem(options?: {
  */
 function detectComponentFromPath(): string {
   const path = window.location.pathname
-  
+
   if (path.includes('/w/')) {
     if (path.includes('/blocks')) return 'block-editor'
     if (path.includes('/settings')) return 'workflow-settings'
     if (path.includes('/logs')) return 'workflow-logs'
     return 'workflow-editor'
   }
-  
+
   if (path.includes('/workspace')) {
     if (path.includes('/settings')) return 'workspace-settings'
     if (path.includes('/team')) return 'team-management'
     return 'workspace-overview'
   }
-  
+
   return 'main-app'
 }
 
@@ -151,15 +154,15 @@ export function withHelp<T extends React.ComponentType<any>>(
   }
 ): React.ComponentType<React.ComponentProps<T>> {
   const ComponentWithHelp = React.forwardRef<any, React.ComponentProps<T>>((props, ref) => {
-    const helpSystem = useHelpSystem({ 
+    const helpSystem = useHelpSystem({
       component: helpOptions?.component,
-      autoStart: true 
+      autoStart: true,
     })
-    
+
     // Add help tooltips to elements
     React.useEffect(() => {
       if (helpOptions?.tooltips) {
-        helpOptions.tooltips.forEach(tooltip => {
+        helpOptions.tooltips.forEach((tooltip) => {
           const element = document.querySelector(tooltip.selector)
           if (element) {
             // Add tooltip functionality
@@ -169,10 +172,10 @@ export function withHelp<T extends React.ComponentType<any>>(
         })
       }
     }, [])
-    
+
     return React.createElement(Component, { ...props, ref })
   })
-  
+
   ComponentWithHelp.displayName = `withHelp(${Component.displayName || Component.name})`
   return ComponentWithHelp
 }
@@ -184,11 +187,7 @@ export const helpUtils = {
   /**
    * Create contextual help content
    */
-  createContextualHelp: (
-    component: string,
-    userLevel: string,
-    situation: string
-  ) => ({
+  createContextualHelp: (component: string, userLevel: string, situation: string) => ({
     id: `${component}-${userLevel}-${situation}`,
     title: `Help: ${component}`,
     content: `Contextual help for ${component} in ${situation} situation`,
@@ -212,10 +211,10 @@ export const helpUtils = {
    */
   generateTour: (
     componentName: string,
-    selectors: Array<{ 
+    selectors: Array<{
       element: string
       title: string
-      description: string 
+      description: string
     }>
   ) => ({
     id: `${componentName}-tour`,
@@ -226,8 +225,8 @@ export const helpUtils = {
       content: step.description,
       target: step.element,
       order: index,
-    }))
-  })
+    })),
+  }),
 }
 
 // ================================================================================================
@@ -249,20 +248,20 @@ export const HelpSystem = {
   }) => {
     // Set global configuration
     if (config?.apiBaseUrl) {
-      (window as any).__HELP_API_BASE_URL = config.apiBaseUrl
+      ;(window as any).__HELP_API_BASE_URL = config.apiBaseUrl
     }
-    
+
     // Initialize analytics if enabled
     if (config?.analyticsEnabled !== false) {
       // Initialize help analytics
       console.log('Help system analytics initialized')
     }
-    
+
     // Set default user level
     if (config?.defaultUserLevel) {
       localStorage.setItem('help_user_level', config.defaultUserLevel)
     }
-    
+
     console.log('Sim Help System initialized', config)
   },
 
@@ -274,12 +273,12 @@ export const HelpSystem = {
     version: '1.0.0',
     componentsLoaded: [
       'HelpProvider',
-      'HelpTooltip', 
+      'HelpTooltip',
       'HelpPanel',
       'HelpSpotlight',
       'HelpSearchBar',
       'HelpContentRenderer',
-      'HelpWorkflowIntegration'
+      'HelpWorkflowIntegration',
     ],
     apiAvailable: typeof fetch !== 'undefined',
     analyticsEnabled: true,
@@ -291,10 +290,7 @@ export const HelpSystem = {
   preloadContent: async (contentIds: string[]) => {
     try {
       const responses = await Promise.all(
-        contentIds.map(id => 
-          fetch(`/api/help/content?contentId=${id}`)
-            .then(res => res.json())
-        )
+        contentIds.map((id) => fetch(`/api/help/content?contentId=${id}`).then((res) => res.json()))
       )
       console.log('Help content preloaded:', responses.length, 'items')
       return responses
@@ -302,7 +298,7 @@ export const HelpSystem = {
       console.error('Failed to preload help content:', error)
       return []
     }
-  }
+  },
 }
 
 // ================================================================================================
@@ -333,7 +329,7 @@ export interface HelpComponentOptions {
 const Help = {
   // Core system
   System: HelpSystem,
-  
+
   // Components
   Provider: HelpContextProvider,
   Tooltip: HelpTooltip,
@@ -342,11 +338,11 @@ const Help = {
   SearchBar: HelpSearchBar,
   ContentRenderer: HelpContentRenderer,
   WorkflowIntegration: HelpWorkflowIntegration,
-  
+
   // Services
   ContentManager: HelpContentManager,
   Analytics: HelpAnalyticsService,
-  
+
   // Hooks and utilities
   useHelpSystem,
   withHelp,
@@ -361,20 +357,20 @@ export default Help
 
 /**
  * BASIC USAGE:
- * 
+ *
  * ```tsx
  * import Help from '@/lib/help'
- * 
+ *
  * // Initialize help system
  * Help.System.init({
  *   analyticsEnabled: true,
  *   defaultUserLevel: 'beginner'
  * })
- * 
+ *
  * // Use in component
  * function MyComponent() {
  *   const help = Help.useHelpSystem({ component: 'my-component' })
- *   
+ *
  *   return (
  *     <Help.Provider>
  *       <Help.Tooltip content="This button starts the process">
@@ -386,12 +382,12 @@ export default Help
  *   )
  * }
  * ```
- * 
+ *
  * WORKFLOW INTEGRATION:
- * 
+ *
  * ```tsx
  * import { HelpWorkflowIntegration } from '@/lib/help'
- * 
+ *
  * function WorkflowEditor() {
  *   return (
  *     <HelpWorkflowIntegration originalNodeTypes={nodeTypes}>

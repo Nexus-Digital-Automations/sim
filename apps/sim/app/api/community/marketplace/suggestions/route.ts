@@ -22,7 +22,7 @@ const logger = createLogger('MarketplaceSuggestionsAPI')
 
 /**
  * Search Suggestion Types
- * 
+ *
  * Defines the structure for search auto-completion suggestions across the marketplace.
  * Each suggestion includes type classification, display information, and enrichment metadata
  * for ranking and presentation purposes.
@@ -218,14 +218,14 @@ async function getTemplateSuggestions(query: string, limit: number): Promise<Sea
     const safeViews = template.views ?? 0
     const safeDownloadCount = template.downloadCount ?? 0
     const safeAvgRating = template.avgRating ?? 0
-    
+
     // Safely truncate description with null checking
-    const description = template.description 
-      ? template.description.length > 100 
-        ? template.description.slice(0, 100) + '...'
+    const description = template.description
+      ? template.description.length > 100
+        ? `${template.description.slice(0, 100)}...`
         : template.description
       : undefined
-    
+
     // Ensure SearchSuggestion interface compliance
     return {
       type: 'template' as const,
@@ -274,7 +274,7 @@ async function getCategorySuggestions(query: string, limit: number): Promise<Sea
   return categoryResults.map((category) => {
     // Apply null safety patterns for category data
     const safeTemplateCount = category.templateCount ?? 0
-    
+
     // Ensure SearchSuggestion interface compliance
     return {
       type: 'category' as const,
@@ -338,7 +338,7 @@ async function getAuthorSuggestions(query: string, limit: number): Promise<Searc
     const safeAvgRating = author.avgRating ? Number(author.avgRating.toFixed(1)) : 0
     const safeReputationPoints = Number(reputation.points) || 0
     const safeReputationLevel = Number(reputation.level) || 1
-    
+
     // Ensure SearchSuggestion interface compliance
     return {
       type: 'author' as const,
@@ -393,10 +393,10 @@ async function getTagSuggestions(query: string, limit: number): Promise<SearchSu
     const safeWeeklyGrowth = Number(tag.weeklyGrowth) || 0
     const safeTrendScore = Number(tag.trendScore) || 0
     const safeUsageCount = Number(tag.usageCount) || 0
-    
+
     // Calculate trend indicator - positive growth gets trend score, otherwise stable
     const trendValue = safeWeeklyGrowth > 0.1 ? safeTrendScore : 0
-    
+
     // Ensure SearchSuggestion interface compliance with proper type casting
     return {
       type: 'tag' as const,
@@ -446,7 +446,7 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
         const safeViews = template.views ?? 0
         const safeDownloadCount = template.downloadCount ?? 0
         const safeAvgRating = template.avgRating ?? 0
-        
+
         // Ensure SearchSuggestion interface compliance
         return {
           type: 'template' as const,
@@ -484,7 +484,7 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
       ...popularCategories.map((category) => {
         // Apply null safety patterns for popular category data
         const safeTemplateCount = category.templateCount ?? 0
-        
+
         // Ensure SearchSuggestion interface compliance
         return {
           type: 'category' as const,
@@ -523,7 +523,7 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
         // Convert decimal types to numbers for safe mathematical operations
         const safeUsageCount = Number(tag.usageCount) || 0
         const safeTrendScore = Number(tag.trendScore) || 0
-        
+
         // Ensure SearchSuggestion interface compliance
         return {
           type: 'tag' as const,
@@ -606,12 +606,13 @@ function calculateRelevanceScore(suggestion: SearchSuggestion, queryLower: strin
 
   // Boost trending items with null safety for trend values
   // trend can be number or string, requiring safe type conversion
-  const trendValue = typeof suggestion.metadata?.trend === 'number' 
-    ? suggestion.metadata.trend
-    : typeof suggestion.metadata?.trend === 'string'
-    ? Number(suggestion.metadata.trend) || 0
-    : 0
-    
+  const trendValue =
+    typeof suggestion.metadata?.trend === 'number'
+      ? suggestion.metadata.trend
+      : typeof suggestion.metadata?.trend === 'string'
+        ? Number(suggestion.metadata.trend) || 0
+        : 0
+
   if (trendValue > 50) score += 15
   else if (trendValue > 20) score += 10
   else if (trendValue > 0) score += 5

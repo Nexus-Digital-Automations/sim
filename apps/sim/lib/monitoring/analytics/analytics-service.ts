@@ -889,7 +889,7 @@ export class AnalyticsService implements IAnalyticsService {
       if (keyParts.length >= 4) {
         const keyStart = keyParts[2]
         const keyEnd = keyParts[3]
-        
+
         const keyStartTime = new Date(keyStart).getTime()
         const keyEndTime = new Date(keyEnd).getTime()
         const rangeStartTime = new Date(timeRange.start).getTime()

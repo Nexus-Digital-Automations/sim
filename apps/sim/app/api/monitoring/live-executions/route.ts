@@ -67,17 +67,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Generate statistics (always provide default values)
     const allExecutions = executions
-    const workspaceStats = params.includeStats ? {
-      running: allExecutions.filter((e) => e.status === 'running').length,
-      queued: allExecutions.filter((e) => e.status === 'queued').length,
-      completed: allExecutions.filter((e) => e.status === 'completed').length,
-      failed: allExecutions.filter((e) => e.status === 'failed').length,
-    } : {
-      running: 0,
-      queued: 0,
-      completed: 0,
-      failed: 0,
-    }
+    const workspaceStats = params.includeStats
+      ? {
+          running: allExecutions.filter((e) => e.status === 'running').length,
+          queued: allExecutions.filter((e) => e.status === 'queued').length,
+          completed: allExecutions.filter((e) => e.status === 'completed').length,
+          failed: allExecutions.filter((e) => e.status === 'failed').length,
+        }
+      : {
+          running: 0,
+          queued: 0,
+          completed: 0,
+          failed: 0,
+        }
 
     const response: MonitoringApiResponse<LiveExecutionsResponse> = {
       success: true,

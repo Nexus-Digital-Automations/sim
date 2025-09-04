@@ -19,7 +19,7 @@
  */
 
 import { NextRequest } from 'next/server'
-import { vi, expect } from 'vitest'
+import { expect, vi } from 'vitest'
 import { mockControls } from './module-mocks'
 
 // ================================

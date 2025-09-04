@@ -93,7 +93,10 @@ export async function GET(request: NextRequest) {
       {
         error: 'Failed to retrieve health analytics',
         // Fix: Cast unknown error to Error type to access message property safely
-        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
         executionTime,
       },
       { status: 500 }

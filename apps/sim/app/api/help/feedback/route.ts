@@ -616,7 +616,7 @@ export async function GET(request: NextRequest) {
 
     // Parse and convert types for validation
     const params: any = { ...rawParams }
-    
+
     // Parse boolean parameters
     if (params.includeAnalytics !== undefined) {
       params.includeAnalytics = params.includeAnalytics === 'true'
