@@ -1056,65 +1056,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1757017056570_u7oc2xzeg",
-      "title": "Research deployment strategies, DevOps pipelines, and infrastructure management for AI help engines",
-      "description": "Research container orchestration, CI/CD pipelines, infrastructure as code, auto-scaling, and multi-environment management for AI help systems",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/enterprise-ai-deployment-monitoring-strategies-2025.md"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T20:17:36.570Z",
-      "auto_research_created": false
-    },
-    {
-      "id": "task_1757017054358_z13byzqbq",
-      "title": "Research real-time response generation systems and content delivery mechanisms for AI help engines",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/help-recommendation-engines-research-1757016131.md",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/research-report-task_1757009959620_ufg6yhama.md"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T20:17:34.358Z",
-      "auto_research_created": false,
-      "description": "No description provided"
-    },
-    {
-      "id": "task_1757017048858_9buuq9gev",
-      "title": "Research comprehensive security, privacy, and compliance systems for AI help engines",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/ai-help-engine-security-patterns-research-2025.md",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/help-system-privacy-security-research-1757016131.md"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T20:17:28.858Z",
-      "auto_research_created": false,
-      "description": "No description provided"
-    },
-    {
       "id": "task_1757016196862_1n9re024f",
       "title": "Research contextual intent recognition NLP/ML techniques for help systems",
       "mode": "DEVELOPMENT",
