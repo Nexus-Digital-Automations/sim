@@ -60,37 +60,34 @@ import { HelpContextProvider, useHelp } from './help-context-provider'
 
 // Re-export accessibility features
 export {
-  // Core accessibility manager
-  AccessibilityManager,
-  accessibilityManager,
-  AccessibilityTestingSystem,
-  accessibilityTesting,
-  
-  // Accessibility hooks
-  useAria,
-  useKeyboardNavigation,
-  useFocusManagement,
-  useScreenReader,
-  useAccessibilityPreferences,
-  useRovingTabindex,
-  
-  // Accessibility components
-  SkipLink,
-  ScreenReaderOnly,
-  LiveRegion,
-  FocusTrap,
-  AccessibleButton,
-  AccessibleMenu,
-  withAccessibility,
-  
   // Accessibility types
   type AccessibilityConfig,
-  type AriaAttributes,
-  type KeyboardShortcut,
-  type AccessibilityViolation,
-  type TestResult,
-  type ManualTestItem,
+  // Core accessibility manager
+  AccessibilityManager,
   type AccessibilityReport,
+  AccessibilityTestingSystem,
+  type AccessibilityViolation,
+  AccessibleButton,
+  AccessibleMenu,
+  type AriaAttributes,
+  accessibilityManager,
+  accessibilityTesting,
+  FocusTrap,
+  type KeyboardShortcut,
+  LiveRegion,
+  type ManualTestItem,
+  ScreenReaderOnly,
+  // Accessibility components
+  SkipLink,
+  type TestResult,
+  useAccessibilityPreferences,
+  // Accessibility hooks
+  useAria,
+  useFocusManagement,
+  useKeyboardNavigation,
+  useRovingTabindex,
+  useScreenReader,
+  withAccessibility,
 } from './accessibility'
 
 // Import accessibility system for internal use
@@ -102,32 +99,27 @@ import AccessibilitySystem from './accessibility'
 
 // Re-export AI Help Engine components
 export {
+  type AIHelpContext,
   // Main AI Help Engine
   AIHelpEngine,
-  
-  // Individual AI services
-  EmbeddingService,
-  SemanticSearchService,
-  IntelligentChatbot,
-  PredictiveHelpEngine,
-  
   // AI Help types
   type AIHelpEngineConfig,
   type AIHelpRequest,
   type AIHelpResponse,
-  type AIHelpContext,
   type AIHelpSuggestion,
   type AIRelatedContent,
-  type EmbeddingConfig,
   type ChatbotConfig,
+  type EmbeddingConfig,
+  // Individual AI services
+  EmbeddingService,
+  IntelligentChatbot,
   type PredictiveHelpConfig,
+  PredictiveHelpEngine,
   type SearchContext,
   type SearchOptions,
+  SemanticSearchService,
   type WorkflowContext,
 } from '../../lib/help/ai'
-
-// Import AI Help Engine for internal use
-import AIHelpEngine from '../../lib/help/ai'
 
 // ================================================================================================
 // INTERNATIONALIZATION SYSTEM
@@ -135,32 +127,29 @@ import AIHelpEngine from '../../lib/help/ai'
 
 // Re-export internationalization features
 export {
-  // Core i18n manager
-  I18nManager,
-  i18nManager,
-  
-  // I18n hooks
-  useI18n,
-  useTranslation,
-  useLocaleSwitch,
-  useRTL,
-  useFormatting,
-  useTranslationLoader,
-  
-  // I18n components
-  I18nProvider,
-  Translate,
-  Plural,
-  LanguageSwitcher,
-  RTLLayout,
   FormattedDate,
   FormattedNumber,
-  
   // I18n types
   type I18nConfig,
-  type TranslationKey,
+  // Core i18n manager
+  I18nManager,
+  // I18n components
+  I18nProvider,
+  i18nManager,
+  LanguageSwitcher,
   type LocaleData,
+  Plural,
+  RTLLayout,
+  Translate,
   type TranslationContext,
+  type TranslationKey,
+  useFormatting,
+  // I18n hooks
+  useI18n,
+  useLocaleSwitch,
+  useRTL,
+  useTranslation,
+  useTranslationLoader,
 } from './internationalization'
 
 // Import i18n system for internal use
@@ -212,6 +201,7 @@ export function useHelpSystem(options?: {
   autoStart?: boolean
   enableTours?: boolean
   enableAnalytics?: boolean
+  enableAI?: boolean
 }) {
   const context = useHelp()
 
@@ -221,20 +211,23 @@ export function useHelpSystem(options?: {
   // Initialize help context
   React.useEffect(() => {
     if (options?.autoStart !== false) {
-      context.setCurrentContext({
-        component,
-        page: window.location.pathname,
-        userLevel: 'beginner',
-      })
+      // Enable AI features if requested
+      if (options?.enableAI !== false && context.isAIEnabled()) {
+        context.enableAI(true)
+      }
     }
-  }, [component, options?.autoStart])
+  }, [component, options?.autoStart, options?.enableAI, context])
 
   return {
     ...context,
-    showHelp: (contentId: string) => context.showHelpContent(contentId),
-    startTour: (tourId: string) => context.startTour(tourId),
+    showHelp: (contentId: string) => context.showHelp(contentId, { component }),
+    startTour: context.startTour,
     trackAction: (action: string, data?: any) =>
-      options?.enableAnalytics !== false && context.trackInteraction(action, data),
+      options?.enableAnalytics !== false && context.trackInteraction('click', action, data),
+    // AI Help shortcuts
+    aiSearch: context.isAIEnabled() ? context.aiSearch : null,
+    aiChat: context.isAIEnabled() ? context.aiChat : null,
+    getSmartSuggestions: context.isAIEnabled() ? context.getSmartSuggestions : null,
   }
 }
 
@@ -402,9 +395,13 @@ export const HelpSystem = {
           focusManagement: true,
           announcements: true,
           enableAutomatedTesting: config?.enableAccessibilityTesting !== false,
-          wcagLevel: config?.wcagLevel || 'AA'
+          wcagLevel: config?.wcagLevel || 'AA',
         })
-        console.log('Help system accessibility initialized with WCAG', config?.wcagLevel || 'AA', 'compliance')
+        console.log(
+          'Help system accessibility initialized with WCAG',
+          config?.wcagLevel || 'AA',
+          'compliance'
+        )
       } catch (error) {
         console.error('Failed to initialize accessibility system:', error)
       }
@@ -419,12 +416,12 @@ export const HelpSystem = {
           autoDetectLocale: true,
           persistLocaleChoice: true,
           enableInterpolation: true,
-          enablePluralForms: true
+          enablePluralForms: true,
         })
         console.log('Help system internationalization initialized', {
           defaultLocale: config?.defaultLocale || 'en-US',
           supportedLocales: config?.supportedLocales?.length || 4,
-          rtlEnabled: config?.enableRTL !== false
+          rtlEnabled: config?.enableRTL !== false,
         })
       } catch (error) {
         console.error('Failed to initialize i18n system:', error)
@@ -433,8 +430,9 @@ export const HelpSystem = {
 
     console.log('Comprehensive Sim Help System initialized', {
       ...config,
-      accessibilityCompliance: config?.accessibilityEnabled !== false ? (config?.wcagLevel || 'AA') : 'disabled',
-      i18nSupport: config?.i18nEnabled !== false ? 'enabled' : 'disabled'
+      accessibilityCompliance:
+        config?.accessibilityEnabled !== false ? config?.wcagLevel || 'AA' : 'disabled',
+      i18nSupport: config?.i18nEnabled !== false ? 'enabled' : 'disabled',
     })
   },
 
@@ -461,12 +459,12 @@ export const HelpSystem = {
       'I18nProvider',
       'LanguageSwitcher',
       'RTLSupport',
-      'TranslationSystem'
+      'TranslationSystem',
     ],
     apiAvailable: typeof fetch !== 'undefined',
     analyticsEnabled: true,
     accessibility: AccessibilitySystem.getStatus(),
-    internationalization: I18nSystem.getStatus()
+    internationalization: I18nSystem.getStatus(),
   }),
 
   /**
@@ -652,7 +650,7 @@ const Help = {
   useHelpSystem,
   withHelp,
   utils: helpUtils,
-  
+
   // Accessibility hooks
   useAria,
   useKeyboardNavigation,
@@ -717,8 +715,8 @@ export default Help
  *           >
  *             <Help.Translate i18nKey="button.start" />
  *           </Help.AccessibleButton>
- *           
- *           <Help.LanguageSwitcher 
+ *
+ *           <Help.LanguageSwitcher
  *             showNativeNames={true}
  *             variant="dropdown"
  *           />
@@ -740,7 +738,7 @@ export default Help
  *     role: 'tooltip',
  *     hidden: true
  *   })
- *   
+ *
  *   const { keyboardProps } = useKeyboardNavigation({
  *     onEscape: () => hideTooltip(),
  *     onEnter: () => showTooltip(),
@@ -774,12 +772,12 @@ export default Help
  *   return (
  *     <div>
  *       <h2>
- *         <Translate 
- *           i18nKey="help.panel.title" 
+ *         <Translate
+ *           i18nKey="help.panel.title"
  *           defaultValue="Help Panel"
  *         />
  *       </h2>
- *       
+ *
  *       <p>
  *         <Plural
  *           i18nKey="help.items.count"
@@ -787,16 +785,16 @@ export default Help
  *           interpolations={{ count: itemCount }}
  *         />
  *       </p>
- *       
+ *
  *       <p>
- *         <Translate 
- *           i18nKey="help.last.updated" 
+ *         <Translate
+ *           i18nKey="help.last.updated"
  *           interpolations={{ date: <FormattedDate date={lastUpdated} /> }}
  *         />
  *       </p>
- *       
+ *
  *       <p>
- *         <Translate 
+ *         <Translate
  *           i18nKey="help.price.label"
  *           interpolations={{ price: formatCurrency(price) }}
  *         />
@@ -826,7 +824,7 @@ export default Help
  *   'keyboard-navigation',
  *   'tester@example.com'
  * )
- * 
+ *
  * // Complete manual test
  * Help.Accessibility.testing.completeManualTest(
  *   'keyboard-navigation',
@@ -846,16 +844,16 @@ export default Help
  *       <Help.SkipLink href="#workflow-main">
  *         <Translate i18nKey="accessibility.skip.to.workflow" />
  *       </Help.SkipLink>
- *       
+ *
  *       <main id="workflow-main" role="main" aria-label="Workflow Editor">
  *         <HelpWorkflowIntegration originalNodeTypes={nodeTypes}>
- *           <ReactFlow 
- *             nodes={nodes} 
+ *           <ReactFlow
+ *             nodes={nodes}
  *             edges={edges}
  *             aria-label="Workflow canvas"
  *           />
  *         </HelpWorkflowIntegration>
- *         
+ *
  *         <Help.AccessibleButton
  *           variant="button"
  *           onClick={() => runWorkflow()}
@@ -863,7 +861,7 @@ export default Help
  *         >
  *           <Translate i18nKey="workflow.run" />
  *         </Help.AccessibleButton>
- *         
+ *
  *         <Help.ScreenReaderOnly id="run-button-help">
  *           <Translate i18nKey="workflow.run.description" />
  *         </Help.ScreenReaderOnly>
@@ -905,17 +903,171 @@ export default Help
  * }
  * ```
  *
- * WORKFLOW INTEGRATION:
+ * AI-ENHANCED HELP USAGE:
  *
  * ```tsx
- * import { HelpWorkflowIntegration } from '@/lib/help'
+ * import Help, { useHelpSystem } from '@/lib/help'
  *
- * function WorkflowEditor() {
- *   return (
- *     <HelpWorkflowIntegration originalNodeTypes={nodeTypes}>
- *       <ReactFlow nodes={nodes} edges={edges} />
- *     </HelpWorkflowIntegration>
+ * function WorkflowEditor({ userId }) {
+ *   const helpSystem = useHelpSystem({ 
+ *     component: 'workflow-editor', 
+ *     enableAI: true 
+ *   })
+ *   
+ *   const [chatResponse, setChatResponse] = useState(null)
+ *   const [suggestions, setSuggestions] = useState([])
+ *
+ *   // Get AI-powered contextual help on component load
+ *   useEffect(() => {
+ *     async function loadSmartSuggestions() {
+ *       if (helpSystem.isAIEnabled()) {
+ *         try {
+ *           const response = await helpSystem.getSmartSuggestions({
+ *             workflowState: 'creating',
+ *             blockType: 'action',
+ *             strugglesDetected: ['navigation', 'configuration']
+ *           })
+ *           setSuggestions(response.suggestions || [])
+ *         } catch (error) {
+ *           console.warn('AI suggestions unavailable:', error)
+ *         }
+ *       }
+ *     }
+ *     loadSmartSuggestions()
+ *   }, [helpSystem])
+ *
+ *   // Process chat queries with AI
+ *   const handleChatQuery = async (query) => {
+ *     if (helpSystem.aiChat) {
+ *       try {
+ *         const response = await helpSystem.aiChat(query, { 
+ *           component: 'workflow-editor',
+ *           workflowContext: {
+ *             currentStep: 'block-configuration',
+ *             errors: []
+ *           }
+ *         })
+ *         setChatResponse(response)
+ *       } catch (error) {
+ *         console.error('AI chat failed:', error)
+ *       }
+ *     }
+ *   }
+ *
+ *   // Search for specific help topics
+ *   const handleHelpSearch = async (searchQuery) => {
+ *     if (helpSystem.aiSearch) {
+ *       try {
+ *         const results = await helpSystem.aiSearch(searchQuery, {
+ *           component: 'workflow-editor'
+ *         })
+ *         console.log('Search results:', results.searchResults)
+ *       } catch (error) {
+ *         console.error('AI search failed:', error)
+ *       }
+ *     }
+ *   }
+ *
+ *   return React.createElement('div', null,
+ *     // Display smart suggestions
+ *     suggestions.length > 0 && React.createElement('div', { className: 'smart-suggestions' },
+ *       React.createElement('h3', null, 'Smart Suggestions'),
+ *       suggestions.map(suggestion => 
+ *         React.createElement(Help.Tooltip, { key: suggestion.id, content: suggestion.content },
+ *           React.createElement('button', { onClick: () => handleHelpSearch(suggestion.content) },
+ *             suggestion.title
+ *           )
+ *         )
+ *       )
+ *     ),
+ *
+ *     // AI Chat interface
+ *     React.createElement('div', { className: 'ai-chat' },
+ *       React.createElement('input', {
+ *         placeholder: 'Ask me anything about workflows...',
+ *         onKeyPress: (e) => {
+ *           if (e.key === 'Enter') {
+ *             handleChatQuery(e.target.value)
+ *             e.target.value = ''
+ *           }
+ *         }
+ *       }),
+ *       chatResponse && React.createElement('div', { className: 'ai-response' },
+ *         React.createElement('strong', null, 'AI Assistant: '),
+ *         chatResponse.message,
+ *         chatResponse.relatedContent && React.createElement('div', { className: 'related-content' },
+ *           React.createElement('h4', null, 'Related Help:'),
+ *           chatResponse.relatedContent.map(content =>
+ *             React.createElement('a', { key: content.id, href: content.url }, content.title)
+ *           )
+ *         )
+ *       )
+ *     ),
+ *
+ *     // Traditional help integration
+ *     React.createElement('button', { onClick: () => helpSystem.showHelp('workflow-editor') },
+ *       'Show Help'
+ *     )
  *   )
  * }
+ * ```
+ *
+ * DIRECT AI ENGINE USAGE:
+ *
+ * ```tsx
+ * import { AIHelpEngine, getConfigForEnvironment } from '@/lib/help/ai'
+
+ *
+ * // Initialize AI help engine directly
+ * const config = getConfigForEnvironment()
+ * const aiEngine = new AIHelpEngine(config, logger)
+ *
+ * // Use semantic search
+ * const searchResults = await aiEngine.processRequest({
+ *   type: 'search',
+ *   userId: 'user-123',
+ *   query: 'How do I connect blocks in a workflow?',
+ *   context: {
+ *     searchContext: {
+ *       component: 'workflow-editor',
+ *       userRole: 'beginner'
+ *     }
+ *   }
+ * })
+ *
+ * // Use intelligent chatbot
+ * const chatResponse = await aiEngine.processRequest({
+ *   query: 'I'm having trouble with API blocks',
+ *   context: {
+ *     conversationContext: {
+ *       userId: 'user-123',
+ *       sessionId: 'chat-session-456',
+ *       workflowContext: {
+ *         type: 'api_integration',
+ *         currentStep: 'configuration',
+ *         blockTypes: ['trigger', 'api_call'],
+ *         errors: [{ code: 'AUTH_FAILED', message: 'Authentication failed' }]
+ *       }
+ *     }
+ *   }
+ * })
+ *
+ * // Get predictive help
+ * const proactiveHelp = await aiEngine.processRequest({
+ *   userId: 'user-123',
+ *   context: {
+ *     workflowContext: {
+ *       workflowId: 'workflow-789',
+ *       type: 'data_processing',
+ *       currentStep: 'transform-data',
+ *       stepIndex: 3,
+ *       totalSteps: 6,
+ *       timeSpentInCurrentStep: 300000, // 5 minutes
+ *       errors: [{ code: 'VALIDATION_ERROR', message: 'Invalid data format' }],
+ *       complexity: 'complex',
+ *       isFirstTime: false
+ *     }
+ *   }
+ * })
  * ```
  */

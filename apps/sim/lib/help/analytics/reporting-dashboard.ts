@@ -16,18 +16,7 @@
 
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/logger'
-import type {
-  HelpPerformanceReport,
-  ContentPerformanceAnalysis,
-  UserEngagementAnalysis,
-  EffectivenessMetrics,
-  SatisfactionMetrics,
-  BusinessImpactMetrics,
-  AnalyticsRecommendation,
-  TrendAnalysis,
-  RealTimeMetrics,
-  SystemAlert,
-} from './help-analytics-engine'
+import type { SystemAlert } from './help-analytics-engine'
 
 const logger = createLogger('HelpAnalyticsReporting')
 
@@ -605,7 +594,10 @@ export class HelpAnalyticsReportingDashboard {
   /**
    * Generate executive dashboard
    */
-  async generateExecutiveDashboard(period: { start: Date; end: Date }): Promise<ExecutiveDashboard> {
+  async generateExecutiveDashboard(period: {
+    start: Date
+    end: Date
+  }): Promise<ExecutiveDashboard> {
     const operationId = nanoid()
     const startTime = Date.now()
 
@@ -614,7 +606,7 @@ export class HelpAnalyticsReportingDashboard {
     try {
       const cacheKey = `executive_${period.start.getTime()}_${period.end.getTime()}`
       const cached = this.reportCache.get(cacheKey)
-      
+
       if (cached && Date.now() - cached.timestamp < this.config.refreshInterval) {
         logger.debug(`[${operationId}] Returning cached executive dashboard`)
         return cached
@@ -644,7 +636,7 @@ export class HelpAnalyticsReportingDashboard {
         period,
         kpis,
         trends,
-        alerts: alerts.filter(alert => alert.severity === 'critical'),
+        alerts: alerts.filter((alert) => alert.severity === 'critical'),
         recommendations,
         roiSummary,
         competitiveAnalysis,
@@ -674,9 +666,10 @@ export class HelpAnalyticsReportingDashboard {
   /**
    * Generate content insights dashboard
    */
-  async generateContentInsightsDashboard(
-    period: { start: Date; end: Date }
-  ): Promise<ContentInsightsDashboard> {
+  async generateContentInsightsDashboard(period: {
+    start: Date
+    end: Date
+  }): Promise<ContentInsightsDashboard> {
     const operationId = nanoid()
     const startTime = Date.now()
 
@@ -685,7 +678,7 @@ export class HelpAnalyticsReportingDashboard {
     try {
       const cacheKey = `content_${period.start.getTime()}_${period.end.getTime()}`
       const cached = this.reportCache.get(cacheKey)
-      
+
       if (cached && Date.now() - cached.timestamp < this.config.refreshInterval) {
         return cached
       }
@@ -739,7 +732,10 @@ export class HelpAnalyticsReportingDashboard {
   /**
    * Generate user insights dashboard
    */
-  async generateUserInsightsDashboard(period: { start: Date; end: Date }): Promise<UserInsightsDashboard> {
+  async generateUserInsightsDashboard(period: {
+    start: Date
+    end: Date
+  }): Promise<UserInsightsDashboard> {
     const operationId = nanoid()
     const startTime = Date.now()
 
@@ -748,7 +744,7 @@ export class HelpAnalyticsReportingDashboard {
     try {
       const cacheKey = `user_${period.start.getTime()}_${period.end.getTime()}`
       const cached = this.reportCache.get(cacheKey)
-      
+
       if (cached && Date.now() - cached.timestamp < this.config.refreshInterval) {
         return cached
       }
@@ -915,11 +911,11 @@ export class HelpAnalyticsReportingDashboard {
    */
   unsubscribe(subscriptionId: string): boolean {
     const removed = this.dashboardSubscribers.delete(subscriptionId)
-    
+
     if (removed) {
       logger.info('Dashboard subscription removed', { subscriptionId })
     }
-    
+
     return removed
   }
 
@@ -927,7 +923,7 @@ export class HelpAnalyticsReportingDashboard {
 
   private initializeScheduledReports(): void {
     // Initialize any existing scheduled reports
-    this.config.reportSchedules.forEach(schedule => {
+    this.config.reportSchedules.forEach((schedule) => {
       if (schedule.enabled) {
         this.scheduleReport(schedule)
       }
@@ -953,9 +949,12 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async generateExecutiveTrends(period: { start: Date; end: Date }): Promise<ExecutiveTrends> {
+  private async generateExecutiveTrends(period: {
+    start: Date
+    end: Date
+  }): Promise<ExecutiveTrends> {
     const periods = this.generatePeriodLabels(period, 'week')
-    
+
     return {
       userGrowth: {
         metric: 'User Growth',
@@ -1027,7 +1026,8 @@ export class HelpAnalyticsReportingDashboard {
         category: 'content',
         priority: 'high',
         title: 'Improve Help Content Quality',
-        description: 'Satisfaction scores below target require immediate content quality improvements',
+        description:
+          'Satisfaction scores below target require immediate content quality improvements',
         expectedImpact: '15-20% increase in user satisfaction',
         investmentRequired: '$25K - content audit and improvement',
         timeline: '2-3 months',
@@ -1057,7 +1057,7 @@ export class HelpAnalyticsReportingDashboard {
     const totalInvestment = 150000 // Annual investment
     const totalBenefit = 285000 // Calculated benefits
     const netROI = totalBenefit - totalInvestment
-    
+
     return {
       totalInvestment,
       totalBenefit,
@@ -1097,9 +1097,10 @@ export class HelpAnalyticsReportingDashboard {
   }
 
   // Content analysis methods
-  private async generateDetailedContentAnalysis(
-    period: { start: Date; end: Date }
-  ): Promise<DetailedContentAnalysis> {
+  private async generateDetailedContentAnalysis(period: {
+    start: Date
+    end: Date
+  }): Promise<DetailedContentAnalysis> {
     // This would analyze actual content performance data
     return {
       totalContent: 342,
@@ -1113,7 +1114,7 @@ export class HelpAnalyticsReportingDashboard {
           averagePerformance: 4.3,
           topContent: this.generateSampleContentMetrics(3),
           improvementAreas: ['Visual examples', 'Interactive elements'],
-          userPreferences: { 'video': 65, 'text': 35 },
+          userPreferences: { video: 65, text: 35 },
         },
         'Advanced Features': {
           category: 'Advanced Features',
@@ -1121,7 +1122,7 @@ export class HelpAnalyticsReportingDashboard {
           averagePerformance: 3.8,
           topContent: this.generateSampleContentMetrics(3),
           improvementAreas: ['Complexity reduction', 'Step-by-step guides'],
-          userPreferences: { 'video': 45, 'text': 55 },
+          userPreferences: { video: 45, text: 55 },
         },
       },
       contentLifecycle: {
@@ -1157,7 +1158,7 @@ export class HelpAnalyticsReportingDashboard {
 
   private generateSampleContentMetrics(count: number): ContentMetric[] {
     const metrics: ContentMetric[] = []
-    
+
     for (let i = 0; i < count; i++) {
       metrics.push({
         contentId: `content_${i}`,
@@ -1173,7 +1174,7 @@ export class HelpAnalyticsReportingDashboard {
         authorId: `author_${Math.floor(Math.random() * 5)}`,
       })
     }
-    
+
     return metrics
   }
 
@@ -1185,10 +1186,10 @@ export class HelpAnalyticsReportingDashboard {
   ): string[] {
     const labels: string[] = []
     const current = new Date(period.start)
-    
+
     while (current <= period.end) {
       labels.push(current.toISOString().split('T')[0])
-      
+
       switch (interval) {
         case 'day':
           current.setDate(current.getDate() + 1)
@@ -1201,26 +1202,28 @@ export class HelpAnalyticsReportingDashboard {
           break
       }
     }
-    
+
     return labels
   }
 
   private calculateNextScheduledTime(frequency: ReportSchedule['frequency']): Date {
     const now = new Date()
-    
+
     switch (frequency) {
       case 'daily':
         return new Date(now.getTime() + 24 * 60 * 60 * 1000)
       case 'weekly':
         return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      case 'monthly':
+      case 'monthly': {
         const nextMonth = new Date(now)
         nextMonth.setMonth(nextMonth.getMonth() + 1)
         return nextMonth
-      case 'quarterly':
+      }
+      case 'quarterly': {
         const nextQuarter = new Date(now)
         nextQuarter.setMonth(nextQuarter.getMonth() + 3)
         return nextQuarter
+      }
       default:
         return new Date(now.getTime() + 24 * 60 * 60 * 1000)
     }
@@ -1271,7 +1274,7 @@ export class HelpAnalyticsReportingDashboard {
 
       // Update schedule
       const updatedSchedule = { ...schedule, lastGenerated: new Date() }
-      const scheduleIndex = this.config.reportSchedules.findIndex(s => s.id === schedule.id)
+      const scheduleIndex = this.config.reportSchedules.findIndex((s) => s.id === schedule.id)
       if (scheduleIndex >= 0) {
         this.config.reportSchedules[scheduleIndex] = updatedSchedule
       }
@@ -1288,10 +1291,13 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private calculateReportPeriod(frequency: ReportSchedule['frequency']): { start: Date; end: Date } {
+  private calculateReportPeriod(frequency: ReportSchedule['frequency']): {
+    start: Date
+    end: Date
+  } {
     const end = new Date()
     const start = new Date()
-    
+
     switch (frequency) {
       case 'daily':
         start.setDate(start.getDate() - 1)
@@ -1306,7 +1312,7 @@ export class HelpAnalyticsReportingDashboard {
         start.setMonth(start.getMonth() - 3)
         break
     }
-    
+
     return { start, end }
   }
 
@@ -1351,11 +1357,17 @@ export class HelpAnalyticsReportingDashboard {
   }
 
   // Placeholder methods for complex analytics - would be fully implemented
-  private async generateContentAuthorInsights(period: { start: Date; end: Date }): Promise<ContentAuthorInsights[]> {
+  private async generateContentAuthorInsights(period: {
+    start: Date
+    end: Date
+  }): Promise<ContentAuthorInsights[]> {
     return []
   }
 
-  private async generateContentQualityMetrics(period: { start: Date; end: Date }): Promise<ContentQualityMetrics> {
+  private async generateContentQualityMetrics(period: {
+    start: Date
+    end: Date
+  }): Promise<ContentQualityMetrics> {
     return {
       overallQualityScore: 85,
       accuracyScore: 90,
@@ -1368,11 +1380,17 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async identifyContentOptimizations(period: { start: Date; end: Date }): Promise<ContentOptimization[]> {
+  private async identifyContentOptimizations(period: {
+    start: Date
+    end: Date
+  }): Promise<ContentOptimization[]> {
     return []
   }
 
-  private async analyzeUserFeedback(period: { start: Date; end: Date }): Promise<UserFeedbackAnalysis> {
+  private async analyzeUserFeedback(period: {
+    start: Date
+    end: Date
+  }): Promise<UserFeedbackAnalysis> {
     return {
       totalFeedback: 0,
       averageRating: 0,
@@ -1385,7 +1403,10 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async analyzeUserSegmentation(period: { start: Date; end: Date }): Promise<UserSegmentAnalysis> {
+  private async analyzeUserSegmentation(period: {
+    start: Date
+    end: Date
+  }): Promise<UserSegmentAnalysis> {
     return {
       totalUsers: 0,
       segments: [],
@@ -1394,7 +1415,10 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async analyzeUserJourneys(period: { start: Date; end: Date }): Promise<UserJourneyAnalysis> {
+  private async analyzeUserJourneys(period: {
+    start: Date
+    end: Date
+  }): Promise<UserJourneyAnalysis> {
     return {
       commonPaths: [],
       dropOffPoints: [],
@@ -1410,7 +1434,10 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async identifyUserBehaviorPatterns(period: { start: Date; end: Date }): Promise<UserBehaviorPatterns> {
+  private async identifyUserBehaviorPatterns(period: {
+    start: Date
+    end: Date
+  }): Promise<UserBehaviorPatterns> {
     return {
       sessionPatterns: [],
       helpRequestPatterns: [],
@@ -1420,7 +1447,10 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async generateDetailedSatisfactionAnalysis(period: { start: Date; end: Date }): Promise<DetailedSatisfactionAnalysis> {
+  private async generateDetailedSatisfactionAnalysis(period: {
+    start: Date
+    end: Date
+  }): Promise<DetailedSatisfactionAnalysis> {
     return {
       overallSatisfaction: {
         overall: 0,
@@ -1455,7 +1485,10 @@ export class HelpAnalyticsReportingDashboard {
     }
   }
 
-  private async generatePersonalizationInsights(period: { start: Date; end: Date }): Promise<PersonalizationInsights> {
+  private async generatePersonalizationInsights(period: {
+    start: Date
+    end: Date
+  }): Promise<PersonalizationInsights> {
     return {
       personalizationScore: 0,
       personalizationOpportunities: [],
@@ -1479,7 +1512,7 @@ export class HelpAnalyticsReportingDashboard {
   // Cleanup method
   public destroy(): void {
     // Clear scheduled reports
-    this.scheduledReports.forEach(timeoutId => {
+    this.scheduledReports.forEach((timeoutId) => {
       clearInterval(timeoutId)
     })
     this.scheduledReports.clear()
@@ -1487,7 +1520,7 @@ export class HelpAnalyticsReportingDashboard {
     // Clear caches and subscriptions
     this.reportCache.clear()
     this.dashboardSubscribers.clear()
-    
+
     logger.info('Help Analytics Reporting Dashboard destroyed')
   }
 }

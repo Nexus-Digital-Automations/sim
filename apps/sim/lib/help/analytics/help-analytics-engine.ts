@@ -794,8 +794,10 @@ export class HelpAnalyticsEngine {
       uniqueUsers.add(userId)
 
       // Check if returning user
-      const userSessions = Array.from(userSessions.keys()).filter((key) => key.startsWith(userId))
-      if (userSessions.length > 1) {
+      const userSessionsForUser = Array.from(this.userSessions.keys()).filter((key) =>
+        key.startsWith(userId)
+      )
+      if (userSessionsForUser.length > 1) {
         returningUsers.add(userId)
       }
 

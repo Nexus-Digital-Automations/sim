@@ -18,74 +18,71 @@
 
 // Core Analytics Engine
 export {
-  HelpAnalyticsEngine,
-  helpAnalyticsEngine,
-  type HelpEngagementMetrics,
-  type HelpAnalyticsContext,
-  type EffectivenessScore,
-  type SatisfactionRating,
-  type HelpPerformanceReport,
-  type ContentPerformanceAnalysis,
-  type UserEngagementAnalysis,
-  type EffectivenessMetrics,
-  type SatisfactionMetrics,
-  type BusinessImpactMetrics,
-  type ROICalculation,
-  type AnalyticsRecommendation,
-  type TrendAnalysis,
   type ABTest,
   type ABTestResults,
+  type AnalyticsRecommendation,
+  type BusinessImpactMetrics,
+  type ContentPerformanceAnalysis,
+  type EffectivenessMetrics,
+  type EffectivenessScore,
+  type HelpAnalyticsContext,
+  HelpAnalyticsEngine,
+  type HelpEngagementMetrics,
+  type HelpPerformanceReport,
+  helpAnalyticsEngine,
   type RealTimeMetrics,
+  type ROICalculation,
+  type SatisfactionMetrics,
+  type SatisfactionRating,
   type SystemAlert,
+  type TrendAnalysis,
+  type UserEngagementAnalysis,
 } from './help-analytics-engine'
-
-// Real-time Monitoring
-export {
-  RealTimeHelpMonitor,
-  realTimeHelpMonitor,
-  type MonitoringConfig,
-  type AlertThresholds,
-  type PerformanceSnapshot,
-  type SystemHealthCheck,
-  type MonitoringEvent,
-} from './real-time-monitor'
-
 // Predictive Analytics
 export {
+  type ActionRecommendation,
+  type HelpPattern,
+  type HelpPrediction,
+  type HelpPredictionModel,
+  type ModelMetrics,
+  type PredictionFeatures,
+  type PredictionInsight,
   PredictiveHelpAnalytics,
   predictiveHelpAnalytics,
   type UserBehaviorProfile,
   type UserSession,
-  type HelpPattern,
-  type PredictionFeatures,
-  type ModelMetrics,
-  type PredictionInsight,
-  type ActionRecommendation,
-  type HelpPredictionModel,
-  type HelpPrediction,
 } from './predictive-analytics'
-
+// Real-time Monitoring
+export {
+  type AlertThresholds,
+  type MonitoringConfig,
+  type MonitoringEvent,
+  type PerformanceSnapshot,
+  RealTimeHelpMonitor,
+  realTimeHelpMonitor,
+  type SystemHealthCheck,
+} from './real-time-monitor'
 // Reporting Dashboard
 export {
+  type ContentInsightsDashboard,
+  type ContentMetric,
+  type DashboardConfig,
+  type DetailedContentAnalysis,
+  type ExecutiveDashboard,
+  type ExecutiveKPIs,
   HelpAnalyticsReportingDashboard,
   helpAnalyticsReportingDashboard,
-  type DashboardConfig,
   type ReportSchedule,
-  type ExecutiveDashboard,
-  type ContentInsightsDashboard,
-  type UserInsightsDashboard,
-  type ExecutiveKPIs,
-  type StrategyRecommendation,
   type ROISummary,
-  type ContentMetric,
-  type DetailedContentAnalysis,
+  type StrategyRecommendation,
+  type UserInsightsDashboard,
   type UserSegmentAnalysis,
 } from './reporting-dashboard'
 
 import { createLogger } from '@/lib/logs/logger'
 import { helpAnalyticsEngine } from './help-analytics-engine'
-import { realTimeHelpMonitor } from './real-time-monitor'
 import { predictiveHelpAnalytics } from './predictive-analytics'
+import { realTimeHelpMonitor } from './real-time-monitor'
 import { helpAnalyticsReportingDashboard } from './reporting-dashboard'
 
 const logger = createLogger('HelpAnalyticsSystem')
@@ -297,12 +294,14 @@ export class HelpAnalyticsSystem {
     return {
       monitoring: metrics,
       alerts,
-      performance: metrics ? {
-        activeUsers: metrics.activeUsers,
-        responseTime: metrics.averageResponseTime,
-        satisfactionScore: metrics.satisfactionScore,
-        systemHealth: metrics.systemHealth,
-      } : null,
+      performance: metrics
+        ? {
+            activeUsers: metrics.activeUsers,
+            responseTime: metrics.averageResponseTime,
+            satisfactionScore: metrics.satisfactionScore,
+            systemHealth: metrics.systemHealth,
+          }
+        : null,
       systemHealth: metrics?.systemHealth || 'unknown',
     }
   }
@@ -310,7 +309,10 @@ export class HelpAnalyticsSystem {
   /**
    * Get user predictions and recommendations
    */
-  async getUserInsights(userId: string, context: any): Promise<{
+  async getUserInsights(
+    userId: string,
+    context: any
+  ): Promise<{
     predictions: any[]
     recommendations: any[]
     riskScore: number
@@ -321,12 +323,17 @@ export class HelpAnalyticsSystem {
 
     try {
       const predictions = await predictiveHelpAnalytics.getUserPredictions(userId, context)
-      const recommendations = await predictiveHelpAnalytics.generateProactiveRecommendations(userId, context)
+      const recommendations = await predictiveHelpAnalytics.generateProactiveRecommendations(
+        userId,
+        context
+      )
 
       // Calculate overall risk score
-      const churnPredictions = predictions.filter(p => p.prediction.prediction.includes('Churn'))
-      const riskScore = churnPredictions.length > 0 ? 
-        Math.max(...churnPredictions.map(p => p.confidence * 100)) : 0
+      const churnPredictions = predictions.filter((p) => p.prediction.prediction.includes('Churn'))
+      const riskScore =
+        churnPredictions.length > 0
+          ? Math.max(...churnPredictions.map((p) => p.confidence * 100))
+          : 0
 
       return {
         predictions,
@@ -352,7 +359,7 @@ export class HelpAnalyticsSystem {
 
     try {
       const testId = await helpAnalyticsEngine.startABTest(test)
-      
+
       logger.info('A/B test started successfully', {
         testId,
         testName: test.name,
@@ -370,7 +377,9 @@ export class HelpAnalyticsSystem {
   /**
    * Get analytics dashboard data
    */
-  async getDashboardData(type: 'executive' | 'operational' | 'content' | 'user' = 'operational'): Promise<any> {
+  async getDashboardData(
+    type: 'executive' | 'operational' | 'content' | 'user' = 'operational'
+  ): Promise<any> {
     try {
       switch (type) {
         case 'executive':
@@ -378,20 +387,18 @@ export class HelpAnalyticsSystem {
             start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
             end: new Date(),
           })
-        
+
         case 'content':
           return await helpAnalyticsReportingDashboard.generateContentInsightsDashboard({
             start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
             end: new Date(),
           })
-        
+
         case 'user':
           return await helpAnalyticsReportingDashboard.generateUserInsightsDashboard({
             start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
             end: new Date(),
           })
-        
-        case 'operational':
         default:
           return await helpAnalyticsEngine.getDashboardData()
       }
@@ -456,17 +463,15 @@ export class HelpAnalyticsSystem {
         case 'engagement':
           // Would export engagement data
           return { message: 'Engagement data exported' }
-        
+
         case 'performance':
           return await helpAnalyticsEngine.generatePerformanceReport(defaultPeriod)
-        
+
         case 'predictions':
           return predictiveHelpAnalytics.getUserProfileAnalytics()
-        
+
         case 'reports':
           return await this.generateComprehensiveReport(defaultPeriod)
-        
-        case 'all':
         default:
           return {
             performance: await helpAnalyticsEngine.generatePerformanceReport(defaultPeriod),
@@ -489,14 +494,14 @@ export class HelpAnalyticsSystem {
    */
   subscribe(eventType: string, callback: (data: any) => void): string {
     const subscriptionId = `${eventType}_${Date.now()}`
-    
+
     switch (eventType) {
       case 'real-time-updates':
         return realTimeHelpMonitor.subscribe(subscriptionId, callback)
-      
+
       case 'dashboard-updates':
         return helpAnalyticsReportingDashboard.subscribe(subscriptionId, callback)
-      
+
       default:
         this.integrationCallbacks.set(subscriptionId, callback)
         return subscriptionId
@@ -510,10 +515,10 @@ export class HelpAnalyticsSystem {
     switch (eventType) {
       case 'real-time-updates':
         return realTimeHelpMonitor.unsubscribe(subscriptionId)
-      
+
       case 'dashboard-updates':
         return helpAnalyticsReportingDashboard.unsubscribe(subscriptionId)
-      
+
       default:
         return this.integrationCallbacks.delete(subscriptionId)
     }
@@ -524,7 +529,7 @@ export class HelpAnalyticsSystem {
    */
   updateConfiguration(newConfig: Partial<HelpAnalyticsSystemConfig>): void {
     this.config = { ...this.config, ...newConfig }
-    
+
     logger.info('Help Analytics System configuration updated', {
       newConfig,
     })
@@ -600,7 +605,7 @@ export class HelpAnalyticsSystem {
       this.integrationCallbacks.clear()
 
       this.isInitialized = false
-      
+
       logger.info('Help Analytics System shutdown complete')
     } catch (error) {
       logger.error('Error during Help Analytics System shutdown', {
@@ -614,7 +619,7 @@ export class HelpAnalyticsSystem {
 export const helpAnalyticsSystem = new HelpAnalyticsSystem()
 
 // Initialize system on module load
-helpAnalyticsSystem.initialize().catch(error => {
+helpAnalyticsSystem.initialize().catch((error) => {
   logger.error('Failed to auto-initialize Help Analytics System', {
     error: error instanceof Error ? error.message : String(error),
   })

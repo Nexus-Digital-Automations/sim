@@ -13,15 +13,15 @@
  * @author Claude Development System
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
-import { 
-  HelpAnalyticsSystem, 
-  helpAnalyticsEngine,
-  realTimeHelpMonitor,
-  predictiveHelpAnalytics,
-  helpAnalyticsReportingDashboard,
-  type HelpEngagementMetrics,
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
   type HelpAnalyticsContext,
+  HelpAnalyticsSystem,
+  type HelpEngagementMetrics,
+  helpAnalyticsEngine,
+  helpAnalyticsReportingDashboard,
+  predictiveHelpAnalytics,
+  realTimeHelpMonitor,
 } from './index'
 
 // Mock logger to avoid console output during tests
@@ -133,7 +133,7 @@ describe('Help Analytics System Integration', () => {
   describe('System Initialization and Configuration', () => {
     it('should initialize all components successfully', async () => {
       const performanceMetrics = analyticsSystem.getPerformanceMetrics()
-      
+
       expect(performanceMetrics.analytics.isInitialized).toBe(true)
       expect(performanceMetrics.analytics.enabledFeatures.predictiveAnalytics).toBe(true)
       expect(performanceMetrics.analytics.enabledFeatures.realTimeMonitoring).toBe(true)
@@ -151,7 +151,7 @@ describe('Help Analytics System Integration', () => {
 
       analyticsSystem.updateConfiguration(newConfig)
       const performanceMetrics = analyticsSystem.getPerformanceMetrics()
-      
+
       expect(performanceMetrics.system.configuration.analytics.dataRetentionDays).toBe(60)
     })
   })
@@ -173,9 +173,9 @@ describe('Help Analytics System Integration', () => {
         timestamp: new Date(Date.now() + i * 1000),
       }))
 
-      await Promise.all(engagements.map(engagement => 
-        analyticsSystem.processEngagement(engagement)
-      ))
+      await Promise.all(
+        engagements.map((engagement) => analyticsSystem.processEngagement(engagement))
+      )
 
       // All engagements should be processed without errors
       expect(true).toBe(true) // Placeholder assertion
@@ -189,15 +189,14 @@ describe('Help Analytics System Integration', () => {
       }
 
       // Should not throw error even with invalid data
-      await expect(analyticsSystem.processEngagement(invalidEngagement))
-        .resolves.not.toThrow()
+      await expect(analyticsSystem.processEngagement(invalidEngagement)).resolves.not.toThrow()
     })
   })
 
   describe('Real-time Monitoring Integration', () => {
     it('should provide real-time status', () => {
       const status = analyticsSystem.getRealTimeStatus()
-      
+
       expect(status).toHaveProperty('monitoring')
       expect(status).toHaveProperty('alerts')
       expect(status).toHaveProperty('performance')
@@ -207,14 +206,14 @@ describe('Help Analytics System Integration', () => {
 
     it('should update real-time metrics after processing engagements', async () => {
       const statusBefore = analyticsSystem.getRealTimeStatus()
-      
+
       await analyticsSystem.processEngagement(sampleEngagement)
-      
+
       // Allow some time for real-time updates
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       const statusAfter = analyticsSystem.getRealTimeStatus()
-      
+
       // Status should still be available (may or may not change)
       expect(statusAfter).toHaveProperty('monitoring')
       expect(statusAfter).toHaveProperty('systemHealth')
@@ -225,11 +224,8 @@ describe('Help Analytics System Integration', () => {
     it('should generate user insights and predictions', async () => {
       // Process some sample data first
       await analyticsSystem.processEngagement(sampleEngagement)
-      
-      const insights = await analyticsSystem.getUserInsights(
-        sampleEngagement.userId,
-        sampleContext
-      )
+
+      const insights = await analyticsSystem.getUserInsights(sampleEngagement.userId, sampleContext)
 
       expect(insights).toHaveProperty('predictions')
       expect(insights).toHaveProperty('recommendations')
@@ -240,10 +236,7 @@ describe('Help Analytics System Integration', () => {
     })
 
     it('should handle user insights for new users', async () => {
-      const insights = await analyticsSystem.getUserInsights(
-        'new-user-123',
-        sampleContext
-      )
+      const insights = await analyticsSystem.getUserInsights('new-user-123', sampleContext)
 
       expect(insights).toHaveProperty('predictions')
       expect(insights).toHaveProperty('recommendations')
@@ -254,7 +247,7 @@ describe('Help Analytics System Integration', () => {
   describe('Reporting Dashboard Integration', () => {
     it('should generate operational dashboard data', async () => {
       const dashboardData = await analyticsSystem.getDashboardData('operational')
-      
+
       expect(dashboardData).toHaveProperty('overview')
       expect(dashboardData).toHaveProperty('recentActivity')
       expect(dashboardData).toHaveProperty('topContent')
@@ -264,7 +257,7 @@ describe('Help Analytics System Integration', () => {
 
     it('should generate executive dashboard data', async () => {
       const dashboardData = await analyticsSystem.getDashboardData('executive')
-      
+
       expect(dashboardData).toHaveProperty('id')
       expect(dashboardData).toHaveProperty('timestamp')
       expect(dashboardData).toHaveProperty('period')
@@ -276,7 +269,7 @@ describe('Help Analytics System Integration', () => {
 
     it('should generate content insights dashboard', async () => {
       const dashboardData = await analyticsSystem.getDashboardData('content')
-      
+
       expect(dashboardData).toHaveProperty('contentAnalysis')
       expect(dashboardData).toHaveProperty('authorInsights')
       expect(dashboardData).toHaveProperty('qualityMetrics')
@@ -286,7 +279,7 @@ describe('Help Analytics System Integration', () => {
 
     it('should generate user insights dashboard', async () => {
       const dashboardData = await analyticsSystem.getDashboardData('user')
-      
+
       expect(dashboardData).toHaveProperty('userSegmentation')
       expect(dashboardData).toHaveProperty('journeyAnalysis')
       expect(dashboardData).toHaveProperty('behaviorPatterns')
@@ -304,12 +297,12 @@ describe('Help Analytics System Integration', () => {
       }
 
       const report = await analyticsSystem.generateComprehensiveReport(period)
-      
+
       expect(report).toHaveProperty('executive')
       expect(report).toHaveProperty('content')
       expect(report).toHaveProperty('user')
       expect(report).toHaveProperty('performance')
-      
+
       // Each report should have the expected structure
       expect(report.executive).toHaveProperty('kpis')
       expect(report.content).toHaveProperty('contentAnalysis')
@@ -335,7 +328,7 @@ describe('Help Analytics System Integration', () => {
           },
           {
             id: 'variant-b',
-            name: 'Video Content', 
+            name: 'Video Content',
             description: 'Video tutorial help content',
             metrics: {},
             conversions: 0,
@@ -367,7 +360,7 @@ describe('Help Analytics System Integration', () => {
       }
 
       const testId = await analyticsSystem.startABTest(testConfig)
-      
+
       expect(typeof testId).toBe('string')
       expect(testId.length).toBeGreaterThan(0)
     })
@@ -376,7 +369,7 @@ describe('Help Analytics System Integration', () => {
   describe('Data Export Integration', () => {
     it('should export performance data', async () => {
       const exportData = await analyticsSystem.exportData('performance')
-      
+
       expect(exportData).toHaveProperty('period')
       expect(exportData).toHaveProperty('contentAnalysis')
       expect(exportData).toHaveProperty('userEngagement')
@@ -386,7 +379,7 @@ describe('Help Analytics System Integration', () => {
 
     it('should export comprehensive analytics data', async () => {
       const exportData = await analyticsSystem.exportData('all')
-      
+
       expect(exportData).toHaveProperty('performance')
       expect(exportData).toHaveProperty('predictions')
       expect(exportData).toHaveProperty('reports')
@@ -395,20 +388,19 @@ describe('Help Analytics System Integration', () => {
 
     it('should handle export errors gracefully', async () => {
       // Test with invalid parameters
-      await expect(analyticsSystem.exportData('invalid_type' as any))
-        .rejects.toThrow()
+      await expect(analyticsSystem.exportData('invalid_type' as any)).rejects.toThrow()
     })
   })
 
   describe('Subscription and Event Handling', () => {
     it('should handle subscriptions to real-time updates', () => {
       const mockCallback = vi.fn()
-      
+
       const subscriptionId = analyticsSystem.subscribe('real-time-updates', mockCallback)
-      
+
       expect(typeof subscriptionId).toBe('string')
       expect(subscriptionId.length).toBeGreaterThan(0)
-      
+
       // Cleanup
       const unsubscribed = analyticsSystem.unsubscribe('real-time-updates', subscriptionId)
       expect(unsubscribed).toBe(true)
@@ -416,11 +408,11 @@ describe('Help Analytics System Integration', () => {
 
     it('should handle subscriptions to dashboard updates', () => {
       const mockCallback = vi.fn()
-      
+
       const subscriptionId = analyticsSystem.subscribe('dashboard-updates', mockCallback)
-      
+
       expect(typeof subscriptionId).toBe('string')
-      
+
       // Cleanup
       const unsubscribed = analyticsSystem.unsubscribe('dashboard-updates', subscriptionId)
       expect(unsubscribed).toBe(true)
@@ -430,21 +422,21 @@ describe('Help Analytics System Integration', () => {
   describe('Performance Metrics', () => {
     it('should provide comprehensive performance metrics', () => {
       const metrics = analyticsSystem.getPerformanceMetrics()
-      
+
       expect(metrics).toHaveProperty('analytics')
-      expect(metrics).toHaveProperty('monitoring') 
+      expect(metrics).toHaveProperty('monitoring')
       expect(metrics).toHaveProperty('predictions')
       expect(metrics).toHaveProperty('system')
-      
+
       // Analytics metrics
       expect(metrics.analytics).toHaveProperty('isInitialized')
       expect(metrics.analytics).toHaveProperty('enabledFeatures')
-      
+
       // System metrics
       expect(metrics.system).toHaveProperty('uptime')
       expect(metrics.system).toHaveProperty('memoryUsage')
       expect(metrics.system).toHaveProperty('configuration')
-      
+
       expect(typeof metrics.system.uptime).toBe('number')
       expect(metrics.system.uptime).toBeGreaterThan(0)
     })
@@ -463,15 +455,14 @@ describe('Help Analytics System Integration', () => {
       }
 
       // Should not throw errors even with problematic data
-      await expect(analyticsSystem.processEngagement(problematicEngagement))
-        .resolves.not.toThrow()
+      await expect(analyticsSystem.processEngagement(problematicEngagement)).resolves.not.toThrow()
     })
 
     it('should continue functioning when individual components fail', async () => {
       // The system should remain functional even if individual components have issues
       const status = analyticsSystem.getRealTimeStatus()
       expect(status).toBeDefined()
-      
+
       const insights = await analyticsSystem.getUserInsights('test-user', sampleContext)
       expect(insights).toBeDefined()
     })
@@ -481,22 +472,19 @@ describe('Help Analytics System Integration', () => {
     it('should demonstrate end-to-end data flow', async () => {
       // Step 1: Process engagement
       await analyticsSystem.processEngagement(sampleEngagement)
-      
+
       // Step 2: Check real-time status updates
       const status = analyticsSystem.getRealTimeStatus()
       expect(status).toBeDefined()
-      
+
       // Step 3: Get user insights (should reflect processed engagement)
-      const insights = await analyticsSystem.getUserInsights(
-        sampleEngagement.userId,
-        sampleContext
-      )
+      const insights = await analyticsSystem.getUserInsights(sampleEngagement.userId, sampleContext)
       expect(insights).toBeDefined()
-      
+
       // Step 4: Generate dashboard (should include processed data)
       const dashboard = await analyticsSystem.getDashboardData('operational')
       expect(dashboard).toBeDefined()
-      
+
       // Step 5: Export data (should include all processed information)
       const exportData = await analyticsSystem.exportData('all')
       expect(exportData).toBeDefined()
@@ -517,11 +505,11 @@ describe('Help Analytics System Integration', () => {
       // Get insights for user-1 (should reflect 2 engagements)
       const user1Insights = await analyticsSystem.getUserInsights('user-1', sampleContext)
       expect(user1Insights).toBeDefined()
-      
+
       // Get insights for user-2 (should reflect 1 engagement)
       const user2Insights = await analyticsSystem.getUserInsights('user-2', sampleContext)
       expect(user2Insights).toBeDefined()
-      
+
       // Both should have predictions and recommendations
       expect(Array.isArray(user1Insights.predictions)).toBe(true)
       expect(Array.isArray(user2Insights.predictions)).toBe(true)
@@ -531,7 +519,7 @@ describe('Help Analytics System Integration', () => {
   describe('Memory and Resource Management', () => {
     it('should manage memory usage appropriately', async () => {
       const initialMemory = process.memoryUsage()
-      
+
       // Process a large number of engagements
       const engagements = Array.from({ length: 100 }, (_, i) => ({
         ...sampleEngagement,
@@ -545,7 +533,7 @@ describe('Help Analytics System Integration', () => {
       }
 
       const finalMemory = process.memoryUsage()
-      
+
       // Memory usage should be reasonable (not testing exact values due to GC variability)
       expect(finalMemory.heapUsed).toBeDefined()
       expect(finalMemory.heapTotal).toBeDefined()
@@ -557,7 +545,7 @@ describe('Individual Component Integration', () => {
   describe('Analytics Engine Integration', () => {
     it('should track engagement and provide analytics', async () => {
       await helpAnalyticsEngine.trackEngagement(sampleEngagement)
-      
+
       const dashboardData = await helpAnalyticsEngine.getDashboardData()
       expect(dashboardData).toHaveProperty('overview')
       expect(dashboardData).toHaveProperty('recentActivity')
@@ -578,7 +566,7 @@ describe('Individual Component Integration', () => {
   describe('Real-time Monitor Integration', () => {
     it('should process engagement events', () => {
       realTimeHelpMonitor.processEngagement(sampleEngagement)
-      
+
       const metrics = realTimeHelpMonitor.getCurrentMetrics()
       expect(metrics).toBeDefined()
     })
@@ -589,9 +577,9 @@ describe('Individual Component Integration', () => {
         'warning',
         'Test alert message'
       )
-      
+
       expect(typeof alertId).toBe('string')
-      
+
       const resolved = realTimeHelpMonitor.resolveAlert(alertId)
       expect(resolved).toBe(true)
     })
@@ -600,18 +588,18 @@ describe('Individual Component Integration', () => {
   describe('Predictive Analytics Integration', () => {
     it('should update user behavior and generate predictions', async () => {
       await predictiveHelpAnalytics.updateUserBehavior(sampleEngagement)
-      
+
       const predictions = await predictiveHelpAnalytics.getUserPredictions(
         sampleEngagement.userId,
         sampleContext
       )
-      
+
       expect(Array.isArray(predictions)).toBe(true)
     })
 
     it('should provide user profile analytics', () => {
       const analytics = predictiveHelpAnalytics.getUserProfileAnalytics()
-      
+
       expect(analytics).toHaveProperty('totalUsers')
       expect(analytics).toHaveProperty('profilesCreated')
       expect(analytics).toHaveProperty('averageChurnRisk')
@@ -665,11 +653,8 @@ describe('Cross-Component Data Consistency', () => {
     realTimeHelpMonitor.processEngagement(testEngagement)
 
     // Verify data consistency
-    const predictions = await predictiveHelpAnalytics.getUserPredictions(
-      testUserId,
-      sampleContext
-    )
-    
+    const predictions = await predictiveHelpAnalytics.getUserPredictions(testUserId, sampleContext)
+
     const realTimeMetrics = realTimeHelpMonitor.getCurrentMetrics()
     const dashboardData = await helpAnalyticsEngine.getDashboardData()
 
@@ -684,12 +669,12 @@ describe('Cross-Component Data Consistency', () => {
 describe('Performance Benchmarks', () => {
   it('should process engagements within performance thresholds', async () => {
     const startTime = Date.now()
-    
+
     await helpAnalyticsEngine.trackEngagement(sampleEngagement)
-    
+
     const endTime = Date.now()
     const processingTime = endTime - startTime
-    
+
     // Should process within 100ms (generous threshold for testing)
     expect(processingTime).toBeLessThan(100)
   })
@@ -701,12 +686,12 @@ describe('Performance Benchmarks', () => {
     }
 
     const startTime = Date.now()
-    
+
     await helpAnalyticsEngine.generatePerformanceReport(period)
-    
+
     const endTime = Date.now()
     const processingTime = endTime - startTime
-    
+
     // Should generate report within 500ms (generous threshold for testing)
     expect(processingTime).toBeLessThan(500)
   })

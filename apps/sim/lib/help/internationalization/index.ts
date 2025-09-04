@@ -1,10 +1,10 @@
 /**
  * Internationalization System - Main Export Index
- * 
+ *
  * Central export point for comprehensive internationalization features in the help system.
  * Provides multi-language support, RTL layouts, cultural adaptation, dynamic language
  * switching, and locale-aware formatting across 140+ languages.
- * 
+ *
  * @created 2025-09-04
  * @author Claude Development System
  */
@@ -14,13 +14,13 @@
 // ================================================================================================
 
 export {
+  type I18nConfig,
   I18nManager,
   i18nManager,
-  type I18nConfig,
-  type TranslationKey,
   type LocaleData,
   type TranslationContext,
-  type TranslationMetadata
+  type TranslationKey,
+  type TranslationMetadata,
 } from './i18n-manager'
 
 // ================================================================================================
@@ -28,24 +28,22 @@ export {
 // ================================================================================================
 
 export {
+  FormattedDate,
+  FormattedNumber,
   // Provider
   I18nProvider,
-  
-  // Hooks
-  useI18n,
-  useTranslation,
-  useLocaleSwitch,
-  useRTL,
-  useFormatting,
-  useTranslationLoader,
-  
+  LanguageSwitcher,
+  Plural,
+  RTLLayout,
   // Components
   Translate,
-  Plural,
-  LanguageSwitcher,
-  RTLLayout,
-  FormattedDate,
-  FormattedNumber
+  useFormatting,
+  // Hooks
+  useI18n,
+  useLocaleSwitch,
+  useRTL,
+  useTranslation,
+  useTranslationLoader,
 } from './i18n-hooks'
 
 // ================================================================================================
@@ -70,7 +68,7 @@ export const I18nUtils = {
     const parts = locale.split('-')
     return {
       language: parts[0],
-      region: parts[1]
+      region: parts[1],
     }
   },
 
@@ -102,17 +100,17 @@ export const I18nUtils = {
     return message.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
       const trimmedKey = key.trim()
       const value = variables[trimmedKey]
-      
+
       if (value !== undefined && value !== null) {
         if (value instanceof Date) {
           return value.toLocaleDateString()
-        } else if (typeof value === 'number') {
-          return value.toLocaleString()
-        } else {
-          return String(value)
         }
+        if (typeof value === 'number') {
+          return value.toLocaleString()
+        }
+        return String(value)
       }
-      
+
       return match
     })
   },
@@ -140,7 +138,7 @@ export const I18nUtils = {
    * Get closest supported locale
    */
   getClosestSupportedLocale: (
-    requestedLocale: string, 
+    requestedLocale: string,
     supportedLocales: string[]
   ): string | null => {
     // Exact match
@@ -150,8 +148,8 @@ export const I18nUtils = {
 
     // Language-only match
     const requestedLanguage = I18nUtils.parseLocale(requestedLocale).language
-    const languageMatch = supportedLocales.find(locale => 
-      I18nUtils.parseLocale(locale).language === requestedLanguage
+    const languageMatch = supportedLocales.find(
+      (locale) => I18nUtils.parseLocale(locale).language === requestedLanguage
     )
 
     return languageMatch || null
@@ -166,21 +164,25 @@ export const I18nUtils = {
       return (count: number) => pr.select(count)
     } catch {
       // Fallback for unsupported locales
-      return (count: number) => count === 1 ? 'one' : 'other'
+      return (count: number) => (count === 1 ? 'one' : 'other')
     }
   },
 
   /**
    * Compare locale preferences
    */
-  compareLocalePreference: (locale1: string, locale2: string, preferredLocales: string[]): number => {
+  compareLocalePreference: (
+    locale1: string,
+    locale2: string,
+    preferredLocales: string[]
+  ): number => {
     const index1 = preferredLocales.indexOf(locale1)
     const index2 = preferredLocales.indexOf(locale2)
-    
+
     if (index1 === -1 && index2 === -1) return 0
     if (index1 === -1) return 1
     if (index2 === -1) return -1
-    
+
     return index1 - index2
   },
 
@@ -198,7 +200,7 @@ export const I18nUtils = {
     return new Intl.Collator(locale, {
       numeric: true,
       sensitivity: 'base',
-      ...options
+      ...options,
     })
   },
 
@@ -208,7 +210,7 @@ export const I18nUtils = {
   sortByLocale: (strings: string[], locale: string): string[] => {
     const collator = I18nUtils.createCollator(locale)
     return [...strings].sort(collator.compare)
-  }
+  },
 }
 
 // ================================================================================================
@@ -233,7 +235,7 @@ export const I18N_CONSTANTS = {
     'ar-SA': { name: 'Arabic', nativeName: 'العربية', rtl: true },
     'he-IL': { name: 'Hebrew', nativeName: 'עברית', rtl: true },
     'ru-RU': { name: 'Russian', nativeName: 'Русский', rtl: false },
-    'hi-IN': { name: 'Hindi', nativeName: 'हिन्दी', rtl: false }
+    'hi-IN': { name: 'Hindi', nativeName: 'हिन्दी', rtl: false },
   },
 
   // RTL languages
@@ -259,7 +261,7 @@ export const I18N_CONSTANTS = {
     'ar-SA': 'SAR',
     'he-IL': 'ILS',
     'ru-RU': 'RUB',
-    'hi-IN': 'INR'
+    'hi-IN': 'INR',
   },
 
   // Common namespaces
@@ -270,7 +272,7 @@ export const I18N_CONSTANTS = {
     NAVIGATION: 'navigation',
     ERRORS: 'errors',
     TOOLTIPS: 'tooltips',
-    FEEDBACK: 'feedback'
+    FEEDBACK: 'feedback',
   },
 
   // Translation interpolation patterns
@@ -281,15 +283,15 @@ export const I18N_CONSTANTS = {
     SHORT: { dateStyle: 'short' as const },
     MEDIUM: { dateStyle: 'medium' as const },
     LONG: { dateStyle: 'long' as const },
-    FULL: { dateStyle: 'full' as const }
+    FULL: { dateStyle: 'full' as const },
   },
 
   // Time format styles
   TIME_FORMATS: {
     SHORT: { timeStyle: 'short' as const },
     MEDIUM: { timeStyle: 'medium' as const },
-    LONG: { timeStyle: 'long' as const }
-  }
+    LONG: { timeStyle: 'long' as const },
+  },
 }
 
 // ================================================================================================
@@ -424,7 +426,7 @@ export const I18nSystem = {
     return {
       ...i18nManager.getTranslationStats(),
       isRTL: i18nManager.isRTL(),
-      supportedLocales: i18nManager.getSupportedLocales().map(l => l.locale)
+      supportedLocales: i18nManager.getSupportedLocales().map((l) => l.locale),
     }
   },
 
@@ -466,7 +468,7 @@ export const I18nSystem = {
    */
   cleanup: () => {
     i18nManager.cleanup()
-  }
+  },
 }
 
 // ================================================================================================
@@ -477,17 +479,17 @@ const I18n = {
   // Core system
   Manager: I18nManager,
   System: I18nSystem,
-  
+
   // Instance
   manager: i18nManager,
-  
+
   // Utilities
   Utils: I18nUtils,
   Constants: I18N_CONSTANTS,
-  
+
   // React provider
   Provider: I18nProvider,
-  
+
   // React hooks
   useI18n,
   useTranslation,
@@ -495,14 +497,14 @@ const I18n = {
   useRTL,
   useFormatting,
   useTranslationLoader,
-  
+
   // React components
   Translate,
   Plural,
   LanguageSwitcher,
   RTLLayout,
   FormattedDate,
-  FormattedNumber
+  FormattedNumber,
 }
 
 export default I18n

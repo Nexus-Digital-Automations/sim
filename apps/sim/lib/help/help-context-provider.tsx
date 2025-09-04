@@ -17,6 +17,8 @@ import type * as React from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/console/logger'
+import { AIHelpEngine, type AIHelpRequest, type AIHelpResponse } from '../../lib/help/ai'
+import { getConfigForEnvironment } from '../../lib/help/ai/config'
 import {
   contextualHelpSystem,
   type HelpContent,
@@ -51,6 +53,17 @@ export interface HelpState {
   interactionHistory: UserInteraction[]
   analytics: HelpAnalytics
 
+  // AI Help Engine state
+  aiHelpEngine: AIHelpEngine | null
+  aiEnabled: boolean
+  chatSession: string | null
+  smartSuggestions: Array<{
+    id: string
+    content: string
+    confidence: number
+    type: 'search' | 'chat' | 'proactive'
+  }>
+
   // System state
   isInitialized: boolean
   isLoading: boolean
@@ -67,6 +80,11 @@ export interface HelpUserPreferences {
   language: string
   accessibilityMode: boolean
   reducedMotion: boolean
+  // AI Help preferences
+  enableAIHelp: boolean
+  enableSmartSuggestions: boolean
+  enableProactiveHelp: boolean
+  aiChatHistory: boolean
 }
 
 export interface TourStep {
@@ -119,6 +137,11 @@ type HelpAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'UPDATE_USER_LEVEL'; payload: 'beginner' | 'intermediate' | 'advanced' | 'expert' }
+  | { type: 'INITIALIZE_AI_ENGINE'; payload: { engine: AIHelpEngine; enabled: boolean } }
+  | { type: 'START_CHAT_SESSION'; payload: { sessionId: string } }
+  | { type: 'ADD_SMART_SUGGESTION'; payload: { suggestion: any } }
+  | { type: 'CLEAR_SMART_SUGGESTIONS' }
+  | { type: 'SET_AI_ENABLED'; payload: boolean }
 
 // ========================
 // INITIAL STATE
@@ -144,6 +167,11 @@ const initialState: HelpState = {
     language: 'en',
     accessibilityMode: false,
     reducedMotion: false,
+    // AI Help preferences
+    enableAIHelp: true,
+    enableSmartSuggestions: true,
+    enableProactiveHelp: true,
+    aiChatHistory: true,
   },
   userLevel: 'beginner',
 
@@ -156,6 +184,12 @@ const initialState: HelpState = {
     helpEffectiveness: new Map(),
     commonStruggles: [],
   },
+
+  // AI Help Engine state
+  aiHelpEngine: null,
+  aiEnabled: false,
+  chatSession: null,
+  smartSuggestions: [],
 
   isInitialized: false,
   isLoading: false,
@@ -383,6 +417,64 @@ function helpReducer(state: HelpState, action: HelpAction): HelpState {
       }
     }
 
+    case 'INITIALIZE_AI_ENGINE': {
+      const { engine, enabled } = action.payload
+
+      logger.info(`[${operationId}] Initializing AI Help Engine`, {
+        enabled,
+        engineAvailable: !!engine,
+      })
+
+      return {
+        ...state,
+        aiHelpEngine: engine,
+        aiEnabled: enabled,
+      }
+    }
+
+    case 'START_CHAT_SESSION': {
+      const { sessionId } = action.payload
+
+      logger.info(`[${operationId}] Starting AI chat session`, { sessionId })
+
+      return {
+        ...state,
+        chatSession: sessionId,
+      }
+    }
+
+    case 'ADD_SMART_SUGGESTION': {
+      const { suggestion } = action.payload
+
+      logger.info(`[${operationId}] Adding smart suggestion`, {
+        suggestionType: suggestion.type,
+        confidence: suggestion.confidence,
+      })
+
+      return {
+        ...state,
+        smartSuggestions: [...state.smartSuggestions, suggestion].slice(-5), // Keep last 5 suggestions
+      }
+    }
+
+    case 'CLEAR_SMART_SUGGESTIONS': {
+      logger.info(`[${operationId}] Clearing smart suggestions`)
+
+      return {
+        ...state,
+        smartSuggestions: [],
+      }
+    }
+
+    case 'SET_AI_ENABLED': {
+      logger.info(`[${operationId}] Setting AI enabled`, { enabled: action.payload })
+
+      return {
+        ...state,
+        aiEnabled: action.payload,
+      }
+    }
+
     default:
       return state
   }
@@ -420,12 +512,20 @@ interface HelpContextType {
   trackInteraction: (type: UserInteraction['type'], target: string, context?: any) => void
   getAnalytics: () => HelpAnalytics
 
+  // AI Help functions
+  aiSearch: (query: string, context?: any) => Promise<AIHelpResponse>
+  aiChat: (message: string, context?: any) => Promise<AIHelpResponse>
+  getSmartSuggestions: (context?: any) => Promise<AIHelpResponse>
+  startChatSession: () => string
+  enableAI: (enabled: boolean) => void
+  isAIEnabled: () => boolean
+
   // Utility functions
   isHelpDismissed: (helpId: string) => boolean
   isTourCompleted: (tourId: string) => boolean
 }
 
-const HelpContext = createContext<HelpContextType | null>(null)
+const HelpReactContext = createContext<HelpContextType | null>(null)
 
 // ========================
 // PROVIDER COMPONENT
@@ -452,6 +552,7 @@ export function HelpContextProvider({
       try {
         logger.info(`[${operationId}] Initializing help context provider`)
 
+        // Initialize traditional help system
         dispatch({
           type: 'INITIALIZE',
           payload: {
@@ -460,9 +561,37 @@ export function HelpContextProvider({
           },
         })
 
+        // Initialize AI Help Engine if enabled
+        const aiPrefs = { enableAIHelp: true, ...initialPreferences }
+        if (aiPrefs.enableAIHelp) {
+          try {
+            const aiConfig = getConfigForEnvironment()
+            const aiEngine = new AIHelpEngine(aiConfig, logger)
+
+            dispatch({
+              type: 'INITIALIZE_AI_ENGINE',
+              payload: { engine: aiEngine, enabled: true },
+            })
+
+            logger.info(`[${operationId}] AI Help Engine initialized successfully`)
+          } catch (aiError) {
+            logger.warn(
+              `[${operationId}] AI Help Engine initialization failed, continuing without AI features`,
+              {
+                error: aiError,
+              }
+            )
+            dispatch({
+              type: 'INITIALIZE_AI_ENGINE',
+              payload: { engine: null, enabled: false },
+            })
+          }
+        }
+
         logger.info(`[${operationId}] Help system initialized successfully`, {
           sessionId: state.sessionId,
           userLevel: initialUserLevel,
+          aiEnabled: aiPrefs.enableAIHelp,
         })
       } catch (error) {
         logger.error(`[${operationId}] Failed to initialize help system`, { error })
@@ -471,7 +600,7 @@ export function HelpContextProvider({
     }
 
     initializeSystem()
-  }, [initialUserLevel, initialPreferences])
+  }, [initialUserLevel, initialPreferences, state.sessionId])
 
   // Core help functions
   const showHelp = useCallback(
@@ -606,6 +735,178 @@ export function HelpContextProvider({
     [state.userPreferences.completedTours]
   )
 
+  // AI Help functions
+  const aiSearch = useCallback(
+    async (query: string, context: any = {}): Promise<AIHelpResponse> => {
+      const operationId = nanoid()
+
+      if (!state.aiHelpEngine || !state.aiEnabled) {
+        logger.warn(`[${operationId}] AI Help Engine not available`)
+        throw new Error('AI Help Engine is not enabled or available')
+      }
+
+      try {
+        logger.info(`[${operationId}] Processing AI search request`, { query, context })
+
+        const request: AIHelpRequest = {
+          type: 'search',
+          userId: state.sessionId,
+          query,
+          context: {
+            searchContext: {
+              component: context.component || 'unknown',
+              userRole: state.userLevel,
+              page: window.location.pathname,
+              ...context,
+            },
+          },
+        }
+
+        const response = await state.aiHelpEngine.processRequest(request)
+        logger.info(`[${operationId}] AI search completed successfully`)
+        return response
+      } catch (error) {
+        logger.error(`[${operationId}] AI search failed`, { error, query })
+        throw error
+      }
+    },
+    [state.aiHelpEngine, state.aiEnabled, state.sessionId, state.userLevel]
+  )
+
+  const aiChat = useCallback(
+    async (message: string, context: any = {}): Promise<AIHelpResponse> => {
+      const operationId = nanoid()
+
+      if (!state.aiHelpEngine || !state.aiEnabled) {
+        logger.warn(`[${operationId}] AI Help Engine not available`)
+        throw new Error('AI Help Engine is not enabled or available')
+      }
+
+      try {
+        logger.info(`[${operationId}] Processing AI chat message`, { message, context })
+
+        let sessionId = state.chatSession
+        if (!sessionId) {
+          sessionId = nanoid()
+          dispatch({ type: 'START_CHAT_SESSION', payload: { sessionId } })
+        }
+
+        const request: AIHelpRequest = {
+          type: 'chat',
+          userId: state.sessionId,
+          sessionId,
+          query: message,
+          context: {
+            conversationContext: {
+              userId: state.sessionId,
+              sessionId,
+              userLevel: state.userLevel,
+              component: context.component || 'unknown',
+              page: window.location.pathname,
+              interactionHistory: state.interactionHistory.slice(-10), // Last 10 interactions
+              ...context,
+            },
+          },
+        }
+
+        const response = await state.aiHelpEngine.processRequest(request)
+        logger.info(`[${operationId}] AI chat completed successfully`)
+        return response
+      } catch (error) {
+        logger.error(`[${operationId}] AI chat failed`, { error, message })
+        throw error
+      }
+    },
+    [
+      state.aiHelpEngine,
+      state.aiEnabled,
+      state.sessionId,
+      state.chatSession,
+      state.userLevel,
+      state.interactionHistory,
+    ]
+  )
+
+  const getSmartSuggestions = useCallback(
+    async (context: any = {}): Promise<AIHelpResponse> => {
+      const operationId = nanoid()
+
+      if (!state.aiHelpEngine || !state.aiEnabled) {
+        logger.warn(`[${operationId}] AI Help Engine not available`)
+        throw new Error('AI Help Engine is not enabled or available')
+      }
+
+      try {
+        logger.info(`[${operationId}] Getting smart suggestions`, { context })
+
+        const request: AIHelpRequest = {
+          type: 'proactive',
+          userId: state.sessionId,
+          context: {
+            workflowContext: {
+              userLevel: state.userLevel,
+              component: context.component || 'unknown',
+              page: window.location.pathname,
+              sessionTime: Date.now() - state.analytics.sessionStartTime.getTime(),
+              interactionHistory: state.interactionHistory.slice(-20), // Last 20 interactions
+              strugglesDetected: state.analytics.commonStruggles,
+              ...context,
+            },
+          },
+        }
+
+        const response = await state.aiHelpEngine.processRequest(request)
+        logger.info(`[${operationId}] Smart suggestions retrieved successfully`)
+
+        // Add suggestions to state
+        if (response.suggestions && response.suggestions.length > 0) {
+          response.suggestions.forEach((suggestion) => {
+            dispatch({
+              type: 'ADD_SMART_SUGGESTION',
+              payload: {
+                suggestion: {
+                  id: nanoid(),
+                  content: suggestion.content,
+                  confidence: suggestion.confidence || 0.8,
+                  type: 'proactive',
+                },
+              },
+            })
+          })
+        }
+
+        return response
+      } catch (error) {
+        logger.error(`[${operationId}] Smart suggestions failed`, { error, context })
+        throw error
+      }
+    },
+    [
+      state.aiHelpEngine,
+      state.aiEnabled,
+      state.sessionId,
+      state.userLevel,
+      state.analytics,
+      state.interactionHistory,
+    ]
+  )
+
+  const startChatSession = useCallback(() => {
+    const sessionId = nanoid()
+    dispatch({ type: 'START_CHAT_SESSION', payload: { sessionId } })
+    logger.info('Started new AI chat session', { sessionId })
+    return sessionId
+  }, [])
+
+  const enableAI = useCallback((enabled: boolean) => {
+    dispatch({ type: 'SET_AI_ENABLED', payload: enabled })
+    logger.info('AI Help Engine enabled state changed', { enabled })
+  }, [])
+
+  const isAIEnabled = useCallback(() => {
+    return state.aiEnabled && !!state.aiHelpEngine
+  }, [state.aiEnabled, state.aiHelpEngine])
+
   // Memoized context value
   const contextValue = useMemo<HelpContextType>(
     () => ({
@@ -625,6 +926,13 @@ export function HelpContextProvider({
       updateUserLevel,
       trackInteraction,
       getAnalytics,
+      // AI Help functions
+      aiSearch,
+      aiChat,
+      getSmartSuggestions,
+      startChatSession,
+      enableAI,
+      isAIEnabled,
       isHelpDismissed,
       isTourCompleted,
     }),
@@ -645,12 +953,19 @@ export function HelpContextProvider({
       updateUserLevel,
       trackInteraction,
       getAnalytics,
+      // AI Help functions
+      aiSearch,
+      aiChat,
+      getSmartSuggestions,
+      startChatSession,
+      enableAI,
+      isAIEnabled,
       isHelpDismissed,
       isTourCompleted,
     ]
   )
 
-  return <HelpContext.Provider value={contextValue}>{children}</HelpContext.Provider>
+  return <HelpReactContext.Provider value={contextValue}>{children}</HelpReactContext.Provider>
 }
 
 // ========================
@@ -667,7 +982,7 @@ export function HelpContextProvider({
  * @throws Error if used outside of HelpContextProvider
  */
 export function useHelp(): HelpContextType {
-  const context = useContext(HelpContext)
+  const context = useContext(HelpReactContext)
 
   if (!context) {
     throw new Error('useHelp must be used within a HelpContextProvider')

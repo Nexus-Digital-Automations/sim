@@ -1,79 +1,123 @@
 {
   "execution": {
-    "timestamp": "2025-09-04T18:06:28.011Z",
+    "timestamp": "2025-09-04T18:44:27.597Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 98571,
-    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
-    "endTimestamp": "2025-09-04T18:06:28.016Z",
-    "durationMs": 5
+    "pid": 69456,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
+    "endTimestamp": "2025-09-04T18:44:27.603Z",
+    "durationMs": 6
   },
   "input": {
-    "sessionId": "ce88cd39-e728-4a1f-ab4e-edefaab75f4a",
-    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ce88cd39-e728-4a1f-ab4e-edefaab75f4a.jsonl",
-    "stopHookActive": true,
+    "sessionId": "ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f",
+    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f.jsonl",
+    "stopHookActive": false,
     "rawInput": {
-      "session_id": "ce88cd39-e728-4a1f-ab4e-edefaab75f4a",
-      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ce88cd39-e728-4a1f-ab4e-edefaab75f4a.jsonl",
-      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
+      "session_id": "ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f",
+      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f.jsonl",
+      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
       "hook_event_name": "Stop",
-      "stop_hook_active": true
+      "stop_hook_active": false
     }
   },
   "projectState": {},
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-04T18:06:28.012Z",
-      "message": "Raw input data: \"{\"session_id\":\"ce88cd39-e728-4a1f-ab4e-edefaab75f4a\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ce88cd39-e728-4a1f-ab4e-edefaab75f4a.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
+      "timestamp": "2025-09-04T18:44:27.598Z",
+      "message": "Raw input data: \"{\"session_id\":\"ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/ec2aa3e6-9c69-4efc-ba36-0b71cbd42c7f.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}\""
     },
     {
-      "timestamp": "2025-09-04T18:06:28.012Z",
-      "message": "Input data length: 329"
+      "timestamp": "2025-09-04T18:44:27.598Z",
+      "message": "Input data length: 321"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.012Z",
+      "timestamp": "2025-09-04T18:44:27.598Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.012Z",
+      "timestamp": "2025-09-04T18:44:27.598Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.013Z",
-      "message": "Found 1 total agents in TODO.json"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Found 5 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.013Z",
-      "message": "Agent development_session_1757006001591_1_general_109b4e99: heartbeat=2025-09-04T17:13:21.592Z, timeSince=3186s, isActive=false"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Agent development_session_1757009193252_1_general_0bbdd531: heartbeat=2025-09-04T18:06:33.253Z, timeSince=2274s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.013Z",
-      "message": "Removed stale agent: development_session_1757006001591_1_general_109b4e99"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Agent development_session_1757009752569_1_general_f78a873a: heartbeat=2025-09-04T18:15:52.570Z, timeSince=1715s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.016Z",
-      "message": "Removed 1 stale agents from TODO.json"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Agent development_session_1757009772053_1_general_8c875e47: heartbeat=2025-09-04T18:16:12.054Z, timeSince=1696s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.016Z",
-      "message": "Active agents found: 0, Stale agents removed: 1, Stale tasks reset: 0"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Agent development_session_1757009806134_1_general_f2851399: heartbeat=2025-09-04T18:16:46.135Z, timeSince=1661s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.016Z",
-      "message": "No active agents detected - need agent initialization"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Agent development_session_1757009857843_1_general_2d371c42: heartbeat=2025-09-04T18:17:37.844Z, timeSince=1610s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T18:06:28.016Z",
-      "message": "Exiting with code 2: No active agents - providing initialization guidance"
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Removed stale agent: development_session_1757009193252_1_general_0bbdd531"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Removed stale agent: development_session_1757009752569_1_general_f78a873a"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Removed stale agent: development_session_1757009772053_1_general_8c875e47"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Removed stale agent: development_session_1757009806134_1_general_f2851399"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Removed stale agent: development_session_1757009857843_1_general_2d371c42"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.601Z",
+      "message": "Reset stale task: Build context-sensitive help and documentation system (38 min)"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "Removed 5 stale agents from TODO.json"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "Reset 1 stale tasks back to pending"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "Active agents found: 0, Stale agents removed: 5, Stale tasks reset: 1"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "No active agents detected - analyzing situation for appropriate guidance"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "Found 5 stale agents - providing reactivation guidance"
+    },
+    {
+      "timestamp": "2025-09-04T18:44:27.603Z",
+      "message": "Exiting with code 2: Only stale agents found - providing reactivation guidance"
     }
   ],
   "output": {
     "exitCode": 2,
-    "exitReason": "No active agents - providing initialization guidance"
+    "exitReason": "Only stale agents found - providing reactivation guidance"
   },
   "errors": []
 }

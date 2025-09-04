@@ -470,29 +470,23 @@ timeout 10s node "/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-co
 - **Development notes** → `development/notes/`
 - **Backup files** → `backups/`
 
-## 🚨 STANDARDIZED DOCUMENTATION STRUCTURE
+## 🚨 DOCUMENTATION REQUIREMENTS
 
-**MANDATORY `docs/` DIRECTORY ORGANIZATION:**
+**MANDATORY DOCUMENTATION REVIEW:**
+- **READ RELEVANT DOCS** - Always check `docs/` directory for relevant documentation before making changes
+- **REFERENCE FIRST** - Review architecture, API, and development docs before implementation
 
-**PRIMARY DOCUMENTATION STRUCTURE:**
+**DOCUMENTATION STRUCTURE:**
 ```
 docs/
-├── api/              # API documentation and specifications
-├── architecture/     # System architecture, design decisions
-├── deployment/       # Deployment guides, environment setup
-├── development/      # Development guides, coding standards
-├── troubleshooting/  # Common issues, debugging guides
-├── user/            # End-user documentation, tutorials
-└── README.md        # Documentation index and overview
+├── api/              # API documentation  
+├── architecture/     # System design
+├── deployment/       # Setup guides
+├── development/      # Contributing guides
+├── troubleshooting/  # Common issues
+├── user/            # User guides
+└── README.md        # Navigation index
 ```
-
-**DOCUMENTATION CATEGORIZATION:**
-- **API Documentation** → `docs/api/` - REST/GraphQL specs, endpoint docs, SDK references
-- **Architecture Docs** → `docs/architecture/` - System design, data flow, component diagrams
-- **Deployment Guides** → `docs/deployment/` - Installation, configuration, environment setup
-- **Development Docs** → `docs/development/` - Contributing guides, coding standards, setup
-- **Troubleshooting** → `docs/troubleshooting/` - Error resolution, FAQ, debugging
-- **User Documentation** → `docs/user/` - User guides, tutorials, feature documentation
 
 **DOCUMENTATION STANDARDS:**
 - **ALWAYS create docs/ directory** for project documentation
@@ -504,8 +498,6 @@ docs/
 **MANDATORY DOCUMENTATION MAINTENANCE:**
 - **UPDATE DOCS WITH FEATURES** - Always update relevant documentation when adding/modifying features
 - **SYNC API CHANGES** - Update API docs immediately when endpoints change
-- **REFLECT ARCHITECTURE** - Update architecture docs when system design changes
-- **MAINTAIN ACCURACY** - Keep documentation current with codebase changes
 - **VALIDATION REQUIREMENT** - Documentation updates must be part of feature completion
 
 ## 🚨 MANDATORY GIT WORKFLOW
@@ -636,12 +628,13 @@ timeout 10s node -e 'const TaskManager = require("/Users/jeremyparker/Desktop/Cl
 
 **STANDARD APPROACH:**
 1. **Create Task** - Follow task creation mandate
-2. **Evaluate Existing Tasks** - Check if can modify existing vs create new
-3. **Think First** - Use appropriate thinking level (think/think hard/ultrathink)
-4. **Initialize Agent** - Use TaskManager API initialization
-5. **Deploy Task Subagents** - Maximize concurrent task subagents when appropriate
-6. **Implement & Validate** - Execute with evidence-based completion
-7. **Complete Tasks** - Mark completed via TaskManager API
+2. **Evaluate Existing Tasks** - Check if can modify existing vs create new  
+3. **Review Documentation** - Check `docs/` directory for relevant documentation before making changes
+4. **Think First** - Use appropriate thinking level (think/think hard/ultrathink)
+5. **Initialize Agent** - Use TaskManager API initialization
+6. **Deploy Task Subagents** - Maximize concurrent task subagents when appropriate
+7. **Implement & Validate** - Execute with evidence-based completion
+8. **Complete Tasks** - Mark completed via TaskManager API
 
 ## 🚨 INFINITE OPERATION MANDATE - NO TIME LIMITS
 
