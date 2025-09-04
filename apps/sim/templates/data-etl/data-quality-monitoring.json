@@ -1,0 +1,359 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "data-quality-monitoring-v1.0",
+    "name": "Comprehensive Data Quality Monitoring & Alerting",
+    "description": "Enterprise-grade data quality monitoring template with automated validation rules, anomaly detection, trend analysis, and intelligent alerting. Monitors data freshness, completeness, consistency, and accuracy across multiple data sources.",
+    "category": "data-etl",
+    "subcategories": ["data-quality", "monitoring", "anomaly-detection", "alerting"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "advanced"
+    },
+    "tags": ["data-quality", "monitoring", "validation", "anomaly-detection", "alerting", "trends"],
+    "integrations": ["postgresql", "mysql", "snowflake", "slack", "email", "pagerduty"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "quality_scheduler",
+          "type": "schedule",
+          "name": "Data Quality Check Scheduler",
+          "configuration": {
+            "schedule_type": "cron",
+            "cron_expression": "0 */4 * * *",
+            "timezone": "UTC",
+            "description": "Run quality checks every 4 hours"
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "data_source_profiler",
+          "type": "javascript",
+          "name": "Profile Data Sources",
+          "configuration": {
+            "code": "// Comprehensive data source profiling\\nconst dataSources = inputs.data_sources || [];\\nconst profilingResults = {};\\nconst currentTimestamp = new Date().toISOString();\\n\\nfor (const source of dataSources) {\\n  try {\\n    console.log(`Profiling data source: ${source.name}`);\\n    \\n    const sourceProfile = {\\n      source_name: source.name,\\n      connection_type: source.type,\\n      profiling_timestamp: currentTimestamp,\\n      metrics: {},\\n      quality_scores: {},\\n      anomalies: [],\\n      trends: {}\\n    };\\n    \\n    // Basic data metrics\\n    const basicQuery = `\\n      SELECT \\n        COUNT(*) as total_records,\\n        COUNT(DISTINCT ${source.primary_key || 'id'}) as unique_records,\\n        MIN(${source.timestamp_column || 'created_at'}) as earliest_record,\\n        MAX(${source.timestamp_column || 'created_at'}) as latest_record,\\n        COUNT(CASE WHEN ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '24 HOURS' THEN 1 END) as records_last_24h,\\n        COUNT(CASE WHEN ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '1 HOUR' THEN 1 END) as records_last_1h\\n      FROM ${source.schema}.${source.table}\\n    `;\\n    \\n    const basicMetrics = await executeQuery(source.connection, basicQuery);\\n    sourceProfile.metrics.basic = basicMetrics[0];\\n    \\n    // Data freshness analysis\\n    sourceProfile.metrics.freshness = {\\n      hours_since_last_record: calculateHoursSince(basicMetrics[0].latest_record),\\n      records_per_hour_24h: basicMetrics[0].records_last_24h / 24,\\n      records_last_hour: basicMetrics[0].records_last_1h,\\n      is_stale: calculateHoursSince(basicMetrics[0].latest_record) > (source.freshness_threshold_hours || 4)\\n    };\\n    \\n    // Column-level quality metrics\\n    const columnMetrics = {};\\n    for (const column of source.monitored_columns || []) {\\n      const columnQuery = `\\n        SELECT \\n          COUNT(*) as total_count,\\n          COUNT(${column.name}) as non_null_count,\\n          COUNT(DISTINCT ${column.name}) as unique_count,\\n          ${column.type === 'numeric' ? `AVG(CAST(${column.name} AS FLOAT))` : '0'} as avg_value,\\n          ${column.type === 'numeric' ? `STDDEV(CAST(${column.name} AS FLOAT))` : '0'} as stddev_value\\n        FROM ${source.schema}.${source.table}\\n        WHERE ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '24 HOURS'\\n      `;\\n      \\n      const columnResult = await executeQuery(source.connection, columnQuery);\\n      const columnData = columnResult[0];\\n      \\n      columnMetrics[column.name] = {\\n        completeness_rate: (columnData.non_null_count / columnData.total_count * 100).toFixed(2),\\n        uniqueness_rate: (columnData.unique_count / columnData.non_null_count * 100).toFixed(2),\\n        null_count: columnData.total_count - columnData.non_null_count,\\n        avg_value: columnData.avg_value,\\n        stddev_value: columnData.stddev_value,\\n        data_type: column.type\\n      };\\n      \\n      // Data range validation for numeric columns\\n      if (column.type === 'numeric' && column.valid_range) {\\n        const rangeQuery = `\\n          SELECT COUNT(*) as out_of_range_count\\n          FROM ${source.schema}.${source.table}\\n          WHERE ${column.name} IS NOT NULL \\n            AND (CAST(${column.name} AS FLOAT) < ${column.valid_range.min} \\n                 OR CAST(${column.name} AS FLOAT) > ${column.valid_range.max})\\n            AND ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '24 HOURS'\\n        `;\\n        \\n        const rangeResult = await executeQuery(source.connection, rangeQuery);\\n        columnMetrics[column.name].out_of_range_count = rangeResult[0].out_of_range_count;\\n        columnMetrics[column.name].range_validity_rate = \\n          ((columnData.non_null_count - rangeResult[0].out_of_range_count) / columnData.non_null_count * 100).toFixed(2);\\n      }\\n      \\n      // Pattern validation for string columns\\n      if (column.type === 'string' && column.pattern) {\\n        const patternQuery = `\\n          SELECT COUNT(*) as pattern_violation_count\\n          FROM ${source.schema}.${source.table}\\n          WHERE ${column.name} IS NOT NULL \\n            AND ${column.name} NOT REGEXP '${column.pattern}'\\n            AND ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '24 HOURS'\\n        `;\\n        \\n        const patternResult = await executeQuery(source.connection, patternQuery);\\n        columnMetrics[column.name].pattern_violation_count = patternResult[0].pattern_violation_count;\\n        columnMetrics[column.name].pattern_validity_rate = \\n          ((columnData.non_null_count - patternResult[0].pattern_violation_count) / columnData.non_null_count * 100).toFixed(2);\\n      }\\n    }\\n    \\n    sourceProfile.metrics.columns = columnMetrics;\\n    \\n    // Data consistency checks\\n    const consistencyChecks = {};\\n    for (const check of source.consistency_rules || []) {\\n      const consistencyQuery = `\\n        SELECT COUNT(*) as violation_count\\n        FROM ${source.schema}.${source.table}\\n        WHERE NOT (${check.condition})\\n          AND ${source.timestamp_column || 'created_at'} >= CURRENT_TIMESTAMP - INTERVAL '24 HOURS'\\n      `;\\n      \\n      const consistencyResult = await executeQuery(source.connection, consistencyQuery);\\n      consistencyChecks[check.name] = {\\n        violation_count: consistencyResult[0].violation_count,\\n        check_condition: check.condition,\\n        severity: check.severity || 'medium'\\n      };\\n    }\\n    \\n    sourceProfile.metrics.consistency = consistencyChecks;\\n    \\n    // Calculate quality scores\\n    sourceProfile.quality_scores = calculateQualityScores(sourceProfile.metrics, source);\\n    \\n    // Detect anomalies\\n    sourceProfile.anomalies = await detectDataAnomalies(sourceProfile.metrics, source);\\n    \\n    // Trend analysis\\n    sourceProfile.trends = await analyzeTrends(source, sourceProfile.metrics);\\n    \\n    profilingResults[source.name] = sourceProfile;\\n    \\n  } catch (error) {\\n    profilingResults[source.name] = {\\n      source_name: source.name,\\n      error: error.message,\\n      profiling_timestamp: currentTimestamp,\\n      status: 'failed'\\n    };\\n  }\\n}\\n\\nfunction calculateHoursSince(timestamp) {\\n  if (!timestamp) return Infinity;\\n  const now = new Date();\\n  const recordTime = new Date(timestamp);\\n  return Math.round((now - recordTime) / (1000 * 60 * 60));\\n}\\n\\nfunction calculateQualityScores(metrics, source) {\\n  const scores = {\\n    freshness_score: 0,\\n    completeness_score: 0,\\n    consistency_score: 0,\\n    validity_score: 0,\\n    overall_score: 0\\n  };\\n  \\n  // Freshness score (0-100)\\n  const hoursSinceLastRecord = metrics.freshness.hours_since_last_record;\\n  const freshnessThreshold = source.freshness_threshold_hours || 4;\\n  scores.freshness_score = Math.max(0, 100 - (hoursSinceLastRecord / freshnessThreshold * 100));\\n  \\n  // Completeness score (average of column completeness rates)\\n  const completenessRates = Object.values(metrics.columns || {})\\n    .map(col => parseFloat(col.completeness_rate))\\n    .filter(rate => !isNaN(rate));\\n  scores.completeness_score = completenessRates.length > 0 \\n    ? completenessRates.reduce((sum, rate) => sum + rate, 0) / completenessRates.length\\n    : 100;\\n  \\n  // Consistency score\\n  const consistencyViolations = Object.values(metrics.consistency || {})\\n    .reduce((sum, check) => sum + check.violation_count, 0);\\n  const totalRecords = metrics.basic.records_last_24h || 1;\\n  scores.consistency_score = Math.max(0, 100 - (consistencyViolations / totalRecords * 100));\\n  \\n  // Validity score (range and pattern validation)\\n  const validityRates = Object.values(metrics.columns || {})\\n    .map(col => parseFloat(col.range_validity_rate || col.pattern_validity_rate || 100))\\n    .filter(rate => !isNaN(rate));\\n  scores.validity_score = validityRates.length > 0\\n    ? validityRates.reduce((sum, rate) => sum + rate, 0) / validityRates.length\\n    : 100;\\n  \\n  // Overall score (weighted average)\\n  scores.overall_score = Math.round(\\n    scores.freshness_score * 0.3 +\\n    scores.completeness_score * 0.25 +\\n    scores.consistency_score * 0.25 +\\n    scores.validity_score * 0.2\\n  );\\n  \\n  return scores;\\n}\\n\\nasync function detectDataAnomalies(metrics, source) {\\n  const anomalies = [];\\n  \\n  // Volume anomaly detection\\n  const currentHourlyRate = metrics.freshness.records_per_hour_24h;\\n  const expectedRate = source.expected_hourly_rate || 100;\\n  const volumeDeviation = Math.abs(currentHourlyRate - expectedRate) / expectedRate;\\n  \\n  if (volumeDeviation > 0.5) { // 50% deviation threshold\\n    anomalies.push({\\n      type: 'volume_anomaly',\\n      severity: volumeDeviation > 0.8 ? 'high' : 'medium',\\n      description: `Data volume anomaly: ${currentHourlyRate.toFixed(1)} records/hour (expected: ${expectedRate})`,\\n      metric_value: currentHourlyRate,\\n      expected_value: expectedRate,\\n      deviation_percentage: (volumeDeviation * 100).toFixed(1)\\n    });\\n  }\\n  \\n  // Freshness anomaly\\n  if (metrics.freshness.is_stale) {\\n    anomalies.push({\\n      type: 'freshness_anomaly',\\n      severity: 'high',\\n      description: `Data is stale: ${metrics.freshness.hours_since_last_record} hours since last record`,\\n      metric_value: metrics.freshness.hours_since_last_record,\\n      threshold: source.freshness_threshold_hours || 4\\n    });\\n  }\\n  \\n  // Column-level anomalies\\n  for (const [columnName, columnMetrics] of Object.entries(metrics.columns || {})) {\\n    const completenessRate = parseFloat(columnMetrics.completeness_rate);\\n    if (completenessRate < 90) { // Less than 90% complete\\n      anomalies.push({\\n        type: 'completeness_anomaly',\\n        column: columnName,\\n        severity: completenessRate < 70 ? 'high' : 'medium',\\n        description: `Low completeness in ${columnName}: ${completenessRate}%`,\\n        metric_value: completenessRate,\\n        threshold: 90\\n      });\\n    }\\n    \\n    if (columnMetrics.out_of_range_count > 0) {\\n      anomalies.push({\\n        type: 'validity_anomaly',\\n        column: columnName,\\n        severity: 'medium',\\n        description: `${columnMetrics.out_of_range_count} out-of-range values in ${columnName}`,\\n        metric_value: columnMetrics.out_of_range_count\\n      });\\n    }\\n  }\\n  \\n  return anomalies;\\n}\\n\\nasync function analyzeTrends(source, currentMetrics) {\\n  try {\\n    // Get historical data for trend analysis\\n    const trendQuery = `\\n      SELECT \\n        DATE(${source.timestamp_column || 'created_at'}) as date,\\n        COUNT(*) as daily_count\\n      FROM ${source.schema}.${source.table}\\n      WHERE ${source.timestamp_column || 'created_at'} >= CURRENT_DATE - INTERVAL 7 DAYS\\n      GROUP BY DATE(${source.timestamp_column || 'created_at'})\\n      ORDER BY date\\n    `;\\n    \\n    const trendData = await executeQuery(source.connection, trendQuery);\\n    \\n    if (trendData.length < 3) return { trend_direction: 'insufficient_data' };\\n    \\n    // Calculate trend direction\\n    const counts = trendData.map(row => row.daily_count);\\n    const trendSlope = calculateTrendSlope(counts);\\n    \\n    return {\\n      trend_direction: trendSlope > 0.1 ? 'increasing' : trendSlope < -0.1 ? 'decreasing' : 'stable',\\n      trend_slope: trendSlope.toFixed(4),\\n      daily_counts: trendData,\\n      avg_daily_count: counts.reduce((sum, count) => sum + count, 0) / counts.length,\\n      trend_confidence: calculateTrendConfidence(counts)\\n    };\\n    \\n  } catch (error) {\\n    return { error: error.message };\\n  }\\n}\\n\\nfunction calculateTrendSlope(values) {\\n  const n = values.length;\\n  const sumX = (n * (n + 1)) / 2;\\n  const sumXX = (n * (n + 1) * (2 * n + 1)) / 6;\\n  const sumY = values.reduce((sum, val) => sum + val, 0);\\n  const sumXY = values.reduce((sum, val, index) => sum + val * (index + 1), 0);\\n  \\n  return (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);\\n}\\n\\nfunction calculateTrendConfidence(values) {\\n  // Simple confidence calculation based on variance\\n  const mean = values.reduce((sum, val) => sum + val, 0) / values.length;\\n  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;\\n  const coefficientOfVariation = Math.sqrt(variance) / mean;\\n  \\n  // Lower coefficient of variation = higher confidence\\n  return Math.max(0, Math.min(100, (1 - coefficientOfVariation) * 100));\\n}\\n\\nreturn { profiling_results: profilingResults };"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "anomaly_classifier",
+          "type": "javascript",
+          "name": "Classify & Prioritize Anomalies",
+          "configuration": {
+            "code": "// Intelligent anomaly classification and prioritization\\nconst profilingResults = inputs.profiling_results || {};\\nconst alertingConfig = inputs.alerting_config || {};\\n\\nconst classifiedAnomalies = {\\n  critical: [],\\n  high: [],\\n  medium: [],\\n  low: [],\\n  informational: []\\n};\\n\\nconst anomalySummary = {\\n  total_anomalies: 0,\\n  sources_with_anomalies: 0,\\n  critical_count: 0,\\n  high_count: 0,\\n  requires_immediate_attention: false,\\n  classification_timestamp: new Date().toISOString()\\n};\\n\\n// Classification rules and scoring\\nconst classificationRules = {\\n  freshness_anomaly: { base_severity: 'high', business_impact: 0.9 },\\n  volume_anomaly: { base_severity: 'medium', business_impact: 0.7 },\\n  completeness_anomaly: { base_severity: 'medium', business_impact: 0.6 },\\n  validity_anomaly: { base_severity: 'low', business_impact: 0.4 },\\n  consistency_anomaly: { base_severity: 'medium', business_impact: 0.8 }\\n};\\n\\nfor (const [sourceName, sourceData] of Object.entries(profilingResults)) {\\n  if (sourceData.status === 'failed') continue;\\n  \\n  const sourceAnomalies = sourceData.anomalies || [];\\n  if (sourceAnomalies.length === 0) continue;\\n  \\n  anomalySummary.sources_with_anomalies++;\\n  \\n  for (const anomaly of sourceAnomalies) {\\n    // Enhance anomaly with additional context\\n    const enhancedAnomaly = {\\n      ...anomaly,\\n      source_name: sourceName,\\n      source_type: sourceData.connection_type || 'unknown',\\n      detection_timestamp: sourceData.profiling_timestamp,\\n      business_impact_score: 0,\\n      final_priority: 'medium'\\n    };\\n    \\n    // Calculate business impact score\\n    const rule = classificationRules[anomaly.type] || { base_severity: 'medium', business_impact: 0.5 };\\n    let impactScore = rule.business_impact;\\n    \\n    // Adjust impact based on source criticality\\n    const sourceConfig = alertingConfig.source_priorities?.[sourceName] || {};\\n    const sourceCriticality = sourceConfig.criticality || 'medium';\\n    \\n    const criticalityMultipliers = {\\n      critical: 1.5,\\n      high: 1.2,\\n      medium: 1.0,\\n      low: 0.7\\n    };\\n    \\n    impactScore *= criticalityMultipliers[sourceCriticality];\\n    \\n    // Adjust based on anomaly severity and specific metrics\\n    if (anomaly.severity === 'high') impactScore *= 1.3;\\n    if (anomaly.type === 'freshness_anomaly' && anomaly.metric_value > 24) impactScore *= 1.5; // Very stale data\\n    if (anomaly.type === 'volume_anomaly' && parseFloat(anomaly.deviation_percentage) > 80) impactScore *= 1.4;\\n    \\n    // Time-based impact adjustment\\n    const currentHour = new Date().getHours();\\n    const businessHours = sourceConfig.business_hours || { start: 9, end: 17 };\\n    if (currentHour >= businessHours.start && currentHour <= businessHours.end) {\\n      impactScore *= 1.2; // Higher impact during business hours\\n    }\\n    \\n    enhancedAnomaly.business_impact_score = Math.round(impactScore * 100) / 100;\\n    \\n    // Final priority classification\\n    if (impactScore >= 1.2) {\\n      enhancedAnomaly.final_priority = 'critical';\\n      classifiedAnomalies.critical.push(enhancedAnomaly);\\n      anomalySummary.critical_count++;\\n    } else if (impactScore >= 0.9) {\\n      enhancedAnomaly.final_priority = 'high';\\n      classifiedAnomalies.high.push(enhancedAnomaly);\\n      anomalySummary.high_count++;\\n    } else if (impactScore >= 0.6) {\\n      enhancedAnomaly.final_priority = 'medium';\\n      classifiedAnomalies.medium.push(enhancedAnomaly);\\n    } else if (impactScore >= 0.3) {\\n      enhancedAnomaly.final_priority = 'low';\\n      classifiedAnomalies.low.push(enhancedAnomaly);\\n    } else {\\n      enhancedAnomaly.final_priority = 'informational';\\n      classifiedAnomalies.informational.push(enhancedAnomaly);\\n    }\\n    \\n    anomalySummary.total_anomalies++;\\n  }\\n}\\n\\n// Determine if immediate attention is required\\nanomaly Summary.requires_immediate_attention = \\n  anomalySummary.critical_count > 0 || \\n  anomalySummary.high_count >= 3 ||\\n  classifiedAnomalies.critical.some(a => a.type === 'freshness_anomaly');\\n\\n// Generate recommendations\\nconst recommendations = generateRecommendations(classifiedAnomalies, profilingResults);\\n\\nfunction generateRecommendations(anomalies, profilingData) {\\n  const recommendations = [];\\n  \\n  // Critical recommendations\\n  if (anomalies.critical.length > 0) {\\n    recommendations.push({\\n      priority: 'immediate',\\n      category: 'operational',\\n      title: 'Immediate Investigation Required',\\n      description: `${anomalies.critical.length} critical data quality issues detected requiring immediate attention`,\\n      action_items: anomalies.critical.map(a => `Investigate ${a.type} in ${a.source_name}`)\\n    });\\n  }\\n  \\n  // Freshness-specific recommendations\\n  const freshnessAnomalies = Object.values(anomalies).flat()\\n    .filter(a => a.type === 'freshness_anomaly');\\n  \\n  if (freshnessAnomalies.length > 0) {\\n    recommendations.push({\\n      priority: 'high',\\n      category: 'data_pipeline',\\n      title: 'Data Pipeline Health Check',\\n      description: 'Multiple data sources showing freshness issues',\\n      action_items: [\\n        'Check ETL job schedules and execution logs',\\n        'Verify source system availability',\\n        'Review data pipeline dependencies'\\n      ]\\n    });\\n  }\\n  \\n  // Quality trend recommendations\\n  const qualityScores = Object.values(profilingData)\\n    .filter(source => source.quality_scores)\\n    .map(source => source.quality_scores.overall_score);\\n  \\n  const avgQualityScore = qualityScores.length > 0 \\n    ? qualityScores.reduce((sum, score) => sum + score, 0) / qualityScores.length\\n    : 0;\\n  \\n  if (avgQualityScore < 70) {\\n    recommendations.push({\\n      priority: 'medium',\\n      category: 'quality_improvement',\\n      title: 'Data Quality Improvement Initiative',\\n      description: `Average data quality score is ${Math.round(avgQualityScore)}% - below acceptable threshold`,\\n      action_items: [\\n        'Review and update data validation rules',\\n        'Implement additional data cleansing steps',\\n        'Establish data quality SLAs with source systems'\\n      ]\\n    });\\n  }\\n  \\n  return recommendations;\\n}\\n\\nreturn {\\n  classified_anomalies: classifiedAnomalies,\\n  anomaly_summary: anomalySummary,\\n  recommendations: recommendations\\n};"
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "intelligent_alerting",
+          "type": "condition",
+          "name": "Intelligent Alert Routing",
+          "configuration": {
+            "condition": "{{anomaly_summary.requires_immediate_attention || classified_anomalies.critical.length > 0}}",
+            "true_path": "critical_alert_handler",
+            "false_path": "standard_reporting"
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "critical_alert_handler",
+          "type": "javascript",
+          "name": "Handle Critical Alerts",
+          "configuration": {
+            "code": "// Advanced critical alert handling with escalation\\nconst criticalAnomalies = inputs.classified_anomalies?.critical || [];\\nconst highAnomalies = inputs.classified_anomalies?.high || [];\\nconst anomalySummary = inputs.anomaly_summary || {};\\nconst alertingConfig = inputs.alerting_config || {};\\n\\nconst alertActions = [];\\n\\n// Immediate notifications for critical issues\\nif (criticalAnomalies.length > 0) {\\n  alertActions.push({\\n    action_type: 'immediate_notification',\\n    channel: 'pagerduty',\\n    severity: 'critical',\\n    title: `CRITICAL: ${criticalAnomalies.length} Critical Data Quality Issues`,\\n    description: `Critical data quality anomalies detected:\\\\n${criticalAnomalies.map(a => \\n      `• ${a.source_name}: ${a.description} (Impact: ${a.business_impact_score})`\\n    ).join('\\\\n')}`,\\n    escalation: true,\\n    acknowledgment_required: true\\n  });\\n  \\n  // Slack notification for immediate team awareness\\n  alertActions.push({\\n    action_type: 'team_notification',\\n    channel: 'slack',\\n    slack_channel: alertingConfig.critical_channel || '#data-critical',\\n    severity: 'critical',\\n    message: `🚨 CRITICAL DATA QUALITY ALERT\\\\n\\\\n**${criticalAnomalies.length} Critical Issues Detected**\\\\n\\\\n${criticalAnomalies.map(a => \\n      `**${a.source_name}** - ${a.type.replace(/_/g, ' ').toUpperCase()}\\\\n` +\\n      `📊 ${a.description}\\\\n` +\\n      `⚡ Impact Score: ${a.business_impact_score}/2.0\\\\n` +\\n      `⏰ Detected: ${a.detection_timestamp}\\\\n\\\\n`\\n    ).join('')}**Action Required**: Immediate investigation needed\\\\n**PagerDuty**: Alert has been escalated`,\\n    urgent: true,\\n    require_response: true\\n  });\\n}\\n\\n// High priority alerts (non-critical but important)\\nif (highAnomalies.length > 0 && criticalAnomalies.length === 0) {\\n  alertActions.push({\\n    action_type: 'high_priority_notification',\\n    channel: 'slack',\\n    slack_channel: alertingConfig.alerts_channel || '#data-alerts',\\n    severity: 'high',\\n    message: `⚠️ HIGH PRIORITY DATA QUALITY ISSUES\\\\n\\\\n**${highAnomalies.length} High Priority Issues Detected**\\\\n\\\\n${highAnomalies.slice(0, 5).map(a => \\n      `**${a.source_name}**: ${a.description} (Impact: ${a.business_impact_score})`\\n    ).join('\\\\n')}${highAnomalies.length > 5 ? `\\\\n\\\\n...and ${highAnomalies.length - 5} more issues` : ''}\\\\n\\\\n**Recommended Action**: Review within 2 hours`\\n  });\\n}\\n\\n// Email notification for management (if multiple sources affected)\\nif (anomalySummary.sources_with_anomalies >= 3 || anomalySummary.critical_count > 0) {\\n  alertActions.push({\\n    action_type: 'management_notification',\\n    channel: 'email',\\n    recipients: alertingConfig.management_emails || [],\\n    subject: `Data Quality Alert Summary - ${anomalySummary.total_anomalies} Issues Across ${anomalySummary.sources_with_anomalies} Sources`,\\n    priority: criticalAnomalies.length > 0 ? 'high' : 'normal',\\n    include_dashboard_link: true\\n  });\\n}\\n\\n// Automatic ticket creation for persistent issues\\nconst persistentIssues = [...criticalAnomalies, ...highAnomalies]\\n  .filter(a => a.type === 'freshness_anomaly' && a.metric_value > 12); // Stale for more than 12 hours\\n\\nif (persistentIssues.length > 0) {\\n  alertActions.push({\\n    action_type: 'ticket_creation',\\n    system: 'jira',\\n    ticket_type: 'incident',\\n    priority: 'high',\\n    title: `Data Quality Incident - Multiple Sources Stale`,\\n    description: `Automated ticket created due to persistent data freshness issues:\\\\n\\\\n${persistentIssues.map(issue => \\n      `${issue.source_name}: ${issue.metric_value} hours stale`\\n    ).join('\\\\n')}\\\\n\\\\nImmediate investigation and resolution required.`,\\n    assignee: alertingConfig.default_assignee || 'data-team',\\n    labels: ['data-quality', 'automated', 'incident']\\n  });\\n}\\n\\n// Smart alert suppression (avoid alert fatigue)\\nconst alertSuppressionRules = {\\n  max_alerts_per_hour: 5,\\n  duplicate_suppression_window: 3600000, // 1 hour in ms\\n  escalation_threshold: 3 // Escalate after 3 similar alerts\\n};\\n\\nreturn {\\n  alert_actions: alertActions,\\n  alert_metadata: {\\n    total_actions: alertActions.length,\\n    requires_escalation: criticalAnomalies.length > 0,\\n    alert_timestamp: new Date().toISOString(),\\n    suppression_applied: false // Would check against historical alerts\\n  }\\n};"
+          },
+          "position": { "x": 900, "y": 50 }
+        },
+        {
+          "id": "pagerduty_alert",
+          "type": "pagerduty",
+          "name": "Send PagerDuty Alert",
+          "configuration": {
+            "integration_key": "{{pagerduty_integration_key}}",
+            "event_action": "trigger",
+            "severity": "critical",
+            "summary": "{{alert_actions.find(a => a.action_type === 'immediate_notification')?.title || 'Data Quality Critical Alert'}}",
+            "source": "sim-data-quality-monitor",
+            "component": "data-pipeline",
+            "group": "data-quality",
+            "class": "data-monitoring",
+            "custom_details": {
+              "critical_anomalies_count": "{{classified_anomalies.critical.length}}",
+              "affected_sources": "{{anomaly_summary.sources_with_anomalies}}",
+              "total_anomalies": "{{anomaly_summary.total_anomalies}}",
+              "detection_timestamp": "{{anomaly_summary.classification_timestamp}}"
+            }
+          },
+          "position": { "x": 1100, "y": 20 }
+        },
+        {
+          "id": "critical_slack_alert",
+          "type": "slack",
+          "name": "Send Critical Slack Alert",
+          "configuration": {
+            "channel": "{{critical_notification_channel}}",
+            "message": "{{alert_actions.find(a => a.action_type === 'team_notification')?.message || 'Critical data quality issues detected'}}",
+            "urgent": true,
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚨 CRITICAL DATA QUALITY ALERT*\\n\\n{{classified_anomalies.critical.length}} critical issues require immediate attention"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Critical Issues*\\n{{classified_anomalies.critical.length}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Affected Sources*\\n{{anomaly_summary.sources_with_anomalies}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Detection Time*\\n{{anomaly_summary.classification_timestamp}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PagerDuty*\\n{{classified_anomalies.critical.length > 0 ? 'Alert Escalated' : 'Not Triggered'}}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Dashboard"
+                    },
+                    "url": "{{dashboard_url}}/quality-monitor",
+                    "style": "danger"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text", 
+                      "text": "Acknowledge"
+                    },
+                    "action_id": "acknowledge_alert"
+                  }
+                ]
+              }
+            ]
+          },
+          "position": { "x": 1100, "y": 80 }
+        },
+        {
+          "id": "standard_reporting",
+          "type": "javascript",
+          "name": "Generate Standard Reports",
+          "configuration": {
+            "code": "// Generate comprehensive quality reports for standard alerting\\nconst profilingResults = inputs.profiling_results || {};\\nconst classifiedAnomalies = inputs.classified_anomalies || {};\\nconst anomalySummary = inputs.anomaly_summary || {};\\nconst recommendations = inputs.recommendations || [];\\n\\n// Generate executive summary\\nconst executiveSummary = {\\n  report_timestamp: new Date().toISOString(),\\n  monitoring_period: '24 hours',\\n  total_sources_monitored: Object.keys(profilingResults).length,\\n  sources_with_issues: anomalySummary.sources_with_anomalies || 0,\\n  overall_health_status: calculateOverallHealthStatus(profilingResults, anomalySummary),\\n  key_metrics: extractKeyMetrics(profilingResults),\\n  trend_analysis: generateTrendSummary(profilingResults),\\n  action_required: anomalySummary.total_anomalies > 0\\n};\\n\\nfunction calculateOverallHealthStatus(profiling, summary) {\\n  const totalSources = Object.keys(profiling).length;\\n  const healthySources = totalSources - (summary.sources_with_anomalies || 0);\\n  const healthPercentage = (healthySources / totalSources) * 100;\\n  \\n  if (summary.critical_count > 0) return 'critical';\\n  if (summary.high_count > 0) return 'degraded';\\n  if (healthPercentage >= 95) return 'healthy';\\n  if (healthPercentage >= 85) return 'warning';\\n  return 'unhealthy';\\n}\\n\\nfunction extractKeyMetrics(profiling) {\\n  const metrics = {\\n    avg_quality_score: 0,\\n    total_records_monitored: 0,\\n    avg_freshness_hours: 0,\\n    completeness_issues: 0,\\n    consistency_violations: 0\\n  };\\n  \\n  let validSources = 0;\\n  \\n  for (const [sourceName, sourceData] of Object.entries(profiling)) {\\n    if (sourceData.status === 'failed') continue;\\n    \\n    validSources++;\\n    metrics.avg_quality_score += sourceData.quality_scores?.overall_score || 0;\\n    metrics.total_records_monitored += sourceData.metrics?.basic?.records_last_24h || 0;\\n    metrics.avg_freshness_hours += sourceData.metrics?.freshness?.hours_since_last_record || 0;\\n    \\n    // Count completeness issues\\n    const columnMetrics = sourceData.metrics?.columns || {};\\n    for (const [column, columnData] of Object.entries(columnMetrics)) {\\n      if (parseFloat(columnData.completeness_rate) < 90) {\\n        metrics.completeness_issues++;\\n      }\\n    }\\n    \\n    // Count consistency violations\\n    const consistencyChecks = sourceData.metrics?.consistency || {};\\n    metrics.consistency_violations += Object.values(consistencyChecks)\\n      .reduce((sum, check) => sum + (check.violation_count || 0), 0);\\n  }\\n  \\n  if (validSources > 0) {\\n    metrics.avg_quality_score = Math.round(metrics.avg_quality_score / validSources);\\n    metrics.avg_freshness_hours = Math.round(metrics.avg_freshness_hours / validSources);\\n  }\\n  \\n  return metrics;\\n}\\n\\nfunction generateTrendSummary(profiling) {\\n  const trendSummary = {\\n    improving_sources: [],\\n    degrading_sources: [],\\n    stable_sources: [],\\n    insufficient_data: []\\n  };\\n  \\n  for (const [sourceName, sourceData] of Object.entries(profiling)) {\\n    if (sourceData.status === 'failed') continue;\\n    \\n    const trend = sourceData.trends?.trend_direction;\\n    switch (trend) {\\n      case 'increasing':\\n        trendSummary.improving_sources.push(sourceName);\\n        break;\\n      case 'decreasing':\\n        trendSummary.degrading_sources.push(sourceName);\\n        break;\\n      case 'stable':\\n        trendSummary.stable_sources.push(sourceName);\\n        break;\\n      default:\\n        trendSummary.insufficient_data.push(sourceName);\\n    }\\n  }\\n  \\n  return trendSummary;\\n}\\n\\n// Generate detailed source reports\\nconst detailedReports = {};\\nfor (const [sourceName, sourceData] of Object.entries(profilingResults)) {\\n  if (sourceData.status === 'failed') continue;\\n  \\n  detailedReports[sourceName] = {\\n    source_name: sourceName,\\n    quality_score: sourceData.quality_scores?.overall_score || 0,\\n    health_status: sourceData.quality_scores?.overall_score >= 90 ? 'healthy' : \\n                   sourceData.quality_scores?.overall_score >= 70 ? 'warning' : 'unhealthy',\\n    key_issues: (sourceData.anomalies || []).map(anomaly => ({\\n      type: anomaly.type,\\n      severity: anomaly.final_priority || anomaly.severity,\\n      description: anomaly.description\\n    })),\\n    metrics_summary: {\\n      freshness: sourceData.metrics?.freshness,\\n      completeness: calculateAvgCompleteness(sourceData.metrics?.columns || {}),\\n      consistency: Object.keys(sourceData.metrics?.consistency || {}).length\\n    },\\n    trend: sourceData.trends?.trend_direction || 'unknown'\\n  };\\n}\\n\\nfunction calculateAvgCompleteness(columnMetrics) {\\n  const completenessRates = Object.values(columnMetrics)\\n    .map(col => parseFloat(col.completeness_rate))\\n    .filter(rate => !isNaN(rate));\\n  \\n  return completenessRates.length > 0 \\n    ? Math.round(completenessRates.reduce((sum, rate) => sum + rate, 0) / completenessRates.length)\\n    : 100;\\n}\\n\\nreturn {\\n  executive_summary: executiveSummary,\\n  detailed_reports: detailedReports,\\n  anomaly_breakdown: {\\n    by_severity: {\\n      critical: classifiedAnomalies.critical?.length || 0,\\n      high: classifiedAnomalies.high?.length || 0,\\n      medium: classifiedAnomalies.medium?.length || 0,\\n      low: classifiedAnomalies.low?.length || 0\\n    },\\n    by_type: calculateAnomalyTypeBreakdown(classifiedAnomalies)\\n  },\\n  recommendations: recommendations\\n};\\n\\nfunction calculateAnomalyTypeBreakdown(anomalies) {\\n  const breakdown = {};\\n  \\n  Object.values(anomalies).flat().forEach(anomaly => {\\n    breakdown[anomaly.type] = (breakdown[anomaly.type] || 0) + 1;\\n  });\\n  \\n  return breakdown;\\n}"
+          },
+          "position": { "x": 900, "y": 200 }
+        },
+        {
+          "id": "quality_dashboard_update",
+          "type": "postgresql",
+          "name": "Update Quality Dashboard",
+          "configuration": {
+            "connection": "{{dashboard_database_connection}}",
+            "operation": "bulk_upsert",
+            "table": "data_quality_metrics",
+            "conflict_resolution": "UPDATE",
+            "conflict_columns": ["source_name", "metric_date"],
+            "data_transformation": {
+              "source_name": "{{source_name}}",
+              "metric_date": "CURRENT_DATE",
+              "quality_score": "{{quality_score}}",
+              "freshness_score": "{{freshness_score}}",
+              "completeness_score": "{{completeness_score}}",
+              "consistency_score": "{{consistency_score}}",
+              "anomaly_count": "{{anomaly_count}}",
+              "health_status": "{{health_status}}",
+              "last_updated": "CURRENT_TIMESTAMP"
+            }
+          },
+          "position": { "x": 1100, "y": 200 }
+        },
+        {
+          "id": "summary_notification",
+          "type": "slack",
+          "name": "Send Summary Notification",
+          "configuration": {
+            "channel": "{{monitoring_channel}}",
+            "message": "📊 Data Quality Monitoring Summary\\n\\n**Overall Status**: {{executive_summary.overall_health_status}}\\n**Sources Monitored**: {{executive_summary.total_sources_monitored}}\\n**Issues Found**: {{anomaly_summary.total_anomalies}}\\n**Avg Quality Score**: {{executive_summary.key_metrics.avg_quality_score}}/100\\n\\n{{#if anomaly_summary.total_anomalies}}**Issue Breakdown**:\\n• Critical: {{anomaly_breakdown.by_severity.critical}}\\n• High: {{anomaly_breakdown.by_severity.high}}\\n• Medium: {{anomaly_breakdown.by_severity.medium}}\\n• Low: {{anomaly_breakdown.by_severity.low}}{{/if}}\\n\\n**Trend Analysis**:\\n• Improving: {{executive_summary.trend_analysis.improving_sources.length}} sources\\n• Stable: {{executive_summary.trend_analysis.stable_sources.length}} sources\\n• Degrading: {{executive_summary.trend_analysis.degrading_sources.length}} sources",
+            "condition": "{{anomaly_summary.total_anomalies > 0 || executive_summary.overall_health_status !== 'healthy'}}"
+          },
+          "position": { "x": 1300, "y": 150 }
+        },
+        {
+          "id": "metrics_storage",
+          "type": "postgresql", 
+          "name": "Store Quality Metrics",
+          "configuration": {
+            "connection": "{{metrics_database_connection}}",
+            "operation": "bulk_insert",
+            "table": "quality_monitoring_history",
+            "data_source": "profiling_results",
+            "additional_fields": {
+              "monitoring_run_id": "{{execution_id}}",
+              "monitoring_timestamp": "{{now()}}",
+              "overall_health_status": "{{executive_summary.overall_health_status}}"
+            }
+          },
+          "position": { "x": 1300, "y": 250 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "quality_scheduler",
+          "to": "data_source_profiler",
+          "condition": null
+        },
+        {
+          "from": "data_source_profiler",
+          "to": "anomaly_classifier",
+          "condition": null
+        },
+        {
+          "from": "anomaly_classifier",
+          "to": "intelligent_alerting",
+          "condition": null
+        },
+        {
+          "from": "intelligent_alerting",
+          "to": "critical_alert_handler",
+          "condition": "{{anomaly_summary.requires_immediate_attention}}"
+        },
+        {
+          "from": "intelligent_alerting",
+          "to": "standard_reporting",
+          "condition": "{{!anomaly_summary.requires_immediate_attention}}"
+        },
+        {
+          "from": "critical_alert_handler",
+          "to": "pagerduty_alert",
+          "condition": "{{classified_anomalies.critical.length > 0}}"
+        },
+        {
+          "from": "critical_alert_handler",
+          "to": "critical_slack_alert",
+          "condition": null
+        },
+        {
+          "from": "pagerduty_alert",
+          "to": "quality_dashboard_update",
+          "condition": null
+        },
+        {
+          "from": "critical_slack_alert",
+          "to": "quality_dashboard_update",
+          "condition": null
+        },
+        {
+          "from": "standard_reporting",
+          "to": "quality_dashboard_update",
+          "condition": null
+        },
+        {
+          "from": "quality_dashboard_update",
+          "to": "summary_notification",
+          "condition": null
+        },
+        {
+          "from": "summary_notification",
+          "to": "metrics_storage",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "total_monitoring_runs": 0,
+        "avg_quality_score": 0,
+        "critical_alerts_sent": 0,
+        "last_monitoring_timestamp": null
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "data_source_connections",
+        "dashboard_database_connection",
+        "metrics_database_connection",
+        "pagerduty_integration_key",
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "monitoring_channel": "#data-monitoring",
+        "critical_notification_channel": "#data-critical",
+        "dashboard_url": "https://your-dashboard.com",
+        "quality_threshold": 70,
+        "freshness_threshold_hours": 4
+      },
+      "custom_parameters": {
+        "data_sources": {
+          "type": "array",
+          "description": "Array of data sources to monitor with connection details and quality rules"
+        },
+        "alerting_config": {
+          "type": "object",
+          "default": {
+            "source_priorities": {},
+            "management_emails": [],
+            "escalation_thresholds": {
+              "critical_count": 1,
+              "high_count": 3
+            }
+          },
+          "description": "Alerting configuration including escalation rules"
+        },
+        "monitoring_frequency": {
+          "type": "string",
+          "default": "0 */4 * * *",
+          "description": "Cron expression for monitoring schedule"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_monitoring_time_ms": 0,
+        "avg_sources_monitored": 0,
+        "alert_accuracy_rate": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure data source connections and monitoring rules\\n2. Set up dashboard database for metrics storage\\n3. Configure PagerDuty integration for critical alerts\\n4. Set up Slack channels for notifications\\n5. Define quality thresholds and business rules\\n6. Test with sample data sources\\n7. Schedule regular monitoring runs\\n8. Review and tune alerting thresholds",
+      "use_cases": [
+        "Enterprise data warehouse quality monitoring",
+        "Real-time analytics pipeline health checks",
+        "Compliance and regulatory data validation",
+        "Customer data quality assurance",
+        "Multi-cloud data consistency monitoring"
+      ],
+      "troubleshooting": {
+        "false_positive_alerts": "Review and adjust anomaly detection thresholds",
+        "missed_anomalies": "Lower sensitivity thresholds or add more validation rules",
+        "alert_fatigue": "Implement alert suppression and escalation policies",
+        "slow_monitoring": "Optimize SQL queries or reduce monitoring frequency"
+      }
+    }
+  }
+}
