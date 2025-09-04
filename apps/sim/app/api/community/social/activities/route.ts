@@ -29,7 +29,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -92,18 +92,21 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string parameters to proper types
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
-    if (queryParams.includeEngagement)
-      queryParams.includeEngagement = queryParams.includeEngagement === 'true'
+    // Convert string parameters to proper types for validation schema compatibility
+    // Type conversions ensure schema validation receives expected types
+    const processedParams: Record<string, any> = { ...queryParams }
+    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)  
+    if (processedParams.includeEngagement)
+      processedParams.includeEngagement = (processedParams.includeEngagement as string) === 'true'
 
-    // Validate parameters
-    const params = ActivityFilterSchema.parse(queryParams)
+    // Validate parameters using processed types
+    const params = ActivityFilterSchema.parse(processedParams)
     console.log('[SocialActivities] Filter parameters validated:', params)
 
-    // Get current user for personalization
-    const currentUser = await auth()
+    // Get current user session for personalization and authentication
+    // Uses getSession() which returns proper session object with user data
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -295,6 +298,8 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[SocialActivities] Executing activity feed query')
+    // Execute main activity query with proper parameter binding
+    // Database results return direct array, not .rows property
     const result = await db.execute(sql.raw(mainQuery, queryValues))
 
     // Get total count for pagination
@@ -306,11 +311,14 @@ export async function GET(request: NextRequest) {
     `
 
     const countValues = queryValues.slice(0, -2) // Remove limit and offset
+    // Execute count query for pagination metadata
+    // Access result directly as array, not via .rows property
     const countResult = await db.execute(sql.raw(countQuery, countValues))
-    const totalActivities = (countResult.rows[0] as any)?.total || 0
+    const totalActivities = (countResult[0] as any)?.total || 0
 
-    // Format activities
-    const activities = result.rows.map((row: any) => ({
+    // Format activities from database result array
+    // Result is direct array, not nested in .rows property
+    const activities = result.map((row: any) => ({
       id: row.id,
       userId: row.user_id,
       user: {
@@ -380,7 +388,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve activities',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -397,8 +405,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[SocialActivities] Processing POST request for activity creation')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for activity creation
+    // Uses getSession() for proper session handling
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[SocialActivities] Unauthorized activity creation attempt')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -517,8 +526,10 @@ export async function POST(request: NextRequest) {
       WHERE cua.id = $1
     `
 
+    // Retrieve created activity with user details
+    // Database result is direct array, not nested in .rows
     const activityResult = await db.execute(sql.raw(createdActivityQuery, [activityId]))
-    const activityRow = activityResult.rows[0] as any
+    const activityRow = activityResult[0] as any
 
     const createdActivity = {
       id: activityRow.id,
@@ -592,7 +603,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create activity',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -609,8 +620,9 @@ export async function PUT(request: NextRequest) {
   try {
     console.log('[SocialActivities] Processing PUT request for activity update')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for activity updates
+    // Uses getSession() for consistent authentication handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -632,11 +644,13 @@ export async function PUT(request: NextRequest) {
       SELECT user_id FROM community_user_activities WHERE id = ${activityId}
     `)
 
-    if (activityResult.rows.length === 0) {
+    // Check if activity exists and get owner information
+    // Database result is direct array, not nested in .rows
+    if (activityResult.length === 0) {
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 })
     }
 
-    const activityUserId = (activityResult.rows[0] as any).user_id
+    const activityUserId = (activityResult[0] as any).user_id
 
     // Check permissions (user can update own activities, moderators can update any)
     const canUpdate =
@@ -699,7 +713,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       activityId,
-      updatedAt: (result.rows[0] as any).updated_at,
+      updatedAt: (result[0] as any).updated_at,
       meta: {
         executionTime,
       },
@@ -722,7 +736,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update activity',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }

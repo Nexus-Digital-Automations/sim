@@ -19,7 +19,7 @@
  */
 
 import { NextRequest } from 'next/server'
-import { vi } from 'vitest'
+import { vi, expect } from 'vitest'
 import { mockControls } from './module-mocks'
 
 // ================================
@@ -189,7 +189,7 @@ export function createRequestBuilder(baseUrl: string) {
 
     console.log(`📨 Building ${method} request to ${url}`)
 
-    const requestInit: RequestInit = {
+    const requestInit: any = {
       method,
       headers: new Headers({
         'Content-Type': 'application/json',

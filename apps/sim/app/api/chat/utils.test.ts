@@ -419,7 +419,7 @@ describe('Chat API Utils - Comprehensive Test Suite', () => {
       expect(mockResponse.headers.set).toHaveBeenCalled()
 
       // Check if localhost origin was handled
-      const headerCalls = mockResponse.headers.set.mock.calls
+      const headerCalls = vi.mocked(mockResponse.headers.set).mock.calls
       console.log('🔍 Header calls made:', headerCalls.length)
       if (headerCalls.length > 0) {
         expect(mockResponse.headers.set).toHaveBeenCalledWith(
@@ -431,8 +431,8 @@ describe('Chat API Utils - Comprehensive Test Suite', () => {
       console.log('✅ CORS headers properly configured for cross-origin chat requests')
 
       // Verify the correct number of CORS headers were set
-      const headerSetCalls = mockResponse.headers.set.mock.calls
-      const corsHeaderCount = headerSetCalls.filter((call) =>
+      const headerSetCalls = vi.mocked(mockResponse.headers.set).mock.calls
+      const corsHeaderCount = headerSetCalls.filter((call: any) =>
         call[0].startsWith('Access-Control')
       ).length
       expect(corsHeaderCount).toBe(4)
@@ -524,7 +524,7 @@ describe('Chat API Utils - Comprehensive Test Suite', () => {
         addCorsHeaders(mockResponse, mockRequest)
 
         // Check if headers were set appropriately based on origin
-        const scenarioHeaderCalls = mockResponse.headers.set.mock.calls
+        const scenarioHeaderCalls = vi.mocked(mockResponse.headers.set).mock.calls
         console.log(`🔍 Headers set for ${scenario.name}:`, scenarioHeaderCalls.length)
 
         // CORS headers only set for localhost origins in development

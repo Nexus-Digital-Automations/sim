@@ -173,7 +173,7 @@ async function makeApiRequest<T = any>(
   url: string,
   accessToken: string,
   options: {
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'
     body?: any
     headers?: Record<string, string>
     timeout?: number
@@ -962,21 +962,7 @@ export async function execute(params: any): Promise<SalesforceResponse> {
   }
 }
 
-// Export individual operation functions for direct use
-export {
-  listContacts,
-  getContact,
-  createContact,
-  updateContact,
-  listLeads,
-  createLead,
-  listOpportunities,
-  createOpportunity,
-  listAccounts,
-  createAccount,
-  executeSOQLQuery,
-  bulkInsertRecords,
-}
+// Individual operation functions are already exported with their declarations above
 
 // Export utilities
 export { buildSOQLQuery, buildApiUrl, SalesforceApiError }

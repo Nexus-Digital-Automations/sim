@@ -28,7 +28,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -65,8 +65,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[SocialInteractions] Processing POST request for interaction')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for social interactions
+    // Uses getSession() for proper session handling
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[SocialInteractions] Unauthorized interaction attempt')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -137,9 +138,10 @@ export async function POST(request: NextRequest) {
     let isRemoval = false
     let interactionId: string
 
-    if (existingInteraction.rows.length > 0) {
+    if (existingInteraction.length > 0) {
       // Toggle off - remove interaction
-      const existingId = (existingInteraction.rows[0] as any).id
+      // Get existing interaction ID - direct array access, not .rows
+      const existingId = (existingInteraction[0] as any).id
       await db.execute(sql`
         DELETE FROM community_activity_engagement WHERE id = ${existingId}
       `)
@@ -304,7 +306,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to process interaction',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -325,17 +327,20 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string parameters
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
-    if (queryParams.includeUserData)
-      queryParams.includeUserData = queryParams.includeUserData === 'true'
+    // Convert string parameters to proper types for validation schema
+    // Handle type conversions to prevent TypeScript validation errors
+    const processedParams: Record<string, any> = { ...queryParams }
+    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.includeUserData)
+      processedParams.includeUserData = (processedParams.includeUserData as string) === 'true'
 
-    const params = GetInteractionsSchema.parse(queryParams)
+    const params = GetInteractionsSchema.parse(processedParams)
     console.log('[SocialInteractions] Query parameters validated:', params)
 
-    // Get current user for personalization
-    const currentUser = await auth()
+    // Get current user session for personalization
+    // Uses getSession() for consistent authentication handling
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -400,6 +405,8 @@ export async function GET(request: NextRequest) {
 
     queryValues.push(params.limit, params.offset)
 
+    // Execute interactions query with proper parameter binding
+    // Database results return direct array, not .rows property
     const result = await db.execute(sql.raw(mainQuery, queryValues))
 
     // Get total count
@@ -409,11 +416,14 @@ export async function GET(request: NextRequest) {
       WHERE ${whereConditions.slice(0, -2).join(' AND ')}
     `
 
+    // Execute count query for pagination metadata
+    // Access result directly as array, not via .rows property
     const countResult = await db.execute(sql.raw(countQuery, queryValues.slice(0, -2)))
-    const totalInteractions = (countResult.rows[0] as any)?.total || 0
+    const totalInteractions = (countResult[0] as any)?.total || 0
 
-    // Format interactions
-    const interactions = result.rows.map((row: any) => ({
+    // Format interactions from database result array
+    // Result is direct array, not nested in .rows property
+    const interactions = result.map((row: any) => ({
       id: row.id,
       userId: row.user_id,
       engagementType: row.engagement_type,
@@ -443,7 +453,8 @@ export async function GET(request: NextRequest) {
     const metricsResult = await db.execute(
       sql.raw(metricsQuery, [params.targetId, params.targetType])
     )
-    const metrics = metricsResult.rows.reduce((acc: any, row: any) => {
+    // Reduce metrics from direct result array, not .rows property
+    const metrics = metricsResult.reduce((acc: any, row: any) => {
       acc[row.engagement_type] = Number.parseInt(row.count)
       return acc
     }, {})
@@ -461,7 +472,7 @@ export async function GET(request: NextRequest) {
         sql.raw(userInteractionsQuery, [params.targetId, params.targetType, currentUserId])
       )
 
-      userInteractions = userResult.rows.reduce((acc: any, row: any) => {
+      userInteractions = userResult.reduce((acc: any, row: any) => {
         acc[row.engagement_type] = true
         return acc
       }, {})
@@ -510,7 +521,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve interactions',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -568,11 +579,12 @@ async function validateTarget(targetType: string, targetId: string, userId: stri
 
     const result = await db.execute(sql.raw(query, [targetId]))
 
-    if (result.rows.length === 0) {
+    // Check target existence - direct array access, not .rows
+    if (result.length === 0) {
       return { exists: false, canInteract: false, title: null }
     }
 
-    const target = result.rows[0] as any
+    const target = result[0] as any
 
     // Check visibility permissions
     let canInteract = true
@@ -585,7 +597,8 @@ async function validateTarget(targetType: string, targetId: string, userId: stri
         SELECT 1 FROM community_user_follows
         WHERE follower_id = ${userId} AND following_id = ${target.user_id}
       `)
-      canInteract = followCheck.rows.length > 0 || target.user_id === userId
+      // Check follow relationship - direct array access, not .rows
+      canInteract = followCheck.length > 0 || target.user_id === userId
     }
 
     return {
@@ -677,7 +690,8 @@ async function getContentCreator(targetType: string, targetId: string): Promise<
     }
 
     const result = await db.execute(sql.raw(query, [targetId]))
-    return result.rows.length > 0 ? (result.rows[0] as any).user_id : null
+    // Return creator from direct result array, not .rows property
+    return result.length > 0 ? (result[0] as any).user_id : null
   } catch (error) {
     console.error('[SocialInteractions] Failed to get content creator:', error)
     return null
@@ -700,7 +714,8 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
     `
 
     const metricsResult = await db.execute(sql.raw(metricsQuery, [targetId, targetType]))
-    const counts = metricsResult.rows.reduce((acc: any, row: any) => {
+    // Process metrics from direct result array, not .rows property
+    const counts = metricsResult.reduce((acc: any, row: any) => {
       acc[`${row.engagement_type}Count`] = Number.parseInt(row.count)
       return acc
     }, {})
@@ -715,7 +730,7 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
       `
 
       const userResult = await db.execute(sql.raw(userQuery, [targetId, targetType, currentUserId]))
-      userInteractions = userResult.rows.reduce((acc: any, row: any) => {
+      userInteractions = userResult.reduce((acc: any, row: any) => {
         acc[`is${row.engagement_type.charAt(0).toUpperCase() + row.engagement_type.slice(1)}d`] =
           true
         return acc

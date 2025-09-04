@@ -870,40 +870,66 @@ export interface TemplateDiff {
 }
 
 // ========================
-// EXPORT ALL TYPES
+// TEMPLATE TAGS INTERFACE
 // ========================
 
-export type {
-  // Re-export all types for convenient importing
-  TemplateVisibility,
-  TemplateDifficulty,
-  TemplateComplexity,
-  TemplateStatus,
-  TemplateCategory,
-  TemplateMetadata,
-  Template,
-  TemplateSearchFilters,
-  TemplateSearchQuery,
-  TemplateSearchResults,
-  TemplateSearchAnalytics,
-  TemplateRating,
-  TemplateComment,
-  TemplateCollection,
-  TemplateUserProfile,
-  TemplateCreationOptions,
-  TemplateCustomization,
-  TemplateInstantiationOptions,
-  TemplateValidationResult,
-  TemplateVersionInfo,
-  TemplateUsageAnalytics,
-  TemplateMarketplaceAnalytics,
-  TemplateGovernance,
-  TemplateRepository,
-  TemplateApiResponse,
-  TemplateOperationResult,
-  TemplateEvent,
-  TemplateSystemConfig,
-  TemplateSearchSuggestion,
-  TemplateRecommendation,
-  TemplateDiff,
+/**
+ * Template tag interface with enhanced database schema alignment
+ * Includes new properties for active status and featured designation
+ */
+export interface TemplateTag {
+  id: string
+  name: string
+  description?: string
+  /** Active status for tag visibility control */
+  isActive: boolean
+  /** Featured status for prominent display in marketplace */
+  isFeatured: boolean
+  /** Usage frequency counter for popularity tracking */
+  usageCount: number
+  color?: string
+  createdAt: Date
+  updatedAt: Date
 }
+
+/**
+ * Enhanced user reputation interface aligned with database schema
+ * Integrates with community reputation system
+ */
+export interface UserReputation {
+  id: string
+  userId: string
+  totalPoints: number
+  /** Reputation level enum: novice, contributor, expert, mentor */
+  reputationLevel: 'novice' | 'contributor' | 'expert' | 'mentor'
+  levelProgress: number
+  weeklyPoints: number
+  monthlyPoints: number
+  averageTemplateRating?: number
+  helpfulReviewPercentage?: number
+  consistencyScore?: number
+  lastCalculationAt: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+// ========================
+// ALL TYPES EXPORTED ABOVE
+// ========================
+
+/**
+ * Template Library Types - Complete Export Summary
+ * 
+ * This module provides comprehensive TypeScript type definitions for:
+ * - Core template structures and metadata
+ * - Search and discovery interfaces  
+ * - Community features (ratings, comments, collections)
+ * - Template management and validation
+ * - Analytics and performance tracking
+ * - Enterprise governance features
+ * - API response wrappers and event types
+ * - Enhanced database schema integration
+ * 
+ * All types are directly exported from their definitions above.
+ * Import any type directly: import { Template, TemplateTag, UserReputation } from './types'
+ */

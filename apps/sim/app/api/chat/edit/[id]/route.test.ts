@@ -142,8 +142,8 @@ describe('Chat Edit API Route - Comprehensive Test Suite', () => {
       },
       database: {
         select: { results: [[]] }, // Default to empty results for subdomain checks
-        update: { success: true },
-        delete: { success: true },
+        update: { results: [] },
+        delete: { results: [] },
       },
       permissions: {
         level: 'admin',

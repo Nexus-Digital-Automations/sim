@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { db } from '@/db'
+import { db } from '../../db'
 
 // ========================
 // TYPE DEFINITIONS
@@ -230,9 +230,10 @@ export class CommunityReputationSystem {
       }
 
       return result
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`[ReputationSystem] Error calculating reputation for user ${userId}:`, error)
-      throw new Error(`Failed to calculate reputation: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      throw new Error(`Failed to calculate reputation: ${errorMessage}`)
     }
   }
 
@@ -263,8 +264,8 @@ export class CommunityReputationSystem {
           AND visibility = 'public'
       `)
 
-      if (templateStats.rows[0]) {
-        const stats = templateStats.rows[0] as any
+      if (templateStats.rowCount > 0) {
+        const stats = templateStats[0] as any
         components.templatePoints =
           stats.template_count * REPUTATION_POINT_VALUES.TEMPLATE_CREATED +
           stats.total_downloads * REPUTATION_POINT_VALUES.TEMPLATE_DOWNLOAD +
@@ -285,8 +286,8 @@ export class CommunityReputationSystem {
           AND tr.is_approved = true
       `)
 
-      if (ratingStats.rows[0]) {
-        const stats = ratingStats.rows[0] as any
+      if (ratingStats.rowCount > 0) {
+        const stats = ratingStats[0] as any
         components.ratingPoints =
           stats.five_star_count * REPUTATION_POINT_VALUES.FIVE_STAR_RATING_RECEIVED +
           stats.four_star_count * REPUTATION_POINT_VALUES.FOUR_STAR_RATING_RECEIVED +
@@ -304,16 +305,16 @@ export class CommunityReputationSystem {
           AND review_content IS NOT NULL
       `)
 
-      if (communityStats.rows[0]) {
-        const stats = communityStats.rows[0] as any
+      if (communityStats.rowCount > 0) {
+        const stats = communityStats[0] as any
         components.communityPoints =
           stats.reviews_given * REPUTATION_POINT_VALUES.RATING_GIVEN +
           stats.helpful_reviews * REPUTATION_POINT_VALUES.HELPFUL_REVIEW_WRITTEN
       }
 
       // Quality bonuses
-      if (templateStats.rows[0]) {
-        const stats = templateStats.rows[0] as any
+      if (templateStats.rowCount > 0) {
+        const stats = templateStats[0] as any
         if (stats.template_count >= 5 && stats.avg_rating >= 4.0) {
           components.qualityBonus += REPUTATION_POINT_VALUES.CONSISTENCY_BONUS
         }
@@ -331,8 +332,8 @@ export class CommunityReputationSystem {
         ) activities
       `)
 
-      if (lastActivityResult.rows[0]?.last_activity) {
-        const lastActivity = new Date(lastActivityResult.rows[0].last_activity as string)
+      if (lastActivityResult.rowCount > 0 && lastActivityResult[0]?.last_activity) {
+        const lastActivity = new Date(lastActivityResult[0].last_activity as string)
         const monthsSinceActivity =
           (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24 * 30)
 
@@ -384,8 +385,8 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      if (result.rows[0]) {
-        const rep = result.rows[0] as any
+      if (result.rowCount > 0) {
+        const rep = result[0] as any
         // Update cache
         this.reputationCache.set(userId, {
           points: rep.total_points,
@@ -503,7 +504,7 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      const currentBadgeIds = new Set(currentBadges.rows.map((row) => (row as any).badge_id))
+      const currentBadgeIds = new Set(currentBadges.rows.map((row: { badge_id: string }) => row.badge_id))
 
       // Get all available badges
       const availableBadges = await db.execute(sql`
@@ -635,7 +636,7 @@ export class CommunityReputationSystem {
         AND visibility = 'public'
     `)
 
-    return (result.rows[0] as any)?.count || 0
+    return result.rowCount > 0 ? (result[0] as any)?.count || 0 : 0
   }
 
   /**
@@ -651,7 +652,7 @@ export class CommunityReputationSystem {
         AND rating_count > 0
     `)
 
-    return (result.rows[0] as any)?.avg_rating || 0
+    return result.rowCount > 0 ? (result[0] as any)?.avg_rating || 0 : 0
   }
 
   /**
@@ -666,7 +667,7 @@ export class CommunityReputationSystem {
         AND is_approved = true
     `)
 
-    return (result.rows[0] as any)?.count || 0
+    return result.rowCount > 0 ? (result[0] as any)?.count || 0 : 0
   }
 
   /**
@@ -686,7 +687,7 @@ export class CommunityReputationSystem {
         AND status = 'approved'
     `)
 
-    return ((result.rows[0] as any)?.count || 0) > 0
+    return result.rowCount > 0 ? ((result[0] as any)?.count || 0) > 0 : false
   }
 
   // ========================
@@ -695,8 +696,32 @@ export class CommunityReputationSystem {
 
   /**
    * Get user reputation summary
+   * @param userId - User ID to get reputation summary for
+   * @returns Promise<UserReputationSummary> - Complete reputation summary with levels and metrics
    */
-  async getUserReputationSummary(userId: string) {
+  async getUserReputationSummary(userId: string): Promise<{
+    userId: string
+    totalPoints: number
+    level: number
+    levelName: string
+    levelProgress: number
+    benefits: string[]
+    nextLevelPoints: number | null
+    breakdown: {
+      templatePoints: number
+      ratingPoints: number
+      communityPoints: number
+      qualityBonus: number
+      penalties: number
+    }
+    qualityMetrics: {
+      averageTemplateRating: number
+      helpfulReviewPercentage: number
+      consistencyScore: number
+    }
+    lastCalculated: Date
+    isVerified: boolean
+  }> {
     try {
       const result = await db.execute(sql`
         SELECT 
@@ -711,13 +736,13 @@ export class CommunityReputationSystem {
         WHERE ur.user_id = ${userId}
       `)
 
-      if (!result.rows[0]) {
+      if (result.rowCount === 0) {
         // Initialize reputation for new user
         await this.calculateUserReputation(userId, true)
         return this.getUserReputationSummary(userId)
       }
 
-      const rep = result.rows[0] as any
+      const rep = result[0] as any
       const levelInfo = REPUTATION_LEVELS[rep.reputation_level - 1]
 
       return {
@@ -798,10 +823,11 @@ export class CommunityReputationSystem {
         results.push(result)
       } catch (error) {
         console.error(`[ReputationSystem] Error in batch calculation for ${userId}:`, error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         results.push({
           userId,
-          error: error.message,
-        })
+          error: errorMessage,
+        } as any)
       }
     }
 
@@ -825,7 +851,7 @@ export class CommunityReputationSystem {
         ORDER BY created_at DESC
       `)
 
-      const rapidGains = recentHistory.rows.filter((row) => (row as any).points_change > 100)
+      const rapidGains = recentHistory.rows.filter((row: { points_change: number }) => row.points_change > 100)
       if (rapidGains.length > 5) {
         flags.push('rapid_point_gain')
         suspicionScore += 30
@@ -841,7 +867,7 @@ export class CommunityReputationSystem {
           AND created_at > NOW() - INTERVAL '24 hours'
       `)
 
-      const reviewData = reviewPattern.rows[0] as any
+      const reviewData = reviewPattern.rowCount > 0 ? (reviewPattern[0] as any) : null
       if (reviewData?.review_count > 10 && reviewData.unique_templates < 3) {
         flags.push('suspicious_review_pattern')
         suspicionScore += 25

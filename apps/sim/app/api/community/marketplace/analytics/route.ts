@@ -92,8 +92,11 @@ export async function POST(request: NextRequest) {
       events.map((event) => validateAndSanitizeEvent(event, request))
     )
 
-    // Filter out invalid events
+    // Filter out invalid events with comprehensive type definition
+    // Type assertion ensures all validated events have required properties
+    // for database insertion and analytics processing
     const validEvents = validatedEvents.filter(Boolean) as Array<{
+      id: string
       templateId: string | null
       userId: string | null
       sessionId: string | null
@@ -127,8 +130,24 @@ export async function POST(request: NextRequest) {
       eventTypes: [...new Set(validEvents.map((e) => e.eventType))],
     })
 
-    // Batch insert events
-    await db.insert(templateAnalyticsEvents).values(validEvents)
+    // Batch insert events into database
+    // Transform validated events to match database schema exactly
+    // Each event requires proper type mapping to avoid database insertion errors
+    const eventsForDatabase = validEvents.map((event) => ({
+      id: event.id || crypto.randomUUID(),
+      templateId: event.templateId,
+      userId: event.userId,
+      sessionId: event.sessionId,
+      eventType: event.eventType,
+      eventCategory: event.eventCategory,
+      properties: event.properties || {},
+      userAgent: event.userAgent,
+      ipAddress: event.ipAddress,
+      referrer: event.referrerUrl,
+      createdAt: event.createdAt,
+    }))
+
+    await db.insert(templateAnalyticsEvents).values(eventsForDatabase)
 
     // Process events asynchronously (update counters, trigger aggregations)
     processEventsAsync(validEvents, requestId)
@@ -303,7 +322,7 @@ async function validateAndSanitizeEvent(
       source: extractSource(event.data),
       referrerUrl: referrer,
       userAgent: userAgent?.slice(0, 500), // Limit length
-      ipAddress: anonymizeIP(ipAddress), // Anonymize for GDPR compliance
+      ipAddress: anonymizeIP(ipAddress || null), // Anonymize for GDPR compliance
       countryCode: null, // Would be populated by IP geolocation service
       region: null,
       city: null,

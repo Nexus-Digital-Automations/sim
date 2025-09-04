@@ -93,6 +93,7 @@ import { getSession } from '@/lib/auth'
 import { parseProvider } from '@/lib/oauth/oauth'
 import { db } from '@/db'
 import { GET } from './route'
+import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 
 // Get mocked functions
 const mockParseProvider = parseProvider as ReturnType<typeof vi.fn>
@@ -109,7 +110,7 @@ const mockUser = { id: 'user-123', email: 'test@example.com' }
 function createMockRequest(method = 'GET', body?: any): NextRequest {
   const url = 'http://localhost:3000/api/auth/oauth/connections'
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

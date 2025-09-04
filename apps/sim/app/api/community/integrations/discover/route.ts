@@ -29,7 +29,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
     if (queryParams.tags) {
       queryParams.tags = queryParams.tags
         .split(',')
-        .map((tag) => tag.trim())
+        .map((tag: string) => tag.trim())
         .filter(Boolean)
     }
 
@@ -123,8 +123,10 @@ export async function GET(request: NextRequest) {
     console.log('[IntegrationDiscovery] Search parameters validated:', params)
 
     // Get current user for personalization
-    const currentUser = await auth()
-    const currentUserId = currentUser?.user?.id
+    // Authentication service provides user session data for personalized search results
+    // and user-specific integration status (installed, favorited)
+    const session = await getSession()
+    const currentUserId = session?.user?.id
 
     // Rate limiting
     const clientId = request.headers.get('x-forwarded-for') || currentUserId || 'anonymous'
@@ -190,7 +192,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to search integrations',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -264,7 +266,7 @@ async function searchIntegrations(params: any, currentUserId?: string) {
     }
 
     // Sort mapping
-    const sortMappings = {
+    const sortMappings: Record<string, string> = {
       relevance: searchRanking,
       popularity: 'cc.download_count',
       rating: 'cc.rating_average',
@@ -336,7 +338,7 @@ async function searchIntegrations(params: any, currentUserId?: string) {
       queryValues.push(params.limit, params.offset)
     }
 
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
+    const result = await db.execute(sql.raw(mainQuery))
 
     // Get total count for pagination
     const countQuery = `
@@ -345,14 +347,14 @@ async function searchIntegrations(params: any, currentUserId?: string) {
       WHERE ${whereConditions.join(' AND ')}
     `
     const countValues = queryValues.slice(0, -(currentUserId ? 4 : 2))
-    const countResult = await db.execute(sql.raw(countQuery, countValues))
-    const total = (countResult.rows[0] as any)?.total || 0
+    const countResult = await db.execute(sql.raw(countQuery))
+    const total = (countResult[0] as any)?.total || 0
 
     // Get search facets for filtering
     const facets = await getSearchFacets(whereConditions, countValues)
 
     // Format integration results
-    const integrations = result.rows.map((row: any) => ({
+    const integrations = result.map((row: any) => ({
       id: row.id,
       name: row.name,
       slug: row.slug,
@@ -418,10 +420,10 @@ async function getSearchFacets(whereConditions: string[], queryValues: any[]) {
       ORDER BY count DESC
     `
 
-    const result = await db.execute(sql.raw(facetQuery, queryValues))
+    const result = await db.execute(sql.raw(facetQuery))
 
     // Process categories
-    const categories = result.rows.map((row: any) => ({
+    const categories = result.map((row: any) => ({
       name: row.category,
       count: Number.parseInt(row.count),
       avgRating: Number.parseFloat(row.avg_rating || 0),
@@ -430,7 +432,7 @@ async function getSearchFacets(whereConditions: string[], queryValues: any[]) {
 
     // Process tags (flatten from all categories)
     const allTags = new Map()
-    result.rows.forEach((row: any) => {
+    result.forEach((row: any) => {
       const tags = row.all_tags || []
       tags.forEach((tagArray: string[]) => {
         if (Array.isArray(tagArray)) {

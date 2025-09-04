@@ -32,8 +32,21 @@ import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
-// Replace with your actual file upload route handlers
-import { DELETE, GET, POST } from './route' // TODO: Import actual file handlers
+// import { DELETE, GET, POST } from './route' // TODO: Import actual route handlers
+
+// Template placeholder functions - replace with actual route imports
+const GET = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template GET handler' }), { status: 200 })
+}
+const POST = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template POST handler' }), { status: 200 })
+}
+const PATCH = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template PATCH handler' }), { status: 200 })
+}
+const DELETE = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template DELETE handler' }), { status: 200 })
+}
 
 // ================================
 // FILE TEST DATA DEFINITIONS
@@ -163,7 +176,7 @@ function createFileUploadRequest(
 
   console.log(`📁 Creating file upload ${method} request to ${baseUrl}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       // Don't set Content-Type for FormData - let the browser set it with boundary
@@ -469,7 +482,7 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
 
       expect(response.status).toBe(400)
       const data = await response.json()
-      expect(data.error).toContain('virus' || 'malware' || 'security')
+      expect(data.error).toMatch(/virus|malware|security/i)
     })
   })
 
@@ -874,7 +887,7 @@ describe('[FILE_ENDPOINT] File Upload API Tests', () => {
 
       const responses = await Promise.all(uploadRequests)
 
-      responses.forEach((response, i) => {
+      responses.forEach((response: any, i: any) => {
         console.log(`📁 Concurrent upload ${i + 1} status:`, response.status)
         expect([200, 201].includes(response.status)).toBe(true)
       })

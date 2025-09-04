@@ -75,7 +75,7 @@ function createMockRequest(
 
   console.log(`🔧 Creating ${method} request to ${baseUrl}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

@@ -28,7 +28,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { CommunityReputationSystem } from '@/lib/community/reputation-system'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -109,18 +109,34 @@ export async function GET(request: NextRequest) {
 
     // Parse search parameters
     const url = new URL(request.url)
-    const searchParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string numbers to actual numbers for validation
-    if (searchParams.minReputation)
-      searchParams.minReputation = Number.parseInt(searchParams.minReputation)
-    if (searchParams.maxReputation)
-      searchParams.maxReputation = Number.parseInt(searchParams.maxReputation)
-    if (searchParams.limit) searchParams.limit = Number.parseInt(searchParams.limit)
-    if (searchParams.offset) searchParams.offset = Number.parseInt(searchParams.offset)
-    if (searchParams.verified) searchParams.verified = searchParams.verified === 'true'
+    /**
+     * Query Parameter Type Safety Enhancement:
+     * Convert string parameters to appropriate types for validation
+     * Handles numeric and boolean conversions with proper type casting
+     */
+    const queryParams: Record<string, any> = {}
+    for (const [key, value] of url.searchParams) {
+      queryParams[key] = value
+    }
+    
+    if (queryParams.minReputation) {
+      queryParams.minReputation = Number.parseInt(queryParams.minReputation)
+    }
+    if (queryParams.maxReputation) {
+      queryParams.maxReputation = Number.parseInt(queryParams.maxReputation)
+    }
+    if (queryParams.limit) {
+      queryParams.limit = Number.parseInt(queryParams.limit)
+    }
+    if (queryParams.offset) {
+      queryParams.offset = Number.parseInt(queryParams.offset)
+    }
+    if (queryParams.verified) {
+      queryParams.verified = queryParams.verified === 'true'
+    }
 
-    const params = SearchUsersSchema.parse(searchParams)
+    const params = SearchUsersSchema.parse(queryParams)
     console.log('[CommunityUsersAPI] Search parameters validated:', params)
 
     // Rate limiting for search requests
@@ -293,10 +309,10 @@ export async function GET(request: NextRequest) {
     `
 
     const countResult = await db.execute(sql.raw(countQuery, queryParams.slice(0, -2)))
-    const totalUsers = (countResult.rows[0] as any)?.total || 0
+    const totalUsers = (countResult[0] as any)?.total || 0
 
     // Format results
-    const users = result.rows.map((row: any) => ({
+    const users = result.map((row: any) => ({
       id: row.id,
       name: row.name,
       displayName: row.display_name || row.name,
@@ -374,7 +390,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to search users',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -392,7 +408,7 @@ export async function POST(request: NextRequest) {
     console.log('[CommunityUsersAPI] Processing POST request for profile creation/update')
 
     // Authenticate user
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[CommunityUsersAPI] Unauthorized request - no valid session')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -421,7 +437,7 @@ export async function POST(request: NextRequest) {
       SELECT id, user_id FROM community_user_profiles WHERE user_id = ${userId}
     `)
 
-    const isUpdate = existingProfile.rows.length > 0
+    const isUpdate = existingProfile.length > 0
     console.log(
       `[CommunityUsersAPI] Profile ${isUpdate ? 'exists - updating' : 'does not exist - creating'}`
     )
@@ -526,7 +542,7 @@ export async function POST(request: NextRequest) {
       console.log(`[CommunityUsersAPI] Initialized reputation for new user: ${userId}`)
     }
 
-    if (!result.rows[0]) {
+    if (!result[0]) {
       throw new Error('Failed to create/update profile')
     }
 
@@ -549,7 +565,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      profileId: result.rows[0].id,
+      profileId: result[0].id,
       isUpdate,
       message: `Community profile ${isUpdate ? 'updated' : 'created'} successfully`,
       meta: {
@@ -575,7 +591,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create/update profile',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -593,7 +609,7 @@ export async function DELETE(request: NextRequest) {
     console.log('[CommunityUsersAPI] Processing DELETE request for profile deletion')
 
     // Authenticate user
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[CommunityUsersAPI] Unauthorized DELETE request')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -607,7 +623,7 @@ export async function DELETE(request: NextRequest) {
       SELECT id FROM community_user_profiles WHERE user_id = ${userId}
     `)
 
-    if (existingProfile.rows.length === 0) {
+    if (existingProfile.length === 0) {
       return NextResponse.json({ error: 'Community profile not found' }, { status: 404 })
     }
 
@@ -672,7 +688,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to delete profile',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }

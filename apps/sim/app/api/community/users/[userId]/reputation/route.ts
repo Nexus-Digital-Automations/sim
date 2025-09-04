@@ -27,7 +27,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { CommunityReputationSystem, REPUTATION_LEVELS } from '@/lib/community/reputation-system'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     const { userId } = UserIdParamSchema.parse(params)
 
     // Get viewer's authentication status
-    const session = await auth()
+    const session = await getSession()
     const viewerId = session?.user?.id
     const isOwnReputation = userId === viewerId
 
@@ -83,7 +83,11 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
       )
     }
 
-    // Check if user exists and get their profile privacy settings
+    /**
+     * Database Access Pattern: Check user existence and privacy settings
+     * Using direct array access pattern [0] instead of .rows[0] for consistency
+     * Includes comprehensive profile privacy validation for reputation visibility
+     */
     const userCheck = await db.execute(sql`
       SELECT 
         u.id,
@@ -95,12 +99,12 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
       WHERE u.id = ${userId}
     `)
 
-    if (!userCheck.rows[0]) {
+    if (!userCheck[0]) {
       console.warn(`[ReputationAPI] User not found: ${userId}`)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const userData = userCheck.rows[0] as any
+    const userData = userCheck[0] as any
 
     // Check privacy settings
     const profileVisibility = userData.profile_visibility || 'public'
@@ -111,7 +115,11 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
       return NextResponse.json({ error: "This user's reputation is private" }, { status: 403 })
     }
 
-    // Get reputation system instance
+    /**
+     * Enhanced Reputation System Integration:
+     * Using singleton pattern for consistent reputation calculations across the application
+     * Integrates with new reputationLevel property from enhanced schema
+     */
     const reputationSystem = CommunityReputationSystem.getInstance()
 
     // Get comprehensive reputation summary
@@ -142,7 +150,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
         LIMIT 10
       `)
 
-      recentHistory = historyResult.rows.map((row: any) => ({
+      recentHistory = historyResult.map((row: any) => ({
         id: row.id,
         changeType: row.change_type,
         pointsChange: row.points_change,
@@ -180,7 +188,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
         GROUP BY u.id
       `)
 
-      const stats = statsResult.rows[0] as any
+      const stats = statsResult[0] as any
       detailedBreakdown = {
         templates: {
           count: stats?.template_count || 0,
@@ -282,7 +290,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to retrieve reputation data',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -305,7 +313,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     const { userId } = UserIdParamSchema.parse(params)
 
     // Authenticate user
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[ReputationAPI] Unauthorized reputation recalculation request')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -358,7 +366,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
       SELECT id FROM "user" WHERE id = ${userId}
     `)
 
-    if (!userExists.rows[0]) {
+    if (!userExists[0]) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
@@ -430,7 +438,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     return NextResponse.json(
       {
         error: 'Failed to recalculate reputation',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -457,14 +465,27 @@ export async function GET_HISTORY(
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string numbers to actual numbers for validation
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
+    /**
+     * Query Parameter Type Safety Enhancement:
+     * Convert string parameters to appropriate types for validation
+     * Handles numeric conversions with proper type casting for pagination
+     */
+    const processedParams: Record<string, any> = {}
+    for (const [key, value] of url.searchParams) {
+      processedParams[key] = value
+    }
+    
+    if (processedParams.limit) {
+      processedParams.limit = Number.parseInt(processedParams.limit)
+    }
+    if (processedParams.offset) {
+      processedParams.offset = Number.parseInt(processedParams.offset)
+    }
 
-    const historyParams = ReputationHistoryQuerySchema.parse(queryParams)
+    const historyParams = ReputationHistoryQuerySchema.parse(processedParams)
 
     // Get viewer's authentication status
-    const session = await auth()
+    const session = await getSession()
     const viewerId = session?.user?.id
     const isOwnReputation = userId === viewerId
 
@@ -479,11 +500,11 @@ export async function GET_HISTORY(
       WHERE u.id = ${userId}
     `)
 
-    if (!userCheck.rows[0]) {
+    if (!userCheck[0]) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const userData = userCheck.rows[0] as any
+    const userData = userCheck[0] as any
     const profileVisibility = userData.profile_visibility || 'public'
     const showActivity = userData.show_activity !== false
 
@@ -549,10 +570,10 @@ export async function GET_HISTORY(
     `
 
     const countResult = await db.execute(sql.raw(countQuery, queryParamsList.slice(0, -2)))
-    const totalRecords = (countResult.rows[0] as any)?.total || 0
+    const totalRecords = (countResult[0] as any)?.total || 0
 
     // Format history records
-    const history = historyResult.rows.map((row: any) => ({
+    const history = historyResult.map((row: any) => ({
       id: row.id,
       changeType: row.change_type,
       pointsChange: row.points_change,
@@ -599,7 +620,7 @@ export async function GET_HISTORY(
     return NextResponse.json(
       {
         error: 'Failed to retrieve reputation history',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }

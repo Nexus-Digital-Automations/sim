@@ -35,7 +35,15 @@ import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 // ================================
 // Replace [ENDPOINT_NAME] with your actual route handlers
 // Example: import { GET, POST, PUT, DELETE, PATCH } from './route'
-import { GET, POST } from './route' // TODO: Import actual route handlers
+// import { GET, POST } from './route' // TODO: Import actual route handlers
+
+// Template placeholder functions - replace with actual route imports
+const GET = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template GET handler' }), { status: 200 })
+}
+const POST = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template POST handler' }), { status: 200 })
+}
 
 // ================================
 // TEST DATA DEFINITIONS
@@ -92,7 +100,7 @@ function createMockRequest(
 
   console.log(`🔧 Creating ${method} request to ${baseUrl}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

@@ -603,7 +603,7 @@ vi.mock('@/lib/uploads', () => {
     getPresignedUrl: vi.fn().mockImplementation(async (key, expirySeconds) => {
       console.log('🔍 getPresignedUrl called:', { key, expirySeconds })
 
-      if (mockStorageProvider === 'local') {
+      if (mockFileState.storageProvider === 'local') {
         return undefined // Local storage doesn't use presigned URLs
       }
 
@@ -611,10 +611,10 @@ vi.mock('@/lib/uploads', () => {
     }),
 
     isUsingCloudStorage: vi.fn().mockImplementation(() => {
-      const result = mockStorageProvider !== 'local'
+      const result = mockFileState.storageProvider !== 'local'
       console.log(
         '🔍 isUsingCloudStorage called, storage provider:',
-        mockStorageProvider,
+        mockFileState.storageProvider,
         'returning:',
         result
       )
@@ -683,12 +683,12 @@ vi.mock('@/lib/workflows/execution-file-storage', () => {
         type,
       })
 
-      if (mockUploadError) {
-        throw new Error(mockUploadError)
+      if (mockFileState.uploadError) {
+        throw new Error(mockFileState.uploadError)
       }
 
       return (
-        mockUploadResult || {
+        mockFileState.uploadResult || {
           id: `exec-file-${Date.now()}`,
           name: filename,
           size: buffer.length,

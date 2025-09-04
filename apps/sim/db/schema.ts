@@ -92,6 +92,7 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(), // Primary identifier for login
   emailVerified: boolean('email_verified').notNull(), // Email verification status for security
   image: text('image'), // Profile picture URL (optional)
+  role: text('role').notNull().default('user'), // User role: admin, user, moderator
   createdAt: timestamp('created_at').notNull(), // Account creation timestamp
   updatedAt: timestamp('updated_at').notNull(), // Last profile update
   stripeCustomerId: text('stripe_customer_id'), // Stripe customer ID for billing
@@ -681,6 +682,64 @@ export const userStats = pgTable('user_stats', {
   totalCopilotCalls: integer('total_copilot_calls').notNull().default(0),
   lastActive: timestamp('last_active').notNull().defaultNow(),
   billingBlocked: boolean('billing_blocked').notNull().default(false),
+})
+
+/**
+ * User Reputation table - Community engagement and expertise tracking
+ *
+ * Tracks user contribution levels, expertise, and community standing through:
+ * - Point accumulation system for various activities
+ * - Reputation levels for progressive recognition (novice -> expert)
+ * - Community rating based on peer feedback
+ * - Expertise areas for specialized knowledge tracking
+ * - Badge system for achievement recognition
+ *
+ * REPUTATION LEVELS:
+ * - 'novice': 0-99 points - New community members
+ * - 'contributor': 100-499 points - Active participants
+ * - 'expert': 500-1999 points - Recognized specialists
+ * - 'mentor': 2000+ points - Community leaders
+ *
+ * POINTS SYSTEM:
+ * - Workflow creation: +10 points
+ * - Template sharing: +25 points
+ * - Helpful feedback: +5 points
+ * - Code contributions: +50 points
+ *
+ * PERFORMANCE:
+ * - Indexed by userId for fast user lookup
+ * - Reputation level enables quick filtering for expert content
+ * - JSON fields for flexible expertise and badge tracking
+ */
+export const userReputation = pgTable('user_reputation', {
+  id: text('id').primaryKey(), // Reputation record identifier
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(), // One reputation record per user
+  totalPoints: integer('total_points').default(0), // Cumulative contribution points
+  level: integer('level').default(1), // Numeric level for calculations
+  reputationLevel: text('reputation_level').notNull().default('novice'), // Human-readable reputation tier
+  contributionScore: decimal('contribution_score', { precision: 8, scale: 2 }).default('0'), // Weighted contribution metric
+  communityRating: decimal('community_rating', { precision: 3, scale: 2 }).default('0'), // Peer feedback rating (0-5.0)
+  helpfulVotes: integer('helpful_votes').default(0), // Community appreciation count
+  
+  // Detailed point breakdown for analytics and transparency
+  templateCreationPoints: integer('template_creation_points').default(0), // Points from template creation
+  templateRatingPoints: integer('template_rating_points').default(0), // Points from template ratings
+  communityContributionPoints: integer('community_contribution_points').default(0), // Points from community engagement
+  qualityBonusPoints: integer('quality_bonus_points').default(0), // Bonus points for high-quality content
+  penaltyPoints: integer('penalty_points').default(0), // Points deducted for violations
+  
+  // Advanced reputation tracking
+  levelProgress: decimal('level_progress', { precision: 5, scale: 2 }).default('0'), // Progress toward next level
+  decayApplied: boolean('decay_applied').default(false), // Whether point decay has been applied
+  lastCalculationAt: timestamp('last_calculation_at').defaultNow(), // Last reputation calculation
+  
+  expertiseAreas: json('expertise_areas').default('[]'), // Specialized knowledge domains
+  badgesEarned: json('badges_earned').default('[]'), // Achievement badges collection
+  createdAt: timestamp('created_at').notNull().defaultNow(), // Reputation tracking start
+  updatedAt: timestamp('updated_at').notNull().defaultNow(), // Last reputation update
 })
 
 export const customTools = pgTable('custom_tools', {
@@ -2444,18 +2503,35 @@ export const templateTags = pgTable(
     // Tag categorization
     tagType: text('tag_type').notNull().default('general'), // 'skill', 'integration', 'industry', 'use_case', 'general'
     isSystemTag: boolean('is_system_tag').notNull().default(false), // System-managed vs user-created
+    
+    // Tag lifecycle management
+    isActive: boolean('is_active').notNull().default(true), // Tag availability for assignment
+    isFeatured: boolean('is_featured').notNull().default(false), // Promoted tags for discovery
 
     // Usage analytics
     usageCount: integer('usage_count').notNull().default(0), // Number of templates using this tag
+    displayName: text('display_name'), // Alternative display name for UI
+    trendScore: decimal('trend_score', { precision: 8, scale: 4 }), // Popularity trend metric
+    weeklyGrowth: decimal('weekly_growth', { precision: 5, scale: 4 }), // Growth rate tracking
 
     // Audit fields
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    createdByUserId: text('created_by_user_id').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(), // Tag creation timestamp
+    updatedAt: timestamp('updated_at').notNull().defaultNow(), // Last tag modification
+    createdByUserId: text('created_by_user_id').references(() => user.id, { onDelete: 'set null' }), // Tag creator
   },
   (table) => ({
+    // Index for tag categorization queries
     typeIdx: index('template_tags_type_idx').on(table.tagType),
+    // Index for popularity-based tag ordering
     usageIdx: index('template_tags_usage_idx').on(table.usageCount),
+    // Index for system vs user-created tag filtering
     systemIdx: index('template_tags_system_idx').on(table.isSystemTag),
+    // Index for active tag filtering in UI
+    activeIdx: index('template_tags_active_idx').on(table.isActive),
+    // Index for featured tag promotion queries
+    featuredIdx: index('template_tags_featured_idx').on(table.isFeatured),
+    // Composite index for active featured tags
+    activeFeaturedIdx: index('template_tags_active_featured_idx').on(table.isActive, table.isFeatured),
   })
 )
 
@@ -2592,25 +2668,52 @@ export const templates = pgTable(
 /**
  * Template tags association table - Many-to-many relationship
  *
- * Links templates to tags for flexible categorization and discovery
+ * Links templates to tags for flexible categorization and discovery.
+ * Supports both automatic system tagging and manual user-assigned tags.
+ *
+ * RELATIONSHIP MODEL:
+ * - Each template can have multiple tags for comprehensive categorization
+ * - Each tag can be applied to multiple templates for broad discovery
+ * - Assignment tracking for audit trails and analytics
+ *
+ * PERFORMANCE:
+ * - Unique constraint prevents duplicate tag assignments
+ * - Indexes optimized for template-to-tags and tags-to-templates queries
+ * - Cascade delete maintains referential integrity
  */
 export const templateTagAssociations = pgTable(
   'template_tag_associations',
   {
     templateId: text('template_id')
       .notNull()
-      .references(() => templates.id, { onDelete: 'cascade' }),
+      .references(() => templates.id, { onDelete: 'cascade' }), // Associated template
     tagId: text('tag_id')
       .notNull()
-      .references(() => templateTags.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
+      .references(() => templateTags.id, { onDelete: 'cascade' }), // Applied tag
+    createdAt: timestamp('created_at').notNull().defaultNow(), // Assignment timestamp
   },
   (table) => ({
+    // Unique constraint prevents duplicate tag assignments
     templateTagPk: uniqueIndex('template_tag_associations_pk').on(table.templateId, table.tagId),
+    // Index for loading all tags for a template
     templateIdx: index('template_tag_assoc_template_idx').on(table.templateId),
+    // Index for finding all templates with a specific tag
     tagIdx: index('template_tag_assoc_tag_idx').on(table.tagId),
   })
 )
+
+/**
+ * Template Tag Assignments table - Alternative name for API compatibility
+ *
+ * This is an alias for templateTagAssociations to maintain backward compatibility
+ * with existing API code that references 'templateTagAssignments'.
+ *
+ * USAGE:
+ * - Import as templateTagAssignments for legacy API compatibility
+ * - Provides same functionality as templateTagAssociations
+ * - Maintains consistent naming across different parts of the codebase
+ */
+export const templateTagAssignments = templateTagAssociations
 
 /**
  * Template ratings table - User rating and review system
@@ -3329,6 +3432,21 @@ export const templatePerformanceMetrics = pgTable(
     blocksAdded: integer('blocks_added').default(0),
     blocksRemoved: integer('blocks_removed').default(0),
     integrationsAdded: integer('integrations_added').default(0),
+    
+    // Analytics fields
+    metricDate: timestamp('metric_date'),
+    metricPeriod: text('metric_period'),
+    viewCount: integer('view_count').default(0),
+    uniqueViews: integer('unique_views').default(0),
+    downloadCount: integer('download_count').default(0),
+    uniqueDownloads: integer('unique_downloads').default(0),
+    deploymentCount: integer('deployment_count').default(0),
+    successfulDeployments: integer('successful_deployments').default(0),
+    viewToDownloadRate: decimal('view_to_download_rate', { precision: 5, scale: 4 }),
+    downloadToDeployRate: decimal('download_to_deploy_rate', { precision: 5, scale: 4 }),
+    deploymentSuccessRate: decimal('deployment_success_rate', { precision: 5, scale: 4 }),
+    trendScore: decimal('trend_score', { precision: 8, scale: 4 }),
+    popularityRank: integer('popularity_rank'),
 
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -3359,6 +3477,42 @@ export const templatePerformanceMetrics = pgTable(
       'error_rate_check',
       sql`${table.errorRate} >= 0 AND ${table.errorRate} <= 1`
     ),
+  })
+)
+
+/**
+ * Template Analytics Events - Track user interactions and behavior
+ *
+ * This table stores detailed analytics events for template and marketplace usage,
+ * enabling comprehensive tracking of user behavior, template performance metrics,
+ * and marketplace engagement patterns.
+ */
+export const templateAnalyticsEvents = pgTable(
+  'template_analytics_events',
+  {
+    id: text('id').primaryKey(),
+    templateId: text('template_id').references(() => templates.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    sessionId: text('session_id'),
+    
+    // Event details
+    eventType: text('event_type').notNull(), // 'template_view', 'template_download', 'search_query', etc.
+    eventCategory: text('event_category').notNull(), // 'marketplace', 'template', 'search', etc.
+    properties: jsonb('properties').default('{}'), // Event-specific data
+    
+    // Context
+    userAgent: text('user_agent'),
+    ipAddress: text('ip_address'),
+    referrer: text('referrer'),
+    
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateIdIdx: index('template_analytics_template_id_idx').on(table.templateId),
+    userIdIdx: index('template_analytics_user_id_idx').on(table.userId),
+    eventTypeIdx: index('template_analytics_event_type_idx').on(table.eventType),
+    sessionIdIdx: index('template_analytics_session_id_idx').on(table.sessionId),
+    createdAtIdx: index('template_analytics_created_at_idx').on(table.createdAt),
   })
 )
 

@@ -27,7 +27,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -57,28 +57,43 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[Analytics] Processing GET request for community metrics')
 
-    // Parse query parameters
+    // Parse query parameters into properly typed object
+    // Using Record<string, any> to handle URL search params conversion from strings
     const url = new URL(request.url)
-    const queryParams = Object.fromEntries(url.searchParams.entries())
+    const queryParams: Record<string, any> = {}
+    
+    // Extract URL search parameters manually for better type safety
+    for (const [key, value] of url.searchParams) {
+      queryParams[key] = value
+    }
 
-    // Convert string parameters
-    if (queryParams.includeHistorical)
+    // Convert string parameters to appropriate types for validation
+    // URL search params are always strings, so we need explicit type conversions
+    if (queryParams.includeHistorical) {
+      // Convert string 'true'/'false' to actual boolean for schema validation
       queryParams.includeHistorical = queryParams.includeHistorical === 'true'
-    if (queryParams.privacyMode) queryParams.privacyMode = queryParams.privacyMode === 'true'
+    }
+    if (queryParams.privacyMode) {
+      // Convert string 'true'/'false' to actual boolean for privacy mode
+      queryParams.privacyMode = queryParams.privacyMode === 'true'
+    }
     if (queryParams.metrics) {
+      // Convert comma-separated string to array of metric names
+      // Handles both single metrics and comma-separated lists
       queryParams.metrics = queryParams.metrics
         .split(',')
-        .map((m) => m.trim())
+        .map((m: string) => m.trim())
         .filter(Boolean)
     }
 
     const params = MetricsQuerySchema.parse(queryParams)
     console.log('[Analytics] Query parameters validated:', params)
 
-    // Get current user and check permissions
-    const currentUser = await auth()
+    // Get current user session for authentication and authorization
+    // Uses getSession() instead of auth() for proper session management
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
-    const userRole = currentUser?.user?.role || 'user'
+    const userRole = (currentUser?.user as any)?.role || 'user'
 
     // Rate limiting
     const clientId = request.headers.get('x-forwarded-for') || currentUserId || 'anonymous'
@@ -158,7 +173,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve metrics',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -190,8 +205,10 @@ async function calculateCommunityMetrics(
         COUNT(CASE WHEN ${dateFilter} THEN 1 END) as period_count
       FROM "user"
     `
+    // Execute SQL query to get total users count with period comparison
+    // Direct array access replaces deprecated .rows property for proper database result handling
     const totalUsersResult = await db.execute(sql.raw(totalUsersQuery))
-    const totalUsersData = totalUsersResult.rows[0] as any
+    const totalUsersData = totalUsersResult[0] as any
 
     // Calculate change percentage
     const previousPeriodUsers = totalUsersData.current_count - totalUsersData.period_count
@@ -216,8 +233,10 @@ async function calculateCommunityMetrics(
       FROM templates
       WHERE status = 'approved'
     `
+    // Execute query for active templates count with growth tracking
+    // Direct array access ensures compatibility with updated database driver
     const activeTemplatesResult = await db.execute(sql.raw(activeTemplatesQuery))
-    const activeTemplatesData = activeTemplatesResult.rows[0] as any
+    const activeTemplatesData = activeTemplatesResult[0] as any
 
     const previousPeriodTemplates =
       activeTemplatesData.current_count - activeTemplatesData.period_count
@@ -243,8 +262,10 @@ async function calculateCommunityMetrics(
       FROM community_user_activities
       WHERE ${dateFilter} AND is_hidden = false
     `
+    // Query community activities for engagement metrics calculation
+    // Using direct array access for consistent database result processing
     const activitiesResult = await db.execute(sql.raw(activitiesQuery))
-    const activitiesData = activitiesResult.rows[0] as any
+    const activitiesData = activitiesResult[0] as any
 
     metrics.push({
       name: 'Community Activities',
@@ -262,8 +283,10 @@ async function calculateCommunityMetrics(
       FROM templates
       WHERE status = 'approved' AND rating_count > 0
     `
+    // Calculate average template rating across all approved templates
+    // Direct array access maintains compatibility with database driver updates
     const avgRatingResult = await db.execute(sql.raw(avgRatingQuery))
-    const avgRatingData = avgRatingResult.rows[0] as any
+    const avgRatingData = avgRatingResult[0] as any
 
     metrics.push({
       name: 'Avg. Rating',
@@ -282,8 +305,10 @@ async function calculateCommunityMetrics(
       FROM community_activity_engagement cae
       WHERE cae.created_at >= NOW() - INTERVAL '7 days'
     `
+    // Fetch engagement metrics for community participation analysis
+    // Using direct array indexing for proper result set handling
     const engagementResult = await db.execute(sql.raw(engagementQuery))
-    const engagementData = engagementResult.rows[0] as any
+    const engagementData = engagementResult[0] as any
 
     const totalActiveUsers = totalUsersData.current_count || 1
     const engagementRate = (engagementData.active_users / totalActiveUsers) * 100
@@ -304,8 +329,10 @@ async function calculateCommunityMetrics(
       FROM templates
       WHERE status = 'approved'
     `
+    // Query total download counts across all approved templates
+    // Direct array access pattern for consistent database interaction
     const downloadsResult = await db.execute(sql.raw(downloadsQuery))
-    const downloadsData = downloadsResult.rows[0] as any
+    const downloadsData = downloadsResult[0] as any
 
     metrics.push({
       name: 'Total Downloads',
@@ -323,8 +350,10 @@ async function calculateCommunityMetrics(
       FROM template_collections
       WHERE visibility = 'public'
     `
+    // Get count of public template collections for community metrics
+    // Direct array indexing ensures proper result extraction
     const collectionsResult = await db.execute(sql.raw(collectionsQuery))
-    const collectionsData = collectionsResult.rows[0] as any
+    const collectionsData = collectionsResult[0] as any
 
     metrics.push({
       name: 'Public Collections',
@@ -422,8 +451,9 @@ async function getHistoricalTrends(daysBack: number, granularity: string, privac
     const trends = []
     const periodMap = new Map()
 
-    // Process user trends
-    userTrendsResult.rows.forEach((row: any) => {
+    // Process user registration trends over time periods
+    // Direct array iteration replaces deprecated .rows property access
+    userTrendsResult.forEach((row: any) => {
       const period = row.period
       if (!periodMap.has(period)) {
         periodMap.set(period, {
@@ -437,8 +467,9 @@ async function getHistoricalTrends(daysBack: number, granularity: string, privac
       periodMap.get(period).users = Number.parseInt(row.new_users)
     })
 
-    // Process template trends
-    templateTrendsResult.rows.forEach((row: any) => {
+    // Process template creation trends for growth analysis
+    // Using direct array iteration for proper result processing
+    templateTrendsResult.forEach((row: any) => {
       const period = row.period
       if (!periodMap.has(period)) {
         periodMap.set(period, {
@@ -452,8 +483,9 @@ async function getHistoricalTrends(daysBack: number, granularity: string, privac
       periodMap.get(period).templates = Number.parseInt(row.new_templates)
     })
 
-    // Process activity trends
-    activityTrendsResult.rows.forEach((row: any) => {
+    // Process community activity trends for engagement tracking
+    // Direct array iteration ensures compatibility with updated database driver
+    activityTrendsResult.forEach((row: any) => {
       const period = row.period
       if (!periodMap.has(period)) {
         periodMap.set(period, {

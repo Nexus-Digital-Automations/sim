@@ -43,7 +43,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
@@ -55,9 +55,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:12:26.750Z",
       "auto_research_created": true,
-      "assigned_agent": "--agent",
-      "started_at": "2025-09-04T09:18:09.183Z",
-      "claimed_by": "--agent",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756944532359_1_general_ead55683",
@@ -91,6 +91,12 @@
           "assignedAt": "2025-09-04T09:18:09.183Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756977466828_1_general_3595d04a"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T10:09:14.499Z",
+          "reason": "Task stale for 51 minutes"
         }
       ]
     },
@@ -694,13 +700,13 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756978229871_1_general_02c2737c": {
+    "development_session_1756982293101_1_general_d5403cd1": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T09:30:29.872Z",
+      "lastHeartbeat": "2025-09-04T10:38:13.102Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -711,8 +717,8 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T09:30:29.872Z",
-      "sessionId": "session_1756978229871",
+      "createdAt": "2025-09-04T10:38:13.103Z",
+      "sessionId": "session_1756982293101",
       "metadata": {}
     }
   },

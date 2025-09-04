@@ -11,7 +11,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     console.log('[EngagementAnalytics] Processing GET request')
 
     const url = new URL(request.url)
-    const queryParams = Object.fromEntries(url.searchParams.entries())
+    const queryParams: Record<string, any> = Object.fromEntries(url.searchParams.entries())
 
     if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
     if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
@@ -39,8 +39,9 @@ export async function GET(request: NextRequest) {
 
     const params = EngagementAnalyticsSchema.parse(queryParams)
 
-    // Get current user
-    const currentUser = await auth()
+    // Get current user session for authentication and rate limiting
+    // Using getSession() instead of auth() to properly handle authentication state
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -201,7 +202,9 @@ export async function GET(request: NextRequest) {
       LIMIT $1 OFFSET $2
     `
 
-    const result = await db.execute(sql.raw(engagementQuery, [params.limit, params.offset]))
+    // Execute engagement analytics query with proper parameter substitution
+    // Using sql.raw() for complex analytical query with dynamic time ranges
+    const result = await db.execute(sql.raw(engagementQuery.replace('$1', String(params.limit)).replace('$2', String(params.offset))))
 
     // Get total count
     const countQuery = `
@@ -209,11 +212,14 @@ export async function GET(request: NextRequest) {
       FROM "user" u
       WHERE u.created_at >= NOW() - INTERVAL '${daysBack * 3} days'
     `
+    // Get total count of users for pagination metadata
+    // Direct array access for database results (not .rows property)
     const countResult = await db.execute(sql.raw(countQuery))
-    const totalUsers = (countResult.rows[0] as any)?.total || 0
+    const totalUsers = Number((countResult[0] as any)?.total || 0)
 
-    // Format engagement data
-    const engagementData = result.rows.map((row: any) => ({
+    // Transform raw database results into structured engagement data
+    // Direct array access for database results (database adapter doesn't use .rows)
+    const engagementData = result.map((row: any) => ({
       userId: row.user_id,
       userName: row.user_name,
       displayName: row.display_name,
@@ -255,11 +261,11 @@ export async function GET(request: NextRequest) {
       summary: {
         totalEngagedUsers: engagementData.length,
         avgEngagementScore:
-          engagementData.reduce((sum, user) => sum + user.engagementScore, 0) /
+          engagementData.reduce((sum: number, user: any) => sum + user.engagementScore, 0) /
             engagementData.length || 0,
-        highEngagementUsers: engagementData.filter((user) => user.engagementScore > 50).length,
+        highEngagementUsers: engagementData.filter((user: any) => user.engagementScore > 50).length,
         activeRetentionRate:
-          (engagementData.filter((user) => user.retentionScore >= 75).length /
+          (engagementData.filter((user: any) => user.retentionScore >= 75).length /
             engagementData.length) *
             100 || 0,
       },
@@ -281,10 +287,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Proper error type casting for TypeScript compliance
+    // Handle both Error instances and unknown error types safely
+    const errorMessage = (error as Error).message || 'Internal server error'
+    
     return NextResponse.json(
       {
         error: 'Failed to retrieve engagement analytics',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
         executionTime,
       },
       { status: 500 }

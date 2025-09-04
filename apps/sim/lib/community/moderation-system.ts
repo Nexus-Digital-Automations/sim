@@ -673,7 +673,7 @@ export class TemplateModerationSystem {
         .where(eq(userReputation.userId, template.userId))
         .limit(1)
 
-      if (authorReputation[0]?.total_points < 50) {
+      if (authorReputation[0]?.totalPoints < 50) {
         standardsScore -= 10
         issues.push('Author has low community reputation')
       }
@@ -1215,7 +1215,7 @@ export class TemplateModerationSystem {
         .where(eq(userReputation.userId, template.userId))
         .limit(1)
 
-      authorReputation = reputationResult[0]?.total_points || 0
+      authorReputation = reputationResult[0]?.totalPoints || 0
     } catch (error) {
       // Ignore reputation lookup errors
     }
@@ -1447,16 +1447,16 @@ export class TemplateModerationSystem {
         await db
           .update(userReputation)
           .set({
-            total_points: sql`${userReputation.total_points} + ${points}`,
-            template_creation_points:
+            totalPoints: sql`${userReputation.totalPoints} + ${points}`,
+            templateCreationPoints:
               eventType === 'template_approved'
-                ? sql`${userReputation.template_creation_points} + ${points}`
-                : userReputation.template_creation_points,
-            penalty_points:
+                ? sql`${userReputation.templateCreationPoints} + ${points}`
+                : userReputation.templateCreationPoints,
+            penaltyPoints:
               points < 0
-                ? sql`${userReputation.penalty_points} + ${Math.abs(points)}`
-                : userReputation.penalty_points,
-            updated_at: new Date(),
+                ? sql`${userReputation.penaltyPoints} + ${Math.abs(points)}`
+                : userReputation.penaltyPoints,
+            updatedAt: new Date(),
           })
           .where(eq(userReputation.userId, template[0].userId))
       }

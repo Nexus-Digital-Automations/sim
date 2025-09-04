@@ -32,8 +32,15 @@ import { mockAuthApi, mockControls } from '@/app/api/__test-utils__/module-mocks
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
-// Replace with your actual auth route handlers
-import { GET, POST } from './route' // TODO: Import actual auth handlers
+// import { GET, POST } from './route' // TODO: Import actual route handlers
+
+// Template placeholder functions - replace with actual route imports
+const GET = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template GET handler' }), { status: 200 })
+}
+const POST = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template POST handler' }), { status: 200 })
+}
 
 // ================================
 // AUTH TEST DATA DEFINITIONS
@@ -100,7 +107,7 @@ function createAuthRequest(
 
   console.log(`🔐 Creating auth ${method} request to ${baseUrl}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

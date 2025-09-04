@@ -302,14 +302,14 @@ describe('Tools Utils Comprehensive', () => {
           url: '/api/form',
           method: 'POST',
           headers: () => ({ 'Content-Type': 'application/x-www-form-urlencoded' }),
-          body: () => 'name=John&age=30',
+          body: () => ({ name: 'John', age: '30' }),
         },
       }
 
       const result = formatRequestParams(tool, {})
 
       expect(result.headers).toEqual({ 'Content-Type': 'application/x-www-form-urlencoded' })
-      expect(result.body).toBe('name=John&age=30')
+      expect(result.body).toEqual({ name: 'John', age: '30' })
     })
   })
 
@@ -361,7 +361,7 @@ describe('Tools Utils Comprehensive', () => {
       const params = { required_param: 'test value' }
 
       expect(() => {
-        validateRequiredParametersAfterMerge(tool, params)
+        validateRequiredParametersAfterMerge('test_tool', tool, params)
       }).not.toThrow()
     })
 
@@ -384,7 +384,7 @@ describe('Tools Utils Comprehensive', () => {
       const params = {} // Missing required parameter
 
       expect(() => {
-        validateRequiredParametersAfterMerge(tool, params)
+        validateRequiredParametersAfterMerge('strict_tool', tool, params)
       }).toThrow()
     })
 
@@ -403,7 +403,7 @@ describe('Tools Utils Comprehensive', () => {
       }
 
       expect(() => {
-        validateRequiredParametersAfterMerge(tool, {})
+        validateRequiredParametersAfterMerge('optional_tool', tool, {})
       }).not.toThrow()
     })
   })

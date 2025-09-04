@@ -22,19 +22,34 @@ const logger = createLogger('MarketplaceSuggestionsAPI')
 
 /**
  * Search Suggestion Types
+ * 
+ * Defines the structure for search auto-completion suggestions across the marketplace.
+ * Each suggestion includes type classification, display information, and enrichment metadata
+ * for ranking and presentation purposes.
  */
 interface SearchSuggestion {
+  /** Suggestion type classification for filtering and priority ranking */
   type: 'template' | 'category' | 'author' | 'tag'
+  /** Unique identifier or search value used for query execution */
   value: string
+  /** Human-readable display label for the suggestion */
   label: string
+  /** Optional detailed description for context and preview */
   description?: string
+  /** Enrichment metadata for ranking, visual styling, and user guidance */
   metadata?: {
+    /** Visual icon identifier for UI representation */
     icon?: string
+    /** Color theme identifier for visual consistency */
     color?: string
+    /** Usage statistics (views, downloads, template count, etc.) */
     count?: number
+    /** Average user rating (0-5 scale) for quality indication */
     rating?: number
+    /** Author reputation points for credibility assessment */
     reputation?: number
-    trend?: number
+    /** Trending score or growth percentage for popularity indication */
+    trend?: number | string
   }
 }
 
@@ -198,20 +213,33 @@ async function getTemplateSuggestions(query: string, limit: number): Promise<Sea
     )
     .limit(limit)
 
-  return templateResults.map((template) => ({
-    type: 'template' as const,
-    value: template.id,
-    label: template.name,
-    description:
-      template.description?.slice(0, 100) +
-      (template.description && template.description.length > 100 ? '...' : ''),
-    metadata: {
-      icon: template.icon || '📄',
-      color: template.color || '#3B82F6',
-      count: template.views + (template.downloadCount || 0),
-      rating: template.avgRating || 0,
-    },
-  }))
+  return templateResults.map((template) => {
+    // Apply null safety patterns for template metrics and content
+    const safeViews = template.views ?? 0
+    const safeDownloadCount = template.downloadCount ?? 0
+    const safeAvgRating = template.avgRating ?? 0
+    
+    // Safely truncate description with null checking
+    const description = template.description 
+      ? template.description.length > 100 
+        ? template.description.slice(0, 100) + '...'
+        : template.description
+      : undefined
+    
+    // Ensure SearchSuggestion interface compliance
+    return {
+      type: 'template' as const,
+      value: template.id || '',
+      label: template.name || '',
+      description,
+      metadata: {
+        icon: template.icon || '📄',
+        color: template.color || '#3B82F6',
+        count: safeViews + safeDownloadCount,
+        rating: safeAvgRating,
+      },
+    }
+  })
 }
 
 /**
@@ -243,17 +271,23 @@ async function getCategorySuggestions(query: string, limit: number): Promise<Sea
     .orderBy(desc(templateCategories.templateCount), templateCategories.name)
     .limit(limit)
 
-  return categoryResults.map((category) => ({
-    type: 'category' as const,
-    value: category.slug,
-    label: category.name,
-    description: category.description,
-    metadata: {
-      icon: category.icon || '📁',
-      color: category.color || '#6B7280',
-      count: category.templateCount,
-    },
-  }))
+  return categoryResults.map((category) => {
+    // Apply null safety patterns for category data
+    const safeTemplateCount = category.templateCount ?? 0
+    
+    // Ensure SearchSuggestion interface compliance
+    return {
+      type: 'category' as const,
+      value: category.slug || category.id || '',
+      label: category.name || '',
+      description: category.description || undefined,
+      metadata: {
+        icon: category.icon || '📁',
+        color: category.color || '#6B7280',
+        count: safeTemplateCount,
+      },
+    }
+  })
 }
 
 /**
@@ -298,18 +332,24 @@ async function getAuthorSuggestions(query: string, limit: number): Promise<Searc
   }
 
   return authorResults.map((author) => {
+    // Apply null safety patterns for author reputation and metrics
     const reputation = reputationMap.get(author.userId) || { points: 0, level: 1 }
-
+    const safeTemplateCount = Number(author.templateCount) || 0
+    const safeAvgRating = author.avgRating ? Number(author.avgRating.toFixed(1)) : 0
+    const safeReputationPoints = Number(reputation.points) || 0
+    const safeReputationLevel = Number(reputation.level) || 1
+    
+    // Ensure SearchSuggestion interface compliance
     return {
       type: 'author' as const,
-      value: author.userId || author.author,
-      label: author.author,
-      description: `${author.templateCount} templates • Level ${reputation.level}`,
+      value: author.userId || author.author || '',
+      label: author.author || '',
+      description: `${safeTemplateCount} templates • Level ${safeReputationLevel}`,
       metadata: {
         icon: '👤',
-        count: author.templateCount,
-        rating: Number(author.avgRating?.toFixed(1)) || 0,
-        reputation: reputation.points,
+        count: safeTemplateCount,
+        rating: safeAvgRating,
+        reputation: safeReputationPoints,
       },
     }
   })
@@ -346,18 +386,31 @@ async function getTagSuggestions(query: string, limit: number): Promise<SearchSu
     .orderBy(desc(templateTags.usageCount), desc(templateTags.trendScore))
     .limit(limit)
 
-  return tagResults.map((tag) => ({
-    type: 'tag' as const,
-    value: tag.name,
-    label: tag.displayName,
-    description: tag.description,
-    metadata: {
-      icon: '🏷️',
-      color: tag.color || '#3B82F6',
-      count: tag.usageCount,
-      trend: tag.weeklyGrowth > 0 ? tag.trendScore : 0,
-    },
-  }))
+  return tagResults.map((tag) => {
+    // Apply null safety patterns for growth calculations and trend analysis
+    // weeklyGrowth and trendScore are decimal types that return strings from database
+    // Convert to numbers with null safety for mathematical comparisons
+    const safeWeeklyGrowth = Number(tag.weeklyGrowth) || 0
+    const safeTrendScore = Number(tag.trendScore) || 0
+    const safeUsageCount = Number(tag.usageCount) || 0
+    
+    // Calculate trend indicator - positive growth gets trend score, otherwise stable
+    const trendValue = safeWeeklyGrowth > 0.1 ? safeTrendScore : 0
+    
+    // Ensure SearchSuggestion interface compliance with proper type casting
+    return {
+      type: 'tag' as const,
+      value: tag.name || '',
+      label: tag.displayName || tag.name || '',
+      description: tag.description || undefined,
+      metadata: {
+        icon: '🏷️',
+        color: tag.color || '#3B82F6',
+        count: safeUsageCount,
+        trend: trendValue,
+      },
+    }
+  })
 }
 
 /**
@@ -388,18 +441,26 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
       .limit(perType)
 
     suggestions.push(
-      ...popularTemplates.map((template) => ({
-        type: 'template' as const,
-        value: template.id,
-        label: template.name,
-        description: 'Popular template',
-        metadata: {
-          icon: template.icon || '📄',
-          color: template.color || '#3B82F6',
-          count: template.views + (template.downloadCount || 0),
-          rating: template.avgRating || 0,
-        },
-      }))
+      ...popularTemplates.map((template) => {
+        // Apply null safety patterns for popular template metrics
+        const safeViews = template.views ?? 0
+        const safeDownloadCount = template.downloadCount ?? 0
+        const safeAvgRating = template.avgRating ?? 0
+        
+        // Ensure SearchSuggestion interface compliance
+        return {
+          type: 'template' as const,
+          value: template.id || '',
+          label: template.name || '',
+          description: 'Popular template',
+          metadata: {
+            icon: template.icon || '📄',
+            color: template.color || '#3B82F6',
+            count: safeViews + safeDownloadCount,
+            rating: safeAvgRating,
+          },
+        }
+      })
     )
   }
 
@@ -420,17 +481,23 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
       .limit(perType)
 
     suggestions.push(
-      ...popularCategories.map((category) => ({
-        type: 'category' as const,
-        value: category.slug,
-        label: category.name,
-        description: 'Browse category',
-        metadata: {
-          icon: category.icon || '📁',
-          color: category.color || '#6B7280',
-          count: category.templateCount,
-        },
-      }))
+      ...popularCategories.map((category) => {
+        // Apply null safety patterns for popular category data
+        const safeTemplateCount = category.templateCount ?? 0
+        
+        // Ensure SearchSuggestion interface compliance
+        return {
+          type: 'category' as const,
+          value: category.slug || category.id || '',
+          label: category.name || '',
+          description: 'Browse category',
+          metadata: {
+            icon: category.icon || '📁',
+            color: category.color || '#6B7280',
+            count: safeTemplateCount,
+          },
+        }
+      })
     )
   }
 
@@ -451,18 +518,26 @@ async function getPopularSuggestions(limit: number, types: string[]): Promise<Se
       .limit(perType)
 
     suggestions.push(
-      ...trendingTags.map((tag) => ({
-        type: 'tag' as const,
-        value: tag.name,
-        label: tag.displayName,
-        description: 'Trending topic',
-        metadata: {
-          icon: '🔥',
-          color: tag.color || '#3B82F6',
-          count: tag.usageCount,
-          trend: tag.trendScore,
-        },
-      }))
+      ...trendingTags.map((tag) => {
+        // Apply null safety patterns for trending tag data
+        // Convert decimal types to numbers for safe mathematical operations
+        const safeUsageCount = Number(tag.usageCount) || 0
+        const safeTrendScore = Number(tag.trendScore) || 0
+        
+        // Ensure SearchSuggestion interface compliance
+        return {
+          type: 'tag' as const,
+          value: tag.name || '',
+          label: tag.displayName || tag.name || '',
+          description: 'Trending topic',
+          metadata: {
+            icon: '🔥',
+            color: tag.color || '#3B82F6',
+            count: safeUsageCount,
+            trend: safeTrendScore,
+          },
+        }
+      })
     )
   }
 
@@ -529,11 +604,17 @@ function calculateRelevanceScore(suggestion: SearchSuggestion, queryLower: strin
   else if (count > 10) score += 10
   else if (count > 0) score += 5
 
-  // Boost trending items
-  const trend = suggestion.metadata?.trend || 0
-  if (trend > 50) score += 15
-  else if (trend > 20) score += 10
-  else if (trend > 0) score += 5
+  // Boost trending items with null safety for trend values
+  // trend can be number or string, requiring safe type conversion
+  const trendValue = typeof suggestion.metadata?.trend === 'number' 
+    ? suggestion.metadata.trend
+    : typeof suggestion.metadata?.trend === 'string'
+    ? Number(suggestion.metadata.trend) || 0
+    : 0
+    
+  if (trendValue > 50) score += 15
+  else if (trendValue > 20) score += 10
+  else if (trendValue > 0) score += 5
 
   // Boost highly rated items
   const rating = suggestion.metadata?.rating || 0

@@ -31,6 +31,13 @@ export interface ToolResponse {
   }
 }
 
+export interface ExecutionContext {
+  workflowId?: string
+  executionId?: string
+  userId?: string
+  organizationId?: string
+}
+
 export interface OAuthConfig {
   required: boolean // Whether this tool requires OAuth authentication
   provider: OAuthService // The service that needs to be authorized

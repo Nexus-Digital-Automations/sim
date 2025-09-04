@@ -11,7 +11,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -27,8 +27,10 @@ export async function GET(request: NextRequest) {
     console.log('[HealthAnalytics] Processing GET request')
 
     const url = new URL(request.url)
-    const queryParams = Object.fromEntries(url.searchParams.entries())
+    // Fix: Allow mixed types in queryParams to handle boolean conversions
+    const queryParams: Record<string, any> = Object.fromEntries(url.searchParams.entries())
 
+    // Fix: Convert string values to proper boolean types for schema validation
     if (queryParams.includeRecommendations)
       queryParams.includeRecommendations = queryParams.includeRecommendations === 'true'
     if (queryParams.includeMetrics)
@@ -36,8 +38,8 @@ export async function GET(request: NextRequest) {
 
     const params = HealthAnalyticsSchema.parse(queryParams)
 
-    // Get current user
-    const currentUser = await auth()
+    // Get current user session - getSession() returns session data with user info
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -90,7 +92,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve health analytics',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        // Fix: Cast unknown error to Error type to access message property safely
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -117,7 +120,8 @@ async function calculateHealthMetrics() {
       ) active_users
     `
     const activeUsersResult = await db.execute(sql.raw(activeUsersQuery))
-    const activeUsersData = activeUsersResult.rows[0] as any
+    // Fix: Drizzle ORM returns results directly, not wrapped in .rows property
+    const activeUsersData = (activeUsersResult as any[])[0] as any
 
     const activeUsersPercent =
       activeUsersData.total_users_week_ago > 0
@@ -134,7 +138,8 @@ async function calculateHealthMetrics() {
       WHERE status = 'approved' AND rating_count > 0
     `
     const contentQualityResult = await db.execute(sql.raw(contentQualityQuery))
-    const contentQualityData = contentQualityResult.rows[0] as any
+    // Fix: Drizzle ORM returns results directly, not wrapped in .rows property
+    const contentQualityData = (contentQualityResult as any[])[0] as any
 
     const contentQualityScore = (Number.parseFloat(contentQualityData.avg_rating || 0) / 5) * 100
     const highQualityRatio =
@@ -167,7 +172,8 @@ async function calculateHealthMetrics() {
       FROM user_engagement
     `
     const userSatisfactionResult = await db.execute(sql.raw(userSatisfactionQuery))
-    const userSatisfactionData = userSatisfactionResult.rows[0] as any
+    // Fix: Drizzle ORM returns results directly, not wrapped in .rows property
+    const userSatisfactionData = (userSatisfactionResult as any[])[0] as any
 
     const userSatisfactionScore = Number.parseFloat(userSatisfactionData.satisfaction_score || 70)
 
@@ -179,7 +185,8 @@ async function calculateHealthMetrics() {
       FROM "user"
     `
     const growthRateResult = await db.execute(sql.raw(growthRateQuery))
-    const growthRateData = growthRateResult.rows[0] as any
+    // Fix: Drizzle ORM returns results directly, not wrapped in .rows property
+    const growthRateData = (growthRateResult as any[])[0] as any
 
     const growthRate =
       growthRateData.previous_period_users > 0
@@ -198,7 +205,8 @@ async function calculateHealthMetrics() {
       WHERE u.created_at <= NOW() - INTERVAL '60 days'
     `
     const churnRateResult = await db.execute(sql.raw(churnRateQuery))
-    const churnRateData = churnRateResult.rows[0] as any
+    // Fix: Drizzle ORM returns results directly, not wrapped in .rows property
+    const churnRateData = (churnRateResult as any[])[0] as any
 
     const churnRate =
       churnRateData.total_users > 0

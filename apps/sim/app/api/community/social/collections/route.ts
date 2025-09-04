@@ -29,7 +29,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -88,26 +88,29 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string parameters
-    if (queryParams.tags) {
-      queryParams.tags = queryParams.tags
+    // Convert string parameters to proper types for validation schema
+    // Handle type conversions to prevent TypeScript errors in schema validation
+    const processedParams: Record<string, any> = { ...queryParams }
+    if (processedParams.tags) {
+      processedParams.tags = (processedParams.tags as string)
         .split(',')
         .map((tag) => tag.trim())
         .filter(Boolean)
     }
-    if (queryParams.isFeatured) queryParams.isFeatured = queryParams.isFeatured === 'true'
-    if (queryParams.includeTemplates)
-      queryParams.includeTemplates = queryParams.includeTemplates === 'true'
-    if (queryParams.includeCollaborators)
-      queryParams.includeCollaborators = queryParams.includeCollaborators === 'true'
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
+    if (processedParams.isFeatured) processedParams.isFeatured = (processedParams.isFeatured as string) === 'true'
+    if (processedParams.includeTemplates)
+      processedParams.includeTemplates = (processedParams.includeTemplates as string) === 'true'
+    if (processedParams.includeCollaborators)
+      processedParams.includeCollaborators = (processedParams.includeCollaborators as string) === 'true'
+    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
 
-    const params = CollectionQuerySchema.parse(queryParams)
+    const params = CollectionQuerySchema.parse(processedParams)
     console.log('[Collections] Query parameters validated:', params)
 
-    // Get current user
-    const currentUser = await auth()
+    // Get current user session for authentication and permission checks
+    // Uses getSession() for consistent authentication handling
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -261,6 +264,8 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[Collections] Executing collections query')
+    // Execute collections query with proper parameter binding
+    // Database results return direct array, not .rows property
     const result = await db.execute(sql.raw(mainQuery, queryValues))
 
     // Get total count
@@ -271,12 +276,15 @@ export async function GET(request: NextRequest) {
     `
 
     const countValues = queryValues.slice(0, -(currentUserId ? 5 : 2))
+    // Execute count query for pagination metadata
+    // Access result directly as array, not via .rows property
     const countResult = await db.execute(sql.raw(countQuery, countValues))
-    const totalCollections = (countResult.rows[0] as any)?.total || 0
+    const totalCollections = (countResult[0] as any)?.total || 0
 
-    // Format collections
+    // Format collections from database result array
+    // Result is direct array, not nested in .rows property
     const collections = await Promise.all(
-      result.rows.map(async (row: any) => {
+      result.map(async (row: any) => {
         const collection = {
           id: row.id,
           userId: row.user_id,
@@ -368,7 +376,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve collections',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -385,8 +393,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[Collections] Processing POST request for collection creation')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for collection creation
+    // Uses getSession() for proper session handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -423,7 +432,8 @@ export async function POST(request: NextRequest) {
           AND (visibility = 'public' OR created_by_user_id = ${userId})
       `)
 
-      const validTemplateIds = templateCheck.rows.map((row: any) => row.id)
+      // Template validation - direct array access, not .rows
+      const validTemplateIds = templateCheck.map((row: any) => row.id)
       const invalidCount = collectionData.templateIds.length - validTemplateIds.length
 
       if (invalidCount > 0) {
@@ -439,7 +449,8 @@ export async function POST(request: NextRequest) {
         SELECT id FROM "user" WHERE id = ANY(${collectionData.collaborators})
       `)
 
-      const validCollaborators = collaboratorCheck.rows.map((row: any) => row.id)
+      // Collaborator validation - direct array access, not .rows
+      const validCollaborators = collaboratorCheck.map((row: any) => row.id)
       collectionData.collaborators = validCollaborators
     }
 
@@ -559,7 +570,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create collection',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -576,8 +587,9 @@ export async function PUT(request: NextRequest) {
   try {
     console.log('[Collections] Processing PUT request for collection update')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for collection updates
+    // Uses getSession() for consistent authentication handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -681,7 +693,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update collection',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -717,7 +729,8 @@ async function getCollectionTemplates(collectionId: string) {
 
     const result = await db.execute(sql.raw(query, [collectionId]))
 
-    return result.rows.map((row: any) => ({
+    // Map template results from direct array, not .rows property
+    return result.map((row: any) => ({
       id: row.id,
       name: row.name,
       description: row.description,
@@ -757,7 +770,8 @@ async function getCollectionCollaborators(collectionId: string) {
 
     const result = await db.execute(sql.raw(query, [collectionId]))
 
-    return result.rows.map((row: any) => ({
+    // Map collaborator results from direct array, not .rows property
+    return result.map((row: any) => ({
       userId: row.user_id,
       role: row.role,
       addedAt: row.added_at,
@@ -796,11 +810,12 @@ async function checkCollectionPermission(
 
     const result = await db.execute(sql.raw(query, [collectionId, userId]))
 
-    if (result.rows.length === 0) {
+    // Check collection existence - direct array access, not .rows
+    if (result.length === 0) {
       return { exists: false, canView: false, canEdit: false, canDelete: false }
     }
 
-    const collection = result.rows[0] as any
+    const collection = result[0] as any
     const isOwner = collection.user_id === userId
     const isCollaborator = !!collection.collaborator_role
 
@@ -858,11 +873,12 @@ async function getCollectionById(collectionId: string, currentUserId?: string) {
 
     const result = await db.execute(sql.raw(query, [collectionId]))
 
-    if (result.rows.length === 0) {
+    // Check collection result - direct array access, not .rows
+    if (result.length === 0) {
       return null
     }
 
-    const row = result.rows[0] as any
+    const row = result[0] as any
 
     return {
       id: row.id,

@@ -27,7 +27,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     const { userId } = UserIdParamSchema.parse(params)
 
     // Get viewer's authentication status
-    const session = await auth()
+    const session = await getSession()
     const viewerId = session?.user?.id
 
     console.log(`[UserProfileAPI] Request from viewer: ${viewerId || 'anonymous'}`)
@@ -149,12 +149,12 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
       WHERE u.id = ${userId}
     `)
 
-    if (!profileResult.rows[0]) {
+    if (!profileResult[0]) {
       console.warn(`[UserProfileAPI] User not found: ${userId}`)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const userData = profileResult.rows[0] as any
+    const userData = profileResult[0] as any
 
     // Check privacy settings
     const isOwnProfile = userId === viewerId
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
       ) mutual_follow ON follow_status.follower_id IS NOT NULL
     `)
 
-    const socialData = socialStats.rows[0] as any
+    const socialData = socialStats[0] as any
 
     // Get featured badges
     const badgesResult = await db.execute(sql`
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
         AND (visibility = 'public' OR ${isOwnProfile})
     `)
 
-    const templateData = templateStats.rows[0] as any
+    const templateData = templateStats[0] as any
 
     // Apply privacy filters to response data
     const responseData = {
@@ -302,7 +302,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
         },
         lastCalculated: userData.last_calculation_at,
       },
-      badges: badgesResult.rows.map((badge: any) => ({
+      badges: badgesResult.map((badge: any) => ({
         id: badge.id,
         name: badge.name,
         description: badge.description,
@@ -376,7 +376,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to retrieve user profile',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -397,7 +397,7 @@ export async function PUT(request: NextRequest, { params }: { params: { userId: 
     const { userId } = UserIdParamSchema.parse(params)
 
     // Authenticate user
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[UserProfileAPI] Unauthorized PUT request')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -495,7 +495,7 @@ export async function PUT(request: NextRequest, { params }: { params: { userId: 
 
     const result = await db.execute(sql.raw(updateQuery, queryParams))
 
-    if (!result.rows[0]) {
+    if (!result[0]) {
       return NextResponse.json({ error: 'Profile not found or no changes made' }, { status: 404 })
     }
 
@@ -542,7 +542,7 @@ export async function PUT(request: NextRequest, { params }: { params: { userId: 
     return NextResponse.json(
       {
         error: 'Failed to update profile',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -563,7 +563,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     const { userId } = UserIdParamSchema.parse(params)
 
     // Authenticate user
-    const session = await auth()
+    const session = await getSession()
     if (!session?.user?.id) {
       console.warn('[UserProfileAPI] Unauthorized DELETE request')
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -582,7 +582,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
       SELECT id FROM community_user_profiles WHERE user_id = ${userId}
     `)
 
-    if (existingProfile.rows.length === 0) {
+    if (existingProfile.length === 0) {
       return NextResponse.json({ error: 'Community profile not found' }, { status: 404 })
     }
 
@@ -661,7 +661,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     return NextResponse.json(
       {
         error: 'Failed to delete profile',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }

@@ -27,7 +27,7 @@ import { POST } from './route'
 function createMockRequest(method = 'POST', body?: any): NextRequest {
   const url = 'http://localhost:3000/api/auth/oauth/disconnect'
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',

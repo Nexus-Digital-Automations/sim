@@ -67,7 +67,7 @@ function createMockRequest(subdomain?: string, headers: Record<string, string> =
 
   console.log(`🔧 Creating GET request to ${url}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method: 'GET',
     headers: new Headers({
       'Content-Type': 'application/json',

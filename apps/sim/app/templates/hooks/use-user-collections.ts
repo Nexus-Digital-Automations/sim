@@ -1,479 +1,437 @@
 /**
- * User Collections Hook - Template Collection Management
- *
- * This hook provides comprehensive collection management functionality for the template
- * marketplace, enabling users to fetch, create, update, and manage their template
- * collections with real-time updates and optimistic UI updates.
- *
- * FEATURES:
- * - User collection fetching with caching and pagination
- * - Real-time collection updates and synchronization
- * - Collection creation and management operations
- * - Optimistic UI updates for better user experience
- * - Error handling and retry mechanisms
- * - Loading states and progress tracking
- *
- * INTEGRATION:
- * - Template marketplace API integration
- * - User authentication and session management
- * - Collection social features and analytics
- * - Template organization and categorization
- *
- * @author Claude Code Template System
- * @version 1.0.0
+ * User Collections Hook
+ * Provides user collection management functionality for template organization
  */
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { createLogger } from '@/lib/logs/console/logger'
 
-const logger = createLogger('useUserCollections')
-
-/**
- * Collection data structure
- */
-export interface Collection {
+export interface TemplateCollection {
   id: string
-  userId: string
   name: string
   description?: string
   visibility: 'private' | 'unlisted' | 'public'
+  collaborativeMode: boolean
   tags: string[]
   coverImage?: string
-  isFeatured: boolean
-  isCollaborative: boolean
   templateCount: number
-  followerCount: number
-  viewCount: number
-  likeCount: number
-  creator: {
-    id: string
-    name: string
-    displayName?: string
-    image?: string
-    isVerified: boolean
-  }
-  userContext: {
-    isFollowing: boolean
-    isLiked: boolean
-    isCollaborator: boolean
-    canEdit: boolean
-  }
   createdAt: string
   updatedAt: string
-  templates: any[]
-  collaborators: any[]
+  userId: string
+  templates?: string[] // Template IDs
 }
 
-/**
- * Collection query parameters
- */
-export interface CollectionQueryParams {
-  userId?: string
-  visibility?: 'private' | 'unlisted' | 'public'
-  isFeatured?: boolean
+export interface CreateCollectionData {
+  name: string
+  description?: string
+  visibility: 'private' | 'unlisted' | 'public'
+  collaborativeMode?: boolean
   tags?: string[]
-  search?: string
-  sortBy?: 'created' | 'updated' | 'name' | 'templates' | 'followers'
-  sortOrder?: 'asc' | 'desc'
-  limit?: number
-  offset?: number
-  includeTemplates?: boolean
-  includeCollaborators?: boolean
+  coverImage?: string
 }
 
-/**
- * Collection API response structure
- */
-interface CollectionResponse {
-  data: Collection[]
-  pagination: {
-    total: number
-    limit: number
-    offset: number
-    hasMore: boolean
-  }
-  filters: CollectionQueryParams
-  meta: {
-    executionTime: number
-    collectionCount: number
-    currentUserId?: string
-  }
+export interface UpdateCollectionData extends Partial<CreateCollectionData> {
+  id: string
 }
 
-/**
- * Hook options
- */
-interface UseUserCollectionsOptions {
+export interface UseUserCollectionsOptions {
   autoFetch?: boolean
-  fetchOnMount?: boolean
   userId?: string
-  includeTemplates?: boolean
-  includeCollaborators?: boolean
 }
 
-/**
- * Hook state
- */
-interface UseUserCollectionsState {
-  collections: Collection[]
+export interface UseUserCollectionsReturn {
+  // Collection data
+  collections: TemplateCollection[]
   loading: boolean
   error: string | null
-  totalCollections: number
+  
+  // Pagination
   hasMore: boolean
-  pagination: {
-    limit: number
-    offset: number
-    total: number
-  }
+  totalCount: number
+  
+  // Actions
+  createCollection: (data: CreateCollectionData) => Promise<TemplateCollection | null>
+  updateCollection: (data: UpdateCollectionData) => Promise<TemplateCollection | null>
+  deleteCollection: (collectionId: string) => Promise<boolean>
+  addTemplateToCollection: (collectionId: string, templateId: string) => Promise<boolean>
+  removeTemplateFromCollection: (collectionId: string, templateId: string) => Promise<boolean>
+  
+  // Utilities
+  getCollectionById: (collectionId: string) => TemplateCollection | undefined
+  getCollectionsByVisibility: (visibility: 'private' | 'unlisted' | 'public') => TemplateCollection[]
+  searchCollections: (query: string) => TemplateCollection[]
+  refresh: () => Promise<void>
+  clearError: () => void
 }
 
 /**
- * User Collections Management Hook
+ * Custom hook for user collection management
  */
-export function useUserCollections(options: UseUserCollectionsOptions = {}) {
-  const {
-    autoFetch = true,
-    fetchOnMount = true,
-    userId,
-    includeTemplates = false,
-    includeCollaborators = false,
-  } = options
+export function useUserCollections(
+  options: UseUserCollectionsOptions = {}
+): UseUserCollectionsReturn {
+  const { autoFetch = true, userId } = options
 
-  // State management
-  const [state, setState] = useState<UseUserCollectionsState>({
-    collections: [],
-    loading: false,
-    error: null,
-    totalCollections: 0,
-    hasMore: false,
-    pagination: {
-      limit: 20,
-      offset: 0,
-      total: 0,
-    },
-  })
+  // State
+  const [collections, setCollections] = useState<TemplateCollection[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
 
   /**
-   * Fetch user collections with comprehensive error handling
+   * Fetch user collections from API
    */
-  const fetchCollections = useCallback(
-    async (params: CollectionQueryParams = {}) => {
-      const startTime = Date.now()
-      setState((prev) => ({ ...prev, loading: true, error: null }))
-
-      try {
-        logger.info('Fetching user collections', {
-          userId,
-          params,
-          includeTemplates,
-          includeCollaborators,
-        })
-
-        // Build query parameters
-        const queryParams = new URLSearchParams()
-
-        // User-specific collections
-        if (userId) {
-          queryParams.set('userId', userId)
-        }
-
-        // Collection options
-        if (params.visibility) queryParams.set('visibility', params.visibility)
-        if (params.isFeatured !== undefined) queryParams.set('isFeatured', String(params.isFeatured))
-        if (params.search) queryParams.set('search', params.search)
-        if (params.sortBy) queryParams.set('sortBy', params.sortBy)
-        if (params.sortOrder) queryParams.set('sortOrder', params.sortOrder)
-        if (params.limit) queryParams.set('limit', String(params.limit))
-        if (params.offset) queryParams.set('offset', String(params.offset))
-
-        // Include options
-        if (includeTemplates) queryParams.set('includeTemplates', 'true')
-        if (includeCollaborators) queryParams.set('includeCollaborators', 'true')
-
-        // Tags filter
-        if (params.tags && params.tags.length > 0) {
-          queryParams.set('tags', params.tags.join(','))
-        }
-
-        // Fetch collections from API
-        const response = await fetch(`/api/community/social/collections?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch collections: ${response.statusText}`)
-        }
-
-        const result: CollectionResponse = await response.json()
-
-        if (!result.data) {
-          throw new Error('Invalid response format')
-        }
-
-        const executionTime = Date.now() - startTime
-
-        setState((prev) => ({
-          ...prev,
-          collections: result.data,
-          totalCollections: result.pagination.total,
-          hasMore: result.pagination.hasMore,
-          pagination: {
-            limit: result.pagination.limit,
-            offset: result.pagination.offset,
-            total: result.pagination.total,
-          },
-          loading: false,
-          error: null,
-        }))
-
-        logger.info('Collections fetched successfully', {
-          collectionCount: result.data.length,
-          totalCollections: result.pagination.total,
-          executionTime,
-        })
-
-        return result.data
-      } catch (error) {
-        const executionTime = Date.now() - startTime
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch collections'
-
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-        }))
-
-        logger.error('Failed to fetch collections', {
-          error: errorMessage,
-          executionTime,
-          params,
-        })
-
-        // Show error toast
-        toast.error('Failed to load collections', {
-          description: errorMessage,
-        })
-
-        throw error
-      }
-    },
-    [userId, includeTemplates, includeCollaborators]
-  )
-
-  /**
-   * Refresh collections with current parameters
-   */
-  const refreshCollections = useCallback(async () => {
-    return fetchCollections({
-      limit: state.pagination.limit,
-      offset: 0, // Reset to first page
-    })
-  }, [fetchCollections, state.pagination.limit])
-
-  /**
-   * Load more collections (pagination)
-   */
-  const loadMoreCollections = useCallback(async () => {
-    if (state.loading || !state.hasMore) {
-      return
-    }
-
-    const nextOffset = state.pagination.offset + state.pagination.limit
-
+  const fetchCollections = useCallback(async (showLoading = true) => {
     try {
-      const newCollections = await fetchCollections({
-        limit: state.pagination.limit,
-        offset: nextOffset,
+      if (showLoading) {
+        setLoading(true)
+      }
+      setError(null)
+
+      const params = new URLSearchParams()
+      if (userId) {
+        params.set('userId', userId)
+      }
+
+      const response = await fetch(`/api/community/social/collections?${params.toString()}`)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch collections: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      setCollections(data.collections || [])
+      setHasMore(data.hasMore || false)
+      setTotalCount(data.totalCount || 0)
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch collections'
+      setError(errorMessage)
+      console.error('User collections fetch error:', err)
+    } finally {
+      if (showLoading) {
+        setLoading(false)
+      }
+    }
+  }, [userId])
+
+  /**
+   * Create a new collection
+   */
+  const createCollection = useCallback(async (
+    data: CreateCollectionData
+  ): Promise<TemplateCollection | null> => {
+    try {
+      setError(null)
+
+      const response = await fetch('/api/community/social/collections', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          collaborativeMode: data.collaborativeMode || false,
+          tags: data.tags || [],
+        }),
       })
 
-      setState((prev) => ({
-        ...prev,
-        collections: [...prev.collections, ...newCollections],
-        pagination: {
-          ...prev.pagination,
-          offset: nextOffset,
-        },
-      }))
-    } catch (error) {
-      // Error handled in fetchCollections
-    }
-  }, [fetchCollections, state.loading, state.hasMore, state.pagination])
-
-  /**
-   * Create new collection with optimistic updates
-   */
-  const createCollection = useCallback(
-    async (collectionData: {
-      name: string
-      description?: string
-      visibility: 'private' | 'unlisted' | 'public'
-      tags?: string[]
-      coverImage?: string
-      isCollaborative?: boolean
-    }) => {
-      const startTime = Date.now()
-
-      try {
-        logger.info('Creating new collection', { name: collectionData.name })
-
-        const response = await fetch('/api/community/social/collections', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...collectionData,
-            templateIds: [],
-            collaborators: [],
-          }),
-        })
-
-        if (!response.ok) {
-          const errorResult = await response.json()
-          throw new Error(errorResult.error || 'Failed to create collection')
-        }
-
-        const result = await response.json()
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to create collection')
-        }
-
-        const newCollection: Collection = result.data
-        const executionTime = Date.now() - startTime
-
-        // Optimistically update collections list
-        setState((prev) => ({
-          ...prev,
-          collections: [newCollection, ...prev.collections],
-          totalCollections: prev.totalCollections + 1,
-        }))
-
-        logger.info('Collection created successfully', {
-          collectionId: newCollection.id,
-          collectionName: newCollection.name,
-          executionTime,
-        })
-
-        // Show success toast
-        toast.success('Collection created successfully!', {
-          description: `Your collection "${newCollection.name}" is now available.`,
-        })
-
-        return newCollection
-      } catch (error) {
-        const executionTime = Date.now() - startTime
-        const errorMessage = error instanceof Error ? error.message : 'Failed to create collection'
-
-        logger.error('Collection creation failed', {
-          error: errorMessage,
-          executionTime,
-          collectionData,
-        })
-
-        // Show error toast
-        toast.error('Failed to create collection', {
-          description: errorMessage,
-        })
-
-        throw error
+      if (!response.ok) {
+        throw new Error(`Failed to create collection: ${response.statusText}`)
       }
-    },
-    []
-  )
+
+      const result = await response.json()
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      const newCollection = result.collection
+
+      // Optimistic UI update
+      setCollections(prev => [newCollection, ...prev])
+      setTotalCount(prev => prev + 1)
+
+      toast.success(`Collection "${newCollection.name}" created successfully!`)
+      return newCollection
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create collection'
+      setError(errorMessage)
+      toast.error(`Failed to create collection: ${errorMessage}`)
+      console.error('Create collection error:', err)
+      return null
+    }
+  }, [])
 
   /**
-   * Delete collection with optimistic updates
+   * Update an existing collection
    */
-  const deleteCollection = useCallback(async (collectionId: string) => {
-    const startTime = Date.now()
-
+  const updateCollection = useCallback(async (
+    data: UpdateCollectionData
+  ): Promise<TemplateCollection | null> => {
     try {
-      logger.info('Deleting collection', { collectionId })
+      setError(null)
 
-      // Optimistically remove from UI
-      const originalCollections = state.collections
-      setState((prev) => ({
-        ...prev,
-        collections: prev.collections.filter((c) => c.id !== collectionId),
-        totalCollections: prev.totalCollections - 1,
-      }))
+      const response = await fetch(`/api/community/social/collections/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update collection: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      const updatedCollection = result.collection
+
+      // Optimistic UI update
+      setCollections(prev => 
+        prev.map(collection => 
+          collection.id === data.id ? updatedCollection : collection
+        )
+      )
+
+      toast.success(`Collection "${updatedCollection.name}" updated successfully!`)
+      return updatedCollection
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update collection'
+      setError(errorMessage)
+      toast.error(`Failed to update collection: ${errorMessage}`)
+      console.error('Update collection error:', err)
+      return null
+    }
+  }, [])
+
+  /**
+   * Delete a collection
+   */
+  const deleteCollection = useCallback(async (collectionId: string): Promise<boolean> => {
+    try {
+      setError(null)
 
       const response = await fetch(`/api/community/social/collections/${collectionId}`, {
         method: 'DELETE',
       })
 
       if (!response.ok) {
-        // Revert optimistic update
-        setState((prev) => ({
-          ...prev,
-          collections: originalCollections,
-          totalCollections: prev.totalCollections + 1,
-        }))
-
-        throw new Error('Failed to delete collection')
+        throw new Error(`Failed to delete collection: ${response.statusText}`)
       }
 
-      const executionTime = Date.now() - startTime
+      const result = await response.json()
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
 
-      logger.info('Collection deleted successfully', {
-        collectionId,
-        executionTime,
-      })
+      // Optimistic UI update
+      setCollections(prev => prev.filter(collection => collection.id !== collectionId))
+      setTotalCount(prev => prev - 1)
 
-      // Show success toast
-      toast.success('Collection deleted successfully')
-    } catch (error) {
-      const executionTime = Date.now() - startTime
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete collection'
-
-      logger.error('Collection deletion failed', {
-        error: errorMessage,
-        executionTime,
-        collectionId,
-      })
-
-      // Show error toast
-      toast.error('Failed to delete collection', {
-        description: errorMessage,
-      })
-
-      throw error
+      toast.success('Collection deleted successfully!')
+      return true
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete collection'
+      setError(errorMessage)
+      toast.error(`Failed to delete collection: ${errorMessage}`)
+      console.error('Delete collection error:', err)
+      return false
     }
-  }, [state.collections])
+  }, [])
 
   /**
-   * Fetch collections on mount if enabled
+   * Add template to collection
+   */
+  const addTemplateToCollection = useCallback(async (
+    collectionId: string,
+    templateId: string
+  ): Promise<boolean> => {
+    try {
+      setError(null)
+
+      const response = await fetch(`/api/community/social/collections/${collectionId}/templates`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ templateId }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to add template to collection: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Optimistic UI update
+      setCollections(prev =>
+        prev.map(collection =>
+          collection.id === collectionId
+            ? {
+                ...collection,
+                templateCount: collection.templateCount + 1,
+                templates: [...(collection.templates || []), templateId],
+              }
+            : collection
+        )
+      )
+
+      toast.success('Template added to collection!')
+      return true
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add template to collection'
+      setError(errorMessage)
+      toast.error(errorMessage)
+      console.error('Add template to collection error:', err)
+      return false
+    }
+  }, [])
+
+  /**
+   * Remove template from collection
+   */
+  const removeTemplateFromCollection = useCallback(async (
+    collectionId: string,
+    templateId: string
+  ): Promise<boolean> => {
+    try {
+      setError(null)
+
+      const response = await fetch(`/api/community/social/collections/${collectionId}/templates/${templateId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove template from collection: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Optimistic UI update
+      setCollections(prev =>
+        prev.map(collection =>
+          collection.id === collectionId
+            ? {
+                ...collection,
+                templateCount: Math.max(0, collection.templateCount - 1),
+                templates: (collection.templates || []).filter(id => id !== templateId),
+              }
+            : collection
+        )
+      )
+
+      toast.success('Template removed from collection!')
+      return true
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to remove template from collection'
+      setError(errorMessage)
+      toast.error(errorMessage)
+      console.error('Remove template from collection error:', err)
+      return false
+    }
+  }, [])
+
+  /**
+   * Get collection by ID
+   */
+  const getCollectionById = useCallback((collectionId: string): TemplateCollection | undefined => {
+    return collections.find(collection => collection.id === collectionId)
+  }, [collections])
+
+  /**
+   * Get collections by visibility
+   */
+  const getCollectionsByVisibility = useCallback((
+    visibility: 'private' | 'unlisted' | 'public'
+  ): TemplateCollection[] => {
+    return collections.filter(collection => collection.visibility === visibility)
+  }, [collections])
+
+  /**
+   * Search collections by name or description
+   */
+  const searchCollections = useCallback((query: string): TemplateCollection[] => {
+    if (!query.trim()) return collections
+
+    const searchTerm = query.toLowerCase()
+    return collections.filter(collection =>
+      collection.name.toLowerCase().includes(searchTerm) ||
+      collection.description?.toLowerCase().includes(searchTerm) ||
+      collection.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+    )
+  }, [collections])
+
+  /**
+   * Refresh collections
+   */
+  const refresh = useCallback(async () => {
+    await fetchCollections(true)
+  }, [fetchCollections])
+
+  /**
+   * Clear current error
+   */
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  /**
+   * Auto-fetch collections on mount
    */
   useEffect(() => {
-    if (fetchOnMount && autoFetch) {
-      fetchCollections()
+    if (autoFetch) {
+      fetchCollections(true)
     }
-  }, [fetchOnMount, autoFetch, fetchCollections])
+  }, [autoFetch, fetchCollections])
 
   return {
-    // State
-    collections: state.collections,
-    collectionsLoading: state.loading,
-    collectionsError: state.error,
-    totalCollections: state.totalCollections,
-    hasMore: state.hasMore,
-    pagination: state.pagination,
-
+    // Collection data
+    collections,
+    loading,
+    error,
+    
+    // Pagination
+    hasMore,
+    totalCount,
+    
     // Actions
-    fetchCollections,
-    refreshCollections,
-    loadMoreCollections,
     createCollection,
+    updateCollection,
     deleteCollection,
+    addTemplateToCollection,
+    removeTemplateFromCollection,
+    
+    // Utilities
+    getCollectionById,
+    getCollectionsByVisibility,
+    searchCollections,
+    refresh,
+    clearError,
   }
-}
-
-/**
- * Convenience hook for current user's collections
- */
-export function useMyCollections(options?: Omit<UseUserCollectionsOptions, 'userId'>) {
-  return useUserCollections({
-    ...options,
-    // userId will be determined automatically from session
-  })
 }

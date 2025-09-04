@@ -11,7 +11,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -32,18 +32,35 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[TemplateAnalytics] Processing GET request')
 
+    // Parse URL search parameters into properly typed object
+    // URL search params are always strings, need conversion for proper typing
     const url = new URL(request.url)
-    const queryParams = Object.fromEntries(url.searchParams.entries())
+    const queryParams: Record<string, any> = {}
+    
+    // Extract URL search parameters manually for better type safety
+    for (const [key, value] of url.searchParams) {
+      queryParams[key] = value
+    }
 
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
-    if (queryParams.includeMetrics)
+    // Convert string parameters to expected types for schema validation
+    if (queryParams.limit) {
+      // Convert string limit to number for pagination
+      queryParams.limit = Number.parseInt(queryParams.limit)
+    }
+    if (queryParams.offset) {
+      // Convert string offset to number for pagination
+      queryParams.offset = Number.parseInt(queryParams.offset)
+    }
+    if (queryParams.includeMetrics) {
+      // Convert string 'true'/'false' to boolean for metrics inclusion flag
       queryParams.includeMetrics = queryParams.includeMetrics === 'true'
+    }
 
     const params = TemplateAnalyticsSchema.parse(queryParams)
 
-    // Get current user
-    const currentUser = await auth()
+    // Get current user session for authentication and access control
+    // Using getSession() instead of auth() for proper session management
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -57,22 +74,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Build query conditions
-    const whereConditions = ['t.status = $1']
-    const queryValues: any[] = ['approved']
-
+    // Build base query conditions with type-safe filtering
+    let baseWhereClause = 't.status = \'approved\''
+    
+    // Add optional filters with proper SQL escaping
     if (params.category) {
-      whereConditions.push(`t.category = $${queryValues.length + 1}`)
-      queryValues.push(params.category)
+      baseWhereClause += ` AND t.category = '${params.category.replace(/'/g, "''")}'`
     }
 
     if (params.author) {
-      whereConditions.push(`t.created_by_user_id = $${queryValues.length + 1}`)
-      queryValues.push(params.author)
+      baseWhereClause += ` AND t.created_by_user_id = '${params.author.replace(/'/g, "''")}'`
     }
 
-    // Sort mapping
-    const sortMappings = {
+    // Sort column mapping with security validation
+    const sortMappings: Record<string, string> = {
       downloads: 't.download_count',
       rating: 't.rating_average',
       views: 't.view_count',
@@ -83,7 +98,7 @@ export async function GET(request: NextRequest) {
     const sortColumn = sortMappings[params.sortBy] || 't.download_count'
     const sortDirection = params.sortOrder.toUpperCase()
 
-    // Main query
+    // Main analytics query with comprehensive template metrics
     const mainQuery = `
       SELECT 
         t.id,
@@ -117,27 +132,29 @@ export async function GET(request: NextRequest) {
         WHERE created_at >= NOW() - INTERVAL '30 days'
         GROUP BY template_id
       ) recent_views ON t.id = recent_views.template_id
-      WHERE ${whereConditions.join(' AND ')}
+      WHERE ${baseWhereClause}
       ORDER BY ${sortColumn} ${sortDirection} NULLS LAST
-      LIMIT $${queryValues.length + 1} OFFSET $${queryValues.length + 2}
+      LIMIT ${params.limit} OFFSET ${params.offset}
     `
 
-    queryValues.push(params.limit, params.offset)
+    // Execute main analytics query for template performance data
+    // Direct result access replaces deprecated .rows property pattern
+    const result = await db.execute(sql.raw(mainQuery))
 
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
-
-    // Get total count
+    // Get total count for pagination with same filtering conditions
     const countQuery = `
       SELECT COUNT(*) as total
       FROM templates t
-      WHERE ${whereConditions.join(' AND ')}
+      WHERE ${baseWhereClause}
     `
-    const countValues = queryValues.slice(0, -2)
-    const countResult = await db.execute(sql.raw(countQuery, countValues))
-    const totalTemplates = (countResult.rows[0] as any)?.total || 0
+    // Execute count query to get total number of matching templates
+    // Using direct array access for proper database result handling
+    const countResult = await db.execute(sql.raw(countQuery))
+    const totalTemplates = (countResult[0] as any)?.total || 0
 
-    // Format template analytics
-    const templates = result.rows.map((row: any) => {
+    // Format template analytics data with performance metrics
+    // Direct array access ensures compatibility with updated database driver
+    const templates = result.map((row: any) => {
       const successRate = row.rating_count > 0 ? (row.rating_average / 5) * 100 : 0
 
       return {
@@ -200,7 +217,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve template analytics',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }

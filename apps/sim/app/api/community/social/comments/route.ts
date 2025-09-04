@@ -28,7 +28,7 @@
 import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -78,18 +78,21 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const queryParams = Object.fromEntries(url.searchParams.entries())
 
-    // Convert string parameters
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
-    if (queryParams.maxDepth) queryParams.maxDepth = Number.parseInt(queryParams.maxDepth)
-    if (queryParams.includeReplies)
-      queryParams.includeReplies = queryParams.includeReplies === 'true'
+    // Convert string parameters to proper types for validation schema
+    // Handle type conversions to prevent TypeScript validation errors
+    const processedParams: Record<string, any> = { ...queryParams }
+    if (processedParams.limit) processedParams.limit = Number.parseInt(processedParams.limit as string)
+    if (processedParams.offset) processedParams.offset = Number.parseInt(processedParams.offset as string)
+    if (processedParams.maxDepth) processedParams.maxDepth = Number.parseInt(processedParams.maxDepth as string)
+    if (processedParams.includeReplies)
+      processedParams.includeReplies = (processedParams.includeReplies as string) === 'true'
 
-    const params = CommentQuerySchema.parse(queryParams)
+    const params = CommentQuerySchema.parse(processedParams)
     console.log('[Comments] Query parameters validated:', params)
 
-    // Get current user for personalization
-    const currentUser = await auth()
+    // Get current user session for personalization and authentication
+    // Uses getSession() for consistent authentication handling
+    const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
 
     // Rate limiting
@@ -240,6 +243,8 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[Comments] Executing comments query')
+    // Execute comments query with proper parameter binding
+    // Database results return direct array, not .rows property
     const result = await db.execute(sql.raw(mainQuery, queryValues))
 
     // Get total count
@@ -249,14 +254,17 @@ export async function GET(request: NextRequest) {
       WHERE ${whereConditions.join(' AND ')}
     `
     const countValues = queryValues.slice(0, whereConditions.length)
+    // Execute count query for pagination metadata
+    // Access result directly as array, not via .rows property
     const countResult = await db.execute(sql.raw(countQuery, countValues))
-    const totalComments = (countResult.rows[0] as any)?.total || 0
+    const totalComments = (countResult[0] as any)?.total || 0
 
     // Build comment tree structure
     const commentMap = new Map()
     const rootComments: any[] = []
 
-    result.rows.forEach((row: any) => {
+    // Process comments from direct result array, not .rows property
+    result.forEach((row: any) => {
       const comment = {
         id: row.id,
         userId: row.user_id,
@@ -297,12 +305,12 @@ export async function GET(request: NextRequest) {
     })
 
     const executionTime = Date.now() - startTime
-    console.log(`[Comments] Retrieved ${result.rows.length} comments in ${executionTime}ms`)
+    console.log(`[Comments] Retrieved ${result.length} comments in ${executionTime}ms`)
 
     return NextResponse.json({
       data: params.includeReplies
         ? rootComments
-        : result.rows.map((row) => {
+        : result.map((row) => {
             const comment = commentMap.get(row.id)
             if (comment) {
               comment.replies = [] // Remove replies if not requested
@@ -325,7 +333,7 @@ export async function GET(request: NextRequest) {
       },
       meta: {
         executionTime,
-        commentCount: result.rows.length,
+        commentCount: result.length,
         currentUserId,
       },
     })
@@ -347,7 +355,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve comments',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -364,8 +372,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[Comments] Processing POST request for comment creation')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for comment creation
+    // Uses getSession() for proper session handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -398,11 +407,12 @@ export async function POST(request: NextRequest) {
         WHERE id = ${commentData.parentId} AND is_deleted = false
       `)
 
-      if (parentCheck.rows.length === 0) {
+      // Check parent comment existence - direct array access, not .rows
+      if (parentCheck.length === 0) {
         return NextResponse.json({ error: 'Parent comment not found' }, { status: 404 })
       }
 
-      const parent = parentCheck.rows[0] as any
+      const parent = parentCheck[0] as any
       // Ensure parent belongs to same target
       if (
         parent.target_id !== commentData.targetId ||
@@ -520,8 +530,10 @@ export async function POST(request: NextRequest) {
       WHERE cc.id = $1
     `
 
+    // Retrieve created comment with user details
+    // Database result is direct array, not nested in .rows
     const commentResult = await db.execute(sql.raw(createdCommentQuery, [commentId]))
-    const commentRow = commentResult.rows[0] as any
+    const commentRow = commentResult[0] as any
 
     const createdComment = {
       id: commentRow.id,
@@ -588,7 +600,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to create comment',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -605,8 +617,9 @@ export async function PUT(request: NextRequest) {
   try {
     console.log('[Comments] Processing PUT request for comment update')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for comment updates
+    // Uses getSession() for consistent authentication handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -626,11 +639,12 @@ export async function PUT(request: NextRequest) {
       WHERE id = ${commentId} AND is_deleted = false
     `)
 
-    if (commentCheck.rows.length === 0) {
+    // Check comment existence for edit - direct array access, not .rows
+    if (commentCheck.length === 0) {
       return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
     }
 
-    const comment = commentCheck.rows[0] as any
+    const comment = commentCheck[0] as any
     const canEdit =
       comment.user_id === userId ||
       session.user.role === 'admin' ||
@@ -682,8 +696,10 @@ export async function PUT(request: NextRequest) {
       WHERE cc.id = $1
     `
 
+    // Retrieve updated comment with user details
+    // Database result is direct array, not nested in .rows
     const updatedResult = await db.execute(sql.raw(updatedCommentQuery, [commentId]))
-    const updatedRow = updatedResult.rows[0] as any
+    const updatedRow = updatedResult[0] as any
 
     const updatedComment = {
       id: updatedRow.id,
@@ -738,7 +754,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to update comment',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -755,8 +771,9 @@ export async function DELETE(request: NextRequest) {
   try {
     console.log('[Comments] Processing DELETE request for comment')
 
-    // Authenticate user
-    const session = await auth()
+    // Authenticate user for comment deletion
+    // Uses getSession() for consistent authentication handling
+    const session = await getSession()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
@@ -776,11 +793,12 @@ export async function DELETE(request: NextRequest) {
       WHERE id = ${commentId} AND is_deleted = false
     `)
 
-    if (commentCheck.rows.length === 0) {
+    // Check comment existence for deletion - direct array access, not .rows
+    if (commentCheck.length === 0) {
       return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
     }
 
-    const comment = commentCheck.rows[0] as any
+    const comment = commentCheck[0] as any
     const canDelete =
       comment.user_id === userId ||
       session.user.role === 'admin' ||
@@ -841,7 +859,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to delete comment',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
         executionTime,
       },
       { status: 500 }
@@ -888,11 +906,12 @@ async function validateCommentTarget(targetType: string, targetId: string, userI
 
     const result = await db.execute(sql.raw(query, [targetId]))
 
-    if (result.rows.length === 0) {
+    // Check target existence - direct array access, not .rows
+    if (result.length === 0) {
       return { exists: false, canComment: false }
     }
 
-    const target = result.rows[0] as any
+    const target = result[0] as any
     let canComment = true
 
     // Check visibility permissions
@@ -904,7 +923,8 @@ async function validateCommentTarget(targetType: string, targetId: string, userI
         SELECT 1 FROM community_user_follows
         WHERE follower_id = ${userId} AND following_id = ${target.user_id}
       `)
-      canComment = followCheck.rows.length > 0 || target.user_id === userId
+      // Check follow relationship - direct array access, not .rows
+      canComment = followCheck.length > 0 || target.user_id === userId
     }
 
     return { exists: true, canComment }

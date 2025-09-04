@@ -32,8 +32,24 @@ import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 // ================================
 // IMPORT ROUTE HANDLERS (AFTER MOCKS)
 // ================================
-// Replace with your actual CRUD route handlers
-import { DELETE, GET, PATCH, POST, PUT } from './route' // TODO: Import actual CRUD handlers
+// import { DELETE, GET, PATCH, POST, PUT } from './route' // TODO: Import actual route handlers
+
+// Template placeholder functions - replace with actual route imports
+const GET = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template GET handler' }), { status: 200 })
+}
+const POST = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template POST handler' }), { status: 200 })
+}
+const PUT = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template PUT handler' }), { status: 200 })
+}
+const PATCH = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template PATCH handler' }), { status: 200 })
+}
+const DELETE = async (request: NextRequest) => {
+  return new Response(JSON.stringify({ message: 'Template DELETE handler' }), { status: 200 })
+}
 
 // ================================
 // CRUD TEST DATA DEFINITIONS
@@ -152,7 +168,7 @@ function createCrudRequest(
 
   console.log(`📊 Creating CRUD ${method} request to ${url}`)
 
-  const requestInit: RequestInit = {
+  const requestInit: any = {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',
