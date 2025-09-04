@@ -32,9 +32,13 @@
     "@next/env": "^15.4.1"
   },
   "dependencies": {
+    "@emnapi/core": "1.5.0",
     "@linear/sdk": "40.0.0",
     "@t3-oss/env-nextjs": "0.13.4",
+    "@tybys/wasm-util": "0.10.0",
+    "dataloader": "2.2.3",
     "geist": "^1.4.2",
+    "graphql-yoga": "5.15.1",
     "react-colorful": "5.6.1",
     "remark-gfm": "4.0.1",
     "socket.io-client": "4.8.1"

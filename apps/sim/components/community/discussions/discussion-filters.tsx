@@ -318,14 +318,17 @@ export function DiscussionFilters({
           <div className='space-y-4'>
             {/* Sort Options */}
             <div>
-              <label className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'>
+              <label
+                htmlFor='sort-by-select'
+                className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'
+              >
                 Sort by
               </label>
               <Select
                 value={filters.sortBy}
                 onValueChange={(value) => updateFilters({ sortBy: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id='sort-by-select'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -365,14 +368,17 @@ export function DiscussionFilters({
 
             {/* Time Range */}
             <div>
-              <label className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'>
+              <label
+                htmlFor='time-range-select'
+                className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'
+              >
                 Time range
               </label>
               <Select
                 value={filters.timeRange}
                 onValueChange={(value) => updateFilters({ timeRange: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id='time-range-select'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -556,10 +562,14 @@ export function DiscussionFilters({
             </div>
 
             <div>
-              <label className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'>
+              <label
+                htmlFor='min-votes-input'
+                className='mb-2 block font-medium text-gray-700 text-sm dark:text-gray-300'
+              >
                 Minimum votes
               </label>
               <Input
+                id='min-votes-input'
                 type='number'
                 min='0'
                 value={filters.minVotes}

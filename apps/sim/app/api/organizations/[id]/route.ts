@@ -56,9 +56,10 @@ export async function GET(
 
     // Validate query parameters
     const { searchParams } = new URL(request.url)
+    let includeSeats = false
     try {
       const queryParams = GetQuerySchema.parse(Object.fromEntries(searchParams.entries()))
-      var includeSeats = queryParams.include === 'seats'
+      includeSeats = queryParams.include === 'seats'
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json(
@@ -72,7 +73,7 @@ export async function GET(
           { status: 400 }
         )
       }
-      var includeSeats = false
+      includeSeats = false
     }
 
     // Verify user has access to this organization

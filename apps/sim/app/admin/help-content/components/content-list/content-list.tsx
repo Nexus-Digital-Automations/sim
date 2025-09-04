@@ -569,8 +569,14 @@ export function ContentList({
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               {/* Author Filter */}
               <div>
-                <label className='mb-2 block font-medium text-gray-700 text-sm'>Author</label>
+                <label
+                  htmlFor='author-select'
+                  className='mb-2 block font-medium text-gray-700 text-sm'
+                >
+                  Author
+                </label>
                 <select
+                  id='author-select'
                   value={selectedAuthor}
                   onChange={(e) => setSelectedAuthor(e.target.value)}
                   className='w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -586,9 +592,15 @@ export function ContentList({
 
               {/* Date Range */}
               <div>
-                <label className='mb-2 block font-medium text-gray-700 text-sm'>Date Range</label>
+                <label
+                  htmlFor='date-range-start'
+                  className='mb-2 block font-medium text-gray-700 text-sm'
+                >
+                  Date Range
+                </label>
                 <div className='flex space-x-2'>
                   <input
+                    id='date-range-start'
                     type='date'
                     value={dateRange.start}
                     onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}

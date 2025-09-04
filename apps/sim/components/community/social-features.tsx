@@ -187,12 +187,12 @@ interface CommentThread {
   id: string
   targetId: string
   targetType: 'template' | 'activity' | 'collection'
-  comments: Comment[]
+  comments: UserComment[]
   totalCount: number
   isLoading: boolean
 }
 
-interface Comment {
+interface UserComment {
   id: string
   userId: string
   user: {
@@ -203,7 +203,7 @@ interface Comment {
   }
   content: string
   parentId?: string
-  replies?: Comment[]
+  replies?: UserComment[]
   likeCount: number
   isLiked?: boolean
   isPinned?: boolean

@@ -182,7 +182,6 @@ describe('HTTP Request Tool', () => {
       })
 
       // Verify the user's Host was used
-      const mockFetch = vi.mocked(global.fetch)
       const userHeaderCall = mockFetch.mock.calls[1]
       expect(userHeaderCall[1]?.headers?.Host).toBe('custom-host.com')
     })

@@ -27,7 +27,7 @@ import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateCollectionItems, templateCollections, templatesV2, users } from '@/db/schema'
+import { templateCollectionItems, templateCollections, templates, user } from '@/db/schema'
 
 // Initialize structured logger with request tracking
 const logger = createLogger('IndividualCollectionAPI')
@@ -126,16 +126,16 @@ export async function GET(request: NextRequest, { params }: { params: { collecti
         createdByUserId: templateCollections.createdByUserId,
         creator: validatedParams.includeCreator
           ? {
-              id: users.id,
-              name: users.name,
-              displayName: users.displayName,
-              image: users.image,
-              isVerified: users.isVerified,
+              id: user.id,
+              name: user.name,
+              displayName: user.displayName,
+              image: user.image,
+              isVerified: user.isVerified,
             }
           : null,
       })
       .from(templateCollections)
-      .leftJoin(users, eq(templateCollections.createdByUserId, users.id))
+      .leftJoin(user, eq(templateCollections.createdByUserId, user.id))
       .where(eq(templateCollections.id, collectionId))
 
     if (!collectionData) {
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest, { params }: { params: { collecti
         (item) =>
           item.template?.isPublic ||
           item.template?.createdByUserId === currentUserId ||
-          currentUserId // Authenticated users see all templates in accessible collections
+          currentUserId // Authenticated user see all templates in accessible collections
       )
 
       responseData.templates = accessibleTemplates.map((item) => ({
@@ -378,15 +378,15 @@ export async function PUT(request: NextRequest, { params }: { params: { collecti
         updatedAt: templateCollections.updatedAt,
         createdByUserId: templateCollections.createdByUserId,
         creator: {
-          id: users.id,
-          name: users.name,
-          displayName: users.displayName,
-          image: users.image,
-          isVerified: users.isVerified,
+          id: user.id,
+          name: user.name,
+          displayName: user.displayName,
+          image: user.image,
+          isVerified: user.isVerified,
         },
       })
       .from(templateCollections)
-      .leftJoin(users, eq(templateCollections.createdByUserId, users.id))
+      .leftJoin(user, eq(templateCollections.createdByUserId, user.id))
       .where(eq(templateCollections.id, collectionId))
 
     // Record analytics for collection update

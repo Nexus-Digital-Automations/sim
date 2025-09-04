@@ -1337,13 +1337,13 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                           <Checkbox id='terms' />
                           <Label htmlFor='terms' className='text-sm leading-relaxed'>
                             I agree to the{' '}
-                            <a href='#' className='text-blue-600 hover:underline'>
+                            <button type='button' className='text-blue-600 hover:underline'>
                               Template Submission Terms
-                            </a>{' '}
+                            </button>{' '}
                             and{' '}
-                            <a href='#' className='text-blue-600 hover:underline'>
+                            <button type='button' className='text-blue-600 hover:underline'>
                               Community Guidelines
-                            </a>
+                            </button>
                           </Label>
                         </div>
                         <div className='flex items-start gap-2'>

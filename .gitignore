@@ -9,9 +9,17 @@
 # bun specific
 bun-debug.log*
 
+# package manager conflicts (using bun)
+package-lock.json
+**/package-lock.json
+
 # testing
 /coverage
 /apps/**/coverage
+
+# python cache
+.mypy_cache
+**/.mypy_cache
 
 # next.js
 /.next/

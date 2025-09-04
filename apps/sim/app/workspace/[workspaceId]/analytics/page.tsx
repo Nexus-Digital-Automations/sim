@@ -95,7 +95,7 @@ function LoadingSkeleton() {
   )
 }
 
-export default function AnalyticsPage({}: AnalyticsPageProps) {
+export default function AnalyticsPage(_props: AnalyticsPageProps) {
   const params = useParams()
   const workspaceId = params.workspaceId as string
 

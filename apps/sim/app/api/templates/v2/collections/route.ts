@@ -30,7 +30,7 @@ import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
-import { templateCollectionItems, templateCollections, templatesV2, users } from '@/db/schema'
+import { templateCollectionItems, templateCollections, templates, user } from '@/db/schema'
 
 // Initialize structured logger with request tracking
 const logger = createLogger('TemplateCollectionsAPI')
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Build base query with joins
-    const creatorAlias = alias(users, 'creator')
+    const creatorAlias = alias(user, 'creator')
     let query = db
       .select({
         id: templateCollections.id,
@@ -546,15 +546,15 @@ export async function POST(request: NextRequest) {
         updatedAt: templateCollections.updatedAt,
         createdByUserId: templateCollections.createdByUserId,
         creator: {
-          id: users.id,
-          name: users.name,
-          displayName: users.displayName,
-          image: users.image,
-          isVerified: users.isVerified,
+          id: user.id,
+          name: user.name,
+          displayName: user.displayName,
+          image: user.image,
+          isVerified: user.isVerified,
         },
       })
       .from(templateCollections)
-      .leftJoin(users, eq(templateCollections.createdByUserId, users.id))
+      .leftJoin(user, eq(templateCollections.createdByUserId, user.id))
       .where(eq(templateCollections.id, collectionId))
 
     // Record analytics for collection creation

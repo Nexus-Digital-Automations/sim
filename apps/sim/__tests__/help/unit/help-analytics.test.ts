@@ -559,12 +559,12 @@ describe('HelpAnalyticsService', () => {
       const originalEnqueue = analyticsService.enqueueEvent
       let errorCount = 0
 
-      analyticsService.enqueueEvent = jest.fn().mockImplementation(async () => {
+      analyticsService.enqueueEvent = jest.fn().mockImplementation(async (...args: any[]) => {
         if (errorCount === 0) {
           errorCount++
           throw new Error('First error')
         }
-        return originalEnqueue.call(analyticsService, arguments[0])
+        return originalEnqueue.call(analyticsService, ...args)
       })
 
       // First call should handle error gracefully

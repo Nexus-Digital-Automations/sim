@@ -563,6 +563,12 @@ export function ContextualOverlay({
             poster={currentStep.mediaUrl.replace('.mp4', '-poster.jpg')}
           >
             <source src={currentStep.mediaUrl} type='video/mp4' />
+            <track
+              kind='captions'
+              src={currentStep.mediaUrl.replace('.mp4', '.vtt')}
+              srcLang='en'
+              label='English captions'
+            />
             Your browser does not support the video tag.
           </video>
         ) : (
