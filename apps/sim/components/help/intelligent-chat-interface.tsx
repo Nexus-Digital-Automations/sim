@@ -168,7 +168,9 @@ export function IntelligentChatInterface({
   const [error, setError] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connected')
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connected' | 'connecting' | 'disconnected'
+  >('connected')
 
   // Refs for DOM manipulation
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -210,7 +212,7 @@ export function IntelligentChatInterface({
 
   const sendChatMessage = async (message: string): Promise<ChatResponse> => {
     setConnectionStatus('connecting')
-    
+
     try {
       const response = await fetch('/api/help/chat', {
         method: 'POST',
@@ -227,7 +229,7 @@ export function IntelligentChatInterface({
           options: {
             enableStreaming: true,
             maxResponseTime: 2000,
-          }
+          },
         }),
       })
 
@@ -248,7 +250,7 @@ export function IntelligentChatInterface({
   const sendChatMessageWithStreaming = async (message: string): Promise<void> => {
     setIsStreaming(true)
     setStreamingMessage('')
-    
+
     try {
       const response = await fetch('/api/help/chat', {
         method: 'POST',
@@ -264,7 +266,7 @@ export function IntelligentChatInterface({
           },
           options: {
             stream: true,
-          }
+          },
         }),
       })
 
@@ -283,7 +285,7 @@ export function IntelligentChatInterface({
 
           const chunk = decoder.decode(value)
           const lines = chunk.split('\n')
-          
+
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               try {
@@ -409,7 +411,7 @@ export function IntelligentChatInterface({
       try {
         // Attempt streaming response
         await sendChatMessageWithStreaming(messageContent)
-        
+
         if (streamingMessage) {
           // Create message from streamed content
           assistantMessage = {
@@ -419,7 +421,7 @@ export function IntelligentChatInterface({
             timestamp: new Date(),
             metadata: { streamingUsed: true },
           }
-          
+
           // Get additional response data
           response = await sendChatMessage(messageContent)
           assistantMessage.intent = response.intent
@@ -429,10 +431,10 @@ export function IntelligentChatInterface({
         }
       } catch (streamError) {
         console.warn('Streaming failed, falling back to regular API:', streamError)
-        
+
         // Fallback to regular API
         response = await sendChatMessage(messageContent)
-        
+
         if (response.success) {
           assistantMessage = {
             id: `msg_${Date.now()}_assistant`,
@@ -449,7 +451,7 @@ export function IntelligentChatInterface({
 
       // Add assistant message to conversation
       setMessages((prev) => [...prev, assistantMessage])
-      
+
       // Update conversation state
       if (response.sessionId) setSessionId(response.sessionId)
       if (response.conversationState) setCurrentState(response.conversationState)
@@ -458,12 +460,11 @@ export function IntelligentChatInterface({
 
       // Show success indicator briefly
       setConnectionStatus('connected')
-      
     } catch (error) {
       console.error('Message sending failed:', error)
       setError(error instanceof Error ? error.message : 'Failed to send message')
       setConnectionStatus('disconnected')
-      
+
       // Add error message to conversation
       const errorMessage: ChatMessage = {
         id: `msg_${Date.now()}_error`,
@@ -638,7 +639,7 @@ export function IntelligentChatInterface({
                 className={cn(
                   'h-2 w-2 rounded-full',
                   connectionStatus === 'connected' && 'bg-green-500',
-                  connectionStatus === 'connecting' && 'bg-yellow-500 animate-pulse',
+                  connectionStatus === 'connecting' && 'animate-pulse bg-yellow-500',
                   connectionStatus === 'disconnected' && 'bg-red-500'
                 )}
               />
@@ -677,9 +678,9 @@ export function IntelligentChatInterface({
                     <span className='font-medium text-sm'>AI Assistant</span>
                     <span className='text-muted-foreground text-xs'>streaming...</span>
                     <div className='flex gap-1'>
-                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse'></div>
-                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse delay-150'></div>
-                      <div className='h-1 w-1 rounded-full bg-purple-600 animate-pulse delay-300'></div>
+                      <div className='h-1 w-1 animate-pulse rounded-full bg-purple-600' />
+                      <div className='h-1 w-1 animate-pulse rounded-full bg-purple-600 delay-150' />
+                      <div className='h-1 w-1 animate-pulse rounded-full bg-purple-600 delay-300' />
                     </div>
                   </div>
                   <div className='prose prose-sm dark:prose-invert max-w-none'>
@@ -696,11 +697,11 @@ export function IntelligentChatInterface({
                 <Bot className='h-6 w-6 text-purple-600' />
                 <div className='flex items-center gap-1'>
                   <div className='flex gap-1'>
-                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce'></div>
-                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-150'></div>
-                    <div className='h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-300'></div>
+                    <div className='h-2 w-2 animate-bounce rounded-full bg-gray-400' />
+                    <div className='h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-150' />
+                    <div className='h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-300' />
                   </div>
-                  <span className='text-muted-foreground text-sm ml-2'>AI is thinking...</span>
+                  <span className='ml-2 text-muted-foreground text-sm'>AI is thinking...</span>
                 </div>
               </div>
             )}
@@ -736,8 +737,8 @@ export function IntelligentChatInterface({
                 connectionStatus === 'disconnected'
                   ? 'Reconnecting...'
                   : isLoading || isStreaming
-                  ? 'Processing your message...'
-                  : 'Ask me anything about workflows, integrations, or troubleshooting...'
+                    ? 'Processing your message...'
+                    : 'Ask me anything about workflows, integrations, or troubleshooting...'
               }
               disabled={isLoading || isStreaming || connectionStatus === 'disconnected'}
               className={cn(
@@ -748,12 +749,12 @@ export function IntelligentChatInterface({
               maxLength={2000}
             />
             {inputMessage.length > 0 && (
-              <div className='absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground'>
+              <div className='-translate-y-1/2 absolute top-1/2 right-3 transform text-muted-foreground text-xs'>
                 {inputMessage.length}/2000
               </div>
             )}
           </div>
-          
+
           <Button
             type='submit'
             disabled={
@@ -767,7 +768,7 @@ export function IntelligentChatInterface({
               'transition-all duration-200',
               connectionStatus === 'connected' && 'bg-purple-600 hover:bg-purple-700',
               connectionStatus === 'connecting' && 'bg-yellow-500',
-              connectionStatus === 'disconnected' && 'bg-gray-400 cursor-not-allowed'
+              connectionStatus === 'disconnected' && 'cursor-not-allowed bg-gray-400'
             )}
           >
             {isLoading || isStreaming ? (
@@ -779,19 +780,19 @@ export function IntelligentChatInterface({
             )}
           </Button>
         </form>
-        
+
         {/* Quick actions for faster interaction */}
         {!isLoading && !isStreaming && suggestedActions.length === 0 && (
           <div className='mt-2 flex flex-wrap gap-1'>
             {[
               { label: 'Need Help?', action: 'I need help with something' },
-              { label: 'Report Issue', action: 'I\'m experiencing an issue' },
+              { label: 'Report Issue', action: "I'm experiencing an issue" },
               { label: 'How to...', action: 'How do I...' },
             ].map((quickAction, index) => (
               <button
                 key={index}
                 onClick={() => setInputMessage(quickAction.action)}
-                className='rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200 transition-colors'
+                className='rounded-full bg-gray-100 px-3 py-1 text-gray-600 text-xs transition-colors hover:bg-gray-200'
               >
                 {quickAction.label}
               </button>

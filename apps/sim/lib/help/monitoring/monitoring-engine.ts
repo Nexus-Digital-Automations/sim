@@ -36,9 +36,9 @@
 
 import { nanoid } from 'nanoid'
 import { createLogger } from '@/lib/logs/logger'
-import { helpAnalyticsEngine, type HelpEngagementMetrics, type HelpPerformanceReport } from '../analytics/help-analytics-engine'
-import { realTimeHelpMonitor, type RealTimeMetrics } from '../analytics/real-time-monitor'
-import { predictiveHelpAnalytics, type HelpPrediction } from '../analytics/predictive-analytics'
+import { type HelpPerformanceReport, helpAnalyticsEngine } from '../analytics/help-analytics-engine'
+import { predictiveHelpAnalytics } from '../analytics/predictive-analytics'
+import { type RealTimeMetrics, realTimeHelpMonitor } from '../analytics/real-time-monitor'
 
 const logger = createLogger('HelpMonitoringEngine')
 
@@ -275,7 +275,7 @@ export interface OptimizationInsight {
  */
 export class HelpMonitoringEngine {
   private config: MonitoringConfiguration
-  private isRunning: boolean = false
+  private isRunning = false
   private monitoringInterval: NodeJS.Timeout | null = null
   private healthCheckInterval: NodeJS.Timeout | null = null
   private alertQueue: MonitoringAlert[] = []
@@ -406,7 +406,7 @@ export class HelpMonitoringEngine {
       this.scheduleReports()
 
       this.isRunning = true
-      
+
       logger.info('Help System Monitoring Engine started successfully', {
         updateInterval: this.config.realTime.updateInterval,
         healthCheckInterval: this.config.realTime.healthCheckInterval,
@@ -452,7 +452,7 @@ export class HelpMonitoringEngine {
       this.subscribers.clear()
 
       this.isRunning = false
-      
+
       logger.info('Help System Monitoring Engine stopped successfully')
     } catch (error) {
       logger.error('Error stopping monitoring engine', {
@@ -481,7 +481,7 @@ export class HelpMonitoringEngine {
     try {
       // Get real-time metrics
       const realTimeMetrics = realTimeHelpMonitor.getCurrentMetrics()
-      
+
       // Get system health
       const systemHealth = await this.performHealthCheck()
 
@@ -560,9 +560,9 @@ export class HelpMonitoringEngine {
 
       // Sort by impact and confidence
       const sortedInsights = insights.sort(
-        (a, b) => 
-          (b.impact.projectedImprovement * b.impact.confidenceLevel) -
-          (a.impact.projectedImprovement * a.impact.confidenceLevel)
+        (a, b) =>
+          b.impact.projectedImprovement * b.impact.confidenceLevel -
+          a.impact.projectedImprovement * a.impact.confidenceLevel
       )
 
       logger.info(`[${operationId}] Optimization insights generated`, {
@@ -648,7 +648,7 @@ export class HelpMonitoringEngine {
    */
   updateConfiguration(newConfig: Partial<MonitoringConfiguration>): void {
     this.config = { ...this.config, ...newConfig }
-    
+
     logger.info('Monitoring configuration updated', {
       updatedSections: Object.keys(newConfig),
       realTimeInterval: this.config.realTime.updateInterval,
@@ -734,15 +734,18 @@ export class HelpMonitoringEngine {
 
   private startOptimizationAnalysis(): void {
     // Generate optimization insights every hour
-    setInterval(async () => {
-      try {
-        await this.generateOptimizationInsights()
-      } catch (error) {
-        logger.error('Optimization analysis failed', {
-          error: error instanceof Error ? error.message : String(error),
-        })
-      }
-    }, 60 * 60 * 1000) // 1 hour
+    setInterval(
+      async () => {
+        try {
+          await this.generateOptimizationInsights()
+        } catch (error) {
+          logger.error('Optimization analysis failed', {
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      },
+      60 * 60 * 1000
+    ) // 1 hour
 
     logger.info('Optimization analysis started')
   }
@@ -791,10 +794,10 @@ export class HelpMonitoringEngine {
 
     // Calculate overall health
     const statuses = Object.values(components).map((c) => c.status)
-    const overall = statuses.includes('critical') 
-      ? 'critical' 
-      : statuses.includes('warning') 
-        ? 'warning' 
+    const overall = statuses.includes('critical')
+      ? 'critical'
+      : statuses.includes('warning')
+        ? 'warning'
         : 'healthy'
 
     // Calculate performance metrics
@@ -839,7 +842,9 @@ export class HelpMonitoringEngine {
       return {
         status: 'critical',
         lastChecked: new Date(),
-        issues: [`Analytics system error: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Analytics system error: ${error instanceof Error ? error.message : String(error)}`,
+        ],
       }
     }
   }
@@ -865,7 +870,9 @@ export class HelpMonitoringEngine {
       return {
         status: 'critical',
         lastChecked: new Date(),
-        issues: [`Real-time monitoring error: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Real-time monitoring error: ${error instanceof Error ? error.message : String(error)}`,
+        ],
       }
     }
   }
@@ -895,7 +902,9 @@ export class HelpMonitoringEngine {
       return {
         status: 'critical',
         lastChecked: new Date(),
-        issues: [`Predictive analytics error: ${error instanceof Error ? error.message : String(error)}`],
+        issues: [
+          `Predictive analytics error: ${error instanceof Error ? error.message : String(error)}`,
+        ],
       }
     }
   }
@@ -911,17 +920,19 @@ export class HelpMonitoringEngine {
 
     // Simulate vector search health check
     const mockResponseTime = Math.random() * 500 + 100
-    const status = mockResponseTime > this.config.realTime.alertThresholds.vectorSearchLatency.critical
-      ? 'critical'
-      : mockResponseTime > this.config.realTime.alertThresholds.vectorSearchLatency.warning
-        ? 'warning'
-        : 'healthy'
+    const status =
+      mockResponseTime > this.config.realTime.alertThresholds.vectorSearchLatency.critical
+        ? 'critical'
+        : mockResponseTime > this.config.realTime.alertThresholds.vectorSearchLatency.warning
+          ? 'warning'
+          : 'healthy'
 
     return {
       status,
       responseTime: mockResponseTime,
       lastChecked: new Date(),
-      issues: status === 'healthy' ? [] : [`Vector search latency: ${mockResponseTime.toFixed(0)}ms`],
+      issues:
+        status === 'healthy' ? [] : [`Vector search latency: ${mockResponseTime.toFixed(0)}ms`],
       metrics: {
         latency: mockResponseTime,
         accuracy: 0.92,
@@ -941,17 +952,19 @@ export class HelpMonitoringEngine {
 
     // Simulate chatbot health check
     const mockResponseTime = Math.random() * 2000 + 500
-    const status = mockResponseTime > this.config.realTime.alertThresholds.chatbotResponseTime.critical
-      ? 'critical'
-      : mockResponseTime > this.config.realTime.alertThresholds.chatbotResponseTime.warning
-        ? 'warning'
-        : 'healthy'
+    const status =
+      mockResponseTime > this.config.realTime.alertThresholds.chatbotResponseTime.critical
+        ? 'critical'
+        : mockResponseTime > this.config.realTime.alertThresholds.chatbotResponseTime.warning
+          ? 'warning'
+          : 'healthy'
 
     return {
       status,
       responseTime: mockResponseTime,
       lastChecked: new Date(),
-      issues: status === 'healthy' ? [] : [`Chatbot response time: ${mockResponseTime.toFixed(0)}ms`],
+      issues:
+        status === 'healthy' ? [] : [`Chatbot response time: ${mockResponseTime.toFixed(0)}ms`],
       metrics: {
         responseTime: mockResponseTime,
         accuracy: 0.89,
@@ -1010,7 +1023,7 @@ export class HelpMonitoringEngine {
   private async checkDatabaseHealth(): Promise<HealthStatus> {
     // Simulate database health check
     const mockLatency = Math.random() * 100 + 20
-    
+
     return {
       status: mockLatency > 100 ? 'warning' : 'healthy',
       responseTime: mockLatency,
@@ -1027,12 +1040,15 @@ export class HelpMonitoringEngine {
   private async checkAPIHealth(): Promise<HealthStatus> {
     // Simulate API health check
     const mockResponseTime = Math.random() * 500 + 100
-    
+
     return {
       status: mockResponseTime > 1000 ? 'warning' : 'healthy',
       responseTime: mockResponseTime,
       lastChecked: new Date(),
-      issues: mockResponseTime > 1000 ? [`API response time elevated: ${mockResponseTime.toFixed(0)}ms`] : [],
+      issues:
+        mockResponseTime > 1000
+          ? [`API response time elevated: ${mockResponseTime.toFixed(0)}ms`]
+          : [],
       metrics: {
         responseTime: mockResponseTime,
         throughput: Math.random() * 1000 + 500,
@@ -1075,11 +1091,7 @@ export class HelpMonitoringEngine {
         metrics: { responseTime: metrics.averageResponseTime },
         threshold: thresholds.responseTime.warning,
         currentValue: metrics.averageResponseTime,
-        suggestions: [
-          'Monitor system resources',
-          'Review recent changes',
-          'Consider optimization',
-        ],
+        suggestions: ['Monitor system resources', 'Review recent changes', 'Consider optimization'],
         autoResolution: false,
       })
     }
@@ -1153,9 +1165,7 @@ export class HelpMonitoringEngine {
     })
 
     // Find escalation policy
-    const policy = this.config.alerting.escalationPolicy.find(
-      (p) => p.severity === alert.severity
-    )
+    const policy = this.config.alerting.escalationPolicy.find((p) => p.severity === alert.severity)
 
     if (policy) {
       // Send notifications based on policy
@@ -1183,7 +1193,7 @@ export class HelpMonitoringEngine {
   }
 
   private async handleHealthStatusChange(
-    previous: string | undefined, 
+    previous: string | undefined,
     current: string
   ): Promise<void> {
     if (previous && previous !== current) {
@@ -1248,7 +1258,8 @@ export class HelpMonitoringEngine {
     const responseTimes = snapshots.map((s) => s.performance.averageResponseTime)
     const trend = this.calculateTrend(responseTimes)
 
-    if (trend > 0.1) { // 10% increase
+    if (trend > 0.1) {
+      // 10% increase
       return {
         id: nanoid(),
         category: 'performance',
@@ -1257,7 +1268,8 @@ export class HelpMonitoringEngine {
           trend,
           currentResponseTime: responseTimes[responseTimes.length - 1],
           previousResponseTime: responseTimes[0],
-          changePercent: ((responseTimes[responseTimes.length - 1] - responseTimes[0]) / responseTimes[0]) * 100,
+          changePercent:
+            ((responseTimes[responseTimes.length - 1] - responseTimes[0]) / responseTimes[0]) * 100,
         },
         impact: {
           metric: 'response_time',
@@ -1293,15 +1305,19 @@ export class HelpMonitoringEngine {
     return null
   }
 
-  private analyzeUserExperiencePatterns(snapshots: MonitoringSnapshot[]): OptimizationInsight | null {
+  private analyzeUserExperiencePatterns(
+    snapshots: MonitoringSnapshot[]
+  ): OptimizationInsight | null {
     const satisfactionScores = snapshots.map((s) => s.performance.userSatisfaction)
-    const avgSatisfaction = satisfactionScores.reduce((a, b) => a + b, 0) / satisfactionScores.length
+    const avgSatisfaction =
+      satisfactionScores.reduce((a, b) => a + b, 0) / satisfactionScores.length
 
     if (avgSatisfaction < 4.0) {
       return {
         id: nanoid(),
         category: 'user-experience',
-        insight: 'User satisfaction scores are below optimal levels, indicating UX improvement opportunities',
+        insight:
+          'User satisfaction scores are below optimal levels, indicating UX improvement opportunities',
         evidence: {
           averageSatisfaction: avgSatisfaction,
           satisfactionTrend: this.calculateTrend(satisfactionScores),
@@ -1341,7 +1357,9 @@ export class HelpMonitoringEngine {
     return null
   }
 
-  private analyzeBusinessOpportunities(snapshots: MonitoringSnapshot[]): OptimizationInsight | null {
+  private analyzeBusinessOpportunities(
+    snapshots: MonitoringSnapshot[]
+  ): OptimizationInsight | null {
     const deflectionRates = snapshots.map((s) => s.business.supportTicketDeflection)
     const avgDeflection = deflectionRates.reduce((a, b) => a + b, 0) / deflectionRates.length
 
@@ -1349,7 +1367,8 @@ export class HelpMonitoringEngine {
       return {
         id: nanoid(),
         category: 'business',
-        insight: 'Support ticket deflection rate indicates opportunity for cost savings through better self-service',
+        insight:
+          'Support ticket deflection rate indicates opportunity for cost savings through better self-service',
         evidence: {
           currentDeflectionRate: avgDeflection,
           potentialSavings: (100 - avgDeflection) * 25, // $25 per ticket
@@ -1389,7 +1408,9 @@ export class HelpMonitoringEngine {
     return null
   }
 
-  private analyzeTechnicalOptimizations(snapshots: MonitoringSnapshot[]): OptimizationInsight | null {
+  private analyzeTechnicalOptimizations(
+    snapshots: MonitoringSnapshot[]
+  ): OptimizationInsight | null {
     const errorRates = snapshots.map((s) => s.performance.errorRate)
     const avgErrorRate = errorRates.reduce((a, b) => a + b, 0) / errorRates.length
 
@@ -1397,7 +1418,8 @@ export class HelpMonitoringEngine {
       return {
         id: nanoid(),
         category: 'technical',
-        insight: 'Error rates are elevated, indicating opportunities for system reliability improvements',
+        insight:
+          'Error rates are elevated, indicating opportunities for system reliability improvements',
         evidence: {
           currentErrorRate: avgErrorRate,
           errorTrend: this.calculateTrend(errorRates),
@@ -1444,19 +1466,21 @@ export class HelpMonitoringEngine {
     recommendedActions: SystemRecommendation[]
   }> {
     // Generate predictive data based on current trends
-    const systemLoad = Array.from({ length: 24 }, (_, i) => 
-      Math.sin((i * Math.PI) / 12) * 30 + 60 + Math.random() * 10
+    const systemLoad = Array.from(
+      { length: 24 },
+      (_, i) => Math.sin((i * Math.PI) / 12) * 30 + 60 + Math.random() * 10
     )
 
-    const userGrowth = Array.from({ length: 7 }, (_, i) => 
-      100 * (1 + i * 0.05) + Math.random() * 20
+    const userGrowth = Array.from(
+      { length: 7 },
+      (_, i) => 100 * (1 + i * 0.05) + Math.random() * 20
     )
 
     const performanceImpact = {
-      'response_time_optimization': 25,
-      'caching_implementation': 40,
-      'database_optimization': 35,
-      'infrastructure_scaling': 20,
+      response_time_optimization: 25,
+      caching_implementation: 40,
+      database_optimization: 35,
+      infrastructure_scaling: 20,
     }
 
     const recommendedActions: SystemRecommendation[] = [
@@ -1465,7 +1489,8 @@ export class HelpMonitoringEngine {
         type: 'performance',
         priority: 'high',
         title: 'Implement Response Time Optimization',
-        description: 'Based on trend analysis, implementing response time optimizations will significantly improve user experience',
+        description:
+          'Based on trend analysis, implementing response time optimizations will significantly improve user experience',
         impact: 'Reduce average response time by 25% and improve user satisfaction',
         effort: 'medium',
         expectedImprovement: 25,
@@ -1516,7 +1541,9 @@ export class HelpMonitoringEngine {
   }
 
   private calculatePeakResponseTime(): number {
-    return Math.max(...this.performanceHistory.slice(-24).map((s) => s.performance.averageResponseTime))
+    return Math.max(
+      ...this.performanceHistory.slice(-24).map((s) => s.performance.averageResponseTime)
+    )
   }
 
   private calculateThroughput(): number {
@@ -1538,8 +1565,8 @@ export class HelpMonitoringEngine {
   }
 
   private calculateOverallPerformanceScore(snapshot: MonitoringSnapshot): number {
-    const responseTimeScore = Math.max(0, 100 - (snapshot.performance.averageResponseTime / 10))
-    const errorRateScore = Math.max(0, 100 - (snapshot.performance.errorRate * 10))
+    const responseTimeScore = Math.max(0, 100 - snapshot.performance.averageResponseTime / 10)
+    const errorRateScore = Math.max(0, 100 - snapshot.performance.errorRate * 10)
     const satisfactionScore = snapshot.performance.userSatisfaction * 20
     const throughputScore = Math.min(100, snapshot.performance.throughput / 10)
 
@@ -1585,9 +1612,9 @@ export class HelpMonitoringEngine {
     const responseTimes = Object.values(components)
       .map((c) => c.responseTime)
       .filter((rt): rt is number => rt !== undefined)
-    
-    return responseTimes.length > 0 
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
+
+    return responseTimes.length > 0
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
       : 0
   }
 
@@ -1599,18 +1626,14 @@ export class HelpMonitoringEngine {
     const errorRates = Object.values(components)
       .map((c) => c.errorRate)
       .filter((er): er is number => er !== undefined)
-    
-    return errorRates.length > 0 
-      ? errorRates.reduce((a, b) => a + b, 0) / errorRates.length 
-      : 0
+
+    return errorRates.length > 0 ? errorRates.reduce((a, b) => a + b, 0) / errorRates.length : 0
   }
 
   private calculateSystemUptime(components: Record<string, HealthStatus>): number {
-    const healthyComponents = Object.values(components).filter(
-      (c) => c.status === 'healthy'
-    ).length
+    const healthyComponents = Object.values(components).filter((c) => c.status === 'healthy').length
     const totalComponents = Object.values(components).length
-    
+
     return (healthyComponents / totalComponents) * 100
   }
 
@@ -1692,7 +1715,7 @@ export class HelpMonitoringEngine {
 
   private async restartWithNewConfig(): Promise<void> {
     logger.info('Restarting monitoring with new configuration')
-    
+
     await this.stopMonitoring()
     await this.startMonitoring()
   }
@@ -1704,7 +1727,7 @@ export class HelpMonitoringEngine {
     if (this.isRunning) {
       this.stopMonitoring()
     }
-    
+
     this.subscribers.clear()
     this.alertQueue = []
     this.optimizationInsights = []

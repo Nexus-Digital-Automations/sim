@@ -744,7 +744,7 @@ class ResponseGenerator {
     operationId: string
   ): Promise<ChatResponse> {
     const startTime = Date.now()
-    
+
     try {
       // Find relevant content using semantic search
       const relatedContent = await this.findRelatedContent(message, context)
@@ -772,7 +772,7 @@ class ResponseGenerator {
         processingTimeMs: processingTime,
         responseLength: response.length,
         suggestedActionsCount: suggestedActions.length,
-        relatedContentCount: relatedContent.length
+        relatedContentCount: relatedContent.length,
       })
 
       return {
@@ -791,13 +791,13 @@ class ResponseGenerator {
           processingTime,
           operationId,
           modelUsed: this.config.model,
-          contextSize: claudeContext.length
-        }
+          contextSize: claudeContext.length,
+        },
       }
     } catch (error) {
       this.logger.error(`[${operationId}] Response generation failed`, {
         error: error instanceof Error ? error.message : 'Unknown error',
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       })
       throw error
     }
@@ -815,20 +815,22 @@ class ResponseGenerator {
   }
 
   private buildClaudeContext(
-    message: ConversationMessage, 
-    context: ConversationContext, 
+    message: ConversationMessage,
+    context: ConversationContext,
     relatedContent: any[]
   ): string {
     const contextParts = []
-    
+
     // Add conversation history for context
     if (context.conversationHistory.length > 0) {
       const recentHistory = context.conversationHistory.slice(-5) // Last 5 messages
-      contextParts.push(`Previous conversation:\n${recentHistory
-        .map(msg => `${msg.role}: ${msg.content}`)
-        .join('\n')}`)
+      contextParts.push(
+        `Previous conversation:\n${recentHistory
+          .map((msg) => `${msg.role}: ${msg.content}`)
+          .join('\n')}`
+      )
     }
-    
+
     // Add workflow context
     if (context.workflowContext) {
       contextParts.push(`Current workflow context:
@@ -838,7 +840,7 @@ class ResponseGenerator {
 - Recent errors: ${context.workflowContext.errors?.length || 0} errors
 - Time spent: ${Math.round((context.workflowContext.timeSpent || 0) / 1000)}s`)
     }
-    
+
     // Add user profile context
     if (context.userProfile) {
       contextParts.push(`User profile:
@@ -846,13 +848,16 @@ class ResponseGenerator {
 - Previous interactions: ${context.userProfile.previousInteractions || 0}
 - Common issues: ${context.userProfile.commonIssues?.join(', ') || 'none'}`)
     }
-    
+
     // Add related content context
     if (relatedContent.length > 0) {
       contextParts.push(`Relevant documentation:
-${relatedContent.slice(0, 3).map(content => `- ${content.title} (score: ${content.score})`).join('\n')}`)
+${relatedContent
+  .slice(0, 3)
+  .map((content) => `- ${content.title} (score: ${content.score})`)
+  .join('\n')}`)
     }
-    
+
     return contextParts.join('\n\n')
   }
 
@@ -863,7 +868,7 @@ ${relatedContent.slice(0, 3).map(content => `- ${content.title} (score: ${conten
   ): Promise<string> {
     try {
       const prompt = this.buildClaudePrompt(message, context)
-      
+
       const response = await this.claudeApiClient.generateResponse({
         model: this.config.model,
         max_tokens: this.config.maxTokens,
@@ -871,20 +876,20 @@ ${relatedContent.slice(0, 3).map(content => `- ${content.title} (score: ${conten
         messages: [
           {
             role: 'user',
-            content: prompt
-          }
-        ]
+            content: prompt,
+          },
+        ],
       })
-      
+
       return response.content || this.getFallbackResponse(message)
     } catch (error) {
       this.logger.error(`[${operationId}] Claude API call failed`, {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       return this.getFallbackResponse(message)
     }
   }
-  
+
   private buildClaudePrompt(message: string, context: string): string {
     return `You are an AI assistant helping users with workflow automation, integrations, and troubleshooting. You have access to the following context:
 
@@ -896,18 +901,18 @@ Please provide a helpful, accurate, and contextually relevant response. Be conci
 
 Response:`
   }
-  
+
   private getFallbackResponse(message: string): string {
     const normalizedMessage = message.toLowerCase()
-    
+
     if (normalizedMessage.includes('error') || normalizedMessage.includes('problem')) {
       return "I understand you're experiencing an issue. Can you provide more details about what happened and any error messages you saw? I'll help you troubleshoot this step by step."
     }
-    
+
     if (normalizedMessage.includes('how to') || normalizedMessage.includes('tutorial')) {
       return "I'd be happy to guide you through that process! Can you tell me more specifically what you're trying to accomplish? I can provide step-by-step instructions."
     }
-    
+
     return "I'm here to help with your workflow automation needs. Could you provide more details about what you're trying to accomplish? I can offer specific guidance based on your situation."
   }
 
@@ -917,7 +922,7 @@ Response:`
     response: string
   ): Promise<SuggestedAction[]> {
     const actions: SuggestedAction[] = []
-    
+
     // Intent-based actions
     if (intent) {
       switch (intent.name) {
@@ -930,7 +935,7 @@ Response:`
             priority: 1,
           })
           break
-          
+
         case 'report_issue':
           actions.push({
             type: 'tutorial',
@@ -949,7 +954,7 @@ Response:`
             })
           }
           break
-          
+
         case 'request_tutorial':
           actions.push({
             type: 'tutorial',
@@ -959,7 +964,7 @@ Response:`
             priority: 1,
           })
           break
-          
+
         case 'configuration_help':
           actions.push({
             type: 'documentation',
@@ -971,11 +976,11 @@ Response:`
           break
       }
     }
-    
+
     // Context-based actions
     if (context.workflowContext) {
       const workflowType = context.workflowContext.type
-      
+
       actions.push({
         type: 'documentation',
         title: `${workflowType} Documentation`,
@@ -983,7 +988,7 @@ Response:`
         action: `/help/workflows/${workflowType}`,
         priority: 2,
       })
-      
+
       // If user is stuck on a step
       if (context.workflowContext.timeSpent && context.workflowContext.timeSpent > 300000) {
         actions.push({
@@ -995,7 +1000,7 @@ Response:`
         })
       }
     }
-    
+
     // User profile-based actions
     if (context.userProfile?.expertiseLevel === 'beginner') {
       actions.push({
@@ -1006,7 +1011,7 @@ Response:`
         priority: 3,
       })
     }
-    
+
     // Always offer support contact for complex issues
     if (intent?.name === 'report_issue' || (context.workflowContext?.errors?.length || 0) > 2) {
       actions.push({
@@ -1017,7 +1022,7 @@ Response:`
         priority: 4,
       })
     }
-    
+
     return actions.sort((a, b) => a.priority - b.priority)
   }
 
@@ -1067,16 +1072,16 @@ Response:`
     response: string
   ): ConversationState {
     const conversationLength = context.conversationHistory.length
-    const hasErrors = context.workflowContext?.errors?.length || 0 > 0
+    const hasErrors = (context.workflowContext?.errors?.length || 0) > 0
     const timeSpent = context.workflowContext?.timeSpent || 0
-    
+
     // Determine phase based on conversation flow and context
     let phase: ConversationState['phase'] = 'greeting'
     let confidence = 0.7
     let needsEscalation = false
     const resolvedIssues: string[] = []
     const pendingActions: string[] = []
-    
+
     // Phase determination logic
     if (conversationLength <= 1) {
       phase = 'greeting'
@@ -1084,15 +1089,18 @@ Response:`
     } else if (message.intent?.name === 'report_issue' || hasErrors) {
       phase = 'problem_identification'
       confidence = 0.8
-      
-      if (hasErrors && timeSpent > 600000) { // 10 minutes
+
+      if (hasErrors && timeSpent > 600000) {
+        // 10 minutes
         needsEscalation = true
         pendingActions.push('consider_support_escalation')
       }
-      
+
       pendingActions.push('gather_error_details', 'analyze_root_cause')
-    } else if (message.intent?.name === 'request_tutorial' || 
-               message.intent?.name === 'configuration_help') {
+    } else if (
+      message.intent?.name === 'request_tutorial' ||
+      message.intent?.name === 'configuration_help'
+    ) {
       phase = 'solution_exploration'
       confidence = 0.85
       pendingActions.push('provide_guidance', 'check_understanding')
@@ -1104,7 +1112,7 @@ Response:`
       // Determine based on conversation context
       const hasQuestions = response.includes('?')
       const hasInstructions = response.includes('step') || response.includes('try')
-      
+
       if (hasQuestions && conversationLength < 3) {
         phase = 'problem_identification'
         confidence = 0.7
@@ -1116,25 +1124,30 @@ Response:`
         confidence = 0.75
       }
     }
-    
+
     // Check for resolution indicators
-    if (response.toLowerCase().includes('solved') || 
-        response.toLowerCase().includes('resolved') ||
-        response.toLowerCase().includes('working now')) {
+    if (
+      response.toLowerCase().includes('solved') ||
+      response.toLowerCase().includes('resolved') ||
+      response.toLowerCase().includes('working now')
+    ) {
       phase = 'resolution'
       confidence = 0.9
       if (message.intent?.name === 'report_issue') {
         resolvedIssues.push('reported_issue')
       }
     }
-    
+
     // Escalation triggers
-    if (conversationLength > 10 || 
-        (hasErrors && timeSpent > 1200000) || // 20 minutes
-        context.workflowContext?.errors?.filter(e => !e.resolved).length || 0 > 3) {
+    if (
+      conversationLength > 10 ||
+      (hasErrors && timeSpent > 1200000) || // 20 minutes
+      context.workflowContext?.errors?.filter((e) => !e.resolved).length ||
+      0 > 3
+    ) {
       needsEscalation = true
     }
-    
+
     return {
       phase,
       confidence,
@@ -1195,7 +1208,9 @@ class ClaudeAPIClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Claude API error: ${response.status} - ${errorData.error?.message || response.statusText}`)
+        throw new Error(
+          `Claude API error: ${response.status} - ${errorData.error?.message || response.statusText}`
+        )
       }
 
       const data = await response.json()

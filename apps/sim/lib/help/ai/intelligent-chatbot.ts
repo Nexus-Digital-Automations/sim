@@ -134,13 +134,9 @@ export class IntelligentChatbot {
   private semanticSearch: SemanticSearchService
   private logger: Logger
   private conversations: Map<string, ConversationData> = new Map()
-  private isInitialized: boolean = false
+  private isInitialized = false
 
-  constructor(
-    config: ChatbotConfig,
-    semanticSearch: SemanticSearchService,
-    logger: Logger
-  ) {
+  constructor(config: ChatbotConfig, semanticSearch: SemanticSearchService, logger: Logger) {
     this.config = config
     this.semanticSearch = semanticSearch
     this.logger = logger
@@ -164,9 +160,12 @@ export class IntelligentChatbot {
       }
 
       // Set up conversation cleanup interval
-      setInterval(() => {
-        this.cleanupExpiredConversations()
-      }, 5 * 60 * 1000) // Every 5 minutes
+      setInterval(
+        () => {
+          this.cleanupExpiredConversations()
+        },
+        5 * 60 * 1000
+      ) // Every 5 minutes
 
       this.isInitialized = true
       this.logger.info('Intelligent Chatbot initialized successfully')
@@ -279,7 +278,7 @@ export class IntelligentChatbot {
       }
     } catch (error) {
       const processingTime = Date.now() - startTime
-      
+
       this.logger.error('Chatbot message processing failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         userId: `${userId.substring(0, 8)}***`,
@@ -288,7 +287,8 @@ export class IntelligentChatbot {
 
       // Return fallback response
       return {
-        message: "I'm sorry, I encountered an issue while processing your message. Please try asking your question again, or contact support if the problem persists.",
+        message:
+          "I'm sorry, I encountered an issue while processing your message. Please try asking your question again, or contact support if the problem persists.",
         conversationState: {
           phase: 'assistance',
           confidence: 0.1,
@@ -335,7 +335,8 @@ export class IntelligentChatbot {
         message = `I noticed you're encountering some issues with your ${type} workflow. Would you like help troubleshooting these errors?`
       }
       // Medium priority: User spending too much time
-      else if (timeSpent && timeSpent > 600000) { // More than 10 minutes
+      else if (timeSpent && timeSpent > 600000) {
+        // More than 10 minutes
         priority = 'medium'
         triggerReason = 'extended_time'
         message = `You've been working on this ${currentStep} step for a while. Would you like some guidance or tips to help move forward?`
@@ -418,7 +419,7 @@ export class IntelligentChatbot {
   clearConversation(userId: string, sessionId: string): void {
     const conversationKey = `${userId}:${sessionId}`
     this.conversations.delete(conversationKey)
-    
+
     this.logger.info('Conversation cleared', {
       userId: `${userId.substring(0, 8)}***`,
       sessionId: `${sessionId.substring(0, 16)}***`,
@@ -452,7 +453,7 @@ export class IntelligentChatbot {
     context?: any
   ): ConversationData {
     const conversationKey = `${userId}:${sessionId}`
-    
+
     if (!this.conversations.has(conversationKey)) {
       const newConversation: ConversationData = {
         userId,
@@ -480,7 +481,7 @@ export class IntelligentChatbot {
   ): Promise<UserIntent> {
     // Simple intent classification (in production, this would use ML)
     const lowercaseMessage = message.toLowerCase()
-    
+
     let intentName = 'general_question'
     let category: UserIntent['category'] = 'question'
     let confidence = 0.7
@@ -526,11 +527,7 @@ export class IntelligentChatbot {
   /**
    * Extract search queries from user message
    */
-  private extractSearchQueries(
-    message: string,
-    intent: UserIntent,
-    context?: any
-  ): string[] {
+  private extractSearchQueries(message: string, intent: UserIntent, context?: any): string[] {
     const queries: string[] = []
 
     // Base query from user message
@@ -566,26 +563,30 @@ export class IntelligentChatbot {
   ): Promise<ChatbotResponse> {
     // Mock response generation (in production, this would call Claude API)
     let responseMessage = ''
-    let conversationState: ConversationState = {
+    const conversationState: ConversationState = {
       phase: 'assistance',
       confidence: 0.8,
     }
 
     // Generate contextual response based on intent
     if (intent.category === 'problem') {
-      responseMessage = "I understand you're experiencing an issue. Let me help you troubleshoot this problem step by step."
+      responseMessage =
+        "I understand you're experiencing an issue. Let me help you troubleshoot this problem step by step."
       conversationState.phase = 'understanding'
       conversationState.confidence = 0.85
     } else if (intent.category === 'guidance') {
-      responseMessage = "I'd be happy to guide you through this process. Let me provide some helpful information and resources."
+      responseMessage =
+        "I'd be happy to guide you through this process. Let me provide some helpful information and resources."
       conversationState.phase = 'assistance'
       conversationState.confidence = 0.9
     } else if (intent.category === 'feedback') {
-      responseMessage = "Thank you for your feedback! It helps me improve and provide better assistance."
+      responseMessage =
+        'Thank you for your feedback! It helps me improve and provide better assistance.'
       conversationState.phase = 'followup'
       conversationState.confidence = 0.95
     } else {
-      responseMessage = "I'm here to help! Let me provide you with relevant information and guidance."
+      responseMessage =
+        "I'm here to help! Let me provide you with relevant information and guidance."
     }
 
     // Add context-specific information
@@ -598,7 +599,7 @@ export class IntelligentChatbot {
 
     // Include related content if available
     if (relatedContent.length > 0) {
-      responseMessage += " I found some relevant resources that might help you."
+      responseMessage += ' I found some relevant resources that might help you.'
     }
 
     // Generate suggested actions
@@ -624,7 +625,7 @@ export class IntelligentChatbot {
       message: responseMessage,
       intent,
       suggestedActions,
-      relatedContent: relatedContent.map(item => ({
+      relatedContent: relatedContent.map((item) => ({
         id: item.id || `content_${Date.now()}`,
         title: item.title || 'Relevant Content',
         type: item.type || 'article',

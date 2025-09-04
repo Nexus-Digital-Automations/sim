@@ -162,11 +162,11 @@ export class AIHelpEngine {
   private chatbot: IntelligentChatbot
   private semanticSearch: SemanticSearchService
   private metrics: AIHelpMetrics
-  private isInitialized: boolean = false
+  private isInitialized = false
 
   constructor() {
     logger.info('Initializing AI Help Engine')
-    
+
     // Initialize metrics
     this.metrics = {
       totalRequests: 0,
@@ -213,7 +213,7 @@ export class AIHelpEngine {
     }
 
     this.chatbot = new IntelligentChatbot(chatbotConfig, this.semanticSearch, logger)
-    
+
     this.isInitialized = true
     logger.info('AI Help Engine initialized successfully')
   }
@@ -223,10 +223,10 @@ export class AIHelpEngine {
    */
   async processRequest(request: AIHelpRequest): Promise<AIHelpResponse> {
     const startTime = Date.now()
-    
+
     try {
       this.metrics.totalRequests++
-      
+
       logger.info('Processing AI help request', {
         type: request.type,
         userId: `${request.userId.substring(0, 8)}***`,
@@ -254,10 +254,10 @@ export class AIHelpEngine {
       }
 
       const responseTime = Date.now() - startTime
-      
+
       // Update metrics
       this.updateMetrics(responseTime, true)
-      
+
       // Add response metadata
       response.metadata.responseTime = responseTime
 
@@ -272,13 +272,13 @@ export class AIHelpEngine {
     } catch (error) {
       const responseTime = Date.now() - startTime
       this.updateMetrics(responseTime, false)
-      
+
       logger.error('AI help request processing failed', {
         type: request.type,
         error: error instanceof Error ? error.message : 'Unknown error',
         responseTime,
       })
-      
+
       throw error
     }
   }
@@ -360,10 +360,7 @@ export class AIHelpEngine {
    */
   private async processSuggestionsRequest(request: AIHelpRequest): Promise<AIHelpResponse> {
     // Generate contextual suggestions based on workflow context
-    const suggestions = await this.generateContextualSuggestions(
-      request.userId,
-      request.context
-    )
+    const suggestions = await this.generateContextualSuggestions(request.userId, request.context)
 
     return {
       type: 'suggestions',
@@ -414,14 +411,16 @@ export class AIHelpEngine {
   private async generateContextualSuggestions(
     userId: string,
     context?: AIHelpContext
-  ): Promise<Array<{
-    id: string
-    title: string
-    description: string
-    confidence: number
-    actionType: string
-    metadata?: Record<string, any>
-  }>> {
+  ): Promise<
+    Array<{
+      id: string
+      title: string
+      description: string
+      confidence: number
+      actionType: string
+      metadata?: Record<string, any>
+    }>
+  > {
     const suggestions = []
 
     // Workflow-based suggestions
@@ -481,20 +480,22 @@ export class AIHelpEngine {
   /**
    * Index help content for semantic search
    */
-  async indexHelpContent(content: Array<{
-    id: string
-    title: string
-    content: string
-    type: string
-    metadata?: Record<string, any>
-  }>): Promise<void> {
+  async indexHelpContent(
+    content: Array<{
+      id: string
+      title: string
+      content: string
+      type: string
+      metadata?: Record<string, any>
+    }>
+  ): Promise<void> {
     logger.info('Indexing help content', { contentCount: content.length })
-    
+
     try {
       await this.semanticSearch.indexContent(content)
-      
+
       this.metrics.components.embedding.totalEmbeddings += content.length
-      
+
       logger.info('Help content indexed successfully', {
         contentCount: content.length,
       })
@@ -515,16 +516,16 @@ export class AIHelpEngine {
       // Check if all components are healthy
       const chatbotHealthy = await this.chatbot.healthCheck()
       const searchHealthy = await this.semanticSearch.healthCheck()
-      
+
       const isHealthy = this.isInitialized && chatbotHealthy && searchHealthy
-      
+
       logger.info('AI Help Engine health check', {
         isHealthy,
         chatbotHealthy,
         searchHealthy,
         isInitialized: this.isInitialized,
       })
-      
+
       return isHealthy
     } catch (error) {
       logger.error('Health check failed', {
@@ -546,19 +547,18 @@ export class AIHelpEngine {
    */
   private updateMetrics(responseTime: number, success: boolean): void {
     // Update average response time
-    this.metrics.averageResponseTime = 
-      (this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + responseTime) / 
+    this.metrics.averageResponseTime =
+      (this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + responseTime) /
       this.metrics.totalRequests
 
     // Update success/error rates
     if (success) {
-      this.metrics.successRate = 
-        (this.metrics.successRate * (this.metrics.totalRequests - 1) + 1) / 
+      this.metrics.successRate =
+        (this.metrics.successRate * (this.metrics.totalRequests - 1) + 1) /
         this.metrics.totalRequests
     } else {
-      this.metrics.errorRate = 
-        (this.metrics.errorRate * (this.metrics.totalRequests - 1) + 1) / 
-        this.metrics.totalRequests
+      this.metrics.errorRate =
+        (this.metrics.errorRate * (this.metrics.totalRequests - 1) + 1) / this.metrics.totalRequests
     }
   }
 }
@@ -583,11 +583,6 @@ export function getAIHelpEngine(): AIHelpEngine {
 // EXPORTS
 // ========================
 
-export type { 
-  AIHelpContext, 
-  AIHelpRequest, 
-  AIHelpResponse, 
-  AIHelpMetrics 
-}
+export type { AIHelpContext, AIHelpRequest, AIHelpResponse, AIHelpMetrics }
 export { IntelligentChatbot } from './intelligent-chatbot'
 export { SemanticSearchService } from './semantic-search'

@@ -119,7 +119,7 @@ export class SemanticSearchService {
   private logger: Logger
   private searchIndex: SearchIndex
   private searchCache: Map<string, { result: SearchResponse; timestamp: number }> = new Map()
-  private isInitialized: boolean = false
+  private isInitialized = false
   private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
   private readonly DEFAULT_EMBEDDING_MODEL = 'text-embedding-ada-002'
 
@@ -262,7 +262,7 @@ export class SemanticSearchService {
       return response
     } catch (error) {
       const searchTime = Date.now() - startTime
-      
+
       this.logger.error('Semantic search failed', {
         query: query.substring(0, 50),
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -300,7 +300,7 @@ export class SemanticSearchService {
       for (const item of content) {
         // Generate embedding for content
         const embedding = await this.generateEmbedding(item.content)
-        
+
         // Store content and embedding
         this.searchIndex.content.set(item.id, {
           ...item,
@@ -310,7 +310,7 @@ export class SemanticSearchService {
         this.searchIndex.embeddings.set(item.id, embedding)
 
         // Update keyword index
-        this.updateKeywordIndex(item.id, item.title + ' ' + item.content)
+        this.updateKeywordIndex(item.id, `${item.title} ${item.content}`)
       }
 
       // Update metadata
@@ -365,7 +365,8 @@ export class SemanticSearchService {
       {
         id: 'getting_started_guide',
         title: 'Getting Started Guide',
-        content: 'Welcome to the platform! This guide will help you get started with creating your first workflow, understanding the interface, and basic concepts.',
+        content:
+          'Welcome to the platform! This guide will help you get started with creating your first workflow, understanding the interface, and basic concepts.',
         type: 'guide',
         metadata: {
           category: 'getting-started',
@@ -376,7 +377,8 @@ export class SemanticSearchService {
       {
         id: 'workflow_creation_tutorial',
         title: 'Creating Your First Workflow',
-        content: 'Learn how to create workflows step by step. Understand blocks, connections, and how to configure automation for your specific needs.',
+        content:
+          'Learn how to create workflows step by step. Understand blocks, connections, and how to configure automation for your specific needs.',
         type: 'tutorial',
         metadata: {
           category: 'workflows',
@@ -387,7 +389,8 @@ export class SemanticSearchService {
       {
         id: 'error_troubleshooting',
         title: 'Common Error Troubleshooting',
-        content: 'Troubleshoot common issues including connection errors, authentication problems, data format issues, and execution failures.',
+        content:
+          'Troubleshoot common issues including connection errors, authentication problems, data format issues, and execution failures.',
         type: 'troubleshooting',
         metadata: {
           category: 'troubleshooting',
@@ -398,7 +401,8 @@ export class SemanticSearchService {
       {
         id: 'api_integration_guide',
         title: 'API Integration Guide',
-        content: 'Connect to external APIs, handle authentication, manage rate limits, and process API responses effectively in your workflows.',
+        content:
+          'Connect to external APIs, handle authentication, manage rate limits, and process API responses effectively in your workflows.',
         type: 'guide',
         metadata: {
           category: 'integrations',
@@ -409,7 +413,8 @@ export class SemanticSearchService {
       {
         id: 'data_transformation',
         title: 'Data Transformation Techniques',
-        content: 'Transform and manipulate data using various techniques including filtering, mapping, aggregation, and format conversion.',
+        content:
+          'Transform and manipulate data using various techniques including filtering, mapping, aggregation, and format conversion.',
         type: 'tutorial',
         metadata: {
           category: 'data',
@@ -428,10 +433,10 @@ export class SemanticSearchService {
   private async generateEmbedding(text: string): Promise<number[]> {
     // In production, this would call an actual embedding API (OpenAI, Cohere, etc.)
     // For now, we'll generate a mock embedding based on text characteristics
-    
+
     const words = text.toLowerCase().split(/\s+/)
     const embedding = new Array(384).fill(0) // 384-dimensional vector
-    
+
     // Simple hash-based mock embedding generation
     for (let i = 0; i < words.length; i++) {
       const word = words[i]
@@ -444,7 +449,7 @@ export class SemanticSearchService {
 
     // Normalize the embedding
     const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0))
-    return embedding.map(val => magnitude > 0 ? val / magnitude : 0)
+    return embedding.map((val) => (magnitude > 0 ? val / magnitude : 0))
   }
 
   /**
@@ -461,7 +466,7 @@ export class SemanticSearchService {
       if (!item.embedding) continue
 
       const similarity = this.cosineSimilarity(queryEmbedding, item.embedding)
-      
+
       if (similarity >= (options.minScore || 0.6)) {
         results.push({
           id,
@@ -492,7 +497,7 @@ export class SemanticSearchService {
     const queryWords = query.toLowerCase().split(/\s+/)
 
     for (const [id, item] of this.searchIndex.content.entries()) {
-      const text = (item.title + ' ' + item.content).toLowerCase()
+      const text = `${item.title} ${item.content}`.toLowerCase()
       let keywordScore = 0
       let matches = 0
 
@@ -569,35 +574,37 @@ export class SemanticSearchService {
     results: SearchResult[],
     context: NonNullable<SearchOptions['context']>
   ): SearchResult[] {
-    return results.map(result => {
-      let contextBoost = 1.0
+    return results
+      .map((result) => {
+        let contextBoost = 1.0
 
-      // Boost based on workflow type match
-      if (context.workflowType && result.metadata?.category === context.workflowType) {
-        contextBoost += 0.2
-      }
-
-      // Boost based on user role
-      if (context.userRole && result.metadata?.difficulty) {
-        if (
-          (context.userRole === 'beginner' && result.metadata.difficulty === 'beginner') ||
-          (context.userRole === 'expert' && result.metadata.difficulty === 'advanced')
-        ) {
-          contextBoost += 0.1
+        // Boost based on workflow type match
+        if (context.workflowType && result.metadata?.category === context.workflowType) {
+          contextBoost += 0.2
         }
-      }
 
-      // Boost troubleshooting content if errors present
-      if (context.errorContext && result.type === 'troubleshooting') {
-        contextBoost += 0.3
-      }
+        // Boost based on user role
+        if (context.userRole && result.metadata?.difficulty) {
+          if (
+            (context.userRole === 'beginner' && result.metadata.difficulty === 'beginner') ||
+            (context.userRole === 'expert' && result.metadata.difficulty === 'advanced')
+          ) {
+            contextBoost += 0.1
+          }
+        }
 
-      return {
-        ...result,
-        relevanceScore: Math.min(result.relevanceScore * contextBoost, 1.0),
-        explanation: result.explanation + ` (context boost: ${((contextBoost - 1) * 100).toFixed(0)}%)`,
-      }
-    }).sort((a, b) => b.relevanceScore - a.relevanceScore)
+        // Boost troubleshooting content if errors present
+        if (context.errorContext && result.type === 'troubleshooting') {
+          contextBoost += 0.3
+        }
+
+        return {
+          ...result,
+          relevanceScore: Math.min(result.relevanceScore * contextBoost, 1.0),
+          explanation: `${result.explanation} (context boost: ${((contextBoost - 1) * 100).toFixed(0)}%)`,
+        }
+      })
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
   }
 
   /**
@@ -609,27 +616,30 @@ export class SemanticSearchService {
     options: SearchOptions
   ): Promise<SearchResult[]> {
     // Simple reranking based on title match and recency
-    return results.map(result => {
-      let rerankScore = result.relevanceScore
+    return results
+      .map((result) => {
+        let rerankScore = result.relevanceScore
 
-      // Boost if query appears in title
-      if (result.title.toLowerCase().includes(query.toLowerCase())) {
-        rerankScore += 0.1
-      }
-
-      // Boost recent content
-      if (result.metadata?.lastUpdated) {
-        const daysAgo = (Date.now() - new Date(result.metadata.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)
-        if (daysAgo < 30) {
-          rerankScore += 0.05 * (30 - daysAgo) / 30
+        // Boost if query appears in title
+        if (result.title.toLowerCase().includes(query.toLowerCase())) {
+          rerankScore += 0.1
         }
-      }
 
-      return {
-        ...result,
-        relevanceScore: Math.min(rerankScore, 1.0),
-      }
-    }).sort((a, b) => b.relevanceScore - a.relevanceScore)
+        // Boost recent content
+        if (result.metadata?.lastUpdated) {
+          const daysAgo =
+            (Date.now() - new Date(result.metadata.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)
+          if (daysAgo < 30) {
+            rerankScore += (0.05 * (30 - daysAgo)) / 30
+          }
+        }
+
+        return {
+          ...result,
+          relevanceScore: Math.min(rerankScore, 1.0),
+        }
+      })
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
   }
 
   /**
@@ -639,13 +649,15 @@ export class SemanticSearchService {
     query: string,
     results: SearchResult[],
     options: SearchOptions
-  ): Promise<Array<{
-    id: string
-    title: string
-    description: string
-    confidence: number
-    actionType: string
-  }>> {
+  ): Promise<
+    Array<{
+      id: string
+      title: string
+      description: string
+      confidence: number
+      actionType: string
+    }>
+  > {
     const suggestions = []
 
     // Suggest tutorials if user seems to need guidance
@@ -690,7 +702,7 @@ export class SemanticSearchService {
       for (const [id, item] of this.searchIndex.content.entries()) {
         if (id === topResult.id) continue
 
-        const sharedTags = (topResult.metadata.tags as string[]).filter(tag =>
+        const sharedTags = (topResult.metadata.tags as string[]).filter((tag) =>
           (item.metadata?.tags as string[])?.includes(tag)
         )
 
@@ -708,9 +720,7 @@ export class SemanticSearchService {
       }
     }
 
-    return relatedContent
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, 3)
+    return relatedContent.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 3)
   }
 
   /**
@@ -736,10 +746,10 @@ export class SemanticSearchService {
   /**
    * Generate a relevant snippet from content
    */
-  private generateSnippet(content: string, query: string, maxLength: number = 200): string {
+  private generateSnippet(content: string, query: string, maxLength = 200): string {
     const queryWords = query.toLowerCase().split(/\s+/)
     const sentences = content.split(/[.!?]+/)
-    
+
     // Find sentence with most query word matches
     let bestSentence = ''
     let bestScore = 0
@@ -747,7 +757,7 @@ export class SemanticSearchService {
     for (const sentence of sentences) {
       const sentenceLower = sentence.toLowerCase()
       let score = 0
-      
+
       for (const word of queryWords) {
         if (sentenceLower.includes(word)) {
           score++
@@ -761,23 +771,26 @@ export class SemanticSearchService {
     }
 
     if (bestSentence.length > maxLength) {
-      bestSentence = bestSentence.substring(0, maxLength - 3) + '...'
+      bestSentence = `${bestSentence.substring(0, maxLength - 3)}...`
     }
 
-    return bestSentence || content.substring(0, maxLength) + '...'
+    return bestSentence || `${content.substring(0, maxLength)}...`
   }
 
   /**
    * Update keyword index for a content item
    */
   private updateKeywordIndex(itemId: string, text: string): void {
-    const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 2)
-    
+    const words = text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 2)
+
     for (const word of words) {
       if (!this.searchIndex.keywordIndex.has(word)) {
         this.searchIndex.keywordIndex.set(word, [])
       }
-      
+
       const itemIds = this.searchIndex.keywordIndex.get(word)!
       if (!itemIds.includes(itemId)) {
         itemIds.push(itemId)
@@ -790,15 +803,15 @@ export class SemanticSearchService {
    */
   private calculateIndexSize(): number {
     let size = 0
-    
+
     // Content size
     for (const item of this.searchIndex.content.values()) {
       size += JSON.stringify(item).length
     }
-    
+
     // Embeddings size (approximate)
     size += this.searchIndex.embeddings.size * 384 * 4 // 4 bytes per float
-    
+
     return size
   }
 
@@ -814,12 +827,10 @@ export class SemanticSearchService {
    */
   private calculateConfidence(results: SearchResult[], query: string): number {
     if (results.length === 0) return 0
-    
+
     const avgScore = results.reduce((sum, r) => sum + r.relevanceScore, 0) / results.length
-    const hasExactMatch = results.some(r => 
-      r.title.toLowerCase().includes(query.toLowerCase())
-    )
-    
+    const hasExactMatch = results.some((r) => r.title.toLowerCase().includes(query.toLowerCase()))
+
     return Math.min(avgScore + (hasExactMatch ? 0.1 : 0), 1.0)
   }
 

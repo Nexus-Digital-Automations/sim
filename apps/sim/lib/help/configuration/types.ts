@@ -150,7 +150,11 @@ export interface MissingParameter {
 }
 
 export interface ParameterConflict {
-  conflictType: 'incompatible_values' | 'mutual_exclusion' | 'dependency_missing' | 'validation_error'
+  conflictType:
+    | 'incompatible_values'
+    | 'mutual_exclusion'
+    | 'dependency_missing'
+    | 'validation_error'
   parameters: string[]
   description: string
   severity: 'error' | 'warning'
@@ -392,7 +396,12 @@ export interface RealTimeAssistanceResponse {
 }
 
 export interface RealTimeWarning {
-  type: 'syntax_error' | 'logic_error' | 'compatibility_issue' | 'security_risk' | 'performance_concern'
+  type:
+    | 'syntax_error'
+    | 'logic_error'
+    | 'compatibility_issue'
+    | 'security_risk'
+    | 'performance_concern'
   message: string
   severity: 'info' | 'warning' | 'error' | 'critical'
   field?: string
@@ -496,7 +505,7 @@ export interface ValidationRule {
 // Additional interfaces would continue here...
 // Truncated for brevity but would include all remaining supporting types
 
-export type ConfigurationAssistanceEvent = 
+export type ConfigurationAssistanceEvent =
   | { type: 'parameter_detected'; data: DetectedParameter }
   | { type: 'validation_completed'; data: ValidationResult }
   | { type: 'recommendation_generated'; data: ConfigurationRecommendation }
