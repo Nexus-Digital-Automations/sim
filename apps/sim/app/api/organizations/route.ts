@@ -1,11 +1,23 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { createOrganizationForTeamPlan } from '@/lib/billing/organization'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('CreateTeamOrganization')
 
-export async function POST(request: Request) {
+const CreateOrganizationSchema = z.object({
+  name: z.string().min(1).max(100).trim().optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-z0-9-_]+$/, 'Slug can only contain lowercase letters, numbers, hyphens, and underscores')
+    .trim()
+    .optional(),
+})
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -15,20 +27,32 @@ export async function POST(request: Request) {
 
     const user = session.user
 
-    // Parse request body for optional name and slug
+    // Parse and validate request body
     let organizationName = user.name
     let organizationSlug: string | undefined
 
     try {
-      const body = await request.json()
-      if (body.name && typeof body.name === 'string') {
-        organizationName = body.name
+      const rawBody = await request.json()
+      const validatedData = CreateOrganizationSchema.parse(rawBody)
+      
+      if (validatedData.name) {
+        organizationName = validatedData.name
       }
-      if (body.slug && typeof body.slug === 'string') {
-        organizationSlug = body.slug
+      if (validatedData.slug) {
+        organizationSlug = validatedData.slug
       }
-    } catch {
-      // If no body or invalid JSON, use defaults
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        logger.warn('Invalid organization creation data', { errors: error.errors })
+        return NextResponse.json(
+          {
+            error: 'Invalid request data',
+            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+          },
+          { status: 400 }
+        )
+      }
+      // If no body or invalid JSON, use defaults - not an error for this endpoint
     }
 
     logger.info('Creating organization for team plan', {
@@ -54,7 +78,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      organizationId,
+      data: {
+        organizationId,
+        name: organizationName,
+        slug: organizationSlug,
+      },
     })
   } catch (error) {
     logger.error('Failed to create organization for team plan', {

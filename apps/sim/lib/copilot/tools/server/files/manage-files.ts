@@ -84,9 +84,10 @@ export const manageFiles = tool({
 
   execute: async (params) => {
     const operationId = `file-${params.action}-${Date.now()}`
+    let session: any = null
 
     try {
-      const session = await getSession()
+      session = await getSession()
       if (!session?.user) {
         throw new Error('Authentication required')
       }
@@ -127,17 +128,17 @@ export const manageFiles = tool({
         default:
           throw new Error(`Unsupported action: ${params.action}`)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(`[${operationId}] File management operation failed`, {
         userId: session?.user?.id,
         action: params.action,
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
       })
 
       return {
         status: 'error',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
         operationId,
       }
     }

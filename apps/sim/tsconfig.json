@@ -25,8 +25,10 @@
     "module": "esnext",
     // Bundler-aware module resolution for Vite/Next.js compatibility
     "moduleResolution": "bundler",
-    // Standard library support for ES2022 + DOM APIs
+    // Standard library support for ES2022 + DOM APIs + Vitest globals
     "lib": ["es2022", "dom", "dom.iterable"],
+    // Include Vitest globals for test files
+    "types": ["vitest/globals"],
 
     // Strict type checking for code safety and quality
     "strict": true,

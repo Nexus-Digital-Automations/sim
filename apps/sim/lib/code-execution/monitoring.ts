@@ -166,7 +166,7 @@ export class ResourceMonitor {
     } catch (error) {
       logger.error('Failed to collect metrics', {
         executionId: this.executionId,
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
   }

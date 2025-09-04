@@ -176,7 +176,7 @@ class AnalyticsProcessor {
     }
   }
 
-  async trackBatchEvents(events: HelpAnalyticsEvent[], userId?: string): Promise<void> {
+  async trackBatchEvents(events: any[], userId?: string): Promise<void> {
     const enrichedEvents = events.map((event) => ({
       ...event,
       userId,
@@ -299,7 +299,7 @@ class AnalyticsProcessor {
 
         case 'trending_content':
           data = await this.getTrendingContent(query)
-          insights = this.generateTrendingInsights(data)
+          insights = this.generateContentInsights(data)
           recommendations = this.generateTrendingRecommendations(data)
           break
 
@@ -748,7 +748,10 @@ export async function GET(request: NextRequest) {
     const queryData = {
       ...validationResult.data,
       type: validationResult.data.type || 'user_engagement',
-      timeRange: validationResult.data.timeRange || { start: new Date().toISOString(), end: new Date().toISOString() },
+      timeRange: {
+        start: validationResult.data.timeRange?.start || new Date().toISOString(),
+        end: validationResult.data.timeRange?.end || new Date().toISOString()
+      },
       groupBy: validationResult.data.groupBy || 'day',
       limit: validationResult.data.limit || 100,
       includeDetails: validationResult.data.includeDetails || false

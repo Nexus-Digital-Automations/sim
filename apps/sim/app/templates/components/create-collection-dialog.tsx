@@ -78,14 +78,18 @@ const createCollectionSchema = z.object({
     .optional(),
   visibility: z.enum(['private', 'unlisted', 'public']).default('public'),
   tags: z
-    .string()
-    .default('')
-    .transform((str) => 
-      str
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter(Boolean)
-        .slice(0, 10) // Max 10 tags
+    .array(z.string())
+    .default([])
+    .or(
+      z.string()
+        .default('')
+        .transform((str) => 
+          str
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+            .slice(0, 10) // Max 10 tags
+        )
     ),
   coverImage: z
     .string()
@@ -165,8 +169,8 @@ export function CreateCollectionDialog({
     defaultValues: {
       name: '',
       description: '',
-      visibility: 'public',
-      tags: '',
+      visibility: 'public' as const,
+      tags: [] as string[],
       coverImage: '',
       isCollaborative: false,
     },
@@ -311,7 +315,7 @@ export function CreateCollectionDialog({
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleCreateCollection)}
+            onSubmit={form.handleSubmit(handleCreateCollection as any)}
             className="space-y-6"
             id="create-collection-form"
           >
@@ -424,7 +428,11 @@ export function CreateCollectionDialog({
                     <Input
                       placeholder="Enter tags separated by commas (e.g., automation, productivity, business)"
                       {...field}
-                      value={typeof field.value === 'string' ? field.value : field.value?.join(', ') || ''}
+                      value={Array.isArray(field.value) ? field.value.join(', ') : (field.value || '')}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        field.onChange(value)
+                      }}
                       disabled={isCreating}
                     />
                   </FormControl>

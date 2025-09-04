@@ -1,5 +1,5 @@
 import type { Edge } from 'reactflow'
-import type { BlockOutput, SubBlockType } from '@/blocks/types'
+import type { BlockOutput, SubBlockType, OutputFieldDefinition } from '@/blocks/types'
 import type { DeploymentStatus } from '@/stores/workflows/registry/types'
 
 export const SUBFLOW_TYPES = {
@@ -57,6 +57,8 @@ export interface BlockData {
 
   // Parallel-specific properties
   parallelType?: 'collection' | 'count' // Type of parallel execution
+  items?: any[] // Items for parallel processing or loop iteration
+  distribution?: any[] | Record<string, any> | string // Distribution config for parallel execution
 
   // Container node type (for ReactFlow node type determination)
   type?: string
@@ -81,7 +83,7 @@ export interface BlockState {
 export interface SubBlockState {
   id: string
   type: SubBlockType
-  value: string | number | string[][] | null
+  value: string | number | string[][] | null | undefined
 }
 
 export interface LoopBlock {

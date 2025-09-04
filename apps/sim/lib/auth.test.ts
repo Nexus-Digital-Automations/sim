@@ -216,7 +216,12 @@ const quickValidateEmail = vi.fn() as any
 const env = {} as any
 const isTruthy = vi.fn() as any
 const createLogger = vi.fn() as any
-const db = {} as any
+const db = {
+  select: vi.fn(),
+  from: vi.fn(), 
+  where: vi.fn(),
+  limit: vi.fn(),
+} as any
 import { auth, getSession } from './auth'
 
 const mockBetterAuth = betterAuth as any
@@ -274,7 +279,13 @@ describe('Main Authentication System - Critical Security Infrastructure', () => 
       },
     })
 
-    mockDb.select.mockReset()
+    // Initialize database mocks
+    mockDb.select = vi.fn()
+    mockDb.from = vi.fn()
+    mockDb.where = vi.fn()
+    mockDb.limit = vi.fn()
+    
+    // Reset other mocks
     mockSendEmail.mockReset()
     mockQuickValidateEmail.mockReset()
   })

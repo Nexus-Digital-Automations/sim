@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { authorizeCredentialUse } from '@/lib/auth/credential-access'
 import { createLogger } from '@/lib/logs/console/logger'
 import { refreshAccessTokenIfNeeded } from '@/app/api/auth/oauth/utils'
@@ -7,19 +8,23 @@ export const dynamic = 'force-dynamic'
 
 const logger = createLogger('TeamsTeamsAPI')
 
-export async function POST(request: Request) {
+const TeamsRequestSchema = z.object({
+  credential: z.string().min(1, 'Credential ID is required'),
+  workflowId: z.string().optional(),
+})
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const requestId = crypto.randomUUID().slice(0, 8)
+  
   try {
-    const body = await request.json()
-
-    const { credential, workflowId } = body
-
-    if (!credential) {
-      logger.error('Missing credential in request')
-      return NextResponse.json({ error: 'Credential is required' }, { status: 400 })
-    }
+    // Parse and validate request body
+    const rawBody = await request.json()
+    const validatedData = TeamsRequestSchema.parse(rawBody)
+    const { credential, workflowId } = validatedData
 
     try {
-      const requestId = crypto.randomUUID().slice(0, 8)
+      logger.debug(`[${requestId}] Processing teams request`, { credential, workflowId })
+      
       const authz = await authorizeCredentialUse(request as any, {
         credentialId: credential,
         workflowId,

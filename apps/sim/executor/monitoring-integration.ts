@@ -360,7 +360,10 @@ export class ExecutorMonitoringIntegration {
       const performanceData: PerformanceEventData = {
         executionTime: duration,
         queueTime: 0, // Would need to track this separately
-        resourceUtilization: resourceUsage,
+        resourceUtilization: {
+          ...resourceUsage,
+          storage: 0, // Default storage usage
+        },
         throughput: duration > 0 ? 1000 / duration : 0, // operations per second
         latency: duration,
         customMetrics: {

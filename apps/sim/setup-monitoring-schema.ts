@@ -35,7 +35,7 @@ async function setupMonitoringSchema() {
       const statement = statements[i]
       if (statement.trim()) {
         try {
-          await db.execute({ sql: statement })
+          await db.execute(statement)
           console.log(`✅ Statement ${i + 1}/${statements.length} executed successfully`)
         } catch (error: any) {
           // Skip already exists errors
@@ -70,10 +70,10 @@ async function setupMonitoringSchema() {
 
     for (const table of tables) {
       try {
-        const result = await db.execute({
-          sql: `SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '${table}'`,
-        })
-        const exists = result.rows[0]?.count > 0
+        const result = await db.execute(
+          `SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '${table}'`
+        )
+        const exists = result[0]?.count > 0
         console.log(`${exists ? '✅' : '❌'} Table ${table}: ${exists ? 'exists' : 'missing'}`)
       } catch (error) {
         console.log(`❌ Table ${table}: verification failed`)

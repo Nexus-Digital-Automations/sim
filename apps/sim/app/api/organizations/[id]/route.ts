@@ -1,5 +1,6 @@
 import { and, eq, ne } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import {
   getOrganizationSeatAnalytics,
@@ -12,11 +13,36 @@ import { member, organization } from '@/db/schema'
 
 const logger = createLogger('OrganizationAPI')
 
+const GetQuerySchema = z.object({
+  include: z.enum(['seats']).optional(),
+})
+
+const UpdateOrganizationSchema = z.object({
+  name: z.string().min(1).max(100).trim().optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-z0-9-_]+$/, 'Slug can only contain lowercase letters, numbers, hyphens, and underscores')
+    .trim()
+    .optional(),
+  logo: z.string().url().nullable().optional(),
+  seats: z.number().min(1).max(1000).optional(),
+}).refine(
+  (data) => Object.keys(data).length > 0,
+  {
+    message: 'At least one field is required for update',
+  }
+)
+
 /**
  * GET /api/organizations/[id]
  * Get organization details including settings and seat information
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -25,8 +51,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id: organizationId } = await params
-    const url = new URL(request.url)
-    const includeSeats = url.searchParams.get('include') === 'seats'
+    
+    // Validate query parameters
+    const { searchParams } = new URL(request.url)
+    try {
+      const queryParams = GetQuerySchema.parse(Object.fromEntries(searchParams.entries()))
+      var includeSeats = queryParams.include === 'seats'
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          {
+            error: 'Invalid query parameters',
+            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+          },
+          { status: 400 }
+        )
+      }
+      var includeSeats = false
+    }
 
     // Verify user has access to this organization
     const memberEntry = await db
@@ -102,7 +144,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  * PUT /api/organizations/[id]
  * Update organization settings or seat count
  */
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getSession()
 
@@ -111,8 +156,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id: organizationId } = await params
-    const body = await request.json()
-    const { name, slug, logo, seats } = body
+    
+    // Parse and validate request body
+    let validatedData
+    try {
+      const rawBody = await request.json()
+      validatedData = UpdateOrganizationSchema.parse(rawBody)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        logger.warn('Invalid organization update data', { errors: error.errors, organizationId })
+        return NextResponse.json(
+          {
+            error: 'Invalid request data',
+            details: error.errors.map(err => ({ field: err.path.join('.'), message: err.message })),
+          },
+          { status: 400 }
+        )
+      }
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
+    }
+    
+    const { name, slug, logo, seats } = validatedData
 
     // Verify user has admin access
     const memberEntry = await db
@@ -134,9 +198,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Handle seat count update
     if (seats !== undefined) {
-      if (typeof seats !== 'number' || seats < 1) {
-        return NextResponse.json({ error: 'Invalid seat count' }, { status: 400 })
-      }
 
       const result = await updateOrganizationSeats(organizationId, seats, session.user.id)
 
@@ -163,28 +224,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Handle settings update
     if (name !== undefined || slug !== undefined || logo !== undefined) {
-      // Validate required fields
-      if (name !== undefined && (!name || typeof name !== 'string' || name.trim().length === 0)) {
-        return NextResponse.json({ error: 'Organization name is required' }, { status: 400 })
-      }
-
-      if (slug !== undefined && (!slug || typeof slug !== 'string' || slug.trim().length === 0)) {
-        return NextResponse.json({ error: 'Organization slug is required' }, { status: 400 })
-      }
-
-      // Validate slug format
+      // Check if slug is already taken by another organization
       if (slug !== undefined) {
-        const slugRegex = /^[a-z0-9-_]+$/
-        if (!slugRegex.test(slug)) {
-          return NextResponse.json(
-            {
-              error: 'Slug can only contain lowercase letters, numbers, hyphens, and underscores',
-            },
-            { status: 400 }
-          )
-        }
-
-        // Check if slug is already taken by another organization
         const existingSlug = await db
           .select()
           .from(organization)
@@ -198,9 +239,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       // Build update object with only provided fields
       const updateData: any = { updatedAt: new Date() }
-      if (name !== undefined) updateData.name = name.trim()
-      if (slug !== undefined) updateData.slug = slug.trim()
-      if (logo !== undefined) updateData.logo = logo || null
+      if (name !== undefined) updateData.name = name
+      if (slug !== undefined) updateData.slug = slug
+      if (logo !== undefined) updateData.logo = logo
 
       // Update organization
       const updatedOrg = await db
@@ -232,6 +273,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       })
     }
 
+    // This should never be reached due to Zod validation, but keeping as fallback
     return NextResponse.json({ error: 'No valid fields provided for update' }, { status: 400 })
   } catch (error) {
     logger.error('Failed to update organization', {

@@ -347,7 +347,7 @@ describe('Workflow Component', () => {
       }))
 
       const { useCurrentWorkflow } = await import('./hooks')
-      vi.mocked(useCurrentWorkflow).mockImplementation(mockCurrentWorkflow)
+      vi.mocked(useCurrentWorkflow).mockReturnValue(mockCurrentWorkflow())
 
       render(<Workflow />)
 
@@ -382,7 +382,7 @@ describe('Workflow Component', () => {
       }))
 
       const { useCurrentWorkflow } = await import('./hooks')
-      vi.mocked(useCurrentWorkflow).mockImplementation(mockCurrentWorkflow)
+      vi.mocked(useCurrentWorkflow).mockReturnValue(mockCurrentWorkflow())
 
       render(<Workflow />)
 
@@ -398,12 +398,44 @@ describe('Workflow Component', () => {
       const mockAddBlock = vi.fn()
       const { useCollaborativeWorkflow } = await import('@/hooks/use-collaborative-workflow')
       vi.mocked(useCollaborativeWorkflow).mockImplementation(() => ({
+        // Connection status
+        isConnected: true,
+        currentWorkflowId: 'test-workflow',
+        presenceUsers: [],
+        hasOperationError: false,
+        // Workflow management
+        joinWorkflow: vi.fn(),
+        leaveWorkflow: vi.fn(),
+        // Collaborative operations
         collaborativeAddBlock: mockAddBlock,
+        collaborativeUpdateBlockPosition: vi.fn(),
+        collaborativeUpdateBlockName: vi.fn(),
+        collaborativeRemoveBlock: vi.fn(),
+        collaborativeToggleBlockEnabled: vi.fn(),
+        collaborativeUpdateParentId: vi.fn(),
+        collaborativeToggleBlockWide: vi.fn(),
+        collaborativeToggleBlockAdvancedMode: vi.fn(),
+        collaborativeToggleBlockTriggerMode: vi.fn(),
+        collaborativeToggleBlockHandles: vi.fn(),
+        collaborativeDuplicateBlock: vi.fn(),
         collaborativeAddEdge: vi.fn(),
         collaborativeRemoveEdge: vi.fn(),
-        collaborativeUpdateBlockPosition: vi.fn(),
-        collaborativeUpdateParentId: vi.fn(),
         collaborativeSetSubblockValue: vi.fn(),
+        collaborativeSetTagSelection: vi.fn(),
+        // Collaborative variable operations
+        collaborativeUpdateVariable: vi.fn(),
+        collaborativeAddVariable: vi.fn(),
+        collaborativeDeleteVariable: vi.fn(),
+        collaborativeDuplicateVariable: vi.fn(),
+        // Collaborative loop/parallel operations
+        collaborativeUpdateLoopType: vi.fn(),
+        collaborativeUpdateParallelType: vi.fn(),
+        // Unified iteration operations
+        collaborativeUpdateIterationCount: vi.fn(),
+        collaborativeUpdateIterationCollection: vi.fn(),
+        // Direct access to stores
+        workflowStore: {} as any,
+        subBlockStore: {} as any,
       }))
 
       render(<Workflow />)
@@ -497,12 +529,44 @@ describe('Workflow Component', () => {
       const mockAddBlock = vi.fn()
       const { useCollaborativeWorkflow } = await import('@/hooks/use-collaborative-workflow')
       vi.mocked(useCollaborativeWorkflow).mockImplementation(() => ({
+        // Connection status
+        isConnected: true,
+        currentWorkflowId: 'test-workflow',
+        presenceUsers: [],
+        hasOperationError: false,
+        // Workflow management
+        joinWorkflow: vi.fn(),
+        leaveWorkflow: vi.fn(),
+        // Collaborative operations
         collaborativeAddBlock: mockAddBlock,
+        collaborativeUpdateBlockPosition: vi.fn(),
+        collaborativeUpdateBlockName: vi.fn(),
+        collaborativeRemoveBlock: vi.fn(),
+        collaborativeToggleBlockEnabled: vi.fn(),
+        collaborativeUpdateParentId: vi.fn(),
+        collaborativeToggleBlockWide: vi.fn(),
+        collaborativeToggleBlockAdvancedMode: vi.fn(),
+        collaborativeToggleBlockTriggerMode: vi.fn(),
+        collaborativeToggleBlockHandles: vi.fn(),
+        collaborativeDuplicateBlock: vi.fn(),
         collaborativeAddEdge: vi.fn(),
         collaborativeRemoveEdge: vi.fn(),
-        collaborativeUpdateBlockPosition: vi.fn(),
-        collaborativeUpdateParentId: vi.fn(),
         collaborativeSetSubblockValue: vi.fn(),
+        collaborativeSetTagSelection: vi.fn(),
+        // Collaborative variable operations
+        collaborativeUpdateVariable: vi.fn(),
+        collaborativeAddVariable: vi.fn(),
+        collaborativeDeleteVariable: vi.fn(),
+        collaborativeDuplicateVariable: vi.fn(),
+        // Collaborative loop/parallel operations
+        collaborativeUpdateLoopType: vi.fn(),
+        collaborativeUpdateParallelType: vi.fn(),
+        // Unified iteration operations
+        collaborativeUpdateIterationCount: vi.fn(),
+        collaborativeUpdateIterationCollection: vi.fn(),
+        // Direct access to stores
+        workflowStore: {} as any,
+        subBlockStore: {} as any,
       }))
 
       render(<Workflow />)
@@ -806,7 +870,7 @@ describe('Workflow Component', () => {
       }))
 
       const { useCurrentWorkflow } = await import('./hooks')
-      vi.mocked(useCurrentWorkflow).mockImplementation(mockCurrentWorkflow)
+      vi.mocked(useCurrentWorkflow).mockReturnValue(mockCurrentWorkflow())
 
       const { useUserPermissionsContext } = await import(
         '@/app/workspace/[workspaceId]/providers/workspace-permissions-provider'
@@ -942,7 +1006,7 @@ describe('Workflow Component', () => {
       }))
 
       const { useCurrentWorkflow } = await import('./hooks')
-      vi.mocked(useCurrentWorkflow).mockImplementation(mockCurrentWorkflow)
+      vi.mocked(useCurrentWorkflow).mockReturnValue(mockCurrentWorkflow())
 
       const renderTime = performance.now()
       render(<Workflow />)

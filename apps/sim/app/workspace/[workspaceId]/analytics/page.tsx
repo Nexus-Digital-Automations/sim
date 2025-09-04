@@ -25,7 +25,7 @@ import type {
   MonitoringApiResponse,
   WorkflowAnalytics,
 } from '@/lib/monitoring/types'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 type AnalyticsPageProps = {}
 
@@ -97,7 +97,6 @@ function LoadingSkeleton() {
 
 export default function AnalyticsPage({}: AnalyticsPageProps) {
   const params = useParams()
-  const { toast } = useToast()
   const workspaceId = params.workspaceId as string
 
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null)
@@ -160,11 +159,7 @@ export default function AnalyticsPage({}: AnalyticsPageProps) {
         throw new Error(data.error?.message || 'Failed to fetch business metrics')
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: `Failed to fetch business metrics: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      })
+      toast.error(`Failed to fetch business metrics: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -190,11 +185,7 @@ export default function AnalyticsPage({}: AnalyticsPageProps) {
         throw new Error(data.error?.message || 'Failed to fetch workflow analytics')
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: `Failed to fetch workflow analytics: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      })
+      toast.error(`Failed to fetch workflow analytics: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

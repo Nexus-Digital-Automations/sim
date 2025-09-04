@@ -264,7 +264,7 @@ export class CommunityReputationSystem {
           AND visibility = 'public'
       `)
 
-      if (templateStats.rowCount > 0) {
+      if (templateStats.length > 0) {
         const stats = templateStats[0] as any
         components.templatePoints =
           stats.template_count * REPUTATION_POINT_VALUES.TEMPLATE_CREATED +
@@ -286,7 +286,7 @@ export class CommunityReputationSystem {
           AND tr.is_approved = true
       `)
 
-      if (ratingStats.rowCount > 0) {
+      if (ratingStats.length > 0) {
         const stats = ratingStats[0] as any
         components.ratingPoints =
           stats.five_star_count * REPUTATION_POINT_VALUES.FIVE_STAR_RATING_RECEIVED +
@@ -305,7 +305,7 @@ export class CommunityReputationSystem {
           AND review_content IS NOT NULL
       `)
 
-      if (communityStats.rowCount > 0) {
+      if (communityStats.length > 0) {
         const stats = communityStats[0] as any
         components.communityPoints =
           stats.reviews_given * REPUTATION_POINT_VALUES.RATING_GIVEN +
@@ -313,7 +313,7 @@ export class CommunityReputationSystem {
       }
 
       // Quality bonuses
-      if (templateStats.rowCount > 0) {
+      if (templateStats.length > 0) {
         const stats = templateStats[0] as any
         if (stats.template_count >= 5 && stats.avg_rating >= 4.0) {
           components.qualityBonus += REPUTATION_POINT_VALUES.CONSISTENCY_BONUS
@@ -332,7 +332,7 @@ export class CommunityReputationSystem {
         ) activities
       `)
 
-      if (lastActivityResult.rowCount > 0 && lastActivityResult[0]?.last_activity) {
+      if (lastActivityResult.length > 0 && lastActivityResult[0]?.last_activity) {
         const lastActivity = new Date(lastActivityResult[0].last_activity as string)
         const monthsSinceActivity =
           (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24 * 30)
@@ -385,7 +385,7 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      if (result.rowCount > 0) {
+      if (result.length > 0) {
         const rep = result[0] as any
         // Update cache
         this.reputationCache.set(userId, {
@@ -504,7 +504,7 @@ export class CommunityReputationSystem {
         WHERE user_id = ${userId}
       `)
 
-      const currentBadgeIds = new Set(currentBadges.rows.map((row: { badge_id: string }) => row.badge_id))
+      const currentBadgeIds = new Set(currentBadges.map((row: { badge_id: string }) => row.badge_id))
 
       // Get all available badges
       const availableBadges = await db.execute(sql`
@@ -513,7 +513,7 @@ export class CommunityReputationSystem {
         WHERE is_active = true
       `)
 
-      for (const badge of availableBadges.rows) {
+      for (const badge of availableBadges) {
         const badgeData = badge as any
 
         // Skip if user already has this badge
@@ -636,7 +636,7 @@ export class CommunityReputationSystem {
         AND visibility = 'public'
     `)
 
-    return result.rowCount > 0 ? (result[0] as any)?.count || 0 : 0
+    return result.length > 0 ? (result[0] as any)?.count || 0 : 0
   }
 
   /**
@@ -652,7 +652,7 @@ export class CommunityReputationSystem {
         AND rating_count > 0
     `)
 
-    return result.rowCount > 0 ? (result[0] as any)?.avg_rating || 0 : 0
+    return result.length > 0 ? (result[0] as any)?.avg_rating || 0 : 0
   }
 
   /**
@@ -667,7 +667,7 @@ export class CommunityReputationSystem {
         AND is_approved = true
     `)
 
-    return result.rowCount > 0 ? (result[0] as any)?.count || 0 : 0
+    return result.length > 0 ? (result[0] as any)?.count || 0 : 0
   }
 
   /**
@@ -687,7 +687,7 @@ export class CommunityReputationSystem {
         AND status = 'approved'
     `)
 
-    return result.rowCount > 0 ? ((result[0] as any)?.count || 0) > 0 : false
+    return result.length > 0 ? ((result[0] as any)?.count || 0) > 0 : false
   }
 
   // ========================
@@ -736,7 +736,7 @@ export class CommunityReputationSystem {
         WHERE ur.user_id = ${userId}
       `)
 
-      if (result.rowCount === 0) {
+      if (result.length === 0) {
         // Initialize reputation for new user
         await this.calculateUserReputation(userId, true)
         return this.getUserReputationSummary(userId)
@@ -751,7 +751,7 @@ export class CommunityReputationSystem {
         level: rep.reputation_level,
         levelName: levelInfo?.name || 'Unknown',
         levelProgress: rep.level_progress,
-        benefits: levelInfo?.benefits || [],
+        benefits: levelInfo?.benefits ? [...levelInfo.benefits] : [],
         nextLevelPoints: REPUTATION_LEVELS[rep.reputation_level]?.minPoints || null,
         breakdown: {
           templatePoints: rep.template_creation_points,
@@ -784,7 +784,7 @@ export class CommunityReputationSystem {
         LIMIT ${limit} OFFSET ${offset}
       `)
 
-      return result.rows.map((row: any) => ({
+      return result.map((row: any) => ({
         userId: row.id,
         name: row.name,
         displayName: row.display_name,
@@ -851,7 +851,7 @@ export class CommunityReputationSystem {
         ORDER BY created_at DESC
       `)
 
-      const rapidGains = recentHistory.rows.filter((row: { points_change: number }) => row.points_change > 100)
+      const rapidGains = recentHistory.filter((row: { points_change: number }) => row.points_change > 100)
       if (rapidGains.length > 5) {
         flags.push('rapid_point_gain')
         suspicionScore += 30
@@ -867,7 +867,7 @@ export class CommunityReputationSystem {
           AND created_at > NOW() - INTERVAL '24 hours'
       `)
 
-      const reviewData = reviewPattern.rowCount > 0 ? (reviewPattern[0] as any) : null
+      const reviewData = reviewPattern.length > 0 ? (reviewPattern[0] as any) : null
       if (reviewData?.review_count > 10 && reviewData.unique_templates < 3) {
         flags.push('suspicious_review_pattern')
         suspicionScore += 25

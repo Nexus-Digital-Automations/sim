@@ -282,7 +282,7 @@ export const EmailAutomationBlock: BlockConfig<GmailToolResponse> = {
       title: 'HTML Content',
       type: 'code',
       layout: 'full',
-      language: 'html',
+      language: 'javascript',
       placeholder: `<!DOCTYPE html>
 <html>
 <head>
@@ -468,7 +468,7 @@ Email preferences: {{preferencesLink}}`,
       type: 'switch',
       layout: 'half',
       description: 'Track opens, clicks, and engagement',
-      value: () => true,
+      value: () => 'true',
     },
     {
       id: 'trackingOptions',
@@ -528,7 +528,7 @@ Email preferences: {{preferencesLink}}`,
       type: 'switch',
       layout: 'half',
       description: 'Exclude unsubscribed and bounced emails',
-      value: () => true,
+      value: () => 'true',
     },
   ],
   tools: {

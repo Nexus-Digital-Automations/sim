@@ -283,7 +283,7 @@ class ContainerPool {
       await this.runDockerCommand(['rm', containerId])
 
       // Remove from pools
-      for (const [poolKey, pool] of this.pools.entries()) {
+      for (const [poolKey, pool] of Array.from(this.pools.entries())) {
         const index = pool.findIndex((c) => c.id === containerId)
         if (index !== -1) {
           pool.splice(index, 1)
@@ -333,7 +333,7 @@ class ContainerPool {
 
     const cleanupPromises: Promise<void>[] = []
 
-    for (const [poolKey, pool] of this.pools.entries()) {
+    for (const [poolKey, pool] of Array.from(this.pools.entries())) {
       for (const container of pool) {
         cleanupPromises.push(container.cleanup())
       }
@@ -499,7 +499,7 @@ export class DockerSandbox {
         stderr += data.toString()
       })
 
-      process.on('close', async (code) => {
+      process.on('close', async (exitCode) => {
         clearTimeout(timeout)
 
         if (killed) return // Already handled by timeout
@@ -508,7 +508,7 @@ export class DockerSandbox {
 
         try {
           // Parse execution results
-          const result = this.parseExecutionOutput(stdout, stderr, code === 0)
+          const result = this.parseExecutionOutput(stdout, stderr, exitCode === 0)
 
           // Collect resource metrics
           const resourceUsage = await this.collectResourceMetrics(container.id)
@@ -517,7 +517,7 @@ export class DockerSandbox {
           const securityReport = await this.generateSecurityReport(container, code, executionTime)
 
           resolve({
-            success: code === 0,
+            success: exitCode === 0,
             output: {
               result: result.result,
               stdout: result.stdout,
@@ -722,7 +722,7 @@ export class DockerSandbox {
     for (const { pattern, type, severity, desc } of dangerousPatterns) {
       if (pattern.test(code)) {
         report.violations.push({
-          type,
+          type: type as 'network' | 'filesystem' | 'resource' | 'code' | 'runtime',
           severity,
           description: desc,
           timestamp: new Date(),

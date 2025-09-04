@@ -334,7 +334,7 @@ export class EscalationManager extends EventEmitter {
         ruleId: rule.id,
         data: {
           ...alert,
-          escalationEvent,
+          escalationLevel: escalationEvent.level,
         },
       }
       this.emit('alert_escalated', alertEvent)

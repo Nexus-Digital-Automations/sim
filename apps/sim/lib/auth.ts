@@ -179,7 +179,7 @@ export const auth = betterAuth({
         (ctx.path.startsWith('/sign-in') || ctx.path.startsWith('/sign-up')) &&
         (env.ALLOWED_LOGIN_EMAILS || env.ALLOWED_LOGIN_DOMAINS)
       ) {
-        const requestEmail = ctx.body?.email?.toLowerCase()
+        const requestEmail = (ctx.body as { email?: string })?.email?.toLowerCase()
 
         if (requestEmail) {
           let isAllowed = false
