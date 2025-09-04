@@ -398,9 +398,7 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "apps/sim/lib/workflows/versioning.ts"
-      ],
+      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -500,10 +498,7 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "apps/sim/db/schema.ts",
-        "apps/sim/app/api/workflows/"
-      ],
+      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -779,11 +774,7 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "apps/sim/serializer/",
-        "apps/sim/tools/",
-        "apps/sim/vitest.config.ts"
-      ],
+      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -901,11 +892,7 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        ".github/workflows/",
-        "vitest.config.ts",
-        "apps/sim/vitest.config.ts"
-      ],
+      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1140,10 +1127,7 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "TODO.json",
-        "DONE.json"
-      ],
+      "important_files": ["TODO.json", "DONE.json"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3606,9 +3590,7 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/"
-      ],
+      "important_files": ["development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3640,10 +3622,7 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/",
-        "development/reports/"
-      ],
+      "important_files": ["development/research-reports/", "development/reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3675,9 +3654,7 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [
-        "development/research-reports/"
-      ],
+      "important_files": ["development/research-reports/"],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,

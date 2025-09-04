@@ -25,25 +25,22 @@
 
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   ChevronRightIcon,
-  CircleIcon,
   EyeIcon,
-  HelpCircleIcon,
   PauseIcon,
   PlayIcon,
   SkipForwardIcon,
   XIcon,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
 import { helpAnalytics } from '@/lib/help/help-analytics'
 import { useHelp } from '@/lib/help/help-context-provider'
 import { cn } from '@/lib/utils'
@@ -57,13 +54,13 @@ export interface InteractiveTutorialProps {
   title: string
   description?: string
   steps: TutorialStep[]
-  
+
   // Behavior
   autoStart?: boolean
   allowSkip?: boolean
   allowPause?: boolean
   persistProgress?: boolean
-  
+
   // Appearance
   variant?: 'overlay' | 'sidebar' | 'inline' | 'modal'
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
@@ -71,7 +68,7 @@ export interface InteractiveTutorialProps {
   showStepNumbers?: boolean
   maxWidth?: number
   className?: string
-  
+
   // Events
   onStart?: () => void
   onComplete?: (completionData: CompletionData) => void
@@ -80,7 +77,7 @@ export interface InteractiveTutorialProps {
   onResume?: () => void
   onSkip?: (reason: string) => void
   onExit?: (reason: string) => void
-  
+
   // Advanced
   customActions?: CustomAction[]
   validationMode?: 'none' | 'automatic' | 'manual'
@@ -92,28 +89,28 @@ export interface TutorialStep {
   title: string
   content: string | React.ReactNode
   type?: 'instruction' | 'interaction' | 'validation' | 'completion'
-  
+
   // Targeting
   targetSelector?: string
   targetElement?: HTMLElement
   highlightType?: 'outline' | 'overlay' | 'spotlight' | 'none'
-  
+
   // Interaction
   expectedAction?: string
   validationFn?: () => boolean | Promise<boolean>
   nextStepCondition?: () => boolean
-  
+
   // Appearance
   position?: 'auto' | 'top' | 'bottom' | 'left' | 'right'
   showArrow?: boolean
   showSkip?: boolean
-  
+
   // Content
   tips?: string[]
   warnings?: string[]
   resources?: Resource[]
   estimatedTime?: number
-  
+
   // Navigation
   canGoBack?: boolean
   canSkip?: boolean
@@ -191,24 +188,24 @@ class ElementHighlighter {
     type: TutorialStep['highlightType'] = 'outline',
     onRemove?: () => void
   ): void {
-    this.removeHighlight()
+    ElementHighlighter.removeHighlight()
 
     const rect = element.getBoundingClientRect()
 
     switch (type) {
       case 'outline':
-        this.createOutlineHighlight(element)
+        ElementHighlighter.createOutlineHighlight(element)
         break
       case 'overlay':
-        this.createOverlayHighlight(rect)
+        ElementHighlighter.createOverlayHighlight(rect)
         break
       case 'spotlight':
-        this.createSpotlightHighlight(rect)
+        ElementHighlighter.createSpotlightHighlight(rect)
         break
     }
 
     // Auto-scroll to element if not visible
-    const isVisible = this.isElementVisible(element)
+    const isVisible = ElementHighlighter.isElementVisible(element)
     if (!isVisible) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -218,18 +215,18 @@ class ElementHighlighter {
    * Remove all highlights
    */
   static removeHighlight(): void {
-    if (this.highlightOverlay) {
-      this.highlightOverlay.remove()
-      this.highlightOverlay = null
+    if (ElementHighlighter.highlightOverlay) {
+      ElementHighlighter.highlightOverlay.remove()
+      ElementHighlighter.highlightOverlay = null
     }
-    if (this.spotlightOverlay) {
-      this.spotlightOverlay.remove()
-      this.spotlightOverlay = null
+    if (ElementHighlighter.spotlightOverlay) {
+      ElementHighlighter.spotlightOverlay.remove()
+      ElementHighlighter.spotlightOverlay = null
     }
 
     // Remove outline styles
     const highlightedElements = document.querySelectorAll('[data-tutorial-highlight]')
-    highlightedElements.forEach(el => {
+    highlightedElements.forEach((el) => {
       el.removeAttribute('data-tutorial-highlight')
       ;(el as HTMLElement).style.outline = ''
       ;(el as HTMLElement).style.outlineOffset = ''
@@ -243,8 +240,8 @@ class ElementHighlighter {
   }
 
   private static createOverlayHighlight(rect: DOMRect): void {
-    this.highlightOverlay = document.createElement('div')
-    this.highlightOverlay.style.cssText = `
+    ElementHighlighter.highlightOverlay = document.createElement('div')
+    ElementHighlighter.highlightOverlay.style.cssText = `
       position: fixed;
       top: ${rect.top - 4}px;
       left: ${rect.left - 4}px;
@@ -257,7 +254,7 @@ class ElementHighlighter {
       z-index: 9999;
       animation: tutorial-pulse 2s infinite;
     `
-    
+
     // Add CSS animation
     if (!document.querySelector('#tutorial-animations')) {
       const style = document.createElement('style')
@@ -272,12 +269,12 @@ class ElementHighlighter {
       document.head.appendChild(style)
     }
 
-    document.body.appendChild(this.highlightOverlay)
+    document.body.appendChild(ElementHighlighter.highlightOverlay)
   }
 
   private static createSpotlightHighlight(rect: DOMRect): void {
-    this.spotlightOverlay = document.createElement('div')
-    this.spotlightOverlay.style.cssText = `
+    ElementHighlighter.spotlightOverlay = document.createElement('div')
+    ElementHighlighter.spotlightOverlay.style.cssText = `
       position: fixed;
       top: 0;
       left: 0;
@@ -301,8 +298,8 @@ class ElementHighlighter {
       background: transparent;
     `
 
-    this.spotlightOverlay.appendChild(spotlightHole)
-    document.body.appendChild(this.spotlightOverlay)
+    ElementHighlighter.spotlightOverlay.appendChild(spotlightHole)
+    document.body.appendChild(ElementHighlighter.spotlightOverlay)
   }
 
   private static isElementVisible(element: HTMLElement): boolean {
@@ -392,7 +389,7 @@ export function InteractiveTutorial({
   }, [currentStep, tutorialState.isValidating, tutorialState.completedSteps, validationMode])
 
   const canGoPrevious = useMemo(() => {
-    return tutorialState.currentStepIndex > 0 && (currentStep?.canGoBack !== false)
+    return tutorialState.currentStepIndex > 0 && currentStep?.canGoBack !== false
   }, [tutorialState.currentStepIndex, currentStep?.canGoBack])
 
   // ========================
@@ -400,7 +397,7 @@ export function InteractiveTutorial({
   // ========================
 
   const startTutorial = useCallback(() => {
-    setTutorialState(prev => ({
+    setTutorialState((prev) => ({
       ...prev,
       isActive: true,
       isPaused: false,
@@ -420,19 +417,19 @@ export function InteractiveTutorial({
   }, [tutorialId, onStart, trackInteraction, helpState.sessionId])
 
   const pauseTutorial = useCallback(() => {
-    setTutorialState(prev => ({ ...prev, isPaused: true }))
+    setTutorialState((prev) => ({ ...prev, isPaused: true }))
     ElementHighlighter.removeHighlight()
-    
+
     onPause?.()
     trackInteraction('pause', `tutorial_${tutorialId}`)
   }, [tutorialId, onPause, trackInteraction])
 
   const resumeTutorial = useCallback(() => {
-    setTutorialState(prev => ({ ...prev, isPaused: false }))
-    
+    setTutorialState((prev) => ({ ...prev, isPaused: false }))
+
     onResume?.()
     trackInteraction('resume', `tutorial_${tutorialId}`)
-    
+
     // Re-highlight current step
     if (currentStep) {
       highlightCurrentStep()
@@ -453,8 +450,8 @@ export function InteractiveTutorial({
     }
 
     ElementHighlighter.removeHighlight()
-    
-    setTutorialState(prev => ({
+
+    setTutorialState((prev) => ({
       ...prev,
       isActive: false,
       isPaused: false,
@@ -487,10 +484,10 @@ export function InteractiveTutorial({
   ])
 
   const exitTutorial = useCallback(
-    (reason: string = 'manual') => {
+    (reason = 'manual') => {
       ElementHighlighter.removeHighlight()
-      
-      setTutorialState(prev => ({
+
+      setTutorialState((prev) => ({
         ...prev,
         isActive: false,
         isPaused: false,
@@ -519,7 +516,7 @@ export function InteractiveTutorial({
       if (stepIndex < 0 || stepIndex >= steps.length) return
 
       const step = steps[stepIndex]
-      setTutorialState(prev => ({
+      setTutorialState((prev) => ({
         ...prev,
         currentStepIndex: stepIndex,
       }))
@@ -542,7 +539,7 @@ export function InteractiveTutorial({
     if (!currentStep || !canGoNext) return
 
     // Mark current step as completed
-    setTutorialState(prev => ({
+    setTutorialState((prev) => ({
       ...prev,
       completedSteps: new Set([...prev.completedSteps, currentStep.id]),
       interactions: [
@@ -563,9 +560,9 @@ export function InteractiveTutorial({
 
     // Handle branches
     if (currentStep.branches) {
-      const branch = currentStep.branches.find(b => b.condition())
+      const branch = currentStep.branches.find((b) => b.condition())
       if (branch) {
-        const nextStepIndex = steps.findIndex(s => s.id === branch.nextStepId)
+        const nextStepIndex = steps.findIndex((s) => s.id === branch.nextStepId)
         if (nextStepIndex !== -1) {
           goToStep(nextStepIndex)
           return
@@ -575,7 +572,7 @@ export function InteractiveTutorial({
 
     // Handle direct next step ID
     if (currentStep.nextStepId) {
-      const nextStepIndex = steps.findIndex(s => s.id === currentStep.nextStepId)
+      const nextStepIndex = steps.findIndex((s) => s.id === currentStep.nextStepId)
       if (nextStepIndex !== -1) {
         goToStep(nextStepIndex)
         return
@@ -593,10 +590,10 @@ export function InteractiveTutorial({
   }, [canGoPrevious, goToStep, tutorialState.currentStepIndex])
 
   const skipStep = useCallback(
-    (reason: string = 'user_skip') => {
+    (reason = 'user_skip') => {
       if (!currentStep || currentStep.canSkip === false) return
 
-      setTutorialState(prev => ({
+      setTutorialState((prev) => ({
         ...prev,
         skippedSteps: new Set([...prev.skippedSteps, currentStep.id]),
       }))
@@ -632,7 +629,7 @@ export function InteractiveTutorial({
 
     if (targetElement && currentStep.highlightType !== 'none') {
       ElementHighlighter.highlight(targetElement, currentStep.highlightType)
-      setTutorialState(prev => ({ ...prev, highlightedElement: targetElement }))
+      setTutorialState((prev) => ({ ...prev, highlightedElement: targetElement }))
     }
   }, [currentStep, tutorialState.isPaused])
 
@@ -643,25 +640,25 @@ export function InteractiveTutorial({
   const validateStep = useCallback(async () => {
     if (!currentStep?.validationFn) return true
 
-    setTutorialState(prev => ({ ...prev, isValidating: true }))
+    setTutorialState((prev) => ({ ...prev, isValidating: true }))
 
     try {
       const isValid = await currentStep.validationFn()
-      
+
       if (isValid) {
-        setTutorialState(prev => ({
+        setTutorialState((prev) => ({
           ...prev,
           completedSteps: new Set([...prev.completedSteps, currentStep.id]),
           isValidating: false,
         }))
       } else {
-        setTutorialState(prev => ({ ...prev, isValidating: false }))
+        setTutorialState((prev) => ({ ...prev, isValidating: false }))
       }
 
       return isValid
     } catch (error) {
       console.error('Step validation error:', error)
-      setTutorialState(prev => ({ ...prev, isValidating: false }))
+      setTutorialState((prev) => ({ ...prev, isValidating: false }))
       return false
     }
   }, [currentStep])
@@ -684,14 +681,19 @@ export function InteractiveTutorial({
     return () => {
       ElementHighlighter.removeHighlight()
     }
-  }, [tutorialState.isActive, tutorialState.isPaused, tutorialState.currentStepIndex, highlightCurrentStep])
+  }, [
+    tutorialState.isActive,
+    tutorialState.isPaused,
+    tutorialState.currentStepIndex,
+    highlightCurrentStep,
+  ])
 
   useEffect(() => {
     if (validationMode === 'automatic' && currentStep?.validationFn) {
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current)
       }
-      
+
       validationTimeoutRef.current = setTimeout(() => {
         validateStep()
       }, 1000)
@@ -723,11 +725,9 @@ export function InteractiveTutorial({
             )}
             <h3 className='font-semibold text-sm'>{currentStep.title}</h3>
           </div>
-          
+
           {currentStep.estimatedTime && (
-            <p className='text-muted-foreground text-xs'>
-              ~{currentStep.estimatedTime}s
-            </p>
+            <p className='text-muted-foreground text-xs'>~{currentStep.estimatedTime}s</p>
           )}
         </div>
 
@@ -743,12 +743,12 @@ export function InteractiveTutorial({
         {/* Tips */}
         {currentStep.tips && currentStep.tips.length > 0 && (
           <div className='space-y-2'>
-            <h4 className='font-medium text-xs text-muted-foreground uppercase tracking-wide'>
+            <h4 className='font-medium text-muted-foreground text-xs uppercase tracking-wide'>
               Tips
             </h4>
             <ul className='space-y-1'>
               {currentStep.tips.map((tip, index) => (
-                <li key={index} className='text-xs text-muted-foreground'>
+                <li key={index} className='text-muted-foreground text-xs'>
                   • {tip}
                 </li>
               ))}
@@ -775,11 +775,11 @@ export function InteractiveTutorial({
         {/* Resources */}
         {currentStep.resources && currentStep.resources.length > 0 && (
           <div className='space-y-2'>
-            <h4 className='font-medium text-xs text-muted-foreground uppercase tracking-wide'>
+            <h4 className='font-medium text-muted-foreground text-xs uppercase tracking-wide'>
               Resources
             </h4>
             <div className='space-y-1'>
-              {currentStep.resources.map(resource => (
+              {currentStep.resources.map((resource) => (
                 <Button
                   key={resource.id}
                   variant='ghost'
@@ -847,8 +847,8 @@ export function InteractiveTutorial({
           position === 'top-left' && 'top-4 left-4',
           position === 'top-right' && 'top-4 right-4',
           position === 'bottom-left' && 'bottom-4 left-4',
-          position === 'bottom-right' && 'bottom-4 right-4',
-          position === 'center' && 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+          position === 'bottom-right' && 'right-4 bottom-4',
+          position === 'center' && '-translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2',
           className
         )}
         style={{ maxWidth }}
@@ -857,25 +857,18 @@ export function InteractiveTutorial({
           {/* Header */}
           <CardHeader className='pb-3'>
             <div className='flex items-start justify-between gap-2'>
-              <div className='flex-1 min-w-0'>
+              <div className='min-w-0 flex-1'>
                 <h2 className='font-semibold text-base leading-tight'>{title}</h2>
-                {description && (
-                  <p className='mt-1 text-muted-foreground text-sm'>{description}</p>
-                )}
+                {description && <p className='mt-1 text-muted-foreground text-sm'>{description}</p>}
               </div>
-              
+
               <div className='flex items-center gap-1'>
                 {allowPause && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={pauseTutorial}
-                    className='h-6 w-6 p-0'
-                  >
+                  <Button variant='ghost' size='sm' onClick={pauseTutorial} className='h-6 w-6 p-0'>
                     <PauseIcon className='h-3 w-3' />
                   </Button>
                 )}
-                
+
                 <Button
                   variant='ghost'
                   size='sm'
@@ -933,8 +926,8 @@ export function InteractiveTutorial({
               <div className='flex items-center gap-2'>
                 {/* Custom actions */}
                 {customActions
-                  .filter(action => !action.visible || action.visible(currentStep!))
-                  .map(action => (
+                  .filter((action) => !action.visible || action.visible(currentStep!))
+                  .map((action) => (
                     <Button
                       key={action.id}
                       variant='ghost'
@@ -949,12 +942,7 @@ export function InteractiveTutorial({
 
                 {/* Skip button */}
                 {allowSkip && currentStep?.canSkip !== false && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => skipStep()}
-                    className='h-8'
-                  >
+                  <Button variant='ghost' size='sm' onClick={() => skipStep()} className='h-8'>
                     <SkipForwardIcon className='mr-1 h-3 w-3' />
                     Skip
                   </Button>
@@ -994,8 +982,8 @@ export function InteractiveTutorial({
           position === 'top-left' && 'top-4 left-4',
           position === 'top-right' && 'top-4 right-4',
           position === 'bottom-left' && 'bottom-4 left-4',
-          position === 'bottom-right' && 'bottom-4 right-4',
-          position === 'center' && 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+          position === 'bottom-right' && 'right-4 bottom-4',
+          position === 'center' && '-translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2'
         )}
         style={{ maxWidth: 280 }}
       >
@@ -1011,7 +999,12 @@ export function InteractiveTutorial({
                 <PlayIcon className='mr-1 h-3 w-3' />
                 Resume
               </Button>
-              <Button variant='ghost' size='sm' onClick={() => exitTutorial('paused')} className='flex-1'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => exitTutorial('paused')}
+                className='flex-1'
+              >
                 Exit
               </Button>
             </div>

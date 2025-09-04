@@ -25,7 +25,8 @@
 'use client'
 
 import type * as React from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   BotIcon,
   ChevronDownIcon,
@@ -40,13 +41,9 @@ import {
   UserIcon,
   XIcon,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { helpAnalytics } from '@/lib/help/help-analytics'
 import { useHelp } from '@/lib/help/help-context-provider'
@@ -63,27 +60,27 @@ export interface AIHelpChatProps {
   isOpen?: boolean
   maxHeight?: number
   className?: string
-  
+
   // Behavior
   autoFocus?: boolean
   enableVoiceInput?: boolean
   enableFileAttachments?: boolean
   showTypingIndicator?: boolean
   persistConversation?: boolean
-  
+
   // Content
   initialMessage?: string
   placeholder?: string
   welcomeMessage?: string
   contextData?: Record<string, any>
-  
+
   // Events
   onOpen?: () => void
   onClose?: () => void
   onMessageSent?: (message: ChatMessage) => void
   onMessageReceived?: (message: ChatMessage) => void
   onConversationClear?: () => void
-  
+
   // Advanced
   customActions?: ChatAction[]
   messageFilters?: MessageFilter[]
@@ -166,8 +163,8 @@ class MessageFormatter {
     // Handle code blocks
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
     const inlineCodeRegex = /`([^`]+)`/g
-    
-    let parts: React.ReactNode[] = []
+
+    const parts: React.ReactNode[] = []
     let lastIndex = 0
     let match
 
@@ -181,13 +178,11 @@ class MessageFormatter {
       // Add formatted code block
       const language = match[1] || 'text'
       const code = match[2].trim()
-      
+
       parts.push(
         <div key={match.index} className='my-3 rounded border'>
-          <div className='bg-muted px-3 py-1 text-xs font-mono'>
-            {language}
-          </div>
-          <pre className='bg-muted/50 p-3 text-sm overflow-x-auto'>
+          <div className='bg-muted px-3 py-1 font-mono text-xs'>{language}</div>
+          <pre className='overflow-x-auto bg-muted/50 p-3 text-sm'>
             <code>{code}</code>
           </pre>
         </div>
@@ -198,8 +193,8 @@ class MessageFormatter {
 
     // Add remaining content
     if (lastIndex < content.length) {
-      let remainingContent = content.substring(lastIndex)
-      
+      const remainingContent = content.substring(lastIndex)
+
       // Process inline code
       const inlineCodeParts = remainingContent.split(inlineCodeRegex)
       for (let i = 0; i < inlineCodeParts.length; i++) {
@@ -209,7 +204,7 @@ class MessageFormatter {
         } else {
           // Inline code
           parts.push(
-            <code key={`inline-${i}`} className='bg-muted px-1 py-0.5 rounded text-sm font-mono'>
+            <code key={`inline-${i}`} className='rounded bg-muted px-1 py-0.5 font-mono text-sm'>
               {inlineCodeParts[i]}
             </code>
           )
@@ -225,7 +220,7 @@ class MessageFormatter {
    */
   static extractSuggestions(content: string): ActionSuggestion[] {
     const suggestions: ActionSuggestion[] = []
-    
+
     // Look for action patterns in the message
     const actionPatterns = [
       { pattern: /try clicking (?:the )?(?:"([^"]+)"|(\w+))/gi, action: 'click_element' },
@@ -274,7 +269,7 @@ export function AIHelpChat({
   persistConversation = true,
   initialMessage,
   placeholder = 'Ask me anything about using the platform...',
-  welcomeMessage = 'Hi! I\'m here to help you navigate and use the platform. What can I assist you with today?',
+  welcomeMessage = "Hi! I'm here to help you navigate and use the platform. What can I assist you with today?",
   contextData,
   onOpen,
   onClose,
@@ -336,7 +331,7 @@ export function AIHelpChat({
         },
       }
 
-      setChatState(prev => ({
+      setChatState((prev) => ({
         ...prev,
         messages: [welcomeMsg],
         contextSnapshot: contextData,
@@ -380,7 +375,7 @@ export function AIHelpChat({
       }
 
       // Add user message
-      setChatState(prev => ({
+      setChatState((prev) => ({
         ...prev,
         messages: [...prev.messages, userMessage],
         currentInput: '',
@@ -392,7 +387,7 @@ export function AIHelpChat({
       try {
         // Simulate AI response (replace with actual API call)
         const response = await simulateAIResponse(content, userMessage.metadata?.context)
-        
+
         const assistantMessage: ChatMessage = {
           id: `${messageId}_response`,
           type: 'assistant',
@@ -404,10 +399,10 @@ export function AIHelpChat({
           },
         }
 
-        setChatState(prev => ({
+        setChatState((prev) => ({
           ...prev,
           messages: prev.messages
-            .map(m => m.id === messageId ? { ...m, status: 'sent' as const } : m)
+            .map((m) => (m.id === messageId ? { ...m, status: 'sent' as const } : m))
             .concat(assistantMessage),
           isTyping: false,
         }))
@@ -422,13 +417,12 @@ export function AIHelpChat({
           'ai_help_chat',
           { messageLength: content.length, responseTime: response.responseTime }
         )
-
       } catch (error) {
         console.error('Failed to send message:', error)
-        
-        setChatState(prev => ({
+
+        setChatState((prev) => ({
           ...prev,
-          messages: prev.messages.map(m => 
+          messages: prev.messages.map((m) =>
             m.id === messageId ? { ...m, status: 'error' as const } : m
           ),
           isTyping: false,
@@ -449,7 +443,7 @@ export function AIHelpChat({
   )
 
   const handleClearConversation = useCallback(() => {
-    setChatState(prev => ({
+    setChatState((prev) => ({
       ...prev,
       messages: [],
       conversationId: Date.now().toString(),
@@ -471,9 +465,9 @@ export function AIHelpChat({
         timestamp: new Date(),
       }
 
-      setChatState(prev => ({
+      setChatState((prev) => ({
         ...prev,
-        messages: prev.messages.map(msg =>
+        messages: prev.messages.map((msg) =>
           msg.id === messageId
             ? {
                 ...msg,
@@ -498,7 +492,11 @@ export function AIHelpChat({
 
   const handleSuggestionClick = useCallback(
     (suggestion: ActionSuggestion) => {
-      trackInteraction('suggestion_click', `ai_help_chat_${suggestion.action}`, suggestion.parameters)
+      trackInteraction(
+        'suggestion_click',
+        `ai_help_chat_${suggestion.action}`,
+        suggestion.parameters
+      )
 
       // Handle built-in actions
       switch (suggestion.action) {
@@ -572,50 +570,51 @@ export function AIHelpChat({
         )}
       >
         {!isSystem && (
-          <div className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'
-          )}>
-            {isUser ? (
-              <UserIcon className='h-4 w-4' />
-            ) : (
-              <BotIcon className='h-4 w-4' />
+          <div
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+              isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'
             )}
+          >
+            {isUser ? <UserIcon className='h-4 w-4' /> : <BotIcon className='h-4 w-4' />}
           </div>
         )}
 
-        <div className={cn(
-          'flex max-w-[80%] flex-col',
-          isUser && 'items-end',
-          isSystem && 'max-w-full items-center'
-        )}>
+        <div
+          className={cn(
+            'flex max-w-[80%] flex-col',
+            isUser && 'items-end',
+            isSystem && 'max-w-full items-center'
+          )}
+        >
           {/* Message bubble */}
-          <div className={cn(
-            'rounded-lg px-3 py-2 text-sm',
-            isUser && 'bg-primary text-primary-foreground',
-            !isUser && !isSystem && 'bg-muted',
-            isSystem && 'bg-muted/50 text-muted-foreground'
-          )}>
+          <div
+            className={cn(
+              'rounded-lg px-3 py-2 text-sm',
+              isUser && 'bg-primary text-primary-foreground',
+              !isUser && !isSystem && 'bg-muted',
+              isSystem && 'bg-muted/50 text-muted-foreground'
+            )}
+          >
             {MessageFormatter.formatContent(message.content)}
           </div>
 
           {/* Timestamp and status */}
-          <div className={cn(
-            'mt-1 flex items-center gap-2 text-xs text-muted-foreground',
-            isUser && 'flex-row-reverse'
-          )}>
+          <div
+            className={cn(
+              'mt-1 flex items-center gap-2 text-muted-foreground text-xs',
+              isUser && 'flex-row-reverse'
+            )}
+          >
             <span>
-              {message.timestamp.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+              {message.timestamp.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
               })}
             </span>
-            
+
             {message.status && isUser && (
-              <span className={cn(
-                'capitalize',
-                message.status === 'error' && 'text-red-500'
-              )}>
+              <span className={cn('capitalize', message.status === 'error' && 'text-red-500')}>
                 {message.status}
               </span>
             )}
@@ -624,7 +623,7 @@ export function AIHelpChat({
           {/* Suggestions */}
           {message.metadata?.suggestions && message.metadata.suggestions.length > 0 && (
             <div className='mt-2 flex flex-wrap gap-1'>
-              {message.metadata.suggestions.map(suggestion => (
+              {message.metadata.suggestions.map((suggestion) => (
                 <Button
                   key={suggestion.id}
                   variant='outline'
@@ -632,9 +631,7 @@ export function AIHelpChat({
                   onClick={() => handleSuggestionClick(suggestion)}
                   className='h-7 text-xs'
                 >
-                  {suggestion.icon && (
-                    <span className='mr-1'>{suggestion.icon}</span>
-                  )}
+                  {suggestion.icon && <span className='mr-1'>{suggestion.icon}</span>}
                   {suggestion.label}
                 </Button>
               ))}
@@ -652,7 +649,7 @@ export function AIHelpChat({
               >
                 <ThumbsUpIcon className='h-3 w-3' />
               </Button>
-              
+
               <Button
                 variant='ghost'
                 size='sm'
@@ -661,7 +658,7 @@ export function AIHelpChat({
               >
                 <ThumbsDownIcon className='h-3 w-3' />
               </Button>
-              
+
               <Button
                 variant='ghost'
                 size='sm'
@@ -682,10 +679,10 @@ export function AIHelpChat({
 
     return (
       <div className='mb-4 flex gap-3'>
-        <div className='bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-full'>
+        <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted'>
           <BotIcon className='h-4 w-4' />
         </div>
-        <div className='bg-muted flex items-center rounded-lg px-3 py-2'>
+        <div className='flex items-center rounded-lg bg-muted px-3 py-2'>
           <div className='flex gap-1'>
             <div className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]' />
             <div className='h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]' />
@@ -710,16 +707,17 @@ export function AIHelpChat({
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'flex flex-col bg-background border border-border shadow-lg',
+        'flex flex-col border border-border bg-background shadow-lg',
         variant === 'floating' && 'fixed z-50 rounded-lg',
-        variant === 'modal' && 'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg',
+        variant === 'modal' &&
+          '-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 rounded-lg',
         variant === 'panel' && 'h-full',
         variant === 'inline' && 'rounded-lg',
-        position === 'bottom-right' && 'bottom-4 right-4',
+        position === 'bottom-right' && 'right-4 bottom-4',
         position === 'bottom-left' && 'bottom-4 left-4',
         className
       )}
-      style={{ 
+      style={{
         width: variant === 'floating' ? 380 : '100%',
         height: variant === 'floating' ? Math.min(maxHeight, 600) : '100%',
       }}
@@ -727,7 +725,7 @@ export function AIHelpChat({
       {/* Header */}
       <CardHeader className='flex-row items-center justify-between space-y-0 pb-3'>
         <div className='flex items-center gap-2'>
-          <div className='bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full'>
+          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground'>
             <BotIcon className='h-4 w-4' />
           </div>
           <div>
@@ -740,7 +738,7 @@ export function AIHelpChat({
 
         <div className='flex items-center gap-1'>
           {/* Custom actions */}
-          {customActions.map(action => (
+          {customActions.map((action) => (
             <Button
               key={action.id}
               variant='ghost'
@@ -763,12 +761,7 @@ export function AIHelpChat({
           </Button>
 
           {onClose && (
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={onClose}
-              className='h-6 w-6 p-0'
-            >
+            <Button variant='ghost' size='sm' onClick={onClose} className='h-6 w-6 p-0'>
               <ChevronDownIcon className='h-3 w-3' />
             </Button>
           )}
@@ -794,12 +787,14 @@ export function AIHelpChat({
               ref={inputRef}
               placeholder={placeholder}
               value={chatState.currentInput}
-              onChange={(e) => setChatState(prev => ({ 
-                ...prev, 
-                currentInput: e.target.value 
-              }))}
+              onChange={(e) =>
+                setChatState((prev) => ({
+                  ...prev,
+                  currentInput: e.target.value,
+                }))
+              }
               onKeyDown={handleKeyDown}
-              className='min-h-[40px] max-h-[120px] resize-none'
+              className='max-h-[120px] min-h-[40px] resize-none'
               disabled={!chatState.isConnected || chatState.isTyping}
             />
           </div>
@@ -830,7 +825,9 @@ export function AIHelpChat({
             <Button
               size='sm'
               onClick={() => handleSendMessage()}
-              disabled={!chatState.currentInput.trim() || !chatState.isConnected || chatState.isTyping}
+              disabled={
+                !chatState.currentInput.trim() || !chatState.isConnected || chatState.isTyping
+              }
               className='h-8 w-8 p-0'
             >
               <SendIcon className='h-4 w-4' />
@@ -851,32 +848,37 @@ async function simulateAIResponse(
   context?: any
 ): Promise<{ content: string; confidence: number; responseTime: number }> {
   const startTime = Date.now()
-  
+
   // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+  await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
 
   const responses = [
     {
       trigger: /help|assist|support/i,
-      response: "I'm here to help! I can assist you with navigating the platform, understanding workflows, troubleshooting issues, and learning new features. What specific area would you like help with?",
+      response:
+        "I'm here to help! I can assist you with navigating the platform, understanding workflows, troubleshooting issues, and learning new features. What specific area would you like help with?",
     },
     {
       trigger: /workflow|automation/i,
-      response: "Workflows are powerful automation sequences that can help streamline your tasks. You can create workflows using our visual editor, connect different services, and set up triggers. Would you like me to show you how to create your first workflow?",
+      response:
+        'Workflows are powerful automation sequences that can help streamline your tasks. You can create workflows using our visual editor, connect different services, and set up triggers. Would you like me to show you how to create your first workflow?',
     },
     {
       trigger: /error|bug|problem|issue/i,
-      response: "I understand you're experiencing an issue. To help troubleshoot, could you describe what you were doing when the problem occurred? Also, any error messages would be helpful to identify the solution.",
+      response:
+        "I understand you're experiencing an issue. To help troubleshoot, could you describe what you were doing when the problem occurred? Also, any error messages would be helpful to identify the solution.",
     },
     {
       trigger: /getting started|how to start|beginner/i,
-      response: "Welcome! Let me help you get started. I recommend beginning with our interactive tutorial that will walk you through the key features. You can also explore some pre-built templates to see workflows in action.",
+      response:
+        'Welcome! Let me help you get started. I recommend beginning with our interactive tutorial that will walk you through the key features. You can also explore some pre-built templates to see workflows in action.',
     },
   ]
 
-  const matchedResponse = responses.find(r => r.trigger.test(userMessage))
-  const response = matchedResponse?.response || 
-    "I understand your question. Let me provide some guidance based on your current context. You can also check our help documentation or contact support for more detailed assistance."
+  const matchedResponse = responses.find((r) => r.trigger.test(userMessage))
+  const response =
+    matchedResponse?.response ||
+    'I understand your question. Let me provide some guidance based on your current context. You can also check our help documentation or contact support for more detailed assistance.'
 
   const responseTime = Date.now() - startTime
 
