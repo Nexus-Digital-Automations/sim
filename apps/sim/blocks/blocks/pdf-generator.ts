@@ -124,7 +124,7 @@ Return only the JSON object:`,
       type: 'code',
       layout: 'full',
       language: 'html',
-      placeholder: `<!DOCTYPE html>
+      placeholder: `<!DOCTYPE html
 <html>
 <head>
   <style>
@@ -161,8 +161,8 @@ Return only the JSON object:`,
         <tr>
           <td>{{this.name}}</td>
           <td>{{this.quantity}}</td>
-          <td>${{this.price}}</td>
-          <td>${{this.total}}</td>
+          <td>{{this.price}} USD</td>
+          <td>{{this.total}} USD</td>
         </tr>
         {{/each}}
       </tbody>
@@ -198,10 +198,10 @@ Generated on {{date}}
 | Item | Quantity | Price | Total |
 |------|----------|-------|-------|
 {{#each items}}
-| {{this.name}} | {{this.quantity}} | ${{this.price}} | ${{this.total}} |
+| {{this.name}} | {{this.quantity}} | {{this.price}} USD | {{this.total}} USD |
 {{/each}}
 
-### Total: ${{grandTotal}}
+### Total: {{grandTotal}} USD
 
 ---
 

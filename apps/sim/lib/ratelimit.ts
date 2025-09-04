@@ -247,7 +247,7 @@ class RateLimiter {
     const keysArray = Array.from(this.memoryStore.keys())
     for (const key of keysArray) {
       const data = this.memoryStore.get(key)
-      if (data && data.requests) {
+      if (data?.requests) {
         // Sliding window cleanup
         const cutoff = now - maxAge
         data.requests = data.requests.filter((timestamp: number) => timestamp > cutoff)
@@ -255,7 +255,7 @@ class RateLimiter {
         if (data.requests.length === 0) {
           this.memoryStore.delete(key)
         }
-      } else if (data && data.window && data.count) {
+      } else if (data?.window && data.count) {
         // Fixed window cleanup - remove very old windows
         const windowAge = now - data.window * 15 * 60 * 1000 // Assume 15min default window
         if (windowAge > maxAge) {

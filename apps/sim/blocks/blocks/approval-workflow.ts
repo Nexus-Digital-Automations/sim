@@ -197,7 +197,7 @@ function getApprovalStages(requestData) {
       language: 'javascript',
       placeholder: `{
   "subject": "Approval Required: {{requestData.type}} - {{requestData.amount}}",
-  "body": "A new {{requestData.type}} request requires your approval.\\n\\nAmount: ${{requestData.amount}}\\nVendor: {{requestData.vendor}}\\nRequested by: {{requestData.requestedBy}}\\nDescription: {{requestData.description}}\\n\\nPlease review and approve/reject this request.",
+  "body": "A new {{requestData.type}} request requires your approval.\\n\\nAmount: {{requestData.amount}} USD\\nVendor: {{requestData.vendor}}\\nRequested by: {{requestData.requestedBy}}\\nDescription: {{requestData.description}}\\n\\nPlease review and approve/reject this request.",
   "urgency": "{{requestData.urgency}}",
   "metadata": {
     "department": "{{requestData.department}}",

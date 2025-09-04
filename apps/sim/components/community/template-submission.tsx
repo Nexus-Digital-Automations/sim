@@ -1220,6 +1220,7 @@ export const TemplateSubmission: React.FC<TemplateSubmissionProps> = ({
                         </Select>
                       </div>
                     </div>
+                  </div>
                   </CardContent>
                 </Card>
               )}
