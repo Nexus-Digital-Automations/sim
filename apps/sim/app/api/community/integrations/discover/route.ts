@@ -74,24 +74,50 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[IntegrationDiscovery] Processing GET request')
 
-    // Parse query parameters
+    // Parse query parameters with flexible typing for proper conversion
+    // Using Record<string, any> pattern to avoid TypeScript type assignment errors
+    // when converting string query parameters to their appropriate types
     const url = new URL(request.url)
-    const queryParams = Object.fromEntries(url.searchParams.entries())
+    const queryParams: Record<string, any> = {}
+    
+    // Extract all URL search parameters into a properly typed object
+    // This allows us to perform type conversions without TypeScript conflicts
+    for (const [key, value] of url.searchParams) {
+      queryParams[key] = value
+    }
 
-    // Convert string parameters
+    // Convert string parameters to their appropriate types
+    // These conversions prevent TypeScript type assignment errors by ensuring
+    // the correct data types are used throughout the application
+    
+    // Convert numeric parameters - parseInt/parseFloat for proper number types
+    if (queryParams.rating) {
+      queryParams.rating = Number.parseFloat(queryParams.rating)
+    }
+    if (queryParams.limit) {
+      queryParams.limit = Number.parseInt(queryParams.limit)
+    }
+    if (queryParams.offset) {
+      queryParams.offset = Number.parseInt(queryParams.offset)
+    }
+    
+    // Convert boolean parameters - string comparison to boolean conversion
+    // Query parameters come as strings, need explicit boolean conversion
+    if (queryParams.includeMetadata) {
+      queryParams.includeMetadata = queryParams.includeMetadata === 'true'
+    }
+    if (queryParams.securityValidated) {
+      queryParams.securityValidated = queryParams.securityValidated === 'true'
+    }
+    
+    // Convert array parameters - split comma-separated string into array
+    // Tags come as comma-separated string, convert to string array for processing
     if (queryParams.tags) {
       queryParams.tags = queryParams.tags
         .split(',')
         .map((tag) => tag.trim())
         .filter(Boolean)
     }
-    if (queryParams.rating) queryParams.rating = Number.parseFloat(queryParams.rating)
-    if (queryParams.limit) queryParams.limit = Number.parseInt(queryParams.limit)
-    if (queryParams.offset) queryParams.offset = Number.parseInt(queryParams.offset)
-    if (queryParams.includeMetadata)
-      queryParams.includeMetadata = queryParams.includeMetadata === 'true'
-    if (queryParams.securityValidated)
-      queryParams.securityValidated = queryParams.securityValidated === 'true'
 
     const params = IntegrationSearchSchema.parse(queryParams)
     console.log('[IntegrationDiscovery] Search parameters validated:', params)
