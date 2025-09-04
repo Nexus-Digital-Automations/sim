@@ -19,6 +19,16 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
+import { 
+  withTemplateDetailsMiddleware,
+  withTemplateUpdateMiddleware,
+  withTemplateDeleteMiddleware,
+  type TemplateAuthResult,
+  getValidatedData,
+  createSuccessResponse,
+  createErrorResponse,
+} from '@/lib/auth/template-api-middleware'
+import { auditTemplateOperation } from '@/lib/auth/template-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
@@ -168,32 +178,23 @@ function sanitizeWorkflowTemplate(workflowTemplate: any): any {
 
 /**
  * GET /api/templates/v2/[templateId] - Get individual template with comprehensive data
+ * Enhanced with role-based access control and security middleware
  */
-export async function GET(request: NextRequest, { params }: { params: { templateId: string } }) {
+async function getTemplateHandler(request: NextRequest, auth: TemplateAuthResult) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
-    const { templateId } = params
+    const templateId = auth.context.templateId!
     const { searchParams } = new URL(request.url)
     const queryParams = TemplateQuerySchema.parse(Object.fromEntries(searchParams.entries()))
+    const userId = auth.context.userId
 
-    logger.info(`[${requestId}] Fetching template: ${templateId}`)
-
-    // Authentication - support session, API key, and internal tokens
-    let userId: string | null = null
-    let isInternalCall = false
-
-    const authHeader = request.headers.get('authorization')
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1]
-      isInternalCall = await verifyInternalToken(token)
-    }
-
-    if (!isInternalCall) {
-      const session = await getSession()
-      userId = session?.user?.id || null
-    }
+    logger.info(`[${requestId}] Fetching template: ${templateId}`, {
+      userId,
+      userRole: auth.context.userRole,
+      templateId,
+    })
 
     // Build comprehensive query
     const query = db
@@ -308,13 +309,8 @@ export async function GET(request: NextRequest, { params }: { params: { template
 
     const template = results[0]
 
-    // Check access permissions
-    if (template.visibility === 'private' && template.authorId !== userId && !isInternalCall) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied to private template' },
-        { status: 403 }
-      )
-    }
+    // Access permissions are already handled by middleware
+    // No additional permission checks needed here since middleware validates access
 
     // Add tags if requested
     if (queryParams.includeTags) {
@@ -339,12 +335,13 @@ export async function GET(request: NextRequest, { params }: { params: { template
       }))
     }
 
-    // Record view analytics if requested and not internal call
-    if (queryParams.trackView && !isInternalCall) {
+    // Record view analytics if requested
+    if (queryParams.trackView && userId) {
       await recordUsageAnalytics(templateId, 'view', userId, {
         includeWorkflowTemplate: queryParams.includeWorkflowTemplate,
         userAgent: request.headers.get('user-agent'),
         referrer: request.headers.get('referer'),
+        userRole: auth.context.userRole,
       })
 
       // Increment view count
@@ -359,69 +356,67 @@ export async function GET(request: NextRequest, { params }: { params: { template
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template fetched successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: template,
-      meta: {
+    return createSuccessResponse(
+      template,
+      200,
+      {
         requestId,
         processingTime: elapsed,
         authenticated: !!userId,
-        viewTracked: queryParams.trackView && !isInternalCall,
+        viewTracked: queryParams.trackView && !!userId,
+        userRole: auth.context.userRole,
+        permissions: auth.permissions,
       },
-    })
+      requestId
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid query parameters',
-          details: error.errors,
-          requestId,
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'Invalid query parameters',
+        400,
+        error.errors,
+        requestId
       )
     }
 
     logger.error(`[${requestId}] Template fetch error after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        requestId,
-      },
-      { status: 500 }
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      requestId
     )
   }
 }
 
+// Export GET endpoint with middleware
+export const GET = withTemplateDetailsMiddleware(getTemplateHandler)
+
 /**
  * PUT /api/templates/v2/[templateId] - Update template with version tracking
+ * Enhanced with role-based access control and security middleware
  */
-export async function PUT(request: NextRequest, { params }: { params: { templateId: string } }) {
+async function updateTemplateHandler(request: NextRequest, auth: TemplateAuthResult) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
-    const { templateId } = params
-    const session = await getSession()
+    const templateId = auth.context.templateId!
+    const userId = auth.context.userId!
+    const validatedData = getValidatedData(request)
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+    const data = validatedData
 
-    const userId = session.user.id
-    const body = await request.json()
-    const data = UpdateTemplateSchema.parse(body)
+    logger.info(`[${requestId}] Updating template: ${templateId}`, {
+      userId,
+      userRole: auth.context.userRole,
+      fieldsToUpdate: Object.keys(data),
+    })
 
-    logger.info(`[${requestId}] Updating template: ${templateId}`)
-
-    // Verify template exists and user has permission to update
+    // Get current template data
     const existingTemplate = await db
       .select({
         id: templates.id,
@@ -429,20 +424,21 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         slug: templates.slug,
         createdByUserId: templates.createdByUserId,
         status: templates.status,
+        categoryId: templates.categoryId,
       })
       .from(templates)
       .where(eq(templates.id, templateId))
       .limit(1)
 
     if (existingTemplate.length === 0) {
-      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
+      return createErrorResponse('Template not found', 404, undefined, requestId)
     }
 
     const template = existingTemplate[0]
-
-    // Check permissions
-    if (template.createdByUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
+    
+    // Permission check is already handled by middleware, but verify ownership for non-admin users
+    if (!auth.context.isOwner && !['admin', 'moderator'].includes(auth.context.userRole)) {
+      return createErrorResponse('Insufficient permissions to update template', 403, undefined, requestId)
     }
 
     // Prepare update data
@@ -463,13 +459,11 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         .limit(1)
 
       if (slugExists.length > 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Template with similar name already exists',
-            suggestion: `${data.name} ${Math.floor(Math.random() * 1000)}`,
-          },
-          { status: 409 }
+        return createErrorResponse(
+          'Template with similar name already exists',
+          409,
+          { suggestion: `${data.name} ${Math.floor(Math.random() * 1000)}` },
+          requestId
         )
       }
 
@@ -520,7 +514,7 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         .limit(1)
 
       if (categoryExists.length === 0) {
-        return NextResponse.json({ success: false, error: 'Category not found' }, { status: 400 })
+        return createErrorResponse('Category not found', 400, undefined, requestId)
       }
       updateData.categoryId = data.categoryId
     }
@@ -556,78 +550,77 @@ export async function PUT(request: NextRequest, { params }: { params: { template
         (key) => key !== 'updatedAt' && key !== 'lastModifiedAt'
       ),
       tagUpdated: data.tagIds !== undefined,
+      userRole: auth.context.userRole,
     })
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template updated successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    const fieldsUpdated = Object.keys(updateData).filter(
+      (key) => key !== 'updatedAt' && key !== 'lastModifiedAt'
+    )
+
+    return createSuccessResponse(
+      {
         id: templateId,
         name: updateData.name || template.name,
         slug: updateData.slug || template.slug,
-        fieldsUpdated: Object.keys(updateData).filter(
-          (key) => key !== 'updatedAt' && key !== 'lastModifiedAt'
-        ),
+        fieldsUpdated,
         message: 'Template updated successfully',
       },
-      meta: {
+      200,
+      {
         requestId,
         processingTime: elapsed,
+        userRole: auth.context.userRole,
+        permissions: auth.permissions,
       },
-    })
+      requestId
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid update data:`, error.errors)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid update data',
-          details: error.errors,
-          requestId,
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'Invalid update data',
+        400,
+        error.errors,
+        requestId
       )
     }
 
     logger.error(`[${requestId}] Template update error after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        requestId,
-      },
-      { status: 500 }
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      requestId
     )
   }
 }
 
+// Export PUT endpoint with middleware
+export const PUT = withTemplateUpdateMiddleware(updateTemplateHandler)
+
 /**
  * DELETE /api/templates/v2/[templateId] - Delete template with dependency checks
+ * Enhanced with role-based access control and security middleware
  */
-export async function DELETE(request: NextRequest, { params }: { params: { templateId: string } }) {
+async function deleteTemplateHandler(request: NextRequest, auth: TemplateAuthResult) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
-    const { templateId } = params
-    const session = await getSession()
+    const templateId = auth.context.templateId!
+    const userId = auth.context.userId!
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+    logger.info(`[${requestId}] Deleting template: ${templateId}`, {
+      userId,
+      userRole: auth.context.userRole,
+    })
 
-    const userId = session.user.id
-
-    logger.info(`[${requestId}] Deleting template: ${templateId}`)
-
-    // Verify template exists and user has permission
+    // Get template data for safety checks
     const existingTemplate = await db
       .select({
         id: templates.id,
@@ -635,34 +628,54 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
         createdByUserId: templates.createdByUserId,
         status: templates.status,
         downloadCount: templates.downloadCount,
+        visibility: templates.visibility,
       })
       .from(templates)
       .where(eq(templates.id, templateId))
       .limit(1)
 
     if (existingTemplate.length === 0) {
-      return NextResponse.json({ success: false, error: 'Template not found' }, { status: 404 })
+      return createErrorResponse('Template not found', 404, undefined, requestId)
     }
 
     const template = existingTemplate[0]
-
-    // Check permissions
-    if (template.createdByUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
+    
+    // Permission check is already handled by middleware, but verify ownership for non-admin users
+    if (!auth.context.isOwner && !['admin', 'moderator'].includes(auth.context.userRole)) {
+      return createErrorResponse('Insufficient permissions to delete template', 403, undefined, requestId)
     }
 
-    // Check if template has significant usage (safety check)
+    // Enhanced safety checks for template deletion
+    const safetyChecks = []
+    
+    // Check significant usage
     if (template.downloadCount && template.downloadCount > 100) {
-      return NextResponse.json(
+      safetyChecks.push({
+        check: 'high_usage',
+        downloadCount: template.downloadCount,
+        severity: 'warning',
+      })
+    }
+    
+    // Check if template is public and popular
+    if (template.visibility === 'public' && template.downloadCount && template.downloadCount > 50) {
+      safetyChecks.push({
+        check: 'public_template',
+        severity: 'warning',
+      })
+    }
+    
+    // For non-admin users, prevent deletion of templates with high usage
+    if (!['admin'].includes(auth.context.userRole) && template.downloadCount && template.downloadCount > 100) {
+      return createErrorResponse(
+        'Cannot delete template with significant usage',
+        400,
         {
-          success: false,
-          error: 'Cannot delete template with significant usage',
-          details: {
-            downloadCount: template.downloadCount,
-            suggestion: 'Consider archiving instead of deleting',
-          },
+          downloadCount: template.downloadCount,
+          suggestion: 'Consider archiving instead of deleting',
+          safetyChecks,
         },
-        { status: 400 }
+        requestId
       )
     }
 
@@ -671,6 +684,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
       templateName: template.name,
       downloadCount: template.downloadCount,
       status: template.status,
+      visibility: template.visibility,
+      userRole: auth.context.userRole,
+      safetyChecks,
     })
 
     // Delete template (cascade will handle related records)
@@ -679,29 +695,34 @@ export async function DELETE(request: NextRequest, { params }: { params: { templ
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template deleted successfully in ${elapsed}ms`)
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    return createSuccessResponse(
+      {
         id: templateId,
         name: template.name,
         message: 'Template deleted successfully',
+        safetyChecks,
       },
-      meta: {
+      200,
+      {
         requestId,
         processingTime: elapsed,
+        userRole: auth.context.userRole,
+        permissions: auth.permissions,
       },
-    })
+      requestId
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 
     logger.error(`[${requestId}] Template deletion error after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        requestId,
-      },
-      { status: 500 }
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      requestId
     )
   }
 }
+
+// Export DELETE endpoint with middleware
+export const DELETE = withTemplateDeleteMiddleware(deleteTemplateHandler)

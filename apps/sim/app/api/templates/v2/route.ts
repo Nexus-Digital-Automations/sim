@@ -23,6 +23,15 @@ import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { verifyInternalToken } from '@/lib/auth/internal'
+import { 
+  withTemplateListMiddleware,
+  withTemplateCreateMiddleware,
+  type TemplateAuthResult,
+  getValidatedData,
+  createSuccessResponse,
+  createErrorResponse,
+} from '@/lib/auth/template-api-middleware'
+import { auditTemplateOperation } from '@/lib/auth/template-middleware'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
@@ -288,49 +297,81 @@ async function recordSearchAnalytics(data: z.infer<typeof SearchAnalyticsSchema>
 
 /**
  * GET /api/templates/v2 - Advanced template discovery with comprehensive filtering
+ * Enhanced with role-based access control and security middleware
  *
  * Features:
  * - Full-text search across all template content
  * - Hierarchical category filtering
- * - Advanced tag-based filtering
+ * - Advanced tag-based filtering  
  * - Rating and quality filters
  * - Business value and ROI filtering
  * - Integration requirement filtering
  * - ML-powered popularity scoring
  * - Comprehensive analytics inclusion
+ * - Role-based visibility filtering
+ * - Security audit logging
  */
-export async function GET(request: NextRequest) {
+async function getTemplatesHandler(request: NextRequest, auth: TemplateAuthResult) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
-    // Parse and validate query parameters
-    const { searchParams } = new URL(request.url)
-    const params = TemplateQuerySchema.parse(Object.fromEntries(searchParams.entries()))
-
-    logger.info(`[${requestId}] Template discovery request with params:`, params)
-
-    // Authentication - support session, API key, and internal tokens
-    let userId: string | null = null
-    let isInternalCall = false
-
-    const authHeader = request.headers.get('authorization')
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1]
-      isInternalCall = await verifyInternalToken(token)
+    const validatedParams = getValidatedData(request)
+    if (!validatedParams) {
+      return createErrorResponse('Request validation failed', 400, undefined, requestId)
     }
+    
+    const params = validatedParams
+    const userId = auth.context.userId
 
-    if (!isInternalCall) {
-      const session = await getSession()
-      userId = session?.user?.id || null
-    }
+    logger.info(`[${requestId}] Template discovery request`, {
+      userId,
+      userRole: auth.context.userRole,
+      searchQuery: params.search || params.query,
+      categoryId: params.categoryId,
+      filtersCount: Object.keys(params).length,
+    })
 
-    // Build query conditions
+    // Build query conditions with role-based filtering
     const conditions = []
 
-    // Base filters
-    conditions.push(eq(templates.status, params.status))
-    conditions.push(eq(templates.visibility, params.visibility))
+    // Base status filtering - admins and moderators can see more statuses
+    if (['admin', 'moderator'].includes(auth.context.userRole)) {
+      // Allow filtering by any status for privileged users
+      if (params.status) {
+        conditions.push(eq(templates.status, params.status))
+      }
+    } else {
+      // Regular users can only see approved templates
+      conditions.push(eq(templates.status, 'approved'))
+    }
+
+    // Enhanced visibility filtering based on user role
+    const visibilityConditions = []
+    
+    // Public templates are visible to everyone
+    visibilityConditions.push(eq(templates.visibility, 'public'))
+    
+    // Unlisted templates are visible to everyone with the link
+    visibilityConditions.push(eq(templates.visibility, 'unlisted'))
+    
+    // Private templates are only visible to owners, admins, and moderators
+    if (userId) {
+      if (['admin', 'moderator'].includes(auth.context.userRole)) {
+        // Privileged users can see all templates
+        visibilityConditions.push(eq(templates.visibility, 'private'))
+      } else {
+        // Regular users can only see their own private templates
+        visibilityConditions.push(
+          and(
+            eq(templates.visibility, 'private'),
+            eq(templates.createdByUserId, userId)
+          )
+        )
+      }
+    }
+    
+    conditions.push(or(...visibilityConditions))
 
     // Category filtering
     if (params.categoryId) {
@@ -456,7 +497,7 @@ export async function GET(request: NextRequest) {
     const orderBy = params.sortOrder === 'asc' ? asc(sortField) : desc(sortField)
 
     // Calculate pagination
-    const offset = (params.page - 1) * params.limit
+    const queryOffset = (params.page - 1) * params.limit
 
     // Build comprehensive query with joins
     let query = db
@@ -593,7 +634,7 @@ export async function GET(request: NextRequest) {
       .where(whereCondition)
       .orderBy(orderBy)
       .limit(params.limit)
-      .offset(offset)
+      .offset(queryOffset)
 
     // Get total count for pagination
     const countQuery = db
@@ -655,7 +696,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Record search analytics
+    // Record search analytics with enhanced user context
     if (params.search || params.query) {
       await recordSearchAnalytics(
         {
@@ -664,6 +705,8 @@ export async function GET(request: NextRequest) {
             categoryId: params.categoryId,
             tagIds: params.tagIds,
             difficultyLevel: params.difficultyLevel,
+            userRole: auth.context.userRole,
+            visibility: params.visibility,
           },
           sortOrder: `${params.sortBy}:${params.sortOrder}`,
           resultsCount: results.length,
@@ -678,28 +721,38 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(total / params.limit)
     const hasNextPage = params.page < totalPages
     const hasPrevPage = params.page > 1
+    const paginationOffset = (params.page - 1) * params.limit
 
     const elapsed = Date.now() - startTime
     logger.info(
-      `[${requestId}] Template discovery completed: ${results.length} results in ${elapsed}ms`
+      `[${requestId}] Template discovery completed: ${results.length}/${total} results in ${elapsed}ms`,
+      {
+        userId,
+        userRole: auth.context.userRole,
+        searchQuery: params.search || params.query,
+        resultsCount: results.length,
+        totalCount: total,
+      }
     )
 
-    return NextResponse.json({
-      success: true,
-      data: results,
-      pagination: {
-        page: params.page,
-        limit: params.limit,
-        total,
-        totalPages,
-        hasNextPage,
-        hasPrevPage,
-        offset,
-      },
-      meta: {
+    return createSuccessResponse(
+      results,
+      200,
+      {
+        pagination: {
+          page: params.page,
+          limit: params.limit,
+          total,
+          totalPages,
+          hasNextPage,
+          hasPrevPage,
+          offset: paginationOffset,
+        },
         requestId,
         processingTime: elapsed,
         authenticated: !!userId,
+        userRole: auth.context.userRole,
+        permissions: auth.permissions,
         searchPerformed: !!(params.search || params.query),
         filtersApplied: Object.keys(params).filter(
           (key) =>
@@ -707,37 +760,37 @@ export async function GET(request: NextRequest) {
             !['page', 'limit', 'sortBy', 'sortOrder'].includes(key)
         ).length,
       },
-    })
+      requestId
+    )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid query parameters:`, error.errors)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid query parameters',
-          details: error.errors,
-          requestId,
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'Invalid query parameters',
+        400,
+        error.errors,
+        requestId
       )
     }
 
     logger.error(`[${requestId}] Template discovery error after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        requestId,
-      },
-      { status: 500 }
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      requestId
     )
   }
 }
 
+// Export GET endpoint with middleware
+export const GET = withTemplateListMiddleware(getTemplatesHandler)
+
 /**
  * POST /api/templates/v2 - Create comprehensive templates with advanced metadata
+ * Enhanced with role-based access control and security middleware
  *
  * Features:
  * - Rich template metadata and categorization
@@ -746,32 +799,29 @@ export async function GET(request: NextRequest) {
  * - SEO and presentation optimization
  * - Automatic workflow sanitization
  * - Version control support
+ * - Role-based access control
+ * - Security audit logging
  */
-export async function POST(request: NextRequest) {
+async function createTemplateHandler(request: NextRequest, auth: TemplateAuthResult) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 
   try {
-    // Parse request body
-    const body = await request.json()
-    const data = CreateTemplateSchema.parse(body)
+    const validatedData = getValidatedData(request)
+    if (!validatedData) {
+      return createErrorResponse('Request validation failed', 400, undefined, requestId)
+    }
+    
+    const data = validatedData
+    const userId = auth.context.userId!
 
     logger.info(`[${requestId}] Creating comprehensive template:`, {
       name: data.name,
       categoryId: data.categoryId,
       difficulty: data.difficultyLevel,
+      userId,
+      userRole: auth.context.userRole,
     })
-
-    // Authentication
-    const session = await getSession()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const userId = session.user.id
 
     // Verify category exists
     const categoryExists = await db
@@ -781,7 +831,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (categoryExists.length === 0) {
-      return NextResponse.json({ success: false, error: 'Category not found' }, { status: 400 })
+      return createErrorResponse('Category not found', 400, undefined, requestId)
     }
 
     // Generate slug from name
@@ -799,13 +849,11 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (slugExists.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Template with similar name already exists',
-          suggestion: `${data.name} (${Math.floor(Math.random() * 1000)})`,
-        },
-        { status: 409 }
+      return createErrorResponse(
+        'Template with similar name already exists',
+        409,
+        { suggestion: `${data.name} (${Math.floor(Math.random() * 1000)})` },
+        requestId
       )
     }
 
@@ -867,53 +915,52 @@ export async function POST(request: NextRequest) {
       difficultyLevel: data.difficultyLevel,
       tagCount: data.tagIds?.length || 0,
       hasBusinessValue: !!(data.estimatedCostSavings || data.estimatedTimeSavings),
+      userRole: auth.context.userRole,
     })
 
     const elapsed = Date.now() - startTime
     logger.info(`[${requestId}] Template created successfully: ${templateId} in ${elapsed}ms`)
 
-    return NextResponse.json(
+    return createSuccessResponse(
       {
-        success: true,
-        data: {
-          id: templateId,
-          name: data.name,
-          slug,
-          categoryId: data.categoryId,
-          visibility: data.visibility,
-          message: 'Template created successfully',
-        },
-        meta: {
-          requestId,
-          processingTime: elapsed,
-        },
+        id: templateId,
+        name: data.name,
+        slug,
+        categoryId: data.categoryId,
+        visibility: data.visibility,
+        message: 'Template created successfully',
       },
-      { status: 201 }
+      201,
+      {
+        requestId,
+        processingTime: elapsed,
+        userRole: auth.context.userRole,
+        permissions: auth.permissions,
+      },
+      requestId
     )
   } catch (error: any) {
     const elapsed = Date.now() - startTime
 
     if (error instanceof z.ZodError) {
       logger.warn(`[${requestId}] Invalid template data:`, error.errors)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid template data',
-          details: error.errors,
-          requestId,
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'Invalid template data',
+        400,
+        error.errors,
+        requestId
       )
     }
 
     logger.error(`[${requestId}] Template creation error after ${elapsed}ms:`, error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        requestId,
-      },
-      { status: 500 }
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      requestId
     )
   }
 }
+
+// Export POST endpoint with middleware
+export const POST = withTemplateCreateMiddleware(createTemplateHandler)
