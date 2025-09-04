@@ -2394,9 +2394,94 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756965231389_jybzcs04h",
+      "title": "Research comprehensive context-sensitive help and documentation systems for complex software applications",
+      "description": "Analyze modern help implementations, documentation patterns, video tutorials, community support, technical architectures, and UX patterns for enterprise-grade workflow platforms",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T05:53:51.389Z",
+      "auto_research_created": false,
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T06:02:14.982Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T06:02:14.983Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756965794701_i4t6n4aq5",
+      "title": "Research: Implement foundational context-sensitive help and documentation system infrastructure",
+      "description": "Research and analysis required for implementing: \"Implement foundational context-sensitive help and documentation system infrastructure\"\n\n**Implementation Task Details:**\nCreate comprehensive help system with core architecture (help-context-provider, help-content-manager, contextual-triggers, help-analytics), UI components (tooltips, panels, spotlight, search, content renderer), content structure, API endpoints, database extensions, and workflow editor integration. Focus on TypeScript, accessibility, performance, and production-ready implementation.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756965794701_ln5mazx4n\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756965794701_i4t6n4aq5.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756965794701_i4t6n4aq5.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T06:03:14.701Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756965794701_ln5mazx4n",
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-04T06:04:40.990Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T06:04:40.990Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756965784575_1_general_d3a4a4f5"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T06:06:50.269Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T06:06:50.270Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 50,
-  "last_completion": "2025-09-04T00:15:30.991Z",
+  "total_completed": 52,
+  "last_completion": "2025-09-04T06:06:50.270Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }
