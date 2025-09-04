@@ -2217,9 +2217,186 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756933981823_qpk4h33l7",
+      "title": "Expand beyond AI-first to comprehensive general automation platform",
+      "description": "Transform Sim from AI-first platform to comprehensive general automation platform to compete directly with n8n, Zapier, and Make, including:\n\n**GENERAL AUTOMATION EXPANSION:**\n1. **Traditional API Integrations**: REST/GraphQL API blocks, webhook processors, HTTP request builders, API authentication managers\n2. **Database Connectors**: Advanced SQL query builders, NoSQL database integrations, data transformation pipelines, batch processing tools\n3. **File Processing Workflows**: CSV/Excel processors, PDF generators, document converters, file system operations, bulk file handlers\n4. **Communication Tools**: Advanced email automation, SMS/messaging integrations, notification systems, multi-channel broadcasting\n5. **Web Scraping and Data Collection**: Advanced scraping tools, data extraction pipelines, monitoring and alerting, scheduled data collection\n6. **Business Process Automation**: Invoice processing, approval workflows, document routing, compliance automation\n\n**NEW BLOCK CATEGORIES:**\n1. **Data Transformation Blocks**: JSON/XML processors, data mappers, formatters, validators, converters\n2. **Control Flow Blocks**: Advanced loops, conditional branching, error handling, retry logic, parallel execution\n3. **Scheduling and Timing**: Cron-like schedulers, time-based triggers, recurring workflows, calendar integrations\n4. **Monitoring and Analytics**: Workflow performance tracking, error monitoring, usage analytics, business intelligence\n5. **Security and Compliance**: Data encryption, access controls, audit logging, compliance reporting\n\n**TECHNICAL IMPLEMENTATION:**\n1. **Block Architecture**: Expand block registry with new categories, implement standardized block interfaces\n2. **Execution Engine**: Enhance executor to handle traditional automation patterns, improve performance for high-volume workflows\n3. **API Gateway**: Build unified API layer for external integrations, implement rate limiting and authentication\n4. **Data Pipeline**: Create ETL pipeline framework, implement data streaming capabilities\n5. **Monitoring System**: Build comprehensive workflow monitoring, implement alerting and notification systems\n\n**SUCCESS CRITERIA:**\n- 100+ new blocks covering traditional automation use cases\n- Performance comparable to n8n for high-volume workflows\n- Enterprise-grade security and compliance features\n- Comprehensive API integration capabilities\n- Advanced data transformation and ETL tools\n- Business process automation templates\n- Migration tools from competitors (n8n, Zapier, Make)",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/blocks/registry.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/executor/index.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/blocks/types.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:13:01.827Z",
+      "auto_research_created": true,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756941852665_1_general_d4733294",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:24:32.588Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T23:41:32.161Z",
+          "reason": "Task stale for 17 minutes"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-03T23:41:44.473Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-03T23:41:44.473Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "./TODO.json"
+    },
+    {
+      "id": "task_1756934380897_rtylfd61f",
+      "title": "Implement comprehensive monitoring and analytics for Sim workflows",
+      "description": "Build observability platform with real-time monitoring, alerting, analytics, and debugging tools",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/research-implement-comprehensive-monitoring-and-analytics-for-sim-workflows-1756943033557.md",
+        "apps/sim/lib/monitoring/",
+        "apps/sim/components/monitoring/",
+        "apps/sim/app/api/monitoring/",
+        "apps/sim/executor/index.ts"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-03T21:19:40.901Z",
+      "auto_research_created": true,
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1756941263966_1_general_137f6b0d",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:14:37.832Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-03T23:41:32.161Z",
+          "reason": "Task stale for 27 minutes"
+        },
+        {
+          "agentId": "development_session_1756943016462_1_general_cd55ea05",
+          "role": "primary",
+          "assignedAt": "2025-09-03T23:43:53.555Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T00:05:58.764Z",
+          "reason": "Task stale for 22 minutes"
+        }
+      ],
+      "last_modified": "2025-09-03T23:53:25.417Z",
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T00:08:18.022Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "pending",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T00:08:18.022Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1756944610393_0un6b2bp0",
+      "title": "Research: Migrate file upload API test from vi.doMock() to bun-compatible enhanced infrastructure",
+      "description": "Research and analysis required for implementing: \"Migrate file upload API test from vi.doMock() to bun-compatible enhanced infrastructure\"\n\n**Implementation Task Details:**\n\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756944610393_si9ezzgx3\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756944610393_0un6b2bp0.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756944610393_0un6b2bp0.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T00:10:10.393Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756944610393_si9ezzgx3",
+      "assigned_agent": "--agent-id",
+      "started_at": "2025-09-04T00:13:57.702Z",
+      "claimed_by": "--agent-id",
+      "agent_assignment_history": [
+        {
+          "agentId": "--agent-id",
+          "role": "primary",
+          "assignedAt": "2025-09-04T00:13:57.702Z",
+          "reassignReason": null,
+          "claimPriority": "development_session_1756944675147_1_general_f68d04c3"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-04T00:15:30.991Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-04T00:15:30.991Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 47,
-  "last_completion": "2025-09-03T23:35:10.850Z",
+  "total_completed": 50,
+  "last_completion": "2025-09-04T00:15:30.991Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

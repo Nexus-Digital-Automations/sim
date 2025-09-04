@@ -1,6 +1,6 @@
 /**
  * Contextual Help System - Smart assistance and guidance system
- * 
+ *
  * Provides intelligent, context-aware help throughout the application:
  * - Field-level help text and tooltips
  * - Smart suggestions based on user context and behavior
@@ -8,13 +8,13 @@
  * - Best practice recommendations
  * - Error guidance and troubleshooting assistance
  * - Tutorial integration and learning pathways
- * 
+ *
  * @created 2025-09-03
  * @author Claude Development System
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { nanoid } from 'nanoid'
+import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ContextualHelp')
 
@@ -110,7 +110,7 @@ export interface UserInteraction {
 
 /**
  * Contextual Help System Class
- * 
+ *
  * Manages intelligent help content delivery, user struggle detection,
  * and personalized assistance recommendations.
  */
@@ -132,14 +132,18 @@ export class ContextualHelpSystem {
   /**
    * Get contextual help for a specific component and context
    */
-  async getContextualHelp(component: string, userLevel: string, context?: Partial<HelpContext>): Promise<HelpContent[]> {
+  async getContextualHelp(
+    component: string,
+    userLevel: string,
+    context?: Partial<HelpContext>
+  ): Promise<HelpContent[]> {
     const operationId = nanoid()
     const startTime = Date.now()
-    
+
     logger.info(`[${operationId}] Getting contextual help`, {
       component,
       userLevel,
-      context
+      context,
     })
 
     try {
@@ -148,16 +152,14 @@ export class ContextualHelpSystem {
         page: window.location.pathname,
         userLevel: userLevel as any,
         sessionTime: Date.now() - (context?.sessionTime || Date.now()),
-        ...context
+        ...context,
       }
 
       // Get base help content for component
       const componentHelp = this.helpContent.get(component) || []
-      
+
       // Filter help based on context and user level
-      const relevantHelp = componentHelp.filter(help => 
-        this.isHelpRelevant(help, fullContext)
-      )
+      const relevantHelp = componentHelp.filter((help) => this.isHelpRelevant(help, fullContext))
 
       // Sort by priority and relevance
       const sortedHelp = relevantHelp.sort((a, b) => {
@@ -167,14 +169,14 @@ export class ContextualHelpSystem {
 
       // Add dynamic suggestions
       const contextualSuggestions = await this.generateContextualSuggestions(fullContext)
-      const suggestionHelp = contextualSuggestions.map(suggestion => 
+      const suggestionHelp = contextualSuggestions.map((suggestion) =>
         this.suggestionToHelpContent(suggestion, fullContext)
       )
 
       const allHelp = [...sortedHelp, ...suggestionHelp].slice(0, 5) // Limit to 5 items
 
       // Track help delivery
-      allHelp.forEach(help => {
+      allHelp.forEach((help) => {
         if (!help.analytics) help.analytics = { shown: 0, clicked: 0, dismissed: 0 }
         help.analytics.shown++
         this.activeHelp.set(help.id, help)
@@ -184,17 +186,16 @@ export class ContextualHelpSystem {
       logger.info(`[${operationId}] Contextual help retrieved`, {
         component,
         helpItemsCount: allHelp.length,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return allHelp
-
     } catch (error) {
       const processingTime = Date.now() - startTime
       logger.error(`[${operationId}] Failed to get contextual help`, {
         component,
         error: error instanceof Error ? error.message : String(error),
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
       return []
     }
@@ -205,10 +206,10 @@ export class ContextualHelpSystem {
    */
   async suggestNextSteps(currentState: any): Promise<Suggestion[]> {
     const operationId = nanoid()
-    
+
     logger.info(`[${operationId}] Generating next step suggestions`, {
       stateType: typeof currentState,
-      stateKeys: Object.keys(currentState || {})
+      stateKeys: Object.keys(currentState || {}),
     })
 
     try {
@@ -242,14 +243,13 @@ export class ContextualHelpSystem {
 
       logger.info(`[${operationId}] Next step suggestions generated`, {
         suggestionsCount: sortedSuggestions.length,
-        topSuggestion: sortedSuggestions[0]?.title
+        topSuggestion: sortedSuggestions[0]?.title,
       })
 
       return sortedSuggestions.slice(0, 3) // Return top 3 suggestions
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to generate next step suggestions`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       return []
     }
@@ -260,27 +260,31 @@ export class ContextualHelpSystem {
    */
   async detectUserStruggles(interactions: UserInteraction[]): Promise<StruggleAnalysis> {
     const operationId = nanoid()
-    
+
     logger.info(`[${operationId}] Analyzing user interactions for struggles`, {
       interactionsCount: interactions.length,
-      timespan: interactions.length > 0 ? 
-        interactions[interactions.length - 1].timestamp.getTime() - interactions[0].timestamp.getTime() : 0
+      timespan:
+        interactions.length > 0
+          ? interactions[interactions.length - 1].timestamp.getTime() -
+            interactions[0].timestamp.getTime()
+          : 0,
     })
 
     try {
       const struggles: DetectedStruggle[] = []
-      
+
       // Analyze interaction patterns
       const analysis = this.analyzeInteractionPatterns(interactions)
-      
+
       // Detect navigation struggles
-      if (analysis.averageTimePerAction > 30000) { // 30+ seconds per action
+      if (analysis.averageTimePerAction > 30000) {
+        // 30+ seconds per action
         struggles.push({
           type: 'navigation',
           description: 'User is taking a long time to navigate between interface elements',
           indicators: ['slow_navigation', 'hesitant_clicking'],
           severity: 'moderate',
-          suggestedHelp: ['interface_tour', 'keyboard_shortcuts', 'quick_actions_guide']
+          suggestedHelp: ['interface_tour', 'keyboard_shortcuts', 'quick_actions_guide'],
         })
       }
 
@@ -291,7 +295,7 @@ export class ContextualHelpSystem {
           description: 'User is struggling with block configuration',
           indicators: ['multiple_config_attempts', 'frequent_form_resets'],
           severity: 'major',
-          suggestedHelp: ['block_configuration_tutorial', 'common_patterns_guide']
+          suggestedHelp: ['block_configuration_tutorial', 'common_patterns_guide'],
         })
       }
 
@@ -302,7 +306,7 @@ export class ContextualHelpSystem {
           description: 'User having difficulty connecting workflow blocks',
           indicators: ['failed_connections', 'drag_drop_issues'],
           severity: 'major',
-          suggestedHelp: ['connection_tutorial', 'workflow_basics']
+          suggestedHelp: ['connection_tutorial', 'workflow_basics'],
         })
       }
 
@@ -313,15 +317,15 @@ export class ContextualHelpSystem {
           description: 'User encountering repeated execution errors',
           indicators: ['execution_failures', 'error_states'],
           severity: 'major',
-          suggestedHelp: ['debugging_guide', 'common_errors', 'validation_tutorial']
+          suggestedHelp: ['debugging_guide', 'common_errors', 'validation_tutorial'],
         })
       }
 
       // Generate recommendations based on detected struggles
       const recommendations = await this.generateStruggleRecommendations(struggles)
-      
+
       const confidence = this.calculateAnalysisConfidence(struggles, analysis)
-      
+
       const struggleAnalysis: StruggleAnalysis = {
         id: operationId,
         timestamp: new Date(),
@@ -332,8 +336,8 @@ export class ContextualHelpSystem {
           component: 'general',
           page: window.location.pathname,
           userLevel: 'beginner', // Would be determined from user data
-          sessionTime: analysis.totalSessionTime
-        }
+          sessionTime: analysis.totalSessionTime,
+        },
       }
 
       // Cache the analysis
@@ -342,16 +346,15 @@ export class ContextualHelpSystem {
       logger.info(`[${operationId}] User struggle analysis completed`, {
         strugglesCount: struggles.length,
         recommendationsCount: recommendations.length,
-        confidence: Math.round(confidence)
+        confidence: Math.round(confidence),
       })
 
       return struggleAnalysis
-
     } catch (error) {
       logger.error(`[${operationId}] Failed to analyze user struggles`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
-      
+
       return {
         id: operationId,
         timestamp: new Date(),
@@ -361,8 +364,8 @@ export class ContextualHelpSystem {
         context: {
           component: 'general',
           page: window.location.pathname,
-          userLevel: 'beginner'
-        }
+          userLevel: 'beginner',
+        },
       }
     }
   }
@@ -376,92 +379,116 @@ export class ContextualHelpSystem {
         {
           id: 'canvas-intro',
           title: 'Welcome to the Workflow Canvas',
-          content: 'This is where you build your automation workflows by adding blocks and connecting them together. Drag blocks from the sidebar onto the canvas to get started.',
+          content:
+            'This is where you build your automation workflows by adding blocks and connecting them together. Drag blocks from the sidebar onto the canvas to get started.',
           type: 'info' as const,
           context: { component: 'workflow-canvas', page: '', userLevel: 'beginner' as const },
           priority: 'high' as const,
           dismissible: true,
-          actions: [{
-            id: 'start-tutorial',
-            label: 'Start Tutorial',
-            type: 'tutorial' as const,
-            action: 'start_first_workflow_tutorial',
-            primary: true
-          }]
+          actions: [
+            {
+              id: 'start-tutorial',
+              label: 'Start Tutorial',
+              type: 'tutorial' as const,
+              action: 'start_first_workflow_tutorial',
+              primary: true,
+            },
+          ],
         },
         {
           id: 'canvas-empty-state',
           title: 'Add Your First Block',
-          content: 'Every workflow starts with a trigger block. Try adding a Starter block from the sidebar to begin building your automation.',
+          content:
+            'Every workflow starts with a trigger block. Try adding a Starter block from the sidebar to begin building your automation.',
           type: 'tip' as const,
-          context: { component: 'workflow-canvas', page: '', userLevel: 'beginner' as const, workflowState: 'empty' },
+          context: {
+            component: 'workflow-canvas',
+            page: '',
+            userLevel: 'beginner' as const,
+            workflowState: 'empty',
+          },
           priority: 'high' as const,
-          dismissible: true
-        }
+          dismissible: true,
+        },
       ],
 
       'block-library': [
         {
           id: 'blocks-overview',
           title: 'Block Library',
-          content: 'Blocks are the building blocks of your workflows. Each block performs a specific action like sending emails, calling APIs, or processing data.',
+          content:
+            'Blocks are the building blocks of your workflows. Each block performs a specific action like sending emails, calling APIs, or processing data.',
           type: 'info' as const,
           context: { component: 'block-library', page: '', userLevel: 'beginner' as const },
           priority: 'medium' as const,
-          dismissible: true
+          dismissible: true,
         },
         {
           id: 'starter-block-help',
           title: 'Start with a Starter Block',
-          content: 'Every workflow needs a trigger. The Starter block is perfect for manual triggers or testing workflows.',
+          content:
+            'Every workflow needs a trigger. The Starter block is perfect for manual triggers or testing workflows.',
           type: 'tip' as const,
-          context: { component: 'block-library', page: '', userLevel: 'beginner' as const, workflowState: 'empty' },
+          context: {
+            component: 'block-library',
+            page: '',
+            userLevel: 'beginner' as const,
+            workflowState: 'empty',
+          },
           priority: 'high' as const,
-          dismissible: true
-        }
+          dismissible: true,
+        },
       ],
 
       'control-bar': [
         {
           id: 'run-workflow-help',
           title: 'Running Your Workflow',
-          content: 'Click the Run button to execute your workflow and see the results. Make sure all blocks are connected properly first.',
+          content:
+            'Click the Run button to execute your workflow and see the results. Make sure all blocks are connected properly first.',
           type: 'info' as const,
           context: { component: 'control-bar', page: '', userLevel: 'beginner' as const },
           priority: 'medium' as const,
-          dismissible: true
+          dismissible: true,
         },
         {
           id: 'debug-mode-help',
           title: 'Debug Mode',
-          content: 'Enable debug mode to see detailed execution information and catch errors more easily.',
+          content:
+            'Enable debug mode to see detailed execution information and catch errors more easily.',
           type: 'tip' as const,
           context: { component: 'control-bar', page: '', userLevel: 'intermediate' as const },
           priority: 'low' as const,
-          dismissible: true
-        }
+          dismissible: true,
+        },
       ],
 
       'block-configuration': [
         {
           id: 'config-required-fields',
           title: 'Required Fields',
-          content: 'Fields marked with a red asterisk (*) are required and must be filled in before the workflow can run successfully.',
+          content:
+            'Fields marked with a red asterisk (*) are required and must be filled in before the workflow can run successfully.',
           type: 'warning' as const,
           context: { component: 'block-configuration', page: '', userLevel: 'beginner' as const },
           priority: 'high' as const,
-          dismissible: false
+          dismissible: false,
         },
         {
           id: 'config-variables',
           title: 'Using Variables',
-          content: 'You can reference data from previous blocks using {{variable}} syntax. This allows data to flow through your workflow.',
+          content:
+            'You can reference data from previous blocks using {{variable}} syntax. This allows data to flow through your workflow.',
           type: 'best-practice' as const,
-          context: { component: 'block-configuration', page: '', userLevel: 'intermediate' as const },
+          context: {
+            component: 'block-configuration',
+            page: '',
+            userLevel: 'intermediate' as const,
+          },
           priority: 'medium' as const,
-          dismissible: true
-        }
-      ]
+          dismissible: true,
+        },
+      ],
     }
 
     // Store help content in the system
@@ -475,19 +502,22 @@ export class ContextualHelpSystem {
       {
         id: 'add-error-handling',
         title: 'Add Error Handling',
-        description: 'Add condition blocks to handle potential errors and make your workflow more robust',
+        description:
+          'Add condition blocks to handle potential errors and make your workflow more robust',
         category: 'best-practice' as const,
         confidence: 75,
         triggers: ['workflow_has_api_blocks', 'no_error_handling'],
-        conditions: [{
-          type: 'block_count' as const,
-          operator: 'greater_than' as const,
-          value: 2,
-          description: 'Workflow has more than 2 blocks'
-        }],
+        conditions: [
+          {
+            type: 'block_count' as const,
+            operator: 'greater_than' as const,
+            value: 2,
+            description: 'Workflow has more than 2 blocks',
+          },
+        ],
         benefits: ['Improved reliability', 'Better user experience', 'Easier debugging'],
         effort: 'medium' as const,
-        impact: 'high' as const
+        impact: 'high' as const,
       },
       {
         id: 'optimize-api-calls',
@@ -496,15 +526,17 @@ export class ContextualHelpSystem {
         category: 'optimization' as const,
         confidence: 80,
         triggers: ['multiple_api_blocks', 'slow_execution'],
-        conditions: [{
-          type: 'execution_time' as const,
-          operator: 'greater_than' as const,
-          value: 30000, // 30 seconds
-          description: 'Workflow takes longer than 30 seconds'
-        }],
+        conditions: [
+          {
+            type: 'execution_time' as const,
+            operator: 'greater_than' as const,
+            value: 30000, // 30 seconds
+            description: 'Workflow takes longer than 30 seconds',
+          },
+        ],
         benefits: ['Faster execution', 'Reduced API costs', 'Better scalability'],
         effort: 'high' as const,
-        impact: 'high' as const
+        impact: 'high' as const,
       },
       {
         id: 'add-logging',
@@ -513,19 +545,21 @@ export class ContextualHelpSystem {
         category: 'best-practice' as const,
         confidence: 60,
         triggers: ['complex_workflow', 'debugging_needed'],
-        conditions: [{
-          type: 'block_count' as const,
-          operator: 'greater_than' as const,
-          value: 5,
-          description: 'Complex workflow with many blocks'
-        }],
+        conditions: [
+          {
+            type: 'block_count' as const,
+            operator: 'greater_than' as const,
+            value: 5,
+            description: 'Complex workflow with many blocks',
+          },
+        ],
         benefits: ['Easier debugging', 'Better monitoring', 'Audit trail'],
         effort: 'low' as const,
-        impact: 'medium' as const
-      }
+        impact: 'medium' as const,
+      },
     ]
 
-    suggestionDatabase.forEach(suggestion => {
+    suggestionDatabase.forEach((suggestion) => {
       const category = this.suggestions.get(suggestion.category) || []
       category.push(suggestion as Suggestion)
       this.suggestions.set(suggestion.category, category)
@@ -540,11 +574,11 @@ export class ContextualHelpSystem {
         type,
         target,
         context,
-        successful: context.successful !== false
+        successful: context.successful !== false,
       }
-      
+
       this.userInteractions.push(interaction)
-      
+
       // Keep only last 50 interactions to prevent memory issues
       if (this.userInteractions.length > 50) {
         this.userInteractions.shift()
@@ -556,7 +590,7 @@ export class ContextualHelpSystem {
       const target = e.target as HTMLElement
       trackInteraction('click', target.tagName + (target.id ? `#${target.id}` : ''), {
         x: e.clientX,
-        y: e.clientY
+        y: e.clientY,
       })
     })
 
@@ -565,7 +599,7 @@ export class ContextualHelpSystem {
         message: e.message,
         filename: e.filename,
         lineno: e.lineno,
-        successful: false
+        successful: false,
       })
     })
   }
@@ -573,19 +607,19 @@ export class ContextualHelpSystem {
   private isHelpRelevant(help: HelpContent, context: HelpContext): boolean {
     // Check if help matches current context
     if (help.context.component !== context.component) return false
-    
+
     // Check user level appropriateness
     const levelOrder = ['beginner', 'intermediate', 'advanced', 'expert']
     const userLevelIndex = levelOrder.indexOf(context.userLevel)
     const helpLevelIndex = levelOrder.indexOf(help.context.userLevel)
-    
+
     if (helpLevelIndex > userLevelIndex) return false
-    
+
     // Check workflow state relevance
     if (help.context.workflowState && context.workflowState !== help.context.workflowState) {
       return false
     }
-    
+
     // Check if help has already been shown too many times
     if (help.analytics && help.analytics.shown > 3 && help.analytics.clicked === 0) {
       return false
@@ -596,10 +630,10 @@ export class ContextualHelpSystem {
 
   private async generateContextualSuggestions(context: HelpContext): Promise<Suggestion[]> {
     const suggestions: Suggestion[] = []
-    
+
     // Get all suggestions and filter by context
     this.suggestions.forEach((categorySuggestions) => {
-      categorySuggestions.forEach(suggestion => {
+      categorySuggestions.forEach((suggestion) => {
         if (this.isSuggestionRelevant(suggestion, context)) {
           suggestions.push(suggestion)
         }
@@ -611,7 +645,7 @@ export class ContextualHelpSystem {
 
   private isSuggestionRelevant(suggestion: Suggestion, context: HelpContext): boolean {
     // Check conditions
-    return suggestion.conditions.every(condition => {
+    return suggestion.conditions.every((condition) => {
       return this.evaluateCondition(condition, context)
     })
   }
@@ -619,18 +653,23 @@ export class ContextualHelpSystem {
   private evaluateCondition(condition: SuggestionCondition, context: HelpContext): boolean {
     // Simplified condition evaluation
     switch (condition.type) {
-      case 'user_level':
+      case 'user_level': {
         const levels = ['beginner', 'intermediate', 'advanced', 'expert']
         const userIndex = levels.indexOf(context.userLevel)
         const conditionIndex = levels.indexOf(condition.value)
-        
+
         switch (condition.operator) {
-          case 'equals': return userIndex === conditionIndex
-          case 'greater_than': return userIndex > conditionIndex
-          case 'less_than': return userIndex < conditionIndex
-          default: return false
+          case 'equals':
+            return userIndex === conditionIndex
+          case 'greater_than':
+            return userIndex > conditionIndex
+          case 'less_than':
+            return userIndex < conditionIndex
+          default:
+            return false
         }
-      
+      }
+
       default:
         return true // Simplified for demo
     }
@@ -645,13 +684,15 @@ export class ContextualHelpSystem {
       context,
       priority: suggestion.confidence > 80 ? 'high' : suggestion.confidence > 60 ? 'medium' : 'low',
       dismissible: true,
-      actions: [{
-        id: 'implement-suggestion',
-        label: 'Learn More',
-        type: 'button',
-        action: `implement_${suggestion.id}`
-      }],
-      relatedTopics: [suggestion.category]
+      actions: [
+        {
+          id: 'implement-suggestion',
+          label: 'Learn More',
+          type: 'button',
+          action: `implement_${suggestion.id}`,
+        },
+      ],
+      relatedTopics: [suggestion.category],
     }
   }
 
@@ -662,127 +703,153 @@ export class ContextualHelpSystem {
       hasBlocks: state?.blocks && Object.keys(state.blocks).length > 0,
       hasConnections: state?.edges && state.edges.length > 0,
       blockCount: state?.blocks ? Object.keys(state.blocks).length : 0,
-      isComplete: state?.blocks && state?.edges && 
-                   Object.keys(state.blocks).length > 0 && state.edges.length > 0,
+      isComplete:
+        state?.blocks &&
+        state?.edges &&
+        Object.keys(state.blocks).length > 0 &&
+        state.edges.length > 0,
       hasTesting: state?.lastExecution !== undefined,
       hasErrors: state?.errors && state.errors.length > 0,
-      errors: state?.errors || []
+      errors: state?.errors || [],
     }
   }
 
   private getEmptyWorkflowSuggestions(): Suggestion[] {
-    return [{
-      id: 'start-with-starter',
-      title: 'Add a Starter Block',
-      description: 'Begin your workflow with a Starter block to define when it should run',
-      category: 'workflow',
-      confidence: 95,
-      triggers: ['empty_workflow'],
-      conditions: [],
-      implementation: {
-        type: 'guided',
-        steps: ['Open block library', 'Find Starter block', 'Drag to canvas']
+    return [
+      {
+        id: 'start-with-starter',
+        title: 'Add a Starter Block',
+        description: 'Begin your workflow with a Starter block to define when it should run',
+        category: 'workflow',
+        confidence: 95,
+        triggers: ['empty_workflow'],
+        conditions: [],
+        implementation: {
+          type: 'guided',
+          steps: ['Open block library', 'Find Starter block', 'Drag to canvas'],
+        },
+        benefits: ['Establishes workflow trigger', 'Provides clear starting point'],
+        effort: 'low',
+        impact: 'high',
       },
-      benefits: ['Establishes workflow trigger', 'Provides clear starting point'],
-      effort: 'low',
-      impact: 'high'
-    }]
+    ]
   }
 
   private getUnconnectedBlocksSuggestions(): Suggestion[] {
-    return [{
-      id: 'connect-blocks',
-      title: 'Connect Your Blocks',
-      description: 'Connect blocks together to create a workflow that processes data from one step to the next',
-      category: 'workflow',
-      confidence: 90,
-      triggers: ['unconnected_blocks'],
-      conditions: [],
-      implementation: {
-        type: 'guided',
-        steps: ['Select source block', 'Drag from output handle', 'Connect to target block input']
+    return [
+      {
+        id: 'connect-blocks',
+        title: 'Connect Your Blocks',
+        description:
+          'Connect blocks together to create a workflow that processes data from one step to the next',
+        category: 'workflow',
+        confidence: 90,
+        triggers: ['unconnected_blocks'],
+        conditions: [],
+        implementation: {
+          type: 'guided',
+          steps: [
+            'Select source block',
+            'Drag from output handle',
+            'Connect to target block input',
+          ],
+        },
+        benefits: ['Creates data flow', 'Enables workflow execution'],
+        effort: 'low',
+        impact: 'high',
       },
-      benefits: ['Creates data flow', 'Enables workflow execution'],
-      effort: 'low',
-      impact: 'high'
-    }]
+    ]
   }
 
   private getTestingSuggestions(): Suggestion[] {
-    return [{
-      id: 'test-workflow',
-      title: 'Test Your Workflow',
-      description: 'Run your workflow to ensure it works as expected before deploying',
-      category: 'best-practice',
-      confidence: 85,
-      triggers: ['untested_workflow'],
-      conditions: [],
-      implementation: {
-        type: 'automatic',
-        steps: ['Click Run button', 'Review execution results', 'Fix any errors']
+    return [
+      {
+        id: 'test-workflow',
+        title: 'Test Your Workflow',
+        description: 'Run your workflow to ensure it works as expected before deploying',
+        category: 'best-practice',
+        confidence: 85,
+        triggers: ['untested_workflow'],
+        conditions: [],
+        implementation: {
+          type: 'automatic',
+          steps: ['Click Run button', 'Review execution results', 'Fix any errors'],
+        },
+        benefits: ['Validates workflow logic', 'Identifies issues early', 'Builds confidence'],
+        effort: 'low',
+        impact: 'high',
       },
-      benefits: ['Validates workflow logic', 'Identifies issues early', 'Builds confidence'],
-      effort: 'low',
-      impact: 'high'
-    }]
+    ]
   }
 
   private getErrorResolutionSuggestions(errors: any[]): Suggestion[] {
-    return [{
-      id: 'fix-errors',
-      title: 'Resolve Workflow Errors',
-      description: 'Fix the errors in your workflow to ensure reliable execution',
-      category: 'troubleshoot',
-      confidence: 95,
-      triggers: ['workflow_errors'],
-      conditions: [],
-      implementation: {
-        type: 'guided',
-        steps: ['Review error messages', 'Check block configurations', 'Test connections']
+    return [
+      {
+        id: 'fix-errors',
+        title: 'Resolve Workflow Errors',
+        description: 'Fix the errors in your workflow to ensure reliable execution',
+        category: 'troubleshoot',
+        confidence: 95,
+        triggers: ['workflow_errors'],
+        conditions: [],
+        implementation: {
+          type: 'guided',
+          steps: ['Review error messages', 'Check block configurations', 'Test connections'],
+        },
+        benefits: ['Reliable workflow execution', 'Better user experience'],
+        effort: 'medium',
+        impact: 'high',
       },
-      benefits: ['Reliable workflow execution', 'Better user experience'],
-      effort: 'medium',
-      impact: 'high'
-    }]
+    ]
   }
 
   private getOptimizationSuggestions(state: any): Suggestion[] {
-    return [{
-      id: 'optimize-performance',
-      title: 'Optimize Workflow Performance',
-      description: 'Improve your workflow efficiency with performance optimizations',
-      category: 'optimization',
-      confidence: 70,
-      triggers: ['complex_workflow'],
-      conditions: [],
-      benefits: ['Faster execution', 'Lower resource usage', 'Better scalability'],
-      effort: 'high',
-      impact: 'medium'
-    }]
+    return [
+      {
+        id: 'optimize-performance',
+        title: 'Optimize Workflow Performance',
+        description: 'Improve your workflow efficiency with performance optimizations',
+        category: 'optimization',
+        confidence: 70,
+        triggers: ['complex_workflow'],
+        conditions: [],
+        benefits: ['Faster execution', 'Lower resource usage', 'Better scalability'],
+        effort: 'high',
+        impact: 'medium',
+      },
+    ]
   }
 
   private analyzeInteractionPatterns(interactions: UserInteraction[]) {
     // Analyze user interaction patterns for struggle detection
-    const totalTime = interactions.length > 0 ? 
-      interactions[interactions.length - 1].timestamp.getTime() - interactions[0].timestamp.getTime() : 0
-    
+    const totalTime =
+      interactions.length > 0
+        ? interactions[interactions.length - 1].timestamp.getTime() -
+          interactions[0].timestamp.getTime()
+        : 0
+
     return {
       totalSessionTime: totalTime,
       averageTimePerAction: interactions.length > 0 ? totalTime / interactions.length : 0,
-      configurationAttempts: interactions.filter(i => 
-        i.target.includes('config') || i.target.includes('form')).length,
-      connectionFailures: interactions.filter(i => 
-        i.type === 'error' && i.context?.message?.includes('connection')).length,
-      executionErrors: interactions.filter(i => 
-        i.type === 'error' && i.context?.message?.includes('execution')).length
+      configurationAttempts: interactions.filter(
+        (i) => i.target.includes('config') || i.target.includes('form')
+      ).length,
+      connectionFailures: interactions.filter(
+        (i) => i.type === 'error' && i.context?.message?.includes('connection')
+      ).length,
+      executionErrors: interactions.filter(
+        (i) => i.type === 'error' && i.context?.message?.includes('execution')
+      ).length,
     }
   }
 
-  private async generateStruggleRecommendations(struggles: DetectedStruggle[]): Promise<Suggestion[]> {
+  private async generateStruggleRecommendations(
+    struggles: DetectedStruggle[]
+  ): Promise<Suggestion[]> {
     const recommendations: Suggestion[] = []
-    
-    struggles.forEach(struggle => {
-      struggle.suggestedHelp.forEach(helpId => {
+
+    struggles.forEach((struggle) => {
+      struggle.suggestedHelp.forEach((helpId) => {
         recommendations.push({
           id: `help-${helpId}`,
           title: `Get Help with ${struggle.type}`,
@@ -793,33 +860,35 @@ export class ContextualHelpSystem {
           conditions: [],
           benefits: ['Improved understanding', 'Faster progress', 'Less frustration'],
           effort: 'low',
-          impact: 'high'
+          impact: 'high',
         })
       })
     })
-    
+
     return recommendations
   }
 
   private calculateAnalysisConfidence(struggles: DetectedStruggle[], analysis: any): number {
     // Calculate confidence in struggle analysis based on data quality and patterns
     let confidence = 50 // Base confidence
-    
+
     // Increase confidence based on data quantity
-    if (analysis.totalSessionTime > 300000) { // 5+ minutes of data
+    if (analysis.totalSessionTime > 300000) {
+      // 5+ minutes of data
       confidence += 20
     }
-    
+
     // Increase confidence based on clear patterns
-    if (struggles.some(s => s.severity === 'major')) {
+    if (struggles.some((s) => s.severity === 'major')) {
       confidence += 15
     }
-    
+
     // Decrease confidence if limited data
-    if (analysis.totalSessionTime < 60000) { // Less than 1 minute
+    if (analysis.totalSessionTime < 60000) {
+      // Less than 1 minute
       confidence -= 20
     }
-    
+
     return Math.max(0, Math.min(100, confidence))
   }
 
@@ -858,11 +927,11 @@ export class ContextualHelpSystem {
       totalClicked: 0,
       totalDismissed: 0,
       clickThroughRate: 0,
-      dismissalRate: 0
+      dismissalRate: 0,
     }
 
-    this.helpContent.forEach(helps => {
-      helps.forEach(help => {
+    this.helpContent.forEach((helps) => {
+      helps.forEach((help) => {
         stats.totalHelpItems++
         if (help.analytics) {
           stats.totalShown += help.analytics.shown
@@ -872,10 +941,9 @@ export class ContextualHelpSystem {
       })
     })
 
-    stats.clickThroughRate = stats.totalShown > 0 ? 
-      (stats.totalClicked / stats.totalShown) * 100 : 0
-    stats.dismissalRate = stats.totalShown > 0 ? 
-      (stats.totalDismissed / stats.totalShown) * 100 : 0
+    stats.clickThroughRate =
+      stats.totalShown > 0 ? (stats.totalClicked / stats.totalShown) * 100 : 0
+    stats.dismissalRate = stats.totalShown > 0 ? (stats.totalDismissed / stats.totalShown) * 100 : 0
 
     return stats
   }

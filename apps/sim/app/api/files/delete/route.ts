@@ -3,6 +3,7 @@ import { unlink } from 'fs/promises'
 import { join } from 'path'
 import type { NextRequest } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
+import { getSession } from '@/lib/auth'
 import { deleteFile, isUsingCloudStorage } from '@/lib/uploads'
 import { UPLOAD_DIR } from '@/lib/uploads/setup'
 import '@/lib/uploads/setup.server'
@@ -29,10 +30,17 @@ const logger = createLogger('FilesDeleteAPI')
  */
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication first
+    const session = await getSession()
+    if (!session?.user) {
+      logger.warn('Unauthorized file deletion attempt')
+      return createErrorResponse(new Error('Authentication required'), 401)
+    }
+
     const requestData = await request.json()
     const { filePath } = requestData
 
-    logger.info('File delete request received:', { filePath })
+    logger.info('File delete request received:', { filePath, userId: session.user.id })
 
     if (!filePath) {
       throw new InvalidRequestError('No file path provided')

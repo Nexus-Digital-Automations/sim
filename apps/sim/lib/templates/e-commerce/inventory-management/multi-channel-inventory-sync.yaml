@@ -1,0 +1,1013 @@
+# Multi-Channel Inventory Synchronization Template
+# Advanced inventory management across Shopify, Amazon, eBay, and WooCommerce with real-time updates
+
+name: "Multi-Channel Inventory Synchronization"
+description: "Real-time inventory synchronization across multiple e-commerce platforms with conflict resolution and automated reordering"
+category: "ecommerce"
+subcategory: "inventory-management"
+difficulty: "advanced"
+estimatedTime: "60-90 minutes"
+platforms: ["shopify", "amazon", "ebay", "woocommerce", "database", "email"]
+tags: ["inventory", "multi-channel", "sync", "shopify", "amazon", "ebay", "stock-management"]
+
+# Template metadata
+metadata:
+  author: "Sim E-commerce Team"
+  version: "1.0.0"
+  lastUpdated: "2025-09-04"
+  useCases:
+    - "Synchronize inventory across multiple e-commerce platforms"
+    - "Prevent overselling with real-time stock updates"
+    - "Automated low stock alerts and reordering"
+    - "Centralized inventory management and reporting"
+    - "Conflict resolution for concurrent stock updates"
+  
+  requirements:
+    - "Multiple e-commerce platform accounts (Shopify, Amazon, eBay, WooCommerce)"
+    - "Central inventory management system or database"
+    - "Webhook endpoints for real-time updates"
+    - "Email service for notifications and alerts"
+    - "Optional: Supplier API integrations for reordering"
+
+# Workflow configuration
+workflow:
+  # ====================================================================
+  # TRIGGER: Inventory Change Detection
+  # ====================================================================
+  trigger:
+    type: "multi-webhook"
+    description: "Listen for inventory changes from multiple platforms"
+    webhooks:
+      shopify_inventory:
+        provider: "shopify"
+        event: "inventory_levels/update"
+        verification:
+          hmac_secret: "{{SHOPIFY_WEBHOOK_SECRET}}"
+          header: "X-Shopify-Hmac-Sha256"
+      
+      woocommerce_inventory:
+        provider: "woocommerce"
+        event: "product.updated"
+        verification:
+          secret_header: "X-WC-Webhook-Signature"
+          secret: "{{WOOCOMMERCE_WEBHOOK_SECRET}}"
+      
+      manual_update:
+        provider: "api"
+        event: "inventory_update"
+        description: "Manual inventory updates from admin panel or ERP system"
+    
+  blocks:
+    # ====================================================================
+    # STEP 1: INVENTORY CHANGE DATA EXTRACTION
+    # ====================================================================
+    - name: "extract_inventory_change"
+      type: "data-transformer"
+      description: "Extract inventory change information from webhook payload"
+      inputs:
+        webhook_data: "{{webhook.body}}"
+        webhook_source: "{{webhook.source}}"
+      
+      operations:
+        - type: "switch"
+          field: "{{webhook_source}}"
+          cases:
+            shopify:
+              extract:
+                platform: "shopify"
+                product_id: "inventory_item_id"
+                location_id: "location_id"
+                variant_id: "variant_id"
+                sku: "sku"
+                quantity_change: "available_adjustment"
+                new_quantity: "available"
+                updated_at: "updated_at"
+            
+            woocommerce:
+              extract:
+                platform: "woocommerce"
+                product_id: "id"
+                sku: "sku"
+                new_quantity: "stock_quantity"
+                stock_status: "stock_status"
+                updated_at: "date_modified"
+            
+            manual:
+              extract:
+                platform: "manual"
+                sku: "sku"
+                new_quantity: "quantity"
+                location: "location"
+                reason: "reason"
+                updated_by: "user_id"
+        
+        - type: "validate"
+          rules:
+            - field: "sku"
+              required: true
+              type: "string"
+            - field: "new_quantity"
+              required: true
+              type: "integer"
+              min: 0
+            - field: "platform"
+              required: true
+              type: "string"
+      
+      outputs:
+        inventory_change: "{{transformed_data}}"
+        validation_errors: "{{validation_errors}}"
+
+    # ====================================================================
+    # STEP 2: VALIDATION AND CONFLICT DETECTION
+    # ====================================================================
+    - name: "inventory_validation"
+      type: "condition"
+      description: "Validate inventory change data and check for conflicts"
+      condition: "{{validation_errors.length === 0}}"
+      
+      on_true:
+        next: "fetch_current_inventory"
+      
+      on_false:
+        next: "validation_error_handler"
+
+    # ====================================================================
+    # ERROR HANDLER: Invalid Inventory Data
+    # ====================================================================
+    - name: "validation_error_handler"
+      type: "email-automation"
+      description: "Alert administrators about invalid inventory data"
+      inputs:
+        to: "{{INVENTORY_ADMIN_EMAIL}}"
+        subject: "Inventory Sync Validation Error - SKU {{inventory_change.sku}}"
+        template: "inventory_validation_error"
+        data:
+          sku: "{{inventory_change.sku}}"
+          platform: "{{inventory_change.platform}}"
+          errors: "{{validation_errors}}"
+          webhook_data: "{{webhook.body}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 3: FETCH CURRENT INVENTORY ACROSS ALL PLATFORMS
+    # ====================================================================
+    - name: "fetch_current_inventory"
+      type: "parallel"
+      description: "Retrieve current inventory levels from all connected platforms"
+      
+      branches:
+        # Fetch from central inventory database
+        central_inventory:
+          - name: "get_central_inventory"
+            type: "database"
+            operation: "query"
+            query: |
+              SELECT 
+                sku,
+                total_quantity,
+                reserved_quantity,
+                available_quantity,
+                platform_allocations,
+                last_sync_time,
+                reorder_point,
+                reorder_quantity,
+                supplier_id
+              FROM inventory_master 
+              WHERE sku = ?
+            params: ["{{inventory_change.sku}}"]
+            
+            outputs:
+              central_stock: "{{query_result[0]}}"
+        
+        # Fetch Shopify inventory
+        shopify_inventory:
+          - name: "get_shopify_inventory"
+            type: "shopify"
+            operation: "get_inventory_levels"
+            inputs:
+              inventory_item_id: "{{inventory_change.shopify_item_id || central_stock.shopify_item_id}}"
+              location_ids: "{{SHOPIFY_LOCATION_IDS}}"
+            
+            outputs:
+              shopify_levels: "{{response.inventory_levels}}"
+        
+        # Fetch WooCommerce inventory
+        woocommerce_inventory:
+          - name: "get_woocommerce_inventory"
+            type: "woocommerce"
+            operation: "get_product"
+            inputs:
+              sku: "{{inventory_change.sku}}"
+            
+            outputs:
+              woocommerce_stock: "{{response.stock_quantity}}"
+              woocommerce_status: "{{response.stock_status}}"
+        
+        # Fetch Amazon inventory (if configured)
+        amazon_inventory:
+          - name: "get_amazon_inventory"
+            type: "condition"
+            condition: "{{AMAZON_INTEGRATION_ENABLED === 'true'}}"
+            
+            on_true:
+              - name: "amazon_inventory_check"
+                type: "amazon-mws"
+                operation: "get_inventory_supply"
+                inputs:
+                  seller_sku: "{{inventory_change.sku}}"
+                  marketplace_id: "{{AMAZON_MARKETPLACE_ID}}"
+                
+                outputs:
+                  amazon_quantity: "{{response.TotalSupplyQuantity}}"
+        
+        # Fetch eBay inventory (if configured)  
+        ebay_inventory:
+          - name: "get_ebay_inventory"
+            type: "condition"
+            condition: "{{EBAY_INTEGRATION_ENABLED === 'true'}}"
+            
+            on_true:
+              - name: "ebay_inventory_check"
+                type: "ebay"
+                operation: "get_item"
+                inputs:
+                  item_id: "{{inventory_change.ebay_item_id || central_stock.ebay_item_id}}"
+                
+                outputs:
+                  ebay_quantity: "{{response.Item.Quantity}}"
+
+    # ====================================================================
+    # STEP 4: INVENTORY RECONCILIATION AND CONFLICT RESOLUTION
+    # ====================================================================
+    - name: "inventory_reconciliation"
+      type: "javascript"
+      description: "Analyze inventory levels across platforms and resolve conflicts"
+      code: |
+        // Advanced inventory reconciliation algorithm
+        function reconcileInventory(centralStock, platformLevels, inventoryChange) {
+          const platforms = ['shopify', 'woocommerce', 'amazon', 'ebay'];
+          const reconciliation = {
+            conflicts: [],
+            updates_needed: [],
+            total_available: 0,
+            allocation_strategy: 'proportional', // or 'priority' or 'manual'
+            recommendations: []
+          };
+          
+          // Calculate total available inventory
+          let totalInventory = centralStock?.total_quantity || 0;
+          const reservedQuantity = centralStock?.reserved_quantity || 0;
+          const availableInventory = totalInventory - reservedQuantity;
+          
+          // Detect conflicts (platform quantities don't match expected allocation)
+          platforms.forEach(platform => {
+            const expectedQuantity = centralStock?.platform_allocations?.[platform] || 0;
+            const actualQuantity = platformLevels[`${platform}_quantity`] || 0;
+            
+            if (Math.abs(expectedQuantity - actualQuantity) > 0) {
+              reconciliation.conflicts.push({
+                platform,
+                expected: expectedQuantity,
+                actual: actualQuantity,
+                difference: actualQuantity - expectedQuantity,
+                severity: Math.abs(actualQuantity - expectedQuantity) > 10 ? 'high' : 'medium'
+              });
+            }
+          });
+          
+          // Determine source of truth for inventory update
+          let newTotalInventory = totalInventory;
+          if (inventoryChange.platform === 'manual' || inventoryChange.platform === 'central') {
+            // Manual updates or central system updates are authoritative
+            newTotalInventory = inventoryChange.new_quantity + reservedQuantity;
+          } else {
+            // Platform-initiated changes need to be analyzed
+            const platformAllocation = centralStock?.platform_allocations?.[inventoryChange.platform] || 0;
+            const quantityDiff = inventoryChange.new_quantity - platformAllocation;
+            newTotalInventory = totalInventory + quantityDiff;
+          }
+          
+          // Calculate new platform allocations
+          const newAvailableInventory = newTotalInventory - reservedQuantory;
+          const allocationPercentages = {
+            shopify: parseFloat(process.env.SHOPIFY_ALLOCATION_PERCENT || '40') / 100,
+            woocommerce: parseFloat(process.env.WOOCOMMERCE_ALLOCATION_PERCENT || '30') / 100,
+            amazon: parseFloat(process.env.AMAZON_ALLOCATION_PERCENT || '20') / 100,
+            ebay: parseFloat(process.env.EBAY_ALLOCATION_PERCENT || '10') / 100
+          };
+          
+          const newAllocations = {};
+          let allocatedTotal = 0;
+          
+          // Calculate proportional allocations
+          platforms.forEach(platform => {
+            if (process.env[`${platform.toUpperCase()}_INTEGRATION_ENABLED`] === 'true') {
+              const allocation = Math.floor(newAvailableInventory * allocationPercentages[platform]);
+              newAllocations[platform] = Math.max(0, allocation);
+              allocatedTotal += newAllocations[platform];
+            } else {
+              newAllocations[platform] = 0;
+            }
+          });
+          
+          // Handle remaining inventory (due to rounding)
+          const remainingInventory = newAvailableInventory - allocatedTotal;
+          if (remainingInventory > 0) {
+            // Allocate remaining to primary platform (Shopify by default)
+            const primaryPlatform = process.env.PRIMARY_PLATFORM || 'shopify';
+            newAllocations[primaryPlatform] += remainingInventory;
+          }
+          
+          // Generate update requirements
+          platforms.forEach(platform => {
+            const currentQuantity = platformLevels[`${platform}_quantity`] || 0;
+            const targetQuantity = newAllocations[platform] || 0;
+            
+            if (currentQuantity !== targetQuantity) {
+              reconciliation.updates_needed.push({
+                platform,
+                current_quantity: currentQuantity,
+                target_quantity: targetQuantity,
+                change_required: targetQuantity - currentQuantity,
+                priority: Math.abs(targetQuantity - currentQuantity) > 5 ? 'high' : 'normal'
+              });
+            }
+          });
+          
+          // Generate recommendations
+          if (newAvailableInventory <= (centralStock?.reorder_point || 10)) {
+            reconciliation.recommendations.push({
+              type: 'reorder',
+              message: `Stock level (${newAvailableInventory}) is at or below reorder point (${centralStock?.reorder_point || 10})`,
+              suggested_quantity: centralStock?.reorder_quantity || 100,
+              supplier_id: centralStock?.supplier_id
+            });
+          }
+          
+          if (reconciliation.conflicts.length > 0) {
+            reconciliation.recommendations.push({
+              type: 'audit',
+              message: 'Inventory conflicts detected. Manual audit recommended.',
+              conflicts: reconciliation.conflicts
+            });
+          }
+          
+          return {
+            ...reconciliation,
+            new_total_inventory: newTotalInventory,
+            new_available_inventory: newAvailableInventory,
+            new_allocations: newAllocations,
+            sku: inventoryChange.sku,
+            timestamp: new Date().toISOString()
+          };
+        }
+        
+        // Execute reconciliation
+        const reconciliationResult = reconcileInventory(
+          {{central_stock}},
+          {
+            shopify_quantity: {{shopify_levels[0]?.available || 0}},
+            woocommerce_quantity: {{woocommerce_stock || 0}},
+            amazon_quantity: {{amazon_quantity || 0}},
+            ebay_quantity: {{ebay_quantity || 0}}
+          },
+          {{inventory_change}}
+        );
+        
+        return reconciliationResult;
+      
+      outputs:
+        reconciliation: "{{result}}"
+
+    # ====================================================================
+    # STEP 5: UPDATE CENTRAL INVENTORY RECORD
+    # ====================================================================
+    - name: "update_central_inventory"
+      type: "database"
+      description: "Update central inventory database with reconciled quantities"
+      operation: "upsert"
+      table: "inventory_master"
+      data:
+        sku: "{{reconciliation.sku}}"
+        total_quantity: "{{reconciliation.new_total_inventory}}"
+        available_quantity: "{{reconciliation.new_available_inventory}}"
+        platform_allocations: "{{reconciliation.new_allocations}}"
+        last_sync_time: "{{current_timestamp}}"
+        last_change_platform: "{{inventory_change.platform}}"
+        conflict_count: "{{reconciliation.conflicts.length}}"
+        sync_status: "{{reconciliation.conflicts.length > 0 ? 'conflicts_detected' : 'synchronized'}}"
+      
+      where:
+        sku: "{{reconciliation.sku}}"
+      
+      outputs:
+        update_success: "{{operation_success}}"
+
+    # ====================================================================
+    # STEP 6: SYNCHRONIZE INVENTORY ACROSS PLATFORMS
+    # ====================================================================
+    - name: "synchronize_platforms"
+      type: "parallel"
+      description: "Update inventory levels on all connected platforms based on reconciliation"
+      
+      branches:
+        # Update Shopify inventory
+        shopify_sync:
+          - name: "update_shopify_inventory"
+            type: "condition"
+            condition: "{{reconciliation.updates_needed.find(u => u.platform === 'shopify') !== undefined}}"
+            
+            on_true:
+              - name: "shopify_inventory_update"
+                type: "shopify"
+                operation: "adjust_inventory_level"
+                inputs:
+                  inventory_item_id: "{{central_stock.shopify_item_id}}"
+                  location_id: "{{SHOPIFY_PRIMARY_LOCATION_ID}}"
+                  available_adjustment: "{{reconciliation.updates_needed.find(u => u.platform === 'shopify')?.change_required || 0}}"
+                  reason: "inventory_sync"
+                
+                outputs:
+                  shopify_update_result: "{{response}}"
+        
+        # Update WooCommerce inventory
+        woocommerce_sync:
+          - name: "update_woocommerce_inventory"
+            type: "condition" 
+            condition: "{{reconciliation.updates_needed.find(u => u.platform === 'woocommerce') !== undefined}}"
+            
+            on_true:
+              - name: "woocommerce_inventory_update"
+                type: "woocommerce"
+                operation: "update_product"
+                inputs:
+                  sku: "{{reconciliation.sku}}"
+                  stock_quantity: "{{reconciliation.new_allocations.woocommerce}}"
+                  stock_status: "{{reconciliation.new_allocations.woocommerce > 0 ? 'instock' : 'outofstock'}}"
+                
+                outputs:
+                  woocommerce_update_result: "{{response}}"
+        
+        # Update Amazon inventory (if enabled)
+        amazon_sync:
+          - name: "update_amazon_inventory"
+            type: "condition"
+            condition: "{{AMAZON_INTEGRATION_ENABLED === 'true' && reconciliation.updates_needed.find(u => u.platform === 'amazon') !== undefined}}"
+            
+            on_true:
+              - name: "amazon_inventory_update"
+                type: "amazon-mws"
+                operation: "submit_inventory_feed"
+                inputs:
+                  seller_sku: "{{reconciliation.sku}}"
+                  quantity: "{{reconciliation.new_allocations.amazon}}"
+                  fulfillment_center_id: "{{AMAZON_FULFILLMENT_CENTER_ID}}"
+                
+                outputs:
+                  amazon_update_result: "{{response}}"
+        
+        # Update eBay inventory (if enabled)
+        ebay_sync:
+          - name: "update_ebay_inventory"
+            type: "condition"
+            condition: "{{EBAY_INTEGRATION_ENABLED === 'true' && reconciliation.updates_needed.find(u => u.platform === 'ebay') !== undefined}}"
+            
+            on_true:
+              - name: "ebay_inventory_update"
+                type: "ebay"
+                operation: "revise_inventory_status"
+                inputs:
+                  item_id: "{{central_stock.ebay_item_id}}"
+                  quantity: "{{reconciliation.new_allocations.ebay}}"
+                
+                outputs:
+                  ebay_update_result: "{{response}}"
+
+    # ====================================================================
+    # STEP 7: INVENTORY SYNC LOGGING AND AUDIT TRAIL
+    # ====================================================================
+    - name: "sync_logging"
+      type: "parallel"
+      description: "Log synchronization results and maintain audit trail"
+      
+      branches:
+        # Log sync transaction
+        transaction_logging:
+          - name: "log_sync_transaction"
+            type: "database"
+            operation: "insert"
+            table: "inventory_sync_log"
+            data:
+              sku: "{{reconciliation.sku}}"
+              sync_timestamp: "{{current_timestamp}}"
+              trigger_platform: "{{inventory_change.platform}}"
+              total_conflicts: "{{reconciliation.conflicts.length}}"
+              platforms_updated: "{{reconciliation.updates_needed.length}}"
+              sync_duration: "{{workflow_duration}}"
+              sync_status: "completed"
+              reconciliation_data: "{{reconciliation}}"
+              platform_results:
+                shopify: "{{shopify_update_result}}"
+                woocommerce: "{{woocommerce_update_result}}"
+                amazon: "{{amazon_update_result}}"
+                ebay: "{{ebay_update_result}}"
+        
+        # Audit trail for compliance
+        audit_logging:
+          - name: "create_audit_record"
+            type: "database"
+            operation: "insert"
+            table: "inventory_audit_trail"
+            data:
+              sku: "{{reconciliation.sku}}"
+              action: "inventory_sync"
+              before_quantity: "{{central_stock.total_quantity}}"
+              after_quantity: "{{reconciliation.new_total_inventory}}"
+              quantity_change: "{{reconciliation.new_total_inventory - central_stock.total_quantity}}"
+              change_reason: "multi_platform_sync"
+              initiated_by: "{{inventory_change.platform}}"
+              affected_platforms: "{{reconciliation.updates_needed.map(u => u.platform)}}"
+              timestamp: "{{current_timestamp}}"
+              ip_address: "{{webhook.headers.X-Forwarded-For}}"
+              user_agent: "{{webhook.headers.User-Agent}}"
+
+    # ====================================================================
+    # STEP 8: CONFLICT RESOLUTION AND ALERTS
+    # ====================================================================
+    - name: "conflict_handling"
+      type: "condition"
+      description: "Handle inventory conflicts and send appropriate alerts"
+      condition: "{{reconciliation.conflicts.length > 0}}"
+      
+      on_true:
+        next: "send_conflict_alerts"
+      
+      on_false:
+        next: "reorder_check"
+
+    # ====================================================================
+    # STEP 9: CONFLICT ALERT PROCESSING
+    # ====================================================================
+    - name: "send_conflict_alerts"
+      type: "parallel"
+      description: "Send conflict alerts to inventory management team"
+      
+      branches:
+        # Email notification for conflicts
+        email_alert:
+          - name: "conflict_email_alert"
+            type: "email-automation"
+            inputs:
+              to: "{{INVENTORY_ADMIN_EMAIL}}"
+              cc: "{{INVENTORY_TEAM_EMAIL}}"
+              subject: "Inventory Conflicts Detected - SKU {{reconciliation.sku}}"
+              template: "inventory_conflicts"
+              data:
+                sku: "{{reconciliation.sku}}"
+                conflicts: "{{reconciliation.conflicts}}"
+                total_conflicts: "{{reconciliation.conflicts.length}}"
+                reconciliation_summary: "{{reconciliation}}"
+                platform_updates: "{{reconciliation.updates_needed}}"
+                dashboard_url: "{{ADMIN_URL}}/inventory/{{reconciliation.sku}}"
+        
+        # Slack notification for urgent conflicts
+        slack_alert:
+          - name: "conflict_slack_alert"
+            type: "condition"
+            condition: "{{reconciliation.conflicts.some(c => c.severity === 'high')}}"
+            
+            on_true:
+              - name: "urgent_slack_notification"
+                type: "slack"
+                operation: "send_message"
+                inputs:
+                  channel: "#inventory-alerts"
+                  message: |
+                    🚨 **HIGH PRIORITY: Inventory Conflicts Detected**
+                    
+                    SKU: `{{reconciliation.sku}}`
+                    Conflicts: {{reconciliation.conflicts.length}}
+                    
+                    {{#each reconciliation.conflicts}}
+                    • **{{platform}}**: Expected {{expected}}, Found {{actual}} ({{#if (gt difference 0)}}+{{difference}}{{else}}{{difference}}{{/if}})
+                    {{/each}}
+                    
+                    <{{ADMIN_URL}}/inventory/{{reconciliation.sku}}|View Details>
+                  
+                  attachments:
+                    - name: "Inventory Dashboard"
+                      url: "{{ADMIN_URL}}/inventory/{{reconciliation.sku}}"
+        
+        # Create high-priority support ticket for major conflicts
+        support_ticket:
+          - name: "create_conflict_ticket"
+            type: "condition"
+            condition: "{{reconciliation.conflicts.filter(c => c.severity === 'high').length >= 2}}"
+            
+            on_true:
+              - name: "urgent_support_ticket"
+                type: "database"
+                operation: "insert"
+                table: "support_tickets"
+                data:
+                  type: "inventory_conflict"
+                  priority: "high"
+                  subject: "Major inventory discrepancies for SKU {{reconciliation.sku}}"
+                  description: "Multiple high-severity inventory conflicts detected across platforms. Immediate attention required."
+                  sku: "{{reconciliation.sku}}"
+                  conflict_data: "{{reconciliation.conflicts}}"
+                  assigned_to: "{{INVENTORY_MANAGER_ID}}"
+                  status: "open"
+                  created_at: "{{current_timestamp}}"
+      
+      next: "reorder_check"
+
+    # ====================================================================
+    # STEP 10: AUTOMATED REORDER CHECK AND PROCESSING
+    # ====================================================================
+    - name: "reorder_check"
+      type: "condition"
+      description: "Check if inventory levels require reordering"
+      condition: "{{reconciliation.recommendations.some(r => r.type === 'reorder')}}"
+      
+      on_true:
+        next: "process_reorder"
+      
+      on_false:
+        next: "performance_analytics"
+
+    # ====================================================================
+    # STEP 11: AUTOMATED REORDER PROCESSING
+    # ====================================================================
+    - name: "process_reorder"
+      type: "parallel"
+      description: "Process automated reordering based on inventory levels"
+      
+      branches:
+        # Create purchase order
+        purchase_order_creation:
+          - name: "create_purchase_order"
+            type: "database"
+            operation: "insert"
+            table: "purchase_orders"
+            data:
+              po_number: "PO-{{current_timestamp}}-{{reconciliation.sku}}"
+              supplier_id: "{{central_stock.supplier_id}}"
+              sku: "{{reconciliation.sku}}"
+              quantity_ordered: "{{reconciliation.recommendations.find(r => r.type === 'reorder')?.suggested_quantity || central_stock.reorder_quantity}}"
+              unit_cost: "{{central_stock.unit_cost}}"
+              total_cost: "{{(reconciliation.recommendations.find(r => r.type === 'reorder')?.suggested_quantity || central_stock.reorder_quantity) * central_stock.unit_cost}}"
+              status: "pending_approval"
+              requested_by: "automated_system"
+              created_at: "{{current_timestamp}}"
+              expected_delivery: "{{date_add(current_timestamp, central_stock.lead_time_days, 'days')}}"
+            
+            outputs:
+              purchase_order_id: "{{insert_id}}"
+        
+        # Supplier notification (if automated ordering is enabled)
+        supplier_notification:
+          - name: "supplier_order_notification"
+            type: "condition"
+            condition: "{{AUTOMATED_ORDERING_ENABLED === 'true' && central_stock.supplier_email}}"
+            
+            on_true:
+              - name: "send_supplier_order"
+                type: "email-automation"
+                inputs:
+                  to: "{{central_stock.supplier_email}}"
+                  cc: "{{PURCHASING_TEAM_EMAIL}}"
+                  subject: "Automated Purchase Order - PO-{{current_timestamp}}-{{reconciliation.sku}}"
+                  template: "supplier_purchase_order"
+                  data:
+                    po_number: "PO-{{current_timestamp}}-{{reconciliation.sku}}"
+                    sku: "{{reconciliation.sku}}"
+                    product_name: "{{central_stock.product_name}}"
+                    quantity: "{{reconciliation.recommendations.find(r => r.type === 'reorder')?.suggested_quantity}}"
+                    unit_cost: "{{central_stock.unit_cost}}"
+                    total_cost: "{{purchase_order_total}}"
+                    delivery_address: "{{WAREHOUSE_ADDRESS}}"
+                    requested_delivery_date: "{{date_add(current_timestamp, central_stock.lead_time_days, 'days')}}"
+        
+        # Internal team notification
+        purchasing_team_alert:
+          - name: "purchasing_team_notification"
+            type: "email-automation"
+            inputs:
+              to: "{{PURCHASING_TEAM_EMAIL}}"
+              subject: "Automated Reorder Created - SKU {{reconciliation.sku}}"
+              template: "reorder_notification"
+              data:
+                sku: "{{reconciliation.sku}}"
+                current_stock: "{{reconciliation.new_available_inventory}}"
+                reorder_point: "{{central_stock.reorder_point}}"
+                quantity_ordered: "{{reconciliation.recommendations.find(r => r.type === 'reorder')?.suggested_quantity}}"
+                supplier: "{{central_stock.supplier_name}}"
+                po_number: "PO-{{current_timestamp}}-{{reconciliation.sku}}"
+                estimated_cost: "{{purchase_order_total}}"
+
+    # ====================================================================
+    # STEP 12: PERFORMANCE ANALYTICS AND REPORTING
+    # ====================================================================
+    - name: "performance_analytics"
+      type: "parallel"
+      description: "Update performance metrics and analytics"
+      
+      branches:
+        # Update inventory performance metrics
+        inventory_kpis:
+          - name: "update_inventory_kpis"
+            type: "database"
+            operation: "upsert"
+            table: "inventory_performance_metrics"
+            data:
+              date: "{{current_date}}"
+              sku: "{{reconciliation.sku}}"
+              sync_count: "increment"
+              conflict_count: "add:{{reconciliation.conflicts.length}}"
+              platforms_synchronized: "add:{{reconciliation.updates_needed.length}}"
+              total_sync_time: "add:{{workflow_duration}}"
+              last_sync: "{{current_timestamp}}"
+              reorders_triggered: "{{reconciliation.recommendations.some(r => r.type === 'reorder') ? 'increment' : 'no_change'}}"
+            
+            where:
+              date: "{{current_date}}"
+              sku: "{{reconciliation.sku}}"
+        
+        # Platform-specific performance tracking
+        platform_analytics:
+          - name: "platform_performance_tracking"
+            type: "database"
+            operation: "insert"
+            table: "platform_sync_performance"
+            data:
+              sync_timestamp: "{{current_timestamp}}"
+              sku: "{{reconciliation.sku}}"
+              shopify_response_time: "{{shopify_update_result?.response_time || null}}"
+              woocommerce_response_time: "{{woocommerce_update_result?.response_time || null}}"
+              amazon_response_time: "{{amazon_update_result?.response_time || null}}"
+              ebay_response_time: "{{ebay_update_result?.response_time || null}}"
+              total_sync_duration: "{{workflow_duration}}"
+              success_rate: "{{(reconciliation.updates_needed.length - failed_updates) / reconciliation.updates_needed.length * 100}}"
+
+    # ====================================================================
+    # STEP 13: CUSTOMER IMPACT ANALYSIS AND NOTIFICATIONS
+    # ====================================================================
+    - name: "customer_impact_analysis"
+      type: "condition"
+      description: "Check if inventory changes affect customer-facing availability"
+      condition: "{{reconciliation.new_available_inventory === 0 || reconciliation.new_available_inventory < 5}}"
+      
+      on_true:
+        next: "low_stock_customer_actions"
+      
+      on_false:
+        next: "workflow_completion"
+
+    # ====================================================================
+    # STEP 14: LOW STOCK CUSTOMER ACTIONS
+    # ====================================================================
+    - name: "low_stock_customer_actions"
+      type: "parallel"
+      description: "Handle customer-facing actions for low stock situations"
+      
+      branches:
+        # Update product availability status
+        availability_updates:
+          - name: "update_availability_status"
+            type: "condition"
+            condition: "{{reconciliation.new_available_inventory === 0}}"
+            
+            on_true:
+              - name: "mark_out_of_stock"
+                type: "parallel"
+                branches:
+                  shopify_status:
+                    - type: "shopify"
+                      operation: "update_product_variant"
+                      inputs:
+                        variant_id: "{{central_stock.shopify_variant_id}}"
+                        inventory_policy: "deny"
+                        inventory_management: "shopify"
+                  
+                  woocommerce_status:
+                    - type: "woocommerce"
+                      operation: "update_product"
+                      inputs:
+                        sku: "{{reconciliation.sku}}"
+                        stock_status: "outofstock"
+                        backorders: "no"
+            
+            on_false:
+              - name: "low_stock_warning"
+                type: "database"
+                operation: "update"
+                table: "products"
+                data:
+                  low_stock_warning: true
+                  low_stock_threshold_reached: "{{current_timestamp}}"
+                where:
+                  sku: "{{reconciliation.sku}}"
+        
+        # Notify customers on waitlists
+        customer_notifications:
+          - name: "notify_waitlist_customers"
+            type: "condition"
+            condition: "{{reconciliation.new_available_inventory === 0}}"
+            
+            on_true:
+              - name: "send_waitlist_notifications"
+                type: "database"
+                operation: "query"
+                query: |
+                  SELECT customer_email, customer_name 
+                  FROM product_waitlists 
+                  WHERE sku = ? AND status = 'active'
+                params: ["{{reconciliation.sku}}"]
+                
+                then:
+                  - name: "send_out_of_stock_emails"
+                    type: "for_each"
+                    items: "{{query_result}}"
+                    do:
+                      - type: "email-automation"
+                        inputs:
+                          to: "{{item.customer_email}}"
+                          subject: "Product Out of Stock - {{central_stock.product_name}}"
+                          template: "out_of_stock_notification"
+                          data:
+                            customer_name: "{{item.customer_name}}"
+                            product_name: "{{central_stock.product_name}}"
+                            sku: "{{reconciliation.sku}}"
+                            estimated_restock: "{{central_stock.estimated_restock_date}}"
+                            waitlist_url: "{{STORE_URL}}/waitlist/{{reconciliation.sku}}"
+
+    # ====================================================================
+    # WORKFLOW COMPLETION AND SUMMARY
+    # ====================================================================
+    - name: "workflow_completion"
+      type: "response"
+      message: "Multi-channel inventory synchronization completed"
+      data:
+        sku: "{{reconciliation.sku}}"
+        sync_status: "{{reconciliation.conflicts.length > 0 ? 'completed_with_conflicts' : 'completed_successfully'}}"
+        total_conflicts: "{{reconciliation.conflicts.length}}"
+        platforms_updated: "{{reconciliation.updates_needed.length}}"
+        new_total_inventory: "{{reconciliation.new_total_inventory}}"
+        new_available_inventory: "{{reconciliation.new_available_inventory}}"
+        reorder_triggered: "{{reconciliation.recommendations.some(r => r.type === 'reorder')}}"
+        processing_time: "{{workflow_duration}}"
+        next_actions: "{{reconciliation.recommendations}}"
+        platform_allocations: "{{reconciliation.new_allocations}}"
+
+# ====================================================================
+# ENVIRONMENT VARIABLES AND CONFIGURATION
+# ====================================================================
+variables:
+  # Platform Configuration
+  SHOPIFY_SHOP_DOMAIN: "${SHOPIFY_SHOP_DOMAIN}"
+  SHOPIFY_ACCESS_TOKEN: "${SHOPIFY_ACCESS_TOKEN}"
+  SHOPIFY_WEBHOOK_SECRET: "${SHOPIFY_WEBHOOK_SECRET}"
+  SHOPIFY_LOCATION_IDS: "${SHOPIFY_LOCATION_IDS}"
+  SHOPIFY_PRIMARY_LOCATION_ID: "${SHOPIFY_PRIMARY_LOCATION_ID}"
+  
+  WOOCOMMERCE_BASE_URL: "${WOOCOMMERCE_BASE_URL}"
+  WOOCOMMERCE_CONSUMER_KEY: "${WOOCOMMERCE_CONSUMER_KEY}"
+  WOOCOMMERCE_CONSUMER_SECRET: "${WOOCOMMERCE_CONSUMER_SECRET}"
+  WOOCOMMERCE_WEBHOOK_SECRET: "${WOOCOMMERCE_WEBHOOK_SECRET}"
+  
+  # Integration Toggles
+  AMAZON_INTEGRATION_ENABLED: "${AMAZON_INTEGRATION_ENABLED:false}"
+  EBAY_INTEGRATION_ENABLED: "${EBAY_INTEGRATION_ENABLED:false}"
+  AUTOMATED_ORDERING_ENABLED: "${AUTOMATED_ORDERING_ENABLED:true}"
+  
+  # Amazon Configuration (if enabled)
+  AMAZON_MWS_ACCESS_KEY: "${AMAZON_MWS_ACCESS_KEY}"
+  AMAZON_MWS_SECRET_KEY: "${AMAZON_MWS_SECRET_KEY}"
+  AMAZON_SELLER_ID: "${AMAZON_SELLER_ID}"
+  AMAZON_MARKETPLACE_ID: "${AMAZON_MARKETPLACE_ID}"
+  AMAZON_FULFILLMENT_CENTER_ID: "${AMAZON_FULFILLMENT_CENTER_ID}"
+  
+  # eBay Configuration (if enabled)
+  EBAY_APP_ID: "${EBAY_APP_ID}"
+  EBAY_CERT_ID: "${EBAY_CERT_ID}"
+  EBAY_DEV_ID: "${EBAY_DEV_ID}"
+  EBAY_TOKEN: "${EBAY_TOKEN}"
+  EBAY_SITE_ID: "${EBAY_SITE_ID:0}"
+  
+  # Inventory Allocation Percentages
+  SHOPIFY_ALLOCATION_PERCENT: "${SHOPIFY_ALLOCATION_PERCENT:40}"
+  WOOCOMMERCE_ALLOCATION_PERCENT: "${WOOCOMMERCE_ALLOCATION_PERCENT:30}" 
+  AMAZON_ALLOCATION_PERCENT: "${AMAZON_ALLOCATION_PERCENT:20}"
+  EBAY_ALLOCATION_PERCENT: "${EBAY_ALLOCATION_PERCENT:10}"
+  PRIMARY_PLATFORM: "${PRIMARY_PLATFORM:shopify}"
+  
+  # Notification Configuration
+  INVENTORY_ADMIN_EMAIL: "${INVENTORY_ADMIN_EMAIL}"
+  INVENTORY_TEAM_EMAIL: "${INVENTORY_TEAM_EMAIL}"
+  INVENTORY_MANAGER_ID: "${INVENTORY_MANAGER_ID}"
+  PURCHASING_TEAM_EMAIL: "${PURCHASING_TEAM_EMAIL}"
+  
+  # Business Configuration
+  ADMIN_URL: "${ADMIN_URL}"
+  STORE_URL: "${STORE_URL}"
+  WAREHOUSE_ADDRESS: "${WAREHOUSE_ADDRESS}"
+  
+  # Slack Integration
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+
+# ====================================================================
+# ERROR HANDLING AND MONITORING
+# ====================================================================
+error_handling:
+  global_error_handler:
+    type: "parallel"
+    branches:
+      admin_notification:
+        - type: "email-automation"
+          inputs:
+            to: "{{INVENTORY_ADMIN_EMAIL}}"
+            subject: "Inventory Sync Error - SKU {{inventory_change.sku || 'Unknown'}}"
+            template: "inventory_sync_error"
+            data:
+              error_details: "{{error}}"
+              inventory_data: "{{inventory_change}}"
+              workflow_step: "{{current_step}}"
+              reconciliation_data: "{{reconciliation}}"
+      
+      error_logging:
+        - type: "database"
+          operation: "insert"
+          table: "inventory_sync_errors"
+          data:
+            sku: "{{inventory_change.sku}}"
+            error_type: "{{error.type}}"
+            error_message: "{{error.message}}"
+            error_stack: "{{error.stack}}"
+            workflow_step: "{{current_step}}"
+            webhook_data: "{{webhook.body}}"
+            created_at: "{{current_timestamp}}"
+  
+  retry_policy:
+    max_retries: 3
+    retry_delay: "45 seconds"
+    exponential_backoff: true
+    retry_on_errors: ["timeout", "network_error", "api_rate_limit", "temporary_platform_error"]
+    
+  monitoring:
+    performance_tracking: true
+    error_alerting: true
+    inventory_accuracy_monitoring: true
+    platform_sync_health: true
+    business_impact_analysis: true
+
+# ====================================================================
+# CUSTOMIZATION AND DEPLOYMENT GUIDE
+# ====================================================================
+customization:
+  inventory_allocation_strategy:
+    description: "Configure how inventory is allocated across platforms"
+    options:
+      - "proportional: Based on percentage allocations"
+      - "priority: Based on platform priority order"
+      - "demand_based: Based on historical sales velocity"
+      - "manual: Manually configured allocations per SKU"
+  
+  reorder_automation:
+    description: "Configure automated reordering behavior"
+    settings:
+      - "reorder_point: Stock level that triggers reorder"
+      - "reorder_quantity: Default quantity to reorder"
+      - "lead_time_days: Expected delivery time from supplier"
+      - "safety_stock: Additional buffer stock to maintain"
+  
+  conflict_resolution:
+    description: "Configure how inventory conflicts are resolved"
+    strategies:
+      - "last_update_wins: Most recent update takes precedence"
+      - "platform_priority: Updates from priority platforms win"
+      - "manual_review: All conflicts require manual approval"
+      - "conservative: Use the lowest quantity across platforms"
+
+# ====================================================================
+# PERFORMANCE OPTIMIZATION
+# ====================================================================
+performance:
+  caching:
+    - "Cache inventory data for 5 minutes to reduce API calls"
+    - "Cache supplier information for 1 hour"
+    - "Cache platform credentials for session duration"
+  
+  optimization:
+    - "Batch platform updates where possible"
+    - "Use parallel processing for independent operations"
+    - "Implement circuit breakers for unreliable APIs"
+    - "Queue low-priority updates during high-traffic periods"
+  
+  scaling:
+    - "Horizontal scaling for high-volume inventory changes"
+    - "Database read replicas for analytics queries"
+    - "CDN for static inventory reports and dashboards"
+    - "Load balancing for webhook processing"

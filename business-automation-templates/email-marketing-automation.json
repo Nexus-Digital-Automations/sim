@@ -1,0 +1,1050 @@
+{
+  "id": "email-marketing-automation-v1",
+  "name": "Email Marketing Automation Suite",
+  "description": "Comprehensive email marketing automation with behavioral triggers, segmentation, and performance analytics",
+  "category": "Marketing Campaigns",
+  "difficulty": "intermediate",
+  "estimatedTime": "10-15 minutes",
+  "version": "1.0.0",
+  "author": "SIM Business Automation Team",
+  "tags": [
+    "email-marketing",
+    "automation",
+    "behavioral-triggers",
+    "segmentation",
+    "analytics",
+    "campaigns",
+    "nurturing",
+    "personalization"
+  ],
+  "icon": "Mail",
+  "color": "#4F46E5",
+  "requirements": [
+    "Email marketing platform (Mailchimp, HubSpot, or SMTP)",
+    "Customer database or CRM system",
+    "Website tracking (optional for behavioral triggers)",
+    "Email templates and content strategy"
+  ],
+  "useCases": [
+    "Welcome email sequences for new subscribers",
+    "Abandoned cart recovery campaigns",
+    "Product launch announcements",
+    "Customer re-engagement campaigns",
+    "Event-driven marketing automation",
+    "Newsletter automation with personalization"
+  ],
+  "businessValue": {
+    "timesSaved": "20-30 hours per week on manual email campaigns",
+    "conversionImprovement": "35-50% increase in email engagement rates",
+    "revenueImpact": "15-25% boost in email-driven revenue",
+    "scalability": "Handles 100k+ subscribers with automated segmentation"
+  },
+  "integrations": [
+    "Mailchimp",
+    "HubSpot Marketing Hub",
+    "Gmail/Outlook",
+    "Google Analytics",
+    "Shopify/WooCommerce",
+    "Custom SMTP servers"
+  ],
+  "workflow": {
+    "blocks": {
+      "trigger_handler": {
+        "id": "trigger_001",
+        "type": "starter",
+        "position": { "x": 100, "y": 200 },
+        "data": {
+          "title": "Email Campaign Trigger",
+          "description": "Handle various trigger events for email automation"
+        },
+        "subBlocks": {
+          "triggerTypes": {
+            "type": "multi-select",
+            "value": [
+              "new_subscriber",
+              "purchase_completed",
+              "cart_abandoned",
+              "website_behavior",
+              "date_based",
+              "manual_trigger"
+            ]
+          }
+        }
+      },
+      "subscriber_segmentation": {
+        "id": "segment_001",
+        "type": "function",
+        "position": { "x": 300, "y": 200 },
+        "data": {
+          "title": "Dynamic Subscriber Segmentation",
+          "description": "Intelligently segment subscribers based on behavior, demographics, and engagement"
+        },
+        "subBlocks": {
+          "code": {
+            "type": "javascript", 
+            "value": `
+              /**
+               * Advanced Subscriber Segmentation Engine
+               * Creates dynamic segments based on multiple criteria
+               * @param {Object} subscriber - Subscriber data
+               * @param {Object} trigger - Trigger event data
+               * @returns {Object} - Segmented subscriber with campaign targeting
+               */
+              function segmentSubscriber(subscriber, trigger) {
+                const segments = {
+                  // Engagement-based segments
+                  engagement: {
+                    'highly_engaged': {
+                      criteria: {
+                        email_opens_30d: { min: 10 },
+                        click_rate: { min: 0.05 },
+                        last_engagement: { max_days_ago: 14 }
+                      },
+                      priority: 'high',
+                      send_time: 'optimal'
+                    },
+                    'moderately_engaged': {
+                      criteria: {
+                        email_opens_30d: { min: 3, max: 9 },
+                        click_rate: { min: 0.02, max: 0.05 },
+                        last_engagement: { max_days_ago: 30 }
+                      },
+                      priority: 'medium',
+                      send_time: 'standard'
+                    },
+                    'low_engaged': {
+                      criteria: {
+                        email_opens_30d: { max: 2 },
+                        click_rate: { max: 0.02 },
+                        last_engagement: { min_days_ago: 30 }
+                      },
+                      priority: 'low',
+                      send_time: 'reengagement'
+                    }
+                  },
+                  
+                  // Behavioral segments
+                  behavior: {
+                    'frequent_buyer': {
+                      criteria: {
+                        purchases_90d: { min: 3 },
+                        avg_order_value: { min: 100 }
+                      },
+                      campaign_type: 'vip_content'
+                    },
+                    'first_time_buyer': {
+                      criteria: {
+                        total_purchases: { equals: 1 },
+                        days_since_purchase: { max: 30 }
+                      },
+                      campaign_type: 'onboarding'
+                    },
+                    'cart_abandoner': {
+                      criteria: {
+                        abandoned_carts_30d: { min: 1 },
+                        cart_value: { min: 50 }
+                      },
+                      campaign_type: 'recovery'
+                    },
+                    'browser': {
+                      criteria: {
+                        website_visits_30d: { min: 5 },
+                        purchases_90d: { equals: 0 }
+                      },
+                      campaign_type: 'conversion'
+                    }
+                  },
+                  
+                  // Demographic segments
+                  demographic: {
+                    'enterprise': {
+                      criteria: {
+                        company_size: ['1000+', '500-1000'],
+                        job_title: ['ceo', 'cto', 'vp', 'director']
+                      },
+                      content_type: 'enterprise'
+                    },
+                    'smb': {
+                      criteria: {
+                        company_size: ['1-50', '51-200'],
+                        job_title: ['founder', 'owner', 'manager']
+                      },
+                      content_type: 'smb_focused'
+                    },
+                    'individual': {
+                      criteria: {
+                        account_type: 'personal'
+                      },
+                      content_type: 'consumer'
+                    }
+                  }
+                };
+                
+                // Function to evaluate criteria
+                function meetsCriteria(data, criteria) {
+                  return Object.entries(criteria).every(([key, condition]) => {
+                    const value = data[key];
+                    if (!value) return false;
+                    
+                    if (condition.min !== undefined && value < condition.min) return false;
+                    if (condition.max !== undefined && value > condition.max) return false;
+                    if (condition.equals !== undefined && value !== condition.equals) return false;
+                    if (condition.includes && !condition.includes.includes(value)) return false;
+                    if (Array.isArray(condition) && !condition.includes(value)) return false;
+                    
+                    // Date-based conditions
+                    if (condition.max_days_ago !== undefined) {
+                      const daysSince = Math.floor((Date.now() - new Date(value)) / (1000 * 60 * 60 * 24));
+                      return daysSince <= condition.max_days_ago;
+                    }
+                    if (condition.min_days_ago !== undefined) {
+                      const daysSince = Math.floor((Date.now() - new Date(value)) / (1000 * 60 * 60 * 24));
+                      return daysSince >= condition.min_days_ago;
+                    }
+                    
+                    return true;
+                  });
+                }
+                
+                // Determine segments
+                const matchedSegments = {};
+                
+                // Check engagement segments
+                for (const [segmentName, segmentData] of Object.entries(segments.engagement)) {
+                  if (meetsCriteria(subscriber, segmentData.criteria)) {
+                    matchedSegments.engagement = segmentName;
+                    matchedSegments.engagement_data = segmentData;
+                    break;
+                  }
+                }
+                
+                // Check behavioral segments
+                for (const [segmentName, segmentData] of Object.entries(segments.behavior)) {
+                  if (meetsCriteria(subscriber, segmentData.criteria)) {
+                    matchedSegments.behavior = segmentName;
+                    matchedSegments.behavior_data = segmentData;
+                    break;
+                  }
+                }
+                
+                // Check demographic segments
+                for (const [segmentName, segmentData] of Object.entries(segments.demographic)) {
+                  if (meetsCriteria(subscriber, segmentData.criteria)) {
+                    matchedSegments.demographic = segmentName;
+                    matchedSegments.demographic_data = segmentData;
+                    break;
+                  }
+                }
+                
+                // Determine optimal send time based on engagement
+                const optimalSendTime = subscriber.timezone 
+                  ? calculateOptimalSendTime(subscriber.timezone, matchedSegments.engagement)
+                  : '09:00';
+                
+                return {
+                  ...subscriber,
+                  segments: matchedSegments,
+                  campaign_priority: matchedSegments.engagement_data?.priority || 'medium',
+                  optimal_send_time: optimalSendTime,
+                  content_personalization: determinePersonalization(matchedSegments),
+                  segmented_at: new Date().toISOString()
+                };
+              }
+              
+              // Helper function for send time optimization
+              function calculateOptimalSendTime(timezone, engagementLevel) {
+                const timeMap = {
+                  'highly_engaged': '09:00',
+                  'moderately_engaged': '10:30', 
+                  'low_engaged': '14:00'
+                };
+                return timeMap[engagementLevel] || '09:00';
+              }
+              
+              // Helper function for personalization
+              function determinePersonalization(segments) {
+                const personalization = {
+                  tone: 'professional',
+                  content_focus: 'general',
+                  cta_style: 'standard'
+                };
+                
+                if (segments.demographic === 'enterprise') {
+                  personalization.tone = 'executive';
+                  personalization.content_focus = 'roi_focused';
+                  personalization.cta_style = 'business';
+                } else if (segments.demographic === 'individual') {
+                  personalization.tone = 'friendly';
+                  personalization.content_focus = 'benefit_focused';
+                  personalization.cta_style = 'casual';
+                }
+                
+                return personalization;
+              }
+              
+              // Execute segmentation
+              const segmentedSubscriber = segmentSubscriber(subscriber, trigger);
+              return segmentedSubscriber;
+            `
+          }
+        }
+      },
+      "campaign_router": {
+        "id": "router_001", 
+        "type": "router",
+        "position": { "x": 500, "y": 200 },
+        "data": {
+          "title": "Campaign Type Router",
+          "description": "Route subscribers to appropriate email campaigns based on segments and triggers"
+        },
+        "subBlocks": {
+          "routes": {
+            "type": "json",
+            "value": [
+              {
+                "condition": "trigger.type === 'new_subscriber'",
+                "route": "welcome_series",
+                "description": "Welcome email series for new subscribers"
+              },
+              {
+                "condition": "trigger.type === 'cart_abandoned' && subscriber.segments.behavior === 'cart_abandoner'",
+                "route": "cart_recovery",
+                "description": "Abandoned cart recovery sequence"
+              },
+              {
+                "condition": "subscriber.segments.engagement === 'low_engaged'",
+                "route": "reengagement",
+                "description": "Re-engagement campaign for inactive subscribers"
+              },
+              {
+                "condition": "trigger.type === 'purchase_completed'",
+                "route": "post_purchase",
+                "description": "Post-purchase follow-up and cross-sell"
+              },
+              {
+                "condition": "subscriber.segments.behavior === 'frequent_buyer'",
+                "route": "vip_campaign",
+                "description": "VIP content for loyal customers"
+              },
+              {
+                "condition": "trigger.type === 'website_behavior'",
+                "route": "behavioral_trigger",
+                "description": "Behavior-triggered personalized emails"
+              }
+            ]
+          }
+        }
+      },
+      "welcome_series": {
+        "id": "welcome_001",
+        "type": "email-automation",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "title": "Welcome Email Series",
+          "description": "Multi-part welcome sequence for new subscribers"
+        },
+        "subBlocks": {
+          "campaign_config": {
+            "type": "json",
+            "value": {
+              "series_name": "new_subscriber_welcome",
+              "total_emails": 5,
+              "schedule": [
+                { "delay": "immediate", "subject": "Welcome to ${COMPANY_NAME}!" },
+                { "delay": "1_day", "subject": "Getting started with ${COMPANY_NAME}" },
+                { "delay": "3_days", "subject": "Success stories from our customers" },
+                { "delay": "7_days", "subject": "Exclusive resources just for you" },
+                { "delay": "14_days", "subject": "We'd love your feedback" }
+              ]
+            }
+          },
+          "personalization": {
+            "type": "json",
+            "value": {
+              "first_name": "${subscriber.first_name}",
+              "company": "${subscriber.company}",
+              "industry": "${subscriber.industry}",
+              "signup_source": "${subscriber.source}"
+            }
+          }
+        }
+      },
+      "cart_recovery": {
+        "id": "recovery_001",
+        "type": "email-automation",
+        "position": { "x": 700, "y": 200 },
+        "data": {
+          "title": "Cart Recovery Campaign",
+          "description": "Automated abandoned cart recovery email sequence"
+        },
+        "subBlocks": {
+          "campaign_config": {
+            "type": "json",
+            "value": {
+              "series_name": "cart_abandonment_recovery",
+              "total_emails": 3,
+              "schedule": [
+                { 
+                  "delay": "1_hour", 
+                  "subject": "You forgot something in your cart",
+                  "include_cart_items": true,
+                  "discount_code": null
+                },
+                { 
+                  "delay": "24_hours", 
+                  "subject": "Still thinking it over? Here's 10% off",
+                  "include_cart_items": true,
+                  "discount_code": "CART10"
+                },
+                { 
+                  "delay": "72_hours", 
+                  "subject": "Last chance - Your cart expires soon",
+                  "include_cart_items": true,
+                  "discount_code": "LASTCHANCE15"
+                }
+              ]
+            }
+          },
+          "cart_data": {
+            "type": "json",
+            "value": {
+              "cart_id": "${trigger.cart_id}",
+              "items": "${trigger.cart_items}",
+              "total_value": "${trigger.cart_value}",
+              "currency": "${trigger.currency}"
+            }
+          }
+        }
+      },
+      "reengagement": {
+        "id": "reengage_001",
+        "type": "email-automation", 
+        "position": { "x": 700, "y": 300 },
+        "data": {
+          "title": "Re-engagement Campaign",
+          "description": "Win back inactive subscribers with targeted content"
+        },
+        "subBlocks": {
+          "campaign_config": {
+            "type": "json",
+            "value": {
+              "series_name": "subscriber_reengagement",
+              "total_emails": 4,
+              "schedule": [
+                { 
+                  "delay": "immediate", 
+                  "subject": "We miss you, ${subscriber.first_name}",
+                  "content_type": "personal_message"
+                },
+                { 
+                  "delay": "3_days", 
+                  "subject": "What you've been missing",
+                  "content_type": "recent_highlights"
+                },
+                { 
+                  "delay": "7_days", 
+                  "subject": "Exclusive offer just for you",
+                  "content_type": "special_offer",
+                  "discount_code": "COMEBACK20"
+                },
+                { 
+                  "delay": "14_days", 
+                  "subject": "Should we say goodbye?",
+                  "content_type": "final_attempt",
+                  "include_preferences_link": true
+                }
+              ]
+            }
+          },
+          "engagement_data": {
+            "type": "json", 
+            "value": {
+              "last_open": "${subscriber.last_email_open}",
+              "last_click": "${subscriber.last_email_click}",
+              "days_inactive": "${subscriber.days_since_engagement}",
+              "previous_interests": "${subscriber.engagement_history}"
+            }
+          }
+        }
+      },
+      "behavioral_email": {
+        "id": "behavior_001",
+        "type": "function",
+        "position": { "x": 700, "y": 400 },
+        "data": {
+          "title": "Behavioral Email Generator",
+          "description": "Generate personalized emails based on website behavior and interactions"
+        },
+        "subBlocks": {
+          "code": {
+            "type": "javascript",
+            "value": `
+              /**
+               * Behavioral Email Content Generator
+               * Creates personalized email content based on user behavior
+               */
+              function generateBehavioralEmail(subscriber, behaviorData) {
+                const emailTemplates = {
+                  'product_page_visit': {
+                    subject: "Interested in ${product.name}? Here's what others love about it",
+                    content_blocks: [
+                      'product_spotlight',
+                      'customer_reviews', 
+                      'related_products',
+                      'limited_time_offer'
+                    ]
+                  },
+                  'content_download': {
+                    subject: "Thanks for downloading ${content.title}",
+                    content_blocks: [
+                      'thank_you_message',
+                      'related_content',
+                      'next_steps',
+                      'expert_consultation'
+                    ]
+                  },
+                  'pricing_page_visit': {
+                    subject: "Questions about our pricing? Let's chat",
+                    content_blocks: [
+                      'pricing_clarification',
+                      'plan_comparison',
+                      'customer_success_story',
+                      'demo_booking'
+                    ]
+                  },
+                  'support_page_visit': {
+                    subject: "Need help? We're here for you",
+                    content_blocks: [
+                      'help_offer',
+                      'popular_resources',
+                      'contact_options',
+                      'community_link'
+                    ]
+                  },
+                  'blog_engagement': {
+                    subject: "More insights on ${blog.topic}",
+                    content_blocks: [
+                      'related_articles',
+                      'expert_insights',
+                      'upcoming_webinars',
+                      'newsletter_signup'
+                    ]
+                  }
+                };
+                
+                const behaviorType = behaviorData.type;
+                const template = emailTemplates[behaviorType];
+                
+                if (!template) {
+                  return {
+                    subject: "Thanks for visiting ${COMPANY_NAME}",
+                    content_type: 'generic_follow_up',
+                    personalization_level: 'basic'
+                  };
+                }
+                
+                // Generate personalized subject line
+                const personalizedSubject = template.subject
+                  .replace(/\\$\\{subscriber\\.([^}]+)\\}/g, (match, field) => subscriber[field] || '')
+                  .replace(/\\$\\{product\\.([^}]+)\\}/g, (match, field) => behaviorData.product?.[field] || '')
+                  .replace(/\\$\\{content\\.([^}]+)\\}/g, (match, field) => behaviorData.content?.[field] || '')
+                  .replace(/\\$\\{blog\\.([^}]+)\\}/g, (match, field) => behaviorData.blog?.[field] || '');
+                
+                // Determine send timing based on behavior recency
+                const hoursSinceBehavior = (Date.now() - new Date(behaviorData.timestamp)) / (1000 * 60 * 60);
+                let sendDelay = 'immediate';
+                
+                if (hoursSinceBehavior < 2) sendDelay = '2_hours';
+                else if (hoursSinceBehavior < 24) sendDelay = '24_hours';
+                else sendDelay = 'immediate';
+                
+                return {
+                  subject: personalizedSubject,
+                  content_blocks: template.content_blocks,
+                  send_delay: sendDelay,
+                  behavior_context: behaviorData,
+                  personalization_level: 'high',
+                  tracking_tags: [behaviorType, 'behavioral_email'],
+                  generated_at: new Date().toISOString()
+                };
+              }
+              
+              const emailContent = generateBehavioralEmail(subscriber, trigger.behavior_data);
+              return {
+                ...subscriber,
+                email_content: emailContent,
+                campaign_type: 'behavioral'
+              };
+            `
+          }
+        }
+      },
+      "email_sender": {
+        "id": "sender_001",
+        "type": "gmail",
+        "position": { "x": 900, "y": 250 },
+        "data": {
+          "title": "Email Campaign Sender",
+          "description": "Send personalized marketing emails through Gmail or email service"
+        },
+        "subBlocks": {
+          "credential": {
+            "type": "oauth-input",
+            "value": "${GMAIL_CREDENTIAL}"
+          },
+          "to": {
+            "type": "text",
+            "value": "${subscriber.email}"
+          },
+          "subject": {
+            "type": "text", 
+            "value": "${email_content.subject}"
+          },
+          "body": {
+            "type": "html",
+            "value": `
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>${email_content.subject}</title>
+                  <style>
+                    body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .email-container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+                    .header { background: ${BRAND_COLOR}; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 30px; }
+                    .cta-button { 
+                      display: inline-block; 
+                      background: ${BRAND_COLOR}; 
+                      color: white; 
+                      padding: 12px 24px; 
+                      text-decoration: none; 
+                      border-radius: 5px; 
+                      font-weight: bold; 
+                      margin: 20px 0;
+                    }
+                    .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+                    .product-showcase { border: 1px solid #eee; padding: 20px; margin: 20px 0; border-radius: 5px; }
+                  </style>
+                </head>
+                <body>
+                  <div class="email-container">
+                    <div class="header">
+                      <h1>${COMPANY_NAME}</h1>
+                    </div>
+                    
+                    <div class="content">
+                      <h2>Hi ${subscriber.first_name},</h2>
+                      
+                      {{#if email_content.content_blocks}}
+                        {{#each email_content.content_blocks}}
+                          {{#if (eq this 'product_spotlight')}}
+                            <div class="product-showcase">
+                              <h3>${trigger.product.name}</h3>
+                              <p>${trigger.product.description}</p>
+                              <p><strong>Price: ${trigger.product.price}</strong></p>
+                              <a href="${trigger.product.url}" class="cta-button">View Product</a>
+                            </div>
+                          {{/if}}
+                          
+                          {{#if (eq this 'thank_you_message')}}
+                            <p>Thank you for downloading <strong>${trigger.content.title}</strong>! We hope you find it valuable.</p>
+                          {{/if}}
+                          
+                          {{#if (eq this 'related_content')}}
+                            <h3>You might also like:</h3>
+                            <ul>
+                              <li><a href="${WEBSITE_URL}/blog/automation-best-practices">Automation Best Practices Guide</a></li>
+                              <li><a href="${WEBSITE_URL}/blog/workflow-optimization">Workflow Optimization Tips</a></li>
+                              <li><a href="${WEBSITE_URL}/resources/case-studies">Customer Success Stories</a></li>
+                            </ul>
+                          {{/if}}
+                          
+                          {{#if (eq this 'special_offer')}}
+                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                              <h3>🎉 Exclusive Offer for You!</h3>
+                              <p>Use code <strong>${email_content.discount_code}</strong> for 20% off your next purchase.</p>
+                              <p><em>Valid until ${offer_expiry_date}</em></p>
+                            </div>
+                          {{/if}}
+                        {{/each}}
+                      {{else}}
+                        <p>Thanks for being part of the ${COMPANY_NAME} community! We're excited to share valuable insights and updates with you.</p>
+                        
+                        <p>Here's what's new:</p>
+                        <ul>
+                          <li>Latest product features and improvements</li>
+                          <li>Industry insights and best practices</li>
+                          <li>Exclusive offers and early access opportunities</li>
+                        </ul>
+                      {{/if}}
+                      
+                      <div style="margin: 30px 0; text-align: center;">
+                        <a href="${CTA_URL}" class="cta-button">${CTA_TEXT}</a>
+                      </div>
+                      
+                      <p>Questions? Reply to this email or visit our <a href="${WEBSITE_URL}/support">support center</a>.</p>
+                      
+                      <p>Best regards,<br>
+                      The ${COMPANY_NAME} Team</p>
+                    </div>
+                    
+                    <div class="footer">
+                      <p>
+                        ${COMPANY_NAME}<br>
+                        ${COMPANY_ADDRESS}<br>
+                        <a href="${WEBSITE_URL}">Visit our website</a> | 
+                        <a href="${UNSUBSCRIBE_URL}">Unsubscribe</a> |
+                        <a href="${PREFERENCES_URL}">Manage preferences</a>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Tracking pixel -->
+                  <img src="${TRACKING_PIXEL_URL}?email=${subscriber.email}&campaign=${campaign_id}" width="1" height="1" style="display:none;">
+                </body>
+              </html>
+            `
+          }
+        }
+      },
+      "analytics_tracker": {
+        "id": "analytics_001",
+        "type": "webhook", 
+        "position": { "x": 1100, "y": 250 },
+        "data": {
+          "title": "Campaign Analytics",
+          "description": "Track email campaign performance and subscriber engagement"
+        },
+        "subBlocks": {
+          "url": {
+            "type": "text",
+            "value": "${ANALYTICS_WEBHOOK_URL}"
+          },
+          "method": {
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "body": {
+            "type": "json",
+            "value": {
+              "event": "email_sent",
+              "timestamp": "${current_timestamp}",
+              "subscriber_id": "${subscriber.id}",
+              "email_address": "${subscriber.email}",
+              "campaign_type": "${campaign_type}",
+              "campaign_id": "${campaign_id}",
+              "subject_line": "${email_content.subject}",
+              "segments": "${subscriber.segments}",
+              "personalization_level": "${email_content.personalization_level}",
+              "send_time": "${send_timestamp}",
+              "optimal_send_time": "${subscriber.optimal_send_time}",
+              "trigger_type": "${trigger.type}",
+              "workflow_version": "1.0.0"
+            }
+          }
+        }
+      },
+      "engagement_tracker": {
+        "id": "engage_001",
+        "type": "function",
+        "position": { "x": 1300, "y": 250 },
+        "data": {
+          "title": "Engagement Score Update",
+          "description": "Update subscriber engagement scores based on email interactions"
+        },
+        "subBlocks": {
+          "code": {
+            "type": "javascript",
+            "value": `
+              /**
+               * Update subscriber engagement score based on email performance
+               */
+              function updateEngagementScore(subscriber, emailMetrics) {
+                const currentScore = subscriber.engagement_score || 50; // Default neutral score
+                let scoreAdjustment = 0;
+                
+                // Positive engagement signals
+                if (emailMetrics.opened) scoreAdjustment += 5;
+                if (emailMetrics.clicked) scoreAdjustment += 10;
+                if (emailMetrics.replied) scoreAdjustment += 15;
+                if (emailMetrics.forwarded) scoreAdjustment += 8;
+                if (emailMetrics.converted) scoreAdjustment += 20;
+                
+                // Negative engagement signals
+                if (emailMetrics.bounced) scoreAdjustment -= 10;
+                if (emailMetrics.spam_reported) scoreAdjustment -= 25;
+                if (emailMetrics.unsubscribed) scoreAdjustment -= 30;
+                
+                // Time-based engagement (quick engagement is more valuable)
+                if (emailMetrics.opened && emailMetrics.time_to_open < 3600) { // Opened within 1 hour
+                  scoreAdjustment += 3;
+                }
+                
+                const newScore = Math.max(0, Math.min(100, currentScore + scoreAdjustment));
+                
+                // Update engagement tier
+                let engagementTier = 'low_engaged';
+                if (newScore >= 70) engagementTier = 'highly_engaged';
+                else if (newScore >= 40) engagementTier = 'moderately_engaged';
+                
+                return {
+                  ...subscriber,
+                  engagement_score: newScore,
+                  engagement_tier: engagementTier,
+                  last_engagement_update: new Date().toISOString(),
+                  engagement_history: [
+                    ...(subscriber.engagement_history || []).slice(-19), // Keep last 20 records
+                    {
+                      timestamp: new Date().toISOString(),
+                      score_change: scoreAdjustment,
+                      new_score: newScore,
+                      campaign_id: emailMetrics.campaign_id,
+                      actions: Object.keys(emailMetrics).filter(key => emailMetrics[key] === true)
+                    }
+                  ]
+                };
+              }
+              
+              // This would typically be called by a webhook when engagement data is received
+              const updatedSubscriber = updateEngagementScore(subscriber, {
+                opened: true,
+                time_to_open: 1800, // 30 minutes
+                campaign_id: campaign_id
+              });
+              
+              return updatedSubscriber;
+            `
+          }
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "edge_001",
+        "source": "trigger_001",
+        "target": "segment_001"
+      },
+      {
+        "id": "edge_002",
+        "source": "segment_001", 
+        "target": "router_001"
+      },
+      {
+        "id": "edge_003",
+        "source": "router_001",
+        "target": "welcome_001",
+        "condition": "route == 'welcome_series'"
+      },
+      {
+        "id": "edge_004", 
+        "source": "router_001",
+        "target": "recovery_001",
+        "condition": "route == 'cart_recovery'"
+      },
+      {
+        "id": "edge_005",
+        "source": "router_001",
+        "target": "reengage_001",
+        "condition": "route == 'reengagement'"
+      },
+      {
+        "id": "edge_006",
+        "source": "router_001",
+        "target": "behavior_001", 
+        "condition": "route == 'behavioral_trigger'"
+      },
+      {
+        "id": "edge_007",
+        "source": "welcome_001",
+        "target": "sender_001"
+      },
+      {
+        "id": "edge_008",
+        "source": "recovery_001",
+        "target": "sender_001"
+      },
+      {
+        "id": "edge_009",
+        "source": "reengage_001",
+        "target": "sender_001"
+      },
+      {
+        "id": "edge_010",
+        "source": "behavior_001",
+        "target": "sender_001"
+      },
+      {
+        "id": "edge_011",
+        "source": "sender_001",
+        "target": "analytics_001"
+      },
+      {
+        "id": "edge_012",
+        "source": "analytics_001",
+        "target": "engage_001"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "key": "COMPANY_NAME",
+      "label": "Company Name",
+      "type": "text",
+      "required": true,
+      "description": "Your company name for email branding"
+    },
+    {
+      "key": "BRAND_COLOR",
+      "label": "Brand Primary Color",
+      "type": "color",
+      "required": true,
+      "defaultValue": "#4F46E5",
+      "description": "Primary brand color for email styling"
+    },
+    {
+      "key": "WEBSITE_URL", 
+      "label": "Website URL",
+      "type": "url",
+      "required": true,
+      "description": "Your website URL for links and tracking"
+    },
+    {
+      "key": "COMPANY_ADDRESS",
+      "label": "Company Address",
+      "type": "textarea",
+      "required": true,
+      "description": "Physical address for compliance (CAN-SPAM)"
+    },
+    {
+      "key": "GMAIL_CREDENTIAL",
+      "label": "Email Service Account",
+      "type": "oauth",
+      "provider": "gmail",
+      "required": true,
+      "description": "Gmail or email service for sending campaigns"
+    },
+    {
+      "key": "CTA_TEXT",
+      "label": "Default Call-to-Action Text",
+      "type": "text",
+      "required": true,
+      "defaultValue": "Learn More",
+      "description": "Default CTA button text"
+    },
+    {
+      "key": "CTA_URL",
+      "label": "Default Call-to-Action URL", 
+      "type": "url",
+      "required": true,
+      "description": "Default CTA destination URL"
+    },
+    {
+      "key": "UNSUBSCRIBE_URL",
+      "label": "Unsubscribe URL",
+      "type": "url", 
+      "required": true,
+      "description": "Unsubscribe page URL for compliance"
+    },
+    {
+      "key": "PREFERENCES_URL",
+      "label": "Email Preferences URL",
+      "type": "url",
+      "required": false,
+      "description": "Email preference management page"
+    },
+    {
+      "key": "TRACKING_PIXEL_URL",
+      "label": "Tracking Pixel URL",
+      "type": "url",
+      "required": false,
+      "description": "Email tracking pixel endpoint"
+    },
+    {
+      "key": "ANALYTICS_WEBHOOK_URL",
+      "label": "Analytics Webhook URL",
+      "type": "url",
+      "required": false,
+      "description": "Webhook URL for campaign analytics"
+    }
+  ],
+  "setupInstructions": [
+    {
+      "step": 1,
+      "title": "Configure Email Service",
+      "description": "Set up Gmail or email service for sending campaigns",
+      "requirements": ["Email service account", "Sending permissions", "Domain authentication (SPF/DKIM)"]
+    },
+    {
+      "step": 2,
+      "title": "Set Up Subscriber Database",
+      "description": "Configure subscriber data source and segmentation criteria",
+      "requirements": ["Customer/subscriber database", "Segmentation fields", "Engagement metrics"]
+    },
+    {
+      "step": 3, 
+      "title": "Design Email Templates",
+      "description": "Customize email templates and branding",
+      "requirements": ["Brand colors and fonts", "Email content strategy", "CTA definitions"]
+    },
+    {
+      "step": 4,
+      "title": "Configure Tracking and Analytics",
+      "description": "Set up campaign performance tracking",
+      "requirements": ["Analytics platform", "Tracking pixels", "Conversion goals"]
+    },
+    {
+      "step": 5,
+      "title": "Test Campaign Flows",
+      "description": "Test all email sequences with sample data",
+      "requirements": ["Test subscriber data", "Email delivery verification", "Link tracking validation"]
+    }
+  ],
+  "customizationOptions": {
+    "segmentation": {
+      "title": "Subscriber Segmentation",
+      "description": "Customize segmentation logic and criteria",
+      "variables": ["engagement_thresholds", "behavioral_triggers", "demographic_rules"],
+      "complexity": "advanced"
+    },
+    "emailTemplates": {
+      "title": "Email Template Design",
+      "description": "Modify email layouts, content, and styling",
+      "variables": ["template_html", "brand_styling", "content_blocks"],
+      "complexity": "intermediate"
+    },
+    "campaignTiming": {
+      "title": "Send Time Optimization",
+      "description": "Adjust campaign timing and frequency",
+      "variables": ["send_schedules", "timezone_handling", "frequency_caps"],
+      "complexity": "intermediate"
+    },
+    "personalization": {
+      "title": "Content Personalization",
+      "description": "Enhance personalization rules and dynamic content",
+      "variables": ["personalization_rules", "dynamic_content", "product_recommendations"],
+      "complexity": "advanced"
+    }
+  },
+  "performanceMetrics": {
+    "expectedOutcomes": [
+      "35-50% increase in email engagement rates",
+      "20-30 hours saved weekly on manual campaigns",
+      "25% improvement in email-driven conversions",
+      "40-60% reduction in unsubscribe rates through better targeting"
+    ],
+    "keyMetrics": [
+      "Open rates by segment",
+      "Click-through rates by campaign type",
+      "Conversion rates and revenue attribution",
+      "Subscriber engagement scores",
+      "Campaign ROI and cost per acquisition"
+    ],
+    "benchmarks": {
+      "openRate": "25-35% (industry average: 21%)",
+      "clickRate": "4-8% (industry average: 2.6%)",
+      "unsubscribeRate": "< 0.5% (industry average: 0.8%)",
+      "conversionRate": "2-5% improvement over manual campaigns"
+    }
+  }
+}

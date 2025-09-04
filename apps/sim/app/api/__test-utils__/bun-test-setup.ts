@@ -34,6 +34,12 @@ export interface BunTestMocks {
     setDeleteResults: (results: any[]) => void
     resetDatabase: () => void
     throwError: (error: Error | string) => void
+    mockDb: {
+      select: any
+      insert: any
+      update: any
+      delete: any
+    }
   }
   permissions: {
     setPermissionLevel: (level: string) => void
@@ -285,6 +291,12 @@ export function setupComprehensiveTestMocks(
         mockOrderBy.mockRejectedValue(errorToThrow)
         mockLimit.mockRejectedValue(errorToThrow)
         mockReturning.mockRejectedValue(errorToThrow)
+      },
+      mockDb: {
+        select: mockSelect,
+        insert: mockInsert,
+        update: mockUpdate,
+        delete: mockDelete,
       },
     },
     permissions: {

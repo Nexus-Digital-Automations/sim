@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    logger.error(`[${tracker.requestId}] Error reverting to checkpoint:`, error)
+    logger.error(`[${tracker?.requestId || 'unknown'}] Error reverting to checkpoint:`, error)
     return createInternalServerErrorResponse('Failed to revert to checkpoint')
   }
 }

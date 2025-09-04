@@ -1,0 +1,577 @@
+{
+  "template": {
+    "name": "Automated Invoice Generation Workflow",
+    "description": "Enterprise-grade automated invoice generation with approval workflows, multi-tier validation, and integration with major accounting systems. Includes smart templates, tax calculations, payment terms automation, and comprehensive audit trails.",
+    "version": "2.1.0",
+    "category": "financial",
+    "subcategory": "invoice-processing",
+    "difficulty": "intermediate",
+    "estimatedTime": "2-3 hours setup, 30 minutes per customization",
+    "tags": [
+      "invoice-automation",
+      "approval-workflow",
+      "financial-processing",
+      "accounting-integration",
+      "tax-calculation",
+      "payment-terms",
+      "audit-trail",
+      "compliance"
+    ],
+    "author": "Claude Financial Automation Specialist",
+    "lastUpdated": "2024-09-04T00:00:00Z",
+    "useCases": [
+      "Automated B2B invoice generation with approval chains",
+      "Recurring billing for subscription services",
+      "Project-based billing with time tracking integration",
+      "Multi-entity invoice processing for enterprise organizations",
+      "Compliance-driven invoice workflows for regulated industries"
+    ],
+    "requirements": [
+      "Valid API credentials for accounting software (QuickBooks/Xero/SAP)",
+      "Email service configuration for notifications",
+      "PDF generation service setup",
+      "Tax calculation service API access",
+      "Database access for audit logging"
+    ],
+    "integrations": [
+      "QuickBooks Online API",
+      "Xero Accounting API",
+      "SAP Business One API",
+      "Stripe Invoicing API",
+      "SendGrid Email API",
+      "DocuSign API for approvals"
+    ],
+    "complianceFeatures": [
+      "SOX audit trail maintenance",
+      "GDPR data protection compliance",
+      "Multi-currency tax calculation accuracy",
+      "Regulatory invoice numbering sequences",
+      "Digital signature integration"
+    ]
+  },
+  "workflow": {
+    "id": "invoice-generation-main",
+    "name": "Invoice Generation Master Workflow",
+    "description": "Comprehensive invoice generation workflow with approval chains, validation, and multi-system integration",
+    "triggers": [
+      {
+        "id": "api_trigger",
+        "type": "webhook",
+        "name": "Invoice Creation API Trigger",
+        "description": "Webhook endpoint to receive invoice creation requests from external systems",
+        "config": {
+          "endpoint": "/api/workflows/invoice/create",
+          "method": "POST",
+          "authentication": "bearer_token",
+          "rateLimit": {
+            "requests": 1000,
+            "period": "hour"
+          }
+        }
+      },
+      {
+        "id": "scheduled_trigger",
+        "type": "schedule",
+        "name": "Recurring Invoice Generation",
+        "description": "Automated recurring invoice generation based on subscription schedules",
+        "config": {
+          "schedule": "0 9 * * 1-5",
+          "timezone": "UTC",
+          "enabled": true
+        }
+      },
+      {
+        "id": "manual_trigger",
+        "type": "manual",
+        "name": "Manual Invoice Creation",
+        "description": "Manual invoice creation with guided form interface",
+        "config": {
+          "requiredRole": "finance_user",
+          "approvalRequired": true
+        }
+      }
+    ],
+    "blocks": [
+      {
+        "id": "input_validation",
+        "type": "function",
+        "name": "Invoice Data Validation",
+        "description": "Comprehensive validation of incoming invoice data including customer verification, line item validation, and business rule compliance",
+        "position": { "x": 100, "y": 100 },
+        "config": {
+          "code": "/**\n * Invoice Data Validation Function\n * Validates all incoming invoice data against business rules and compliance requirements\n * \n * @param {Object} invoiceData - The invoice data to validate\n * @returns {Object} - Validation result with sanitized data or error details\n */\n\nconst validateInvoiceData = async (invoiceData) => {\n  const logger = getLogger('InvoiceValidation');\n  const operationId = generateOperationId();\n  \n  logger.info(`[${operationId}] Starting invoice data validation`, {\n    customerId: invoiceData.customerId,\n    invoiceAmount: invoiceData.totalAmount,\n    lineItemCount: invoiceData.lineItems?.length || 0\n  });\n  \n  try {\n    const validationResult = {\n      isValid: true,\n      errors: [],\n      warnings: [],\n      sanitizedData: {},\n      validationScore: 100\n    };\n    \n    // Required field validation\n    const requiredFields = ['customerId', 'lineItems', 'invoiceDate', 'dueDate', 'currency'];\n    for (const field of requiredFields) {\n      if (!invoiceData[field]) {\n        validationResult.errors.push(`Missing required field: ${field}`);\n        validationResult.isValid = false;\n        validationResult.validationScore -= 20;\n      }\n    }\n    \n    // Customer ID validation - verify customer exists and is active\n    if (invoiceData.customerId) {\n      logger.info(`[${operationId}] Validating customer ID`, { customerId: invoiceData.customerId });\n      \n      // This would integrate with your customer management system\n      const customerValidation = await validateCustomer(invoiceData.customerId);\n      if (!customerValidation.isValid) {\n        validationResult.errors.push(`Invalid customer ID: ${invoiceData.customerId}`);\n        validationResult.isValid = false;\n        validationResult.validationScore -= 25;\n      } else {\n        validationResult.sanitizedData.customer = customerValidation.customerData;\n      }\n    }\n    \n    // Line items validation\n    if (invoiceData.lineItems && Array.isArray(invoiceData.lineItems)) {\n      let totalAmount = 0;\n      const validatedLineItems = [];\n      \n      for (let i = 0; i < invoiceData.lineItems.length; i++) {\n        const item = invoiceData.lineItems[i];\n        \n        // Validate required line item fields\n        if (!item.description || !item.quantity || !item.unitPrice) {\n          validationResult.errors.push(`Line item ${i + 1}: Missing required fields (description, quantity, unitPrice)`);\n          validationResult.isValid = false;\n          validationResult.validationScore -= 10;\n        } else {\n          // Calculate line total and validate numeric values\n          const quantity = parseFloat(item.quantity);\n          const unitPrice = parseFloat(item.unitPrice);\n          \n          if (isNaN(quantity) || quantity <= 0) {\n            validationResult.errors.push(`Line item ${i + 1}: Invalid quantity value`);\n            validationResult.isValid = false;\n          } else if (isNaN(unitPrice) || unitPrice < 0) {\n            validationResult.errors.push(`Line item ${i + 1}: Invalid unit price value`);\n            validationResult.isValid = false;\n          } else {\n            const lineTotal = quantity * unitPrice;\n            totalAmount += lineTotal;\n            \n            validatedLineItems.push({\n              ...item,\n              quantity: quantity,\n              unitPrice: unitPrice,\n              lineTotal: lineTotal,\n              taxAmount: calculateLineTax(lineTotal, item.taxRate || 0)\n            });\n          }\n        }\n      }\n      \n      validationResult.sanitizedData.lineItems = validatedLineItems;\n      validationResult.sanitizedData.subtotal = totalAmount;\n    }\n    \n    // Date validation\n    const invoiceDate = new Date(invoiceData.invoiceDate);\n    const dueDate = new Date(invoiceData.dueDate);\n    \n    if (isNaN(invoiceDate.getTime())) {\n      validationResult.errors.push('Invalid invoice date format');\n      validationResult.isValid = false;\n    } else if (isNaN(dueDate.getTime())) {\n      validationResult.errors.push('Invalid due date format');\n      validationResult.isValid = false;\n    } else if (dueDate <= invoiceDate) {\n      validationResult.warnings.push('Due date should be after invoice date');\n      validationResult.validationScore -= 5;\n    }\n    \n    // Currency validation\n    const validCurrencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF'];\n    if (invoiceData.currency && !validCurrencies.includes(invoiceData.currency)) {\n      validationResult.warnings.push(`Uncommon currency detected: ${invoiceData.currency}`);\n      validationResult.validationScore -= 5;\n    }\n    \n    // Business rule validation\n    if (validationResult.sanitizedData.subtotal > 50000) {\n      validationResult.warnings.push('High-value invoice requires additional approval');\n      validationResult.sanitizedData.requiresHighValueApproval = true;\n    }\n    \n    // Set final validation data\n    validationResult.sanitizedData = {\n      ...validationResult.sanitizedData,\n      invoiceNumber: await generateInvoiceNumber(invoiceData.customerId),\n      invoiceDate: invoiceDate.toISOString(),\n      dueDate: dueDate.toISOString(),\n      currency: invoiceData.currency || 'USD',\n      status: 'draft',\n      createdAt: new Date().toISOString(),\n      validatedAt: new Date().toISOString(),\n      validationScore: validationResult.validationScore\n    };\n    \n    logger.info(`[${operationId}] Invoice validation completed`, {\n      isValid: validationResult.isValid,\n      errorCount: validationResult.errors.length,\n      warningCount: validationResult.warnings.length,\n      validationScore: validationResult.validationScore\n    });\n    \n    return validationResult;\n    \n  } catch (error) {\n    logger.error(`[${operationId}] Invoice validation failed`, {\n      error: error.message,\n      stack: error.stack\n    });\n    \n    return {\n      isValid: false,\n      errors: [`Validation system error: ${error.message}`],\n      warnings: [],\n      sanitizedData: {},\n      validationScore: 0\n    };\n  }\n};\n\n// Helper function to validate customer\nconst validateCustomer = async (customerId) => {\n  // This would integrate with your customer management system or CRM\n  // For now, we'll simulate the validation\n  try {\n    const customerData = {\n      id: customerId,\n      name: 'Sample Customer',\n      email: 'customer@example.com',\n      status: 'active',\n      creditLimit: 100000,\n      paymentTerms: 'NET30'\n    };\n    \n    return {\n      isValid: true,\n      customerData: customerData\n    };\n  } catch (error) {\n    return {\n      isValid: false,\n      error: error.message\n    };\n  }\n};\n\n// Helper function to calculate line item tax\nconst calculateLineTax = (lineTotal, taxRate) => {\n  return Math.round((lineTotal * (taxRate / 100)) * 100) / 100;\n};\n\n// Helper function to generate invoice number\nconst generateInvoiceNumber = async (customerId) => {\n  const timestamp = Date.now();\n  const customerPrefix = customerId.substring(0, 3).toUpperCase();\n  return `INV-${customerPrefix}-${timestamp}`;\n};\n\nreturn validateInvoiceData(params.invoiceData);"
+        },
+        "inputs": {
+          "invoiceData": {
+            "type": "json",
+            "description": "Raw invoice data from trigger or manual input"
+          }
+        },
+        "outputs": {
+          "validationResult": {
+            "type": "json",
+            "description": "Validation result with sanitized data or errors"
+          }
+        }
+      },
+      {
+        "id": "approval_routing",
+        "type": "condition",
+        "name": "Approval Routing Logic",
+        "description": "Intelligent routing based on invoice amount, customer type, and business rules to determine approval requirements",
+        "position": { "x": 300, "y": 100 },
+        "config": {
+          "conditions": [
+            {
+              "id": "high_value_approval",
+              "name": "High Value Invoice Approval",
+              "condition": "validationResult.sanitizedData.subtotal > 10000 || validationResult.sanitizedData.requiresHighValueApproval",
+              "description": "Route to high-value approval workflow for invoices over $10,000"
+            },
+            {
+              "id": "new_customer_approval", 
+              "name": "New Customer Approval",
+              "condition": "validationResult.sanitizedData.customer.isNewCustomer || validationResult.sanitizedData.customer.creditScore < 600",
+              "description": "Route to new customer approval for first-time or low-credit customers"
+            },
+            {
+              "id": "international_approval",
+              "name": "International Invoice Approval",
+              "condition": "validationResult.sanitizedData.currency !== 'USD'",
+              "description": "Route to international approval for foreign currency invoices"
+            },
+            {
+              "id": "auto_approve",
+              "name": "Auto Approval",
+              "condition": "validationResult.sanitizedData.subtotal <= 5000 && validationResult.validationScore >= 90",
+              "description": "Auto-approve low-value, high-quality invoices"
+            }
+          ],
+          "defaultPath": "manual_review"
+        }
+      },
+      {
+        "id": "high_value_approval_workflow",
+        "type": "approval-gate",
+        "name": "High Value Invoice Approval",
+        "description": "Multi-tier approval workflow for high-value invoices with escalation and timeout handling",
+        "position": { "x": 500, "y": 50 },
+        "config": {
+          "approvalMatrix": [
+            {
+              "level": 1,
+              "name": "Finance Manager Approval",
+              "approvers": ["finance.manager@company.com"],
+              "requiredApprovals": 1,
+              "timeoutHours": 24,
+              "escalationEnabled": true
+            },
+            {
+              "level": 2,
+              "name": "Finance Director Approval",
+              "approvers": ["finance.director@company.com", "cfo@company.com"],
+              "requiredApprovals": 1,
+              "timeoutHours": 48,
+              "escalationEnabled": true,
+              "condition": "invoice.subtotal > 25000"
+            },
+            {
+              "level": 3,
+              "name": "Executive Approval",
+              "approvers": ["ceo@company.com", "cfo@company.com"],
+              "requiredApprovals": 2,
+              "timeoutHours": 72,
+              "escalationEnabled": false,
+              "condition": "invoice.subtotal > 100000"
+            }
+          ],
+          "notifications": {
+            "emailTemplate": "high-value-invoice-approval",
+            "slackChannel": "#finance-approvals",
+            "mobileNotifications": true
+          },
+          "auditLogging": {
+            "enabled": true,
+            "logLevel": "detailed",
+            "retentionDays": 2555
+          }
+        },
+        "condition": {
+          "field": "approval_routing",
+          "value": "high_value_approval"
+        }
+      },
+      {
+        "id": "tax_calculation",
+        "type": "function",
+        "name": "Advanced Tax Calculation",
+        "description": "Comprehensive tax calculation supporting multiple jurisdictions, tax exemptions, and real-time rate updates",
+        "position": { "x": 700, "y": 100 },
+        "config": {
+          "code": "/**\n * Advanced Tax Calculation Function\n * Handles multi-jurisdiction tax calculations with real-time rate updates\n * Supports tax exemptions, reverse charge, and compliance requirements\n */\n\nconst calculateTaxes = async (invoiceData) => {\n  const logger = getLogger('TaxCalculation');\n  const operationId = generateOperationId();\n  \n  logger.info(`[${operationId}] Starting tax calculation`, {\n    invoiceId: invoiceData.invoiceNumber,\n    currency: invoiceData.currency,\n    subtotal: invoiceData.subtotal,\n    billingCountry: invoiceData.customer.country,\n    lineItemCount: invoiceData.lineItems.length\n  });\n  \n  try {\n    const taxResult = {\n      taxes: [],\n      totalTaxAmount: 0,\n      taxExempt: false,\n      taxJurisdictions: [],\n      calculationMethod: 'standard',\n      exemptionReason: null,\n      complianceNotes: []\n    };\n    \n    // Check for tax exemptions first\n    const exemptionCheck = await checkTaxExemptions(invoiceData.customer);\n    if (exemptionCheck.isExempt) {\n      taxResult.taxExempt = true;\n      taxResult.exemptionReason = exemptionCheck.reason;\n      taxResult.complianceNotes.push(`Tax exempt: ${exemptionCheck.reason}`);\n      \n      logger.info(`[${operationId}] Invoice is tax exempt`, {\n        exemptionReason: exemptionCheck.reason,\n        exemptionId: exemptionCheck.exemptionId\n      });\n      \n      return {\n        ...invoiceData,\n        taxCalculation: taxResult,\n        grandTotal: invoiceData.subtotal\n      };\n    }\n    \n    // Determine tax jurisdiction based on business rules\n    const jurisdiction = await determineTaxJurisdiction({\n      billingAddress: invoiceData.customer.billingAddress,\n      shippingAddress: invoiceData.customer.shippingAddress,\n      customerLocation: invoiceData.customer.country,\n      sellerLocation: 'US', // This would come from your business configuration\n      transactionType: 'service' // or 'goods' based on line items\n    });\n    \n    logger.info(`[${operationId}] Tax jurisdiction determined`, {\n      jurisdiction: jurisdiction.name,\n      taxRate: jurisdiction.rate,\n      taxType: jurisdiction.type\n    });\n    \n    taxResult.taxJurisdictions.push(jurisdiction);\n    \n    // Calculate taxes for each line item\n    let runningTaxTotal = 0;\n    \n    for (let i = 0; i < invoiceData.lineItems.length; i++) {\n      const lineItem = invoiceData.lineItems[i];\n      \n      // Get product-specific tax information\n      const productTaxInfo = await getProductTaxInfo(lineItem.productId || lineItem.sku);\n      \n      // Calculate line item tax based on jurisdiction and product type\n      const lineTaxCalc = await calculateLineItemTax({\n        lineTotal: lineItem.lineTotal,\n        productCategory: productTaxInfo.category,\n        taxJurisdiction: jurisdiction,\n        isDigitalProduct: productTaxInfo.isDigital,\n        exemptions: productTaxInfo.exemptions\n      });\n      \n      // Update line item with tax information\n      invoiceData.lineItems[i].taxRate = lineTaxCalc.rate;\n      invoiceData.lineItems[i].taxAmount = lineTaxCalc.amount;\n      invoiceData.lineItems[i].taxJurisdiction = jurisdiction.code;\n      \n      runningTaxTotal += lineTaxCalc.amount;\n      \n      // Add tax detail to result\n      taxResult.taxes.push({\n        lineItemIndex: i,\n        taxType: lineTaxCalc.type,\n        taxRate: lineTaxCalc.rate,\n        taxableAmount: lineItem.lineTotal,\n        taxAmount: lineTaxCalc.amount,\n        jurisdiction: jurisdiction.code,\n        description: `${lineTaxCalc.type} on ${lineItem.description}`\n      });\n    }\n    \n    taxResult.totalTaxAmount = Math.round(runningTaxTotal * 100) / 100;\n    \n    // Handle special cases like reverse charge for EU VAT\n    if (jurisdiction.type === 'VAT' && invoiceData.customer.vatNumber && jurisdiction.requiresReverseCharge) {\n      taxResult.calculationMethod = 'reverse_charge';\n      taxResult.totalTaxAmount = 0;\n      taxResult.complianceNotes.push('Reverse charge applied - customer liable for VAT');\n    }\n    \n    // Compliance validation\n    const complianceCheck = await validateTaxCompliance({\n      taxResult,\n      invoiceData,\n      jurisdiction\n    });\n    \n    if (!complianceCheck.isCompliant) {\n      logger.warn(`[${operationId}] Tax compliance issues detected`, {\n        issues: complianceCheck.issues\n      });\n      taxResult.complianceNotes.push(...complianceCheck.issues);\n    }\n    \n    const grandTotal = invoiceData.subtotal + taxResult.totalTaxAmount;\n    \n    logger.info(`[${operationId}] Tax calculation completed`, {\n      subtotal: invoiceData.subtotal,\n      taxAmount: taxResult.totalTaxAmount,\n      grandTotal: grandTotal,\n      taxRate: jurisdiction.rate,\n      calculationMethod: taxResult.calculationMethod\n    });\n    \n    return {\n      ...invoiceData,\n      taxCalculation: taxResult,\n      grandTotal: grandTotal\n    };\n    \n  } catch (error) {\n    logger.error(`[${operationId}] Tax calculation failed`, {\n      error: error.message,\n      stack: error.stack\n    });\n    \n    throw new Error(`Tax calculation failed: ${error.message}`);\n  }\n};\n\n// Helper function to check tax exemptions\nconst checkTaxExemptions = async (customer) => {\n  // Check customer tax exemption status\n  if (customer.taxExemptNumber) {\n    return {\n      isExempt: true,\n      reason: 'Tax exempt organization',\n      exemptionId: customer.taxExemptNumber\n    };\n  }\n  \n  if (customer.customerType === 'government') {\n    return {\n      isExempt: true,\n      reason: 'Government entity exemption',\n      exemptionId: 'GOV-EXEMPT'\n    };\n  }\n  \n  return { isExempt: false };\n};\n\n// Helper function to determine tax jurisdiction\nconst determineTaxJurisdiction = async (locationInfo) => {\n  // This would integrate with a tax service like Avalara or TaxJar\n  // For demo purposes, we'll use simplified logic\n  \n  const { customerLocation, sellerLocation } = locationInfo;\n  \n  if (customerLocation === 'US' && sellerLocation === 'US') {\n    return {\n      code: 'US-SALES-TAX',\n      name: 'US Sales Tax',\n      type: 'SALES_TAX',\n      rate: 0.0875, // 8.75%\n      requiresReverseCharge: false\n    };\n  } else if (customerLocation.startsWith('EU')) {\n    return {\n      code: 'EU-VAT',\n      name: 'European VAT',\n      type: 'VAT',\n      rate: 0.20, // 20%\n      requiresReverseCharge: true\n    };\n  } else {\n    return {\n      code: 'NO-TAX',\n      name: 'No Tax',\n      type: 'EXEMPT',\n      rate: 0.00,\n      requiresReverseCharge: false\n    };\n  }\n};\n\n// Helper function to get product tax information\nconst getProductTaxInfo = async (productId) => {\n  // This would lookup product tax categories from your product catalog\n  return {\n    category: 'SOFTWARE',\n    isDigital: true,\n    exemptions: [],\n    taxCode: 'SW001'\n  };\n};\n\n// Helper function to calculate line item tax\nconst calculateLineItemTax = async (params) => {\n  const { lineTotal, taxJurisdiction } = params;\n  \n  const taxAmount = Math.round((lineTotal * taxJurisdiction.rate) * 100) / 100;\n  \n  return {\n    type: taxJurisdiction.type,\n    rate: taxJurisdiction.rate,\n    amount: taxAmount\n  };\n};\n\n// Helper function to validate tax compliance\nconst validateTaxCompliance = async (params) => {\n  const issues = [];\n  \n  // Add compliance validation logic here\n  // Check for required tax numbers, proper rates, etc.\n  \n  return {\n    isCompliant: issues.length === 0,\n    issues: issues\n  };\n};\n\nreturn calculateTaxes(params.invoiceData);"
+        },
+        "inputs": {
+          "invoiceData": {
+            "type": "json",
+            "description": "Invoice data with line items for tax calculation"
+          }
+        },
+        "outputs": {
+          "taxCalculatedInvoice": {
+            "type": "json",
+            "description": "Invoice data with complete tax calculations"
+          }
+        }
+      },
+      {
+        "id": "pdf_generation",
+        "type": "pdf-generator",
+        "name": "Professional Invoice PDF Generation",
+        "description": "Generate professional, branded PDF invoices with compliance features, multiple language support, and accessibility standards",
+        "position": { "x": 900, "y": 100 },
+        "config": {
+          "template": "professional-invoice-template",
+          "branding": {
+            "logo": "{{company.logoUrl}}",
+            "colors": {
+              "primary": "#2D5AA0",
+              "secondary": "#F8F9FA",
+              "accent": "#17C13E"
+            },
+            "fonts": {
+              "primary": "Arial",
+              "secondary": "Arial"
+            }
+          },
+          "localization": {
+            "currency": "{{invoice.currency}}",
+            "dateFormat": "MM/DD/YYYY",
+            "numberFormat": "en-US",
+            "language": "en"
+          },
+          "compliance": {
+            "includeTermsAndConditions": true,
+            "includePaymentInstructions": true,
+            "includeDisputeProcess": true,
+            "accessibilityCompliant": true,
+            "digitalSignature": true
+          },
+          "watermark": {
+            "enabled": false,
+            "text": "DRAFT",
+            "opacity": 0.1
+          }
+        },
+        "inputs": {
+          "invoiceData": {
+            "type": "json",
+            "description": "Complete invoice data with tax calculations"
+          }
+        },
+        "outputs": {
+          "pdfBuffer": {
+            "type": "buffer",
+            "description": "Generated PDF invoice as binary buffer"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "description": "URL to access the generated PDF"
+          }
+        }
+      },
+      {
+        "id": "accounting_integration",
+        "type": "switch",
+        "name": "Accounting System Integration Router",
+        "description": "Route invoice data to appropriate accounting system based on configuration",
+        "position": { "x": 1100, "y": 100 },
+        "config": {
+          "switchField": "accountingSystem",
+          "cases": [
+            {
+              "value": "quickbooks",
+              "targetBlock": "quickbooks_integration"
+            },
+            {
+              "value": "xero",
+              "targetBlock": "xero_integration"
+            },
+            {
+              "value": "sap",
+              "targetBlock": "sap_integration"
+            }
+          ],
+          "defaultCase": "manual_export"
+        }
+      },
+      {
+        "id": "quickbooks_integration",
+        "type": "api",
+        "name": "QuickBooks Online Integration",
+        "description": "Create invoice in QuickBooks Online with complete data synchronization",
+        "position": { "x": 1300, "y": 50 },
+        "config": {
+          "url": "https://quickbooks-api.intuit.com/v3/company/{{qb.companyId}}/invoice",
+          "method": "POST",
+          "authentication": {
+            "type": "oauth2",
+            "credentials": "quickbooks_oauth"
+          },
+          "headers": {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "Line": "{{invoice.lineItems | map: qb_line_format}}",
+            "CustomerRef": {
+              "value": "{{invoice.customer.qbId}}"
+            },
+            "BillAddr": "{{invoice.customer.billingAddress | qb_address_format}}",
+            "ShipAddr": "{{invoice.customer.shippingAddress | qb_address_format}}",
+            "TxnDate": "{{invoice.invoiceDate | date: 'YYYY-MM-DD'}}",
+            "DueDate": "{{invoice.dueDate | date: 'YYYY-MM-DD'}}",
+            "DocNumber": "{{invoice.invoiceNumber}}",
+            "PrivateNote": "Generated via Sim Automation Platform",
+            "CustomField": [
+              {
+                "DefinitionId": "1",
+                "Name": "SimWorkflowId",
+                "Type": "StringType",
+                "StringValue": "{{workflow.id}}"
+              }
+            ]
+          },
+          "errorHandling": {
+            "retryAttempts": 3,
+            "retryDelay": 5000,
+            "fallbackAction": "log_and_notify"
+          }
+        },
+        "condition": {
+          "field": "accounting_integration",
+          "value": "quickbooks"
+        }
+      },
+      {
+        "id": "email_notification",
+        "type": "email-automation",
+        "name": "Invoice Delivery & Notifications",
+        "description": "Send professional invoice emails with PDF attachments, payment links, and tracking",
+        "position": { "x": 1500, "y": 100 },
+        "config": {
+          "emailService": "sendgrid",
+          "template": "invoice-delivery-template",
+          "from": {
+            "email": "{{company.billingEmail}}",
+            "name": "{{company.name}} Billing"
+          },
+          "to": [
+            {
+              "email": "{{invoice.customer.billingEmail}}",
+              "name": "{{invoice.customer.name}}"
+            }
+          ],
+          "cc": [
+            {
+              "email": "{{company.accountsReceivableEmail}}",
+              "name": "Accounts Receivable"
+            }
+          ],
+          "subject": "Invoice {{invoice.invoiceNumber}} - {{company.name}}",
+          "templateData": {
+            "invoiceNumber": "{{invoice.invoiceNumber}}",
+            "customerName": "{{invoice.customer.name}}",
+            "invoiceAmount": "{{invoice.grandTotal}}",
+            "dueDate": "{{invoice.dueDate | date: 'MMMM DD, YYYY'}}",
+            "paymentUrl": "{{invoice.paymentUrl}}",
+            "companyName": "{{company.name}}",
+            "supportEmail": "{{company.supportEmail}}"
+          },
+          "attachments": [
+            {
+              "filename": "Invoice-{{invoice.invoiceNumber}}.pdf",
+              "content": "{{pdfBuffer}}",
+              "type": "application/pdf"
+            }
+          ],
+          "trackingEnabled": true,
+          "unsubscribeGroup": "billing-notifications"
+        }
+      },
+      {
+        "id": "audit_logging",
+        "type": "function",
+        "name": "Comprehensive Audit Trail",
+        "description": "Log all invoice generation activities for compliance, auditing, and troubleshooting purposes",
+        "position": { "x": 1700, "y": 100 },
+        "config": {
+          "code": "/**\n * Comprehensive Audit Logging Function\n * Records all invoice generation activities with detailed metadata\n * for compliance, security, and operational monitoring\n */\n\nconst logAuditTrail = async (invoiceData, workflowContext) => {\n  const logger = getLogger('InvoiceAudit');\n  const operationId = generateOperationId();\n  \n  logger.info(`[${operationId}] Creating comprehensive audit trail`, {\n    invoiceId: invoiceData.invoiceNumber,\n    workflowId: workflowContext.workflowId,\n    executionId: workflowContext.executionId\n  });\n  \n  try {\n    const auditRecord = {\n      // Basic invoice information\n      invoiceId: invoiceData.invoiceNumber,\n      customerId: invoiceData.customer.id,\n      customerName: invoiceData.customer.name,\n      invoiceAmount: invoiceData.grandTotal,\n      currency: invoiceData.currency,\n      \n      // Workflow execution details\n      workflowId: workflowContext.workflowId,\n      executionId: workflowContext.executionId,\n      triggeredBy: workflowContext.triggeredBy,\n      triggerType: workflowContext.triggerType,\n      \n      // Processing timeline\n      processingStarted: workflowContext.startTime,\n      processingCompleted: new Date().toISOString(),\n      processingDuration: Date.now() - new Date(workflowContext.startTime).getTime(),\n      \n      // Validation and approval information\n      validationScore: invoiceData.validationScore,\n      approvalRequired: workflowContext.approvalRequired || false,\n      approvedBy: workflowContext.approvedBy || null,\n      approvalTimestamp: workflowContext.approvalTimestamp || null,\n      \n      // Tax calculation details\n      taxJurisdiction: invoiceData.taxCalculation?.taxJurisdictions[0]?.code || 'N/A',\n      taxAmount: invoiceData.taxCalculation?.totalTaxAmount || 0,\n      taxExempt: invoiceData.taxCalculation?.taxExempt || false,\n      \n      // System integration information\n      accountingSystemSync: workflowContext.accountingSystemSync || false,\n      accountingSystemId: workflowContext.accountingSystemId || null,\n      pdfGenerated: workflowContext.pdfGenerated || false,\n      emailSent: workflowContext.emailSent || false,\n      \n      // Compliance and security\n      dataClassification: 'FINANCIAL_CONFIDENTIAL',\n      retentionPolicy: 'LEGAL_REQUIREMENT_7_YEARS',\n      accessControls: ['FINANCE_TEAM', 'AUDIT_TEAM', 'CUSTOMER_BILLING'],\n      \n      // Change tracking\n      originalData: JSON.stringify(workflowContext.originalInvoiceData),\n      modifiedFields: identifyModifiedFields(workflowContext.originalInvoiceData, invoiceData),\n      \n      // Error handling\n      errors: workflowContext.errors || [],\n      warnings: workflowContext.warnings || [],\n      \n      // Metadata\n      auditVersion: '2.1.0',\n      createdAt: new Date().toISOString(),\n      createdBy: workflowContext.userId || 'SYSTEM',\n      ipAddress: workflowContext.ipAddress || null,\n      userAgent: workflowContext.userAgent || null\n    };\n    \n    // Store audit record in secure audit database\n    const auditId = await storeAuditRecord(auditRecord);\n    \n    // Create searchable audit index entry\n    await createAuditIndex({\n      auditId: auditId,\n      invoiceId: invoiceData.invoiceNumber,\n      customerId: invoiceData.customer.id,\n      amount: invoiceData.grandTotal,\n      date: new Date().toISOString(),\n      type: 'INVOICE_GENERATION',\n      status: 'COMPLETED'\n    });\n    \n    // Log for real-time monitoring\n    logger.info(`[${operationId}] Audit trail created successfully`, {\n      auditId: auditId,\n      invoiceId: invoiceData.invoiceNumber,\n      processingDuration: auditRecord.processingDuration,\n      status: 'AUDIT_COMPLETE'\n    });\n    \n    // Send audit notification to compliance team if required\n    if (invoiceData.grandTotal > 50000) {\n      await sendAuditNotification({\n        type: 'HIGH_VALUE_INVOICE',\n        auditId: auditId,\n        invoiceDetails: auditRecord\n      });\n    }\n    \n    return {\n      auditId: auditId,\n      auditCompleted: true,\n      complianceStatus: 'COMPLIANT',\n      retentionUntil: calculateRetentionDate(7, 'years')\n    };\n    \n  } catch (error) {\n    logger.error(`[${operationId}] Audit trail creation failed`, {\n      error: error.message,\n      stack: error.stack,\n      invoiceId: invoiceData.invoiceNumber\n    });\n    \n    // Even if audit fails, we should not block the invoice generation\n    // but we must alert the compliance team\n    await sendAuditFailureAlert({\n      error: error.message,\n      invoiceId: invoiceData.invoiceNumber,\n      timestamp: new Date().toISOString()\n    });\n    \n    return {\n      auditId: null,\n      auditCompleted: false,\n      complianceStatus: 'AUDIT_FAILURE',\n      error: error.message\n    };\n  }\n};\n\n// Helper function to identify modified fields\nconst identifyModifiedFields = (original, current) => {\n  const modifications = [];\n  \n  const compareObjects = (obj1, obj2, path = '') => {\n    for (const key in obj2) {\n      const currentPath = path ? `${path}.${key}` : key;\n      \n      if (obj1[key] !== obj2[key]) {\n        modifications.push({\n          field: currentPath,\n          originalValue: obj1[key],\n          newValue: obj2[key],\n          changeType: obj1[key] === undefined ? 'ADDED' : 'MODIFIED'\n        });\n      }\n    }\n  };\n  \n  compareObjects(original || {}, current || {});\n  return modifications;\n};\n\n// Helper function to store audit record\nconst storeAuditRecord = async (auditRecord) => {\n  // This would integrate with your audit database\n  // For demo purposes, return a mock audit ID\n  return `AUDIT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;\n};\n\n// Helper function to create audit index\nconst createAuditIndex = async (indexData) => {\n  // This would create searchable index entries for audit queries\n  return true;\n};\n\n// Helper function to calculate retention date\nconst calculateRetentionDate = (amount, unit) => {\n  const date = new Date();\n  if (unit === 'years') {\n    date.setFullYear(date.getFullYear() + amount);\n  } else if (unit === 'months') {\n    date.setMonth(date.getMonth() + amount);\n  }\n  return date.toISOString();\n};\n\n// Helper function to send audit notifications\nconst sendAuditNotification = async (notificationData) => {\n  // This would send notifications to compliance team\n  return true;\n};\n\n// Helper function to send audit failure alerts\nconst sendAuditFailureAlert = async (alertData) => {\n  // This would send critical alerts about audit failures\n  return true;\n};\n\nreturn logAuditTrail(params.invoiceData, params.workflowContext);"
+        },
+        "inputs": {
+          "invoiceData": {
+            "type": "json",
+            "description": "Complete invoice data"
+          },
+          "workflowContext": {
+            "type": "json",
+            "description": "Workflow execution context and metadata"
+          }
+        },
+        "outputs": {
+          "auditResult": {
+            "type": "json",
+            "description": "Audit trail creation result"
+          }
+        }
+      }
+    ],
+    "connections": [
+      {
+        "from": "input_validation",
+        "to": "approval_routing",
+        "condition": "validationResult.isValid === true"
+      },
+      {
+        "from": "approval_routing",
+        "to": "high_value_approval_workflow",
+        "condition": "high_value_approval"
+      },
+      {
+        "from": "approval_routing",
+        "to": "tax_calculation",
+        "condition": "auto_approve"
+      },
+      {
+        "from": "high_value_approval_workflow",
+        "to": "tax_calculation",
+        "condition": "approved === true"
+      },
+      {
+        "from": "tax_calculation",
+        "to": "pdf_generation"
+      },
+      {
+        "from": "pdf_generation",
+        "to": "accounting_integration"
+      },
+      {
+        "from": "accounting_integration",
+        "to": "email_notification"
+      },
+      {
+        "from": "email_notification",
+        "to": "audit_logging"
+      }
+    ],
+    "errorHandling": {
+      "globalErrorHandler": "invoice_error_handler",
+      "retryPolicy": {
+        "maxRetries": 3,
+        "backoffStrategy": "exponential",
+        "initialDelay": 1000
+      },
+      "notifications": {
+        "onError": ["finance-team@company.com", "it-support@company.com"],
+        "onCriticalError": ["cto@company.com", "ceo@company.com"]
+      }
+    },
+    "monitoring": {
+      "metricsCollection": true,
+      "performanceTracking": true,
+      "businessMetrics": [
+        "invoices_generated_per_hour",
+        "average_processing_time",
+        "approval_rates",
+        "error_rates",
+        "tax_calculation_accuracy"
+      ]
+    }
+  },
+  "configuration": {
+    "environmentVariables": {
+      "QUICKBOOKS_CLIENT_ID": "{{secrets.quickbooks_client_id}}",
+      "QUICKBOOKS_CLIENT_SECRET": "{{secrets.quickbooks_client_secret}}",
+      "SENDGRID_API_KEY": "{{secrets.sendgrid_api_key}}",
+      "TAX_SERVICE_API_KEY": "{{secrets.tax_service_api_key}}",
+      "AUDIT_DATABASE_URL": "{{secrets.audit_database_url}}"
+    },
+    "businessRules": {
+      "highValueThreshold": 10000,
+      "autoApprovalLimit": 5000,
+      "taxExemptCustomers": ["GOVT", "NONPROFIT"],
+      "requiredApprovals": {
+        "domestic": 1,
+        "international": 2,
+        "highValue": 3
+      }
+    },
+    "compliance": {
+      "auditRetention": "7 years",
+      "encryptionLevel": "AES-256",
+      "accessLogging": true,
+      "dataClassification": "CONFIDENTIAL"
+    }
+  },
+  "testing": {
+    "testScenarios": [
+      {
+        "name": "Standard Invoice Generation",
+        "description": "Test normal invoice processing flow",
+        "testData": {
+          "customerId": "TEST-CUSTOMER-001",
+          "lineItems": [
+            {
+              "description": "Software License",
+              "quantity": 1,
+              "unitPrice": 999.99,
+              "productId": "SW-LICENSE-001"
+            }
+          ],
+          "invoiceDate": "2024-09-04",
+          "dueDate": "2024-10-04",
+          "currency": "USD"
+        },
+        "expectedResults": {
+          "validationPassed": true,
+          "approvalRequired": false,
+          "taxCalculated": true,
+          "pdfGenerated": true,
+          "emailSent": true,
+          "auditLogged": true
+        }
+      },
+      {
+        "name": "High Value Invoice Approval",
+        "description": "Test approval workflow for high-value invoices",
+        "testData": {
+          "customerId": "TEST-CUSTOMER-002",
+          "lineItems": [
+            {
+              "description": "Enterprise Implementation",
+              "quantity": 1,
+              "unitPrice": 25000.00,
+              "productId": "ENTERPRISE-IMPL"
+            }
+          ],
+          "invoiceDate": "2024-09-04",
+          "dueDate": "2024-10-04",
+          "currency": "USD"
+        },
+        "expectedResults": {
+          "validationPassed": true,
+          "approvalRequired": true,
+          "approvalLevel": 2,
+          "taxCalculated": true,
+          "pdfGenerated": true,
+          "auditLogged": true
+        }
+      }
+    ]
+  },
+  "documentation": {
+    "setupGuide": "/docs/financial-automation/invoice-generation-setup.md",
+    "userManual": "/docs/financial-automation/invoice-generation-user-guide.md",
+    "apiReference": "/docs/financial-automation/invoice-api-reference.md",
+    "troubleshooting": "/docs/financial-automation/invoice-troubleshooting.md"
+  }
+}

@@ -5,13 +5,13 @@
  * authentication, validation, and production-ready error handling patterns.
  *
  * Key Features:
- * - Enhanced bun/vitest compatible mocking infrastructure
+ * - Uses existing module-mocks.ts infrastructure for stability
  * - Comprehensive logging for debugging copilot operations
  * - Production-ready error handling and validation
  * - Secure access control and authentication testing
  * - Redis integration testing with proper mock controls
  *
- * Migrated from vi.doMock() to proven module-level mocking approach.
+ * Migrated from vi.doMock() to proven module-mocks.ts approach.
  *
  * @vitest-environment node
  */
@@ -25,25 +25,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/app/api/__test-utils__/module-mocks'
 import { mockControls } from '@/app/api/__test-utils__/module-mocks'
 
-// ================================
-// MODULE-LEVEL MOCKS FOR BUN/VITEST COMPATIBILITY
-// ================================
-
-// Mock Redis operations at module level
+// Create Redis mocks compatible with existing infrastructure
 const mockRedisExists = vi.fn()
 const mockRedisSet = vi.fn()
 const mockGetRedisClient = vi.fn()
 
-// Mock Redis client with factory function
-vi.mock('@/lib/redis', () => {
+// Mock Redis module using vi.doMock to avoid hoisting issues
+await vi.doMock('@/lib/redis', () => {
   console.log('📦 Mocking @/lib/redis')
   return {
     getRedisClient: mockGetRedisClient,
   }
 })
 
-// Import route handlers AFTER mocks are set up
-import { POST } from './route'
+// Import route handlers AFTER mocks are established
+const { POST } = await import('./route')
 
 // ================================
 // TEST DATA DEFINITIONS
@@ -327,8 +323,13 @@ describe('Copilot Confirm API Route', () => {
     it('should return 400 when tool call is not found in Redis', async () => {
       console.log('[TEST] Testing tool call not found error')
 
-      // Mock tool call as not existing in Redis
-      mockRedisExists.mockResolvedValue(0)
+      // Reset mocks and ensure tool call is immediately not found (no polling delay)
+      const mockRedisClient = {
+        exists: vi.fn().mockResolvedValue(0), // Always return 0 (not found)
+        set: mockRedisSet,
+      }
+      
+      mockGetRedisClient.mockReturnValue(mockRedisClient)
 
       const req = createMockRequest('POST', {
         toolCallId: 'non-existent-tool',

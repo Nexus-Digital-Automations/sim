@@ -22,6 +22,13 @@ let mockPermissionLevel = 'admin'
 let mockInternalTokenValid = true
 let mockDatabaseError: Error | string | null = null
 
+// File upload specific mock state  
+const mockFileState = {
+  storageProvider: 'local' as 'local' | 's3' | 'azure' | 'gcs',
+  uploadResult: null as any,
+  uploadError: null as string | null,
+}
+
 // Export runtime controls for tests
 export const mockControls = {
   // Authentication controls
@@ -58,6 +65,24 @@ export const mockControls = {
     console.log('🔧 Mock database error set:', error instanceof Error ? error.message : error)
   },
 
+  // File upload storage controls
+  setStorageProvider: (provider: 'local' | 's3' | 'azure' | 'gcs') => {
+    mockFileState.storageProvider = provider
+    console.log('🔧 Mock storage provider set:', provider)
+  },
+
+  setUploadSuccess: (result: any) => {
+    mockFileState.uploadResult = result
+    mockFileState.uploadError = null
+    console.log('🔧 Mock upload success set:', result?.key || result?.id || 'result')
+  },
+
+  setUploadError: (error: string) => {
+    mockFileState.uploadError = error
+    mockFileState.uploadResult = null
+    console.log('🔧 Mock upload error set:', error)
+  },
+
   // Reset all mocks to defaults
   reset: () => {
     mockAuthUser = { id: 'user-123', email: 'test@example.com' }
@@ -65,6 +90,9 @@ export const mockControls = {
     mockPermissionLevel = 'admin'
     mockInternalTokenValid = true
     mockDatabaseError = null
+    mockFileState.storageProvider = 'local'
+    mockFileState.uploadResult = null
+    mockFileState.uploadError = null
     console.log('🔧 All mocks reset to defaults')
   },
 }
@@ -93,6 +121,64 @@ vi.mock('@/lib/auth', () => {
     auth: {
       api: mockAuthApi,
     },
+  }
+})
+
+// Mock @/lib/copilot/auth (used by checkpoint revert API)
+vi.mock('@/lib/copilot/auth', () => {
+  console.log('📦 Mocking @/lib/copilot/auth')
+  return {
+    authenticateCopilotRequestSessionOnly: vi.fn().mockImplementation(() => {
+      const result = {
+        userId: mockAuthUser?.id || null,
+        isAuthenticated: !!mockAuthUser,
+        user: mockAuthUser
+      }
+      console.log('🔍 authenticateCopilotRequestSessionOnly called, returning:', {
+        userId: result.userId,
+        isAuthenticated: result.isAuthenticated
+      })
+      return Promise.resolve(result)
+    }),
+    createInternalServerErrorResponse: vi.fn().mockImplementation((message = 'Internal Server Error') => {
+      console.log('🔍 createInternalServerErrorResponse called with:', message)
+      return new Response(JSON.stringify({ error: message }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }),
+    createNotFoundResponse: vi.fn().mockImplementation((message = 'Not Found') => {
+      console.log('🔍 createNotFoundResponse called with:', message)
+      return new Response(JSON.stringify({ error: message }), { 
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }),
+    createUnauthorizedResponse: vi.fn().mockImplementation(() => {
+      console.log('🔍 createUnauthorizedResponse called')
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }),
+    createBadRequestResponse: vi.fn().mockImplementation((message = 'Bad Request') => {
+      console.log('🔍 createBadRequestResponse called with:', message)
+      return new Response(JSON.stringify({ error: message }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }),
+    createRequestTracker: vi.fn().mockImplementation((short = true) => {
+      const requestId = short ? `req-${Math.random().toString(36).substr(2, 8)}` : `req-${crypto.randomUUID()}`
+      const startTime = Date.now()
+      const tracker = {
+        requestId,
+        startTime,
+        getDuration: () => Date.now() - startTime
+      }
+      console.log('🔍 createRequestTracker called, returning:', tracker.requestId)
+      return tracker
+    }),
   }
 })
 
@@ -339,6 +425,23 @@ vi.mock('@/db/schema', () => {
       createdAt: 'createdAt',
       lastUsedAt: 'lastUsedAt',
     },
+    chat: {
+      id: 'id',
+      workflowId: 'workflowId',
+      userId: 'userId',
+      subdomain: 'subdomain',
+      title: 'title',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
+    workflowCheckpoints: {
+      id: 'id',
+      userId: 'userId',
+      workflowId: 'workflowId',
+      workflowState: 'workflowState',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
   }
 })
 
@@ -421,6 +524,30 @@ vi.mock('crypto', async (importOriginal) => {
   }
 })
 
+// Mock workflow API utilities
+vi.mock('@/app/api/workflows/utils', () => {
+  console.log('📦 Mocking @/app/api/workflows/utils')
+  
+  const { NextResponse } = require('next/server')
+  
+  return {
+    createErrorResponse: vi.fn().mockImplementation((error: string, status: number, code?: string) => {
+      console.log('🔍 createErrorResponse called:', { error, status, code })
+      return NextResponse.json(
+        {
+          error,
+          code: code || error.toUpperCase().replace(/\s+/g, '_'),
+        },
+        { status }
+      )
+    }),
+    createSuccessResponse: vi.fn().mockImplementation((data: any) => {
+      console.log('🔍 createSuccessResponse called with:', Object.keys(data))
+      return NextResponse.json(data)
+    }),
+  }
+})
+
 // Mock Next.js headers (common source of test failures)
 vi.mock('next/headers', () => {
   console.log('📦 Mocking next/headers')
@@ -436,6 +563,231 @@ vi.mock('next/headers', () => {
         set: vi.fn(),
         delete: vi.fn(),
       }
+    }),
+  }
+})
+
+// Mock @/lib/uploads for file storage operations
+vi.mock('@/lib/uploads', () => {
+  console.log('📦 Mocking @/lib/uploads')
+  return {
+    uploadFile: vi.fn().mockImplementation(async (buffer, filename, type, size) => {
+      console.log('🔍 uploadFile called:', { filename, type, size: buffer.length })
+      console.log('🔍 uploadFile mockUploadError state:', mockFileState.uploadError)
+      console.log('🔍 uploadFile storageProvider state:', mockFileState.storageProvider)
+      
+      if (mockFileState.uploadError) {
+        console.log('🔍 Upload throwing error:', mockFileState.uploadError)
+        const error = new Error(mockFileState.uploadError)
+        throw error
+      }
+
+      const result = mockFileState.uploadResult || {
+        key: `${mockFileState.storageProvider}-${Date.now()}-${filename}`,
+        path: `/api/files/serve/${filename}`,
+        name: filename,
+        size: size,
+        type: type,
+      }
+      
+      console.log('🔍 Upload returning result:', result.key)
+      return result
+    }),
+    
+    getPresignedUrl: vi.fn().mockImplementation(async (key, expirySeconds) => {
+      console.log('🔍 getPresignedUrl called:', { key, expirySeconds })
+      
+      if (mockStorageProvider === 'local') {
+        return undefined // Local storage doesn't use presigned URLs
+      }
+      
+      return `https://cdn.example.com/${key}?expires=${Date.now() + (expirySeconds * 1000)}`
+    }),
+    
+    isUsingCloudStorage: vi.fn().mockImplementation(() => {
+      const result = mockStorageProvider !== 'local'
+      console.log('🔍 isUsingCloudStorage called, storage provider:', mockStorageProvider, 'returning:', result)
+      return result
+    }),
+  }
+})
+
+// Mock @/lib/uploads/setup.server (side-effect import)
+vi.mock('@/lib/uploads/setup.server', () => {
+  console.log('📦 Mocking @/lib/uploads/setup.server')
+  return {}
+})
+
+// Mock @/app/api/files/utils for error handling
+vi.mock('@/app/api/files/utils', () => {
+  console.log('📦 Mocking @/app/api/files/utils')
+  
+  class MockInvalidRequestError extends Error {
+    constructor(message: string) {
+      super(message)
+      this.name = 'InvalidRequestError'
+    }
+  }
+  
+  return {
+    InvalidRequestError: MockInvalidRequestError,
+    
+    createErrorResponse: vi.fn().mockImplementation((error) => {
+      console.log('🔍 createErrorResponse called:', error.message)
+      const status = error.name === 'InvalidRequestError' ? 400 : 500
+      return new Response(JSON.stringify({
+        error: error.name || 'Error',
+        message: error.message
+      }), {
+        status,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }),
+    
+    createOptionsResponse: vi.fn().mockImplementation(() => {
+      console.log('🔍 createOptionsResponse called')
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      })
+    }),
+  }
+})
+
+// Mock dynamic execution file storage import
+vi.mock('@/lib/workflows/execution-file-storage', () => {
+  console.log('📦 Mocking @/lib/workflows/execution-file-storage')
+  return {
+    uploadExecutionFile: vi.fn().mockImplementation(async (context, buffer, filename, type) => {
+      console.log('🔍 uploadExecutionFile called:', { 
+        workflowId: context.workflowId, 
+        executionId: context.executionId,
+        filename, 
+        type 
+      })
+      
+      if (mockUploadError) {
+        throw new Error(mockUploadError)
+      }
+
+      return mockUploadResult || {
+        id: `exec-file-${Date.now()}`,
+        name: filename,
+        size: buffer.length,
+        type: type,
+        path: `/api/files/serve/execution/${context.executionId}/${filename}`,
+        url: `/api/files/serve/execution/${context.executionId}/${filename}`,
+        uploadedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+      }
+    }),
+  }
+})
+
+// Mock @/lib/uploads with comprehensive storage operations
+let mockUseCloudStorage = false
+let mockDeleteFileError: Error | null = null
+
+export const mockUploadsControls = {
+  setCloudStorage: (enabled: boolean) => {
+    mockUseCloudStorage = enabled
+    console.log('🔧 Mock cloud storage enabled:', enabled)
+  },
+  setDeleteFileError: (error: Error | null) => {
+    mockDeleteFileError = error
+    console.log('🔧 Mock delete file error set:', error?.message || 'null')
+  },
+  reset: () => {
+    mockUseCloudStorage = false
+    mockDeleteFileError = null
+    console.log('🔧 Uploads mocks reset to defaults')
+  },
+}
+
+vi.mock('@/lib/uploads', () => {
+  console.log('📦 Mocking @/lib/uploads')
+  return {
+    deleteFile: vi.fn().mockImplementation(async (key: string) => {
+      console.log('🔍 deleteFile called with key:', key)
+      if (mockDeleteFileError) {
+        throw mockDeleteFileError
+      }
+      return Promise.resolve()
+    }),
+    isUsingCloudStorage: vi.fn().mockImplementation(() => {
+      console.log('🔍 isUsingCloudStorage called, returning:', mockUseCloudStorage)
+      return mockUseCloudStorage
+    }),
+    uploadFile: vi.fn().mockImplementation(async () => {
+      console.log('🔍 uploadFile mock called')
+      return Promise.resolve({
+        path: '/api/files/serve/mock-file.txt',
+        key: 'mock-file.txt',
+        name: 'mock-file.txt',
+        size: 100,
+        type: 'text/plain',
+      })
+    }),
+    downloadFile: vi.fn().mockImplementation(async () => {
+      console.log('🔍 downloadFile mock called')
+      return Promise.resolve(Buffer.from('mock file content'))
+    }),
+    getStorageProvider: vi.fn().mockImplementation(() => {
+      const provider = mockUseCloudStorage ? 's3' : 'local'
+      console.log('🔍 getStorageProvider called, returning:', provider)
+      return provider
+    }),
+  }
+})
+
+// Mock @/lib/uploads/setup
+vi.mock('@/lib/uploads/setup', () => {
+  console.log('📦 Mocking @/lib/uploads/setup')
+  return {
+    UPLOAD_DIR: '/tmp/test-uploads',
+    USE_S3_STORAGE: false,
+    USE_BLOB_STORAGE: false,
+  }
+})
+
+// Mock @/lib/uploads/setup.server (server-only imports)
+vi.mock('@/lib/uploads/setup.server', () => {
+  console.log('📦 Mocking @/lib/uploads/setup.server')
+  return {}
+})
+
+// Mock file system operations
+vi.mock('fs', async (importOriginal) => {
+  console.log('📦 Mocking fs')
+  const actual = (await importOriginal()) as any
+  return {
+    ...actual,
+    existsSync: vi.fn().mockImplementation((path: string) => {
+      // Don't return file exists if we're testing delete errors
+      if (mockDeleteFileError && mockDeleteFileError.message.includes('ENOENT')) {
+        console.log('🔍 fs.existsSync returning false (simulating file not found)')
+        return false
+      }
+      console.log('🔍 fs.existsSync called with:', path, 'returning: true')
+      return true
+    }),
+  }
+})
+
+vi.mock('fs/promises', async (importOriginal) => {
+  console.log('📦 Mocking fs/promises')
+  const actual = (await importOriginal()) as any
+  return {
+    ...actual,
+    unlink: vi.fn().mockImplementation(async (path: string) => {
+      console.log('🔍 fs.unlink called with:', path)
+      if (mockDeleteFileError) {
+        throw mockDeleteFileError
+      }
+      return Promise.resolve()
     }),
   }
 })

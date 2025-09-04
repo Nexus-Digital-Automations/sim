@@ -1,0 +1,1017 @@
+# Automated Customer Support Ticket System Template
+# Intelligent support ticket routing, automated responses, and escalation management for e-commerce
+
+name: "Automated Customer Support Ticket System"
+description: "Intelligent support ticket automation with AI-powered routing, automated responses, and escalation workflows"
+category: "ecommerce"
+subcategory: "customer-service"
+difficulty: "advanced"
+estimatedTime: "60-75 minutes"
+platforms: ["email", "zendesk", "slack", "openai", "database", "crm"]
+tags: ["customer-service", "support-tickets", "automation", "ai-routing", "escalation", "satisfaction"]
+
+# Template metadata
+metadata:
+  author: "Sim E-commerce Team"
+  version: "1.0.0"
+  lastUpdated: "2025-09-04"
+  useCases:
+    - "Intelligent support ticket routing based on content analysis"
+    - "Automated responses for common customer inquiries"
+    - "Priority escalation for VIP customers and urgent issues"
+    - "Integration with CRM for customer history context"
+    - "Performance tracking and customer satisfaction monitoring"
+  
+  requirements:
+    - "Email service (Gmail, Outlook, or IMAP/SMTP)"
+    - "Support ticket system (Zendesk, Freshdesk, or custom)"
+    - "AI service for content analysis (OpenAI, Claude, or similar)"
+    - "CRM system for customer data (HubSpot, Salesforce, etc.)"
+    - "Team communication platform (Slack, Teams)"
+
+# Workflow configuration
+workflow:
+  # ====================================================================
+  # TRIGGER: New Support Email or Ticket
+  # ====================================================================
+  trigger:
+    type: "multi-trigger"
+    description: "Handle support requests from multiple channels"
+    triggers:
+      email_support:
+        type: "email"
+        provider: "gmail"
+        mailbox: "support@{{COMPANY_DOMAIN}}"
+        conditions:
+          - "to_contains: support"
+          - "not_from: {{INTERNAL_DOMAIN}}"
+      
+      contact_form:
+        type: "webhook"
+        provider: "website"
+        event: "contact_form_submission"
+        verification:
+          secret_header: "X-Contact-Form-Secret"
+          secret: "{{CONTACT_FORM_SECRET}}"
+      
+      chat_escalation:
+        type: "webhook"
+        provider: "livechat"
+        event: "chat_escalated"
+        description: "When live chat is escalated to support ticket"
+    
+  blocks:
+    # ====================================================================
+    # STEP 1: SUPPORT REQUEST DATA EXTRACTION
+    # ====================================================================
+    - name: "extract_support_request"
+      type: "data-transformer"
+      description: "Extract and normalize support request data from different sources"
+      inputs:
+        trigger_source: "{{trigger.source}}"
+        raw_data: "{{trigger.data}}"
+      
+      operations:
+        - type: "switch"
+          field: "{{trigger_source}}"
+          cases:
+            email_support:
+              extract:
+                channel: "email"
+                customer_email: "from.email"
+                customer_name: "from.name || extract_name_from_email(from.email)"
+                subject: "subject"
+                message_content: "body.text || body.html"
+                message_html: "body.html"
+                attachments: "attachments"
+                received_at: "date"
+                original_message_id: "messageId"
+                thread_id: "threadId"
+                priority_indicators: "extract_priority_keywords(subject, body)"
+            
+            contact_form:
+              extract:
+                channel: "contact_form"
+                customer_email: "email"
+                customer_name: "name || first_name + ' ' + last_name"
+                customer_phone: "phone"
+                subject: "subject || inquiry_type"
+                message_content: "message"
+                form_data: "form_fields"
+                received_at: "submitted_at"
+                source_url: "source_url"
+                user_agent: "user_agent"
+                ip_address: "ip_address"
+            
+            chat_escalation:
+              extract:
+                channel: "live_chat"
+                customer_email: "visitor.email"
+                customer_name: "visitor.name"
+                subject: "escalation_reason"
+                message_content: "chat_transcript"
+                chat_duration: "chat_duration"
+                agent_notes: "agent_notes"
+                received_at: "escalated_at"
+                chat_id: "chat_id"
+                previous_agent: "agent_id"
+        
+        - type: "validate"
+          rules:
+            - field: "customer_email"
+              required: true
+              format: "email"
+            - field: "message_content"
+              required: true
+              type: "string"
+              min_length: 10
+            - field: "channel"
+              required: true
+              type: "string"
+      
+      outputs:
+        support_request: "{{transformed_data}}"
+        validation_errors: "{{validation_errors}}"
+
+    # ====================================================================
+    # STEP 2: CUSTOMER LOOKUP AND CONTEXT GATHERING
+    # ====================================================================
+    - name: "gather_customer_context"
+      type: "parallel"
+      description: "Gather comprehensive customer context from multiple systems"
+      
+      branches:
+        # CRM customer lookup
+        crm_lookup:
+          - name: "hubspot_customer_lookup"
+            type: "hubspot"
+            operation: "search_contacts"
+            inputs:
+              email: "{{support_request.customer_email}}"
+              properties: [
+                "firstname", "lastname", "email", "phone", "company",
+                "lifecyclestage", "hs_lead_status", "total_revenue",
+                "num_conversion_events", "recent_deal_amount",
+                "last_activity_date", "createdate", "hubspot_owner_id"
+              ]
+            
+            outputs:
+              crm_profile: "{{response.results[0] || null}}"
+              customer_tier: "{{calculate_customer_tier(response.results[0])}}"
+              is_vip: "{{response.results[0]?.properties.total_revenue > VIP_REVENUE_THRESHOLD}}"
+        
+        # Order history lookup
+        order_history:
+          - name: "get_order_history"
+            type: "database"
+            operation: "query"
+            query: |
+              SELECT 
+                order_id, order_number, status, total_amount, currency,
+                created_at, items_count, shipping_country,
+                CASE 
+                  WHEN created_at > DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 'recent'
+                  WHEN created_at > DATE_SUB(NOW(), INTERVAL 90 DAY) THEN 'moderate'
+                  ELSE 'old'
+                END as recency
+              FROM orders 
+              WHERE customer_email = ? 
+              ORDER BY created_at DESC 
+              LIMIT 10
+            params: ["{{support_request.customer_email}}"]
+            
+            outputs:
+              order_history: "{{query_result}}"
+              total_orders: "{{query_result.length}}"
+              recent_orders: "{{query_result.filter(o => o.recency === 'recent').length}}"
+        
+        # Previous support history
+        support_history:
+          - name: "get_support_history"
+            type: "database"
+            operation: "query"
+            query: |
+              SELECT 
+                ticket_id, subject, status, priority, category,
+                created_at, resolved_at, agent_id, satisfaction_score,
+                TIMESTAMPDIFF(HOUR, created_at, resolved_at) as resolution_hours
+              FROM support_tickets 
+              WHERE customer_email = ? 
+              ORDER BY created_at DESC 
+              LIMIT 5
+            params: ["{{support_request.customer_email}}"]
+            
+            outputs:
+              support_history: "{{query_result}}"
+              repeat_customer: "{{query_result.length > 0}}"
+              avg_satisfaction: "{{query_result.filter(t => t.satisfaction_score).reduce((acc, t) => acc + t.satisfaction_score, 0) / query_result.filter(t => t.satisfaction_score).length}}"
+
+    # ====================================================================
+    # STEP 3: AI-POWERED CONTENT ANALYSIS AND CATEGORIZATION
+    # ====================================================================
+    - name: "ai_content_analysis"
+      type: "openai"
+      description: "Use AI to analyze support request content and extract key information"
+      operation: "chat_completion"
+      inputs:
+        model: "gpt-4"
+        messages:
+          - role: "system"
+            content: |
+              You are an expert customer service analyst. Analyze the following customer support request and provide structured analysis.
+              
+              Consider these aspects:
+              1. Category classification (billing, shipping, product, technical, refund, exchange, general)
+              2. Priority level (low, medium, high, urgent)
+              3. Sentiment analysis (positive, neutral, negative, frustrated, angry)
+              4. Key issues and concerns mentioned
+              5. Specific product/order references
+              6. Urgency indicators
+              7. Customer intent (complaint, question, request, compliment)
+              8. Suggested resolution approach
+              
+              Return analysis as structured JSON with these exact fields:
+              {
+                "category": "string",
+                "subcategory": "string",
+                "priority": "string",
+                "sentiment": "string",
+                "urgency_score": number (1-10),
+                "key_issues": ["array of key issues"],
+                "product_references": ["array of mentioned products/SKUs"],
+                "order_references": ["array of order numbers"],
+                "customer_intent": "string",
+                "suggested_department": "string",
+                "estimated_resolution_time": "string",
+                "requires_human": boolean,
+                "confidence_score": number (0-1)
+              }
+              
+          - role: "user"
+            content: |
+              Customer Email: {{support_request.customer_email}}
+              Channel: {{support_request.channel}}
+              Subject: {{support_request.subject}}
+              
+              Message Content:
+              {{support_request.message_content}}
+              
+              Customer Context:
+              - Customer Tier: {{customer_tier}}
+              - Is VIP: {{is_vip}}
+              - Total Orders: {{total_orders}}
+              - Recent Orders: {{recent_orders}}
+              - Previous Support Tickets: {{support_history.length}}
+              - Average Satisfaction: {{avg_satisfaction}}
+      
+      outputs:
+        ai_analysis: "{{response.choices[0].message.content | json_parse}}"
+
+    # ====================================================================
+    # STEP 4: PRIORITY CALCULATION AND ROUTING LOGIC
+    # ====================================================================
+    - name: "calculate_ticket_priority"
+      type: "javascript"
+      description: "Calculate final ticket priority based on multiple factors"
+      code: |
+        function calculateTicketPriority(aiAnalysis, customerContext, supportRequest) {
+          let priorityScore = 0;
+          const factors = [];
+          
+          // Base AI priority scoring
+          const aiPriorityMap = {
+            'low': 10,
+            'medium': 25,
+            'high': 40,
+            'urgent': 60
+          };
+          priorityScore += aiPriorityMap[aiAnalysis.priority] || 10;
+          factors.push(`AI Priority: ${aiAnalysis.priority} (+${aiPriorityMap[aiAnalysis.priority]})`);
+          
+          // Customer tier influence
+          if (customerContext.is_vip) {
+            priorityScore += 30;
+            factors.push('VIP Customer (+30)');
+          } else if (customerContext.customer_tier === 'platinum') {
+            priorityScore += 20;
+            factors.push('Platinum Customer (+20)');
+          } else if (customerContext.customer_tier === 'gold') {
+            priorityScore += 10;
+            factors.push('Gold Customer (+10)');
+          }
+          
+          // Recent purchase influence
+          if (customerContext.recent_orders > 0) {
+            priorityScore += 15;
+            factors.push(`Recent Orders: ${customerContext.recent_orders} (+15)`);
+          }
+          
+          // Sentiment and urgency impact
+          if (aiAnalysis.sentiment === 'angry' || aiAnalysis.sentiment === 'frustrated') {
+            priorityScore += 20;
+            factors.push(`Negative Sentiment: ${aiAnalysis.sentiment} (+20)`);
+          }
+          
+          if (aiAnalysis.urgency_score >= 8) {
+            priorityScore += 25;
+            factors.push(`High Urgency Score: ${aiAnalysis.urgency_score} (+25)`);
+          }
+          
+          // Category-specific adjustments
+          const urgentCategories = ['billing', 'refund', 'technical'];
+          if (urgentCategories.includes(aiAnalysis.category)) {
+            priorityScore += 15;
+            factors.push(`Urgent Category: ${aiAnalysis.category} (+15)`);
+          }
+          
+          // Previous support history influence
+          if (customerContext.support_history.length > 2) {
+            priorityScore += 10;
+            factors.push(`Repeat Customer: ${customerContext.support_history.length} tickets (+10)`);
+          }
+          
+          // Time-based priority (after hours, weekends)
+          const currentHour = new Date().getHours();
+          const isWeekend = [0, 6].includes(new Date().getDay());
+          
+          if (currentHour < 9 || currentHour > 17 || isWeekend) {
+            // Slightly lower priority for after-hours unless urgent
+            if (priorityScore < 70) {
+              priorityScore -= 5;
+              factors.push('After Hours (-5)');
+            }
+          }
+          
+          // Determine final priority level
+          let finalPriority;
+          if (priorityScore >= 80) {
+            finalPriority = 'critical';
+          } else if (priorityScore >= 60) {
+            finalPriority = 'high';
+          } else if (priorityScore >= 35) {
+            finalPriority = 'medium';
+          } else {
+            finalPriority = 'low';
+          }
+          
+          // Determine routing department
+          let routingDepartment;
+          const categoryDepartmentMap = {
+            'billing': 'finance',
+            'refund': 'finance',
+            'shipping': 'fulfillment',
+            'product': 'product_support',
+            'technical': 'technical_support',
+            'exchange': 'customer_success',
+            'general': 'general_support'
+          };
+          
+          routingDepartment = categoryDepartmentMap[aiAnalysis.category] || 'general_support';
+          
+          // Override for VIP customers
+          if (customerContext.is_vip && finalPriority === 'critical') {
+            routingDepartment = 'vip_support';
+          }
+          
+          return {
+            final_priority: finalPriority,
+            priority_score: priorityScore,
+            routing_department: routingDepartment,
+            priority_factors: factors,
+            sla_hours: finalPriority === 'critical' ? 2 : 
+                      finalPriority === 'high' ? 4 : 
+                      finalPriority === 'medium' ? 8 : 24,
+            requires_escalation: priorityScore >= 80,
+            auto_response_eligible: aiAnalysis.confidence_score >= 0.8 && !aiAnalysis.requires_human && finalPriority === 'low'
+          };
+        }
+        
+        // Execute priority calculation
+        const priorityResult = calculateTicketPriority(
+          {{ai_analysis}},
+          {
+            is_vip: {{is_vip}},
+            customer_tier: '{{customer_tier}}',
+            recent_orders: {{recent_orders}},
+            support_history: {{support_history}}
+          },
+          {{support_request}}
+        );
+        
+        return priorityResult;
+      
+      outputs:
+        priority_analysis: "{{result}}"
+
+    # ====================================================================
+    # STEP 5: CREATE SUPPORT TICKET RECORD
+    # ====================================================================
+    - name: "create_ticket_record"
+      type: "database"
+      description: "Create comprehensive support ticket record in database"
+      operation: "insert"
+      table: "support_tickets"
+      data:
+        ticket_id: "TICKET-{{current_timestamp}}-{{random_string(6)}}"
+        customer_email: "{{support_request.customer_email}}"
+        customer_name: "{{support_request.customer_name}}"
+        customer_phone: "{{support_request.customer_phone}}"
+        subject: "{{support_request.subject}}"
+        original_message: "{{support_request.message_content}}"
+        message_html: "{{support_request.message_html}}"
+        channel: "{{support_request.channel}}"
+        category: "{{ai_analysis.category}}"
+        subcategory: "{{ai_analysis.subcategory}}"
+        priority: "{{priority_analysis.final_priority}}"
+        priority_score: "{{priority_analysis.priority_score}}"
+        routing_department: "{{priority_analysis.routing_department}}"
+        sentiment: "{{ai_analysis.sentiment}}"
+        urgency_score: "{{ai_analysis.urgency_score}}"
+        customer_tier: "{{customer_tier}}"
+        is_vip: "{{is_vip}}"
+        status: "open"
+        sla_deadline: "{{date_add(current_timestamp, priority_analysis.sla_hours, 'hours')}}"
+        created_at: "{{current_timestamp}}"
+        ai_analysis: "{{ai_analysis}}"
+        customer_context: "{{crm_profile}}"
+        order_history_summary: "{{order_history}}"
+        support_history_summary: "{{support_history}}"
+        source_data: "{{support_request}}"
+      
+      outputs:
+        ticket_id: "{{insert_id}}"
+        ticket_number: "{{generated_ticket_id}}"
+
+    # ====================================================================
+    # STEP 6: AUTOMATED RESPONSE CHECK
+    # ====================================================================
+    - name: "automated_response_check"
+      type: "condition"
+      description: "Check if ticket is eligible for automated response"
+      condition: "{{priority_analysis.auto_response_eligible && ai_analysis.confidence_score >= 0.8}}"
+      
+      on_true:
+        next: "generate_automated_response"
+      
+      on_false:
+        next: "route_to_human_agent"
+
+    # ====================================================================
+    # STEP 7A: GENERATE AND SEND AUTOMATED RESPONSE
+    # ====================================================================
+    - name: "generate_automated_response"
+      type: "openai"
+      description: "Generate personalized automated response for simple inquiries"
+      operation: "chat_completion"
+      inputs:
+        model: "gpt-4"
+        messages:
+          - role: "system"
+            content: |
+              You are a helpful customer service representative for {{COMPANY_NAME}}. 
+              Generate a personalized, empathetic response to the customer's inquiry.
+              
+              Guidelines:
+              1. Address the customer by name if available
+              2. Reference their order history or customer tier when relevant
+              3. Provide specific, actionable information
+              4. Include relevant links or next steps
+              5. Maintain a warm, professional tone
+              6. If you cannot fully resolve the issue, explain next steps
+              7. End with contact information for further assistance
+              
+              Company Information:
+              - Company: {{COMPANY_NAME}}
+              - Support Email: {{SUPPORT_EMAIL}}
+              - Support Phone: {{SUPPORT_PHONE}}
+              - Website: {{COMPANY_WEBSITE}}
+              - Return Policy: {{RETURN_POLICY_URL}}
+              - Shipping Policy: {{SHIPPING_POLICY_URL}}
+              
+          - role: "user"
+            content: |
+              Customer Information:
+              - Name: {{support_request.customer_name}}
+              - Email: {{support_request.customer_email}}
+              - Customer Tier: {{customer_tier}}
+              - Total Orders: {{total_orders}}
+              - Recent Orders: {{recent_orders}}
+              
+              Customer Inquiry:
+              Subject: {{support_request.subject}}
+              Message: {{support_request.message_content}}
+              
+              AI Analysis:
+              - Category: {{ai_analysis.category}}
+              - Intent: {{ai_analysis.customer_intent}}
+              - Key Issues: {{ai_analysis.key_issues}}
+              - Sentiment: {{ai_analysis.sentiment}}
+              
+              Please generate an appropriate response.
+      
+      outputs:
+        automated_response: "{{response.choices[0].message.content}}"
+      
+      next: "send_automated_response"
+
+    # ====================================================================
+    # STEP 7B: SEND AUTOMATED RESPONSE TO CUSTOMER
+    # ====================================================================
+    - name: "send_automated_response"
+      type: "parallel"
+      description: "Send automated response and update ticket status"
+      
+      branches:
+        # Send email response
+        email_response:
+          - name: "send_response_email"
+            type: "email-automation"
+            inputs:
+              to: "{{support_request.customer_email}}"
+              from: "{{SUPPORT_EMAIL}}"
+              subject: "Re: {{support_request.subject}} - Ticket #{{ticket_number}}"
+              template: "automated_support_response"
+              data:
+                customer_name: "{{support_request.customer_name}}"
+                ticket_number: "{{ticket_number}}"
+                response_content: "{{automated_response}}"
+                support_email: "{{SUPPORT_EMAIL}}"
+                support_phone: "{{SUPPORT_PHONE}}"
+                company_name: "{{COMPANY_NAME}}"
+        
+        # Update ticket status
+        ticket_update:
+          - name: "update_ticket_automated_response"
+            type: "database"
+            operation: "update"
+            table: "support_tickets"
+            data:
+              status: "auto_responded"
+              automated_response: "{{automated_response}}"
+              responded_at: "{{current_timestamp}}"
+              response_time_minutes: "{{minutes_since(created_at)}}"
+              assigned_agent: "automated_system"
+            where:
+              id: "{{ticket_id}}"
+      
+      next: "schedule_follow_up"
+
+    # ====================================================================
+    # STEP 7C: ROUTE TO HUMAN AGENT
+    # ====================================================================
+    - name: "route_to_human_agent"
+      type: "parallel"
+      description: "Route ticket to appropriate human agent based on category and priority"
+      
+      branches:
+        # Department-specific routing
+        agent_assignment:
+          - name: "assign_to_department"
+            type: "switch"
+            variable: "{{priority_analysis.routing_department}}"
+            
+            cases:
+              "vip_support":
+                next: "assign_vip_agent"
+              
+              "finance":
+                next: "assign_billing_agent"
+              
+              "technical_support":
+                next: "assign_technical_agent"
+              
+              "fulfillment":
+                next: "assign_fulfillment_agent"
+              
+              "product_support":
+                next: "assign_product_agent"
+            
+            default: "assign_general_agent"
+        
+        # Immediate escalation for critical tickets
+        critical_escalation:
+          - name: "critical_ticket_escalation"
+            type: "condition"
+            condition: "{{priority_analysis.final_priority === 'critical'}}"
+            
+            on_true:
+              - name: "immediate_escalation_alert"
+                type: "parallel"
+                branches:
+                  slack_alert:
+                    - name: "critical_slack_alert"
+                      type: "slack"
+                      operation: "send_message"
+                      inputs:
+                        channel: "#support-critical"
+                        message: |
+                          🚨 **CRITICAL SUPPORT TICKET** 🚨
+                          
+                          Ticket: #{{ticket_number}}
+                          Customer: {{support_request.customer_name}} ({{customer_tier}})
+                          {{#if is_vip}}👑 VIP CUSTOMER{{/if}}
+                          
+                          Subject: {{support_request.subject}}
+                          Priority Score: {{priority_analysis.priority_score}}
+                          Department: {{priority_analysis.routing_department}}
+                          
+                          **Key Issues:**
+                          {{#each ai_analysis.key_issues}}
+                          • {{this}}
+                          {{/each}}
+                          
+                          **Sentiment:** {{ai_analysis.sentiment}}
+                          **SLA Deadline:** {{format_date(sla_deadline)}}
+                          
+                          <{{ADMIN_URL}}/tickets/{{ticket_number}}|View Ticket>
+                  
+                  sms_alert:
+                    - name: "manager_sms_alert"
+                      type: "condition"
+                      condition: "{{SUPPORT_MANAGER_PHONE && priority_analysis.priority_score >= 90}}"
+                      
+                      on_true:
+                        - name: "send_manager_sms"
+                          type: "twilio"
+                          operation: "send_sms"
+                          inputs:
+                            to: "{{SUPPORT_MANAGER_PHONE}}"
+                            from: "{{TWILIO_PHONE_NUMBER}}"
+                            message: "CRITICAL SUPPORT TICKET: #{{ticket_number}} - {{support_request.customer_name}} - {{ai_analysis.category}} - Priority: {{priority_analysis.priority_score}}"
+        
+        # Customer acknowledgment
+        customer_acknowledgment:
+          - name: "send_acknowledgment_email"
+            type: "email-automation"
+            inputs:
+              to: "{{support_request.customer_email}}"
+              from: "{{SUPPORT_EMAIL}}"
+              subject: "We received your message - Ticket #{{ticket_number}}"
+              template: "support_acknowledgment"
+              data:
+                customer_name: "{{support_request.customer_name}}"
+                ticket_number: "{{ticket_number}}"
+                priority: "{{priority_analysis.final_priority}}"
+                expected_response_time: "{{priority_analysis.sla_hours}} hours"
+                department: "{{priority_analysis.routing_department}}"
+                support_email: "{{SUPPORT_EMAIL}}"
+                support_phone: "{{SUPPORT_PHONE}}"
+
+    # ====================================================================
+    # STEP 8: AGENT ASSIGNMENT LOGIC
+    # ====================================================================
+    - name: "assign_vip_agent"
+      type: "database"
+      description: "Assign to available VIP support specialist"
+      operation: "query"
+      query: |
+        SELECT agent_id, name, email, current_tickets 
+        FROM support_agents 
+        WHERE department = 'vip_support' 
+        AND status = 'available' 
+        AND current_tickets < max_concurrent_tickets
+        ORDER BY current_tickets ASC, last_assigned ASC
+        LIMIT 1
+      
+      then:
+        - name: "update_agent_assignment"
+          type: "database"
+          operation: "update"
+          table: "support_tickets"
+          data:
+            assigned_agent_id: "{{query_result[0].agent_id}}"
+            assigned_agent_name: "{{query_result[0].name}}"
+            assigned_at: "{{current_timestamp}}"
+            status: "assigned"
+          where:
+            id: "{{ticket_id}}"
+        
+        - name: "notify_vip_agent"
+          type: "email-automation"
+          inputs:
+            to: "{{query_result[0].email}}"
+            subject: "VIP Customer Support Assignment - Ticket #{{ticket_number}}"
+            template: "vip_agent_assignment"
+            data:
+              agent_name: "{{query_result[0].name}}"
+              ticket_number: "{{ticket_number}}"
+              customer_name: "{{support_request.customer_name}}"
+              customer_tier: "{{customer_tier}}"
+              priority: "{{priority_analysis.final_priority}}"
+              sla_deadline: "{{sla_deadline}}"
+              ticket_url: "{{ADMIN_URL}}/tickets/{{ticket_number}}"
+      
+      next: "update_ticket_metrics"
+
+    # Similar assignment logic for other departments...
+    - name: "assign_general_agent"
+      type: "database"
+      description: "Assign to next available general support agent"
+      operation: "query"
+      query: |
+        SELECT agent_id, name, email, current_tickets 
+        FROM support_agents 
+        WHERE department IN ('general_support', 'customer_success') 
+        AND status = 'available' 
+        AND current_tickets < max_concurrent_tickets
+        ORDER BY 
+          CASE WHEN department = 'general_support' THEN 1 ELSE 2 END,
+          current_tickets ASC, 
+          last_assigned ASC
+        LIMIT 1
+      
+      then:
+        - name: "update_general_assignment"
+          type: "database"
+          operation: "update"
+          table: "support_tickets"
+          data:
+            assigned_agent_id: "{{query_result[0].agent_id}}"
+            assigned_agent_name: "{{query_result[0].name}}"
+            assigned_at: "{{current_timestamp}}"
+            status: "assigned"
+          where:
+            id: "{{ticket_id}}"
+        
+        - name: "increment_agent_workload"
+          type: "database"
+          operation: "update"
+          table: "support_agents"
+          data:
+            current_tickets: "current_tickets + 1"
+            last_assigned: "{{current_timestamp}}"
+          where:
+            agent_id: "{{query_result[0].agent_id}}"
+      
+      next: "update_ticket_metrics"
+
+    # ====================================================================
+    # STEP 9: SCHEDULE FOLLOW-UP ACTIONS
+    # ====================================================================
+    - name: "schedule_follow_up"
+      type: "schedule"
+      description: "Schedule follow-up actions based on ticket type and priority"
+      
+      schedules:
+        # SLA monitoring
+        sla_reminder:
+          delay: "{{priority_analysis.sla_hours - 1}} hours"
+          condition: "{{priority_analysis.final_priority !== 'low'}}"
+          workflow: "sla_reminder_check"
+          data:
+            ticket_id: "{{ticket_id}}"
+            ticket_number: "{{ticket_number}}"
+            sla_deadline: "{{sla_deadline}}"
+            assigned_agent_id: "{{assigned_agent_id}}"
+        
+        # Customer satisfaction survey
+        satisfaction_survey:
+          delay: "24 hours"
+          condition: "{{status === 'auto_responded'}}"
+          workflow: "customer_satisfaction_survey"
+          data:
+            ticket_id: "{{ticket_id}}"
+            customer_email: "{{support_request.customer_email}}"
+            customer_name: "{{support_request.customer_name}}"
+        
+        # Follow-up for unresolved tickets
+        resolution_follow_up:
+          delay: "{{priority_analysis.sla_hours * 2}} hours"
+          workflow: "ticket_resolution_follow_up"
+          data:
+            ticket_id: "{{ticket_id}}"
+            priority: "{{priority_analysis.final_priority}}"
+            assigned_agent_id: "{{assigned_agent_id}}"
+
+    # ====================================================================
+    # STEP 10: UPDATE ANALYTICS AND METRICS
+    # ====================================================================
+    - name: "update_ticket_metrics"
+      type: "parallel"
+      description: "Update various analytics and performance metrics"
+      
+      branches:
+        # Daily metrics update
+        daily_metrics:
+          - name: "update_daily_metrics"
+            type: "database"
+            operation: "upsert"
+            table: "daily_support_metrics"
+            data:
+              date: "{{current_date}}"
+              total_tickets: "increment"
+              tickets_by_priority: "json_array_append(tickets_by_priority, '$.{{priority_analysis.final_priority}}', 1)"
+              tickets_by_category: "json_array_append(tickets_by_category, '$.{{ai_analysis.category}}', 1)"
+              tickets_by_channel: "json_array_append(tickets_by_channel, '$.{{support_request.channel}}', 1)"
+              automated_responses: "{{status === 'auto_responded' ? 'increment' : 'no_change'}}"
+              vip_tickets: "{{is_vip ? 'increment' : 'no_change'}}"
+              avg_priority_score: "running_average:{{priority_analysis.priority_score}}"
+            where:
+              date: "{{current_date}}"
+        
+        # Agent workload tracking
+        agent_metrics:
+          - name: "update_agent_metrics"
+            type: "condition"
+            condition: "{{assigned_agent_id !== null}}"
+            
+            on_true:
+              - name: "track_agent_assignment"
+                type: "database"
+                operation: "upsert"
+                table: "agent_performance_metrics"
+                data:
+                  date: "{{current_date}}"
+                  agent_id: "{{assigned_agent_id}}"
+                  tickets_assigned: "increment"
+                  total_priority_score: "add:{{priority_analysis.priority_score}}"
+                  avg_priority_score: "running_average:{{priority_analysis.priority_score}}"
+                where:
+                  date: "{{current_date}}"
+                  agent_id: "{{assigned_agent_id}}"
+        
+        # Customer analytics
+        customer_metrics:
+          - name: "update_customer_metrics"
+            type: "database"
+            operation: "upsert"
+            table: "customer_support_analytics"
+            data:
+              customer_email: "{{support_request.customer_email}}"
+              total_tickets: "increment"
+              last_contact: "{{current_timestamp}}"
+              avg_priority_score: "running_average:{{priority_analysis.priority_score}}"
+              preferred_channel: "{{support_request.channel}}"
+              common_categories: "json_array_append(common_categories, '$', '{{ai_analysis.category}}')"
+            where:
+              customer_email: "{{support_request.customer_email}}"
+
+    # ====================================================================
+    # WORKFLOW COMPLETION
+    # ====================================================================
+    - name: "workflow_completion"
+      type: "response"
+      message: "Support ticket processed successfully"
+      data:
+        ticket_id: "{{ticket_id}}"
+        ticket_number: "{{ticket_number}}"
+        customer_email: "{{support_request.customer_email}}"
+        priority: "{{priority_analysis.final_priority}}"
+        priority_score: "{{priority_analysis.priority_score}}"
+        category: "{{ai_analysis.category}}"
+        department: "{{priority_analysis.routing_department}}"
+        assigned_agent: "{{assigned_agent_name || 'automated_system'}}"
+        status: "{{status}}"
+        sla_deadline: "{{sla_deadline}}"
+        processing_time: "{{workflow_duration}}"
+        automated_response: "{{status === 'auto_responded'}}"
+        next_actions: "{{scheduled_actions}}"
+
+# ====================================================================
+# ENVIRONMENT VARIABLES AND CONFIGURATION
+# ====================================================================
+variables:
+  # Company Information
+  COMPANY_NAME: "${COMPANY_NAME}"
+  COMPANY_DOMAIN: "${COMPANY_DOMAIN}"
+  COMPANY_WEBSITE: "${COMPANY_WEBSITE}"
+  INTERNAL_DOMAIN: "${INTERNAL_DOMAIN}"
+  
+  # Support Configuration
+  SUPPORT_EMAIL: "${SUPPORT_EMAIL}"
+  SUPPORT_PHONE: "${SUPPORT_PHONE}"
+  SUPPORT_MANAGER_PHONE: "${SUPPORT_MANAGER_PHONE}"
+  
+  # AI Configuration
+  OPENAI_API_KEY: "${OPENAI_API_KEY}"
+  OPENAI_MODEL: "${OPENAI_MODEL:gpt-4}"
+  
+  # CRM Integration
+  HUBSPOT_API_KEY: "${HUBSPOT_API_KEY}"
+  
+  # Communication
+  GMAIL_API_CREDENTIALS: "${GMAIL_API_CREDENTIALS}"
+  TWILIO_ACCOUNT_SID: "${TWILIO_ACCOUNT_SID}"
+  TWILIO_AUTH_TOKEN: "${TWILIO_AUTH_TOKEN}"
+  TWILIO_PHONE_NUMBER: "${TWILIO_PHONE_NUMBER}"
+  
+  # Business Rules
+  VIP_REVENUE_THRESHOLD: "${VIP_REVENUE_THRESHOLD:5000}"
+  AUTO_RESPONSE_CONFIDENCE_THRESHOLD: "${AUTO_RESPONSE_CONFIDENCE_THRESHOLD:0.8}"
+  
+  # URLs and Links
+  ADMIN_URL: "${ADMIN_URL}"
+  RETURN_POLICY_URL: "${RETURN_POLICY_URL}"
+  SHIPPING_POLICY_URL: "${SHIPPING_POLICY_URL}"
+  
+  # Webhooks and Secrets
+  CONTACT_FORM_SECRET: "${CONTACT_FORM_SECRET}"
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+
+# ====================================================================
+# ERROR HANDLING AND MONITORING
+# ====================================================================
+error_handling:
+  global_error_handler:
+    type: "parallel"
+    branches:
+      admin_notification:
+        - type: "email-automation"
+          inputs:
+            to: "{{SUPPORT_ADMIN_EMAIL}}"
+            subject: "Support Ticket Processing Error"
+            template: "support_workflow_error"
+            data:
+              error_details: "{{error}}"
+              support_request: "{{support_request}}"
+              workflow_step: "{{current_step}}"
+      
+      error_logging:
+        - type: "database"
+          operation: "insert"
+          table: "support_workflow_errors"
+          data:
+            customer_email: "{{support_request.customer_email}}"
+            error_type: "{{error.type}}"
+            error_message: "{{error.message}}"
+            workflow_step: "{{current_step}}"
+            request_data: "{{support_request}}"
+            created_at: "{{current_timestamp}}"
+      
+      fallback_ticket_creation:
+        - type: "database"
+          operation: "insert"
+          table: "support_tickets"
+          data:
+            customer_email: "{{support_request.customer_email}}"
+            subject: "{{support_request.subject}}"
+            original_message: "{{support_request.message_content}}"
+            status: "error_fallback"
+            priority: "medium"
+            category: "unknown"
+            created_at: "{{current_timestamp}}"
+            error_context: "{{error}}"
+  
+  retry_policy:
+    max_retries: 3
+    retry_delay: "30 seconds"
+    exponential_backoff: true
+    retry_on_errors: ["timeout", "network_error", "api_rate_limit", "ai_service_error"]
+    
+  monitoring:
+    performance_tracking: true
+    error_alerting: true
+    customer_satisfaction_monitoring: true
+    sla_compliance_tracking: true
+    agent_performance_monitoring: true
+
+# ====================================================================
+# CUSTOMIZATION AND BUSINESS RULES
+# ====================================================================
+customization:
+  priority_scoring:
+    description: "Customize priority scoring algorithm"
+    factors:
+      - "Customer tier weighting (VIP, Platinum, Gold, Standard)"
+      - "Sentiment analysis impact"
+      - "Category-based priority adjustments"
+      - "Time-based priority modifications"
+      - "Order history influence"
+  
+  automated_responses:
+    description: "Configure automated response criteria"
+    settings:
+      - "Minimum confidence threshold for auto-response"
+      - "Categories eligible for automation"
+      - "Customer tiers excluded from automation"
+      - "Time-based automation rules"
+  
+  routing_logic:
+    description: "Customize agent routing and assignment"
+    options:
+      - "Department-based routing rules"
+      - "Agent skill-based matching"
+      - "Workload balancing algorithms"
+      - "VIP customer priority routing"
+      - "Escalation triggers and thresholds"
+
+# ====================================================================
+# PERFORMANCE OPTIMIZATION
+# ====================================================================
+performance:
+  caching:
+    - "Cache customer profiles for 30 minutes"
+    - "Cache AI analysis results for similar requests"
+    - "Cache agent availability status for 5 minutes"
+  
+  optimization:
+    - "Parallel processing for customer context gathering"
+    - "Batch database updates for analytics"
+    - "Optimize AI prompts for faster response times"
+    - "Use database indexes for fast customer lookups"
+  
+  scaling:
+    - "Queue system for high-volume ticket processing"
+    - "Horizontal scaling for AI analysis services"
+    - "Load balancing for email processing"
+    - "Database read replicas for analytics queries"

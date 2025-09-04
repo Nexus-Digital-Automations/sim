@@ -1,44 +1,143 @@
-# 🧪 API Test Migration Infrastructure
+# 🧪 API Test Migration Templates and Tools
 
 ## Overview
 
-This directory contains a comprehensive infrastructure for migrating API tests to bun/vitest 3.x compatible patterns with 90%+ pass rates. The system provides standardized templates, utilities, and migration tools for systematic API test migration.
+This directory contains comprehensive migration templates, helper utilities, and tools for systematically migrating API tests to bun/vitest 3.x compatible patterns with 90%+ pass rates.
 
-## 📁 File Structure
+## 📁 Directory Structure
 
 ```
-app/api/__test-utils__/
-├── README.md                           # This file - overview and instructions
-├── migration-template.test.ts          # 🎯 Main migration template
-├── migration-checklist.md              # 📋 Comprehensive migration checklist
-├── quick-migration-guide.md            # 🚀 5-minute quick start guide
-├── example-migrated-test.test.ts       # 💡 Complete migration example
-├── setup.ts                           # Basic Vitest setup
-├── utils.ts                          # Legacy test utilities
-├── bun-compatible-utils.ts            # Bun/Vitest 3.x utilities
-├── enhanced-utils.ts                  # Enhanced backward-compatible utilities
-└── module-mocks.ts                   # Module-level mocks for bun compatibility
+__test-utils__/
+├── 📋 Core Migration Files
+│   ├── migration-template.test.ts         # Master migration template
+│   ├── migration-checklist.md            # Step-by-step migration checklist
+│   ├── comprehensive-migration-guide.md  # Complete migration guide
+│   └── quick-start.js                    # Interactive template selection
+│
+├── 🎯 Specialized Templates
+│   └── templates/
+│       ├── auth-api-template.test.ts         # Authentication APIs
+│       ├── crud-api-template.test.ts         # CRUD operations
+│       ├── file-upload-api-template.test.ts  # File management
+│       └── external-integration-template.test.ts # External services
+│
+├── 🔧 Utilities & Infrastructure
+│   ├── migration-helpers.ts              # Reusable migration utilities
+│   ├── module-mocks.ts                  # Bun/vitest compatible mocks
+│   ├── enhanced-utils.ts                # Enhanced testing utilities
+│   └── bun-test-setup.ts               # Bun test environment setup
+│
+└── 📚 Documentation & Examples
+    ├── README.md                        # This file
+    ├── example-migrated-test.test.ts    # Working example
+    ├── quick-migration-guide.md         # 5-minute guide
+    └── *.md                            # Additional guides
 ```
 
 ## 🚀 Quick Start
 
-### 1. Copy Template
+### 1. Interactive Template Selection
+
 ```bash
-cp app/api/__test-utils__/migration-template.test.ts app/api/your-endpoint/route.test.ts
+# Run interactive quick start
+node app/api/__test-utils__/quick-start.js
+
+# Or with parameters
+node app/api/__test-utils__/quick-start.js --endpoint=/api/users --type=crud
 ```
 
-### 2. Customize Template
-- Replace `[ENDPOINT_NAME]` with your endpoint name
-- Import your actual route handlers
-- Update test data structure
-- Configure authentication patterns
+### 2. Manual Template Selection
 
-### 3. Run Tests
+#### For General APIs
 ```bash
-bun test app/api/your-endpoint/route.test.ts
+cp app/api/__test-utils__/migration-template.test.ts your-endpoint/route.test.ts
 ```
 
-**Target:** 90%+ pass rate ✅
+#### For Authentication APIs
+```bash
+cp app/api/__test-utils__/templates/auth-api-template.test.ts auth/login/route.test.ts
+```
+
+#### For CRUD APIs
+```bash
+cp app/api/__test-utils__/templates/crud-api-template.test.ts users/route.test.ts
+```
+
+#### For File Operations
+```bash
+cp app/api/__test-utils__/templates/file-upload-api-template.test.ts files/upload/route.test.ts
+```
+
+#### For External Integrations
+```bash
+cp app/api/__test-utils__/templates/external-integration-template.test.ts webhooks/stripe/route.test.ts
+```
+
+## 🎯 Template Selection Guide
+
+| API Type | Template | Best For | Key Features |
+|----------|----------|----------|--------------|
+| **General Purpose** | `migration-template.test.ts` | Standard REST endpoints | Authentication, DB mocking, validation |
+| **Authentication** | `auth-api-template.test.ts` | Login, registration, auth | Session handling, OAuth, security testing |
+| **CRUD Operations** | `crud-api-template.test.ts` | Data management | Pagination, filtering, bulk operations |
+| **File Management** | `file-upload-api-template.test.ts` | File uploads/downloads | Multipart handling, storage mocking |
+| **External Services** | `external-integration-template.test.ts` | Third-party APIs | Webhook processing, API mocking |
+
+## 🔧 Migration Helper Utilities
+
+### Essential Imports
+```typescript
+import '@/app/api/__test-utils__/module-mocks'
+import { mockControls } from '@/app/api/__test-utils__/module-mocks'
+import { migrationHelpers } from '@/app/api/__test-utils__/migration-helpers'
+```
+
+### Quick Setup Patterns
+
+#### Basic Test Environment
+```typescript
+const { setupTestEnvironment, createRequestBuilder } = migrationHelpers
+
+beforeEach(() => {
+  setupTestEnvironment({
+    auth: { user: migrationHelpers.createDefaultTestUser() },
+    database: { selectResults: [[sampleData]] },
+    logging: true,
+  })
+})
+
+const requestBuilder = createRequestBuilder('http://localhost:3000/api/your-endpoint')
+```
+
+#### Complete Workflow
+```typescript
+const workflow = migrationHelpers.createMigrationWorkflow(
+  'http://localhost:3000/api/your-endpoint',
+  { GET, POST, PUT, DELETE }
+)
+
+const testSuite = workflow.generateTestSuite({
+  authentication: true,
+  crud: true,
+  performance: true,
+})
+
+await testSuite.runAuthenticationTests()
+await testSuite.runCrudTests()
+await testSuite.runPerformanceTests()
+```
+
+#### Response Validation
+```typescript
+await migrationHelpers.validateResponse(response, {
+  expectedStatus: 200,
+  requiredFields: ['id', 'name'],
+  typeChecks: { id: 'string', name: 'string' },
+  customValidations: [
+    (data) => data.id.startsWith('user-') || 'ID should start with user-'
+  ],
+})
+```
 
 ## 📋 Migration Process
 

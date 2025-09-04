@@ -2,6 +2,58 @@
   "project": "unknown",
   "tasks": [
     {
+      "id": "task_1756944793177_461ty2ijp",
+      "title": "Research: Migrate knowledge search API test from vi.mock() to bun-compatible infrastructure",
+      "description": "Research and analysis required for implementing: \"Migrate knowledge search API test from vi.mock() to bun-compatible infrastructure\"\n\n**Implementation Task Details:**\nMigrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/knowledge/search/route.test.ts from vi.mock() patterns to pure bun-compatible infrastructure using bun-test-setup. Remove all vi.mock() calls that cause \"vi.mock is not a function\" errors and implement equivalent mocking using the bun-test-setup infrastructure. Preserve all search logic, filtering, result processing, authentication, and permission tests. Target: 90%+ pass rate.\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756944793177_3mdjuke4s\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756944793177_461ty2ijp.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756944793177_461ty2ijp.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T00:13:13.177Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756944793177_3mdjuke4s"
+    },
+    {
+      "id": "task_1756944597049_8hz0s7kxg",
+      "title": "Research: Migrate knowledge search API test from vi.doMock() to bun-compatible infrastructure",
+      "description": "Research and analysis required for implementing: \"Migrate knowledge search API test from vi.doMock() to bun-compatible infrastructure\"\n\n**Implementation Task Details:**\nMigrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/knowledge/search/route.test.ts from vi.doMock() patterns to bun-compatible infrastructure with proper mocking, search logic preservation, and 90%+ pass rate validation\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1756944597049_kltgzkukd\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
+      "mode": "RESEARCH",
+      "category": "research",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "./development/research-reports/research-report-task_1756944597049_8hz0s7kxg.md"
+      ],
+      "success_criteria": [
+        "Research methodology and approach documented",
+        "Key findings and recommendations provided",
+        "Implementation guidance and best practices identified",
+        "Risk assessment and mitigation strategies outlined",
+        "Research report created: ./development/research-reports/research-report-task_1756944597049_8hz0s7kxg.md"
+      ],
+      "estimate": "1-2 hours",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T00:09:57.049Z",
+      "created_by": "auto-research-system",
+      "auto_created_for": "task_1756944597049_kltgzkukd"
+    },
+    {
       "id": "task_1756926341864_sfkpxrhkm",
       "title": "Execute Phase 3: Systematic API Test Migration",
       "description": "Apply proven minimal bun-compatible migration pattern to remaining 70 API test files using validated approach from Phase 2 achieving 100% success rate",
@@ -20,9 +72,7 @@
       "subtasks": [],
       "created_at": "2025-09-03T19:05:41.868Z",
       "auto_research_created": true,
-      "assigned_agent": "development_session_1756926335112_1_general_563ec756",
-      "started_at": "2025-09-03T19:08:36.085Z",
-      "claimed_by": "development_session_1756926335112_1_general_563ec756",
+      "claimed_by": "development_session_1756944363460_1_general_b976e732",
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756926335112_1_general_563ec756",
@@ -30,25 +80,76 @@
           "assignedAt": "2025-09-03T19:08:36.085Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agentId": "development_session_1756944363460_1_general_b976e732",
+          "role": "primary",
+          "assignedAt": "2025-09-04T00:06:58.061Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
         }
-      ]
+      ],
+      "reverted_at": "2025-09-04T00:06:52.519Z",
+      "revert_reason": "Task auto-reverted after 15 minutes in progress",
+      "previously_assigned_agent": "development_session_1756926335112_1_general_563ec756",
+      "previous_started_at": "2025-09-03T19:08:36.085Z",
+      "assigned_agent": "development_session_1756944363460_1_general_b976e732",
+      "started_at": "2025-09-04T00:06:58.061Z"
     },
     {
-      "id": "task_1756893050562_3ggq51al8",
-      "title": "Migrate workflow API test files to bun/vitest compatible patterns",
+      "id": "task_1756944642899_4anlen4k7",
+      "title": "Migrate files/parse route test from vi.doMock() to bun-compatible enhanced infrastructure",
+      "description": "Migrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/files/parse/route.test.ts from vi.doMock() pattern to bun-compatible enhanced infrastructure using migration template. Preserve all existing comprehensive security tests and file parsing logic. Apply proven pattern: module mocks first, enhanced-utils, route handlers. Replace vi.doMock() with vi.mock() factory functions. Use mockControls for runtime config. Ensure proper cleanup and test isolation.",
       "mode": "DEVELOPMENT",
-      "category": "test-refactor",
-      "priority": "medium",
+      "category": "refactor",
+      "priority": "high",
       "status": "pending",
       "dependencies": [],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
-      "requires_research": false,
+      "requires_research": true,
       "subtasks": [],
-      "created_at": "2025-09-03T09:50:50.562Z",
-      "auto_research_created": false,
-      "description": "No description provided"
+      "created_at": "2025-09-04T00:10:42.902Z",
+      "auto_research_created": true
+    },
+    {
+      "id": "task_1756944793177_3mdjuke4s",
+      "title": "Migrate knowledge search API test from vi.mock() to bun-compatible infrastructure",
+      "description": "Migrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/knowledge/search/route.test.ts from vi.mock() patterns to pure bun-compatible infrastructure using bun-test-setup. Remove all vi.mock() calls that cause \"vi.mock is not a function\" errors and implement equivalent mocking using the bun-test-setup infrastructure. Preserve all search logic, filtering, result processing, authentication, and permission tests. Target: 90%+ pass rate.",
+      "mode": "DEVELOPMENT",
+      "category": "refactor",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [
+        "task_1756944793177_461ty2ijp"
+      ],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T00:13:13.188Z",
+      "auto_research_created": true
+    },
+    {
+      "id": "task_1756944597049_kltgzkukd",
+      "title": "Migrate knowledge search API test from vi.doMock() to bun-compatible infrastructure",
+      "description": "Migrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/knowledge/search/route.test.ts from vi.doMock() patterns to bun-compatible infrastructure with proper mocking, search logic preservation, and 90%+ pass rate validation",
+      "mode": "DEVELOPMENT",
+      "category": "refactor",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [
+        "task_1756944597049_8hz0s7kxg"
+      ],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T00:09:57.052Z",
+      "auto_research_created": true
     }
   ],
   "agents": {
@@ -60,7 +161,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T09:50:39.799Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T09:50:39.799Z",
@@ -75,7 +182,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T18:39:59.081Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T18:39:59.081Z",
@@ -96,7 +209,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T19:05:35.113Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T19:05:35.113Z",
@@ -111,7 +230,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:23.587Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:23.587Z",
@@ -126,7 +251,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:31.772Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:31.772Z",
@@ -141,11 +272,59 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:36.373Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:36.373Z",
       "sessionId": "session_1756941216372",
+      "metadata": {}
+    },
+    "development_session_1756944584502_1_general_0a7c1bff": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T00:09:44.502Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T00:09:44.502Z",
+      "sessionId": "session_1756944584502",
+      "metadata": {}
+    },
+    "development_session_1756944617144_1_general_52b58ca3": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-04T00:10:17.144Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-04T00:10:17.144Z",
+      "sessionId": "session_1756944617144",
       "metadata": {}
     }
   },

@@ -2,7 +2,7 @@
 
 /**
  * Enhanced Drag and Drop System - Advanced interaction with visual feedback
- * 
+ *
  * Provides enhanced drag-and-drop capabilities with:
  * - Visual feedback during drag operations
  * - Smart drop zone validation and highlighting
@@ -10,29 +10,17 @@
  * - Connection validation and error prevention
  * - Smooth animations and micro-interactions
  * - Touch device support and responsive behavior
- * 
+ *
  * @created 2025-09-03
  * @author Claude Development System
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { 
-  AlertCircle, 
-  CheckCircle, 
-  Info, 
-  MousePointer, 
-  Move, 
-  Plus, 
-  Target, 
-  Zap 
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { CheckCircle, Move, Target } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { cn } from '@/lib/utils'
+import { Card } from '@/components/ui/card'
 import { createLogger } from '@/lib/logs/console/logger'
+import { cn } from '@/lib/utils'
 
 const logger = createLogger('EnhancedDragDrop')
 
@@ -144,7 +132,7 @@ export function EnhancedDragDropProvider({
   className,
   accessibilityMode = true,
   touchEnabled = true,
-  animationsEnabled = true
+  animationsEnabled = true,
 }: EnhancedDragDropProps) {
   // State management
   const [dragState, setDragState] = useState<DragState>({
@@ -154,9 +142,9 @@ export function EnhancedDragDropProvider({
     validDropZones: [],
     hoveredDropZone: null,
     ghostElement: null,
-    previewElement: null
+    previewElement: null,
   })
-  
+
   const dropZones = useRef(new Map<string, DropZone>())
   const dragStateRef = useRef(dragState)
   const animationFrame = useRef<number>()
@@ -172,11 +160,11 @@ export function EnhancedDragDropProvider({
    */
   const registerDropZone = useCallback((zone: DropZone) => {
     const operationId = Date.now().toString()
-    
+
     logger.info(`[${operationId}] Registering drop zone`, {
       zoneId: zone.id,
       acceptedTypes: zone.type,
-      hasValidation: !!zone.validation
+      hasValidation: !!zone.validation,
     })
 
     dropZones.current.set(zone.id, zone)
@@ -193,79 +181,77 @@ export function EnhancedDragDropProvider({
   /**
    * Start drag operation with comprehensive setup
    */
-  const startDrag = useCallback((
-    item: DragItem, 
-    element: HTMLElement, 
-    position: { x: number; y: number }
-  ) => {
-    const operationId = Date.now().toString()
-    
-    logger.info(`[${operationId}] Starting drag operation`, {
-      itemId: item.id,
-      itemType: item.type,
-      position
-    })
+  const startDrag = useCallback(
+    (item: DragItem, element: HTMLElement, position: { x: number; y: number }) => {
+      const operationId = Date.now().toString()
 
-    try {
-      // Create ghost element for visual feedback
-      const ghostElement = createGhostElement(item, element)
-      
-      // Create preview element
-      const previewElement = createPreviewElement(item)
-      
-      // Determine valid drop zones
-      const validZones = Array.from(dropZones.current.entries())
-        .filter(([, zone]) => zone.accepts(item))
-        .map(([id]) => id)
-
-      // Update drag state
-      setDragState(prev => ({
-        ...prev,
-        isDragging: true,
-        item,
-        position,
-        validDropZones: validZones,
-        ghostElement,
-        previewElement
-      }))
-
-      // Position ghost element
-      if (ghostElement) {
-        positionGhostElement(ghostElement, position)
-      }
-
-      // Add global styles for drag state
-      document.body.classList.add('dragging')
-      document.body.style.cursor = 'grabbing'
-
-      // Announce drag start to screen readers
-      if (accessibilityMode) {
-        announceToScreenReader(
-          `Started dragging ${item.preview?.title || item.type}. ${validZones.length} drop zones available.`
-        )
-      }
-
-      // Callback
-      onDragStart?.(item)
-
-      logger.info(`[${operationId}] Drag operation started successfully`, {
-        validDropZones: validZones.length,
-        hasGhost: !!ghostElement,
-        hasPreview: !!previewElement
-      })
-
-    } catch (error) {
-      logger.error(`[${operationId}] Failed to start drag operation`, {
+      logger.info(`[${operationId}] Starting drag operation`, {
         itemId: item.id,
-        error: error instanceof Error ? error.message : String(error)
+        itemType: item.type,
+        position,
       })
-      
-      // Cleanup on error
-      setDragState(prev => ({ ...prev, isDragging: false }))
-      document.body.classList.remove('dragging')
-      document.body.style.cursor = ''
-    }
-  }, [onDragStart, accessibilityMode])
+
+      try {
+        // Create ghost element for visual feedback
+        const ghostElement = createGhostElement(item, element)
+
+        // Create preview element
+        const previewElement = createPreviewElement(item)
+
+        // Determine valid drop zones
+        const validZones = Array.from(dropZones.current.entries())
+          .filter(([, zone]) => zone.accepts(item))
+          .map(([id]) => id)
+
+        // Update drag state
+        setDragState((prev) => ({
+          ...prev,
+          isDragging: true,
+          item,
+          position,
+          validDropZones: validZones,
+          ghostElement,
+          previewElement,
+        }))
+
+        // Position ghost element
+        if (ghostElement) {
+          positionGhostElement(ghostElement, position)
+        }
+
+        // Add global styles for drag state
+        document.body.classList.add('dragging')
+        document.body.style.cursor = 'grabbing'
+
+        // Announce drag start to screen readers
+        if (accessibilityMode) {
+          announceToScreenReader(
+            `Started dragging ${item.preview?.title || item.type}. ${validZones.length} drop zones available.`
+          )
+        }
+
+        // Callback
+        onDragStart?.(item)
+
+        logger.info(`[${operationId}] Drag operation started successfully`, {
+          validDropZones: validZones.length,
+          hasGhost: !!ghostElement,
+          hasPreview: !!previewElement,
+        })
+      } catch (error) {
+        logger.error(`[${operationId}] Failed to start drag operation`, {
+          itemId: item.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+
+        // Cleanup on error
+        setDragState((prev) => ({ ...prev, isDragging: false }))
+        document.body.classList.remove('dragging')
+        document.body.style.cursor = ''
+      }
+    },
+    [onDragStart, accessibilityMode]
+  )
 
   /**
    * Update drag position with visual feedback
@@ -280,21 +266,21 @@ export function EnhancedDragDropProvider({
 
     // Find hovered drop zone
     const hoveredZone = findDropZoneAtPosition(position)
-    
+
     // Update hover state if changed
     if (hoveredZone !== dragStateRef.current.hoveredDropZone) {
-      setDragState(prev => ({
+      setDragState((prev) => ({
         ...prev,
         position,
-        hoveredDropZone: hoveredZone
+        hoveredDropZone: hoveredZone,
       }))
 
       // Update drop zone visual feedback
       updateDropZoneVisuals(hoveredZone, dragStateRef.current.hoveredDropZone)
     } else {
-      setDragState(prev => ({
+      setDragState((prev) => ({
         ...prev,
-        position
+        position,
       }))
     }
   }, [])
@@ -302,93 +288,95 @@ export function EnhancedDragDropProvider({
   /**
    * End drag operation with validation and cleanup
    */
-  const endDrag = useCallback((success: boolean) => {
-    const operationId = Date.now().toString()
-    const { item, hoveredDropZone, ghostElement, previewElement } = dragStateRef.current
-    
-    logger.info(`[${operationId}] Ending drag operation`, {
-      success,
-      itemId: item?.id,
-      hoveredDropZone
-    })
+  const endDrag = useCallback(
+    (success: boolean) => {
+      const operationId = Date.now().toString()
+      const { item, hoveredDropZone, ghostElement, previewElement } = dragStateRef.current
 
-    try {
-      let dropSuccess = false
+      logger.info(`[${operationId}] Ending drag operation`, {
+        success,
+        itemId: item?.id,
+        hoveredDropZone,
+      })
 
-      // Attempt drop if over valid zone
-      if (success && item && hoveredDropZone) {
-        const dropZone = dropZones.current.get(hoveredDropZone)
-        if (dropZone) {
-          // Validate drop
-          const validation = validateDrop(item, hoveredDropZone)
-          
-          if (validation.valid) {
-            // Perform drop
-            dropZone.onDrop(item, dragStateRef.current.position)
-            dropSuccess = true
-            
-            // Animate drop if enabled
-            if (animationsEnabled && dropZone.visual?.animateOnDrop) {
-              animateDropSuccess(ghostElement, hoveredDropZone)
-            }
-            
-            if (accessibilityMode) {
-              announceToScreenReader(`Successfully dropped ${item.preview?.title || item.type}`)
-            }
-          } else {
-            // Handle validation errors
-            if (validation.errors.length > 0) {
-              onValidationError?.(validation.errors)
-              
+      try {
+        let dropSuccess = false
+
+        // Attempt drop if over valid zone
+        if (success && item && hoveredDropZone) {
+          const dropZone = dropZones.current.get(hoveredDropZone)
+          if (dropZone) {
+            // Validate drop
+            const validation = validateDrop(item, hoveredDropZone)
+
+            if (validation.valid) {
+              // Perform drop
+              dropZone.onDrop(item, dragStateRef.current.position)
+              dropSuccess = true
+
+              // Animate drop if enabled
+              if (animationsEnabled && dropZone.visual?.animateOnDrop) {
+                animateDropSuccess(ghostElement, hoveredDropZone)
+              }
+
               if (accessibilityMode) {
-                const errorMessages = validation.errors.map(e => e.message).join('. ')
-                announceToScreenReader(`Drop failed: ${errorMessages}`)
+                announceToScreenReader(`Successfully dropped ${item.preview?.title || item.type}`)
+              }
+            } else {
+              // Handle validation errors
+              if (validation.errors.length > 0) {
+                onValidationError?.(validation.errors)
+
+                if (accessibilityMode) {
+                  const errorMessages = validation.errors.map((e) => e.message).join('. ')
+                  announceToScreenReader(`Drop failed: ${errorMessages}`)
+                }
               }
             }
           }
         }
+
+        // Cleanup
+        cleanupDragOperation()
+
+        // Reset state
+        setDragState({
+          isDragging: false,
+          item: null,
+          position: { x: 0, y: 0 },
+          validDropZones: [],
+          hoveredDropZone: null,
+          ghostElement: null,
+          previewElement: null,
+        })
+
+        // Callback
+        onDragEnd?.(item!, dropSuccess)
+
+        logger.info(`[${operationId}] Drag operation ended`, {
+          success: dropSuccess,
+          itemId: item?.id,
+        })
+      } catch (error) {
+        logger.error(`[${operationId}] Error ending drag operation`, {
+          error: error instanceof Error ? error.message : String(error),
+        })
+
+        // Force cleanup on error
+        cleanupDragOperation()
+        setDragState({
+          isDragging: false,
+          item: null,
+          position: { x: 0, y: 0 },
+          validDropZones: [],
+          hoveredDropZone: null,
+          ghostElement: null,
+          previewElement: null,
+        })
       }
-
-      // Cleanup
-      cleanupDragOperation()
-      
-      // Reset state
-      setDragState({
-        isDragging: false,
-        item: null,
-        position: { x: 0, y: 0 },
-        validDropZones: [],
-        hoveredDropZone: null,
-        ghostElement: null,
-        previewElement: null
-      })
-
-      // Callback
-      onDragEnd?.(item!, dropSuccess)
-
-      logger.info(`[${operationId}] Drag operation ended`, {
-        success: dropSuccess,
-        itemId: item?.id
-      })
-
-    } catch (error) {
-      logger.error(`[${operationId}] Error ending drag operation`, {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      
-      // Force cleanup on error
-      cleanupDragOperation()
-      setDragState({
-        isDragging: false,
-        item: null,
-        position: { x: 0, y: 0 },
-        validDropZones: [],
-        hoveredDropZone: null,
-        ghostElement: null,
-        previewElement: null
-      })
-    }
-  }, [onDragEnd, onValidationError, animationsEnabled, accessibilityMode])
+    },
+    [onDragEnd, onValidationError, animationsEnabled, accessibilityMode]
+  )
 
   /**
    * Validate drop operation
@@ -398,14 +386,16 @@ export function EnhancedDragDropProvider({
     if (!zone) {
       return {
         valid: false,
-        errors: [{ 
-          rule: 'zone-not-found', 
-          message: 'Drop zone not found', 
-          severity: 'error', 
-          fixable: false 
-        }],
+        errors: [
+          {
+            rule: 'zone-not-found',
+            message: 'Drop zone not found',
+            severity: 'error',
+            fixable: false,
+          },
+        ],
         warnings: [],
-        suggestions: []
+        suggestions: [],
       }
     }
 
@@ -418,17 +408,17 @@ export function EnhancedDragDropProvider({
     if (zone.validation?.rules) {
       const errors: ValidationError[] = []
       const warnings: ValidationError[] = []
-      
-      zone.validation.rules.forEach(rule => {
+
+      zone.validation.rules.forEach((rule) => {
         if (!rule.check(item, {})) {
           const error: ValidationError = {
             rule: rule.id,
             message: rule.message,
             severity: rule.severity,
             fixable: !!rule.autoFix,
-            fix: rule.autoFix
+            fix: rule.autoFix,
           }
-          
+
           if (rule.severity === 'error') {
             errors.push(error)
           } else {
@@ -441,23 +431,27 @@ export function EnhancedDragDropProvider({
         valid: errors.length === 0,
         errors,
         warnings,
-        suggestions: []
+        suggestions: [],
       }
     }
 
     // Basic type checking
     const typeValid = zone.type.includes(item.type) || zone.accepts(item)
-    
+
     return {
       valid: typeValid,
-      errors: typeValid ? [] : [{
-        rule: 'type-mismatch',
-        message: `Cannot drop ${item.type} here`,
-        severity: 'error',
-        fixable: false
-      }],
+      errors: typeValid
+        ? []
+        : [
+            {
+              rule: 'type-mismatch',
+              message: `Cannot drop ${item.type} here`,
+              severity: 'error',
+              fixable: false,
+            },
+          ],
       warnings: [],
-      suggestions: []
+      suggestions: [],
     }
   }, [])
 
@@ -465,7 +459,7 @@ export function EnhancedDragDropProvider({
 
   const createGhostElement = (item: DragItem, originalElement: HTMLElement): HTMLElement => {
     const ghost = originalElement.cloneNode(true) as HTMLElement
-    
+
     // Style the ghost element
     ghost.style.position = 'fixed'
     ghost.style.pointerEvents = 'none'
@@ -474,16 +468,16 @@ export function EnhancedDragDropProvider({
     ghost.style.transform = 'rotate(5deg)'
     ghost.style.transition = animationsEnabled ? 'all 0.2s ease' : 'none'
     ghost.classList.add('drag-ghost')
-    
+
     document.body.appendChild(ghost)
-    
+
     return ghost
   }
 
   const createPreviewElement = (item: DragItem): HTMLElement => {
     const preview = document.createElement('div')
     preview.className = 'drag-preview'
-    
+
     if (item.preview) {
       preview.innerHTML = `
         <div class="preview-card">
@@ -495,7 +489,7 @@ export function EnhancedDragDropProvider({
         </div>
       `
     }
-    
+
     preview.style.position = 'fixed'
     preview.style.pointerEvents = 'none'
     preview.style.zIndex = '9999'
@@ -505,9 +499,9 @@ export function EnhancedDragDropProvider({
     preview.style.padding = '12px'
     preview.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
     preview.style.maxWidth = '300px'
-    
+
     document.body.appendChild(preview)
-    
+
     return preview
   }
 
@@ -515,7 +509,7 @@ export function EnhancedDragDropProvider({
     if (animationFrame.current) {
       cancelAnimationFrame(animationFrame.current)
     }
-    
+
     animationFrame.current = requestAnimationFrame(() => {
       element.style.left = `${position.x - 50}px`
       element.style.top = `${position.y - 25}px`
@@ -525,13 +519,13 @@ export function EnhancedDragDropProvider({
   const findDropZoneAtPosition = (position: { x: number; y: number }): string | null => {
     const element = document.elementFromPoint(position.x, position.y)
     if (!element) return null
-    
+
     // Find closest drop zone element
     const dropZoneElement = element.closest('[data-drop-zone]')
     if (dropZoneElement) {
       return dropZoneElement.getAttribute('data-drop-zone')
     }
-    
+
     return null
   }
 
@@ -543,13 +537,13 @@ export function EnhancedDragDropProvider({
         prevElement.classList.remove('drop-zone-hovered', 'drop-zone-valid', 'drop-zone-invalid')
       }
     }
-    
+
     // Add highlight to new zone
     if (newHovered && dragStateRef.current.item) {
       const newElement = document.querySelector(`[data-drop-zone="${newHovered}"]`)
       if (newElement) {
         newElement.classList.add('drop-zone-hovered')
-        
+
         // Add validation class
         const validation = validateDrop(dragStateRef.current.item, newHovered)
         if (validation.valid) {
@@ -563,20 +557,20 @@ export function EnhancedDragDropProvider({
 
   const animateDropSuccess = (ghostElement: HTMLElement | null, zoneId: string) => {
     if (!ghostElement) return
-    
+
     const dropZoneElement = document.querySelector(`[data-drop-zone="${zoneId}"]`)
     if (!dropZoneElement) return
-    
+
     const rect = dropZoneElement.getBoundingClientRect()
     const centerX = rect.left + rect.width / 2
     const centerY = rect.top + rect.height / 2
-    
+
     ghostElement.style.transition = 'all 0.3s ease'
     ghostElement.style.transform = 'scale(0.8) rotate(0deg)'
     ghostElement.style.left = `${centerX - 25}px`
     ghostElement.style.top = `${centerY - 12}px`
     ghostElement.style.opacity = '0'
-    
+
     setTimeout(() => {
       if (ghostElement.parentNode) {
         ghostElement.parentNode.removeChild(ghostElement)
@@ -589,21 +583,23 @@ export function EnhancedDragDropProvider({
     if (dragStateRef.current.ghostElement?.parentNode) {
       dragStateRef.current.ghostElement.parentNode.removeChild(dragStateRef.current.ghostElement)
     }
-    
+
     // Remove preview element
     if (dragStateRef.current.previewElement?.parentNode) {
-      dragStateRef.current.previewElement.parentNode.removeChild(dragStateRef.current.previewElement)
+      dragStateRef.current.previewElement.parentNode.removeChild(
+        dragStateRef.current.previewElement
+      )
     }
-    
+
     // Remove visual feedback from all drop zones
-    document.querySelectorAll('[data-drop-zone]').forEach(element => {
+    document.querySelectorAll('[data-drop-zone]').forEach((element) => {
       element.classList.remove('drop-zone-hovered', 'drop-zone-valid', 'drop-zone-invalid')
     })
-    
+
     // Remove global drag styles
     document.body.classList.remove('dragging')
     document.body.style.cursor = ''
-    
+
     // Cancel any pending animation frames
     if (animationFrame.current) {
       cancelAnimationFrame(animationFrame.current)
@@ -617,9 +613,9 @@ export function EnhancedDragDropProvider({
     announcement.style.position = 'absolute'
     announcement.style.left = '-10000px'
     announcement.textContent = message
-    
+
     document.body.appendChild(announcement)
-    
+
     setTimeout(() => {
       document.body.removeChild(announcement)
     }, 1000)
@@ -666,7 +662,7 @@ export function EnhancedDragDropProvider({
     document.addEventListener('mousemove', handleMouseMove, { passive: false })
     document.addEventListener('mouseup', handleMouseUp)
     document.addEventListener('keydown', handleKeyDown)
-    
+
     if (touchEnabled) {
       document.addEventListener('touchmove', handleTouchMove, { passive: false })
       document.addEventListener('touchend', handleTouchEnd)
@@ -676,7 +672,7 @@ export function EnhancedDragDropProvider({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('keydown', handleKeyDown)
-      
+
       if (touchEnabled) {
         document.removeEventListener('touchmove', handleTouchMove)
         document.removeEventListener('touchend', handleTouchEnd)
@@ -700,22 +696,19 @@ export function EnhancedDragDropProvider({
     startDrag,
     updateDrag,
     endDrag,
-    validateDrop
+    validateDrop,
   }
 
   return (
     <DragDropContext.Provider value={contextValue}>
       <div className={cn('enhanced-drag-drop-container', className)}>
         {children}
-        
+
         {/* Drag feedback UI */}
         {dragState.isDragging && (
-          <DragFeedbackUI 
-            dragState={dragState}
-            accessibilityMode={accessibilityMode}
-          />
+          <DragFeedbackUI dragState={dragState} accessibilityMode={accessibilityMode} />
         )}
-        
+
         {/* Global drag styles */}
         <style jsx global>{`
           .dragging * {
@@ -789,47 +782,56 @@ interface DraggableProps {
   accessibilityLabel?: string
 }
 
-export function Draggable({ 
-  item, 
-  children, 
-  className, 
-  disabled = false, 
-  accessibilityLabel 
+export function Draggable({
+  item,
+  children,
+  className,
+  disabled = false,
+  accessibilityLabel,
 }: DraggableProps) {
   const { startDrag } = useDragDrop()
   const elementRef = useRef<HTMLDivElement>(null)
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (disabled) return
-    
-    e.preventDefault()
-    
-    if (elementRef.current) {
-      startDrag(item, elementRef.current, { x: e.clientX, y: e.clientY })
-    }
-  }, [item, startDrag, disabled])
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (disabled) return
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (disabled || !e.touches[0]) return
-    
-    if (elementRef.current) {
-      startDrag(item, elementRef.current, { 
-        x: e.touches[0].clientX, 
-        y: e.touches[0].clientY 
-      })
-    }
-  }, [item, startDrag, disabled])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (disabled) return
-    
-    // Keyboard alternative for drag operation
-    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      // This would trigger a different UI for keyboard users
-      // such as a modal with available drop zones
-    }
-  }, [disabled])
+
+      if (elementRef.current) {
+        startDrag(item, elementRef.current, { x: e.clientX, y: e.clientY })
+      }
+    },
+    [item, startDrag, disabled]
+  )
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (disabled || !e.touches[0]) return
+
+      if (elementRef.current) {
+        startDrag(item, elementRef.current, {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        })
+      }
+    },
+    [item, startDrag, disabled]
+  )
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (disabled) return
+
+      // Keyboard alternative for drag operation
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        // This would trigger a different UI for keyboard users
+        // such as a modal with available drop zones
+      }
+    },
+    [disabled]
+  )
 
   return (
     <div
@@ -844,9 +846,9 @@ export function Draggable({
       onKeyDown={handleKeyDown}
       draggable={false} // We handle our own drag logic
       tabIndex={disabled ? -1 : 0}
-      role="button"
+      role='button'
       aria-label={accessibilityLabel || `Draggable ${item.preview?.title || item.type}`}
-      aria-grabbed="false"
+      aria-grabbed='false'
     >
       {children}
     </div>
@@ -863,12 +865,7 @@ interface DropZoneProps {
   showDropIndicator?: boolean
 }
 
-export function DropZone({ 
-  zone, 
-  children, 
-  className, 
-  showDropIndicator = true 
-}: DropZoneProps) {
+export function DropZone({ zone, children, className, showDropIndicator = true }: DropZoneProps) {
   const { registerDropZone, unregisterDropZone, dragState } = useDragDrop()
 
   useEffect(() => {
@@ -888,18 +885,18 @@ export function DropZone({
         isHovered && 'drop-zone-hovered',
         className
       )}
-      role="region"
+      role='region'
       aria-label={`Drop zone for ${zone.type.join(', ')}`}
       aria-dropeffect={dragState.isDragging && isValidTarget ? 'move' : 'none'}
     >
       {children}
-      
+
       {/* Drop indicator */}
       {showDropIndicator && dragState.isDragging && isValidTarget && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="bg-primary/90 text-primary-foreground px-4 py-2 rounded-md flex items-center space-x-2">
-            <Target className="w-4 h-4" />
-            <span className="text-sm font-medium">Drop here</span>
+        <div className='pointer-events-none absolute inset-0 z-10 flex items-center justify-center'>
+          <div className='flex items-center space-x-2 rounded-md bg-primary/90 px-4 py-2 text-primary-foreground'>
+            <Target className='h-4 w-4' />
+            <span className='font-medium text-sm'>Drop here</span>
           </div>
         </div>
       )}
@@ -919,20 +916,20 @@ function DragFeedbackUI({ dragState, accessibilityMode }: DragFeedbackUIProps) {
   if (!dragState.isDragging || !dragState.item) return null
 
   return (
-    <div className="fixed top-4 right-4 z-[10001] pointer-events-none">
-      <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
-        <div className="p-4 space-y-3">
+    <div className='pointer-events-none fixed top-4 right-4 z-[10001]'>
+      <Card className='border bg-background/95 shadow-lg backdrop-blur-sm'>
+        <div className='space-y-3 p-4'>
           {/* Drag item info */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center">
-              <Move className="w-4 h-4 text-primary" />
+          <div className='flex items-center space-x-3'>
+            <div className='flex h-8 w-8 items-center justify-center rounded-md bg-primary/10'>
+              <Move className='h-4 w-4 text-primary' />
             </div>
             <div>
-              <h3 className="text-sm font-medium">
+              <h3 className='font-medium text-sm'>
                 {dragState.item.preview?.title || dragState.item.type}
               </h3>
               {dragState.item.preview?.description && (
-                <p className="text-xs text-muted-foreground">
+                <p className='text-muted-foreground text-xs'>
                   {dragState.item.preview.description}
                 </p>
               )}
@@ -940,25 +937,23 @@ function DragFeedbackUI({ dragState, accessibilityMode }: DragFeedbackUIProps) {
           </div>
 
           {/* Drop zone status */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Valid drop zones:</span>
-              <Badge variant="secondary">
-                {dragState.validDropZones.length}
-              </Badge>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between text-xs'>
+              <span className='text-muted-foreground'>Valid drop zones:</span>
+              <Badge variant='secondary'>{dragState.validDropZones.length}</Badge>
             </div>
-            
+
             {dragState.hoveredDropZone && (
-              <div className="flex items-center space-x-2 text-xs">
-                <CheckCircle className="w-3 h-3 text-green-500" />
-                <span className="text-green-600 font-medium">Ready to drop</span>
+              <div className='flex items-center space-x-2 text-xs'>
+                <CheckCircle className='h-3 w-3 text-green-500' />
+                <span className='font-medium text-green-600'>Ready to drop</span>
               </div>
             )}
           </div>
 
           {/* Keyboard hint for accessibility */}
           {accessibilityMode && (
-            <div className="pt-2 border-t text-xs text-muted-foreground">
+            <div className='border-t pt-2 text-muted-foreground text-xs'>
               Press Escape to cancel
             </div>
           )}
@@ -991,27 +986,22 @@ export function BlockLibraryItem({ block, onDragStart }: BlockLibraryItemProps) 
     preview: {
       title: block.name,
       description: block.description,
-      category: block.category
-    }
+      category: block.category,
+    },
   }
 
   return (
-    <Draggable 
-      item={dragItem}
-      accessibilityLabel={`Drag ${block.name} block to workflow canvas`}
-    >
-      <Card className="p-3 hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing">
-        <div className="flex items-center space-x-3">
+    <Draggable item={dragItem} accessibilityLabel={`Drag ${block.name} block to workflow canvas`}>
+      <Card className='cursor-grab p-3 transition-shadow hover:shadow-md active:cursor-grabbing'>
+        <div className='flex items-center space-x-3'>
           {block.icon && (
-            <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center">
-              <block.icon className="w-4 h-4 text-primary" />
+            <div className='flex h-8 w-8 items-center justify-center rounded-md bg-primary/10'>
+              <block.icon className='h-4 w-4 text-primary' />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium truncate">{block.name}</h3>
-            <p className="text-xs text-muted-foreground truncate">
-              {block.description}
-            </p>
+          <div className='min-w-0 flex-1'>
+            <h3 className='truncate font-medium text-sm'>{block.name}</h3>
+            <p className='truncate text-muted-foreground text-xs'>{block.description}</p>
           </div>
         </div>
       </Card>
@@ -1046,22 +1036,19 @@ export function WorkflowCanvas({ onBlockDrop, children }: WorkflowCanvasProps) {
             return (context.currentBlockCount || 0) < 50
           },
           message: 'Workflow cannot have more than 50 blocks',
-          severity: 'error'
-        }
-      ]
+          severity: 'error',
+        },
+      ],
     },
     visual: {
       highlight: true,
       showPreview: true,
-      animateOnDrop: true
-    }
+      animateOnDrop: true,
+    },
   }
 
   return (
-    <DropZone 
-      zone={canvasDropZone}
-      className="w-full h-full bg-muted/50 rounded-lg relative"
-    >
+    <DropZone zone={canvasDropZone} className='relative h-full w-full rounded-lg bg-muted/50'>
       {children}
     </DropZone>
   )

@@ -373,6 +373,152 @@ export function WorkflowMonitoringPanel({
       </div>
     )
   }
+  
+  // Render business intelligence insights
+  const renderBusinessIntelligence = () => {
+    const { businessMetrics } = monitoringData
+    
+    return (
+      <div className='space-y-4'>
+        {/* Business value metrics */}
+        <div className='grid grid-cols-2 gap-4'>
+          <Card className='p-3'>
+            <div className='flex items-center space-x-2'>
+              <DollarSign className='h-4 w-4 text-green-500' />
+              <div>
+                <div className='text-muted-foreground text-xs'>Cost Savings</div>
+                <div className='font-medium text-sm'>${businessMetrics.costSavings.toFixed(2)}</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className='p-3'>
+            <div className='flex items-center space-x-2'>
+              <Clock className='h-4 w-4 text-blue-500' />
+              <div>
+                <div className='text-muted-foreground text-xs'>Time Saved</div>
+                <div className='font-medium text-sm'>{formatDuration(businessMetrics.timeSaved)}</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className='p-3'>
+            <div className='flex items-center space-x-2'>
+              <Target className='h-4 w-4 text-purple-500' />
+              <div>
+                <div className='text-muted-foreground text-xs'>Tasks Automated</div>
+                <div className='font-medium text-sm'>{businessMetrics.tasksAutomated}</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className='p-3'>
+            <div className='flex items-center space-x-2'>
+              <TrendingUp className='h-4 w-4 text-orange-500' />
+              <div>
+                <div className='text-muted-foreground text-xs'>ROI</div>
+                <div className='font-medium text-sm'>{businessMetrics.roinPercentage.toFixed(1)}%</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* System health and anomaly insights */}
+        <div>
+          <div className='mb-2 font-medium text-sm'>System Intelligence</div>
+          <div className='space-y-2'>
+            <div className='flex justify-between rounded bg-muted p-3 text-sm'>
+              <span className='flex items-center space-x-2'>
+                <Shield className='h-4 w-4 text-green-500' />
+                <span>System Status</span>
+              </span>
+              <span className={`font-medium ${
+                monitoringData.systemHealth.status === 'healthy' ? 'text-green-600' :
+                monitoringData.systemHealth.status === 'degraded' ? 'text-yellow-600' :
+                'text-red-600'
+              }`}>
+                {monitoringData.systemHealth.status.charAt(0).toUpperCase() + monitoringData.systemHealth.status.slice(1)}
+              </span>
+            </div>
+            
+            <div className='flex justify-between rounded bg-muted p-3 text-sm'>
+              <span className='flex items-center space-x-2'>
+                <Brain className='h-4 w-4 text-purple-500' />
+                <span>ML Anomalies Detected</span>
+              </span>
+              <span className='font-medium'>
+                {monitoringData.detectedAnomalies.length}
+              </span>
+            </div>
+            
+            <div className='flex justify-between rounded bg-muted p-3 text-sm'>
+              <span className='flex items-center space-x-2'>
+                <Network className='h-4 w-4 text-blue-500' />
+                <span>Real-time Events</span>
+              </span>
+              <span className='font-medium'>
+                {monitoringData.realtimeEvents.length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Connection statistics */}
+        <div>
+          <div className='mb-2 font-medium text-sm'>Connection Health</div>
+          <div className='grid grid-cols-2 gap-2 text-xs'>
+            <div className='flex justify-between'>
+              <span>Status:</span>
+              <span className={`font-medium ${
+                monitoringData.connectionStats.connected ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {monitoringData.connectionStats.connected ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
+            <div className='flex justify-between'>
+              <span>Latency:</span>
+              <span className='font-medium'>{monitoringData.connectionStats.latency}ms</span>
+            </div>
+            <div className='flex justify-between'>
+              <span>Messages Sent:</span>
+              <span className='font-medium'>{monitoringData.connectionStats.messagesSent}</span>
+            </div>
+            <div className='flex justify-between'>
+              <span>Messages Received:</span>
+              <span className='font-medium'>{monitoringData.connectionStats.messagesReceived}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent anomaly recommendations */}
+        {monitoringData.detectedAnomalies.length > 0 && (
+          <div>
+            <div className='mb-2 font-medium text-sm'>Latest Recommendations</div>
+            <ScrollArea className='h-32'>
+              <div className='space-y-2'>
+                {monitoringData.detectedAnomalies.slice(0, 3).map((anomaly, index) => (
+                  <div key={index} className='rounded bg-muted p-3'>
+                    <div className='mb-1 font-medium text-xs'>
+                      {anomaly.type.replace(/_/g, ' ').toUpperCase()}
+                    </div>
+                    {anomaly.recommendations.slice(0, 1).map((rec, recIndex) => (
+                      <div key={recIndex} className='text-xs'>
+                        <div className='font-medium'>{rec.title}</div>
+                        <div className='text-muted-foreground'>{rec.description}</div>
+                        <div className='mt-1 text-muted-foreground'>
+                          Impact: {rec.expectedBenefit} • Effort: {rec.estimatedEffort}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   if (error) {
     return (
@@ -403,7 +549,7 @@ export function WorkflowMonitoringPanel({
       </CardHeader>
       <CardContent className='p-0'>
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className='w-full'>
-          <TabsList className='grid w-full grid-cols-4'>
+          <TabsList className='grid w-full grid-cols-5'>
             <TabsTrigger value='overview' className='text-xs'>
               Overview
             </TabsTrigger>
@@ -415,6 +561,9 @@ export function WorkflowMonitoringPanel({
             </TabsTrigger>
             <TabsTrigger value='analytics' className='text-xs'>
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value='intelligence' className='text-xs'>
+              Intelligence
             </TabsTrigger>
           </TabsList>
 
@@ -439,6 +588,10 @@ export function WorkflowMonitoringPanel({
 
             <TabsContent value='analytics' className='mt-0'>
               {renderAnalytics()}
+            </TabsContent>
+            
+            <TabsContent value='intelligence' className='mt-0'>
+              {renderBusinessIntelligence()}
             </TabsContent>
           </div>
         </Tabs>

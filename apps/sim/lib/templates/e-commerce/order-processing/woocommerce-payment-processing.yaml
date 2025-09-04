@@ -1,0 +1,856 @@
+# WooCommerce Advanced Payment Processing Template
+# Comprehensive payment handling with multiple gateways, fraud detection, and automated reconciliation
+
+name: "WooCommerce Advanced Payment Processing"
+description: "Multi-gateway payment processing with fraud detection, automated refunds, and financial reconciliation"
+category: "ecommerce"
+subcategory: "payment-processing"
+difficulty: "advanced"
+estimatedTime: "45-60 minutes"
+platforms: ["woocommerce", "stripe", "paypal", "email", "accounting"]
+tags: ["woocommerce", "payment", "stripe", "paypal", "fraud-detection", "reconciliation"]
+
+# Template metadata
+metadata:
+  author: "Sim E-commerce Team"
+  version: "1.0.0"
+  lastUpdated: "2025-09-04"
+  useCases:
+    - "Multi-gateway payment processing for WooCommerce"
+    - "Automated fraud detection and prevention"
+    - "Payment reconciliation and reporting"
+    - "Automated refund and dispute management"
+    - "PCI compliance and security monitoring"
+  
+  requirements:
+    - "WooCommerce store with REST API enabled"
+    - "Stripe and/or PayPal merchant accounts"
+    - "Fraud detection service (MaxMind/Sift)"
+    - "Accounting system integration (QuickBooks/Xero)"
+    - "Email service for notifications"
+
+# Workflow configuration
+workflow:
+  # ====================================================================
+  # TRIGGER: WooCommerce Payment Webhook
+  # ====================================================================
+  trigger:
+    type: "webhook"
+    provider: "woocommerce"
+    event: "order.payment_complete"
+    description: "Triggered when payment is completed in WooCommerce"
+    verification:
+      secret_header: "X-WC-Webhook-Signature"
+      secret: "{{WOOCOMMERCE_WEBHOOK_SECRET}}"
+    
+  blocks:
+    # ====================================================================
+    # STEP 1: PAYMENT DATA EXTRACTION AND VALIDATION
+    # ====================================================================
+    - name: "extract_payment_data"
+      type: "data-transformer"
+      description: "Extract and validate payment information from WooCommerce webhook"
+      inputs:
+        webhook_data: "{{webhook.body}}"
+      
+      operations:
+        - type: "extract"
+          fields:
+            order_id: "id"
+            order_key: "order_key"
+            order_number: "number"
+            payment_method: "payment_method"
+            payment_method_title: "payment_method_title"
+            transaction_id: "transaction_id"
+            total_amount: "total"
+            currency: "currency"
+            status: "status"
+            date_created: "date_created"
+            date_paid: "date_paid"
+            customer_id: "customer_id"
+            customer_email: "billing.email"
+            customer_name: "billing.first_name + ' ' + billing.last_name"
+            billing_address: "billing"
+            payment_url: "payment_url"
+            line_items: "line_items"
+            meta_data: "meta_data"
+        
+        - type: "validate"
+          rules:
+            - field: "order_id"
+              required: true
+              type: "integer"
+            - field: "transaction_id"
+              required: true
+              type: "string"
+            - field: "total_amount"
+              required: true
+              type: "number"
+              min: 0
+            - field: "currency"
+              required: true
+              type: "string"
+              length: 3
+            - field: "customer_email"
+              required: true
+              format: "email"
+      
+      outputs:
+        payment_data: "{{transformed_data}}"
+        validation_errors: "{{validation_errors}}"
+
+    # ====================================================================
+    # STEP 2: VALIDATION CHECK
+    # ====================================================================
+    - name: "payment_validation_check"
+      type: "condition"
+      description: "Verify payment data is valid before processing"
+      condition: "{{validation_errors.length === 0 && payment_data.transaction_id !== null}}"
+      
+      on_true:
+        next: "fraud_screening"
+      
+      on_false:
+        next: "validation_error_handler"
+
+    # ====================================================================
+    # ERROR HANDLER: Invalid Payment Data
+    # ====================================================================
+    - name: "validation_error_handler"
+      type: "parallel"
+      description: "Handle invalid payment data with notifications and logging"
+      
+      branches:
+        admin_notification:
+          - name: "admin_payment_error_alert"
+            type: "email-automation"
+            inputs:
+              to: "{{FINANCE_ADMIN_EMAIL}}"
+              subject: "Payment Processing Error - Order #{{payment_data.order_number}}"
+              template: "payment_validation_error"
+              data:
+                order_id: "{{payment_data.order_id}}"
+                order_number: "{{payment_data.order_number}}"
+                errors: "{{validation_errors}}"
+                customer_email: "{{payment_data.customer_email}}"
+        
+        error_logging:
+          - name: "log_payment_error"
+            type: "database"
+            operation: "insert"
+            table: "payment_errors"
+            data:
+              order_id: "{{payment_data.order_id}}"
+              error_type: "validation_failure"
+              errors: "{{validation_errors}}"
+              webhook_data: "{{webhook.body}}"
+              created_at: "{{current_timestamp}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 3: FRAUD SCREENING AND RISK ASSESSMENT
+    # ====================================================================
+    - name: "fraud_screening"
+      type: "parallel"
+      description: "Comprehensive fraud screening using multiple data points"
+      
+      branches:
+        # MaxMind GeoIP and risk scoring
+        geolocation_check:
+          - name: "maxmind_fraud_check"
+            type: "rest-api"
+            method: "POST"
+            url: "https://minfraud.maxmind.com/minfraud/v2.0/score"
+            headers:
+              Authorization: "Basic {{base64(MAXMIND_USER_ID:MAXMIND_LICENSE_KEY)}}"
+              Content-Type: "application/json"
+            body:
+              device:
+                ip_address: "{{webhook.headers.X-Forwarded-For || webhook.headers.X-Real-IP}}"
+              email:
+                address: "{{payment_data.customer_email}}"
+              billing:
+                first_name: "{{payment_data.billing_address.first_name}}"
+                last_name: "{{payment_data.billing_address.last_name}}"
+                address: "{{payment_data.billing_address.address_1}}"
+                city: "{{payment_data.billing_address.city}}"
+                region: "{{payment_data.billing_address.state}}"
+                country: "{{payment_data.billing_address.country}}"
+                postal: "{{payment_data.billing_address.postcode}}"
+              order:
+                amount: "{{payment_data.total_amount}}"
+                currency: "{{payment_data.currency}}"
+              payment:
+                processor: "{{payment_data.payment_method}}"
+            
+            outputs:
+              risk_score: "{{response.risk_score}}"
+              country_match: "{{response.country_match}}"
+              high_risk_country: "{{response.high_risk_country}}"
+              warnings: "{{response.warnings}}"
+        
+        # Payment method specific validation
+        payment_method_validation:
+          - name: "validate_payment_method"
+            type: "switch"
+            variable: "{{payment_data.payment_method}}"
+            
+            cases:
+              "stripe":
+                next: "stripe_payment_validation"
+              "paypal":
+                next: "paypal_payment_validation"
+              "stripe_cc":
+                next: "stripe_payment_validation"
+            
+            default: "generic_payment_validation"
+        
+        # Customer history check
+        customer_history:
+          - name: "customer_risk_analysis"
+            type: "database"
+            operation: "query"
+            query: |
+              SELECT 
+                COUNT(*) as order_count,
+                AVG(total) as avg_order_value,
+                MAX(date_created) as last_order_date,
+                SUM(CASE WHEN status IN ('refunded', 'cancelled') THEN 1 ELSE 0 END) as problem_orders
+              FROM wc_orders 
+              WHERE customer_email = ?
+              AND date_created > DATE_SUB(NOW(), INTERVAL 90 DAY)
+            params: ["{{payment_data.customer_email}}"]
+            
+            outputs:
+              customer_profile: "{{query_result}}"
+
+    # ====================================================================
+    # STEP 4: STRIPE PAYMENT VALIDATION
+    # ====================================================================
+    - name: "stripe_payment_validation"
+      type: "stripe"
+      description: "Validate Stripe payment and retrieve detailed information"
+      operation: "retrieve_payment_intent"
+      inputs:
+        payment_intent_id: "{{payment_data.transaction_id}}"
+      
+      outputs:
+        stripe_payment: "{{response}}"
+        payment_status: "{{response.status}}"
+        payment_amount: "{{response.amount}}"
+        currency: "{{response.currency}}"
+        customer_id: "{{response.customer}}"
+        charges: "{{response.charges.data}}"
+        
+      next: "risk_assessment"
+
+    # ====================================================================
+    # STEP 5: PAYPAL PAYMENT VALIDATION
+    # ====================================================================
+    - name: "paypal_payment_validation"
+      type: "paypal"
+      description: "Validate PayPal payment and retrieve transaction details"
+      operation: "get_payment_details"
+      inputs:
+        transaction_id: "{{payment_data.transaction_id}}"
+      
+      outputs:
+        paypal_payment: "{{response}}"
+        payment_status: "{{response.state}}"
+        payment_amount: "{{response.transactions[0].amount.total}}"
+        
+      next: "risk_assessment"
+
+    # ====================================================================
+    # STEP 6: COMPREHENSIVE RISK ASSESSMENT
+    # ====================================================================
+    - name: "risk_assessment"
+      type: "javascript"
+      description: "Analyze all fraud indicators and calculate final risk score"
+      code: |
+        // Comprehensive risk scoring algorithm
+        function calculateRiskScore(fraudData, customerHistory, paymentData) {
+          let riskScore = 0;
+          const riskFactors = [];
+          
+          // MaxMind risk score (0-100)
+          const maxmindScore = fraudData.risk_score || 0;
+          riskScore += maxmindScore * 0.4; // 40% weight
+          
+          if (maxmindScore > 50) {
+            riskFactors.push(`High MaxMind risk score: ${maxmindScore}`);
+          }
+          
+          // Geographic risk factors
+          if (fraudData.high_risk_country) {
+            riskScore += 25;
+            riskFactors.push('Payment from high-risk country');
+          }
+          
+          if (!fraudData.country_match) {
+            riskScore += 15;
+            riskFactors.push('Country mismatch detected');
+          }
+          
+          // Customer history analysis
+          if (customerHistory.order_count === 0) {
+            riskScore += 10;
+            riskFactors.push('New customer - no order history');
+          } else {
+            const problemRatio = customerHistory.problem_orders / customerHistory.order_count;
+            if (problemRatio > 0.2) {
+              riskScore += 20;
+              riskFactors.push(`High problem order ratio: ${(problemRatio * 100).toFixed(1)}%`);
+            }
+          }
+          
+          // Order amount analysis
+          const orderAmount = parseFloat(paymentData.total_amount);
+          if (customerHistory.order_count > 0) {
+            const avgOrderValue = customerHistory.avg_order_value || 0;
+            if (orderAmount > avgOrderValue * 3) {
+              riskScore += 15;
+              riskFactors.push('Order amount significantly higher than customer average');
+            }
+          } else if (orderAmount > 500) {
+            riskScore += 15;
+            riskFactors.push('High-value order from new customer');
+          }
+          
+          // Payment method risk
+          if (paymentData.payment_method === 'cod') {
+            riskScore += 20;
+            riskFactors.push('Cash on delivery payment method');
+          }
+          
+          // Time-based risk (orders placed at unusual hours)
+          const orderHour = new Date().getHours();
+          if (orderHour >= 0 && orderHour <= 5) {
+            riskScore += 10;
+            riskFactors.push('Order placed during unusual hours');
+          }
+          
+          return {
+            final_risk_score: Math.min(riskScore, 100),
+            risk_level: riskScore < 30 ? 'low' : riskScore < 60 ? 'medium' : 'high',
+            risk_factors: riskFactors,
+            recommendation: riskScore < 30 ? 'approve' : riskScore < 60 ? 'review' : 'decline'
+          };
+        }
+        
+        // Execute risk assessment
+        const riskAssessment = calculateRiskScore(
+          {
+            risk_score: {{risk_score}},
+            high_risk_country: {{high_risk_country}},
+            country_match: {{country_match}}
+          },
+          {{customer_profile}},
+          {{payment_data}}
+        );
+        
+        return riskAssessment;
+      
+      outputs:
+        risk_assessment: "{{result}}"
+
+    # ====================================================================
+    # STEP 7: RISK-BASED DECISION ROUTING
+    # ====================================================================
+    - name: "risk_decision_routing"
+      type: "switch"
+      description: "Route payment based on risk assessment results"
+      variable: "{{risk_assessment.recommendation}}"
+      
+      cases:
+        "approve":
+          next: "process_payment_approval"
+        
+        "review":
+          next: "manual_review_queue"
+        
+        "decline":
+          next: "decline_payment"
+      
+      default: "manual_review_queue"
+
+    # ====================================================================
+    # STEP 8A: PROCESS APPROVED PAYMENT
+    # ====================================================================
+    - name: "process_payment_approval"
+      type: "parallel"
+      description: "Process approved payment with all necessary updates and notifications"
+      
+      branches:
+        # Update WooCommerce order status
+        order_status_update:
+          - name: "update_woocommerce_status"
+            type: "woocommerce"
+            operation: "update_order"
+            inputs:
+              order_id: "{{payment_data.order_id}}"
+              status: "processing"
+              meta_data:
+                - key: "_payment_verified"
+                  value: "yes"
+                - key: "_risk_score"
+                  value: "{{risk_assessment.final_risk_score}}"
+                - key: "_fraud_check_passed"
+                  value: "yes"
+        
+        # Financial record keeping
+        accounting_integration:
+          - name: "create_accounting_entry"
+            type: "quickbooks"
+            operation: "create_sales_receipt"
+            inputs:
+              customer_id: "{{payment_data.customer_id}}"
+              transaction_date: "{{payment_data.date_paid}}"
+              total_amount: "{{payment_data.total_amount}}"
+              currency: "{{payment_data.currency}}"
+              payment_method: "{{payment_data.payment_method_title}}"
+              reference_number: "{{payment_data.order_number}}"
+              line_items: "{{payment_data.line_items}}"
+              memo: "WooCommerce Order #{{payment_data.order_number}}"
+        
+        # Customer notification
+        customer_communication:
+          - name: "payment_confirmation_email"
+            type: "email-automation"
+            inputs:
+              to: "{{payment_data.customer_email}}"
+              subject: "Payment Confirmed - Order #{{payment_data.order_number}}"
+              template: "payment_confirmation"
+              data:
+                customer_name: "{{payment_data.customer_name}}"
+                order_number: "{{payment_data.order_number}}"
+                payment_amount: "{{payment_data.total_amount}}"
+                payment_method: "{{payment_data.payment_method_title}}"
+                transaction_id: "{{payment_data.transaction_id}}"
+                order_items: "{{payment_data.line_items}}"
+        
+        # Analytics and reporting
+        analytics_tracking:
+          - name: "payment_analytics"
+            type: "database"
+            operation: "insert"
+            table: "payment_analytics"
+            data:
+              order_id: "{{payment_data.order_id}}"
+              payment_method: "{{payment_data.payment_method}}"
+              amount: "{{payment_data.total_amount}}"
+              currency: "{{payment_data.currency}}"
+              risk_score: "{{risk_assessment.final_risk_score}}"
+              processing_time: "{{workflow_duration}}"
+              fraud_check_result: "passed"
+              geographic_region: "{{billing_address.country}}"
+              customer_type: "{{customer_profile.order_count > 0 ? 'returning' : 'new'}}"
+              created_at: "{{current_timestamp}}"
+      
+      next: "payment_reconciliation"
+
+    # ====================================================================
+    # STEP 8B: MANUAL REVIEW QUEUE
+    # ====================================================================
+    - name: "manual_review_queue"
+      type: "parallel"
+      description: "Queue payment for manual review with comprehensive data package"
+      
+      branches:
+        # Create review record
+        review_record_creation:
+          - name: "create_review_record"
+            type: "database"
+            operation: "insert"
+            table: "payment_review_queue"
+            data:
+              order_id: "{{payment_data.order_id}}"
+              order_number: "{{payment_data.order_number}}"
+              customer_email: "{{payment_data.customer_email}}"
+              amount: "{{payment_data.total_amount}}"
+              payment_method: "{{payment_data.payment_method}}"
+              risk_score: "{{risk_assessment.final_risk_score}}"
+              risk_factors: "{{risk_assessment.risk_factors}}"
+              customer_history: "{{customer_profile}}"
+              fraud_data: "{{risk_score}}"
+              status: "pending_review"
+              created_at: "{{current_timestamp}}"
+              priority: "{{risk_assessment.final_risk_score > 70 ? 'high' : 'medium'}}"
+        
+        # Notify review team
+        team_notification:
+          - name: "review_team_alert"
+            type: "slack"
+            operation: "send_message"
+            inputs:
+              channel: "#payment-review"
+              message: |
+                🔍 **Payment Review Required**
+                
+                Order: #{{payment_data.order_number}}
+                Amount: {{payment_data.currency}} {{payment_data.total_amount}}
+                Risk Score: {{risk_assessment.final_risk_score}}/100
+                Customer: {{payment_data.customer_email}}
+                
+                Risk Factors:
+                {{#each risk_assessment.risk_factors}}
+                • {{this}}
+                {{/each}}
+                
+                <button>Review Payment</button>
+              
+              attachments:
+                - name: "Review Dashboard"
+                  url: "{{ADMIN_URL}}/payment-review/{{payment_data.order_id}}"
+        
+        # Customer notification about review
+        customer_review_notification:
+          - name: "customer_review_email"
+            type: "email-automation"
+            inputs:
+              to: "{{payment_data.customer_email}}"
+              subject: "Payment Under Review - Order #{{payment_data.order_number}}"
+              template: "payment_under_review"
+              data:
+                customer_name: "{{payment_data.customer_name}}"
+                order_number: "{{payment_data.order_number}}"
+                expected_resolution: "24-48 hours"
+                contact_info: "{{SUPPORT_EMAIL}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 8C: DECLINE HIGH-RISK PAYMENT
+    # ====================================================================
+    - name: "decline_payment"
+      type: "parallel"
+      description: "Decline high-risk payment with appropriate actions and notifications"
+      
+      branches:
+        # Update order status
+        order_decline:
+          - name: "update_order_status_declined"
+            type: "woocommerce"
+            operation: "update_order"
+            inputs:
+              order_id: "{{payment_data.order_id}}"
+              status: "cancelled"
+              meta_data:
+                - key: "_payment_declined"
+                  value: "yes"
+                - key: "_decline_reason"
+                  value: "high_fraud_risk"
+                - key: "_risk_score"
+                  value: "{{risk_assessment.final_risk_score}}"
+        
+        # Initiate refund if payment was captured
+        refund_processing:
+          - name: "process_refund"
+            type: "condition"
+            condition: "{{payment_data.payment_method === 'stripe' && stripe_payment.status === 'succeeded'}}"
+            
+            on_true:
+              - name: "stripe_refund"
+                type: "stripe"
+                operation: "create_refund"
+                inputs:
+                  payment_intent_id: "{{payment_data.transaction_id}}"
+                  reason: "fraudulent"
+                  metadata:
+                    order_id: "{{payment_data.order_id}}"
+                    risk_score: "{{risk_assessment.final_risk_score}}"
+        
+        # Customer notification
+        customer_decline_notification:
+          - name: "customer_decline_email"
+            type: "email-automation"
+            inputs:
+              to: "{{payment_data.customer_email}}"
+              subject: "Payment Issue - Order #{{payment_data.order_number}}"
+              template: "payment_declined_customer"
+              data:
+                customer_name: "{{payment_data.customer_name}}"
+                order_number: "{{payment_data.order_number}}"
+                support_email: "{{SUPPORT_EMAIL}}"
+                support_phone: "{{SUPPORT_PHONE}}"
+        
+        # Admin notification for high-risk declines
+        admin_decline_notification:
+          - name: "admin_decline_alert"
+            type: "email-automation"
+            inputs:
+              to: "{{FRAUD_ADMIN_EMAIL}}"
+              subject: "High-Risk Payment Declined - Order #{{payment_data.order_number}}"
+              template: "payment_declined_admin"
+              data:
+                order_details: "{{payment_data}}"
+                risk_assessment: "{{risk_assessment}}"
+                customer_history: "{{customer_profile}}"
+        
+        # Security logging
+        security_log:
+          - name: "log_declined_payment"
+            type: "database"
+            operation: "insert"
+            table: "security_events"
+            data:
+              event_type: "payment_declined"
+              order_id: "{{payment_data.order_id}}"
+              risk_score: "{{risk_assessment.final_risk_score}}"
+              risk_factors: "{{risk_assessment.risk_factors}}"
+              customer_email: "{{payment_data.customer_email}}"
+              ip_address: "{{webhook.headers.X-Forwarded-For}}"
+              user_agent: "{{webhook.headers.User-Agent}}"
+              created_at: "{{current_timestamp}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 9: PAYMENT RECONCILIATION AND REPORTING
+    # ====================================================================
+    - name: "payment_reconciliation"
+      type: "parallel"
+      description: "Reconcile payment with accounting systems and generate reports"
+      
+      branches:
+        # Daily reconciliation check
+        reconciliation:
+          - name: "daily_reconciliation_update"
+            type: "database"
+            operation: "upsert"
+            table: "daily_payment_reconciliation"
+            data:
+              date: "{{current_date}}"
+              payment_method: "{{payment_data.payment_method}}"
+              transaction_count: "increment"
+              total_amount: "add:{{payment_data.total_amount}}"
+              currency: "{{payment_data.currency}}"
+              last_updated: "{{current_timestamp}}"
+            
+            where:
+              date: "{{current_date}}"
+              payment_method: "{{payment_data.payment_method}}"
+              currency: "{{payment_data.currency}}"
+        
+        # Gateway-specific reconciliation
+        gateway_reconciliation:
+          - name: "gateway_transaction_log"
+            type: "database"
+            operation: "insert"
+            table: "gateway_transactions"
+            data:
+              gateway: "{{payment_data.payment_method}}"
+              gateway_transaction_id: "{{payment_data.transaction_id}}"
+              order_id: "{{payment_data.order_id}}"
+              amount: "{{payment_data.total_amount}}"
+              currency: "{{payment_data.currency}}"
+              fees: "{{calculated_fees}}"
+              net_amount: "{{net_amount}}"
+              status: "completed"
+              created_at: "{{current_timestamp}}"
+        
+        # Business intelligence updates
+        bi_updates:
+          - name: "update_business_metrics"
+            type: "database"
+            operation: "call_procedure"
+            procedure: "update_payment_kpis"
+            params:
+              - "{{payment_data.order_id}}"
+              - "{{payment_data.total_amount}}"
+              - "{{payment_data.currency}}"
+              - "{{payment_data.payment_method}}"
+              - "{{risk_assessment.final_risk_score}}"
+
+    # ====================================================================
+    # STEP 10: AUTOMATED REPORTING AND ALERTS
+    # ====================================================================
+    - name: "automated_reporting"
+      type: "condition"
+      description: "Check if it's time for automated reports (end of day/week/month)"
+      condition: "{{is_end_of_day || is_end_of_week || is_end_of_month}}"
+      
+      on_true:
+        - name: "generate_payment_reports"
+          type: "parallel"
+          branches:
+            # Daily payment summary
+            daily_report:
+              - name: "daily_payment_summary"
+                type: "condition"
+                condition: "{{is_end_of_day}}"
+                on_true:
+                  - name: "send_daily_report"
+                    type: "email-automation"
+                    inputs:
+                      to: "{{FINANCE_TEAM_EMAIL}}"
+                      subject: "Daily Payment Summary - {{current_date}}"
+                      template: "daily_payment_report"
+                      data:
+                        report_date: "{{current_date}}"
+                        total_transactions: "{{daily_transaction_count}}"
+                        total_revenue: "{{daily_revenue}}"
+                        payment_methods: "{{payment_method_breakdown}}"
+                        risk_summary: "{{daily_risk_summary}}"
+            
+            # Weekly fraud analysis
+            weekly_fraud_report:
+              - name: "weekly_fraud_analysis"
+                type: "condition"
+                condition: "{{is_end_of_week}}"
+                on_true:
+                  - name: "send_fraud_report"
+                    type: "email-automation"
+                    inputs:
+                      to: "{{SECURITY_TEAM_EMAIL}}"
+                      subject: "Weekly Fraud Analysis Report"
+                      template: "weekly_fraud_report"
+                      data:
+                        week_ending: "{{current_date}}"
+                        high_risk_transactions: "{{weekly_high_risk_count}}"
+                        declined_payments: "{{weekly_declined_count}}"
+                        fraud_trends: "{{fraud_trend_analysis}}"
+
+    # ====================================================================
+    # WORKFLOW COMPLETION
+    # ====================================================================
+    - name: "end_workflow"
+      type: "response"
+      message: "Payment processing completed"
+      data:
+        order_id: "{{payment_data.order_id}}"
+        order_number: "{{payment_data.order_number}}"
+        payment_status: "{{final_payment_status}}"
+        risk_score: "{{risk_assessment.final_risk_score}}"
+        processing_time: "{{workflow_duration}}"
+        next_action: "{{next_recommended_action}}"
+
+# ====================================================================
+# ENVIRONMENT VARIABLES
+# ====================================================================
+variables:
+  # WooCommerce Configuration
+  WOOCOMMERCE_BASE_URL: "${WOOCOMMERCE_BASE_URL}"
+  WOOCOMMERCE_CONSUMER_KEY: "${WOOCOMMERCE_CONSUMER_KEY}"
+  WOOCOMMERCE_CONSUMER_SECRET: "${WOOCOMMERCE_CONSUMER_SECRET}"
+  WOOCOMMERCE_WEBHOOK_SECRET: "${WOOCOMMERCE_WEBHOOK_SECRET}"
+  
+  # Payment Gateways
+  STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
+  STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET}"
+  PAYPAL_CLIENT_ID: "${PAYPAL_CLIENT_ID}"
+  PAYPAL_CLIENT_SECRET: "${PAYPAL_CLIENT_SECRET}"
+  PAYPAL_SANDBOX: "${PAYPAL_SANDBOX:false}"
+  
+  # Fraud Detection
+  MAXMIND_USER_ID: "${MAXMIND_USER_ID}"
+  MAXMIND_LICENSE_KEY: "${MAXMIND_LICENSE_KEY}"
+  
+  # Accounting Integration
+  QUICKBOOKS_CLIENT_ID: "${QUICKBOOKS_CLIENT_ID}"
+  QUICKBOOKS_CLIENT_SECRET: "${QUICKBOOKS_CLIENT_SECRET}"
+  QUICKBOOKS_REFRESH_TOKEN: "${QUICKBOOKS_REFRESH_TOKEN}"
+  QUICKBOOKS_COMPANY_ID: "${QUICKBOOKS_COMPANY_ID}"
+  
+  # Notification Configuration
+  FINANCE_ADMIN_EMAIL: "${FINANCE_ADMIN_EMAIL}"
+  FRAUD_ADMIN_EMAIL: "${FRAUD_ADMIN_EMAIL}"
+  FINANCE_TEAM_EMAIL: "${FINANCE_TEAM_EMAIL}"
+  SECURITY_TEAM_EMAIL: "${SECURITY_TEAM_EMAIL}"
+  SUPPORT_EMAIL: "${SUPPORT_EMAIL}"
+  SUPPORT_PHONE: "${SUPPORT_PHONE}"
+  
+  # Business Configuration
+  ADMIN_URL: "${ADMIN_URL}"
+  HIGH_RISK_THRESHOLD: "${HIGH_RISK_THRESHOLD:60}"
+  MANUAL_REVIEW_THRESHOLD: "${MANUAL_REVIEW_THRESHOLD:30}"
+  
+  # Slack Integration
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+
+# ====================================================================
+# ERROR HANDLING AND MONITORING
+# ====================================================================
+error_handling:
+  global_error_handler:
+    type: "parallel"
+    branches:
+      admin_notification:
+        - type: "email-automation"
+          inputs:
+            to: "{{FINANCE_ADMIN_EMAIL}}"
+            subject: "Payment Processing Error - Order #{{payment_data.order_number}}"
+            template: "payment_workflow_error"
+            data:
+              error_details: "{{error}}"
+              order_data: "{{payment_data}}"
+              workflow_step: "{{current_step}}"
+      
+      error_logging:
+        - type: "database"
+          operation: "insert"
+          table: "workflow_errors"
+          data:
+            workflow_name: "woocommerce_payment_processing"
+            order_id: "{{payment_data.order_id}}"
+            error_message: "{{error.message}}"
+            error_stack: "{{error.stack}}"
+            workflow_step: "{{current_step}}"
+            created_at: "{{current_timestamp}}"
+  
+  retry_policy:
+    max_retries: 3
+    retry_delay: "60 seconds"
+    exponential_backoff: true
+    retry_on_errors: ["timeout", "network_error", "api_rate_limit"]
+    
+  monitoring:
+    performance_tracking: true
+    error_alerting: true
+    fraud_monitoring: true
+    financial_reconciliation: true
+    compliance_logging: true
+
+# ====================================================================
+# SECURITY AND COMPLIANCE
+# ====================================================================
+security:
+  pci_compliance:
+    - "Never log complete card numbers"
+    - "Encrypt all sensitive payment data"
+    - "Use secure API communications only"
+    - "Implement proper access controls"
+  
+  data_protection:
+    - "GDPR compliant data handling"
+    - "Automatic PII redaction in logs"
+    - "Secure credential management"
+    - "Regular security audits"
+  
+  fraud_prevention:
+    - "Multi-layer fraud detection"
+    - "Real-time risk scoring"
+    - "Behavioral analysis"
+    - "IP and device fingerprinting"
+
+# ====================================================================
+# PERFORMANCE OPTIMIZATION
+# ====================================================================
+performance:
+  caching:
+    - "Cache customer risk profiles for 1 hour"
+    - "Cache fraud detection results for 30 minutes"
+    - "Use CDN for static resources"
+  
+  optimization:
+    - "Parallel processing for non-dependent operations"
+    - "Database query optimization"
+    - "API call batching where possible"
+    - "Efficient error handling and logging"
+  
+  scaling:
+    - "Horizontal scaling for webhook processing"
+    - "Queue systems for high-volume periods"
+    - "Load balancing for API calls"
+    - "Database read replicas for analytics"

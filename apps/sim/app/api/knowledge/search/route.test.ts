@@ -1,106 +1,145 @@
 /**
- * Tests for knowledge search API route
- * Focuses on route-specific functionality: authentication, validation, API contract, error handling
- * Search logic is tested in utils.test.ts
+ * Knowledge Search API Route Tests - Bun-Compatible Test Suite
+ *
+ * This file contains comprehensive tests for knowledge search functionality focusing on:
+ * - Authentication and authorization with multiple auth methods
+ * - Search parameter validation and error handling
+ * - Vector search, tag search, and combined search modes
+ * - Cost tracking and performance metrics
+ * - Database error resilience and API integration
+ *
+ * Migration Notes:
+ * - Migrated from vi.mock() to pure bun-compatible infrastructure
+ * - Uses bun-test-setup.ts for all mocking without vi.mock() calls
+ * - Implements proper cleanup and test isolation patterns
+ * - Maintains all original test functionality with enhanced logging
  *
  * @vitest-environment node
  */
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  createMockRequest,
-  mockConsoleLogger,
-  mockKnowledgeSchemas,
-} from '@/app/api/__test-utils__/utils'
+  type BunTestMocks,
+  createTestRequest,
+  defaultMockUser,
+  setupComprehensiveTestMocks,
+} from '@/app/api/__test-utils__/bun-test-setup'
 
-vi.mock('drizzle-orm', () => ({
-  and: vi.fn().mockImplementation((...args) => ({ and: args })),
-  eq: vi.fn().mockImplementation((a, b) => ({ eq: [a, b] })),
-  inArray: vi.fn().mockImplementation((field, values) => ({ inArray: [field, values] })),
-  isNull: vi.fn().mockImplementation((arg) => ({ isNull: arg })),
-  sql: vi.fn().mockImplementation((strings, ...values) => ({
-    sql: strings,
-    values,
-    as: vi.fn().mockReturnValue({ sql: strings, values, alias: 'mocked_alias' }),
-  })),
-}))
-
-mockKnowledgeSchemas()
-
-vi.mock('@/lib/env', () => ({
-  env: {
-    OPENAI_API_KEY: 'test-api-key',
-  },
-  isTruthy: (value: string | boolean | number | undefined) =>
-    typeof value === 'string' ? value === 'true' || value === '1' : Boolean(value),
-}))
-
-vi.mock('@/lib/documents/utils', () => ({
-  retryWithExponentialBackoff: vi.fn().mockImplementation((fn) => fn()),
-}))
-
-vi.mock('@/lib/tokenization/estimators', () => ({
-  estimateTokenCount: vi.fn().mockReturnValue({ count: 521 }),
-}))
-
-vi.mock('@/providers/utils', () => ({
-  calculateCost: vi.fn().mockReturnValue({
-    input: 0.00001042,
-    output: 0,
-    total: 0.00001042,
-    pricing: {
-      input: 0.02,
-      output: 0,
-      updatedAt: '2025-07-10',
-    },
-  }),
-}))
-
+// Bun-compatible mock functions for knowledge search functionality
 const mockCheckKnowledgeBaseAccess = vi.fn()
-vi.mock('@/app/api/knowledge/utils', () => ({
-  checkKnowledgeBaseAccess: mockCheckKnowledgeBaseAccess,
-}))
-
 const mockHandleTagOnlySearch = vi.fn()
 const mockHandleVectorOnlySearch = vi.fn()
 const mockHandleTagAndVectorSearch = vi.fn()
 const mockGetQueryStrategy = vi.fn()
 const mockGenerateSearchEmbedding = vi.fn()
 const mockGetDocumentNamesByIds = vi.fn()
-vi.mock('./utils', () => ({
+const mockEstimateTokenCount = vi.fn()
+const mockCalculateCost = vi.fn()
+const mockGetUserId = vi.fn()
+
+// Bun-compatible drizzle-orm mock functions
+const mockDrizzleAnd = vi.fn((...args) => ({ and: args }))
+const mockDrizzleEq = vi.fn((a, b) => ({ eq: [a, b] }))
+const mockDrizzleInArray = vi.fn((field, values) => ({ inArray: [field, values] }))
+const mockDrizzleIsNull = vi.fn((arg) => ({ isNull: arg }))
+const mockDrizzleSql = vi.fn((strings, ...values) => ({
+  sql: strings,
+  values,
+  as: vi.fn().mockReturnValue({ sql: strings, values, alias: 'mocked_alias' }),
+}))
+
+// Mock console logger
+const mockLogger = {
+  debug: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}
+const mockCreateLogger = vi.fn().mockReturnValue(mockLogger)
+
+// Mock environment configuration
+const mockEnv = {
+  OPENAI_API_KEY: 'test-api-key',
+}
+const mockIsTruthy = (value: string | boolean | number | undefined) =>
+  typeof value === 'string' ? value === 'true' || value === '1' : Boolean(value)
+
+// Mock database schema objects
+const mockKnowledgeBases = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  deletedAt: 'deletedAt',
+}
+const mockKnowledgeBaseChunks = {
+  id: 'id',
+  content: 'content',
+  documentId: 'documentId',
+  knowledgeBaseId: 'knowledgeBaseId',
+  chunkIndex: 'chunkIndex',
+  embedding: 'embedding',
+}
+const mockKnowledgeBaseDocuments = {
+  id: 'id',
+  name: 'name',
+  knowledgeBaseId: 'knowledgeBaseId',
+}
+const mockKnowledgeBaseTagDefinitions = {
+  id: 'id',
+  knowledgeBaseId: 'knowledgeBaseId',
+  tagSlot: 'tagSlot',
+  displayName: 'displayName',
+}
+
+// Mock document utility functions
+const mockRetryWithExponentialBackoff = vi.fn().mockImplementation((fn) => fn())
+
+// Mock APIError class
+class MockAPIError extends Error {
+  public status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'APIError'
+    this.status = status
+  }
+}
+
+// Setup bun-compatible global mocks using vi.stubGlobal
+vi.stubGlobal('__mockKnowledgeSearch', {
+  checkKnowledgeBaseAccess: mockCheckKnowledgeBaseAccess,
   handleTagOnlySearch: mockHandleTagOnlySearch,
   handleVectorOnlySearch: mockHandleVectorOnlySearch,
   handleTagAndVectorSearch: mockHandleTagAndVectorSearch,
   getQueryStrategy: mockGetQueryStrategy,
   generateSearchEmbedding: mockGenerateSearchEmbedding,
   getDocumentNamesByIds: mockGetDocumentNamesByIds,
-  APIError: class APIError extends Error {
-    public status: number
-    constructor(message: string, status: number) {
-      super(message)
-      this.name = 'APIError'
-      this.status = status
-    }
+  estimateTokenCount: mockEstimateTokenCount,
+  calculateCost: mockCalculateCost,
+  getUserId: mockGetUserId,
+  APIError: MockAPIError,
+  retryWithExponentialBackoff: mockRetryWithExponentialBackoff,
+  createLogger: mockCreateLogger,
+  env: mockEnv,
+  isTruthy: mockIsTruthy,
+  drizzle: {
+    and: mockDrizzleAnd,
+    eq: mockDrizzleEq,
+    inArray: mockDrizzleInArray,
+    isNull: mockDrizzleIsNull,
+    sql: mockDrizzleSql,
   },
-}))
+  schema: {
+    knowledgeBases: mockKnowledgeBases,
+    knowledgeBaseChunks: mockKnowledgeBaseChunks,
+    knowledgeBaseDocuments: mockKnowledgeBaseDocuments,
+    knowledgeBaseTagDefinitions: mockKnowledgeBaseTagDefinitions,
+  },
+})
 
-mockConsoleLogger()
+describe('Knowledge Search API Route - Bun-Compatible Test Suite', () => {
+  let mocks: BunTestMocks
 
-describe('Knowledge Search API Route', () => {
-  const mockDbChain = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    innerJoin: vi.fn().mockReturnThis(),
-    leftJoin: vi.fn().mockReturnThis(),
-    groupBy: vi.fn().mockReturnThis(),
-    having: vi.fn().mockReturnThis(),
-  }
-
-  const mockGetUserId = vi.fn()
-  const mockFetch = vi.fn()
-
+  // Test data constants
   const mockEmbedding = [0.1, 0.2, 0.3, 0.4, 0.5]
   const mockSearchResults = [
     {
@@ -121,47 +160,85 @@ describe('Knowledge Search API Route', () => {
     },
   ]
 
-  beforeEach(async () => {
+  const mockKnowledgeBases = [
+    {
+      id: 'kb-123',
+      userId: 'user-123',
+      name: 'Test KB',
+      deletedAt: null,
+    },
+  ]
+
+  beforeEach(() => {
+    console.log('🚀 Setting up Knowledge Search API test environment')
+
+    // Clear all mocks
     vi.clearAllMocks()
 
-    vi.doMock('@/db', () => ({
-      db: mockDbChain,
-    }))
-
-    vi.doMock('@/app/api/auth/oauth/utils', () => ({
-      getUserId: mockGetUserId,
-    }))
-
-    Object.values(mockDbChain).forEach((fn) => {
-      if (typeof fn === 'function') {
-        fn.mockClear().mockReturnThis()
-      }
+    // Setup comprehensive test mocks using bun-compatible infrastructure
+    mocks = setupComprehensiveTestMocks({
+      auth: { authenticated: true, user: defaultMockUser },
+      database: { select: { results: [mockSearchResults] } },
     })
 
-    mockHandleTagOnlySearch.mockClear()
-    mockHandleVectorOnlySearch.mockClear()
-    mockHandleTagAndVectorSearch.mockClear()
-    mockGetQueryStrategy.mockClear().mockReturnValue({
+    // Configure search utility mocks using bun-compatible approach
+    mockGetQueryStrategy.mockReturnValue({
       useParallel: false,
       distanceThreshold: 1.0,
       parallelLimit: 15,
       singleQueryOptimized: true,
     })
-    mockGenerateSearchEmbedding.mockClear().mockResolvedValue([0.1, 0.2, 0.3, 0.4, 0.5])
-    mockGetDocumentNamesByIds.mockClear().mockResolvedValue({
-      doc1: 'Document 1',
-      doc2: 'Document 2',
+
+    mockGenerateSearchEmbedding.mockResolvedValue(mockEmbedding)
+
+    mockGetDocumentNamesByIds.mockResolvedValue({
+      'doc-1': 'Test Document',
+      'doc-2': 'Another Document',
     })
 
+    mockEstimateTokenCount.mockReturnValue({
+      count: 521,
+      confidence: 'high',
+      provider: 'openai',
+      method: 'precise',
+    })
+
+    mockCalculateCost.mockReturnValue({
+      input: 0.00001042,
+      output: 0,
+      total: 0.00001042,
+      pricing: {
+        input: 0.02,
+        output: 0,
+        updatedAt: '2025-07-10',
+      },
+    })
+
+    // Mock fetch for OpenAI API calls using bun-compatible vi.stubGlobal
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            data: [{ embedding: mockEmbedding }],
+          }),
+      })
+    )
+
+    // Mock crypto.randomUUID using bun-compatible vi.stubGlobal
     vi.stubGlobal('crypto', {
       randomUUID: vi.fn().mockReturnValue('mock-uuid-1234-5678'),
     })
 
-    vi.stubGlobal('fetch', mockFetch)
+    console.log('✅ Knowledge Search API test environment setup complete (bun-compatible)')
   })
 
   afterEach(() => {
+    console.log('🧹 Cleaning up Knowledge Search API test environment')
+    mocks.cleanup()
     vi.clearAllMocks()
+    console.log('✅ Knowledge Search test cleanup complete')
   })
 
   describe('POST /api/knowledge/search', () => {
@@ -181,37 +258,36 @@ describe('Knowledge Search API Route', () => {
     ]
 
     it('should perform search successfully with single knowledge base', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
+      console.log('🧪 Testing single knowledge base search functionality')
+
+      // Setup authenticated user and knowledge base access
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
       mockCheckKnowledgeBaseAccess.mockResolvedValue({
         hasAccess: true,
         knowledgeBase: {
           id: 'kb-123',
-          userId: 'user-123',
+          userId: defaultMockUser.id,
           name: 'Test KB',
           deletedAt: null,
         },
       })
 
-      mockDbChain.limit.mockResolvedValue([])
-
+      // Configure database to return search results
+      mocks.database.setSelectResults([mockSearchResults])
       mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
-
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Search response status:', response.status)
+      console.log('📊 Search results count:', data.data?.results?.length)
+
       if (response.status !== 200) {
-        console.log('Test failed with response:', data)
+        console.log('❌ Test failed with response:', data)
       }
 
       expect(response.status).toBe(200)
@@ -220,15 +296,20 @@ describe('Knowledge Search API Route', () => {
       expect(data.data.results[0].similarity).toBe(0.8) // 1 - 0.2
       expect(data.data.query).toBe(validSearchData.query)
       expect(data.data.knowledgeBaseIds).toEqual(['kb-123'])
+
       expect(mockHandleVectorOnlySearch).toHaveBeenCalledWith({
         knowledgeBaseIds: ['kb-123'],
         topK: 10,
         queryVector: JSON.stringify(mockEmbedding),
         distanceThreshold: expect.any(Number),
       })
+
+      console.log('✅ Single knowledge base search test completed successfully')
     })
 
     it('should perform search successfully with multiple knowledge bases', async () => {
+      console.log('🧪 Testing multiple knowledge base search functionality')
+
       const multiKbData = {
         ...validSearchData,
         knowledgeBaseIds: ['kb-123', 'kb-456'],
@@ -236,144 +317,161 @@ describe('Knowledge Search API Route', () => {
 
       const multiKbs = [
         ...mockKnowledgeBases,
-        { id: 'kb-456', userId: 'user-123', name: 'Test KB 2', deletedAt: null },
+        { id: 'kb-456', userId: defaultMockUser.id, name: 'Test KB 2', deletedAt: null },
       ]
 
-      mockGetUserId.mockResolvedValue('user-123')
+      // Setup authenticated user and multiple knowledge base access
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
       mockCheckKnowledgeBaseAccess
         .mockResolvedValueOnce({ hasAccess: true, knowledgeBase: multiKbs[0] })
         .mockResolvedValueOnce({ hasAccess: true, knowledgeBase: multiKbs[1] })
 
-      mockDbChain.limit.mockResolvedValue([])
-
+      // Configure database and search handler
+      mocks.database.setSelectResults([mockSearchResults])
       mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
-
-      const req = createMockRequest('POST', multiKbData)
+      const req = createTestRequest('POST', multiKbData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Multi-KB search status:', response.status)
+      console.log('📊 Knowledge bases searched:', data.data?.knowledgeBaseIds)
+
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data.knowledgeBaseIds).toEqual(['kb-123', 'kb-456'])
+
       expect(mockHandleVectorOnlySearch).toHaveBeenCalledWith({
         knowledgeBaseIds: ['kb-123', 'kb-456'],
         topK: 10,
         queryVector: JSON.stringify(mockEmbedding),
         distanceThreshold: expect.any(Number),
       })
+
+      console.log('✅ Multiple knowledge base search test completed successfully')
     })
 
     it('should handle workflow-based authentication', async () => {
+      console.log('🧪 Testing workflow-based authentication functionality')
+
       const workflowData = {
         ...validSearchData,
         workflowId: 'workflow-123',
       }
 
-      mockGetUserId.mockResolvedValue('user-123')
+      // Setup workflow authentication
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
       mockCheckKnowledgeBaseAccess.mockResolvedValue({
         hasAccess: true,
         knowledgeBase: {
           id: 'kb-123',
-          userId: 'user-123',
+          userId: defaultMockUser.id,
           name: 'Test KB',
           deletedAt: null,
         },
       })
 
-      mockDbChain.limit.mockResolvedValue([])
-
+      // Configure database and search handler
+      mocks.database.setSelectResults([mockSearchResults])
       mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
-
-      const req = createMockRequest('POST', workflowData)
+      const req = createTestRequest('POST', workflowData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Workflow auth response status:', response.status)
+      console.log('📊 Workflow ID processed:', workflowData.workflowId)
+
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(mockGetUserId).toHaveBeenCalledWith(expect.any(String), 'workflow-123')
+
+      console.log('✅ Workflow-based authentication test completed successfully')
     })
 
-    it.concurrent(
-      'should return unauthorized for unauthenticated request with security logging',
-      async () => {
-        const logger = mockConsoleLogger()
-        logger.info('[Knowledge Search] Testing unauthorized access scenario')
-        logger.debug('[Knowledge Search] Attempted search data:', validSearchData)
+    it('should return unauthorized for unauthenticated request with security logging', async () => {
+      console.log('🧪 Testing unauthorized access security controls')
+      console.log('📊 Attempted search data:', validSearchData)
 
-        mockGetUserId.mockResolvedValue(null)
+      // Setup unauthenticated state
+      mocks.auth.setUnauthenticated()
+      mockGetUserId.mockResolvedValue(null)
 
-        const req = createMockRequest('POST', validSearchData)
-        const { POST } = await import('@/app/api/knowledge/search/route')
-        const response = await POST(req)
-        const data = await response.json()
+      const req = createTestRequest('POST', validSearchData)
+      const { POST } = await import('@/app/api/knowledge/search/route')
+      const response = await POST(req)
+      const data = await response.json()
 
-        logger.warn('[Knowledge Search] Unauthorized search attempt blocked')
-        logger.debug('[Knowledge Search] Security response:', data)
+      console.log('⚠️ Unauthorized search attempt blocked')
+      console.log('📊 Security response status:', response.status)
+      console.log('📊 Security response data:', data)
 
-        expect(response.status).toBe(401)
-        expect(data.error).toBe('Unauthorized')
+      expect(response.status).toBe(401)
+      expect(data.error).toBe('Unauthorized')
 
-        // Verify no search operations were attempted
-        expect(mockHandleVectorOnlySearch).not.toHaveBeenCalled()
-        expect(mockHandleTagOnlySearch).not.toHaveBeenCalled()
-        expect(mockGenerateSearchEmbedding).not.toHaveBeenCalled()
+      // Verify no search operations were attempted for security
+      expect(mockHandleVectorOnlySearch).not.toHaveBeenCalled()
+      expect(mockHandleTagOnlySearch).not.toHaveBeenCalled()
+      expect(mockGenerateSearchEmbedding).not.toHaveBeenCalled()
 
-        logger.info('[Knowledge Search] Unauthorized access test completed')
-      }
-    )
+      console.log('✅ Unauthorized access security test completed successfully')
+    })
 
-    it.concurrent('should return not found for workflow that does not exist', async () => {
+    it('should return not found for workflow that does not exist', async () => {
+      console.log('🧪 Testing nonexistent workflow handling')
+
       const workflowData = {
         ...validSearchData,
         workflowId: 'nonexistent-workflow',
       }
 
+      // Setup workflow not found scenario
       mockGetUserId.mockResolvedValue(null)
 
-      const req = createMockRequest('POST', workflowData)
+      const req = createTestRequest('POST', workflowData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Nonexistent workflow response status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(404)
       expect(data.error).toBe('Workflow not found')
+
+      console.log('✅ Nonexistent workflow test completed successfully')
     })
 
     it('should return not found for non-existent knowledge base', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
+      console.log('🧪 Testing non-existent knowledge base handling')
+
+      // Setup authenticated user but non-existent knowledge base
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
       mockCheckKnowledgeBaseAccess.mockResolvedValue({
         hasAccess: false,
         notFound: true,
       })
 
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Non-existent KB response status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(404)
       expect(data.error).toBe('Knowledge base not found or access denied')
+
+      console.log('✅ Non-existent knowledge base test completed successfully')
     })
 
     it('should return not found for some missing knowledge bases', async () => {
@@ -389,7 +487,7 @@ describe('Knowledge Search API Route', () => {
         .mockResolvedValueOnce({ hasAccess: true, knowledgeBase: mockKnowledgeBases[0] })
         .mockResolvedValueOnce({ hasAccess: false, notFound: true })
 
-      const req = createMockRequest('POST', multiKbData)
+      const req = createTestRequest('POST', multiKbData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -398,158 +496,230 @@ describe('Knowledge Search API Route', () => {
       expect(data.error).toBe('Knowledge bases not found or access denied: kb-missing')
     })
 
-    it.concurrent('should validate search parameters', async () => {
+    it('should validate search parameters', async () => {
+      console.log('🧪 Testing search parameter validation')
+
       const invalidData = {
         knowledgeBaseIds: '', // Empty string
         query: '', // Empty query
         topK: 150, // Too high
       }
 
-      const req = createMockRequest('POST', invalidData)
+      console.log('📊 Invalid search parameters:', invalidData)
+
+      const req = createTestRequest('POST', invalidData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Parameter validation response status:', response.status)
+      console.log('📊 Validation error details:', data.details)
+
       expect(response.status).toBe(400)
       expect(data.error).toBe('Invalid request data')
       expect(data.details).toBeDefined()
+
+      console.log('✅ Search parameter validation test completed successfully')
     })
 
     it('should use default topK value when not provided', async () => {
+      console.log('🧪 Testing default topK value assignment')
+
       const dataWithoutTopK = {
         knowledgeBaseIds: 'kb-123',
         query: 'test search query',
       }
 
-      mockGetUserId.mockResolvedValue('user-123')
+      // Setup authenticated user and knowledge base access
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
-      // Mock knowledge base access check to return success
       mockCheckKnowledgeBaseAccess.mockResolvedValue({
         hasAccess: true,
         knowledgeBase: {
           id: 'kb-123',
-          userId: 'user-123',
+          userId: defaultMockUser.id,
           name: 'Test KB',
           deletedAt: null,
         },
       })
 
-      mockDbChain.limit.mockResolvedValueOnce(mockSearchResults) // Search results
+      // Configure database and search handler
+      mocks.database.setSelectResults([mockSearchResults])
+      mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
-
-      const req = createMockRequest('POST', dataWithoutTopK)
+      const req = createTestRequest('POST', dataWithoutTopK)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Default topK response status:', response.status)
+      console.log('📊 Applied topK value:', data.data?.topK)
+
       expect(response.status).toBe(200)
       expect(data.data.topK).toBe(10) // Default value
+
+      console.log('✅ Default topK value test completed successfully')
     })
 
-    it.concurrent('should handle OpenAI API errors', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
-      mockDbChain.limit.mockResolvedValueOnce(mockKnowledgeBases)
+    it('should handle OpenAI API errors', async () => {
+      console.log('🧪 Testing OpenAI API error handling')
 
-      // Mock generateSearchEmbedding to throw an error
+      // Setup authenticated user
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
+
+      mockCheckKnowledgeBaseAccess.mockResolvedValue({
+        hasAccess: true,
+        knowledgeBase: mockKnowledgeBases[0],
+      })
+
+      mocks.database.setSelectResults([mockKnowledgeBases])
+
+      // Mock generateSearchEmbedding to throw OpenAI API error
       mockGenerateSearchEmbedding.mockRejectedValueOnce(
         new Error('OpenAI API error: 401 Unauthorized - Invalid API key')
       )
 
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 OpenAI API error response status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(500)
       expect(data.error).toBe('Failed to perform vector search')
+
+      console.log('✅ OpenAI API error handling test completed successfully')
     })
 
-    it.concurrent('should handle missing OpenAI API key', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
-      mockDbChain.limit.mockResolvedValueOnce(mockKnowledgeBases)
+    it('should handle missing OpenAI API key', async () => {
+      console.log('🧪 Testing missing OpenAI API key error handling')
+
+      // Setup authenticated user
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
+
+      mockCheckKnowledgeBaseAccess.mockResolvedValue({
+        hasAccess: true,
+        knowledgeBase: mockKnowledgeBases[0],
+      })
+
+      mocks.database.setSelectResults([mockKnowledgeBases])
 
       // Mock generateSearchEmbedding to throw missing API key error
       mockGenerateSearchEmbedding.mockRejectedValueOnce(new Error('OPENAI_API_KEY not configured'))
 
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Missing API key response status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(500)
       expect(data.error).toBe('Failed to perform vector search')
+
+      console.log('✅ Missing OpenAI API key error handling test completed successfully')
     })
 
-    it.concurrent('should handle database errors during search', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
-      mockDbChain.limit.mockResolvedValueOnce(mockKnowledgeBases)
+    it('should handle database errors during search', async () => {
+      console.log('🧪 Testing database error handling during search')
+
+      // Setup authenticated user
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
+
+      mockCheckKnowledgeBaseAccess.mockResolvedValue({
+        hasAccess: true,
+        knowledgeBase: mockKnowledgeBases[0],
+      })
+
+      mocks.database.setSelectResults([mockKnowledgeBases])
 
       // Mock the search handler to throw a database error
       mockHandleVectorOnlySearch.mockRejectedValueOnce(new Error('Database error'))
 
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Database error response status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(500)
       expect(data.error).toBe('Failed to perform vector search')
+
+      console.log('✅ Database error handling test completed successfully')
     })
 
-    it.concurrent('should handle invalid OpenAI response format', async () => {
-      mockGetUserId.mockResolvedValue('user-123')
-      mockDbChain.limit.mockResolvedValueOnce(mockKnowledgeBases)
+    it('should handle invalid OpenAI response format', async () => {
+      console.log('🧪 Testing invalid OpenAI response format error handling')
+
+      // Setup authenticated user
+      mocks.auth.setAuthenticated(defaultMockUser)
+      mockGetUserId.mockResolvedValue(defaultMockUser.id)
+
+      mockCheckKnowledgeBaseAccess.mockResolvedValue({
+        hasAccess: true,
+        knowledgeBase: mockKnowledgeBases[0],
+      })
+
+      mocks.database.setSelectResults([mockKnowledgeBases])
 
       // Mock generateSearchEmbedding to throw invalid response format error
       mockGenerateSearchEmbedding.mockRejectedValueOnce(
         new Error('Invalid response format from OpenAI embeddings API')
       )
 
-      const req = createMockRequest('POST', validSearchData)
+      const req = createTestRequest('POST', validSearchData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
 
+      console.log('📊 Invalid response format error status:', response.status)
+      console.log('📊 Error message:', data.error)
+
       expect(response.status).toBe(500)
       expect(data.error).toBe('Failed to perform vector search')
+
+      console.log('✅ Invalid OpenAI response format error handling test completed successfully')
     })
 
     describe('Cost tracking', () => {
-      it.concurrent('should include cost information in successful search response', async () => {
-        mockGetUserId.mockResolvedValue('user-123')
+      it('should include cost information in successful search response', async () => {
+        console.log('🧪 Testing cost information in search response')
+
+        // Setup authenticated user
+        mocks.auth.setAuthenticated(defaultMockUser)
+        mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
         // Mock knowledge base access check to return success
         mockCheckKnowledgeBaseAccess.mockResolvedValue({
           hasAccess: true,
           knowledgeBase: {
             id: 'kb-123',
-            userId: 'user-123',
+            userId: defaultMockUser.id,
             name: 'Test KB',
             deletedAt: null,
           },
         })
 
-        mockDbChain.limit.mockResolvedValueOnce(mockSearchResults)
+        // Configure database and search handler
+        mocks.database.setSelectResults([mockSearchResults])
+        mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-        mockFetch.mockResolvedValue({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              data: [{ embedding: mockEmbedding }],
-            }),
-        })
-
-        const req = createMockRequest('POST', validSearchData)
+        const req = createTestRequest('POST', validSearchData)
         const { POST } = await import('@/app/api/knowledge/search/route')
         const response = await POST(req)
         const data = await response.json()
+
+        console.log('📊 Cost tracking response status:', response.status)
+        console.log('📊 Cost information:', data.data?.cost)
 
         expect(response.status).toBe(200)
         expect(data.success).toBe(true)
@@ -570,58 +740,59 @@ describe('Knowledge Search API Route', () => {
           output: 0,
           updatedAt: '2025-07-10',
         })
+
+        console.log('✅ Cost information test completed successfully')
       })
 
       it('should call cost calculation functions with correct parameters', async () => {
-        const { estimateTokenCount } = await import('@/lib/tokenization/estimators')
-        const { calculateCost } = await import('@/providers/utils')
+        console.log('🧪 Testing cost calculation function calls')
 
-        mockGetUserId.mockResolvedValue('user-123')
+        // Setup authenticated user
+        mocks.auth.setAuthenticated(defaultMockUser)
+        mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
         // Mock knowledge base access check to return success
         mockCheckKnowledgeBaseAccess.mockResolvedValue({
           hasAccess: true,
           knowledgeBase: {
             id: 'kb-123',
-            userId: 'user-123',
+            userId: defaultMockUser.id,
             name: 'Test KB',
             deletedAt: null,
           },
         })
 
-        mockDbChain.limit.mockResolvedValueOnce(mockSearchResults)
+        // Configure database and search handler
+        mocks.database.setSelectResults([mockSearchResults])
+        mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-        mockFetch.mockResolvedValue({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              data: [{ embedding: mockEmbedding }],
-            }),
-        })
-
-        const req = createMockRequest('POST', validSearchData)
+        const req = createTestRequest('POST', validSearchData)
         const { POST } = await import('@/app/api/knowledge/search/route')
         await POST(req)
 
+        console.log('📊 Token estimation calls:', mockEstimateTokenCount.mock.calls)
+        console.log('📊 Cost calculation calls:', mockCalculateCost.mock.calls)
+
         // Verify token estimation was called with correct parameters
-        expect(estimateTokenCount).toHaveBeenCalledWith('test search query', 'openai')
+        expect(mockEstimateTokenCount).toHaveBeenCalledWith('test search query', 'openai')
 
         // Verify cost calculation was called with correct parameters
-        expect(calculateCost).toHaveBeenCalledWith('text-embedding-3-small', 521, 0, false)
+        expect(mockCalculateCost).toHaveBeenCalledWith('text-embedding-3-small', 521, 0, false)
+
+        console.log('✅ Cost calculation function calls test completed successfully')
       })
 
       it('should handle cost calculation with different query lengths', async () => {
-        const { estimateTokenCount } = await import('@/lib/tokenization/estimators')
-        const { calculateCost } = await import('@/providers/utils')
+        console.log('🧪 Testing cost calculation with different query lengths')
 
         // Mock different token count for longer query
-        vi.mocked(estimateTokenCount).mockReturnValue({
+        mockEstimateTokenCount.mockReturnValue({
           count: 1042,
           confidence: 'high',
           provider: 'openai',
           method: 'precise',
         })
-        vi.mocked(calculateCost).mockReturnValue({
+        mockCalculateCost.mockReturnValue({
           input: 0.00002084,
           output: 0,
           total: 0.00002084,
@@ -638,38 +809,39 @@ describe('Knowledge Search API Route', () => {
             'This is a much longer search query with many more tokens to test cost calculation accuracy',
         }
 
-        mockGetUserId.mockResolvedValue('user-123')
+        // Setup authenticated user
+        mocks.auth.setAuthenticated(defaultMockUser)
+        mockGetUserId.mockResolvedValue(defaultMockUser.id)
 
         // Mock knowledge base access check to return success
         mockCheckKnowledgeBaseAccess.mockResolvedValue({
           hasAccess: true,
           knowledgeBase: {
             id: 'kb-123',
-            userId: 'user-123',
+            userId: defaultMockUser.id,
             name: 'Test KB',
             deletedAt: null,
           },
         })
 
-        mockDbChain.limit.mockResolvedValueOnce(mockSearchResults)
+        // Configure database and search handler
+        mocks.database.setSelectResults([mockSearchResults])
+        mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-        mockFetch.mockResolvedValue({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              data: [{ embedding: mockEmbedding }],
-            }),
-        })
-
-        const req = createMockRequest('POST', longQueryData)
+        const req = createTestRequest('POST', longQueryData)
         const { POST } = await import('@/app/api/knowledge/search/route')
         const response = await POST(req)
         const data = await response.json()
 
+        console.log('📊 Long query cost response status:', response.status)
+        console.log('📊 Cost data:', data.data?.cost)
+
         expect(response.status).toBe(200)
         expect(data.data.cost.input).toBe(0.00002084)
         expect(data.data.cost.tokens.prompt).toBe(1042)
-        expect(calculateCost).toHaveBeenCalledWith('text-embedding-3-small', 1042, 0, false)
+        expect(mockCalculateCost).toHaveBeenCalledWith('text-embedding-3-small', 1042, 0, false)
+
+        console.log('✅ Different query lengths cost calculation test completed successfully')
       })
     })
   })
@@ -723,15 +895,11 @@ describe('Knowledge Search API Route', () => {
         },
       })
 
-      // Mock tag definitions queries for filter mapping and display mapping
-      mockDbChain.limit
-        .mockResolvedValueOnce(mockTagDefinitions) // Tag definitions for filter mapping
-        .mockResolvedValueOnce(mockTagDefinitions) // Tag definitions for display mapping
-
-      // Mock the tag-only search handler
+      // Configure database to return tag definitions and search handler
+      mocks.database.setSelectResults([mockTagDefinitions, mockTagDefinitions])
       mockHandleTagOnlySearch.mockResolvedValue(mockTaggedResults)
 
-      const req = createMockRequest('POST', tagOnlyData)
+      const req = createTestRequest('POST', tagOnlyData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -775,23 +943,13 @@ describe('Knowledge Search API Route', () => {
         },
       })
 
-      // Mock tag definitions queries for filter mapping and display mapping
-      mockDbChain.limit
-        .mockResolvedValueOnce(mockTagDefinitions) // Tag definitions for filter mapping
-        .mockResolvedValueOnce(mockTagDefinitions) // Tag definitions for display mapping
-
-      // Mock the tag + vector search handler
+      // Configure database to return tag definitions and search handler
+      mocks.database.setSelectResults([mockTagDefinitions, mockTagDefinitions])
       mockHandleTagAndVectorSearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
+      // Fetch mock is already configured globally in beforeEach
 
-      const req = createMockRequest('POST', combinedData)
+      const req = createTestRequest('POST', combinedData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -821,7 +979,7 @@ describe('Knowledge Search API Route', () => {
         topK: 10,
       }
 
-      const req = createMockRequest('POST', emptyData)
+      const req = createTestRequest('POST', emptyData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -846,7 +1004,7 @@ describe('Knowledge Search API Route', () => {
         topK: 10,
       }
 
-      const req = createMockRequest('POST', emptyFiltersData)
+      const req = createTestRequest('POST', emptyFiltersData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -865,7 +1023,7 @@ describe('Knowledge Search API Route', () => {
         // This would result in no filters after tool transformation
       }
 
-      const req = createMockRequest('POST', emptyTagValueData)
+      const req = createTestRequest('POST', emptyTagValueData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -892,7 +1050,7 @@ describe('Knowledge Search API Route', () => {
         filters: null,
       }
 
-      const req = createMockRequest('POST', nullValuesData)
+      const req = createTestRequest('POST', nullValuesData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -927,17 +1085,13 @@ describe('Knowledge Search API Route', () => {
         },
       })
 
-      mockDbChain.limit.mockResolvedValueOnce(mockSearchResults)
+      // Configure database and search handler
+      mocks.database.setSelectResults([mockSearchResults])
+      mockHandleVectorOnlySearch.mockResolvedValue(mockSearchResults)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ embedding: mockEmbedding }],
-          }),
-      })
+      // Fetch mock is already configured globally in beforeEach
 
-      const req = createMockRequest('POST', queryOnlyData)
+      const req = createTestRequest('POST', queryOnlyData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()
@@ -976,39 +1130,17 @@ describe('Knowledge Search API Route', () => {
           knowledgeBase: { id: 'kb-456', userId: 'user-123', name: 'Test KB 2' },
         })
 
-      // Reset all mocks before setting up specific behavior
-      Object.values(mockDbChain).forEach((fn) => {
-        if (typeof fn === 'function') {
-          fn.mockClear().mockReturnThis()
-        }
-      })
-
-      // Create fresh mocks for multiple database calls needed for multi-KB tag search
-      const mockTagDefsQuery1 = {
-        ...mockDbChain,
-        limit: vi.fn().mockResolvedValue(mockTagDefinitions),
-      }
-      const mockTagSearchQuery = {
-        ...mockDbChain,
-        limit: vi.fn().mockResolvedValue(mockTaggedResults),
-      }
-      const mockTagDefsQuery2 = {
-        ...mockDbChain,
-        limit: vi.fn().mockResolvedValue(mockTagDefinitions),
-      }
-      const mockTagDefsQuery3 = {
-        ...mockDbChain,
-        limit: vi.fn().mockResolvedValue(mockTagDefinitions),
-      }
-
+      // Configure database for multiple KB tag search
       // Chain the mocks for: tag defs, search, display mapping KB1, display mapping KB2
-      mockDbChain.select
-        .mockReturnValueOnce(mockTagDefsQuery1)
-        .mockReturnValueOnce(mockTagSearchQuery)
-        .mockReturnValueOnce(mockTagDefsQuery2)
-        .mockReturnValueOnce(mockTagDefsQuery3)
+      mocks.database.setSelectResults([
+        mockTagDefinitions, // Tag definitions for filter mapping
+        mockTaggedResults, // Search results
+        mockTagDefinitions, // Display mapping KB1
+        mockTagDefinitions, // Display mapping KB2
+      ])
+      mockHandleTagOnlySearch.mockResolvedValue(mockTaggedResults)
 
-      const req = createMockRequest('POST', multiKbTagData)
+      const req = createTestRequest('POST', multiKbTagData)
       const { POST } = await import('@/app/api/knowledge/search/route')
       const response = await POST(req)
       const data = await response.json()

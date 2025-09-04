@@ -1,17 +1,125 @@
 /**
- * Comprehensive Test Suite for Template Management API
- * Tests template CRUD operations, advanced filtering, and analytics
- * Covers authentication, authorization, security filtering, and performance
+ * Templates API Route Tests - Bun-Compatible Test Suite
+ *
+ * This file contains comprehensive tests for template management functionality focusing on:
+ * - Template CRUD operations with proper validation and security
+ * - Advanced filtering and search capabilities
+ * - Analytics and performance metrics
+ * - Authentication and authorization workflows
+ * - Database error handling and resilience patterns
+ *
+ * Migration Notes:
+ * - Migrated from vi.doMock() to module-level vi.mock() for bun compatibility
+ * - Uses comprehensive database mocking with chainable operations
+ * - Implements proper cleanup and test isolation patterns
+ * - Maintains all original test functionality with enhanced logging
+ *
+ * @vitest-environment node
  */
 
 import { NextRequest } from 'next/server'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  createMockRequest,
-  mockUser,
+  createTestRequest,
+  defaultMockUser,
   setupComprehensiveTestMocks,
-} from '@/app/api/__test-utils__/utils'
+  type BunTestMocks,
+} from '@/app/api/__test-utils__/bun-test-setup'
+import { createMockRequest } from '@/app/api/__test-utils__/bun-compatible-utils'
+
+// Mock database
+vi.mock('@/db', () => ({
+  db: {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+}))
+
+// Mock auth session
+vi.mock('@/lib/auth', () => ({
+  getSession: vi.fn(),
+}))
+
+// Mock internal authentication using factory function
+vi.mock('@/lib/auth/internal', () => ({
+  verifyInternalToken: vi.fn(),
+}))
+
+// Mock user authentication using factory function
+vi.mock('@/app/api/auth/oauth/utils', () => ({
+  getCurrentUser: vi.fn(),
+}))
+
+// Mock logger
+vi.mock('@/lib/logs/console/logger', () => ({
+  createLogger: vi.fn(() => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  })),
+}))
+
+// Mock database schema
+vi.mock('@/db/schema', () => ({
+  workflow: {
+    id: 'id',
+    name: 'name',
+    userId: 'userId',
+    state: 'state',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+  },
+  templates: {
+    id: 'id',
+    workflowId: 'workflowId',
+    name: 'name',
+    description: 'description',
+    author: 'author',
+    views: 'views',
+    stars: 'stars',
+    category: 'category',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+  },
+  templateStars: {
+    id: 'id',
+    userId: 'userId',
+    templateId: 'templateId',
+    createdAt: 'createdAt',
+  },
+  apiKey: {
+    id: 'id',
+    userId: 'userId',
+    key: 'key',
+    createdAt: 'createdAt',
+  },
+}))
+
+// Mock drizzle-orm functions
+vi.mock('drizzle-orm', () => ({
+  and: vi.fn(),
+  or: vi.fn(),
+  eq: vi.fn(),
+  desc: vi.fn(),
+  asc: vi.fn(),
+  sql: vi.fn(),
+  ilike: vi.fn(),
+}))
+
 import { GET, POST } from './route'
+import { db } from '@/db'
+import { getSession } from '@/lib/auth'
+import { verifyInternalToken } from '@/lib/auth/internal'
+import { getCurrentUser } from '@/app/api/auth/oauth/utils'
+
+// Get typed mock references
+const mockDb = vi.mocked(db)
+const mockGetSession = vi.mocked(getSession)
+const mockVerifyInternalToken = vi.mocked(verifyInternalToken)
+const mockGetCurrentUser = vi.mocked(getCurrentUser)
 
 // Mock template data for testing
 const sampleTemplateData = {
@@ -72,19 +180,22 @@ const sampleWorkflowData = {
   workspaceId: null,
 }
 
-describe('Template API - GET /api/templates', () => {
-  let mocks: any
+describe('Template API - GET /api/templates - Bun-Compatible Test Suite', () => {
+  let mocks: BunTestMocks
 
   beforeEach(() => {
-    mocks = setupComprehensiveTestMocks({
-      auth: { authenticated: true, user: mockUser },
-      database: {
-        select: { results: [sampleTemplatesList, [{ count: 2 }]] },
-      },
-    })
+    console.log('🚀 Setting up Template API GET test environment')
+    
+    // Clear all mocks
+    vi.clearAllMocks()
+    
+    // Setup auth mocks
+    mockGetSession.mockResolvedValue({ user: defaultMockUser })
+    mockVerifyInternalToken.mockResolvedValue(true)
+    mockGetCurrentUser.mockResolvedValue(defaultMockUser)
 
-    // Mock complex query building
-    mocks.database.mockDb.select.mockImplementation(() => ({
+    // Mock database query building chain
+    const mockQuery = {
       from: vi.fn().mockReturnThis(),
       leftJoin: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
@@ -93,12 +204,30 @@ describe('Template API - GET /api/templates', () => {
       offset: vi.fn().mockReturnThis(),
       groupBy: vi.fn().mockReturnThis(),
       then: vi.fn().mockResolvedValue(sampleTemplatesList),
-    }))
+    }
+    
+    mockDb.select.mockReturnValue(mockQuery)
+    
+    // Setup insert/update mocks
+    const mockInsert = {
+      values: vi.fn().mockReturnThis(),
+      returning: vi.fn().mockResolvedValue([sampleTemplateData]),
+    }
+    mockDb.insert.mockReturnValue(mockInsert)
+    
+    console.log('✅ Template API GET test environment setup complete')
+  })
+  
+  afterEach(() => {
+    console.log('🧹 Cleaning up Template API GET test environment')
+    vi.clearAllMocks()
+    console.log('✅ Template GET test cleanup complete')
   })
 
   describe('Authentication and Authorization', () => {
     it('should require authentication for template listing', async () => {
-      mocks.auth.setUnauthenticated()
+      // Setup unauthenticated state
+      mockGetSession.mockResolvedValue(null)
 
       const request = createMockRequest('GET')
       const response = await GET(request)
@@ -109,15 +238,17 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should authenticate with API key', async () => {
-      mocks.auth.setUnauthenticated()
+      // Setup unauthenticated session but valid API key
+      mockGetSession.mockResolvedValue(null)
       const apiKeyResults = [{ userId: 'user-123' }]
-      mocks.database.mockDb.select.mockImplementation(() => ({
-        from: () => ({
-          where: () => ({
-            limit: () => Promise.resolve(apiKeyResults),
-          }),
-        }),
-      }))
+      
+      // Mock API key validation query
+      const mockApiKeyQuery = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue(apiKeyResults),
+      }
+      mockDb.select.mockReturnValue(mockApiKeyQuery)
 
       const request = createMockRequest('GET', undefined, { 'x-api-key': 'test-api-key' })
       const response = await GET(request)
@@ -126,16 +257,20 @@ describe('Template API - GET /api/templates', () => {
     })
 
     it('should support internal JWT token authentication', async () => {
-      vi.doMock('@/lib/auth/internal', () => ({
-        verifyInternalToken: vi.fn().mockResolvedValue(true),
-      }))
+      console.log('🧪 Testing internal JWT token authentication')
+      
+      // Setup internal token authentication
+      mockVerifyInternalToken.mockResolvedValue(true)
 
-      const request = createMockRequest('GET', undefined, {
+      const request = createTestRequest('GET', undefined, {
         authorization: 'Bearer internal-jwt-token',
       })
       const response = await GET(request)
 
+      console.log('📊 Internal JWT auth response status:', response.status)
       expect(response.status).toBe(200)
+      
+      console.log('✅ Internal JWT token authentication test completed successfully')
     })
   })
 
@@ -414,16 +549,35 @@ describe('Template API - GET /api/templates', () => {
 })
 
 describe('Template API - POST /api/templates', () => {
-  let mocks: any
+  let mocks: BunTestMocks
 
   beforeEach(() => {
+    console.log('🚀 Setting up Template API POST test environment')
+    
+    // Clear all mocks
+    vi.clearAllMocks()
+    
+    // Setup comprehensive test mocks
     mocks = setupComprehensiveTestMocks({
-      auth: { authenticated: true, user: mockUser },
+      auth: { authenticated: true, user: defaultMockUser },
       database: {
         select: { results: [[sampleWorkflowData], []] }, // Workflow exists, no duplicate template
         insert: { results: [sampleTemplateData] },
       },
     })
+    
+    // Setup auth mocks
+    mockVerifyInternalToken.mockClear()
+    mockGetCurrentUser.mockResolvedValue(defaultMockUser)
+    
+    console.log('✅ Template API POST test environment setup complete')
+  })
+  
+  afterEach(() => {
+    console.log('🧹 Cleaning up Template API POST test environment')
+    mocks.cleanup()
+    vi.clearAllMocks()
+    console.log('✅ Template POST test cleanup complete')
   })
 
   describe('Template Creation', () => {
@@ -623,9 +777,10 @@ describe('Template API - POST /api/templates', () => {
     })
 
     it('should support internal JWT token authentication', async () => {
-      vi.doMock('@/lib/auth/internal', () => ({
-        verifyInternalToken: vi.fn().mockResolvedValue(true),
-      }))
+      console.log('🧪 Testing internal JWT token authentication for template creation')
+      
+      // Setup internal token authentication
+      mockVerifyInternalToken.mockResolvedValue(true)
 
       const templateData = {
         workflowId: 'workflow-456',
@@ -638,12 +793,15 @@ describe('Template API - POST /api/templates', () => {
         state: { blocks: {}, edges: [] },
       }
 
-      const request = createMockRequest('POST', templateData, {
+      const request = createTestRequest('POST', templateData, {
         authorization: 'Bearer internal-jwt-token',
       })
       const response = await POST(request)
 
+      console.log('📊 Internal JWT auth template creation response status:', response.status)
       expect(response.status).toBe(201)
+      
+      console.log('✅ Internal JWT token authentication for template creation test completed successfully')
     })
   })
 

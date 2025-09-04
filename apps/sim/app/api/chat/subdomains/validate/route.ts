@@ -22,7 +22,8 @@ export async function GET(request: Request) {
       return createErrorResponse('Missing subdomain parameter', 400)
     }
 
-    if (!/^[a-z0-9-]+$/.test(subdomain)) {
+    // Validate subdomain format: alphanumeric and hyphens, but cannot start or end with hyphen
+    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(subdomain)) {
       return NextResponse.json(
         {
           available: false,

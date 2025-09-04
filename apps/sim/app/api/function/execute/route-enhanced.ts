@@ -1,10 +1,10 @@
 /**
  * Enhanced Function Execution API with Intelligent Routing
- * 
+ *
  * Backward-compatible enhancement of the existing function execution API
  * that automatically routes requests to optimal execution methods while
  * preserving existing API contracts and behavior.
- * 
+ *
  * Features:
  * - 100% backward compatibility with existing API
  * - Intelligent routing between VM and Docker execution
@@ -12,16 +12,16 @@
  * - Performance optimization with caching
  * - Comprehensive error handling and debugging
  * - Seamless integration with existing workflow systems
- * 
+ *
  * Author: Claude Development Agent
  * Created: September 3, 2025
  */
 
 import { createContext, Script } from 'vm'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
-import { executionRouter, type LegacyExecutionRequest } from '@/lib/execution/execution-router'
 import { enhancedExecutionManager } from '@/lib/execution/enhanced-execution-manager'
+import { executionRouter, type LegacyExecutionRequest } from '@/lib/execution/execution-router'
+import { createLogger } from '@/lib/logs/console/logger'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -390,8 +390,8 @@ function escapeRegExp(string: string): string {
 export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
-  let stdout = ''
-  let userCodeStartLine = 3
+  const stdout = ''
+  const userCodeStartLine = 3
   let resolvedCode = ''
   let routingDecision: any = null
 
@@ -419,7 +419,7 @@ export async function POST(req: NextRequest) {
       timeout,
       workflowId,
       isCustomTool,
-      routingEnabled: ENABLE_ENHANCED_ROUTING
+      routingEnabled: ENABLE_ENHANCED_ROUTING,
     })
 
     // Resolve variables in the code
@@ -445,7 +445,7 @@ export async function POST(req: NextRequest) {
         blockNameMapping,
         workflowVariables,
         workflowId,
-        isCustomTool
+        isCustomTool,
       }
 
       const routing = await executionRouter.routeExecution(routingRequest)
@@ -455,17 +455,12 @@ export async function POST(req: NextRequest) {
         method: routingDecision.method,
         reason: routingDecision.reason,
         confidence: routingDecision.confidence,
-        securityRisk: routingDecision.criteria.securityRisk
+        securityRisk: routingDecision.criteria.securityRisk,
       })
 
       // Use enhanced execution if recommended
       if (routing.shouldUseEnhanced) {
-        return await executeWithEnhanced(
-          requestId,
-          routingRequest,
-          routingDecision,
-          startTime
-        )
+        return await executeWithEnhanced(requestId, routingRequest, routingDecision, startTime)
       }
     }
 
@@ -481,7 +476,6 @@ export async function POST(req: NextRequest) {
       startTime,
       routingDecision
     )
-
   } catch (error: any) {
     const executionTime = Date.now() - startTime
     logger.error(`[${requestId}] Function execution failed`, {
@@ -512,10 +506,12 @@ export async function POST(req: NextRequest) {
         lineContent: enhancedError.lineContent,
         stack: enhancedError.stack,
         requestId,
-        routingDecision: routingDecision ? {
-          method: routingDecision.method,
-          reason: routingDecision.reason
-        } : null
+        routingDecision: routingDecision
+          ? {
+              method: routingDecision.method,
+              reason: routingDecision.reason,
+            }
+          : null,
       },
     }
 
@@ -552,15 +548,21 @@ async function executeWithEnhanced(
       enableCaching: routingDecision.recommendation.enableCaching,
       enableMetrics: true,
       timeout: request.timeout || 5000,
-      memoryLimit: routingDecision.criteria.memoryRequirement === 'high' ? '1GB' :
-                   routingDecision.criteria.memoryRequirement === 'medium' ? '512MB' : '256MB',
-      networkAccess: routingDecision.criteria.hasNetworkOperations ? 'monitored' as const : 'none' as const,
-      customPackages: []
-    }
+      memoryLimit:
+        routingDecision.criteria.memoryRequirement === 'high'
+          ? '1GB'
+          : routingDecision.criteria.memoryRequirement === 'medium'
+            ? '512MB'
+            : '256MB',
+      networkAccess: routingDecision.criteria.hasNetworkOperations
+        ? ('monitored' as const)
+        : ('none' as const),
+      customPackages: [],
+    },
   }
 
   const result = await enhancedExecutionManager.executeCode(enhancedRequest)
-  
+
   // Update routing metrics
   executionRouter.updateMetrics('enhanced', Date.now() - startTime, result.success)
 
@@ -576,21 +578,23 @@ async function executeWithEnhanced(
     debug: {
       requestId,
       executionMethod: result.executionMethod,
-      securityAnalysis: result.securityAnalysis ? {
-        riskScore: result.securityAnalysis.riskScore,
-        threatLevel: result.securityAnalysis.threatLevel,
-        approved: result.securityAnalysis.approved
-      } : null,
+      securityAnalysis: result.securityAnalysis
+        ? {
+            riskScore: result.securityAnalysis.riskScore,
+            threatLevel: result.securityAnalysis.threatLevel,
+            approved: result.securityAnalysis.approved,
+          }
+        : null,
       routingDecision: {
         method: routingDecision.method,
         reason: routingDecision.reason,
-        confidence: routingDecision.confidence
+        confidence: routingDecision.confidence,
       },
       cacheHit: result.cacheHit,
       // Enhanced debug info
       resourceUsage: result.output.resourceUsage,
-      securityReport: result.output.securityReport
-    }
+      securityReport: result.output.securityReport,
+    },
   }
 
   return NextResponse.json(legacyResponse, { status: result.success ? 200 : 500 })
@@ -663,7 +667,7 @@ async function executeWithLegacyVM(
   })
 
   const executionTime = Date.now() - startTime
-  
+
   // Update routing metrics
   if (ENABLE_ENHANCED_ROUTING) {
     executionRouter.updateMetrics('legacy', executionTime, true)
@@ -683,12 +687,14 @@ async function executeWithLegacyVM(
     debug: {
       requestId,
       executionMethod: 'vm',
-      routingDecision: routingDecision ? {
-        method: routingDecision.method,
-        reason: routingDecision.reason,
-        confidence: routingDecision.confidence
-      } : null
-    }
+      routingDecision: routingDecision
+        ? {
+            method: routingDecision.method,
+            reason: routingDecision.reason,
+            confidence: routingDecision.confidence,
+          }
+        : null,
+    },
   }
 
   return NextResponse.json(response)
@@ -707,47 +713,51 @@ export async function GET(req: NextRequest) {
       version: '1.5', // Enhanced version of existing API
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      
+
       // Feature flags
       features: {
         enhancedRoutingEnabled: ENABLE_ENHANCED_ROUTING,
         backwardCompatibility: true,
         intelligentExecutionSelection: true,
         securityAnalysis: true,
-        performanceOptimization: true
+        performanceOptimization: true,
       },
-      
+
       // Routing statistics
       routing: routingStats,
-      
+
       // Enhanced execution metrics
       enhanced: {
         totalExecutions: enhancedMetrics.totalExecutions,
-        successRate: enhancedMetrics.totalExecutions > 0 ? 
-          (enhancedMetrics.successfulExecutions / enhancedMetrics.totalExecutions) * 100 : 0,
+        successRate:
+          enhancedMetrics.totalExecutions > 0
+            ? (enhancedMetrics.successfulExecutions / enhancedMetrics.totalExecutions) * 100
+            : 0,
         averageExecutionTime: Math.round(enhancedMetrics.averageExecutionTime),
-        cacheHitRate: Math.round(enhancedMetrics.cacheHitRate * 100)
+        cacheHitRate: Math.round(enhancedMetrics.cacheHitRate * 100),
       },
-      
+
       // API compatibility
       compatibility: {
         legacyAPISupport: true,
         existingContractsPreserved: true,
         errorFormatCompatible: true,
-        responseFormatCompatible: true
-      }
+        responseFormatCompatible: true,
+      },
     }
 
     return NextResponse.json(response)
-    
   } catch (error: any) {
     logger.error('API status check failed', { error: error.message })
-    
-    return NextResponse.json({
-      service: 'Enhanced Function Execution API',
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      error: error.message
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        service: 'Enhanced Function Execution API',
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error.message,
+      },
+      { status: 500 }
+    )
   }
 }

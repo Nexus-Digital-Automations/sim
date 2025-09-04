@@ -1372,8 +1372,11 @@ export const workflowCheckpoints = pgTable(
   })
 )
 
-export const templates = pgTable(
-  'templates',
+// Legacy templates table - DEPRECATED - Use new template library system above
+// This table is kept for backward compatibility with existing API endpoints
+// New implementations should use the comprehensive template library system
+export const legacyTemplates = pgTable(
+  'legacy_templates',
   {
     id: text('id').primaryKey(),
     workflowId: text('workflow_id').references(() => workflow.id),
@@ -1394,25 +1397,26 @@ export const templates = pgTable(
   },
   (table) => ({
     // Primary access patterns
-    workflowIdIdx: index('templates_workflow_id_idx').on(table.workflowId),
-    userIdIdx: index('templates_user_id_idx').on(table.userId),
-    categoryIdx: index('templates_category_idx').on(table.category),
+    workflowIdIdx: index('legacy_templates_workflow_id_idx').on(table.workflowId),
+    userIdIdx: index('legacy_templates_user_id_idx').on(table.userId),
+    categoryIdx: index('legacy_templates_category_idx').on(table.category),
 
     // Sorting indexes for popular/trending templates
-    viewsIdx: index('templates_views_idx').on(table.views),
-    starsIdx: index('templates_stars_idx').on(table.stars),
+    viewsIdx: index('legacy_templates_views_idx').on(table.views),
+    starsIdx: index('legacy_templates_stars_idx').on(table.stars),
 
     // Composite indexes for common queries
-    categoryViewsIdx: index('templates_category_views_idx').on(table.category, table.views),
-    categoryStarsIdx: index('templates_category_stars_idx').on(table.category, table.stars),
-    userCategoryIdx: index('templates_user_category_idx').on(table.userId, table.category),
+    categoryViewsIdx: index('legacy_templates_category_views_idx').on(table.category, table.views),
+    categoryStarsIdx: index('legacy_templates_category_stars_idx').on(table.category, table.stars),
+    userCategoryIdx: index('legacy_templates_user_category_idx').on(table.userId, table.category),
 
     // Temporal indexes
-    createdAtIdx: index('templates_created_at_idx').on(table.createdAt),
-    updatedAtIdx: index('templates_updated_at_idx').on(table.updatedAt),
+    createdAtIdx: index('legacy_templates_created_at_idx').on(table.createdAt),
+    updatedAtIdx: index('legacy_templates_updated_at_idx').on(table.updatedAt),
   })
 )
 
+// Legacy template stars table - DEPRECATED - Use templateFavorites for new template system
 export const templateStars = pgTable(
   'template_stars',
   {
@@ -1422,7 +1426,7 @@ export const templateStars = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     templateId: text('template_id')
       .notNull()
-      .references(() => templates.id, { onDelete: 'cascade' }),
+      .references(() => legacyTemplates.id, { onDelete: 'cascade' }),
     starredAt: timestamp('starred_at').notNull().defaultNow(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
@@ -2358,5 +2362,498 @@ export const fileAccessLogs = pgTable(
       sql`DATE(${table.createdAt})`,
       table.action
     ),
+  })
+)
+
+// ========================
+// TEMPLATE LIBRARY SYSTEM
+// ========================
+
+/**
+ * Template categories table - Hierarchical organization system
+ *
+ * Provides structured categorization for templates with support for:
+ * - Nested categories (Business > CRM > Lead Management)
+ * - Visual customization (colors, icons)
+ * - SEO optimization (slugs, descriptions)
+ * - Analytics tracking (usage counts)
+ *
+ * PERFORMANCE: Materialized path pattern for efficient hierarchy queries
+ */
+export const templateCategories = pgTable(
+  'template_categories',
+  {
+    id: text('id').primaryKey(), // UUID format for category identification
+    name: text('name').notNull(), // Display name (e.g., "Business Automation")
+    slug: text('slug').notNull().unique(), // URL-friendly identifier
+    description: text('description'), // Category purpose and content description
+    icon: text('icon'), // Lucide icon name for UI display
+    color: text('color').notNull().default('#6366F1'), // Hex color for visual theming
+
+    // Hierarchical organization
+    parentId: text('parent_id').references(() => templateCategories.id, { onDelete: 'cascade' }),
+    path: text('path').notNull(), // Materialized path (e.g., "/business/crm/leads")
+    depth: integer('depth').notNull().default(0), // Nesting level for query optimization
+    sortOrder: integer('sort_order').notNull().default(0), // Display order within parent
+
+    // Analytics and metadata
+    templateCount: integer('template_count').notNull().default(0), // Number of templates in category
+    isFeatured: boolean('is_featured').notNull().default(false), // Highlight in discovery UI
+    isActive: boolean('is_active').notNull().default(true), // Enable/disable category
+
+    // SEO and content
+    metaTitle: text('meta_title'), // SEO page title
+    metaDescription: text('meta_description'), // SEO page description
+    contentDescription: text('content_description'), // Rich content for category pages
+
+    // Audit fields
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    createdByUserId: text('created_by_user_id').references(() => user.id, { onDelete: 'set null' }),
+  },
+  (table) => ({
+    parentIdIdx: index('template_categories_parent_id_idx').on(table.parentId),
+    pathIdx: index('template_categories_path_idx').on(table.path),
+    depthIdx: index('template_categories_depth_idx').on(table.depth),
+    featuredActiveIdx: index('template_categories_featured_active_idx').on(table.isFeatured, table.isActive),
+    slugIdx: index('template_categories_slug_idx').on(table.slug),
+  })
+)
+
+/**
+ * Template tags table - Flexible labeling system
+ *
+ * Provides cross-cutting concerns and metadata tagging:
+ * - Skill levels (beginner, intermediate, advanced)
+ * - Integration types (salesforce, hubspot, slack)
+ * - Use cases (automation, reporting, integration)
+ * - Industry tags (ecommerce, finance, marketing)
+ */
+export const templateTags = pgTable(
+  'template_tags',
+  {
+    id: text('id').primaryKey(), // UUID format for tag identification
+    name: text('name').notNull().unique(), // Tag display name
+    slug: text('slug').notNull().unique(), // URL-friendly identifier
+    description: text('description'), // Tag purpose and usage description
+    color: text('color').notNull().default('#6B7280'), // Hex color for visual theming
+
+    // Tag categorization
+    tagType: text('tag_type').notNull().default('general'), // 'skill', 'integration', 'industry', 'use_case', 'general'
+    isSystemTag: boolean('is_system_tag').notNull().default(false), // System-managed vs user-created
+
+    // Usage analytics
+    usageCount: integer('usage_count').notNull().default(0), // Number of templates using this tag
+
+    // Audit fields
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    createdByUserId: text('created_by_user_id').references(() => user.id, { onDelete: 'set null' }),
+  },
+  (table) => ({
+    typeIdx: index('template_tags_type_idx').on(table.tagType),
+    usageIdx: index('template_tags_usage_idx').on(table.usageCount),
+    systemIdx: index('template_tags_system_idx').on(table.isSystemTag),
+  })
+)
+
+/**
+ * Templates table - Core template storage and metadata
+ *
+ * Stores workflow templates with comprehensive metadata:
+ * - Complete workflow definition in JSONB format
+ * - Rich metadata for discovery and analytics
+ * - Version control and approval workflow
+ * - Performance and usage tracking
+ * - SEO and content management
+ *
+ * STORAGE: Uses JSONB for flexible workflow template storage
+ * PERFORMANCE: Optimized for read-heavy workloads with comprehensive indexing
+ */
+export const templates = pgTable(
+  'templates',
+  {
+    id: text('id').primaryKey(), // UUID format for template identification
+
+    // Core template information
+    name: text('name').notNull(), // Template display name
+    slug: text('slug').notNull().unique(), // URL-friendly identifier for SEO
+    description: text('description').notNull(), // Brief template description for discovery
+    longDescription: text('long_description'), // Detailed explanation and use cases
+
+    // Template storage and structure
+    workflowTemplate: jsonb('workflow_template').notNull(), // Complete workflow definition
+    templateVersion: text('template_version').notNull().default('1.0.0'), // Semantic version
+    minSimVersion: text('min_sim_version'), // Minimum required Sim version for compatibility
+
+    // Categorization and organization
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => templateCategories.id, { onDelete: 'cascade' }),
+
+    // Template metadata and configuration
+    difficultyLevel: text('difficulty_level').notNull().default('intermediate'), // 'beginner', 'intermediate', 'advanced', 'expert'
+    estimatedSetupTime: integer('estimated_setup_time'), // Setup time in minutes
+    estimatedExecutionTime: integer('estimated_execution_time'), // Average execution time in seconds
+
+    // Publishing and moderation
+    status: text('status').notNull().default('draft'), // 'draft', 'pending_review', 'approved', 'rejected', 'archived'
+    visibility: text('visibility').notNull().default('private'), // 'private', 'unlisted', 'public'
+    isFeatured: boolean('is_featured').notNull().default(false), // Highlight in discovery UI
+    isCommunityTemplate: boolean('is_community_template').notNull().default(false), // User-contributed vs official
+
+    // Analytics and performance tracking
+    viewCount: integer('view_count').notNull().default(0), // Number of times template was viewed
+    downloadCount: integer('download_count').notNull().default(0), // Number of times template was used
+    likeCount: integer('like_count').notNull().default(0), // Number of user likes/favorites
+    ratingAverage: decimal('rating_average', { precision: 3, scale: 2 }).default('0'), // Average rating (0.00 to 5.00)
+    ratingCount: integer('rating_count').notNull().default(0), // Number of ratings received
+
+    // Quality and validation metrics
+    lastTestedAt: timestamp('last_tested_at'), // Last successful template validation
+    testSuccessRate: decimal('test_success_rate', { precision: 5, scale: 2 }).default('0'), // Percentage of successful test runs
+    communityScore: decimal('community_score', { precision: 5, scale: 2 }).default('0'), // Algorithm-calculated quality score
+
+    // SEO and content management
+    metaTitle: text('meta_title'), // SEO page title
+    metaDescription: text('meta_description'), // SEO page description
+    coverImageUrl: text('cover_image_url'), // Template preview image
+    previewImages: jsonb('preview_images').default('[]'), // Array of screenshot URLs
+
+    // Business value and ROI
+    estimatedCostSavings: decimal('estimated_cost_savings', { precision: 10, scale: 2 }), // Monthly cost savings in USD
+    estimatedTimeSavings: integer('estimated_time_savings'), // Time savings per execution in minutes
+    businessValueDescription: text('business_value_description'), // Explanation of business benefits
+
+    // Integration requirements
+    requiredIntegrations: jsonb('required_integrations').default('[]'), // Array of required external services
+    supportedIntegrations: jsonb('supported_integrations').default('[]'), // Array of supported but optional services
+    technicalRequirements: text('technical_requirements'), // Additional setup requirements
+
+    // User and ownership
+    createdByUserId: text('created_by_user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    approvedByUserId: text('approved_by_user_id').references(() => user.id, { onDelete: 'set null' }),
+    approvedAt: timestamp('approved_at'),
+
+    // Versioning and history
+    parentTemplateId: text('parent_template_id').references(() => templates.id, { onDelete: 'set null' }), // For template forks/variants
+    originalTemplateId: text('original_template_id').references(() => templates.id, { onDelete: 'set null' }), // Track original for forks
+
+    // Audit and timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    publishedAt: timestamp('published_at'),
+    lastModifiedAt: timestamp('last_modified_at').notNull().defaultNow(),
+
+    // Full-text search
+    searchVector: tsvector('search_vector'), // Generated column for full-text search
+  },
+  (table) => ({
+    categoryIdIdx: index('templates_category_id_idx').on(table.categoryId),
+    createdByIdx: index('templates_created_by_idx').on(table.createdByUserId),
+    statusVisibilityIdx: index('templates_status_visibility_idx').on(table.status, table.visibility),
+    featuredIdx: index('templates_featured_idx').on(table.isFeatured, table.status, table.visibility),
+    communityIdx: index('templates_community_idx').on(table.isCommunityTemplate, table.status, table.visibility),
+    ratingIdx: index('templates_rating_idx').on(table.ratingAverage, table.ratingCount),
+    popularityIdx: index('templates_popularity_idx').on(table.downloadCount, table.viewCount),
+    difficultyIdx: index('templates_difficulty_idx').on(table.difficultyLevel),
+    publishedIdx: index('templates_published_idx').on(table.publishedAt),
+    searchIdx: index('templates_search_idx').using('gin', table.searchVector),
+    workflowGinIdx: index('templates_workflow_gin_idx').using('gin', table.workflowTemplate),
+    integrationsGinIdx: index('templates_integrations_gin_idx').using('gin', table.requiredIntegrations, table.supportedIntegrations),
+  })
+)
+
+/**
+ * Template tags association table - Many-to-many relationship
+ *
+ * Links templates to tags for flexible categorization and discovery
+ */
+export const templateTagAssociations = pgTable(
+  'template_tag_associations',
+  {
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => templateTags.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateTagPk: uniqueIndex('template_tag_associations_pk').on(table.templateId, table.tagId),
+    templateIdx: index('template_tag_assoc_template_idx').on(table.templateId),
+    tagIdx: index('template_tag_assoc_tag_idx').on(table.tagId),
+  })
+)
+
+/**
+ * Template ratings table - User rating and review system
+ *
+ * Comprehensive review system supporting:
+ * - 5-star rating system with detailed feedback
+ * - Helpful/unhelpful voting on reviews
+ * - Moderation and quality control
+ * - Analytics for template improvement
+ */
+export const templateRatings = pgTable(
+  'template_ratings',
+  {
+    id: text('id').primaryKey(), // UUID format for rating identification
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+
+    // Rating and review content
+    rating: integer('rating').notNull(), // 1-5 star rating
+    reviewTitle: text('review_title'), // Optional review headline
+    reviewContent: text('review_content'), // Detailed review text
+
+    // Review categorization
+    usageContext: text('usage_context'), // How the user used the template
+    userExpertiseLevel: text('user_expertise_level').default('intermediate'), // 'beginner', 'intermediate', 'advanced'
+
+    // Template-specific feedback
+    easeOfUseRating: integer('ease_of_use_rating'), // 1-5 rating
+    documentationRating: integer('documentation_rating'), // 1-5 rating
+    performanceRating: integer('performance_rating'), // 1-5 rating
+    valueRating: integer('value_rating'), // 1-5 rating
+
+    // Review engagement and quality
+    helpfulCount: integer('helpful_count').notNull().default(0), // Number of "helpful" votes
+    unhelpfulCount: integer('unhelpful_count').notNull().default(0), // Number of "unhelpful" votes
+    isVerifiedUsage: boolean('is_verified_usage').notNull().default(false), // User actually used the template
+
+    // Moderation and quality control
+    isApproved: boolean('is_approved').notNull().default(true), // Review approval status
+    isFeatured: boolean('is_featured').notNull().default(false), // Highlight as exemplary review
+    moderationNotes: text('moderation_notes'), // Internal moderation comments
+    flaggedCount: integer('flagged_count').notNull().default(0), // Number of user flags for inappropriate content
+
+    // Audit and timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateUserUnique: uniqueIndex('template_ratings_template_user_unique').on(table.templateId, table.userId),
+    templateIdx: index('template_ratings_template_idx').on(table.templateId, table.rating),
+    userIdx: index('template_ratings_user_idx').on(table.userId),
+    approvedIdx: index('template_ratings_approved_idx').on(table.isApproved, table.createdAt),
+    helpfulIdx: index('template_ratings_helpful_idx').on(table.helpfulCount),
+    verifiedIdx: index('template_ratings_verified_idx').on(table.isVerifiedUsage, table.rating),
+    ratingCheck: check('template_ratings_rating_check', sql`${table.rating} >= 1 AND ${table.rating} <= 5`),
+    easeRatingCheck: check('template_ratings_ease_rating_check', sql`${table.easeOfUseRating} IS NULL OR (${table.easeOfUseRating} >= 1 AND ${table.easeOfUseRating} <= 5)`),
+    docRatingCheck: check('template_ratings_doc_rating_check', sql`${table.documentationRating} IS NULL OR (${table.documentationRating} >= 1 AND ${table.documentationRating} <= 5)`),
+    perfRatingCheck: check('template_ratings_perf_rating_check', sql`${table.performanceRating} IS NULL OR (${table.performanceRating} >= 1 AND ${table.performanceRating} <= 5)`),
+    valueRatingCheck: check('template_ratings_value_rating_check', sql`${table.valueRating} IS NULL OR (${table.valueRating} >= 1 AND ${table.valueRating} <= 5)`),
+  })
+)
+
+/**
+ * Rating helpfulness votes table - Community-driven review quality
+ */
+export const templateRatingVotes = pgTable(
+  'template_rating_votes',
+  {
+    ratingId: text('rating_id')
+      .notNull()
+      .references(() => templateRatings.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    isHelpful: boolean('is_helpful').notNull(), // true = helpful, false = unhelpful
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    ratingUserPk: uniqueIndex('template_rating_votes_pk').on(table.ratingId, table.userId),
+    ratingIdx: index('template_rating_votes_rating_idx').on(table.ratingId, table.isHelpful),
+  })
+)
+
+/**
+ * Template usage analytics table - Detailed usage tracking
+ *
+ * Comprehensive analytics for template optimization:
+ * - Usage patterns and adoption metrics
+ * - Performance tracking and optimization insights
+ * - User behavior analysis for recommendations
+ * - Business impact measurement
+ */
+export const templateUsageAnalytics = pgTable(
+  'template_usage_analytics',
+  {
+    id: text('id').primaryKey(), // UUID for analytics record
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }), // NULL for anonymous usage
+
+    // Usage event tracking
+    eventType: text('event_type').notNull(), // 'view', 'download', 'instantiate', 'customize', 'deploy', 'execute'
+    eventContext: jsonb('event_context').default('{}'), // Additional event metadata
+
+    // Template instantiation details
+    customizationsMade: jsonb('customizations_made').default('{}'), // Record of user modifications
+    setupTimeSeconds: integer('setup_time_seconds'), // Time spent customizing template
+    successOnFirstTry: boolean('success_on_first_try'), // Whether template worked immediately
+
+    // Performance and outcome tracking
+    executionTimeSeconds: integer('execution_time_seconds'), // Template execution duration
+    executionSuccess: boolean('execution_success'), // Whether execution completed successfully
+    errorDetails: text('error_details'), // Error information if execution failed
+    costIncurred: decimal('cost_incurred', { precision: 10, scale: 4 }), // Execution cost in USD
+
+    // User context and environment
+    userAgent: text('user_agent'), // Browser/client information
+    referrerUrl: text('referrer_url'), // How user discovered the template
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'set null' }),
+
+    // Geographic and temporal context
+    countryCode: text('country_code'), // User location (2-letter ISO code)
+    timezone: text('timezone'), // User timezone
+    usageTimestamp: timestamp('usage_timestamp').notNull().defaultNow(),
+
+    // Integration and technical details
+    integrationsUsed: jsonb('integrations_used').default('[]'), // Array of integrations activated
+    blocksModified: integer('blocks_modified').default(0), // Number of blocks user customized
+    variablesConfigured: integer('variables_configured').default(0), // Number of variables user set
+
+    // Business outcome tracking
+    estimatedTimeSaved: integer('estimated_time_saved'), // Time savings achieved in minutes
+    estimatedCostSaved: decimal('estimated_cost_saved', { precision: 10, scale: 2 }), // Cost savings achieved in USD
+    userSatisfactionScore: integer('user_satisfaction_score'), // 1-5 rating of template experience
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateIdx: index('template_usage_template_idx').on(table.templateId, table.usageTimestamp),
+    userIdx: index('template_usage_user_idx').on(table.userId, table.usageTimestamp),
+    eventIdx: index('template_usage_event_idx').on(table.eventType, table.usageTimestamp),
+    successIdx: index('template_usage_success_idx').on(table.templateId, table.executionSuccess),
+    timestampIdx: index('template_usage_timestamp_idx').on(table.usageTimestamp),
+    workspaceIdx: index('template_usage_workspace_idx').on(table.workspaceId, table.usageTimestamp),
+  })
+)
+
+/**
+ * Template collections table - User-curated template sets
+ *
+ * Allows users to create and share curated collections of templates
+ * similar to playlists or reading lists
+ */
+export const templateCollections = pgTable(
+  'template_collections',
+  {
+    id: text('id').primaryKey(), // UUID for collection identification
+    name: text('name').notNull(), // Collection display name
+    description: text('description'), // Collection purpose and contents
+    slug: text('slug').notNull(), // URL-friendly identifier
+
+    // Collection metadata
+    isPublic: boolean('is_public').notNull().default(false), // Public vs private collection
+    isFeatured: boolean('is_featured').notNull().default(false), // Highlight in discovery
+    coverImageUrl: text('cover_image_url'), // Collection thumbnail
+
+    // User and ownership
+    createdByUserId: text('created_by_user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+
+    // Analytics
+    viewCount: integer('view_count').notNull().default(0),
+    followCount: integer('follow_count').notNull().default(0),
+
+    // Audit
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userSlugUnique: uniqueIndex('template_collections_user_slug_unique').on(table.createdByUserId, table.slug),
+    userIdx: index('template_collections_user_idx').on(table.createdByUserId),
+    publicIdx: index('template_collections_public_idx').on(table.isPublic, table.isFeatured),
+    slugIdx: index('template_collections_slug_idx').on(table.slug),
+  })
+)
+
+/**
+ * Collection templates association table - Templates in collections
+ */
+export const templateCollectionItems = pgTable(
+  'template_collection_items',
+  {
+    collectionId: text('collection_id')
+      .notNull()
+      .references(() => templateCollections.id, { onDelete: 'cascade' }),
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    sortOrder: integer('sort_order').notNull().default(0), // Display order within collection
+    addedAt: timestamp('added_at').notNull().defaultNow(),
+    notes: text('notes'), // User notes about why template is in collection
+  },
+  (table) => ({
+    collectionTemplatePk: uniqueIndex('template_collection_items_pk').on(table.collectionId, table.templateId),
+    collectionIdx: index('collection_items_collection_idx').on(table.collectionId, table.sortOrder),
+    templateIdx: index('collection_items_template_idx').on(table.templateId),
+  })
+)
+
+/**
+ * User template favorites table - Personal bookmarking system
+ */
+export const templateFavorites = pgTable(
+  'template_favorites',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    templateId: text('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    notes: text('notes'), // Personal notes about the template
+  },
+  (table) => ({
+    userTemplatePk: uniqueIndex('template_favorites_pk').on(table.userId, table.templateId),
+    userIdx: index('template_favorites_user_idx').on(table.userId, table.createdAt),
+    templateIdx: index('template_favorites_template_idx').on(table.templateId),
+  })
+)
+
+/**
+ * Template search queries table - Search analytics and optimization
+ *
+ * Track user search behavior to improve discovery and recommendations
+ */
+export const templateSearchQueries = pgTable(
+  'template_search_queries',
+  {
+    id: text('id').primaryKey(),
+    query: text('query').notNull(), // User search query
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+
+    // Search context
+    filtersApplied: jsonb('filters_applied').default('{}'), // Applied category/tag filters
+    sortOrder: text('sort_order').default('relevance'), // Sort preference
+    resultsCount: integer('results_count').default(0), // Number of results returned
+
+    // User interaction
+    clickedTemplateIds: jsonb('clicked_template_ids').default('[]'), // Templates user clicked
+    noResults: boolean('no_results').default(false), // Whether search returned no results
+
+    // Analytics
+    searchTimestamp: timestamp('search_timestamp').notNull().defaultNow(),
+    sessionId: text('session_id'), // User session identifier
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    queryIdx: index('search_queries_query_idx').on(table.query),
+    timestampIdx: index('search_queries_timestamp_idx').on(table.searchTimestamp),
+    noResultsIdx: index('search_queries_no_results_idx').on(table.noResults),
   })
 )

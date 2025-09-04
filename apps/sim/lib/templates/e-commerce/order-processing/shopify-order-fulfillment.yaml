@@ -1,0 +1,677 @@
+# Shopify Complete Order Fulfillment Automation Template
+# Comprehensive order processing workflow with payment verification, inventory updates, and shipping automation
+
+name: "Shopify Order Fulfillment Automation"
+description: "Complete order processing workflow from payment to delivery with real-time tracking and notifications"
+category: "ecommerce"
+subcategory: "order-processing"
+difficulty: "intermediate"
+estimatedTime: "30-45 minutes"
+platforms: ["shopify", "stripe", "email", "sms"]
+tags: ["shopify", "order-processing", "fulfillment", "shipping", "payment", "inventory"]
+
+# Template metadata for marketplace display
+metadata:
+  author: "Sim E-commerce Team"
+  version: "1.0.0"
+  lastUpdated: "2025-09-04"
+  useCases:
+    - "Automated order fulfillment for Shopify stores"
+    - "Payment verification and processing"
+    - "Inventory management and stock updates"
+    - "Customer notification and tracking"
+    - "Multi-carrier shipping integration"
+  
+  requirements:
+    - "Shopify store with Admin API access"
+    - "Payment processor (Stripe/PayPal) integration"
+    - "Shipping carrier accounts (FedEx/UPS/USPS)"
+    - "Email/SMS notification service"
+    - "Inventory management system"
+
+# Workflow configuration starts here
+workflow:
+  # ====================================================================
+  # TRIGGER: New Order Webhook from Shopify
+  # ====================================================================
+  trigger:
+    type: "webhook"
+    provider: "shopify"
+    event: "orders/create"
+    description: "Triggered when a new order is placed in Shopify"
+    verification:
+      hmac_secret: "{{SHOPIFY_WEBHOOK_SECRET}}"
+      header: "X-Shopify-Hmac-Sha256"
+    
+  blocks:
+    # ====================================================================
+    # STEP 1: ORDER VALIDATION AND DATA EXTRACTION
+    # ====================================================================
+    - name: "extract_order_data"
+      type: "data-transformer"
+      description: "Extract and validate critical order information from Shopify webhook"
+      inputs:
+        raw_order: "{{webhook.body}}"
+      operations:
+        - type: "extract"
+          fields:
+            order_id: "id"
+            order_number: "order_number"
+            customer_email: "customer.email"
+            customer_name: "customer.first_name + ' ' + customer.last_name"
+            customer_phone: "customer.phone"
+            total_price: "total_price"
+            currency: "currency"
+            payment_status: "financial_status"
+            fulfillment_status: "fulfillment_status"
+            line_items: "line_items"
+            shipping_address: "shipping_address"
+            billing_address: "billing_address"
+            created_at: "created_at"
+            order_status_url: "order_status_url"
+        
+        - type: "validate"
+          rules:
+            - field: "order_id"
+              required: true
+              type: "number"
+            - field: "customer_email"  
+              required: true
+              format: "email"
+            - field: "total_price"
+              required: true
+              type: "number"
+              min: 0
+            - field: "line_items"
+              required: true
+              type: "array"
+              min_length: 1
+      
+      outputs:
+        order: "{{transformed_data}}"
+        validation_errors: "{{validation_errors}}"
+
+    # ====================================================================
+    # STEP 2: CONDITIONAL VALIDATION CHECK
+    # ====================================================================
+    - name: "validation_check"
+      type: "condition"
+      description: "Verify order data is valid before processing"
+      condition: "{{validation_errors.length === 0}}"
+      
+      on_true:
+        next: "payment_verification"
+      
+      on_false:
+        next: "validation_error_handler"
+
+    # ====================================================================
+    # ERROR HANDLING: Invalid Order Data
+    # ====================================================================
+    - name: "validation_error_handler"
+      type: "email-automation"
+      description: "Alert administrators about invalid order data"
+      inputs:
+        to: "{{ADMIN_EMAIL}}"
+        subject: "Order Validation Failed - Order #{{order.order_number}}"
+        template: "order_validation_error"
+        data:
+          order_id: "{{order.order_id}}"
+          order_number: "{{order.order_number}}"
+          errors: "{{validation_errors}}"
+          webhook_data: "{{webhook.body}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 3: PAYMENT VERIFICATION WITH STRIPE
+    # ====================================================================
+    - name: "payment_verification"
+      type: "stripe"
+      description: "Verify payment status and capture funds if needed"
+      operation: "retrieve_payment_intent"
+      inputs:
+        payment_intent_id: "{{order.payment_details.stripe_payment_intent_id}}"
+      
+      outputs:
+        payment_status: "{{response.status}}"
+        payment_amount: "{{response.amount}}"
+        payment_currency: "{{response.currency}}"
+      
+      next: "payment_status_check"
+
+    # ====================================================================
+    # STEP 4: PAYMENT STATUS CONDITIONAL
+    # ====================================================================
+    - name: "payment_status_check"
+      type: "condition"
+      description: "Check if payment is successful before fulfillment"
+      condition: "{{payment_status === 'succeeded' || order.payment_status === 'paid'}}"
+      
+      on_true:
+        next: "inventory_check"
+      
+      on_false:
+        next: "payment_failed_handler"
+
+    # ====================================================================
+    # ERROR HANDLING: Payment Failed
+    # ====================================================================
+    - name: "payment_failed_handler"
+      type: "parallel"
+      description: "Handle payment failures with customer notification and admin alert"
+      
+      branches:
+        # Notify customer of payment issue
+        customer_notification:
+          - name: "customer_payment_notification"
+            type: "email-automation"
+            inputs:
+              to: "{{order.customer_email}}"
+              subject: "Payment Issue - Order #{{order.order_number}}"
+              template: "payment_failed_customer"
+              data:
+                customer_name: "{{order.customer_name}}"
+                order_number: "{{order.order_number}}"
+                total_amount: "{{order.total_price}}"
+                order_status_url: "{{order.order_status_url}}"
+        
+        # Alert administrators
+        admin_notification:
+          - name: "admin_payment_alert"
+            type: "email-automation"
+            inputs:
+              to: "{{ADMIN_EMAIL}}"
+              subject: "Payment Failed - Order #{{order.order_number}}"
+              template: "payment_failed_admin"
+              data:
+                order_id: "{{order.order_id}}"
+                customer_email: "{{order.customer_email}}"
+                payment_status: "{{payment_status}}"
+                order_total: "{{order.total_price}}"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 5: INVENTORY AVAILABILITY CHECK
+    # ====================================================================
+    - name: "inventory_check"
+      type: "shopify"
+      description: "Verify product availability and update inventory levels"
+      operation: "check_inventory_levels"
+      inputs:
+        line_items: "{{order.line_items}}"
+        location_id: "{{SHOPIFY_LOCATION_ID}}"
+      
+      logic:
+        # Check each line item for availability
+        for_each: "{{order.line_items}}"
+        do:
+          - check_variant_inventory:
+              variant_id: "{{item.variant_id}}"
+              quantity_needed: "{{item.quantity}}"
+              location: "{{SHOPIFY_LOCATION_ID}}"
+      
+      outputs:
+        inventory_status: "{{inventory_check_results}}"
+        out_of_stock_items: "{{filtered_out_of_stock}}"
+        available_items: "{{filtered_available}}"
+
+    # ====================================================================
+    # STEP 6: INVENTORY AVAILABILITY CONDITIONAL
+    # ====================================================================
+    - name: "inventory_availability_check"
+      type: "condition"
+      description: "Check if all items are in stock"
+      condition: "{{out_of_stock_items.length === 0}}"
+      
+      on_true:
+        next: "create_fulfillment"
+      
+      on_false:
+        next: "partial_fulfillment_handler"
+
+    # ====================================================================
+    # STEP 7A: FULL FULFILLMENT PATH
+    # ====================================================================
+    - name: "create_fulfillment"
+      type: "shopify"
+      description: "Create fulfillment record for all items"
+      operation: "create_fulfillment"
+      inputs:
+        order_id: "{{order.order_id}}"
+        line_items: "{{available_items}}"
+        location_id: "{{SHOPIFY_LOCATION_ID}}"
+        tracking_company: "{{SHIPPING_CARRIER}}"
+        notify_customer: true
+      
+      outputs:
+        fulfillment_id: "{{response.fulfillment.id}}"
+        fulfillment_status: "{{response.fulfillment.status}}"
+        tracking_number: "{{response.fulfillment.tracking_number}}"
+      
+      next: "shipping_label_creation"
+
+    # ====================================================================
+    # STEP 7B: PARTIAL FULFILLMENT HANDLER
+    # ====================================================================
+    - name: "partial_fulfillment_handler"
+      type: "switch"
+      description: "Handle partial fulfillment scenarios based on business rules"
+      variable: "{{PARTIAL_FULFILLMENT_STRATEGY}}"
+      
+      cases:
+        "ship_available":
+          # Ship available items immediately
+          next: "create_partial_fulfillment"
+        
+        "wait_for_stock":
+          # Wait for full stock before shipping
+          next: "backorder_notification"
+        
+        "cancel_out_of_stock":
+          # Cancel unavailable items, ship the rest
+          next: "partial_cancellation"
+      
+      default: "create_partial_fulfillment"
+
+    # ====================================================================
+    # STEP 8A: CREATE PARTIAL FULFILLMENT
+    # ====================================================================
+    - name: "create_partial_fulfillment"
+      type: "shopify"
+      description: "Create fulfillment for available items only"
+      operation: "create_fulfillment"
+      inputs:
+        order_id: "{{order.order_id}}"
+        line_items: "{{available_items}}"
+        location_id: "{{SHOPIFY_LOCATION_ID}}"
+        tracking_company: "{{SHIPPING_CARRIER}}"
+        notify_customer: true
+        partial: true
+      
+      outputs:
+        fulfillment_id: "{{response.fulfillment.id}}"
+        partial_fulfillment: true
+      
+      next: "shipping_label_creation"
+
+    # ====================================================================
+    # STEP 8B: BACKORDER NOTIFICATION
+    # ====================================================================
+    - name: "backorder_notification"
+      type: "parallel"
+      description: "Notify customer about backorder and create internal tracking"
+      
+      branches:
+        # Customer notification
+        customer_communication:
+          - name: "backorder_customer_email"
+            type: "email-automation"
+            inputs:
+              to: "{{order.customer_email}}"
+              subject: "Order Update - Items on Backorder #{{order.order_number}}"
+              template: "backorder_notification"
+              data:
+                customer_name: "{{order.customer_name}}"
+                order_number: "{{order.order_number}}"
+                out_of_stock_items: "{{out_of_stock_items}}"
+                estimated_restock: "{{ESTIMATED_RESTOCK_DATE}}"
+        
+        # Internal tracking
+        backorder_tracking:
+          - name: "create_backorder_record"
+            type: "database"
+            operation: "insert"
+            table: "backorders"
+            data:
+              order_id: "{{order.order_id}}"
+              customer_email: "{{order.customer_email}}"
+              items: "{{out_of_stock_items}}"
+              created_at: "{{current_timestamp}}"
+              status: "pending_restock"
+      
+      next: "end_workflow"
+
+    # ====================================================================
+    # STEP 9: SHIPPING LABEL CREATION
+    # ====================================================================
+    - name: "shipping_label_creation"
+      type: "fedex"
+      description: "Generate shipping label with optimal carrier selection"
+      operation: "create_shipment"
+      inputs:
+        # Shipper information
+        shipper:
+          name: "{{COMPANY_NAME}}"
+          address: "{{WAREHOUSE_ADDRESS}}"
+          phone: "{{COMPANY_PHONE}}"
+          account_number: "{{FEDEX_ACCOUNT_NUMBER}}"
+        
+        # Recipient information
+        recipient:
+          name: "{{order.shipping_address.name}}"
+          address: 
+            street: "{{order.shipping_address.address1}}"
+            street2: "{{order.shipping_address.address2}}"
+            city: "{{order.shipping_address.city}}"
+            state: "{{order.shipping_address.province}}"
+            postal_code: "{{order.shipping_address.zip}}"
+            country: "{{order.shipping_address.country_code}}"
+          phone: "{{order.customer_phone}}"
+        
+        # Package details
+        package:
+          weight: "{{calculated_weight}}"
+          dimensions: "{{calculated_dimensions}}"
+          packaging_type: "YOUR_PACKAGING"
+          declared_value: "{{order.total_price}}"
+        
+        # Service details
+        service_type: "{{SHIPPING_SERVICE_TYPE}}"
+        payment_type: "SENDER"
+        label_format: "PDF"
+        
+      outputs:
+        tracking_number: "{{response.tracking_number}}"
+        label_url: "{{response.label.url}}"
+        estimated_delivery: "{{response.estimated_delivery}}"
+        shipping_cost: "{{response.charges.total}}"
+      
+      next: "update_shopify_tracking"
+
+    # ====================================================================
+    # STEP 10: UPDATE SHOPIFY WITH TRACKING INFO
+    # ====================================================================
+    - name: "update_shopify_tracking"
+      type: "shopify"
+      description: "Update fulfillment with tracking information"
+      operation: "update_fulfillment"
+      inputs:
+        order_id: "{{order.order_id}}"
+        fulfillment_id: "{{fulfillment_id}}"
+        tracking_number: "{{tracking_number}}"
+        tracking_company: "FedEx"
+        tracking_url: "https://www.fedex.com/fedextrack/?trknbr={{tracking_number}}"
+        notify_customer: true
+      
+      next: "customer_notification_parallel"
+
+    # ====================================================================
+    # STEP 11: COMPREHENSIVE CUSTOMER NOTIFICATIONS
+    # ====================================================================
+    - name: "customer_notification_parallel"
+      type: "parallel"
+      description: "Send multi-channel notifications to customer"
+      
+      branches:
+        # Email notification with tracking details
+        email_notification:
+          - name: "shipping_confirmation_email"
+            type: "email-automation"
+            inputs:
+              to: "{{order.customer_email}}"
+              subject: "Your order is on the way! - Order #{{order.order_number}}"
+              template: "shipping_confirmation"
+              data:
+                customer_name: "{{order.customer_name}}"
+                order_number: "{{order.order_number}}"
+                tracking_number: "{{tracking_number}}"
+                estimated_delivery: "{{estimated_delivery}}"
+                tracking_url: "https://www.fedex.com/fedextrack/?trknbr={{tracking_number}}"
+                shipped_items: "{{available_items}}"
+                order_total: "{{order.total_price}}"
+                shipping_address: "{{order.shipping_address}}"
+              
+              attachments:
+                - name: "shipping_label.pdf"
+                  url: "{{label_url}}"
+                  type: "pdf"
+        
+        # SMS notification (if phone number provided)
+        sms_notification:
+          - name: "shipping_sms"
+            type: "condition"
+            condition: "{{order.customer_phone !== null && order.customer_phone !== ''}}"
+            
+            on_true:
+              - name: "send_shipping_sms"
+                type: "twilio"
+                operation: "send_sms"
+                inputs:
+                  to: "{{order.customer_phone}}"
+                  from: "{{TWILIO_PHONE_NUMBER}}"
+                  message: "Great news! Your order #{{order.order_number}} has shipped! Track it here: https://www.fedex.com/fedextrack/?trknbr={{tracking_number}}"
+      
+      next: "internal_notifications"
+
+    # ====================================================================
+    # STEP 12: INTERNAL TEAM NOTIFICATIONS AND ANALYTICS
+    # ====================================================================
+    - name: "internal_notifications"
+      type: "parallel"
+      description: "Internal processing and analytics updates"
+      
+      branches:
+        # Update internal systems
+        system_updates:
+          # Update CRM with order status
+          - name: "update_crm"
+            type: "hubspot"
+            operation: "update_deal"
+            inputs:
+              deal_id: "{{order.hubspot_deal_id}}"
+              properties:
+                dealstage: "closedwon"
+                amount: "{{order.total_price}}"
+                closedate: "{{current_timestamp}}"
+                tracking_number: "{{tracking_number}}"
+          
+          # Log fulfillment analytics
+          - name: "analytics_update"
+            type: "database"
+            operation: "insert"
+            table: "fulfillment_analytics"
+            data:
+              order_id: "{{order.order_id}}"
+              fulfillment_time: "{{current_timestamp}}"
+              processing_duration: "{{workflow_duration}}"
+              shipping_cost: "{{shipping_cost}}"
+              carrier: "FedEx"
+              service_type: "{{SHIPPING_SERVICE_TYPE}}"
+              customer_tier: "{{customer_tier}}"
+        
+        # Team notifications (for high-value orders)
+        team_alerts:
+          - name: "high_value_order_check"
+            type: "condition"
+            condition: "{{order.total_price > HIGH_VALUE_THRESHOLD}}"
+            
+            on_true:
+              - name: "high_value_alert"
+                type: "slack"
+                operation: "send_message"
+                inputs:
+                  channel: "#high-value-orders"
+                  message: "🎉 High-value order shipped!\nOrder: #{{order.order_number}}\nValue: ${{order.total_price}}\nCustomer: {{order.customer_name}}\nTracking: {{tracking_number}}"
+                  
+        # Inventory adjustment
+        inventory_updates:
+          - name: "update_inventory_levels"
+            type: "shopify"
+            operation: "adjust_inventory"
+            inputs:
+              adjustments: "{{inventory_adjustments}}"
+              reason: "sold"
+              location_id: "{{SHOPIFY_LOCATION_ID}}"
+
+    # ====================================================================
+    # STEP 13: POST-FULFILLMENT FOLLOW-UP SCHEDULING
+    # ====================================================================
+    - name: "schedule_follow_ups"
+      type: "schedule"
+      description: "Schedule automated follow-up communications"
+      
+      schedules:
+        # Delivery confirmation follow-up
+        delivery_follow_up:
+          delay: "{{estimated_delivery + 1 day}}"
+          workflow: "delivery_confirmation_followup"
+          data:
+            order_id: "{{order.order_id}}"
+            customer_email: "{{order.customer_email}}"
+            tracking_number: "{{tracking_number}}"
+        
+        # Review request follow-up
+        review_request:
+          delay: "{{estimated_delivery + 3 days}}"
+          workflow: "review_request_automation"
+          data:
+            order_id: "{{order.order_id}}"
+            customer_email: "{{order.customer_email}}"
+            purchased_items: "{{available_items}}"
+        
+        # Customer satisfaction survey
+        satisfaction_survey:
+          delay: "{{estimated_delivery + 7 days}}"
+          workflow: "customer_satisfaction_survey"
+          data:
+            order_id: "{{order.order_id}}"
+            customer_email: "{{order.customer_email}}"
+            order_experience_data: "{{order_metrics}}"
+
+    # ====================================================================
+    # WORKFLOW COMPLETION
+    # ====================================================================
+    - name: "end_workflow"
+      type: "response"
+      message: "Order fulfillment completed successfully"
+      data:
+        order_id: "{{order.order_id}}"
+        order_number: "{{order.order_number}}"
+        fulfillment_id: "{{fulfillment_id}}"
+        tracking_number: "{{tracking_number}}"
+        status: "shipped"
+        processing_time: "{{workflow_duration}}"
+
+# ====================================================================
+# ENVIRONMENT VARIABLES AND CONFIGURATION
+# ====================================================================
+variables:
+  # Shopify Configuration
+  SHOPIFY_SHOP_DOMAIN: "${SHOPIFY_SHOP_DOMAIN}"
+  SHOPIFY_ACCESS_TOKEN: "${SHOPIFY_ACCESS_TOKEN}"
+  SHOPIFY_WEBHOOK_SECRET: "${SHOPIFY_WEBHOOK_SECRET}"
+  SHOPIFY_LOCATION_ID: "${SHOPIFY_LOCATION_ID}"
+  
+  # Payment Processing
+  STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
+  STRIPE_PUBLISHABLE_KEY: "${STRIPE_PUBLISHABLE_KEY}"
+  
+  # Shipping Configuration
+  FEDEX_ACCOUNT_NUMBER: "${FEDEX_ACCOUNT_NUMBER}"
+  FEDEX_METER_NUMBER: "${FEDEX_METER_NUMBER}"
+  FEDEX_API_KEY: "${FEDEX_API_KEY}"
+  FEDEX_SECRET_KEY: "${FEDEX_SECRET_KEY}"
+  SHIPPING_SERVICE_TYPE: "${SHIPPING_SERVICE_TYPE:FEDEX_GROUND}"
+  
+  # Company Information
+  COMPANY_NAME: "${COMPANY_NAME}"
+  WAREHOUSE_ADDRESS: "${WAREHOUSE_ADDRESS}"
+  COMPANY_PHONE: "${COMPANY_PHONE}"
+  
+  # Notification Configuration
+  ADMIN_EMAIL: "${ADMIN_EMAIL}"
+  TWILIO_ACCOUNT_SID: "${TWILIO_ACCOUNT_SID}"
+  TWILIO_AUTH_TOKEN: "${TWILIO_AUTH_TOKEN}"
+  TWILIO_PHONE_NUMBER: "${TWILIO_PHONE_NUMBER}"
+  
+  # Business Rules
+  HIGH_VALUE_THRESHOLD: "${HIGH_VALUE_THRESHOLD:500}"
+  PARTIAL_FULFILLMENT_STRATEGY: "${PARTIAL_FULFILLMENT_STRATEGY:ship_available}"
+  ESTIMATED_RESTOCK_DATE: "${ESTIMATED_RESTOCK_DATE:7 days}"
+  
+  # CRM Integration
+  HUBSPOT_API_KEY: "${HUBSPOT_API_KEY}"
+  
+  # Communication
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+
+# ====================================================================
+# ERROR HANDLING AND MONITORING
+# ====================================================================
+error_handling:
+  global_error_handler:
+    type: "email-automation"
+    inputs:
+      to: "{{ADMIN_EMAIL}}"
+      subject: "Order Fulfillment Workflow Error - Order #{{order.order_number}}"
+      template: "workflow_error"
+      data:
+        error_message: "{{error.message}}"
+        error_stack: "{{error.stack}}"
+        order_data: "{{order}}"
+        workflow_step: "{{current_step}}"
+  
+  retry_policy:
+    max_retries: 3
+    retry_delay: "30 seconds"
+    exponential_backoff: true
+    
+  monitoring:
+    performance_tracking: true
+    error_alerting: true
+    business_metrics: true
+
+# ====================================================================
+# TEMPLATE CUSTOMIZATION GUIDE
+# ====================================================================
+customization:
+  required_credentials:
+    - name: "Shopify Admin API"
+      type: "api_key"
+      permissions: ["read_orders", "write_fulfillments", "read_inventory", "write_inventory"]
+    
+    - name: "Stripe"
+      type: "api_key" 
+      permissions: ["read_payments", "read_payment_intents"]
+    
+    - name: "FedEx"
+      type: "api_key"
+      permissions: ["create_shipments", "track_packages"]
+    
+    - name: "Email Service"
+      type: "smtp_config"
+      requirements: ["smtp_server", "username", "password"]
+  
+  business_rules:
+    shipping_rules:
+      - "Configure shipping service type based on order value"
+      - "Set up shipping rate calculations"
+      - "Define packaging requirements"
+    
+    inventory_rules:
+      - "Set low stock thresholds"
+      - "Configure backorder handling"
+      - "Define partial fulfillment policies"
+    
+    customer_communication:
+      - "Customize email templates for brand consistency"
+      - "Configure notification preferences"
+      - "Set up multi-language support if needed"
+
+# ====================================================================
+# PERFORMANCE OPTIMIZATION NOTES
+# ====================================================================
+performance:
+  optimizations:
+    - "Use parallel processing for notifications"
+    - "Implement caching for inventory checks"
+    - "Batch API calls where possible"
+    - "Use webhook verification for security"
+  
+  scaling_considerations:
+    - "Implement rate limiting for API calls"
+    - "Use queue systems for high-volume processing"
+    - "Monitor and optimize database queries"
+    - "Set up horizontal scaling for webhook processing"
