@@ -17,11 +17,12 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import { Maximize2, MessageCircle, Minimize2, X, Zap } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { MessageCircle, X, Minimize2, Maximize2, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { IntelligentChatInterface } from './intelligent-chat-interface'
 
@@ -78,7 +79,7 @@ export function FloatingChatWidget({
   className,
   zIndex = 1000,
   showProactiveSuggestions = true,
-  onStateChange
+  onStateChange,
 }: FloatingChatWidgetProps) {
   // State management
   const [isExpanded, setIsExpanded] = useState(initialExpanded)
@@ -112,7 +113,7 @@ export function FloatingChatWidget({
     setIsExpanded(!isExpanded)
     setHasUnreadMessages(false)
     setUnreadCount(0)
-    
+
     if (!isExpanded) {
       setIsMinimized(false)
     }
@@ -130,12 +131,12 @@ export function FloatingChatWidget({
 
   const handleDragStart = (e: React.MouseEvent) => {
     if (!isExpanded) return // Only allow dragging when expanded
-    
+
     setIsDragging(true)
     const rect = e.currentTarget.getBoundingClientRect()
     setDragOffset({
       x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      y: e.clientY - rect.top,
     })
   }
 
@@ -150,7 +151,7 @@ export function FloatingChatWidget({
   const getPositionStyles = () => {
     const baseStyles = {
       position: 'fixed' as const,
-      zIndex
+      zIndex,
     }
 
     switch (position) {
@@ -175,36 +176,33 @@ export function FloatingChatWidget({
     <Button
       onClick={handleToggleExpanded}
       className={cn(
-        'h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200',
+        'h-14 w-14 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl',
         'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700',
-        'relative group'
+        'group relative'
       )}
       style={getPositionStyles()}
     >
-      <MessageCircle className="h-6 w-6 text-white" />
-      
+      <MessageCircle className='h-6 w-6 text-white' />
+
       {/* Unread messages indicator */}
       {hasUnreadMessages && unreadCount > 0 && (
-        <Badge 
-          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"
-        >
+        <Badge className='-top-2 -right-2 absolute flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs'>
           {unreadCount > 9 ? '9+' : unreadCount}
         </Badge>
       )}
-      
+
       {/* Proactive assistance pulse */}
       {workflowContext?.errors && workflowContext.errors.length > 1 && (
-        <div className="absolute inset-0 rounded-full animate-pulse bg-red-400 opacity-30" />
+        <div className='absolute inset-0 animate-pulse rounded-full bg-red-400 opacity-30' />
       )}
-      
+
       {/* Tooltip */}
-      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+      <div className='-translate-x-1/2 pointer-events-none absolute bottom-full left-1/2 mb-2 transform opacity-0 transition-opacity group-hover:opacity-100'>
+        <div className='whitespace-nowrap rounded bg-black px-2 py-1 text-white text-xs'>
           Need help? Ask me anything!
           {workflowContext?.errors && workflowContext.errors.length > 1 && (
-            <div className="flex items-center gap-1 mt-1 text-red-300">
-              <Zap className="h-3 w-3" />
-              I noticed some issues - let me help!
+            <div className='mt-1 flex items-center gap-1 text-red-300'>
+              <Zap className='h-3 w-3' />I noticed some issues - let me help!
             </div>
           )}
         </div>
@@ -219,7 +217,7 @@ export function FloatingChatWidget({
   const renderExpandedWidget = () => (
     <Card
       className={cn(
-        'shadow-2xl border-0 overflow-hidden transition-all duration-300',
+        'overflow-hidden border-0 shadow-2xl transition-all duration-300',
         isMinimized ? 'h-12' : 'h-[600px]',
         'w-96 max-w-[90vw]'
       )}
@@ -228,52 +226,52 @@ export function FloatingChatWidget({
       {/* Header */}
       <div
         className={cn(
-          'flex items-center justify-between p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white cursor-move',
+          'flex cursor-move items-center justify-between bg-gradient-to-r from-purple-600 to-blue-600 p-3 text-white',
           isDragging && 'cursor-grabbing'
         )}
         onMouseDown={handleDragStart}
         onMouseUp={handleDragEnd}
       >
-        <div className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5" />
-          <h3 className="font-semibold text-sm">AI Assistant</h3>
+        <div className='flex items-center gap-2'>
+          <MessageCircle className='h-5 w-5' />
+          <h3 className='font-semibold text-sm'>AI Assistant</h3>
           {workflowContext?.type && (
-            <Badge variant="secondary" className="text-xs bg-white/20 text-white border-0">
+            <Badge variant='secondary' className='border-0 bg-white/20 text-white text-xs'>
               {workflowContext.type}
             </Badge>
           )}
         </div>
-        
-        <div className="flex items-center gap-1">
+
+        <div className='flex items-center gap-1'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={handleMinimize}
-            className="h-6 w-6 p-0 hover:bg-white/20 text-white"
+            className='h-6 w-6 p-0 text-white hover:bg-white/20'
           >
-            {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+            {isMinimized ? <Maximize2 className='h-3 w-3' /> : <Minimize2 className='h-3 w-3' />}
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={handleClose}
-            className="h-6 w-6 p-0 hover:bg-white/20 text-white"
+            className='h-6 w-6 p-0 text-white hover:bg-white/20'
           >
-            <X className="h-3 w-3" />
+            <X className='h-3 w-3' />
           </Button>
         </div>
       </div>
-      
+
       {/* Chat Content */}
       {!isMinimized && (
-        <div className="h-[calc(100%-48px)]">
+        <div className='h-[calc(100%-48px)]'>
           <IntelligentChatInterface
             sessionId={sessionId}
             workflowContext={workflowContext}
             userProfile={userProfile}
             embedded={true}
             showProactiveSuggestions={showProactiveSuggestions}
-            maxHeight="100%"
+            maxHeight='100%'
             onClose={handleClose}
           />
         </div>
@@ -307,20 +305,15 @@ interface ChatWidgetProviderProps {
   enabled?: boolean
 }
 
-export function ChatWidgetProvider({ 
-  children, 
+export function ChatWidgetProvider({
+  children,
   widgetProps = {},
-  enabled = true 
+  enabled = true,
 }: ChatWidgetProviderProps) {
   return (
     <>
       {children}
-      {enabled && (
-        <FloatingChatWidget
-          showProactiveSuggestions={true}
-          {...widgetProps}
-        />
-      )}
+      {enabled && <FloatingChatWidget showProactiveSuggestions={true} {...widgetProps} />}
     </>
   )
 }

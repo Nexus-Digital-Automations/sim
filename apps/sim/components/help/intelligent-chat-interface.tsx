@@ -18,28 +18,27 @@
 
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  MessageCircle, 
-  Send, 
-  User, 
-  Bot, 
-  ThumbsUp, 
-  ThumbsDown, 
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  AlertCircle,
+  Bot,
   ExternalLink,
   Loader2,
-  AlertCircle,
+  MessageCircle,
+  Send,
   Sparkles,
-  Clock,
-  Trash2
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  User,
 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 
 // ========================
@@ -79,7 +78,12 @@ interface RelatedContent {
 }
 
 interface ConversationState {
-  phase: 'greeting' | 'problem_identification' | 'solution_exploration' | 'implementation' | 'resolution'
+  phase:
+    | 'greeting'
+    | 'problem_identification'
+    | 'solution_exploration'
+    | 'implementation'
+    | 'resolution'
   confidence: number
   needsEscalation: boolean
   resolvedIssues: string[]
@@ -150,7 +154,7 @@ export function IntelligentChatInterface({
   className,
   onClose,
   showProactiveSuggestions = true,
-  maxHeight = '600px'
+  maxHeight = '600px',
 }: IntelligentChatInterfaceProps) {
   // State management
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -182,8 +186,9 @@ export function IntelligentChatInterface({
       const greetingMessage: ChatMessage = {
         id: `msg_${Date.now()}`,
         role: 'assistant',
-        content: "Hi! I'm your AI assistant. I'm here to help you with workflow automation, troubleshooting, and any questions you might have. How can I assist you today?",
-        timestamp: new Date()
+        content:
+          "Hi! I'm your AI assistant. I'm here to help you with workflow automation, troubleshooting, and any questions you might have. How can I assist you today?",
+        timestamp: new Date(),
       }
       setMessages([greetingMessage])
     }
@@ -204,16 +209,16 @@ export function IntelligentChatInterface({
     const response = await fetch('/api/help/chat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         message,
         sessionId,
         context: {
           workflowContext,
-          userProfile
-        }
-      })
+          userProfile,
+        },
+      }),
     })
 
     if (!response.ok) {
@@ -229,7 +234,7 @@ export function IntelligentChatInterface({
       const response = await fetch(
         `/api/help/chat?action=suggestions&workflowContext=${encodeURIComponent(JSON.stringify(workflowContext))}`
       )
-      
+
       if (response.ok) {
         const data = await response.json()
         if (data.suggestions) {
@@ -247,12 +252,12 @@ export function IntelligentChatInterface({
       await fetch('/api/help/chat', {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           messageId,
-          rating
-        })
+          rating,
+        }),
       })
     } catch (error) {
       console.error('Failed to submit feedback:', error)
@@ -262,24 +267,23 @@ export function IntelligentChatInterface({
   const clearConversation = async () => {
     try {
       await fetch(`/api/help/chat?sessionId=${sessionId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
-      
+
       setMessages([])
       setSuggestedActions([])
       setRelatedContent([])
       setCurrentState(null)
       setError(null)
-      
+
       // Reinitialize with greeting
       const greetingMessage: ChatMessage = {
         id: `msg_${Date.now()}`,
         role: 'assistant',
-        content: "Conversation cleared! How can I help you today?",
-        timestamp: new Date()
+        content: 'Conversation cleared! How can I help you today?',
+        timestamp: new Date(),
       }
       setMessages([greetingMessage])
-      
     } catch (error) {
       console.error('Failed to clear conversation:', error)
     }
@@ -291,17 +295,17 @@ export function IntelligentChatInterface({
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!inputMessage.trim() || isLoading) return
 
     const userMessage: ChatMessage = {
       id: `msg_${Date.now()}_user`,
       role: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInputMessage('')
     setIsLoading(true)
     setIsTyping(true)
@@ -309,7 +313,7 @@ export function IntelligentChatInterface({
 
     try {
       const response = await sendChatMessage(userMessage.content)
-      
+
       if (response.success) {
         const assistantMessage: ChatMessage = {
           id: `msg_${Date.now()}_assistant`,
@@ -317,10 +321,10 @@ export function IntelligentChatInterface({
           content: response.message,
           timestamp: new Date(),
           intent: response.intent,
-          metadata: response.metadata
+          metadata: response.metadata,
         }
 
-        setMessages(prev => [...prev, assistantMessage])
+        setMessages((prev) => [...prev, assistantMessage])
         setSessionId(response.sessionId)
         setCurrentState(response.conversationState)
         setSuggestedActions(response.suggestedActions)
@@ -364,57 +368,55 @@ export function IntelligentChatInterface({
     <div
       key={message.id}
       className={cn(
-        'flex gap-3 p-3 rounded-lg',
-        message.role === 'user' 
-          ? 'bg-blue-50 dark:bg-blue-950/30 ml-8' 
-          : 'bg-gray-50 dark:bg-gray-800/50 mr-8'
+        'flex gap-3 rounded-lg p-3',
+        message.role === 'user'
+          ? 'ml-8 bg-blue-50 dark:bg-blue-950/30'
+          : 'mr-8 bg-gray-50 dark:bg-gray-800/50'
       )}
     >
-      <div className="flex-shrink-0">
+      <div className='flex-shrink-0'>
         {message.role === 'user' ? (
-          <User className="h-6 w-6 text-blue-600" />
+          <User className='h-6 w-6 text-blue-600' />
         ) : (
-          <Bot className="h-6 w-6 text-purple-600" />
+          <Bot className='h-6 w-6 text-purple-600' />
         )}
       </div>
-      
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium">
+
+      <div className='min-w-0 flex-1'>
+        <div className='mb-1 flex items-center gap-2'>
+          <span className='font-medium text-sm'>
             {message.role === 'user' ? 'You' : 'AI Assistant'}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className='text-muted-foreground text-xs'>
             {message.timestamp.toLocaleTimeString()}
           </span>
           {message.intent && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant='outline' className='text-xs'>
               {message.intent.name}
             </Badge>
           )}
         </div>
-        
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          {message.content}
-        </div>
-        
+
+        <div className='prose prose-sm dark:prose-invert max-w-none'>{message.content}</div>
+
         {message.role === 'assistant' && (
-          <div className="flex items-center gap-2 mt-2">
+          <div className='mt-2 flex items-center gap-2'>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => submitFeedback(message.id, 'helpful')}
-              className="h-8 px-2 text-xs"
+              className='h-8 px-2 text-xs'
             >
-              <ThumbsUp className="h-3 w-3 mr-1" />
+              <ThumbsUp className='mr-1 h-3 w-3' />
               Helpful
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => submitFeedback(message.id, 'not_helpful')}
-              className="h-8 px-2 text-xs"
+              className='h-8 px-2 text-xs'
             >
-              <ThumbsDown className="h-3 w-3 mr-1" />
+              <ThumbsDown className='mr-1 h-3 w-3' />
               Not helpful
             </Button>
           </div>
@@ -423,21 +425,21 @@ export function IntelligentChatInterface({
     </div>
   )
 
-  const renderSuggestedActions = () => (
+  const renderSuggestedActions = () =>
     suggestedActions.length > 0 && (
-      <div className="p-3 border-t bg-gray-50 dark:bg-gray-800/30">
-        <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-          <Sparkles className="h-4 w-4" />
+      <div className='border-t bg-gray-50 p-3 dark:bg-gray-800/30'>
+        <h4 className='mb-2 flex items-center gap-2 font-medium text-sm'>
+          <Sparkles className='h-4 w-4' />
           Suggested Actions
         </h4>
-        <div className="flex flex-wrap gap-2">
+        <div className='flex flex-wrap gap-2'>
           {suggestedActions.map((action, index) => (
             <Button
               key={index}
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => handleSuggestedAction(action)}
-              className="text-xs"
+              className='text-xs'
             >
               {action.title}
             </Button>
@@ -445,23 +447,22 @@ export function IntelligentChatInterface({
         </div>
       </div>
     )
-  )
 
-  const renderRelatedContent = () => (
+  const renderRelatedContent = () =>
     relatedContent.length > 0 && (
-      <div className="p-3 border-t bg-blue-50 dark:bg-blue-950/20">
-        <h4 className="text-sm font-medium mb-2">Related Content</h4>
-        <div className="space-y-2">
+      <div className='border-t bg-blue-50 p-3 dark:bg-blue-950/20'>
+        <h4 className='mb-2 font-medium text-sm'>Related Content</h4>
+        <div className='space-y-2'>
           {relatedContent.slice(0, 3).map((content) => (
             <button
               key={content.id}
               onClick={() => handleRelatedContentClick(content)}
-              className="w-full text-left p-2 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className='w-full rounded bg-white p-2 text-left transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700'
             >
-              <div className="flex items-center gap-2 text-sm">
-                <ExternalLink className="h-3 w-3 text-blue-600" />
-                <span className="font-medium">{content.title}</span>
-                <Badge variant="secondary" className="text-xs ml-auto">
+              <div className='flex items-center gap-2 text-sm'>
+                <ExternalLink className='h-3 w-3 text-blue-600' />
+                <span className='font-medium'>{content.title}</span>
+                <Badge variant='secondary' className='ml-auto text-xs'>
                   {content.type}
                 </Badge>
               </div>
@@ -470,38 +471,32 @@ export function IntelligentChatInterface({
         </div>
       </div>
     )
-  )
 
   // ========================
   // MAIN RENDER
   // ========================
 
   const chatContent = (
-    <div className="flex flex-col h-full">
+    <div className='flex h-full flex-col'>
       {/* Header */}
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <MessageCircle className="h-5 w-5 text-purple-600" />
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <CardTitle className='flex items-center gap-2 text-lg'>
+            <MessageCircle className='h-5 w-5 text-purple-600' />
             AI Chat Assistant
             {currentState && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant='outline' className='text-xs'>
                 {currentState.phase.replace('_', ' ')}
               </Badge>
             )}
           </CardTitle>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearConversation}
-              className="h-8 px-2"
-            >
-              <Trash2 className="h-3 w-3" />
+
+          <div className='flex items-center gap-2'>
+            <Button variant='ghost' size='sm' onClick={clearConversation} className='h-8 px-2'>
+              <Trash2 className='h-3 w-3' />
             </Button>
             {onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} className="h-8 px-2">
+              <Button variant='ghost' size='sm' onClick={onClose} className='h-8 px-2'>
                 ×
               </Button>
             )}
@@ -510,24 +505,24 @@ export function IntelligentChatInterface({
       </CardHeader>
 
       {/* Messages Area */}
-      <CardContent className="flex-1 p-0">
-        <ScrollArea 
-          className="h-full px-4 pb-4" 
+      <CardContent className='flex-1 p-0'>
+        <ScrollArea
+          className='h-full px-4 pb-4'
           style={{ maxHeight: embedded ? maxHeight : '400px' }}
         >
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {messages.map(renderMessage)}
-            
+
             {isTyping && (
-              <div className="flex gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 mr-8">
-                <Bot className="h-6 w-6 text-purple-600" />
-                <div className="flex items-center gap-1">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">AI is typing...</span>
+              <div className='mr-8 flex gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50'>
+                <Bot className='h-6 w-6 text-purple-600' />
+                <div className='flex items-center gap-1'>
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                  <span className='text-muted-foreground text-sm'>AI is typing...</span>
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -535,8 +530,8 @@ export function IntelligentChatInterface({
 
       {/* Error Display */}
       {error && (
-        <Alert className="mx-4 mb-4">
-          <AlertCircle className="h-4 w-4" />
+        <Alert className='mx-4 mb-4'>
+          <AlertCircle className='h-4 w-4' />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -548,25 +543,21 @@ export function IntelligentChatInterface({
       {renderRelatedContent()}
 
       {/* Input Area */}
-      <div className="p-4 border-t">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+      <div className='border-t p-4'>
+        <form onSubmit={handleSendMessage} className='flex gap-2'>
           <Input
             ref={inputRef}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Ask me anything about workflows, integrations, or troubleshooting..."
+            placeholder='Ask me anything about workflows, integrations, or troubleshooting...'
             disabled={isLoading}
-            className="flex-1"
+            className='flex-1'
           />
-          <Button 
-            type="submit" 
-            disabled={isLoading || !inputMessage.trim()}
-            size="icon"
-          >
+          <Button type='submit' disabled={isLoading || !inputMessage.trim()} size='icon'>
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className='h-4 w-4' />
             )}
           </Button>
         </form>
@@ -576,15 +567,11 @@ export function IntelligentChatInterface({
 
   // Return embedded version or full card
   if (embedded) {
-    return (
-      <div className={cn('h-full', className)}>
-        {chatContent}
-      </div>
-    )
+    return <div className={cn('h-full', className)}>{chatContent}</div>
   }
 
   return (
-    <Card className={cn('w-full max-w-2xl mx-auto', className)} style={{ height: maxHeight }}>
+    <Card className={cn('mx-auto w-full max-w-2xl', className)} style={{ height: maxHeight }}>
       {chatContent}
     </Card>
   )
