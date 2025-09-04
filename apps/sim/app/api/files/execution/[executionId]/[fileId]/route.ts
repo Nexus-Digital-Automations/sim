@@ -45,7 +45,7 @@ export async function GET(
     const userFile: UserFile = file
 
     // Generate a new short-lived presigned URL (5 minutes)
-    const downloadUrl = await generateExecutionFileDownloadUrl(userFile)
+    const downloadUrl = await generateExecutionFileDownloadUrl(executionId, fileId)
 
     logger.info(`Generated download URL for file ${file.name} (execution: ${executionId})`)
 

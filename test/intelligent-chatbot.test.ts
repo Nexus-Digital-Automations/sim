@@ -1,672 +1,755 @@
 /**
- * Comprehensive Test Suite for Intelligent Chatbot Implementation
+ * Test Suite for Intelligent Chatbot Backend Service
  *
- * Tests all core functionality of the intelligent chatbot system including:
- * - Message processing and NLP capabilities
- * - Context-aware response generation
- * - Conversation state management
- * - Error handling and edge cases
- * - Performance and scalability
+ * Comprehensive testing of the enhanced chatbot backend including:
+ * - Message processing and intent recognition
+ * - Context awareness and conversation management
+ * - Claude API integration and response generation
+ * - Proactive assistance and suggestion algorithms
+ * - Performance optimization and error handling
  *
  * @created 2025-09-04
  * @author Intelligent Chatbot Implementation Specialist
  */
 
-import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
-import {
-  type ChatbotConfig,
-  type ConversationContext,
-  IntelligentChatbot,
-} from '../lib/help/ai/intelligent-chatbot'
-import type { SemanticSearchService } from '../lib/help/ai/semantic-search'
-import type { Logger } from '../lib/monitoring/logger'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { IntelligentChatbot } from '../lib/help/ai/intelligent-chatbot'
+import type { ChatContext, ChatMessage } from '../lib/help/ai/types'
 
-// Mock implementations
-const mockLogger: Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  child: jest.fn().mockReturnThis(),
+// Mock dependencies
+const mockClaudeClient = {
+  generateResponse: vi.fn(),
+  classifyIntent: vi.fn(),
+  extractEntities: vi.fn(),
 }
 
 const mockSemanticSearch = {
-  search: jest.fn(),
-  getSuggestions: jest.fn(),
-  indexContent: jest.fn(),
-  getMetrics: jest.fn().mockReturnValue({}),
-} as unknown as SemanticSearchService
-
-// Test configuration
-const testConfig: ChatbotConfig = {
-  claudeApiKey: 'test-api-key-12345',
-  model: 'claude-3-5-sonnet-20241022',
-  maxTokens: 1024,
-  temperature: 0.7,
-  conversationTimeout: 3600000,
-  maxConversationHistory: 50,
-  enableProactiveAssistance: true,
-  enableContextRetention: true,
+  search: vi.fn(),
+  indexDocument: vi.fn(),
 }
+
+const mockHelpContentManager = {
+  getRelevantContent: vi.fn(),
+  getContextualHelp: vi.fn(),
+}
+
+const mockAnalytics = {
+  trackInteraction: vi.fn(),
+  recordMetrics: vi.fn(),
+}
+
+vi.mock('../lib/help/ai/claude-client', () => ({
+  ClaudeAPIClient: vi.fn().mockImplementation(() => mockClaudeClient),
+}))
+
+vi.mock('../lib/help/semantic-search', () => ({
+  SemanticSearch: vi.fn().mockImplementation(() => mockSemanticSearch),
+}))
+
+vi.mock('../lib/help/content-manager', () => ({
+  HelpContentManager: vi.fn().mockImplementation(() => mockHelpContentManager),
+}))
+
+vi.mock('../lib/analytics', () => ({
+  Analytics: vi.fn().mockImplementation(() => mockAnalytics),
+}))
 
 describe('IntelligentChatbot', () => {
   let chatbot: IntelligentChatbot
-  let mockFetch: jest.MockedFunction<typeof fetch>
+  let defaultContext: ChatContext
 
   beforeEach(() => {
-    // Mock global fetch for Claude API calls
-    mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>
-    global.fetch = mockFetch
+    vi.clearAllMocks()
 
-    // Reset mocks
-    jest.clearAllMocks()
-
-    // Create chatbot instance
-    chatbot = new IntelligentChatbot(testConfig, mockSemanticSearch, mockLogger)
-  })
-
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  describe('Initialization', () => {
-    test('should initialize with correct configuration', () => {
-      expect(chatbot).toBeInstanceOf(IntelligentChatbot)
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'IntelligentChatbot initialized',
-        expect.objectContaining({
-          model: testConfig.model,
-          maxTokens: testConfig.maxTokens,
-          enableProactiveAssistance: testConfig.enableProactiveAssistance,
-        })
-      )
+    chatbot = new IntelligentChatbot({
+      claudeApiKey: 'test-api-key',
+      enableSemanticSearch: true,
+      enableProactiveAssistance: true,
+      responseTimeout: 5000,
     })
 
-    test('should throw error with invalid configuration', () => {
-      const invalidConfig = { ...testConfig, maxTokens: -1 }
-      expect(() => new IntelligentChatbot(invalidConfig, mockSemanticSearch, mockLogger)).toThrow()
-    })
-
-    test('should set default values for optional config parameters', () => {
-      const minimalConfig: ChatbotConfig = {
-        claudeApiKey: 'test-key',
-        model: 'claude-3-5-sonnet-20241022',
-      }
-
-      const chatbotWithDefaults = new IntelligentChatbot(
-        minimalConfig,
-        mockSemanticSearch,
-        mockLogger
-      )
-      expect(chatbotWithDefaults).toBeInstanceOf(IntelligentChatbot)
-    })
-  })
-
-  describe('Message Processing', () => {
-    test('should process simple message successfully', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [
-            {
-              type: 'text',
-              text: 'Hello! I can help you with your questions about the platform.',
-            },
-          ],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      mockSemanticSearch.search = jest.fn().mockResolvedValue([
-        {
-          id: '1',
-          title: 'Getting Started Guide',
-          content: 'Welcome to our platform...',
-          score: 0.9,
-          tags: ['getting-started', 'tutorial'],
-        },
-      ])
-
-      const response = await chatbot.processMessage(
-        'user123',
-        'session456',
-        'Hello, how do I get started?'
-      )
-
-      expect(response).toMatchObject({
-        message: expect.stringContaining('Hello!'),
-        intent: expect.objectContaining({
-          name: expect.any(String),
-          confidence: expect.any(Number),
-        }),
-        conversationState: expect.objectContaining({
-          phase: expect.any(String),
-          confidence: expect.any(Number),
-        }),
-      })
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.anthropic.com/v1/messages',
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-            'x-api-key': testConfig.claudeApiKey,
-            'anthropic-version': '2023-06-01',
-          }),
-        })
-      )
-    })
-
-    test('should handle context-aware message processing', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [
-            {
-              type: 'text',
-              text: 'Based on your workflow context, here are specific steps to resolve this error.',
-            },
-          ],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      const context: ConversationContext = {
-        workflowContext: {
-          type: 'data-processing',
-          currentStep: 'validation',
-          blockTypes: ['transform', 'filter'],
-          completedSteps: ['import', 'clean'],
-          errors: [
-            {
-              code: 'VALIDATION_ERROR',
-              message: 'Invalid data format',
-              context: 'Row 15: Expected number, got string',
-              timestamp: new Date().toISOString(),
-              resolved: false,
-            },
-          ],
-          timeSpent: 300000, // 5 minutes
-        },
-        userProfile: {
-          expertiseLevel: 'intermediate',
-          preferredLanguage: 'en',
-          previousInteractions: 5,
-          commonIssues: ['data-validation', 'format-conversion'],
-        },
-      }
-
-      const response = await chatbot.processMessage(
-        'user123',
-        'session456',
-        "I'm getting a validation error in my data processing workflow",
-        context
-      )
-
-      expect(response.message).toContain('workflow context')
-      expect(response.metadata.hasWorkflowContext).toBe(true)
-      expect(response.suggestedActions).toBeDefined()
-      expect(response.relatedContent).toBeDefined()
-    })
-
-    test('should handle API rate limiting gracefully', async () => {
-      const rateLimitResponse = {
-        ok: false,
-        status: 429,
-        json: jest.fn().mockResolvedValue({
-          error: { type: 'rate_limit_error', message: 'Rate limit exceeded' },
-        }),
-      }
-      mockFetch.mockResolvedValue(rateLimitResponse as any)
-
-      await expect(chatbot.processMessage('user123', 'session456', 'Hello')).rejects.toThrow(
-        'Rate limit exceeded'
-      )
-
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringMatching(/\[.*\] Claude API request failed/),
-        expect.objectContaining({
-          error: 'Rate limit exceeded',
-          statusCode: 429,
-        })
-      )
-    })
-
-    test('should handle network errors gracefully', async () => {
-      mockFetch.mockRejectedValue(new Error('Network error'))
-
-      await expect(chatbot.processMessage('user123', 'session456', 'Hello')).rejects.toThrow(
-        'Network error'
-      )
-
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringMatching(/\[.*\] Message processing failed/),
-        expect.objectContaining({
-          error: 'Network error',
-        })
-      )
-    })
-  })
-
-  describe('Intent Classification', () => {
-    test('should classify help-seeking intents correctly', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'I can help you with that.' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      const testCases = [
-        { message: 'How do I create a new project?', expectedIntent: 'how_to_question' },
-        { message: 'My workflow is not working', expectedIntent: 'troubleshooting' },
-        {
-          message: 'What is the best way to handle large datasets?',
-          expectedIntent: 'best_practices',
-        },
-        { message: 'Can you explain how transforms work?', expectedIntent: 'explanation_request' },
-      ]
-
-      for (const testCase of testCases) {
-        const response = await chatbot.processMessage('user123', 'session456', testCase.message)
-        expect(response.intent?.name).toBe(testCase.expectedIntent)
-        expect(response.intent?.confidence).toBeGreaterThan(0.5)
-      }
-    })
-
-    test('should extract entities from user messages', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'I can help with CSV file processing.' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      const response = await chatbot.processMessage(
-        'user123',
-        'session456',
-        'How do I import a CSV file with 10,000 rows into my workflow?'
-      )
-
-      expect(response.entities).toContainEqual({
-        type: 'file_format',
-        value: 'CSV',
-        confidence: expect.any(Number),
-      })
-      expect(response.entities).toContainEqual({
-        type: 'data_size',
-        value: '10,000 rows',
-        confidence: expect.any(Number),
-      })
-      expect(response.entities).toContainEqual({
-        type: 'workflow_component',
-        value: 'import',
-        confidence: expect.any(Number),
-      })
-    })
-  })
-
-  describe('Conversation State Management', () => {
-    test('should maintain conversation context across messages', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Following up on your previous question...' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      // First message
-      const response1 = await chatbot.processMessage(
-        'user123',
-        'session456',
-        'I need help with data validation'
-      )
-
-      expect(response1.conversationState.phase).toBe('problem_identification')
-
-      // Follow-up message
-      const response2 = await chatbot.processMessage(
-        'user123',
-        'session456',
-        'The error is happening on row 15'
-      )
-
-      expect(response2.conversationState.phase).toBe('solution_providing')
-      expect(response2.conversationState.context.previousTopics).toContain('data_validation')
-    })
-
-    test('should clear conversation on timeout', async () => {
-      // Set short timeout for testing
-      const shortTimeoutConfig = { ...testConfig, conversationTimeout: 1000 } // 1 second
-      const testChatbot = new IntelligentChatbot(shortTimeoutConfig, mockSemanticSearch, mockLogger)
-
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Hello!' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      // First message
-      await testChatbot.processMessage('user123', 'session456', 'Hello')
-
-      // Wait for timeout
-      await new Promise((resolve) => setTimeout(resolve, 1100))
-
-      // Second message after timeout
-      const response = await testChatbot.processMessage('user123', 'session456', 'Are you there?')
-
-      expect(response.conversationState.phase).toBe('greeting')
-      expect(response.conversationState.context.isNewConversation).toBe(true)
-    })
-
-    test('should manage conversation history correctly', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Response' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      // Send multiple messages
-      for (let i = 0; i < 5; i++) {
-        await chatbot.processMessage('user123', 'session456', `Message ${i + 1}`)
-      }
-
-      const conversationHistory = chatbot.getConversationHistory('user123', 'session456')
-
-      expect(conversationHistory).toBeDefined()
-      expect(conversationHistory?.conversationHistory).toHaveLength(5)
-      expect(conversationHistory?.conversationHistory[0].userMessage).toBe('Message 1')
-      expect(conversationHistory?.conversationHistory[4].userMessage).toBe('Message 5')
-    })
-
-    test('should limit conversation history size', async () => {
-      const limitedConfig = { ...testConfig, maxConversationHistory: 3 }
-      const testChatbot = new IntelligentChatbot(limitedConfig, mockSemanticSearch, mockLogger)
-
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Response' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      // Send more messages than the limit
-      for (let i = 0; i < 5; i++) {
-        await testChatbot.processMessage('user123', 'session456', `Message ${i + 1}`)
-      }
-
-      const conversationHistory = testChatbot.getConversationHistory('user123', 'session456')
-
-      expect(conversationHistory?.conversationHistory).toHaveLength(3)
-      expect(conversationHistory?.conversationHistory[0].userMessage).toBe('Message 3')
-      expect(conversationHistory?.conversationHistory[2].userMessage).toBe('Message 5')
-    })
-  })
-
-  describe('Proactive Assistance', () => {
-    test('should generate proactive suggestions based on workflow context', async () => {
-      const workflowContext = {
+    defaultContext = {
+      sessionId: 'test-session-123',
+      workflowContext: {
         type: 'data-processing',
         currentStep: 'validation',
         blockTypes: ['transform', 'filter'],
         completedSteps: ['import'],
-        errors: [
-          {
-            code: 'HIGH_ERROR_RATE',
-            message: 'Many validation failures detected',
-            context: 'Error rate: 15%',
-            timestamp: new Date().toISOString(),
-            resolved: false,
-          },
-        ],
-        timeSpent: 900000, // 15 minutes
-      }
+        errors: [],
+        timeSpent: 300000,
+      },
+      userProfile: {
+        expertiseLevel: 'intermediate',
+        preferredLanguage: 'en',
+        previousInteractions: 5,
+        commonIssues: ['data-validation'],
+      },
+    }
 
-      mockSemanticSearch.getSuggestions = jest.fn().mockResolvedValue([
-        {
-          id: 'validation-tips',
-          title: 'Data Validation Best Practices',
-          content: 'Tips for improving data validation...',
-          score: 0.95,
-          tags: ['validation', 'best-practices'],
-        },
-      ])
-
-      const suggestions = await chatbot.generateProactiveAssistance('user123', workflowContext)
-
-      expect(suggestions).toBeDefined()
-      expect(suggestions?.message).toContain('high error rate')
-      expect(suggestions?.suggestedActions).toHaveLength(expect.any(Number))
-      expect(suggestions?.relatedContent).toHaveLength(expect.any(Number))
-      expect(suggestions?.priority).toBeGreaterThan(7) // High priority due to errors
+    // Set up default mock responses
+    mockClaudeClient.generateResponse.mockResolvedValue({
+      content: 'Hello! I can help you with your data processing workflow.',
+      confidence: 0.9,
+      reasoning: 'User is asking for general help with data processing.',
     })
 
-    test('should not generate suggestions for normal workflow progress', async () => {
-      const normalWorkflowContext = {
-        type: 'data-processing',
-        currentStep: 'transform',
-        blockTypes: ['transform'],
-        completedSteps: ['import', 'validation'],
-        errors: [],
-        timeSpent: 120000, // 2 minutes
+    mockClaudeClient.classifyIntent.mockResolvedValue({
+      name: 'help_request',
+      confidence: 0.85,
+      entities: [
+        { type: 'workflow_step', value: 'validation', confidence: 0.9 },
+        { type: 'workflow_type', value: 'data-processing', confidence: 0.8 },
+      ],
+    })
+
+    mockSemanticSearch.search.mockResolvedValue([
+      {
+        id: 'doc-1',
+        content: 'Data validation best practices...',
+        score: 0.95,
+        metadata: { type: 'help_article', category: 'data-processing' },
+      },
+      {
+        id: 'doc-2',
+        content: 'Common validation errors and solutions...',
+        score: 0.88,
+        metadata: { type: 'troubleshooting', category: 'validation' },
+      },
+    ])
+
+    mockHelpContentManager.getRelevantContent.mockResolvedValue([
+      {
+        id: 'help-1',
+        title: 'Data Validation Guide',
+        content: 'Step-by-step guide for data validation...',
+        category: 'tutorials',
+        difficulty: 'intermediate',
+      },
+    ])
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe('Message Processing', () => {
+    test('should process basic text message successfully', async () => {
+      const message: ChatMessage = {
+        id: 'msg-1',
+        content: 'How do I validate my data?',
+        timestamp: new Date(),
+        role: 'user',
       }
 
-      const suggestions = await chatbot.generateProactiveAssistance(
-        'user123',
-        normalWorkflowContext
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response).toBeDefined()
+      expect(response.message).toContain('help you with your data processing')
+      expect(response.intent).toBeDefined()
+      expect(response.intent.name).toBe('help_request')
+      expect(response.intent.confidence).toBeGreaterThan(0.8)
+      expect(mockClaudeClient.generateResponse).toHaveBeenCalledTimes(1)
+      expect(mockClaudeClient.classifyIntent).toHaveBeenCalledTimes(1)
+    })
+
+    test('should handle empty or invalid messages', async () => {
+      const emptyMessage: ChatMessage = {
+        id: 'msg-2',
+        content: '',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      await expect(chatbot.processMessage(emptyMessage, defaultContext)).rejects.toThrow(
+        'Message content cannot be empty'
+      )
+    })
+
+    test('should process complex queries with multiple intents', async () => {
+      mockClaudeClient.classifyIntent.mockResolvedValueOnce({
+        name: 'complex_help_request',
+        confidence: 0.92,
+        entities: [
+          { type: 'workflow_step', value: 'validation', confidence: 0.9 },
+          { type: 'action', value: 'troubleshoot', confidence: 0.85 },
+          { type: 'data_type', value: 'csv', confidence: 0.8 },
+        ],
+      })
+
+      const complexMessage: ChatMessage = {
+        id: 'msg-3',
+        content: "I'm having trouble validating my CSV data, can you help me troubleshoot?",
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(complexMessage, defaultContext)
+
+      expect(response.intent.entities).toHaveLength(3)
+      expect(response.intent.entities.map((e) => e.type)).toContain('data_type')
+      expect(response.suggestedActions).toBeDefined()
+      expect(response.suggestedActions.length).toBeGreaterThan(0)
+    })
+
+    test('should handle API timeouts gracefully', async () => {
+      mockClaudeClient.generateResponse.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 6000))
       )
 
-      expect(suggestions).toBeNull()
+      const message: ChatMessage = {
+        id: 'msg-4',
+        content: 'Test timeout handling',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      await expect(chatbot.processMessage(message, defaultContext)).rejects.toThrow(/timeout/i)
     })
   })
 
-  describe('Performance and Scalability', () => {
-    test('should handle concurrent message processing', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Response' }],
-        }),
+  describe('Context Awareness', () => {
+    test('should adapt responses based on workflow context', async () => {
+      const validationContext: ChatContext = {
+        ...defaultContext,
+        workflowContext: {
+          type: 'data-processing',
+          currentStep: 'validation',
+          blockTypes: ['validate'],
+          completedSteps: ['import', 'clean'],
+          errors: [
+            { type: 'validation_error', message: 'Invalid date format', field: 'created_at' },
+          ],
+          timeSpent: 600000,
+        },
       }
-      mockFetch.mockResolvedValue(mockResponse as any)
 
-      const promises = []
-      for (let i = 0; i < 10; i++) {
-        promises.push(chatbot.processMessage(`user${i}`, `session${i}`, `Message ${i}`))
+      const message: ChatMessage = {
+        id: 'msg-5',
+        content: "I'm getting validation errors",
+        timestamp: new Date(),
+        role: 'user',
       }
+
+      const response = await chatbot.processMessage(message, validationContext)
+
+      expect(mockClaudeClient.generateResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: message.content,
+          context: expect.objectContaining({
+            hasErrors: true,
+            currentStep: 'validation',
+            timeSpent: 600000,
+          }),
+        })
+      )
+
+      expect(response.contextualInfo).toBeDefined()
+      expect(response.contextualInfo?.currentStep).toBe('validation')
+      expect(response.contextualInfo?.hasErrors).toBe(true)
+    })
+
+    test('should personalize responses based on user expertise', async () => {
+      const beginnerContext: ChatContext = {
+        ...defaultContext,
+        userProfile: {
+          expertiseLevel: 'beginner',
+          preferredLanguage: 'en',
+          previousInteractions: 1,
+          commonIssues: [],
+        },
+      }
+
+      mockClaudeClient.generateResponse.mockResolvedValueOnce({
+        content: "I'll guide you through the basics of data validation step by step.",
+        confidence: 0.9,
+        reasoning: 'User is a beginner, providing detailed guidance.',
+      })
+
+      const message: ChatMessage = {
+        id: 'msg-6',
+        content: 'How do I start with data validation?',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, beginnerContext)
+
+      expect(response.message).toContain('step by step')
+      expect(response.suggestedActions).toBeDefined()
+      expect(
+        response.suggestedActions.some(
+          (action) => action.type === 'tutorial' || action.priority === 1
+        )
+      ).toBe(true)
+    })
+
+    test('should maintain conversation state across messages', async () => {
+      const message1: ChatMessage = {
+        id: 'msg-7',
+        content: 'I need help with data validation',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const message2: ChatMessage = {
+        id: 'msg-8',
+        content: 'What about error handling?',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      // First message
+      const response1 = await chatbot.processMessage(message1, defaultContext)
+      expect(response1.conversationState).toBeDefined()
+
+      // Second message should reference previous context
+      const contextWithHistory = {
+        ...defaultContext,
+        conversationHistory: [message1],
+        conversationState: response1.conversationState,
+      }
+
+      const response2 = await chatbot.processMessage(message2, contextWithHistory)
+
+      expect(mockClaudeClient.generateResponse).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          conversationHistory: expect.arrayContaining([
+            expect.objectContaining({ content: 'I need help with data validation' }),
+          ]),
+        })
+      )
+
+      expect(response2.conversationState.phase).toBeDefined()
+      expect(response2.conversationState.context).toMatchObject(
+        expect.objectContaining({ previousTopic: expect.any(String) })
+      )
+    })
+  })
+
+  describe('Proactive Assistance', () => {
+    test('should generate proactive suggestions based on workflow state', async () => {
+      const contextWithStuckUser: ChatContext = {
+        ...defaultContext,
+        workflowContext: {
+          type: 'data-processing',
+          currentStep: 'validation',
+          blockTypes: ['validate'],
+          completedSteps: ['import'],
+          errors: [{ type: 'validation_error', message: 'Multiple validation failures' }],
+          timeSpent: 1200000, // 20 minutes - user seems stuck
+        },
+      }
+
+      const assistance = await chatbot.generateProactiveAssistance(contextWithStuckUser)
+
+      expect(assistance).toBeDefined()
+      expect(assistance.suggestions).toHaveLength(expect.any(Number))
+      expect(assistance.suggestions.some((s) => s.priority === 1)).toBe(true)
+      expect(assistance.reason).toContain('stuck') ||
+        expect(assistance.reason).toContain('difficulty')
+      expect(assistance.triggerConditions).toContain('time_spent_threshold')
+    })
+
+    test('should suggest relevant actions based on common issues', async () => {
+      const contextWithCommonIssues: ChatContext = {
+        ...defaultContext,
+        userProfile: {
+          expertiseLevel: 'intermediate',
+          preferredLanguage: 'en',
+          previousInteractions: 10,
+          commonIssues: ['data-validation', 'schema-mismatch'],
+        },
+        workflowContext: {
+          type: 'data-processing',
+          currentStep: 'import',
+          blockTypes: ['import'],
+          completedSteps: [],
+          errors: [{ type: 'schema_error', message: 'Column mismatch detected' }],
+          timeSpent: 300000,
+        },
+      }
+
+      const assistance = await chatbot.generateProactiveAssistance(contextWithCommonIssues)
+
+      expect(
+        assistance.suggestions.some(
+          (s) => s.action === 'check_schema' || s.description.toLowerCase().includes('schema')
+        )
+      ).toBe(true)
+      expect(assistance.triggerConditions).toContain('common_issue_pattern')
+    })
+
+    test('should not generate excessive proactive suggestions', async () => {
+      const recentlyHelpedContext: ChatContext = {
+        ...defaultContext,
+        lastProactiveAssistance: new Date(Date.now() - 30000), // 30 seconds ago
+      }
+
+      const assistance = await chatbot.generateProactiveAssistance(recentlyHelpedContext)
+
+      expect(assistance.suggestions).toHaveLength(0)
+      expect(assistance.reason).toContain('recently provided')
+    })
+  })
+
+  describe('Semantic Search Integration', () => {
+    test('should enhance responses with relevant search results', async () => {
+      const message: ChatMessage = {
+        id: 'msg-9',
+        content: 'What are the best practices for data validation?',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(mockSemanticSearch.search).toHaveBeenCalledWith(
+        expect.stringContaining('data validation best practices'),
+        expect.objectContaining({
+          limit: expect.any(Number),
+          threshold: expect.any(Number),
+        })
+      )
+
+      expect(response.searchResults).toBeDefined()
+      expect(response.searchResults.length).toBeGreaterThan(0)
+      expect(response.searchResults[0].score).toBeGreaterThan(0.8)
+    })
+
+    test('should handle search failures gracefully', async () => {
+      mockSemanticSearch.search.mockRejectedValueOnce(new Error('Search service unavailable'))
+
+      const message: ChatMessage = {
+        id: 'msg-10',
+        content: 'Help with validation',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response).toBeDefined()
+      expect(response.message).toBeDefined()
+      expect(response.searchResults).toEqual([])
+      expect(mockAnalytics.recordMetrics).toHaveBeenCalledWith(
+        expect.objectContaining({
+          searchError: true,
+        })
+      )
+    })
+
+    test('should filter search results by relevance', async () => {
+      mockSemanticSearch.search.mockResolvedValueOnce([
+        { id: 'doc-1', content: 'Highly relevant content', score: 0.95 },
+        { id: 'doc-2', content: 'Moderately relevant content', score: 0.75 },
+        { id: 'doc-3', content: 'Low relevance content', score: 0.45 },
+      ])
+
+      const message: ChatMessage = {
+        id: 'msg-11',
+        content: 'Data validation help',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response.searchResults.length).toBeLessThanOrEqual(2)
+      expect(response.searchResults.every((result) => result.score > 0.7)).toBe(true)
+    })
+  })
+
+  describe('Performance and Reliability', () => {
+    test('should handle high concurrency gracefully', async () => {
+      const messages = Array.from({ length: 10 }, (_, i) => ({
+        id: `msg-${i}`,
+        content: `Test message ${i}`,
+        timestamp: new Date(),
+        role: 'user' as const,
+      }))
+
+      const promises = messages.map((message) => chatbot.processMessage(message, defaultContext))
 
       const responses = await Promise.all(promises)
 
       expect(responses).toHaveLength(10)
-      responses.forEach((response, index) => {
+      responses.forEach((response) => {
+        expect(response).toBeDefined()
         expect(response.message).toBeDefined()
-        expect(response.conversationState).toBeDefined()
       })
     })
 
-    test('should clean up expired conversations', async () => {
-      const shortTimeoutConfig = { ...testConfig, conversationTimeout: 1000 }
-      const testChatbot = new IntelligentChatbot(shortTimeoutConfig, mockSemanticSearch, mockLogger)
-
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Response' }],
-        }),
+    test('should implement response caching for similar queries', async () => {
+      const message1: ChatMessage = {
+        id: 'msg-12',
+        content: 'How to validate CSV data?',
+        timestamp: new Date(),
+        role: 'user',
       }
-      mockFetch.mockResolvedValue(mockResponse as any)
 
-      // Create conversations
-      await testChatbot.processMessage('user1', 'session1', 'Hello')
-      await testChatbot.processMessage('user2', 'session2', 'Hello')
+      const message2: ChatMessage = {
+        id: 'msg-13',
+        content: 'How to validate CSV data?', // Identical content
+        timestamp: new Date(),
+        role: 'user',
+      }
 
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 1200))
+      const response1 = await chatbot.processMessage(message1, defaultContext)
+      const response2 = await chatbot.processMessage(message2, defaultContext)
 
-      // Check that conversations were cleaned up
-      const conversation1 = testChatbot.getConversationHistory('user1', 'session1')
-      const conversation2 = testChatbot.getConversationHistory('user2', 'session2')
-
-      expect(conversation1).toBeNull()
-      expect(conversation2).toBeNull()
+      expect(response1.message).toBe(response2.message)
+      expect(mockClaudeClient.generateResponse).toHaveBeenCalledTimes(1) // Should use cache
     })
 
-    test('should measure and report performance metrics', () => {
-      const metrics = chatbot.getMetrics()
+    test('should track performance metrics', async () => {
+      const message: ChatMessage = {
+        id: 'msg-14',
+        content: 'Performance test message',
+        timestamp: new Date(),
+        role: 'user',
+      }
 
-      expect(metrics).toMatchObject({
-        totalConversations: expect.any(Number),
-        totalMessages: expect.any(Number),
-        averageResponseTime: expect.any(Number),
-        successRate: expect.any(Number),
-        activeConversations: expect.any(Number),
-        intentClassificationAccuracy: expect.any(Number),
-        proactiveAssistanceTriggered: expect.any(Number),
-      })
+      const startTime = Date.now()
+      const response = await chatbot.processMessage(message, defaultContext)
+      const endTime = Date.now()
+
+      expect(response.metadata).toBeDefined()
+      expect(response.metadata.processingTime).toBeWithinRange(0, endTime - startTime + 100)
+      expect(response.metadata.timestamp).toBeDefined()
+
+      expect(mockAnalytics.recordMetrics).toHaveBeenCalledWith(
+        expect.objectContaining({
+          responseTime: expect.any(Number),
+          intentConfidence: expect.any(Number),
+          searchResultsCount: expect.any(Number),
+        })
+      )
+    })
+
+    test('should handle memory cleanup properly', async () => {
+      // Process many messages to test memory management
+      for (let i = 0; i < 100; i++) {
+        const message: ChatMessage = {
+          id: `memory-test-${i}`,
+          content: `Memory test message ${i}`,
+          timestamp: new Date(),
+          role: 'user',
+        }
+        await chatbot.processMessage(message, defaultContext)
+      }
+
+      // Verify that conversation history is properly managed
+      const memoryUsage = process.memoryUsage()
+      expect(memoryUsage.heapUsed).toBeLessThan(100 * 1024 * 1024) // Less than 100MB
     })
   })
 
   describe('Error Handling and Edge Cases', () => {
-    test('should handle empty messages gracefully', async () => {
-      await expect(chatbot.processMessage('user123', 'session456', '')).rejects.toThrow(
-        'Message cannot be empty'
-      )
-    })
-
-    test('should handle very long messages', async () => {
-      const longMessage = 'a'.repeat(10000)
-
-      await expect(chatbot.processMessage('user123', 'session456', longMessage)).rejects.toThrow(
-        'Message too long'
-      )
-    })
-
-    test('should handle invalid user IDs', async () => {
-      await expect(chatbot.processMessage('', 'session456', 'Hello')).rejects.toThrow(
-        'User ID is required'
-      )
-    })
-
     test('should handle Claude API errors gracefully', async () => {
-      const errorResponse = {
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValue({
-          error: { type: 'invalid_request_error', message: 'Invalid request' },
-        }),
-      }
-      mockFetch.mockResolvedValue(errorResponse as any)
+      mockClaudeClient.generateResponse.mockRejectedValueOnce(
+        new Error('Claude API rate limit exceeded')
+      )
 
-      await expect(chatbot.processMessage('user123', 'session456', 'Hello')).rejects.toThrow(
-        'Invalid request'
+      const message: ChatMessage = {
+        id: 'msg-15',
+        content: 'Test API error handling',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response.message).toContain('temporarily unavailable')
+      expect(response.error).toBeDefined()
+      expect(response.error.type).toBe('api_error')
+      expect(response.suggestedActions.some((a) => a.action === 'retry')).toBe(true)
+    })
+
+    test('should validate message format and content', async () => {
+      const invalidMessage = {
+        id: 'msg-16',
+        content: null,
+        timestamp: new Date(),
+        role: 'user',
+      } as any
+
+      await expect(chatbot.processMessage(invalidMessage, defaultContext)).rejects.toThrow(
+        'Invalid message format'
       )
     })
 
-    test('should handle malformed API responses', async () => {
-      const malformedResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          // Missing required fields
-        }),
+    test('should handle malformed context gracefully', async () => {
+      const malformedContext = {
+        sessionId: 'test-session',
+        workflowContext: null,
+        userProfile: undefined,
+      } as any
+
+      const message: ChatMessage = {
+        id: 'msg-17',
+        content: 'Test with malformed context',
+        timestamp: new Date(),
+        role: 'user',
       }
-      mockFetch.mockResolvedValue(malformedResponse as any)
 
-      await expect(chatbot.processMessage('user123', 'session456', 'Hello')).rejects.toThrow()
-    })
-  })
+      const response = await chatbot.processMessage(message, malformedContext)
 
-  describe('Integration with Semantic Search', () => {
-    test('should integrate with semantic search for context enhancement', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: "Based on the search results, here's how to help." }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      mockSemanticSearch.search = jest.fn().mockResolvedValue([
-        {
-          id: 'doc1',
-          title: 'Troubleshooting Guide',
-          content: 'Common solutions...',
-          score: 0.9,
-          tags: ['troubleshooting'],
-        },
-      ])
-
-      const response = await chatbot.processMessage(
-        'user123',
-        'session456',
-        "I'm having trouble with my workflow"
-      )
-
-      expect(mockSemanticSearch.search).toHaveBeenCalledWith(
-        expect.stringContaining('trouble'),
-        expect.any(Object),
-        expect.any(Object)
-      )
-
-      expect(response.relatedContent).toBeDefined()
-      expect(response.relatedContent).toHaveLength(expect.any(Number))
-    })
-
-    test('should handle semantic search failures gracefully', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'I can help without search results.' }],
-        }),
-      }
-      mockFetch.mockResolvedValue(mockResponse as any)
-
-      mockSemanticSearch.search = jest.fn().mockRejectedValue(new Error('Search failed'))
-
-      const response = await chatbot.processMessage('user123', 'session456', 'Hello')
-
+      expect(response).toBeDefined()
       expect(response.message).toBeDefined()
-      expect(response.relatedContent).toEqual([])
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringMatching(/Failed to get semantic search results/),
-        expect.any(Object)
-      )
+      expect(response.contextualInfo).toBeDefined()
+    })
+
+    test('should implement circuit breaker for external services', async () => {
+      // Simulate multiple failures
+      for (let i = 0; i < 5; i++) {
+        mockSemanticSearch.search.mockRejectedValueOnce(new Error('Service unavailable'))
+
+        const message: ChatMessage = {
+          id: `circuit-test-${i}`,
+          content: `Circuit breaker test ${i}`,
+          timestamp: new Date(),
+          role: 'user',
+        }
+
+        await chatbot.processMessage(message, defaultContext)
+      }
+
+      // Next call should bypass the failing service
+      const message: ChatMessage = {
+        id: 'circuit-test-final',
+        content: 'Final circuit breaker test',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response.searchResults).toEqual([])
+      expect(response.metadata.serviceStatus.semanticSearch).toBe('circuit_open')
     })
   })
 
-  describe('Memory and Resource Management', () => {
-    test('should clear conversation when requested', () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          content: [{ type: 'text', text: 'Hello!' }],
-        }),
+  describe('Analytics and Monitoring', () => {
+    test('should track user interaction patterns', async () => {
+      const messages = [
+        { content: 'How do I start?', intent: 'getting_started' },
+        { content: 'What about validation?', intent: 'validation_help' },
+        { content: "I'm stuck on errors", intent: 'troubleshooting' },
+      ]
+
+      for (const msgData of messages) {
+        const message: ChatMessage = {
+          id: crypto.randomUUID(),
+          content: msgData.content,
+          timestamp: new Date(),
+          role: 'user',
+        }
+
+        await chatbot.processMessage(message, defaultContext)
       }
-      mockFetch.mockResolvedValue(mockResponse as any)
 
-      // Create conversation
-      chatbot.processMessage('user123', 'session456', 'Hello')
-
-      // Clear conversation
-      chatbot.clearConversation('user123', 'session456')
-
-      // Verify cleared
-      const conversation = chatbot.getConversationHistory('user123', 'session456')
-      expect(conversation).toBeNull()
+      expect(mockAnalytics.trackInteraction).toHaveBeenCalledTimes(messages.length)
+      expect(mockAnalytics.recordMetrics).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationProgression: expect.any(Array),
+          userJourney: expect.any(Object),
+        })
+      )
     })
 
-    test('should handle shutdown gracefully', async () => {
-      await expect(chatbot.shutdown()).resolves.not.toThrow()
+    test('should measure response quality metrics', async () => {
+      const message: ChatMessage = {
+        id: 'quality-test',
+        content: 'Comprehensive question about data validation best practices and error handling',
+        timestamp: new Date(),
+        role: 'user',
+      }
 
-      expect(mockLogger.info).toHaveBeenCalledWith('IntelligentChatbot shutdown completed')
+      const response = await chatbot.processMessage(message, defaultContext)
+
+      expect(response.qualityMetrics).toBeDefined()
+      expect(response.qualityMetrics.relevanceScore).toBeWithinRange(0, 1)
+      expect(response.qualityMetrics.completenessScore).toBeWithinRange(0, 1)
+      expect(response.qualityMetrics.clarityScore).toBeWithinRange(0, 1)
+      expect(response.qualityMetrics.helpfulnessScore).toBeWithinRange(0, 1)
+    })
+  })
+
+  describe('Conversation Management', () => {
+    test('should handle multi-turn conversations effectively', async () => {
+      const conversationHistory: ChatMessage[] = []
+
+      // Turn 1
+      const msg1: ChatMessage = {
+        id: 'turn-1',
+        content: 'I need help with data validation',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response1 = await chatbot.processMessage(msg1, defaultContext)
+      conversationHistory.push(msg1, {
+        id: 'assistant-1',
+        content: response1.message,
+        timestamp: new Date(),
+        role: 'assistant',
+      })
+
+      // Turn 2
+      const msg2: ChatMessage = {
+        id: 'turn-2',
+        content: 'Can you show me examples?',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const contextWithHistory = {
+        ...defaultContext,
+        conversationHistory,
+        conversationState: response1.conversationState,
+      }
+
+      const response2 = await chatbot.processMessage(msg2, contextWithHistory)
+
+      expect(response2.message).toContain('example') ||
+        expect(response2.message).toContain('validation')
+      expect(response2.conversationState.turn).toBe(2)
+      expect(response2.conversationState.context.previousTopic).toContain('validation')
+    })
+
+    test('should reset conversation context when appropriate', async () => {
+      const oldConversationContext: ChatContext = {
+        ...defaultContext,
+        conversationState: {
+          sessionId: 'old-session',
+          turn: 5,
+          phase: 'detailed_help',
+          confidence: 0.8,
+          context: { topic: 'data-import', lastActivity: Date.now() - 3600000 }, // 1 hour ago
+        },
+      }
+
+      const message: ChatMessage = {
+        id: 'new-topic',
+        content: 'I want to learn about machine learning',
+        timestamp: new Date(),
+        role: 'user',
+      }
+
+      const response = await chatbot.processMessage(message, oldConversationContext)
+
+      expect(response.conversationState.turn).toBe(1)
+      expect(response.conversationState.phase).toBe('greeting')
+      expect(response.conversationState.context.topic).toContain('machine learning')
     })
   })
 })
+
+// Custom Jest matchers for better test assertions
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeWithinRange(floor: number, ceiling: number): R
+    }
+  }
+}

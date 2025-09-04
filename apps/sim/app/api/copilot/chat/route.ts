@@ -16,8 +16,7 @@ import { createLogger } from '@/lib/logs/console/logger'
 import { SIM_AGENT_API_URL_DEFAULT } from '@/lib/sim-agent'
 import { generateChatTitle } from '@/lib/sim-agent/utils'
 import { createFileContent, isSupportedFileType } from '@/lib/uploads/file-utils'
-import { S3_COPILOT_CONFIG } from '@/lib/uploads/setup'
-import { downloadFile, getStorageProvider } from '@/lib/uploads/storage-client'
+import { downloadFile } from '@/lib/uploads/storage-client'
 import { db } from '@/db'
 import { copilotChats } from '@/db/schema'
 
@@ -188,28 +187,8 @@ export async function POST(req: NextRequest) {
             continue
           }
 
-          const storageProvider = getStorageProvider()
-          let fileBuffer: Buffer
-
-          // Since this is a local-only setup, storageProvider will always be 'local'
-          // The following conditional checks are kept for future cloud storage support
-          if ((storageProvider as string) === 's3') {
-            fileBuffer = await downloadFile(attachment.key, {
-              bucket: S3_COPILOT_CONFIG.bucket,
-              region: S3_COPILOT_CONFIG.region,
-            })
-          } else if ((storageProvider as string) === 'blob') {
-            const { BLOB_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
-            fileBuffer = await downloadFile(attachment.key, {
-              containerName: BLOB_COPILOT_CONFIG.containerName,
-              accountName: BLOB_COPILOT_CONFIG.accountName,
-              accountKey: BLOB_COPILOT_CONFIG.accountKey,
-              connectionString: BLOB_COPILOT_CONFIG.connectionString,
-            })
-          } else {
-            // Default to local storage
-            fileBuffer = await downloadFile(attachment.key)
-          }
+          // Since this is a local-only setup, always use local storage
+          const fileBuffer = await downloadFile(attachment.key)
 
           // Convert to format
           const fileContent = createFileContent(fileBuffer, attachment.media_type)
@@ -239,27 +218,8 @@ export async function POST(req: NextRequest) {
         for (const attachment of msg.fileAttachments) {
           try {
             if (isSupportedFileType(attachment.media_type)) {
-              const storageProvider = getStorageProvider()
-              let fileBuffer: Buffer
-
-              // Since this is a local-only setup, storageProvider will always be 'local'
-              if ((storageProvider as string) === 's3') {
-                fileBuffer = await downloadFile(attachment.key, {
-                  bucket: S3_COPILOT_CONFIG.bucket,
-                  region: S3_COPILOT_CONFIG.region,
-                })
-              } else if ((storageProvider as string) === 'blob') {
-                const { BLOB_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
-                fileBuffer = await downloadFile(attachment.key, {
-                  containerName: BLOB_COPILOT_CONFIG.containerName,
-                  accountName: BLOB_COPILOT_CONFIG.accountName,
-                  accountKey: BLOB_COPILOT_CONFIG.accountKey,
-                  connectionString: BLOB_COPILOT_CONFIG.connectionString,
-                })
-              } else {
-                // Default to local storage
-                fileBuffer = await downloadFile(attachment.key)
-              }
+              // Since this is a local-only setup, always use local storage
+              const fileBuffer = await downloadFile(attachment.key)
               const fileContent = createFileContent(fileBuffer, attachment.media_type)
               if (fileContent) {
                 content.push(fileContent)

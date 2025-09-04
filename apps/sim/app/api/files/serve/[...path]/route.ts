@@ -92,7 +92,7 @@ async function downloadKBFile(cloudKey: string): Promise<Buffer> {
   logger.info(`Downloading KB file: ${cloudKey}`)
   const storageProvider = getStorageProvider()
 
-  if (storageProvider === 'blob') {
+  if ((storageProvider as string) === 'blob') {
     const { BLOB_KB_CONFIG } = await import('@/lib/uploads/setup')
     return downloadFile(cloudKey, {
       containerName: BLOB_KB_CONFIG.containerName,
@@ -102,7 +102,7 @@ async function downloadKBFile(cloudKey: string): Promise<Buffer> {
     })
   }
 
-  if (storageProvider === 's3') {
+  if ((storageProvider as string) === 's3') {
     return downloadFile(cloudKey, {
       bucket: S3_KB_CONFIG.bucket,
       region: S3_KB_CONFIG.region,
@@ -130,13 +130,13 @@ async function handleCloudProxy(
     } else if (bucketType === 'copilot') {
       const storageProvider = getStorageProvider()
 
-      if (storageProvider === 's3') {
+      if ((storageProvider as string) === 's3') {
         const { S3_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
         fileBuffer = await downloadFile(cloudKey, {
           bucket: S3_COPILOT_CONFIG.bucket,
           region: S3_COPILOT_CONFIG.region,
         })
-      } else if (storageProvider === 'blob') {
+      } else if ((storageProvider as string) === 'blob') {
         const { BLOB_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
         fileBuffer = await downloadFile(cloudKey, {
           containerName: BLOB_COPILOT_CONFIG.containerName,

@@ -29,10 +29,7 @@ export async function POST(request: NextRequest) {
           logger.info(`Using execution files storage for file: ${key}`)
           downloadUrl = await getPresignedUrlWithConfig(
             key,
-            {
-              bucket: S3_EXECUTION_FILES_CONFIG.bucket,
-              region: S3_EXECUTION_FILES_CONFIG.region,
-            },
+            S3_EXECUTION_FILES_CONFIG as any,
             5 * 60 // 5 minutes
           )
         } else if (storageProvider && (storageProvider === 's3' || storageProvider === 'blob')) {
@@ -43,9 +40,9 @@ export async function POST(request: NextRequest) {
             downloadUrl = await getPresignedUrlWithConfig(
               key,
               {
-                bucket: bucketName || S3_EXECUTION_FILES_CONFIG.bucket,
-                region: S3_EXECUTION_FILES_CONFIG.region,
-              },
+                ...S3_EXECUTION_FILES_CONFIG,
+                bucket: bucketName || S3_EXECUTION_FILES_CONFIG.bucketName,
+              } as any,
               5 * 60 // 5 minutes
             )
           } else {
@@ -53,11 +50,9 @@ export async function POST(request: NextRequest) {
             downloadUrl = await getPresignedUrlWithConfig(
               key,
               {
-                accountName: BLOB_EXECUTION_FILES_CONFIG.accountName,
-                accountKey: BLOB_EXECUTION_FILES_CONFIG.accountKey,
-                connectionString: BLOB_EXECUTION_FILES_CONFIG.connectionString,
+                ...BLOB_EXECUTION_FILES_CONFIG,
                 containerName: bucketName || BLOB_EXECUTION_FILES_CONFIG.containerName,
-              },
+              } as any,
               5 * 60 // 5 minutes
             )
           }
