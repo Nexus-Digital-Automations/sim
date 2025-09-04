@@ -74,6 +74,25 @@
       ]
     },
     {
+      "id": "task_1757006176613_8ujr8hcnd",
+      "title": "Research comprehensive template library systems for workflow automation platforms",
+      "description": "Create detailed research report analyzing n8n, Zapier, Make.com, and other workflow automation template systems. Focus on competitive analysis, technical architecture, categorization systems, and implementation strategies for Sim platform.",
+      "mode": "DEVELOPMENT",
+      "category": "research",
+      "priority": "medium",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/reports/"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T17:16:16.613Z",
+      "auto_research_created": false
+    },
+    {
       "id": "task_1756944793177_3mdjuke4s",
       "title": "Migrate knowledge search API test from vi.mock() to bun-compatible infrastructure",
       "description": "Migrate /Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/knowledge/search/route.test.ts from vi.mock() patterns to pure bun-compatible infrastructure using bun-test-setup. Remove all vi.mock() calls that cause \"vi.mock is not a function\" errors and implement equivalent mocking using the bun-test-setup infrastructure. Preserve all search logic, filtering, result processing, authentication, and permission tests. Target: 90%+ pass rate.",
@@ -81,7 +100,9 @@
       "category": "refactor",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1756944793177_461ty2ijp"],
+      "dependencies": [
+        "task_1756944793177_461ty2ijp"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -98,7 +119,9 @@
       "category": "refactor",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1756944597049_8hz0s7kxg"],
+      "dependencies": [
+        "task_1756944597049_8hz0s7kxg"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -117,7 +140,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T09:50:39.799Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T09:50:39.799Z",
@@ -132,7 +161,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T18:39:59.081Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T18:39:59.081Z",
@@ -153,7 +188,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T19:05:35.113Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T19:05:35.113Z",
@@ -168,7 +209,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:23.587Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:23.587Z",
@@ -183,7 +230,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:31.772Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:31.772Z",
@@ -198,7 +251,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-03T23:13:36.373Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-03T23:13:36.373Z",
@@ -213,7 +272,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T00:09:44.502Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T00:09:44.502Z",
@@ -228,7 +293,13 @@
       "assignedTasks": [],
       "lastHeartbeat": "2025-09-04T00:10:17.144Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
       "createdAt": "2025-09-04T00:10:17.144Z",

@@ -1,0 +1,335 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "database-cross-sync-replication-v1.0",
+    "name": "Cross-Database Synchronization & Replication",
+    "description": "Comprehensive database synchronization template for real-time replication between different database systems (PostgreSQL, MySQL, MongoDB). Includes conflict resolution, data validation, and performance monitoring.",
+    "category": "data-etl",
+    "subcategories": ["database", "synchronization", "replication", "cross-platform"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "advanced"
+    },
+    "tags": ["database", "sync", "replication", "etl", "real-time", "postgresql", "mysql", "mongodb"],
+    "integrations": ["postgresql", "mysql", "mongodb", "slack", "email"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "source_db_monitor",
+          "type": "schedule",
+          "name": "Source Database Monitor",
+          "configuration": {
+            "schedule_type": "interval",
+            "interval": "30s",
+            "timezone": "UTC"
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "source_data_query",
+          "type": "sql_query",
+          "name": "Extract Source Data",
+          "configuration": {
+            "connection": "{{source_database_connection}}",
+            "query": "SELECT * FROM {{source_table}} WHERE updated_at > '{{last_sync_timestamp}}' ORDER BY updated_at ASC LIMIT 1000",
+            "parameters": {
+              "source_table": "{{source_table_name}}",
+              "last_sync_timestamp": "{{variables.last_sync_timestamp}}"
+            }
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "data_validation",
+          "type": "data_validator",
+          "name": "Validate Data Quality",
+          "configuration": {
+            "validation_rules": [
+              {
+                "field": "id",
+                "type": "required",
+                "message": "ID field is required"
+              },
+              {
+                "field": "updated_at",
+                "type": "timestamp",
+                "message": "Invalid timestamp format"
+              }
+            ],
+            "error_handling": "continue_with_errors",
+            "log_errors": true
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "data_transformation",
+          "type": "data_transformer",
+          "name": "Transform Data Schema",
+          "configuration": {
+            "transformations": [
+              {
+                "operation": "rename_field",
+                "from": "{{source_field_mapping.from}}",
+                "to": "{{source_field_mapping.to}}"
+              },
+              {
+                "operation": "format_timestamp",
+                "field": "updated_at",
+                "format": "ISO8601"
+              },
+              {
+                "operation": "add_metadata",
+                "fields": {
+                  "sync_timestamp": "{{now()}}",
+                  "source_system": "{{source_system_name}}"
+                }
+              }
+            ]
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "conflict_detection",
+          "type": "javascript",
+          "name": "Detect Conflicts",
+          "configuration": {
+            "code": "// Conflict detection logic\\nconst sourceData = inputs.data;\\nconst conflicts = [];\\n\\nfor (const record of sourceData) {\\n  // Check for existing record in target\\n  const existingQuery = `SELECT * FROM ${inputs.target_table} WHERE id = '${record.id}'`;\\n  const existing = await executeQuery(inputs.target_connection, existingQuery);\\n  \\n  if (existing.length > 0) {\\n    const existingRecord = existing[0];\\n    if (new Date(record.updated_at) < new Date(existingRecord.updated_at)) {\\n      conflicts.push({\\n        record_id: record.id,\\n        conflict_type: 'outdated_source',\\n        source_timestamp: record.updated_at,\\n        target_timestamp: existingRecord.updated_at\\n      });\\n    }\\n  }\\n}\\n\\nreturn {\\n  clean_data: sourceData.filter(r => !conflicts.find(c => c.record_id === r.id)),\\n  conflicts: conflicts\\n};"
+          },
+          "position": { "x": 900, "y": 100 }
+        },
+        {
+          "id": "target_upsert",
+          "type": "sql_query",
+          "name": "Upsert to Target Database",
+          "configuration": {
+            "connection": "{{target_database_connection}}",
+            "query": "INSERT INTO {{target_table}} ({{field_list}}) VALUES {{value_placeholders}} ON CONFLICT (id) DO UPDATE SET {{update_clause}}, updated_at = NOW()",
+            "batch_size": 100,
+            "parameters": {
+              "target_table": "{{target_table_name}}",
+              "field_list": "{{target_field_mapping}}",
+              "value_placeholders": "{{generated_placeholders}}",
+              "update_clause": "{{generated_update_clause}}"
+            }
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "sync_metrics",
+          "type": "system_monitor",
+          "name": "Track Sync Metrics",
+          "configuration": {
+            "metrics": {
+              "records_processed": "{{data.length}}",
+              "records_inserted": "{{upsert_result.inserted_count}}",
+              "records_updated": "{{upsert_result.updated_count}}",
+              "conflicts_detected": "{{conflicts.length}}",
+              "processing_time_ms": "{{execution_time_ms}}",
+              "sync_timestamp": "{{now()}}"
+            },
+            "store_metrics": true,
+            "alert_thresholds": {
+              "error_rate": 0.05,
+              "processing_time_ms": 30000
+            }
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "update_checkpoint",
+          "type": "variable_updater",
+          "name": "Update Sync Checkpoint",
+          "configuration": {
+            "variables": {
+              "last_sync_timestamp": "{{max(data.updated_at)}}",
+              "total_records_synced": "{{variables.total_records_synced + data.length}}"
+            }
+          },
+          "position": { "x": 1500, "y": 100 }
+        },
+        {
+          "id": "conflict_notification",
+          "type": "condition",
+          "name": "Check for Conflicts",
+          "configuration": {
+            "condition": "{{conflicts.length > 0}}",
+            "true_path": "notify_conflicts",
+            "false_path": "end"
+          },
+          "position": { "x": 900, "y": 300 }
+        },
+        {
+          "id": "notify_conflicts",
+          "type": "slack",
+          "name": "Notify About Conflicts",
+          "configuration": {
+            "channel": "{{conflict_notification_channel}}",
+            "message": "🚨 Database Sync Conflicts Detected\\n\\n**Conflicts Found**: {{conflicts.length}}\\n**Source**: {{source_system_name}}\\n**Target**: {{target_system_name}}\\n\\n**Conflict Details**:\\n{{#each conflicts}}\\n- Record ID: {{record_id}} (Type: {{conflict_type}})\\n{{/each}}\\n\\nPlease review and resolve conflicts manually.",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "🚨 *Database Synchronization Conflicts*\\n\\n*Source:* {{source_system_name}}\\n*Target:* {{target_system_name}}\\n*Conflicts:* {{conflicts.length}}"
+                }
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Details"
+                    },
+                    "url": "{{dashboard_url}}/conflicts/{{workflow_execution_id}}"
+                  }
+                ]
+              }
+            ]
+          },
+          "position": { "x": 900, "y": 500 }
+        },
+        {
+          "id": "error_handler",
+          "type": "error_handler",
+          "name": "Handle Sync Errors",
+          "configuration": {
+            "error_types": ["database_connection", "validation_error", "timeout"],
+            "retry_policy": {
+              "max_retries": 3,
+              "backoff_strategy": "exponential",
+              "base_delay_ms": 1000
+            },
+            "notification": {
+              "channel": "{{error_notification_channel}}",
+              "template": "Database sync failed: {{error_message}}"
+            }
+          },
+          "position": { "x": 1100, "y": 300 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "source_db_monitor",
+          "to": "source_data_query",
+          "condition": null
+        },
+        {
+          "from": "source_data_query",
+          "to": "data_validation",
+          "condition": "{{data.length > 0}}"
+        },
+        {
+          "from": "data_validation",
+          "to": "data_transformation",
+          "condition": null
+        },
+        {
+          "from": "data_transformation",
+          "to": "conflict_detection",
+          "condition": null
+        },
+        {
+          "from": "conflict_detection",
+          "to": "target_upsert",
+          "condition": "{{clean_data.length > 0}}"
+        },
+        {
+          "from": "conflict_detection",
+          "to": "conflict_notification",
+          "condition": "{{conflicts.length > 0}}"
+        },
+        {
+          "from": "target_upsert",
+          "to": "sync_metrics",
+          "condition": null
+        },
+        {
+          "from": "sync_metrics",
+          "to": "update_checkpoint",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "last_sync_timestamp": "1970-01-01T00:00:00Z",
+        "total_records_synced": 0,
+        "sync_batch_size": 1000,
+        "max_conflicts_before_alert": 10
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "source_database_connection",
+        "target_database_connection",
+        "slack_webhook",
+        "email_smtp"
+      ],
+      "environment_variables": {
+        "source_system_name": "Source Database System",
+        "target_system_name": "Target Database System",
+        "source_table_name": "source_table",
+        "target_table_name": "target_table",
+        "conflict_notification_channel": "#data-ops",
+        "error_notification_channel": "#alerts",
+        "dashboard_url": "https://your-dashboard.com"
+      },
+      "custom_parameters": {
+        "sync_interval": {
+          "type": "string",
+          "default": "30s",
+          "description": "How often to check for new data"
+        },
+        "batch_size": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Number of records to process per batch"
+        },
+        "field_mapping": {
+          "type": "object",
+          "default": {},
+          "description": "Mapping between source and target field names"
+        },
+        "enable_conflict_detection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to detect and handle conflicts"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_execution_time_ms": 0,
+        "avg_records_per_second": 0,
+        "error_rate": 0.0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure source and target database connections\\n2. Set up field mapping between databases\\n3. Configure notification channels\\n4. Test with small dataset first\\n5. Enable monitoring and alerts",
+      "use_cases": [
+        "Real-time data replication between production and analytics databases",
+        "Cross-platform data synchronization (PostgreSQL to MongoDB)",
+        "Backup and disaster recovery data synchronization",
+        "Multi-region database synchronization"
+      ],
+      "troubleshooting": {
+        "high_conflict_rate": "Check if source and target databases have different update patterns",
+        "slow_sync_performance": "Reduce batch size or add database indexes",
+        "connection_timeouts": "Increase connection timeout values and check network latency"
+      }
+    }
+  }
+}

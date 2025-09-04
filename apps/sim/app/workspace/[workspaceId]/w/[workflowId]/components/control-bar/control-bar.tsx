@@ -39,6 +39,7 @@ import {
   ExportControls,
   TemplateModal,
 } from '@/app/workspace/[workspaceId]/w/[workflowId]/components/control-bar/components'
+import { WorkflowTemplateButton } from '@/components/template-integration'
 import { useWorkflowExecution } from '@/app/workspace/[workspaceId]/w/[workflowId]/hooks/use-workflow-execution'
 import {
   getKeyboardShortcutText,
@@ -1212,6 +1213,13 @@ export function ControlBar({ hasValidationErrors = false }: ControlBarProps) {
       {isExpanded && <ExportControls />}
       {isExpanded && renderAutoLayoutButton()}
       {isExpanded && renderPublishButton()}
+      {isExpanded && activeWorkflowId && (
+        <WorkflowTemplateButton
+          workflowId={activeWorkflowId}
+          userPermissions={userPermissions}
+          isEnabled={!isExecuting && !isDebugging}
+        />
+      )}
       {renderDeleteButton()}
       {renderDuplicateButton()}
       {!isDebugging && renderDebugModeToggle()}

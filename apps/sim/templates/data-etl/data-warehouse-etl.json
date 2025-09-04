@@ -1,0 +1,236 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "data-warehouse-etl-v1.0",
+    "name": "Enterprise Data Warehouse ETL Pipeline",
+    "description": "Comprehensive data warehouse ETL template with dimensional modeling, slowly changing dimensions (SCD), data lineage tracking, and enterprise-grade performance optimization for large-scale analytics.",
+    "category": "data-etl",
+    "subcategories": ["data-warehouse", "dimensional-modeling", "scd", "analytics"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "advanced"
+    },
+    "tags": ["data-warehouse", "etl", "dimensional-modeling", "scd", "analytics", "enterprise"],
+    "integrations": ["postgresql", "mysql", "snowflake", "redshift", "airflow", "dbt"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "etl_orchestrator",
+          "type": "schedule",
+          "name": "ETL Job Orchestrator",
+          "configuration": {
+            "schedule_type": "cron",
+            "cron_expression": "0 2 * * *",
+            "timezone": "UTC",
+            "description": "Daily ETL run at 2 AM UTC",
+            "max_execution_time_minutes": 240
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "source_data_profiler",
+          "type": "javascript",
+          "name": "Profile Source Data Quality",
+          "configuration": {
+            "code": "// Comprehensive data profiling for ETL preparation\\nconst dataSources = inputs.data_sources || [];\\nconst profilingResults = {};\\n\\nfor (const source of dataSources) {\\n  try {\\n    // Connect to source and analyze data quality\\n    const query = `\\n      SELECT \\n        COUNT(*) as total_records,\\n        COUNT(DISTINCT ${source.primary_key}) as unique_records,\\n        MIN(${source.date_column}) as earliest_date,\\n        MAX(${source.date_column}) as latest_date,\\n        COUNT(CASE WHEN ${source.date_column} >= CURRENT_DATE - INTERVAL '1 DAY' THEN 1 END) as new_records_today\\n      FROM ${source.schema}.${source.table}\\n    `;\\n    \\n    const basicStats = await executeQuery(source.connection, query);\\n    \\n    // Detailed column profiling\\n    const columnProfiles = {};\\n    for (const column of source.columns || []) {\\n      const columnQuery = `\\n        SELECT \\n          COUNT(*) as total_count,\\n          COUNT(${column}) as non_null_count,\\n          COUNT(DISTINCT ${column}) as unique_count,\\n          ${column === source.primary_key ? 'COUNT(CASE WHEN ' + column + ' IS NULL THEN 1 END)' : '0'} as null_key_count\\n        FROM ${source.schema}.${source.table}\\n      `;\\n      \\n      const columnStats = await executeQuery(source.connection, columnQuery);\\n      columnProfiles[column] = {\\n        ...columnStats[0],\\n        completeness_rate: (columnStats[0].non_null_count / columnStats[0].total_count * 100).toFixed(2),\\n        uniqueness_rate: (columnStats[0].unique_count / columnStats[0].total_count * 100).toFixed(2)\\n      };\\n    }\\n    \\n    // Data freshness analysis\\n    const freshnessQuery = `\\n      SELECT \\n        DATE(${source.date_column}) as data_date,\\n        COUNT(*) as record_count\\n      FROM ${source.schema}.${source.table}\\n      WHERE ${source.date_column} >= CURRENT_DATE - INTERVAL '7 DAYS'\\n      GROUP BY DATE(${source.date_column})\\n      ORDER BY data_date DESC\\n    `;\\n    \\n    const freshnessData = await executeQuery(source.connection, freshnessQuery);\\n    \\n    profilingResults[source.name] = {\\n      basic_statistics: basicStats[0],\\n      column_profiles: columnProfiles,\\n      data_freshness: freshnessData,\\n      quality_score: calculateQualityScore(basicStats[0], columnProfiles),\\n      profiling_timestamp: new Date().toISOString(),\\n      recommendations: generateRecommendations(basicStats[0], columnProfiles, freshnessData)\\n    };\\n    \\n  } catch (error) {\\n    profilingResults[source.name] = {\\n      error: error.message,\\n      profiling_timestamp: new Date().toISOString(),\\n      status: 'failed'\\n    };\\n  }\\n}\\n\\nfunction calculateQualityScore(basicStats, columnProfiles) {\\n  let score = 100;\\n  \\n  // Penalize for low uniqueness in primary key\\n  if (basicStats.total_records !== basicStats.unique_records) {\\n    score -= 20;\\n  }\\n  \\n  // Penalize for low completeness rates\\n  const avgCompleteness = Object.values(columnProfiles)\\n    .reduce((sum, col) => sum + parseFloat(col.completeness_rate), 0) / Object.keys(columnProfiles).length;\\n  \\n  if (avgCompleteness < 95) score -= (95 - avgCompleteness);\\n  \\n  // Penalize for data freshness issues\\n  if (basicStats.new_records_today === 0) score -= 10;\\n  \\n  return Math.max(0, Math.round(score));\\n}\\n\\nfunction generateRecommendations(basicStats, columnProfiles, freshnessData) {\\n  const recommendations = [];\\n  \\n  if (basicStats.total_records !== basicStats.unique_records) {\\n    recommendations.push('Investigate primary key duplicates - may require deduplication logic');\\n  }\\n  \\n  for (const [column, profile] of Object.entries(columnProfiles)) {\\n    if (parseFloat(profile.completeness_rate) < 90) {\\n      recommendations.push(`Low completeness in ${column} (${profile.completeness_rate}%) - consider data imputation`);\\n    }\\n  }\\n  \\n  if (basicStats.new_records_today === 0) {\\n    recommendations.push('No new records today - verify data source is active');\\n  }\\n  \\n  return recommendations;\\n}\\n\\nreturn { profiling_results: profilingResults };"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "dimension_processor",
+          "type": "javascript",
+          "name": "Process Dimension Tables",
+          "configuration": {
+            "code": "// Dimension table processing with SCD Type 2 support\\nconst dimensionConfig = inputs.dimension_config || {};\\nconst profilingResults = inputs.profiling_results || {};\\nconst dimensionResults = {};\\n\\nfor (const [dimName, config] of Object.entries(dimensionConfig)) {\\n  try {\\n    console.log(`Processing dimension: ${dimName}`);\\n    \\n    // Extract source data for dimension\\n    const sourceQuery = `\\n      SELECT DISTINCT\\n        ${config.business_key} as business_key,\\n        ${config.attributes.join(', ')},\\n        ${config.source_timestamp || 'CURRENT_TIMESTAMP'} as source_timestamp\\n      FROM ${config.source_schema}.${config.source_table}\\n      WHERE ${config.filter_condition || '1=1'}\\n        AND ${config.source_timestamp || 'created_at'} >= '${inputs.etl_start_date || '1900-01-01'}'\\n    `;\\n    \\n    const sourceData = await executeQuery(config.source_connection, sourceQuery);\\n    \\n    // Get existing dimension records\\n    const existingQuery = `\\n      SELECT \\n        dimension_key,\\n        business_key,\\n        ${config.attributes.join(', ')},\\n        effective_date,\\n        expiration_date,\\n        is_current\\n      FROM ${config.target_schema}.${config.target_table}\\n      WHERE is_current = true\\n    `;\\n    \\n    const existingData = await executeQuery(config.target_connection, existingQuery);\\n    const existingMap = new Map(existingData.map(row => [row.business_key, row]));\\n    \\n    const dimensionChanges = {\\n      new_records: [],\\n      updated_records: [],\\n      unchanged_records: 0\\n    };\\n    \\n    // Process each source record\\n    for (const sourceRecord of sourceData) {\\n      const existingRecord = existingMap.get(sourceRecord.business_key);\\n      \\n      if (!existingRecord) {\\n        // New dimension record\\n        dimensionChanges.new_records.push({\\n          business_key: sourceRecord.business_key,\\n          ...config.attributes.reduce((obj, attr) => {\\n            obj[attr] = sourceRecord[attr];\\n            return obj;\\n          }, {}),\\n          effective_date: new Date().toISOString(),\\n          expiration_date: '9999-12-31T23:59:59Z',\\n          is_current: true,\\n          created_date: new Date().toISOString(),\\n          updated_date: new Date().toISOString()\\n        });\\n      } else {\\n        // Check if attributes have changed (SCD Type 2)\\n        const attributesChanged = config.attributes.some(attr => \\n          sourceRecord[attr] !== existingRecord[attr]\\n        );\\n        \\n        if (attributesChanged) {\\n          // Close existing record\\n          dimensionChanges.updated_records.push({\\n            action: 'close_existing',\\n            dimension_key: existingRecord.dimension_key,\\n            expiration_date: new Date().toISOString(),\\n            is_current: false\\n          });\\n          \\n          // Create new current record\\n          dimensionChanges.new_records.push({\\n            business_key: sourceRecord.business_key,\\n            ...config.attributes.reduce((obj, attr) => {\\n              obj[attr] = sourceRecord[attr];\\n              return obj;\\n            }, {}),\\n            effective_date: new Date().toISOString(),\\n            expiration_date: '9999-12-31T23:59:59Z',\\n            is_current: true,\\n            created_date: new Date().toISOString(),\\n            updated_date: new Date().toISOString()\\n          });\\n        } else {\\n          dimensionChanges.unchanged_records++;\\n        }\\n      }\\n    }\\n    \\n    // Execute dimension updates\\n    if (dimensionChanges.updated_records.length > 0) {\\n      for (const update of dimensionChanges.updated_records) {\\n        if (update.action === 'close_existing') {\\n          const updateQuery = `\\n            UPDATE ${config.target_schema}.${config.target_table}\\n            SET expiration_date = '${update.expiration_date}',\\n                is_current = false,\\n                updated_date = CURRENT_TIMESTAMP\\n            WHERE dimension_key = '${update.dimension_key}'\\n          `;\\n          await executeQuery(config.target_connection, updateQuery);\\n        }\\n      }\\n    }\\n    \\n    // Insert new dimension records\\n    if (dimensionChanges.new_records.length > 0) {\\n      const insertQuery = `\\n        INSERT INTO ${config.target_schema}.${config.target_table}\\n        (business_key, ${config.attributes.join(', ')}, effective_date, expiration_date, is_current, created_date, updated_date)\\n        VALUES ${dimensionChanges.new_records.map(record => \\n          `('${record.business_key}', ${config.attributes.map(attr => `'${record[attr]}'`).join(', ')}, '${record.effective_date}', '${record.expiration_date}', ${record.is_current}, '${record.created_date}', '${record.updated_date}')`\\n        ).join(', ')}\\n      `;\\n      \\n      await executeQuery(config.target_connection, insertQuery);\\n    }\\n    \\n    dimensionResults[dimName] = {\\n      source_records_processed: sourceData.length,\\n      new_records_created: dimensionChanges.new_records.length,\\n      existing_records_updated: dimensionChanges.updated_records.length,\\n      unchanged_records: dimensionChanges.unchanged_records,\\n      processing_timestamp: new Date().toISOString(),\\n      status: 'completed'\\n    };\\n    \\n  } catch (error) {\\n    dimensionResults[dimName] = {\\n      error: error.message,\\n      processing_timestamp: new Date().toISOString(),\\n      status: 'failed'\\n    };\\n  }\\n}\\n\\nreturn { dimension_results: dimensionResults };"
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "fact_processor",
+          "type": "javascript",
+          "name": "Process Fact Tables",
+          "configuration": {
+            "code": "// Fact table processing with dimension key lookups\\nconst factConfig = inputs.fact_config || {};\\nconst dimensionResults = inputs.dimension_results || {};\\nconst factResults = {};\\n\\nfor (const [factName, config] of Object.entries(factConfig)) {\\n  try {\\n    console.log(`Processing fact table: ${factName}`);\\n    \\n    // Build dimension lookup queries\\n    const dimensionLookups = {};\\n    for (const dimLookup of config.dimension_lookups || []) {\\n      const lookupQuery = `\\n        SELECT business_key, dimension_key\\n        FROM ${dimLookup.schema}.${dimLookup.table}\\n        WHERE is_current = true\\n      `;\\n      dimensionLookups[dimLookup.name] = await executeQuery(dimLookup.connection, lookupQuery);\\n    }\\n    \\n    // Create lookup maps for performance\\n    const lookupMaps = {};\\n    for (const [dimName, dimData] of Object.entries(dimensionLookups)) {\\n      lookupMaps[dimName] = new Map(dimData.map(row => [row.business_key, row.dimension_key]));\\n    }\\n    \\n    // Extract source fact data\\n    const sourceQuery = `\\n      SELECT \\n        ${config.source_columns.join(', ')},\\n        ${config.measure_columns.join(', ')},\\n        ${config.date_column} as transaction_date\\n      FROM ${config.source_schema}.${config.source_table}\\n      WHERE ${config.date_column} >= '${inputs.etl_start_date || '1900-01-01'}'\\n        AND ${config.filter_condition || '1=1'}\\n      ORDER BY ${config.date_column}\\n    `;\\n    \\n    const sourceData = await executeQuery(config.source_connection, sourceQuery);\\n    \\n    // Process fact records with dimension key lookups\\n    const processedFacts = [];\\n    const orphanedRecords = [];\\n    \\n    for (const sourceRecord of sourceData) {\\n      const factRecord = {\\n        ...sourceRecord,\\n        etl_batch_id: inputs.batch_id || new Date().toISOString(),\\n        created_date: new Date().toISOString()\\n      };\\n      \\n      let allDimensionsFound = true;\\n      \\n      // Resolve dimension keys\\n      for (const dimLookup of config.dimension_lookups || []) {\\n        const businessKey = sourceRecord[dimLookup.business_key_column];\\n        const dimensionKey = lookupMaps[dimLookup.name].get(businessKey);\\n        \\n        if (dimensionKey) {\\n          factRecord[dimLookup.target_column] = dimensionKey;\\n        } else {\\n          // Handle missing dimension\\n          if (dimLookup.handle_missing === 'create_unknown') {\\n            // Create or get 'Unknown' dimension record\\n            factRecord[dimLookup.target_column] = await getOrCreateUnknownDimension(\\n              dimLookup.schema, \\n              dimLookup.table, \\n              dimLookup.connection\\n            );\\n          } else if (dimLookup.handle_missing === 'skip_record') {\\n            allDimensionsFound = false;\\n            orphanedRecords.push({\\n              ...sourceRecord,\\n              missing_dimension: dimLookup.name,\\n              missing_business_key: businessKey\\n            });\\n            break;\\n          } else {\\n            factRecord[dimLookup.target_column] = null;\\n          }\\n        }\\n      }\\n      \\n      if (allDimensionsFound) {\\n        processedFacts.push(factRecord);\\n      }\\n    }\\n    \\n    // Batch insert processed facts\\n    if (processedFacts.length > 0) {\\n      const batchSize = 1000;\\n      let insertedCount = 0;\\n      \\n      for (let i = 0; i < processedFacts.length; i += batchSize) {\\n        const batch = processedFacts.slice(i, i + batchSize);\\n        \\n        const insertColumns = [\\n          ...config.source_columns,\\n          ...config.measure_columns,\\n          ...config.dimension_lookups.map(d => d.target_column),\\n          'transaction_date',\\n          'etl_batch_id',\\n          'created_date'\\n        ];\\n        \\n        const insertValues = batch.map(record => \\n          `(${insertColumns.map(col => {\\n            const value = record[col];\\n            return value === null || value === undefined ? 'NULL' : `'${value}'`;\\n          }).join(', ')})`\\n        ).join(', ');\\n        \\n        const insertQuery = `\\n          INSERT INTO ${config.target_schema}.${config.target_table}\\n          (${insertColumns.join(', ')})\\n          VALUES ${insertValues}\\n        `;\\n        \\n        await executeQuery(config.target_connection, insertQuery);\\n        insertedCount += batch.length;\\n      }\\n    }\\n    \\n    // Log orphaned records for investigation\\n    if (orphanedRecords.length > 0) {\\n      const orphanLogQuery = `\\n        INSERT INTO ${config.target_schema}.fact_orphan_log\\n        (fact_table, orphan_data, missing_dimension, processing_date)\\n        VALUES ${orphanedRecords.map(record => \\n          `('${factName}', '${JSON.stringify(record)}', '${record.missing_dimension}', CURRENT_TIMESTAMP)`\\n        ).join(', ')}\\n      `;\\n      \\n      await executeQuery(config.target_connection, orphanLogQuery);\\n    }\\n    \\n    factResults[factName] = {\\n      source_records_processed: sourceData.length,\\n      fact_records_inserted: processedFacts.length,\\n      orphaned_records: orphanedRecords.length,\\n      processing_timestamp: new Date().toISOString(),\\n      status: 'completed'\\n    };\\n    \\n  } catch (error) {\\n    factResults[factName] = {\\n      error: error.message,\\n      processing_timestamp: new Date().toISOString(),\\n      status: 'failed'\\n    };\\n  }\\n}\\n\\nasync function getOrCreateUnknownDimension(schema, table, connection) {\\n  // Check if 'Unknown' record exists\\n  const checkQuery = `SELECT dimension_key FROM ${schema}.${table} WHERE business_key = 'UNKNOWN' AND is_current = true`;\\n  const existing = await executeQuery(connection, checkQuery);\\n  \\n  if (existing.length > 0) {\\n    return existing[0].dimension_key;\\n  } else {\\n    // Create 'Unknown' dimension record\\n    const insertQuery = `\\n      INSERT INTO ${schema}.${table}\\n      (business_key, name, effective_date, expiration_date, is_current, created_date)\\n      VALUES ('UNKNOWN', 'Unknown', CURRENT_TIMESTAMP, '9999-12-31', true, CURRENT_TIMESTAMP)\\n      RETURNING dimension_key\\n    `;\\n    \\n    const inserted = await executeQuery(connection, insertQuery);\\n    return inserted[0].dimension_key;\\n  }\\n}\\n\\nreturn { fact_results: factResults };"
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "data_lineage_tracker",
+          "type": "postgresql",
+          "name": "Track Data Lineage",
+          "configuration": {
+            "connection": "{{metadata_connection}}",
+            "operation": "bulk_insert",
+            "table": "etl_data_lineage",
+            "data_source": "lineage_tracking_data",
+            "schema": {
+              "etl_job_id": "{{execution_id}}",
+              "etl_run_date": "{{now()}}",
+              "source_system": "{{source_system_name}}",
+              "target_system": "{{target_system_name}}",
+              "transformation_type": "{{transformation_type}}",
+              "records_processed": "{{records_processed}}",
+              "data_quality_score": "{{quality_score}}",
+              "processing_duration_minutes": "{{execution_time_ms / 60000}}",
+              "status": "{{job_status}}"
+            }
+          },
+          "position": { "x": 900, "y": 100 }
+        },
+        {
+          "id": "quality_validation",
+          "type": "javascript",
+          "name": "Validate Data Quality",
+          "configuration": {
+            "code": "// Post-ETL data quality validation\\nconst qualityTests = inputs.quality_tests || {};\\nconst validationResults = {};\\n\\nfor (const [testName, testConfig] of Object.entries(qualityTests)) {\\n  try {\\n    const testQuery = testConfig.query.replace(/\\\\{([^}]+)\\\\}/g, (match, param) => {\\n      return inputs[param] || match;\\n    });\\n    \\n    const testResult = await executeQuery(testConfig.connection, testQuery);\\n    const actualValue = testResult[0][testConfig.metric_column];\\n    \\n    const passed = evaluateTestCondition(\\n      actualValue, \\n      testConfig.operator, \\n      testConfig.expected_value\\n    );\\n    \\n    validationResults[testName] = {\\n      test_type: testConfig.test_type,\\n      actual_value: actualValue,\\n      expected_value: testConfig.expected_value,\\n      operator: testConfig.operator,\\n      passed: passed,\\n      severity: testConfig.severity || 'medium',\\n      execution_time: new Date().toISOString()\\n    };\\n    \\n  } catch (error) {\\n    validationResults[testName] = {\\n      error: error.message,\\n      passed: false,\\n      severity: 'high',\\n      execution_time: new Date().toISOString()\\n    };\\n  }\\n}\\n\\nfunction evaluateTestCondition(actual, operator, expected) {\\n  switch (operator) {\\n    case 'equals': return actual == expected;\\n    case 'not_equals': return actual != expected;\\n    case 'greater_than': return parseFloat(actual) > parseFloat(expected);\\n    case 'less_than': return parseFloat(actual) < parseFloat(expected);\\n    case 'greater_equal': return parseFloat(actual) >= parseFloat(expected);\\n    case 'less_equal': return parseFloat(actual) <= parseFloat(expected);\\n    case 'between': \\n      const [min, max] = expected.split(',').map(v => parseFloat(v.trim()));\\n      return parseFloat(actual) >= min && parseFloat(actual) <= max;\\n    default: return false;\\n  }\\n}\\n\\nconst overallScore = Object.values(validationResults)\\n  .filter(result => result.passed !== undefined)\\n  .reduce((sum, result) => sum + (result.passed ? 1 : 0), 0) / Object.keys(validationResults).length * 100;\\n\\nconst failedTests = Object.entries(validationResults)\\n  .filter(([_, result]) => result.passed === false)\\n  .map(([testName, result]) => ({ test: testName, ...result }));\\n\\nreturn { \\n  validation_results: validationResults, \\n  overall_quality_score: Math.round(overallScore),\\n  failed_tests: failedTests,\\n  validation_summary: {\\n    total_tests: Object.keys(validationResults).length,\\n    passed_tests: Object.values(validationResults).filter(r => r.passed === true).length,\\n    failed_tests: failedTests.length,\\n    critical_failures: failedTests.filter(t => t.severity === 'high').length\\n  }\\n};"
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "performance_optimizer",
+          "type": "javascript",
+          "name": "Optimize Performance",
+          "configuration": {
+            "code": "// ETL performance analysis and optimization\\nconst performanceMetrics = {\\n  total_execution_time_ms: inputs.execution_time_ms || 0,\\n  dimension_processing_time: Object.values(inputs.dimension_results || {})\\n    .reduce((sum, dim) => sum + (dim.processing_time_ms || 0), 0),\\n  fact_processing_time: Object.values(inputs.fact_results || {})\\n    .reduce((sum, fact) => sum + (fact.processing_time_ms || 0), 0),\\n  total_records_processed: Object.values(inputs.fact_results || {})\\n    .reduce((sum, fact) => sum + (fact.source_records_processed || 0), 0),\\n  memory_usage_peak_mb: inputs.memory_usage_mb || 0,\\n  cpu_usage_avg_percent: inputs.cpu_usage_percent || 0\\n};\\n\\n// Calculate throughput metrics\\nconst executionTimeSeconds = performanceMetrics.total_execution_time_ms / 1000;\\nperformanceMetrics.records_per_second = executionTimeSeconds > 0 \\n  ? (performanceMetrics.total_records_processed / executionTimeSeconds).toFixed(2)\\n  : 0;\\n\\n// Generate optimization recommendations\\nconst optimizations = [];\\n\\nif (parseFloat(performanceMetrics.records_per_second) < 1000) {\\n  optimizations.push({\\n    type: 'throughput',\\n    recommendation: 'Consider increasing batch sizes or parallel processing',\\n    current_value: performanceMetrics.records_per_second + ' records/sec',\\n    target_value: '> 1000 records/sec'\\n  });\\n}\\n\\nif (performanceMetrics.memory_usage_peak_mb > 2048) {\\n  optimizations.push({\\n    type: 'memory',\\n    recommendation: 'Reduce batch sizes or implement streaming processing',\\n    current_value: performanceMetrics.memory_usage_peak_mb + ' MB',\\n    target_value: '< 2048 MB'\\n  });\\n}\\n\\nif (performanceMetrics.cpu_usage_avg_percent > 80) {\\n  optimizations.push({\\n    type: 'cpu',\\n    recommendation: 'Optimize SQL queries or distribute load across multiple workers',\\n    current_value: performanceMetrics.cpu_usage_avg_percent + '%',\\n    target_value: '< 80%'\\n  });\\n}\\n\\nif (performanceMetrics.total_execution_time_ms > 3600000) { // > 1 hour\\n  optimizations.push({\\n    type: 'duration',\\n    recommendation: 'Consider incremental processing or partitioning strategies',\\n    current_value: (performanceMetrics.total_execution_time_ms / 60000).toFixed(1) + ' minutes',\\n    target_value: '< 60 minutes'\\n  });\\n}\\n\\n// Historical performance comparison\\nconst performanceHistory = inputs.historical_performance || [];\\nconst improvementAnalysis = {};\\n\\nif (performanceHistory.length > 0) {\\n  const lastRun = performanceHistory[performanceHistory.length - 1];\\n  improvementAnalysis.execution_time_change = \\n    ((performanceMetrics.total_execution_time_ms - lastRun.total_execution_time_ms) / lastRun.total_execution_time_ms * 100).toFixed(2);\\n  improvementAnalysis.throughput_change = \\n    ((parseFloat(performanceMetrics.records_per_second) - parseFloat(lastRun.records_per_second)) / parseFloat(lastRun.records_per_second) * 100).toFixed(2);\\n}\\n\\nreturn {\\n  performance_metrics: performanceMetrics,\\n  optimization_recommendations: optimizations,\\n  improvement_analysis: improvementAnalysis,\\n  performance_rating: optimizations.length === 0 ? 'excellent' : \\n                     optimizations.length <= 2 ? 'good' : \\n                     optimizations.length <= 4 ? 'fair' : 'needs_improvement'\\n};"
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "etl_completion_report",
+          "type": "email",
+          "name": "Send ETL Completion Report",
+          "configuration": {
+            "to": "{{data_team_email}}",
+            "subject": "ETL Job {{execution_id}} - {{job_status}} - {{timestamp}}",
+            "html_body": "<h2>ETL Job Completion Report</h2><h3>Job Summary</h3><ul><li><strong>Execution ID:</strong> {{execution_id}}</li><li><strong>Status:</strong> {{job_status}}</li><li><strong>Start Time:</strong> {{start_time}}</li><li><strong>Duration:</strong> {{execution_time_ms / 60000}} minutes</li><li><strong>Records Processed:</strong> {{total_records_processed:,}}</li></ul><h3>Dimension Processing</h3><table border='1'><tr><th>Dimension</th><th>Source Records</th><th>New Records</th><th>Updated Records</th><th>Status</th></tr>{{#each dimension_results}}<tr><td>{{@key}}</td><td>{{source_records_processed:,}}</td><td>{{new_records_created:,}}</td><td>{{existing_records_updated:,}}</td><td>{{status}}</td></tr>{{/each}}</table><h3>Fact Processing</h3><table border='1'><tr><th>Fact Table</th><th>Source Records</th><th>Inserted Records</th><th>Orphaned Records</th><th>Status</th></tr>{{#each fact_results}}<tr><td>{{@key}}</td><td>{{source_records_processed:,}}</td><td>{{fact_records_inserted:,}}</td><td>{{orphaned_records:,}}</td><td>{{status}}</td></tr>{{/each}}</table><h3>Data Quality</h3><ul><li><strong>Overall Score:</strong> {{overall_quality_score}}/100</li><li><strong>Total Tests:</strong> {{validation_summary.total_tests}}</li><li><strong>Passed Tests:</strong> {{validation_summary.passed_tests}}</li><li><strong>Failed Tests:</strong> {{validation_summary.failed_tests}}</li>{{#if failed_tests.length}}<li><strong>Critical Failures:</strong> {{validation_summary.critical_failures}}</li>{{/if}}</ul>{{#if failed_tests.length}}<h4>Failed Quality Tests</h4><ul>{{#each failed_tests}}<li><strong>{{test}}</strong>: Expected {{expected_value}}, got {{actual_value}} ({{severity}} severity)</li>{{/each}}</ul>{{/if}}<h3>Performance Metrics</h3><ul><li><strong>Throughput:</strong> {{performance_metrics.records_per_second}} records/sec</li><li><strong>Peak Memory:</strong> {{performance_metrics.memory_usage_peak_mb}} MB</li><li><strong>Avg CPU:</strong> {{performance_metrics.cpu_usage_avg_percent}}%</li><li><strong>Performance Rating:</strong> {{performance_rating}}</li></ul>{{#if optimization_recommendations.length}}<h4>Performance Recommendations</h4><ul>{{#each optimization_recommendations}}<li><strong>{{type}}:</strong> {{recommendation}} (Current: {{current_value}}, Target: {{target_value}})</li>{{/each}}</ul>{{/if}}<p><em>Report generated at {{timestamp}}</em></p>",
+            "attachments": [
+              {
+                "name": "etl_performance_data.json",
+                "content": "{{JSON.stringify(performance_metrics, null, 2)}}",
+                "content_type": "application/json"
+              }
+            ]
+          },
+          "position": { "x": 1500, "y": 100 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "etl_orchestrator",
+          "to": "source_data_profiler",
+          "condition": null
+        },
+        {
+          "from": "source_data_profiler",
+          "to": "dimension_processor",
+          "condition": null
+        },
+        {
+          "from": "dimension_processor",
+          "to": "fact_processor",
+          "condition": null
+        },
+        {
+          "from": "fact_processor",
+          "to": "data_lineage_tracker",
+          "condition": null
+        },
+        {
+          "from": "data_lineage_tracker",
+          "to": "quality_validation",
+          "condition": null
+        },
+        {
+          "from": "quality_validation",
+          "to": "performance_optimizer",
+          "condition": null
+        },
+        {
+          "from": "performance_optimizer",
+          "to": "etl_completion_report",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "etl_start_date": "{{date_subtract(now(), '1 day')}}",
+        "batch_id": "{{execution_id}}",
+        "total_records_processed": 0,
+        "overall_quality_score": 0
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "source_connections",
+        "target_connections", 
+        "metadata_connection",
+        "email_smtp"
+      ],
+      "environment_variables": {
+        "data_team_email": "data-team@company.com",
+        "etl_timeout_minutes": 240,
+        "max_parallel_processes": 4,
+        "batch_size": 10000,
+        "enable_lineage_tracking": true
+      },
+      "custom_parameters": {
+        "dimension_config": {
+          "type": "object",
+          "description": "Configuration for dimension table processing with SCD support"
+        },
+        "fact_config": {
+          "type": "object", 
+          "description": "Configuration for fact table processing and dimension lookups"
+        },
+        "quality_tests": {
+          "type": "object",
+          "description": "Data quality validation tests to run post-ETL"
+        },
+        "performance_targets": {
+          "type": "object",
+          "default": {
+            "min_throughput_records_per_sec": 1000,
+            "max_memory_usage_mb": 2048,
+            "max_execution_time_minutes": 60
+          },
+          "description": "Performance targets for optimization recommendations"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_execution_time_minutes": 0,
+        "avg_throughput_records_per_sec": 0,
+        "avg_quality_score": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure source and target database connections\\n2. Define dimension and fact table configurations\\n3. Set up SCD Type 2 processing rules\\n4. Configure data quality tests\\n5. Set up email notifications\\n6. Test with sample datasets\\n7. Schedule regular ETL runs\\n8. Monitor performance and optimize",
+      "use_cases": [
+        "Enterprise data warehouse loading with star schema",
+        "Customer 360 data consolidation with SCD tracking",
+        "Financial reporting data pipeline with quality validation",
+        "Sales analytics with dimension management",
+        "Multi-source business intelligence data integration"
+      ],
+      "troubleshooting": {
+        "scd_processing_errors": "Verify dimension key relationships and business key uniqueness",
+        "performance_issues": "Optimize SQL queries, increase batch sizes, or add database indexes",
+        "quality_test_failures": "Review test thresholds and investigate data source changes",
+        "orphaned_fact_records": "Check dimension loading order and unknown dimension handling"
+      }
+    }
+  }
+}

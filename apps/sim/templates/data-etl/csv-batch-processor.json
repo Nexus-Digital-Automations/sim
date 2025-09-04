@@ -1,0 +1,328 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "csv-batch-processor-v1.0",
+    "name": "Enterprise CSV Batch Processing Pipeline",
+    "description": "High-performance CSV file processing template with validation, transformation, error handling, and batch optimization. Supports large files, custom schemas, and automated quality reports.",
+    "category": "data-etl",
+    "subcategories": ["file-processing", "csv", "batch", "transformation"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "intermediate"
+    },
+    "tags": ["csv", "batch-processing", "file-processing", "data-validation", "transformation", "etl"],
+    "integrations": ["file", "s3", "postgresql", "email", "slack"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "file_monitor",
+          "type": "file",
+          "name": "Monitor CSV Files",
+          "configuration": {
+            "operation": "watch_directory",
+            "directory": "{{input_directory}}",
+            "file_pattern": "*.csv",
+            "poll_interval_seconds": 30,
+            "include_subdirectories": true,
+            "file_size_threshold_mb": "{{max_file_size_mb}}",
+            "exclude_patterns": [".*processed.*", ".*error.*", ".*temp.*"]
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "file_validator",
+          "type": "javascript",
+          "name": "Validate CSV File",
+          "configuration": {
+            "code": "// CSV file validation and metadata extraction\\nconst fs = require('fs');\\nconst path = require('path');\\nconst csv = require('csv-parser');\\n\\nconst filePath = inputs.file_path;\\nconst fileName = path.basename(filePath);\\n\\ntry {\\n  // Check file size\\n  const stats = fs.statSync(filePath);\\n  const fileSizeMB = stats.size / (1024 * 1024);\\n  \\n  if (fileSizeMB > inputs.max_file_size_mb) {\\n    throw new Error(`File size ${fileSizeMB.toFixed(2)}MB exceeds maximum ${inputs.max_file_size_mb}MB`);\\n  }\\n  \\n  // Quick header validation\\n  const firstLine = fs.readFileSync(filePath, 'utf8').split('\\\\n')[0];\\n  const headers = firstLine.split(',').map(h => h.trim().replace(/[\\"']/g, ''));\\n  \\n  // Validate required columns\\n  const requiredColumns = inputs.required_columns || [];\\n  const missingColumns = requiredColumns.filter(col => !headers.includes(col));\\n  \\n  if (missingColumns.length > 0) {\\n    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);\\n  }\\n  \\n  // Estimate row count (approximate)\\n  const sampleLines = fs.readFileSync(filePath, 'utf8').split('\\\\n').slice(0, 100);\\n  const avgLineLength = sampleLines.reduce((sum, line) => sum + line.length, 0) / sampleLines.length;\\n  const estimatedRows = Math.floor(stats.size / avgLineLength) - 1; // -1 for header\\n  \\n  return {\\n    validation_status: 'valid',\\n    file_path: filePath,\\n    file_name: fileName,\\n    file_size_mb: fileSizeMB,\\n    estimated_rows: estimatedRows,\\n    headers: headers,\\n    column_count: headers.length,\\n    processing_batch_size: Math.min(inputs.batch_size, Math.ceil(estimatedRows / 10))\\n  };\\n  \\n} catch (error) {\\n  return {\\n    validation_status: 'invalid',\\n    file_path: filePath,\\n    file_name: fileName,\\n    error_message: error.message,\\n    should_skip: true\\n  };\\n}"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "batch_processor",
+          "type": "javascript",
+          "name": "Process CSV in Batches",
+          "configuration": {
+            "code": "// Advanced CSV batch processing with streaming\\nconst fs = require('fs');\\nconst csv = require('csv-parser');\\nconst { Transform } = require('stream');\\n\\nconst filePath = inputs.file_path;\\nconst batchSize = inputs.processing_batch_size;\\nconst transformationRules = inputs.transformation_rules || [];\\n\\nlet processedRows = [];\\nlet errorRows = [];\\nlet totalProcessed = 0;\\nlet currentBatch = [];\\n\\n// Custom transformation stream\\nconst transformStream = new Transform({\\n  objectMode: true,\\n  transform(row, encoding, callback) {\\n    try {\\n      let transformedRow = { ...row };\\n      \\n      // Apply transformation rules\\n      for (const rule of transformationRules) {\\n        switch (rule.type) {\\n          case 'rename_column':\\n            if (transformedRow[rule.from]) {\\n              transformedRow[rule.to] = transformedRow[rule.from];\\n              delete transformedRow[rule.from];\\n            }\\n            break;\\n            \\n          case 'format_date':\\n            if (transformedRow[rule.column]) {\\n              const date = new Date(transformedRow[rule.column]);\\n              if (!isNaN(date.getTime())) {\\n                transformedRow[rule.column] = date.toISOString();\\n              } else {\\n                throw new Error(`Invalid date format in ${rule.column}: ${transformedRow[rule.column]}`);\\n              }\\n            }\\n            break;\\n            \\n          case 'normalize_text':\\n            if (transformedRow[rule.column]) {\\n              transformedRow[rule.column] = transformedRow[rule.column]\\n                .toString()\\n                .toLowerCase()\\n                .trim()\\n                .replace(/\\\\s+/g, ' ');\\n            }\\n            break;\\n            \\n          case 'validate_email':\\n            if (transformedRow[rule.column]) {\\n              const emailRegex = /^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/;\\n              if (!emailRegex.test(transformedRow[rule.column])) {\\n                throw new Error(`Invalid email format: ${transformedRow[rule.column]}`);\\n              }\\n            }\\n            break;\\n            \\n          case 'calculate_field':\\n            transformedRow[rule.target_column] = eval(rule.expression.replace(/\\\\{([^}]+)\\\\}/g, (match, field) => {\\n              return transformedRow[field] || '0';\\n            }));\\n            break;\\n        }\\n      }\\n      \\n      // Add metadata\\n      transformedRow._row_number = totalProcessed + 1;\\n      transformedRow._processed_at = new Date().toISOString();\\n      transformedRow._source_file = inputs.file_name;\\n      \\n      currentBatch.push(transformedRow);\\n      totalProcessed++;\\n      \\n      // Process batch when full\\n      if (currentBatch.length >= batchSize) {\\n        processedRows.push(...currentBatch);\\n        currentBatch = [];\\n      }\\n      \\n      callback();\\n      \\n    } catch (error) {\\n      errorRows.push({\\n        row_number: totalProcessed + 1,\\n        original_data: row,\\n        error_message: error.message,\\n        error_timestamp: new Date().toISOString()\\n      });\\n      \\n      totalProcessed++;\\n      callback();\\n    }\\n  }\\n});\\n\\nreturn new Promise((resolve, reject) => {\\n  const stream = fs.createReadStream(filePath)\\n    .pipe(csv())\\n    .pipe(transformStream);\\n    \\n  stream.on('end', () => {\\n    // Process remaining batch\\n    if (currentBatch.length > 0) {\\n      processedRows.push(...currentBatch);\\n    }\\n    \\n    const processingStats = {\\n      total_rows_processed: totalProcessed,\\n      successful_rows: processedRows.length,\\n      error_rows: errorRows.length,\\n      success_rate: ((processedRows.length / totalProcessed) * 100).toFixed(2),\\n      processing_time_start: new Date().toISOString()\\n    };\\n    \\n    resolve({\\n      processed_data: processedRows,\\n      error_data: errorRows,\\n      processing_stats: processingStats\\n    });\\n  });\\n  \\n  stream.on('error', reject);\\n});"
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "quality_analyzer",
+          "type": "javascript",
+          "name": "Analyze Data Quality",
+          "configuration": {
+            "code": "// Comprehensive data quality analysis\\nconst processedData = inputs.processed_data;\\nconst errorData = inputs.error_data;\\n\\nif (processedData.length === 0) {\\n  return {\\n    quality_report: {\\n      overall_score: 0,\\n      total_records: 0,\\n      quality_issues: ['No data processed successfully']\\n    }\\n  };\\n}\\n\\n// Analyze data completeness\\nconst headers = Object.keys(processedData[0]).filter(key => !key.startsWith('_'));\\nconst completenessAnalysis = {};\\nconst duplicateAnalysis = {};\\nconst valueDistribution = {};\\n\\nfor (const header of headers) {\\n  const values = processedData.map(row => row[header]);\\n  const nonEmptyValues = values.filter(val => val !== null && val !== undefined && val !== '');\\n  \\n  completenessAnalysis[header] = {\\n    total_values: values.length,\\n    non_empty_values: nonEmptyValues.length,\\n    completeness_percentage: ((nonEmptyValues.length / values.length) * 100).toFixed(2),\\n    empty_count: values.length - nonEmptyValues.length\\n  };\\n  \\n  // Value distribution analysis\\n  const uniqueValues = [...new Set(nonEmptyValues)];\\n  valueDistribution[header] = {\\n    unique_count: uniqueValues.length,\\n    uniqueness_percentage: ((uniqueValues.length / nonEmptyValues.length) * 100).toFixed(2),\\n    most_common: nonEmptyValues.reduce((acc, val) => {\\n      acc[val] = (acc[val] || 0) + 1;\\n      return acc;\\n    }, {})\\n  };\\n}\\n\\n// Detect potential duplicates\\nconst duplicateMap = {};\\nprocessedData.forEach((row, index) => {\\n  const key = headers.map(h => row[h]).join('|');\\n  if (duplicateMap[key]) {\\n    duplicateMap[key].push(index);\\n  } else {\\n    duplicateMap[key] = [index];\\n  }\\n});\\n\\nconst duplicateGroups = Object.values(duplicateMap).filter(group => group.length > 1);\\nconst duplicateCount = duplicateGroups.reduce((sum, group) => sum + group.length - 1, 0);\\n\\n// Calculate overall quality score\\nconst avgCompleteness = Object.values(completenessAnalysis)\\n  .reduce((sum, analysis) => sum + parseFloat(analysis.completeness_percentage), 0) / headers.length;\\n\\nconst errorRate = (errorData.length / (processedData.length + errorData.length)) * 100;\\nconst duplicateRate = (duplicateCount / processedData.length) * 100;\\n\\nconst qualityScore = Math.max(0, Math.min(100, \\n  avgCompleteness * 0.4 +  // 40% weight on completeness\\n  (100 - errorRate) * 0.3 +  // 30% weight on error rate\\n  (100 - duplicateRate) * 0.2 +  // 20% weight on duplicate rate\\n  75 * 0.1  // 10% base score\\n));\\n\\nconst qualityIssues = [];\\nif (avgCompleteness < 80) qualityIssues.push(`Low data completeness: ${avgCompleteness.toFixed(2)}%`);\\nif (errorRate > 5) qualityIssues.push(`High error rate: ${errorRate.toFixed(2)}%`);\\nif (duplicateRate > 10) qualityIssues.push(`High duplicate rate: ${duplicateRate.toFixed(2)}%`);\\n\\nreturn {\\n  quality_report: {\\n    overall_score: Math.round(qualityScore),\\n    total_records: processedData.length,\\n    error_records: errorData.length,\\n    duplicate_records: duplicateCount,\\n    avg_completeness: Math.round(avgCompleteness),\\n    error_rate: Math.round(errorRate * 100) / 100,\\n    duplicate_rate: Math.round(duplicateRate * 100) / 100,\\n    completeness_analysis: completenessAnalysis,\\n    value_distribution: valueDistribution,\\n    quality_issues: qualityIssues,\\n    duplicate_groups: duplicateGroups.slice(0, 10) // First 10 duplicate groups\\n  }\\n};"
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "data_output",
+          "type": "postgresql",
+          "name": "Store Processed Data",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "bulk_insert",
+            "table": "{{output_table}}",
+            "batch_size": 1000,
+            "conflict_resolution": "IGNORE",
+            "create_table_if_not_exists": true,
+            "schema_inference": true,
+            "additional_columns": {
+              "_batch_id": "{{execution_id}}",
+              "_processing_timestamp": "NOW()",
+              "_file_source": "{{file_name}}"
+            }
+          },
+          "position": { "x": 900, "y": 50 }
+        },
+        {
+          "id": "error_output",
+          "type": "file",
+          "name": "Save Error Report",
+          "configuration": {
+            "operation": "write",
+            "file_path": "{{error_directory}}/{{file_name}}_errors_{{timestamp}}.json",
+            "content": "{{JSON.stringify(error_data, null, 2)}}",
+            "create_directory": true,
+            "backup_existing": true
+          },
+          "position": { "x": 900, "y": 150 }
+        },
+        {
+          "id": "quality_report",
+          "type": "file",
+          "name": "Generate Quality Report",
+          "configuration": {
+            "operation": "write",
+            "file_path": "{{report_directory}}/{{file_name}}_quality_report_{{timestamp}}.json",
+            "content": "{{JSON.stringify(quality_report, null, 2)}}",
+            "create_directory": true
+          },
+          "position": { "x": 900, "y": 250 }
+        },
+        {
+          "id": "file_archival",
+          "type": "file",
+          "name": "Archive Processed File",
+          "configuration": {
+            "operation": "move",
+            "source_path": "{{file_path}}",
+            "destination_path": "{{archive_directory}}/processed/{{timestamp}}_{{file_name}}",
+            "create_directory": true,
+            "preserve_timestamp": true
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "success_notification",
+          "type": "slack",
+          "name": "Send Processing Summary",
+          "configuration": {
+            "channel": "{{notification_channel}}",
+            "message": "✅ CSV Processing Complete\\n\\n**File**: {{file_name}}\\n**Records Processed**: {{processing_stats.successful_rows:,}}\\n**Errors**: {{processing_stats.error_rows}}\\n**Success Rate**: {{processing_stats.success_rate}}%\\n**Quality Score**: {{quality_report.overall_score}}/100\\n\\n**Quality Issues**:\\n{{#each quality_report.quality_issues}}\\n- {{this}}\\n{{/each}}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*CSV Processing Summary*\\n\\n*File:* `{{file_name}}`\\n*Records:* {{processing_stats.successful_rows:,}} processed\\n*Quality Score:* {{quality_report.overall_score}}/100\\n*Success Rate:* {{processing_stats.success_rate}}%"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Total Records*\\n{{processing_stats.total_rows_processed:,}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Error Count*\\n{{processing_stats.error_rows}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Duplicates*\\n{{quality_report.duplicate_records}}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Completeness*\\n{{quality_report.avg_completeness}}%"
+                  }
+                ]
+              }
+            ]
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "performance_metrics",
+          "type": "system_monitor",
+          "name": "Track Performance Metrics",
+          "configuration": {
+            "metrics": {
+              "file_size_mb": "{{file_size_mb}}",
+              "total_rows": "{{processing_stats.total_rows_processed}}",
+              "successful_rows": "{{processing_stats.successful_rows}}",
+              "error_rows": "{{processing_stats.error_rows}}",
+              "processing_time_ms": "{{execution_time_ms}}",
+              "rows_per_second": "{{processing_stats.successful_rows / (execution_time_ms / 1000)}}",
+              "quality_score": "{{quality_report.overall_score}}",
+              "memory_usage_mb": "{{memory_usage_mb}}",
+              "cpu_usage_percent": "{{cpu_usage_percent}}"
+            },
+            "alerts": [
+              {
+                "condition": "{{quality_report.overall_score < 70}}",
+                "message": "Low quality score: {{quality_report.overall_score}}/100",
+                "severity": "warning"
+              },
+              {
+                "condition": "{{processing_stats.error_rows > processing_stats.successful_rows * 0.1}}",
+                "message": "High error rate: {{processing_stats.error_rows}} errors",
+                "severity": "error"
+              }
+            ]
+          },
+          "position": { "x": 1500, "y": 100 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "file_monitor",
+          "to": "file_validator",
+          "condition": null
+        },
+        {
+          "from": "file_validator",
+          "to": "batch_processor",
+          "condition": "{{validation_status === 'valid'}}"
+        },
+        {
+          "from": "batch_processor",
+          "to": "quality_analyzer",
+          "condition": null
+        },
+        {
+          "from": "quality_analyzer",
+          "to": "data_output",
+          "condition": "{{processed_data.length > 0}}"
+        },
+        {
+          "from": "quality_analyzer",
+          "to": "error_output",
+          "condition": "{{error_data.length > 0}}"
+        },
+        {
+          "from": "quality_analyzer",
+          "to": "quality_report",
+          "condition": null
+        },
+        {
+          "from": "data_output",
+          "to": "file_archival",
+          "condition": null
+        },
+        {
+          "from": "error_output",
+          "to": "file_archival",
+          "condition": null
+        },
+        {
+          "from": "quality_report",
+          "to": "file_archival",
+          "condition": null
+        },
+        {
+          "from": "file_archival",
+          "to": "success_notification",
+          "condition": null
+        },
+        {
+          "from": "success_notification",
+          "to": "performance_metrics",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "total_files_processed": 0,
+        "total_records_processed": 0,
+        "avg_quality_score": 0,
+        "last_processing_time": null
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "postgresql_connection",
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "input_directory": "/data/input",
+        "archive_directory": "/data/archive",
+        "error_directory": "/data/errors",
+        "report_directory": "/data/reports",
+        "output_table": "processed_csv_data",
+        "notification_channel": "#data-processing",
+        "max_file_size_mb": 500,
+        "batch_size": 5000
+      },
+      "custom_parameters": {
+        "required_columns": {
+          "type": "array",
+          "default": [],
+          "description": "List of required column names"
+        },
+        "transformation_rules": {
+          "type": "array",
+          "default": [],
+          "description": "Data transformation and validation rules"
+        },
+        "quality_threshold": {
+          "type": "integer",
+          "default": 70,
+          "description": "Minimum quality score threshold"
+        },
+        "auto_archive": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically archive processed files"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_processing_time_ms": 0,
+        "avg_rows_per_second": 0,
+        "avg_quality_score": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure input, archive, and output directories\\n2. Set up database connection and output table\\n3. Define required columns and transformation rules\\n4. Configure notification channels\\n5. Test with sample CSV files\\n6. Monitor performance and adjust batch sizes",
+      "use_cases": [
+        "Employee data imports and HR system updates",
+        "Customer data migration and CRM integration",
+        "Financial transaction processing and reporting",
+        "Inventory data synchronization",
+        "Survey response processing and analysis"
+      ],
+      "troubleshooting": {
+        "large_file_processing": "Increase batch size and available memory allocation",
+        "low_quality_scores": "Review transformation rules and data validation logic",
+        "high_error_rates": "Check CSV format consistency and column mapping",
+        "slow_processing": "Optimize database connection pool and batch sizes"
+      }
+    }
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "json-data-processor-v1.0",
+    "name": "Advanced JSON Data Processing Pipeline",
+    "description": "Comprehensive JSON data processing template with schema inference, nested data flattening, complex transformations, and validation. Handles large JSON files, arrays, and complex nested structures.",
+    "category": "data-etl",
+    "subcategories": ["json", "transformation", "schema-inference", "nested-data"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "intermediate"
+    },
+    "tags": ["json", "data-processing", "schema-inference", "nested-data", "transformation", "validation"],
+    "integrations": ["file", "s3", "mongodb", "elasticsearch", "postgresql"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "json_file_monitor",
+          "type": "file",
+          "name": "Monitor JSON Files",
+          "configuration": {
+            "operation": "watch_directory",
+            "directory": "{{json_input_directory}}",
+            "file_pattern": "*.json",
+            "poll_interval_seconds": 30,
+            "include_subdirectories": true,
+            "file_size_threshold_mb": 1000,
+            "exclude_patterns": [".*processed.*", ".*error.*"]
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "json_validator",
+          "type": "javascript",
+          "name": "Validate JSON Structure",
+          "configuration": {
+            "code": "// JSON validation and structure analysis\\nconst fs = require('fs');\\nconst path = require('path');\\n\\nconst filePath = inputs.file_path;\\nconst fileName = path.basename(filePath);\\n\\ntry {\\n  // Read and parse JSON file\\n  const fileContent = fs.readFileSync(filePath, 'utf8');\\n  let jsonData;\\n  \\n  try {\\n    jsonData = JSON.parse(fileContent);\\n  } catch (parseError) {\\n    // Try to fix common JSON issues\\n    const fixedContent = fileContent\\n      .replace(/,\\s*}/g, '}')  // Remove trailing commas in objects\\n      .replace(/,\\s*]/g, ']')  // Remove trailing commas in arrays\\n      .replace(/([\\\\w]+):/g, '\"$1\":')  // Quote unquoted keys\\n      .replace(/'/g, '\"');  // Convert single quotes to double quotes\\n    \\n    try {\\n      jsonData = JSON.parse(fixedContent);\\n      console.log('JSON repaired successfully');\\n    } catch (repairError) {\\n      throw new Error(`JSON parse failed: ${parseError.message}`);\\n    }\\n  }\\n  \\n  // Analyze JSON structure\\n  const structureAnalysis = analyzeJsonStructure(jsonData);\\n  \\n  // Validate against schema if provided\\n  const schemaValidation = inputs.json_schema ? \\n    validateAgainstSchema(jsonData, inputs.json_schema) : \\n    { valid: true, errors: [] };\\n  \\n  // File statistics\\n  const stats = fs.statSync(filePath);\\n  \\n  return {\\n    validation_status: 'valid',\\n    file_path: filePath,\\n    file_name: fileName,\\n    file_size_mb: (stats.size / (1024 * 1024)).toFixed(2),\\n    json_data: jsonData,\\n    structure_analysis: structureAnalysis,\\n    schema_validation: schemaValidation,\\n    processing_timestamp: new Date().toISOString()\\n  };\\n  \\n} catch (error) {\\n  return {\\n    validation_status: 'invalid',\\n    file_path: filePath,\\n    file_name: fileName,\\n    error_message: error.message,\\n    should_skip: true,\\n    processing_timestamp: new Date().toISOString()\\n  };\\n}\\n\\nfunction analyzeJsonStructure(data, path = '') {\\n  const analysis = {\\n    total_keys: 0,\\n    nested_objects: 0,\\n    arrays: 0,\\n    data_types: {},\\n    max_nesting_depth: 0,\\n    key_patterns: {},\\n    sample_data: {}\\n  };\\n  \\n  function traverse(obj, currentPath = '', depth = 0) {\\n    analysis.max_nesting_depth = Math.max(analysis.max_nesting_depth, depth);\\n    \\n    if (Array.isArray(obj)) {\\n      analysis.arrays++;\\n      analysis.data_types.array = (analysis.data_types.array || 0) + 1;\\n      \\n      if (obj.length > 0) {\\n        // Analyze array elements\\n        const elementTypes = new Set();\\n        obj.slice(0, 10).forEach(element => {  // Sample first 10 elements\\n          elementTypes.add(typeof element);\\n          if (typeof element === 'object' && element !== null) {\\n            traverse(element, `${currentPath}[*]`, depth + 1);\\n          }\\n        });\\n        \\n        analysis.key_patterns[`${currentPath}[*]`] = {\\n          element_types: Array.from(elementTypes),\\n          array_length: obj.length\\n        };\\n      }\\n      \\n    } else if (typeof obj === 'object' && obj !== null) {\\n      analysis.nested_objects++;\\n      \\n      for (const [key, value] of Object.entries(obj)) {\\n        const keyPath = currentPath ? `${currentPath}.${key}` : key;\\n        analysis.total_keys++;\\n        \\n        const valueType = Array.isArray(value) ? 'array' : typeof value;\\n        analysis.data_types[valueType] = (analysis.data_types[valueType] || 0) + 1;\\n        \\n        // Store sample data for schema inference\\n        if (!analysis.sample_data[keyPath]) {\\n          analysis.sample_data[keyPath] = {\\n            type: valueType,\\n            sample_value: Array.isArray(value) ? `[${value.length} items]` : \\n                         typeof value === 'object' ? '[object]' : value\\n          };\\n        }\\n        \\n        if (typeof value === 'object') {\\n          traverse(value, keyPath, depth + 1);\\n        }\\n      }\\n    }\\n  }\\n  \\n  traverse(data);\\n  return analysis;\\n}\\n\\nfunction validateAgainstSchema(data, schema) {\\n  const errors = [];\\n  \\n  function validateObject(obj, schemaObj, path = '') {\\n    if (schemaObj.required) {\\n      for (const requiredField of schemaObj.required) {\\n        if (!obj.hasOwnProperty(requiredField)) {\\n          errors.push(`Missing required field: ${path}.${requiredField}`);\\n        }\\n      }\\n    }\\n    \\n    if (schemaObj.properties) {\\n      for (const [key, value] of Object.entries(obj)) {\\n        const fieldSchema = schemaObj.properties[key];\\n        if (fieldSchema) {\\n          const fieldPath = path ? `${path}.${key}` : key;\\n          validateField(value, fieldSchema, fieldPath);\\n        }\\n      }\\n    }\\n  }\\n  \\n  function validateField(value, fieldSchema, path) {\\n    if (fieldSchema.type) {\\n      const actualType = Array.isArray(value) ? 'array' : typeof value;\\n      if (actualType !== fieldSchema.type) {\\n        errors.push(`Type mismatch at ${path}: expected ${fieldSchema.type}, got ${actualType}`);\\n      }\\n    }\\n    \\n    if (fieldSchema.type === 'object' && typeof value === 'object' && !Array.isArray(value)) {\\n      validateObject(value, fieldSchema, path);\\n    } else if (fieldSchema.type === 'array' && Array.isArray(value)) {\\n      if (fieldSchema.items) {\\n        value.forEach((item, index) => {\\n          validateField(item, fieldSchema.items, `${path}[${index}]`);\\n        });\\n      }\\n    }\\n    \\n    if (fieldSchema.minLength && typeof value === 'string' && value.length < fieldSchema.minLength) {\\n      errors.push(`String too short at ${path}: minimum ${fieldSchema.minLength} characters`);\\n    }\\n    \\n    if (fieldSchema.maxLength && typeof value === 'string' && value.length > fieldSchema.maxLength) {\\n      errors.push(`String too long at ${path}: maximum ${fieldSchema.maxLength} characters`);\\n    }\\n  }\\n  \\n  if (schema.type === 'object') {\\n    validateObject(data, schema);\\n  } else if (schema.type === 'array' && Array.isArray(data)) {\\n    if (schema.items) {\\n      data.forEach((item, index) => {\\n        validateField(item, schema.items, `[${index}]`);\\n      });\\n    }\\n  }\\n  \\n  return {\\n    valid: errors.length === 0,\\n    errors: errors\\n  };\\n}"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "json_transformer",
+          "type": "javascript",
+          "name": "Transform JSON Data",
+          "configuration": {
+            "code": "// Advanced JSON transformation with flattening and restructuring\\nconst jsonData = inputs.json_data;\\nconst transformationRules = inputs.transformation_config || {};\\nconst structureAnalysis = inputs.structure_analysis || {};\\n\\nfunction flattenJson(obj, prefix = '', separator = '.') {\\n  const flattened = {};\\n  \\n  function flatten(current, prop) {\\n    if (Object.prototype.toString.call(current) === '[object Object]') {\\n      let isEmpty = true;\\n      for (let p in current) {\\n        isEmpty = false;\\n        flatten(current[p], prop ? prop + separator + p : p);\\n      }\\n      if (isEmpty && prop) {\\n        flattened[prop] = {};\\n      }\\n    } else if (Array.isArray(current)) {\\n      if (current.length === 0) {\\n        flattened[prop] = [];\\n      } else {\\n        // Handle arrays based on configuration\\n        if (transformationRules.array_handling === 'expand_indexed') {\\n          current.forEach((item, index) => {\\n            flatten(item, `${prop}[${index}]`);\\n          });\\n        } else if (transformationRules.array_handling === 'expand_rows') {\\n          // This will be handled later for creating multiple rows\\n          flattened[prop] = current;\\n        } else {\\n          // Default: keep as array\\n          flattened[prop] = current;\\n        }\\n      }\\n    } else {\\n      flattened[prop] = current;\\n    }\\n  }\\n  \\n  flatten(obj, prefix);\\n  return flattened;\\n}\\n\\nfunction transformJsonData(data) {\\n  const transformedRecords = [];\\n  \\n  // Handle root array vs single object\\n  const dataArray = Array.isArray(data) ? data : [data];\\n  \\n  for (const record of dataArray) {\\n    let transformedRecord = { ...record };\\n    \\n    // Apply field mappings\\n    if (transformationRules.field_mappings) {\\n      for (const [oldField, newField] of Object.entries(transformationRules.field_mappings)) {\\n        if (transformedRecord.hasOwnProperty(oldField)) {\\n          transformedRecord[newField] = transformedRecord[oldField];\\n          delete transformedRecord[oldField];\\n        }\\n      }\\n    }\\n    \\n    // Apply data type conversions\\n    if (transformationRules.type_conversions) {\\n      for (const [field, targetType] of Object.entries(transformationRules.type_conversions)) {\\n        if (transformedRecord.hasOwnProperty(field)) {\\n          transformedRecord[field] = convertDataType(transformedRecord[field], targetType);\\n        }\\n      }\\n    }\\n    \\n    // Flatten nested structures if requested\\n    if (transformationRules.flatten_nested) {\\n      transformedRecord = flattenJson(transformedRecord);\\n    }\\n    \\n    // Extract nested array elements into separate records\\n    if (transformationRules.array_handling === 'expand_rows') {\\n      const expandedRecords = expandArraysToRows(transformedRecord, transformationRules.array_fields || []);\\n      transformedRecords.push(...expandedRecords);\\n    } else {\\n      transformedRecords.push(transformedRecord);\\n    }\\n  }\\n  \\n  // Apply calculated fields\\n  if (transformationRules.calculated_fields) {\\n    for (const record of transformedRecords) {\\n      for (const [fieldName, calculation] of Object.entries(transformationRules.calculated_fields)) {\\n        record[fieldName] = calculateField(record, calculation);\\n      }\\n    }\\n  }\\n  \\n  // Add metadata\\n  for (const record of transformedRecords) {\\n    record._source_file = inputs.file_name;\\n    record._processing_timestamp = new Date().toISOString();\\n    record._record_id = generateRecordId(record, transformationRules.primary_key_fields || []);\\n  }\\n  \\n  return transformedRecords;\\n}\\n\\nfunction convertDataType(value, targetType) {\\n  if (value === null || value === undefined) return value;\\n  \\n  switch (targetType) {\\n    case 'string':\\n      return String(value);\\n    case 'number':\\n      const num = Number(value);\\n      return isNaN(num) ? null : num;\\n    case 'boolean':\\n      if (typeof value === 'boolean') return value;\\n      if (typeof value === 'string') {\\n        return value.toLowerCase() === 'true' || value === '1';\\n      }\\n      return Boolean(value);\\n    case 'date':\\n      const date = new Date(value);\\n      return isNaN(date.getTime()) ? null : date.toISOString();\\n    case 'integer':\\n      const int = parseInt(value);\\n      return isNaN(int) ? null : int;\\n    case 'float':\\n      const float = parseFloat(value);\\n      return isNaN(float) ? null : float;\\n    default:\\n      return value;\\n  }\\n}\\n\\nfunction expandArraysToRows(record, arrayFields) {\\n  const expandedRecords = [];\\n  const nonArrayFields = {};\\n  const arrayData = {};\\n  \\n  // Separate array and non-array fields\\n  for (const [key, value] of Object.entries(record)) {\\n    if (Array.isArray(value) && arrayFields.includes(key)) {\\n      arrayData[key] = value;\\n    } else {\\n      nonArrayFields[key] = value;\\n    }\\n  }\\n  \\n  // If no arrays to expand, return original record\\n  if (Object.keys(arrayData).length === 0) {\\n    return [record];\\n  }\\n  \\n  // Find maximum array length\\n  const maxLength = Math.max(...Object.values(arrayData).map(arr => arr.length));\\n  \\n  // Create expanded records\\n  for (let i = 0; i < maxLength; i++) {\\n    const expandedRecord = { ...nonArrayFields };\\n    \\n    for (const [arrayField, arrayValue] of Object.entries(arrayData)) {\\n      expandedRecord[arrayField] = i < arrayValue.length ? arrayValue[i] : null;\\n      expandedRecord[`${arrayField}_index`] = i;\\n    }\\n    \\n    expandedRecords.push(expandedRecord);\\n  }\\n  \\n  return expandedRecords;\\n}\\n\\nfunction calculateField(record, calculation) {\\n  try {\\n    // Simple expression evaluation\\n    if (calculation.type === 'concatenation') {\\n      return calculation.fields.map(field => record[field] || '').join(calculation.separator || ' ');\\n    } else if (calculation.type === 'arithmetic') {\\n      const values = calculation.fields.map(field => parseFloat(record[field]) || 0);\\n      switch (calculation.operation) {\\n        case 'sum': return values.reduce((a, b) => a + b, 0);\\n        case 'multiply': return values.reduce((a, b) => a * b, 1);\\n        case 'average': return values.reduce((a, b) => a + b, 0) / values.length;\\n        default: return null;\\n      }\\n    } else if (calculation.type === 'conditional') {\\n      const conditionField = record[calculation.condition_field];\\n      return calculation.conditions[conditionField] || calculation.default_value;\\n    } else if (calculation.type === 'extraction') {\\n      const sourceValue = record[calculation.source_field];\\n      if (typeof sourceValue === 'string' && calculation.regex) {\\n        const match = sourceValue.match(new RegExp(calculation.regex));\\n        return match ? match[calculation.group || 0] : null;\\n      }\\n    }\\n    return null;\\n  } catch (error) {\\n    console.error(`Error calculating field: ${error.message}`);\\n    return null;\\n  }\\n}\\n\\nfunction generateRecordId(record, primaryKeyFields) {\\n  if (primaryKeyFields.length === 0) {\\n    return `${inputs.file_name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\\n  }\\n  \\n  const keyValues = primaryKeyFields.map(field => record[field] || 'null').join('_');\\n  return `${keyValues}_${inputs.file_name}`;\\n}\\n\\n// Transform the data\\nconst transformedRecords = transformJsonData(jsonData);\\n\\n// Generate transformation statistics\\nconst transformationStats = {\\n  input_records: Array.isArray(jsonData) ? jsonData.length : 1,\\n  output_records: transformedRecords.length,\\n  transformation_ratio: transformedRecords.length / (Array.isArray(jsonData) ? jsonData.length : 1),\\n  fields_before: structureAnalysis.total_keys || 0,\\n  fields_after: transformedRecords.length > 0 ? Object.keys(transformedRecords[0]).length : 0,\\n  processing_timestamp: new Date().toISOString()\\n};\\n\\nreturn {\\n  transformed_data: transformedRecords,\\n  transformation_stats: transformationStats\\n};"
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "schema_inferrer",
+          "type": "javascript",
+          "name": "Infer Data Schema",
+          "configuration": {
+            "code": "// Advanced schema inference from JSON data\\nconst transformedData = inputs.transformed_data || [];\\nconst structureAnalysis = inputs.structure_analysis || {};\\n\\nif (transformedData.length === 0) {\\n  return { inferred_schema: null, schema_confidence: 0 };\\n}\\n\\nfunction inferSchema(data) {\\n  const sampleSize = Math.min(data.length, 1000); // Sample for performance\\n  const sample = data.slice(0, sampleSize);\\n  const fieldAnalysis = {};\\n  \\n  // Analyze each field across all sample records\\n  sample.forEach(record => {\\n    Object.keys(record).forEach(field => {\\n      if (!fieldAnalysis[field]) {\\n        fieldAnalysis[field] = {\\n          types: new Map(),\\n          null_count: 0,\\n          total_count: 0,\\n          sample_values: [],\\n          min_length: Infinity,\\n          max_length: 0,\\n          numeric_stats: { min: Infinity, max: -Infinity, sum: 0 }\\n        };\\n      }\\n      \\n      const analysis = fieldAnalysis[field];\\n      analysis.total_count++;\\n      \\n      const value = record[field];\\n      if (value === null || value === undefined) {\\n        analysis.null_count++;\\n        return;\\n      }\\n      \\n      const valueType = Array.isArray(value) ? 'array' : typeof value;\\n      analysis.types.set(valueType, (analysis.types.get(valueType) || 0) + 1);\\n      \\n      // Store sample values for pattern analysis\\n      if (analysis.sample_values.length < 10) {\\n        analysis.sample_values.push(value);\\n      }\\n      \\n      // String analysis\\n      if (typeof value === 'string') {\\n        analysis.min_length = Math.min(analysis.min_length, value.length);\\n        analysis.max_length = Math.max(analysis.max_length, value.length);\\n      }\\n      \\n      // Numeric analysis\\n      if (typeof value === 'number') {\\n        analysis.numeric_stats.min = Math.min(analysis.numeric_stats.min, value);\\n        analysis.numeric_stats.max = Math.max(analysis.numeric_stats.max, value);\\n        analysis.numeric_stats.sum += value;\\n      }\\n    });\\n  });\\n  \\n  // Generate schema from analysis\\n  const schema = {\\n    $schema: 'http://json-schema.org/draft-07/schema#',\\n    type: 'object',\\n    properties: {},\\n    required: []\\n  };\\n  \\n  const fieldMetrics = {};\\n  \\n  Object.entries(fieldAnalysis).forEach(([field, analysis]) => {\\n    const fieldSchema = { title: field };\\n    const typeFrequencies = Array.from(analysis.types.entries())\\n      .sort((a, b) => b[1] - a[1]);\\n    \\n    const dominantType = typeFrequencies[0];\\n    const typeConfidence = dominantType[1] / analysis.total_count;\\n    \\n    // Determine field type\\n    if (dominantType[0] === 'string') {\\n      fieldSchema.type = 'string';\\n      \\n      // Check for specific string patterns\\n      const patterns = detectStringPatterns(analysis.sample_values);\\n      if (patterns.email > 0.8) {\\n        fieldSchema.format = 'email';\\n        fieldSchema.pattern = '^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$';\\n      } else if (patterns.url > 0.8) {\\n        fieldSchema.format = 'uri';\\n      } else if (patterns.date > 0.8) {\\n        fieldSchema.format = 'date-time';\\n      } else if (patterns.uuid > 0.8) {\\n        fieldSchema.format = 'uuid';\\n      }\\n      \\n      // String length constraints\\n      if (analysis.min_length !== Infinity) {\\n        fieldSchema.minLength = analysis.min_length;\\n        fieldSchema.maxLength = analysis.max_length;\\n      }\\n      \\n    } else if (dominantType[0] === 'number') {\\n      // Determine if integer or float\\n      const isInteger = analysis.sample_values.every(v => \\n        typeof v === 'number' && Number.isInteger(v)\\n      );\\n      \\n      fieldSchema.type = isInteger ? 'integer' : 'number';\\n      \\n      if (analysis.numeric_stats.min !== Infinity) {\\n        fieldSchema.minimum = analysis.numeric_stats.min;\\n        fieldSchema.maximum = analysis.numeric_stats.max;\\n      }\\n      \\n    } else if (dominantType[0] === 'boolean') {\\n      fieldSchema.type = 'boolean';\\n      \\n    } else if (dominantType[0] === 'array') {\\n      fieldSchema.type = 'array';\\n      \\n      // Analyze array elements\\n      const arrayElements = analysis.sample_values.filter(Array.isArray).flat();\\n      if (arrayElements.length > 0) {\\n        const elementTypes = [...new Set(arrayElements.map(el => typeof el))];\\n        if (elementTypes.length === 1) {\\n          fieldSchema.items = { type: elementTypes[0] };\\n        }\\n      }\\n      \\n    } else if (dominantType[0] === 'object') {\\n      fieldSchema.type = 'object';\\n      // Could recursively analyze nested objects here\\n    }\\n    \\n    // Nullable field detection\\n    const nullabilityRate = analysis.null_count / analysis.total_count;\\n    if (nullabilityRate < 0.05) { // Less than 5% nulls\\n      schema.required.push(field);\\n    }\\n    \\n    if (nullabilityRate > 0) {\\n      fieldSchema.nullable = true;\\n    }\\n    \\n    schema.properties[field] = fieldSchema;\\n    \\n    // Store field metrics for confidence calculation\\n    fieldMetrics[field] = {\\n      type_confidence: typeConfidence,\\n      nullability_rate: nullabilityRate,\\n      sample_size: analysis.total_count\\n    };\\n  });\\n  \\n  // Calculate overall schema confidence\\n  const avgTypeConfidence = Object.values(fieldMetrics)\\n    .reduce((sum, metrics) => sum + metrics.type_confidence, 0) / Object.keys(fieldMetrics).length;\\n  \\n  const schemaConfidence = Math.round(avgTypeConfidence * 100);\\n  \\n  return {\\n    schema,\\n    field_metrics: fieldMetrics,\\n    confidence: schemaConfidence,\\n    sample_size: sampleSize\\n  };\\n}\\n\\nfunction detectStringPatterns(values) {\\n  const patterns = {\\n    email: 0,\\n    url: 0,\\n    date: 0,\\n    uuid: 0,\\n    phone: 0\\n  };\\n  \\n  const regexes = {\\n    email: /^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/,\\n    url: /^https?:\\\\/\\\\/[^\\\\s/$.?#].[^\\\\s]*$/,\\n    date: /^\\\\d{4}-\\\\d{2}-\\\\d{2}(T\\\\d{2}:\\\\d{2}:\\\\d{2})?/,\\n    uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,\\n    phone: /^[+]?[1-9]?[0-9]{7,15}$/\\n  };\\n  \\n  const stringValues = values.filter(v => typeof v === 'string');\\n  if (stringValues.length === 0) return patterns;\\n  \\n  Object.entries(regexes).forEach(([pattern, regex]) => {\\n    const matches = stringValues.filter(value => regex.test(value)).length;\\n    patterns[pattern] = matches / stringValues.length;\\n  });\\n  \\n  return patterns;\\n}\\n\\nconst schemaInference = inferSchema(transformedData);\\n\\nreturn {\\n  inferred_schema: schemaInference.schema,\\n  schema_confidence: schemaInference.confidence,\\n  field_metrics: schemaInference.field_metrics,\\n  sample_size: schemaInference.sample_size\\n};"
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "data_storage",
+          "type": "postgresql",
+          "name": "Store Processed JSON Data",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "dynamic_upsert",
+            "table": "{{output_table_name}}",
+            "data_source": "transformed_data",
+            "schema_source": "inferred_schema",
+            "create_table_from_schema": true,
+            "conflict_resolution": "UPDATE",
+            "conflict_columns": ["_record_id"],
+            "batch_size": 1000
+          },
+          "position": { "x": 900, "y": 50 }
+        },
+        {
+          "id": "mongodb_storage",
+          "type": "mongodb",
+          "name": "Store in MongoDB",
+          "configuration": {
+            "connection": "{{mongodb_connection}}",
+            "database": "{{mongodb_database}}",
+            "collection": "{{mongodb_collection}}",
+            "operation": "bulk_upsert",
+            "data_source": "transformed_data",
+            "upsert_key": "_record_id",
+            "batch_size": 1000
+          },
+          "position": { "x": 900, "y": 150 }
+        },
+        {
+          "id": "schema_registry",
+          "type": "file",
+          "name": "Save Inferred Schema",
+          "configuration": {
+            "operation": "write",
+            "file_path": "{{schema_output_directory}}/{{file_name}}_schema_{{timestamp}}.json",
+            "content": "{{JSON.stringify(inferred_schema, null, 2)}}",
+            "create_directory": true
+          },
+          "position": { "x": 900, "y": 250 }
+        },
+        {
+          "id": "processing_report",
+          "type": "file",
+          "name": "Generate Processing Report",
+          "configuration": {
+            "operation": "write",
+            "file_path": "{{report_output_directory}}/{{file_name}}_processing_report_{{timestamp}}.json",
+            "content": "{{JSON.stringify({ file_name: file_name, structure_analysis: structure_analysis, transformation_stats: transformation_stats, schema_confidence: schema_confidence, field_metrics: field_metrics, processing_timestamp: now() }, null, 2)}}",
+            "create_directory": true
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "file_archival",
+          "type": "file",
+          "name": "Archive Processed File",
+          "configuration": {
+            "operation": "move",
+            "source_path": "{{file_path}}",
+            "destination_path": "{{archive_directory}}/processed/{{timestamp}}_{{file_name}}",
+            "create_directory": true
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "success_notification",
+          "type": "slack",
+          "name": "Send Processing Notification",
+          "configuration": {
+            "channel": "{{notification_channel}}",
+            "message": "✅ JSON Processing Complete\\n\\n**File**: {{file_name}}\\n**Input Records**: {{transformation_stats.input_records:,}}\\n**Output Records**: {{transformation_stats.output_records:,}}\\n**Schema Confidence**: {{schema_confidence}}%\\n**Processing Time**: {{execution_time_ms / 1000}} seconds\\n\\n**Structure Analysis**:\\n• Total Keys: {{structure_analysis.total_keys}}\\n• Nested Objects: {{structure_analysis.nested_objects}}\\n• Arrays: {{structure_analysis.arrays}}\\n• Max Nesting: {{structure_analysis.max_nesting_depth}} levels"
+          },
+          "position": { "x": 1500, "y": 100 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "json_file_monitor",
+          "to": "json_validator",
+          "condition": null
+        },
+        {
+          "from": "json_validator",
+          "to": "json_transformer",
+          "condition": "{{validation_status === 'valid'}}"
+        },
+        {
+          "from": "json_transformer",
+          "to": "schema_inferrer",
+          "condition": null
+        },
+        {
+          "from": "schema_inferrer",
+          "to": "data_storage",
+          "condition": "{{enable_postgresql_storage}}"
+        },
+        {
+          "from": "schema_inferrer",
+          "to": "mongodb_storage",
+          "condition": "{{enable_mongodb_storage}}"
+        },
+        {
+          "from": "schema_inferrer",
+          "to": "schema_registry",
+          "condition": null
+        },
+        {
+          "from": "data_storage",
+          "to": "processing_report",
+          "condition": null
+        },
+        {
+          "from": "mongodb_storage",
+          "to": "processing_report",
+          "condition": null
+        },
+        {
+          "from": "schema_registry",
+          "to": "processing_report",
+          "condition": null
+        },
+        {
+          "from": "processing_report",
+          "to": "file_archival",
+          "condition": null
+        },
+        {
+          "from": "file_archival",
+          "to": "success_notification",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "total_files_processed": 0,
+        "total_records_processed": 0,
+        "avg_schema_confidence": 0
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "postgresql_connection",
+        "mongodb_connection", 
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "json_input_directory": "/data/input/json",
+        "archive_directory": "/data/archive",
+        "schema_output_directory": "/data/schemas",
+        "report_output_directory": "/data/reports",
+        "output_table_name": "processed_json_data",
+        "mongodb_database": "json_processing",
+        "mongodb_collection": "processed_data",
+        "notification_channel": "#data-processing",
+        "enable_postgresql_storage": true,
+        "enable_mongodb_storage": false
+      },
+      "custom_parameters": {
+        "transformation_config": {
+          "type": "object",
+          "default": {
+            "flatten_nested": true,
+            "array_handling": "keep_arrays",
+            "field_mappings": {},
+            "type_conversions": {},
+            "calculated_fields": {}
+          },
+          "description": "JSON transformation configuration"
+        },
+        "json_schema": {
+          "type": "object",
+          "description": "Optional JSON schema for validation"
+        },
+        "primary_key_fields": {
+          "type": "array",
+          "default": [],
+          "description": "Fields to use for generating unique record IDs"
+        },
+        "validation_strict": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to reject files that fail schema validation"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_processing_time_ms": 0,
+        "avg_records_per_second": 0,
+        "avg_schema_confidence": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure input directory for JSON files\\n2. Set up database connections (PostgreSQL/MongoDB)\\n3. Define transformation rules and field mappings\\n4. Configure schema output and archival directories\\n5. Set up notification channels\\n6. Test with sample JSON files\\n7. Monitor processing and schema confidence",
+      "use_cases": [
+        "API response data processing and normalization",
+        "Log file analysis and structured data extraction", 
+        "Configuration file processing and validation",
+        "Survey data transformation and analysis",
+        "IoT sensor data processing from JSON formats"
+      ],
+      "troubleshooting": {
+        "low_schema_confidence": "Review data quality and increase sample size",
+        "nested_data_issues": "Adjust flattening configuration or array handling",
+        "type_inference_errors": "Define explicit type conversions in transformation config",
+        "performance_issues": "Reduce batch size or optimize transformation rules"
+      }
+    }
+  }
+}

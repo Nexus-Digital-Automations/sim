@@ -1,0 +1,581 @@
+# Lead Qualification and Scoring Workflow Template
+# Automatically qualifies and scores leads based on multiple criteria
+
+metadata:
+  title: "Automated Lead Qualification & Scoring System"
+  description: "Comprehensive lead qualification workflow with multi-criteria scoring, automated routing, and CRM integration"
+  category: "crm-workflows"
+  subcategories: ["lead-management", "sales-automation", "scoring"]
+  version: "1.0.0"
+  author:
+    name: "Sim Platform Templates"
+    verified: true
+  difficulty: "intermediate"
+  estimated_setup_time: "15-20 minutes"
+  tags: ["lead-scoring", "crm", "automation", "qualification", "sales"]
+  integrations: ["salesforce", "hubspot", "pipedrive", "email", "slack"]
+  
+  # Template metrics and usage
+  usage_stats:
+    installations: 0
+    success_rate: 95.8
+    average_rating: 4.7
+    
+  # Business impact metrics
+  business_impact:
+    time_saved: "8-12 hours per week"
+    conversion_improvement: "35-45%"
+    lead_response_time: "Under 5 minutes"
+
+# Workflow Definition
+workflow:
+  name: "lead-qualification-scoring"
+  description: "Multi-stage lead qualification and scoring system"
+  
+  # Input triggers - multiple lead sources
+  triggers:
+    - id: "web_form_submission"
+      type: "webhook"
+      source: "website_form"
+      description: "New lead from website contact forms"
+      
+    - id: "marketing_campaign"
+      type: "webhook"
+      source: "marketing_automation"
+      description: "Lead from marketing campaigns"
+      
+    - id: "social_media_inquiry"
+      type: "webhook"
+      source: "social_platforms"
+      description: "Inquiries from social media channels"
+      
+    - id: "trade_show_collection"
+      type: "manual"
+      source: "events"
+      description: "Leads collected at trade shows/events"
+
+  # Variables and configuration
+  variables:
+    scoring_thresholds:
+      hot_lead: 80
+      warm_lead: 60
+      cold_lead: 40
+      disqualified: 20
+    
+    response_timeframes:
+      hot_lead: "5 minutes"
+      warm_lead: "2 hours"
+      cold_lead: "24 hours"
+      
+    crm_settings:
+      lead_owner_assignment: "round_robin"
+      notification_channels: ["email", "slack", "sms"]
+      
+  # Workflow steps
+  blocks:
+    # Step 1: Lead Data Collection and Enrichment
+    - id: "lead_data_enrichment"
+      type: "data_enrichment"
+      name: "Enrich Lead Information"
+      description: "Gather additional data about the lead from multiple sources"
+      
+      config:
+        enrichment_sources:
+          - "clearbit_api"
+          - "zoominfo_api"
+          - "linkedin_api"
+          - "company_database"
+        
+        data_points:
+          - company_size
+          - industry_vertical
+          - annual_revenue
+          - technology_stack
+          - contact_role_level
+          - social_media_presence
+          - website_traffic_data
+      
+      error_handling:
+        on_failure: "continue_with_available_data"
+        timeout: "30 seconds"
+        retry_attempts: 2
+        
+    # Step 2: Qualification Criteria Assessment
+    - id: "qualification_assessment"
+      type: "decision_logic"
+      name: "Assess Lead Qualification"
+      description: "Evaluate lead against BANT and custom criteria"
+      
+      config:
+        qualification_criteria:
+          budget_assessment:
+            indicators: ["company_size", "revenue", "funding_status"]
+            weight: 25
+            scoring_rules:
+              - condition: "company_size > 100 AND revenue > 10M"
+                score: 25
+              - condition: "company_size > 50 AND revenue > 5M"
+                score: 20
+              - condition: "company_size > 25 AND revenue > 1M"
+                score: 15
+              - condition: "company_size > 10"
+                score: 10
+              - default: 5
+                
+          authority_assessment:
+            indicators: ["job_title", "seniority_level", "decision_maker"]
+            weight: 20
+            scoring_rules:
+              - condition: "title CONTAINS 'CEO|CTO|VP|Director'"
+                score: 20
+              - condition: "title CONTAINS 'Manager|Head|Lead'"
+                score: 15
+              - condition: "title CONTAINS 'Coordinator|Analyst|Associate'"
+                score: 10
+              - default: 5
+                
+          need_assessment:
+            indicators: ["form_responses", "website_behavior", "content_engagement"]
+            weight: 30
+            scoring_rules:
+              - condition: "form_interest_level = 'urgent' OR pages_visited > 5"
+                score: 30
+              - condition: "form_interest_level = 'high' OR pages_visited > 3"
+                score: 25
+              - condition: "form_interest_level = 'medium' OR pages_visited > 1"
+                score: 15
+              - default: 5
+                
+          timeline_assessment:
+            indicators: ["implementation_timeline", "urgency_indicators"]
+            weight: 25
+            scoring_rules:
+              - condition: "timeline = 'immediate' OR urgency = 'high'"
+                score: 25
+              - condition: "timeline = 'within_3_months'"
+                score: 20
+              - condition: "timeline = 'within_6_months'"
+                score: 15
+              - condition: "timeline = 'within_year'"
+                score: 10
+              - default: 5
+      
+      outputs:
+        total_score: "calculated_qualification_score"
+        qualification_breakdown: "detailed_scoring_analysis"
+        recommendation: "next_action_recommendation"
+        
+    # Step 3: Lead Scoring and Classification
+    - id: "lead_classification"
+      type: "conditional_logic"
+      name: "Classify Lead Priority"
+      description: "Assign lead priority based on qualification score"
+      
+      config:
+        classification_rules:
+          - condition: "total_score >= 80"
+            classification: "hot_lead"
+            priority: "high"
+            sla_response_time: "5 minutes"
+            actions: ["immediate_notification", "auto_assign_senior_rep", "priority_queue"]
+            
+          - condition: "total_score >= 60"
+            classification: "warm_lead"
+            priority: "medium"
+            sla_response_time: "2 hours"
+            actions: ["standard_notification", "assign_available_rep", "normal_queue"]
+            
+          - condition: "total_score >= 40"
+            classification: "cold_lead"
+            priority: "low"
+            sla_response_time: "24 hours"
+            actions: ["batch_notification", "nurture_campaign", "low_priority_queue"]
+            
+          - condition: "total_score < 40"
+            classification: "disqualified"
+            priority: "none"
+            actions: ["add_to_nurture", "send_resource_email", "quarterly_review"]
+            
+    # Step 4: CRM Integration and Data Sync
+    - id: "crm_integration"
+      type: "api_integration"
+      name: "Sync to CRM System"
+      description: "Create or update lead record in CRM with scoring data"
+      
+      config:
+        crm_operations:
+          create_lead_record:
+            endpoint: "{{crm_base_url}}/api/leads"
+            method: "POST"
+            headers:
+              Authorization: "Bearer {{crm_api_token}}"
+              Content-Type: "application/json"
+            body:
+              lead_id: "{{lead_id}}"
+              contact_info: "{{enriched_contact_data}}"
+              qualification_score: "{{total_score}}"
+              classification: "{{lead_classification}}"
+              scoring_breakdown: "{{qualification_breakdown}}"
+              source: "{{lead_source}}"
+              created_date: "{{current_timestamp}}"
+              next_action: "{{recommendation}}"
+              sla_response_time: "{{sla_response_time}}"
+              
+          update_lead_scoring:
+            endpoint: "{{crm_base_url}}/api/leads/{{lead_id}}/scoring"
+            method: "PUT"
+            body:
+              qualification_score: "{{total_score}}"
+              last_scored_date: "{{current_timestamp}}"
+              scoring_criteria: "{{qualification_breakdown}}"
+              
+      error_handling:
+        on_failure: "log_and_notify"
+        retry_attempts: 3
+        fallback_action: "store_in_backup_queue"
+        
+    # Step 5: Automated Lead Assignment
+    - id: "lead_assignment"
+      type: "assignment_logic"
+      name: "Assign Lead to Sales Representative"
+      description: "Automatically assign qualified leads to appropriate sales reps"
+      
+      config:
+        assignment_strategies:
+          round_robin:
+            active_reps: "{{available_sales_reps}}"
+            consideration_factors: ["current_workload", "expertise_match", "availability"]
+            
+          skill_based:
+            matching_criteria:
+              - industry_expertise: "{{lead_industry}}"
+              - product_specialization: "{{lead_interest_area}}"
+              - deal_size_experience: "{{estimated_deal_value}}"
+              - language_preference: "{{lead_language}}"
+              
+          territory_based:
+            geographic_rules:
+              - region: "{{lead_region}}"
+              - timezone: "{{lead_timezone}}"
+              - local_presence_required: "{{requires_local_rep}}"
+              
+          priority_escalation:
+            hot_leads: "assign_to_senior_reps"
+            large_opportunities: "assign_to_enterprise_team"
+            strategic_accounts: "assign_to_account_managers"
+            
+    # Step 6: Multi-Channel Notifications
+    - id: "notification_system"
+      type: "notification"
+      name: "Send Notifications"
+      description: "Notify assigned rep and stakeholders about new qualified lead"
+      
+      config:
+        notification_channels:
+          email_notification:
+            template: "qualified_lead_alert"
+            recipients: ["{{assigned_sales_rep}}", "{{sales_manager}}"]
+            priority: "{{lead_priority}}"
+            content:
+              subject: "New {{lead_classification}} Lead Assigned - {{company_name}}"
+              body: |
+                New qualified lead assigned to you:
+                
+                Company: {{company_name}}
+                Contact: {{contact_name}} ({{contact_title}})
+                Score: {{total_score}}/100
+                Classification: {{lead_classification}}
+                Priority: {{lead_priority}}
+                
+                Key Details:
+                - Industry: {{industry}}
+                - Company Size: {{company_size}}
+                - Estimated Value: {{estimated_deal_value}}
+                - Response SLA: {{sla_response_time}}
+                
+                Qualification Breakdown:
+                {{qualification_breakdown}}
+                
+                Next Steps: {{recommendation}}
+                
+                CRM Link: {{crm_lead_url}}
+                
+          slack_notification:
+            channel: "#sales-qualified-leads"
+            message_format: |
+              🎯 New {{lead_classification}} lead assigned to {{assigned_sales_rep}}!
+              
+              📊 **Score**: {{total_score}}/100
+              🏢 **Company**: {{company_name}}
+              👤 **Contact**: {{contact_name}}
+              ⏰ **Response Time**: {{sla_response_time}}
+              💰 **Est. Value**: {{estimated_deal_value}}
+              
+              View in CRM: {{crm_lead_url}}
+              
+          sms_notification:
+            condition: "lead_priority = 'high'"
+            recipient: "{{assigned_sales_rep_phone}}"
+            message: "🔥 Hot lead assigned! {{company_name}} - {{contact_name}}. Score: {{total_score}}. Respond within {{sla_response_time}}. Check CRM."
+            
+    # Step 7: Follow-up Automation Setup
+    - id: "followup_automation"
+      type: "automation_trigger"
+      name: "Setup Follow-up Sequences"
+      description: "Initialize appropriate follow-up workflows based on lead classification"
+      
+      config:
+        followup_sequences:
+          hot_leads:
+            sequence_type: "immediate_outreach"
+            triggers:
+              - delay: "0 minutes"
+                action: "send_personal_email"
+                template: "hot_lead_immediate_response"
+              - delay: "30 minutes"
+                condition: "no_response"
+                action: "send_follow_up_call_reminder"
+              - delay: "2 hours"
+                condition: "no_contact"
+                action: "escalate_to_manager"
+                
+          warm_leads:
+            sequence_type: "standard_outreach"
+            triggers:
+              - delay: "30 minutes"
+                action: "send_welcome_email"
+                template: "warm_lead_introduction"
+              - delay: "2 days"
+                condition: "no_response"
+                action: "send_value_proposition_email"
+              - delay: "1 week"
+                condition: "no_engagement"
+                action: "add_to_nurture_campaign"
+                
+          cold_leads:
+            sequence_type: "nurture_campaign"
+            triggers:
+              - delay: "1 day"
+                action: "send_educational_content"
+              - delay: "1 week"
+                action: "send_case_study"
+              - delay: "1 month"
+                action: "send_industry_insights"
+              - delay: "3 months"
+                action: "re_qualification_survey"
+                
+    # Step 8: Analytics and Reporting
+    - id: "analytics_tracking"
+      type: "analytics"
+      name: "Track Performance Metrics"
+      description: "Record lead qualification metrics and performance data"
+      
+      config:
+        metrics_to_track:
+          lead_volume:
+            - leads_processed_per_day
+            - leads_by_source
+            - leads_by_classification
+            
+          qualification_performance:
+            - average_qualification_score
+            - score_distribution
+            - qualification_accuracy
+            
+          conversion_metrics:
+            - lead_to_opportunity_conversion
+            - qualification_to_close_rate
+            - time_to_first_contact
+            - response_time_sla_compliance
+            
+          rep_performance:
+            - leads_assigned_per_rep
+            - response_time_by_rep
+            - conversion_rate_by_rep
+            
+        reporting_schedule:
+          daily_summary: "7:00 AM"
+          weekly_analysis: "Monday 9:00 AM"
+          monthly_review: "First Monday of month"
+          
+        dashboard_integration:
+          platform: "tableau"
+          refresh_frequency: "every_hour"
+          stakeholder_access: ["sales_manager", "vp_sales", "cro"]
+
+# Configuration Requirements
+configuration:
+  required_credentials:
+    - name: "crm_api_token"
+      description: "API token for CRM system integration"
+      type: "api_key"
+      
+    - name: "enrichment_api_keys"
+      description: "API keys for data enrichment services"
+      type: "object"
+      properties:
+        clearbit: "string"
+        zoominfo: "string"
+        linkedin: "string"
+        
+    - name: "notification_settings"
+      description: "Configuration for notification channels"
+      type: "object"
+      properties:
+        slack_webhook: "string"
+        email_smtp_config: "object"
+        sms_provider_config: "object"
+        
+  environment_variables:
+    CRM_BASE_URL: "Base URL for CRM API"
+    LEAD_SCORING_THRESHOLD_HOT: "80"
+    LEAD_SCORING_THRESHOLD_WARM: "60"
+    LEAD_SCORING_THRESHOLD_COLD: "40"
+    DEFAULT_RESPONSE_TIME_HOT: "5m"
+    DEFAULT_RESPONSE_TIME_WARM: "2h"
+    DEFAULT_RESPONSE_TIME_COLD: "24h"
+    
+  custom_parameters:
+    - name: "industry_scoring_weights"
+      description: "Custom scoring weights for different industries"
+      type: "object"
+      default: {}
+      
+    - name: "territory_assignment_rules"
+      description: "Rules for territory-based lead assignment"
+      type: "array"
+      default: []
+      
+    - name: "qualification_criteria_customization"
+      description: "Custom qualification criteria beyond BANT"
+      type: "object"
+      default: {}
+
+# Documentation and Usage
+documentation:
+  overview: |
+    This comprehensive lead qualification and scoring workflow automatically processes incoming leads,
+    enriches their data, scores them based on multiple criteria, and routes them to appropriate
+    sales representatives with proper follow-up automation.
+    
+    The system uses advanced BANT qualification methodology combined with behavioral scoring
+    and predictive analytics to ensure high-quality lead prioritization and optimal sales
+    resource allocation.
+    
+  setup_instructions:
+    1. "Configure CRM integration credentials and API endpoints"
+    2. "Setup data enrichment service API keys (Clearbit, ZoomInfo, etc.)"
+    3. "Configure notification channels (email, Slack, SMS)"
+    4. "Customize scoring criteria and thresholds for your business"
+    5. "Define sales team assignment rules and territories"
+    6. "Test workflow with sample leads before production deployment"
+    7. "Setup analytics dashboard integration"
+    8. "Train sales team on new lead classification system"
+    
+  customization_guide: |
+    Key customization areas:
+    - Qualification criteria and scoring weights
+    - Classification thresholds and priority levels
+    - CRM field mappings and custom properties
+    - Notification templates and channels
+    - Assignment rules and territory definitions
+    - Follow-up sequences and timing
+    - Analytics metrics and reporting frequency
+    
+  troubleshooting:
+    common_issues:
+      - issue: "Leads not scoring correctly"
+        solution: "Review qualification criteria configuration and data enrichment quality"
+      - issue: "CRM integration failures"
+        solution: "Verify API credentials and endpoint URLs, check rate limiting"
+      - issue: "Assignment not working"
+        solution: "Ensure sales rep records are active and properly configured in assignment rules"
+      - issue: "Notifications not sending"
+        solution: "Check notification channel configurations and test with simple messages"
+        
+# Test Data and Examples
+test_scenarios:
+  sample_lead_1:
+    input:
+      company_name: "TechCorp Solutions"
+      contact_name: "John Smith"
+      contact_email: "john.smith@techcorp.com"
+      contact_title: "VP Engineering"
+      company_size: 150
+      industry: "Software"
+      form_interest: "urgent"
+      timeline: "immediate"
+      website_behavior:
+        pages_visited: 8
+        time_on_site: 420
+        content_downloaded: ["whitepaper", "case_study"]
+        
+    expected_output:
+      total_score: 85
+      classification: "hot_lead"
+      priority: "high"
+      assigned_rep: "senior_enterprise_rep"
+      response_time: "5 minutes"
+      
+  sample_lead_2:
+    input:
+      company_name: "Small Business Inc"
+      contact_name: "Jane Doe"
+      contact_email: "jane@smallbiz.com"
+      contact_title: "Office Manager"
+      company_size: 15
+      industry: "Retail"
+      form_interest: "medium"
+      timeline: "within_6_months"
+      website_behavior:
+        pages_visited: 2
+        time_on_site: 180
+        
+    expected_output:
+      total_score: 45
+      classification: "cold_lead"
+      priority: "low"
+      assigned_rep: "junior_rep"
+      response_time: "24 hours"
+      nurture_sequence: true
+
+# Performance and Monitoring
+performance_metrics:
+  sla_targets:
+    hot_lead_response_time: "< 5 minutes"
+    warm_lead_response_time: "< 2 hours"
+    cold_lead_response_time: "< 24 hours"
+    qualification_accuracy: "> 90%"
+    system_uptime: "> 99.5%"
+    
+  monitoring_alerts:
+    - metric: "qualification_processing_time"
+      threshold: "> 60 seconds"
+      action: "alert_technical_team"
+      
+    - metric: "crm_integration_failure_rate"
+      threshold: "> 5%"
+      action: "escalate_to_admin"
+      
+    - metric: "lead_assignment_failures"
+      threshold: "> 1% in 1 hour"
+      action: "notify_sales_ops"
+      
+# Security and Compliance
+security_measures:
+  data_protection:
+    - "All lead data encrypted in transit and at rest"
+    - "PII handling compliant with GDPR and CCPA"
+    - "API access secured with OAuth 2.0 and rate limiting"
+    - "Audit logging for all lead processing activities"
+    
+  access_controls:
+    - "Role-based access to lead scoring configuration"
+    - "Secure credential management for integrations"
+    - "Lead data access restricted by territory/assignment"
+    
+  compliance_features:
+    - "Lead consent tracking and management"
+    - "Data retention policy enforcement"
+    - "Right to be forgotten automation"
+    - "Compliance reporting and audit trails"

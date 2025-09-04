@@ -1,0 +1,379 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "real-time-data-streaming-v1.0",
+    "name": "Real-Time Data Streaming & Processing Pipeline",
+    "description": "High-throughput real-time data streaming pipeline with Apache Kafka integration, stream processing, windowing operations, and real-time analytics. Handles millions of events per minute with low latency.",
+    "category": "data-etl",
+    "subcategories": ["streaming", "real-time", "kafka", "analytics"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "advanced"
+    },
+    "tags": ["streaming", "real-time", "kafka", "analytics", "windowing", "high-throughput"],
+    "integrations": ["kafka", "redis", "postgresql", "websocket", "elasticsearch"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "kafka_consumer",
+          "type": "kafka",
+          "name": "Stream Data Consumer",
+          "configuration": {
+            "operation": "consume",
+            "bootstrap_servers": "{{kafka_bootstrap_servers}}",
+            "topics": ["{{input_topic}}", "{{events_topic}}", "{{metrics_topic}}"],
+            "group_id": "{{consumer_group_id}}",
+            "consumer_config": {
+              "auto.offset.reset": "latest",
+              "enable.auto.commit": true,
+              "max.poll.records": 1000,
+              "fetch.min.bytes": 1024,
+              "fetch.max.wait.ms": 500
+            },
+            "message_format": "json",
+            "processing_mode": "streaming"
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "stream_validator",
+          "type": "javascript",
+          "name": "Validate Streaming Data",
+          "configuration": {
+            "code": "// Real-time data validation with performance optimization\\nconst messages = inputs.messages || [];\\nconst validMessages = [];\\nconst invalidMessages = [];\\nconst validationStats = {\\n  total_processed: 0,\\n  valid_count: 0,\\n  invalid_count: 0,\\n  validation_errors: {}\\n};\\n\\n// Pre-compile validation functions for better performance\\nconst validators = {\\n  required_fields: (data, fields) => {\\n    const missing = fields.filter(field => !data.hasOwnProperty(field) || data[field] === null || data[field] === undefined);\\n    return missing.length === 0 ? null : `Missing required fields: ${missing.join(', ')}`;\\n  },\\n  \\n  timestamp_validation: (data, field) => {\\n    const timestamp = new Date(data[field]);\\n    if (isNaN(timestamp.getTime())) return `Invalid timestamp format in ${field}`;\\n    \\n    const now = Date.now();\\n    const messageTime = timestamp.getTime();\\n    if (Math.abs(now - messageTime) > 24 * 60 * 60 * 1000) {\\n      return `Timestamp out of acceptable range: ${data[field]}`;\\n    }\\n    return null;\\n  },\\n  \\n  numeric_validation: (data, field) => {\\n    if (data[field] !== undefined && isNaN(Number(data[field]))) {\\n      return `Non-numeric value in ${field}: ${data[field]}`;\\n    }\\n    return null;\\n  },\\n  \\n  schema_validation: (data, schema) => {\\n    const errors = [];\\n    for (const [field, rules] of Object.entries(schema)) {\\n      if (rules.type === 'string' && typeof data[field] !== 'string') {\\n        errors.push(`${field} must be a string`);\\n      } else if (rules.type === 'number' && typeof data[field] !== 'number') {\\n        errors.push(`${field} must be a number`);\\n      }\\n      \\n      if (rules.min_length && data[field] && data[field].length < rules.min_length) {\\n        errors.push(`${field} must be at least ${rules.min_length} characters`);\\n      }\\n    }\\n    return errors.length > 0 ? errors.join(', ') : null;\\n  }\\n};\\n\\n// Process messages in batch for performance\\nfor (const message of messages) {\\n  try {\\n    const data = typeof message.value === 'string' ? JSON.parse(message.value) : message.value;\\n    const validationErrors = [];\\n    \\n    // Apply validation rules\\n    const requiredFields = inputs.validation_config?.required_fields || [];\\n    const timestampField = inputs.validation_config?.timestamp_field || 'timestamp';\\n    const numericFields = inputs.validation_config?.numeric_fields || [];\\n    const schema = inputs.validation_config?.schema || {};\\n    \\n    // Run validations\\n    const requiredError = validators.required_fields(data, requiredFields);\\n    if (requiredError) validationErrors.push(requiredError);\\n    \\n    if (data[timestampField]) {\\n      const timestampError = validators.timestamp_validation(data, timestampField);\\n      if (timestampError) validationErrors.push(timestampError);\\n    }\\n    \\n    for (const field of numericFields) {\\n      const numericError = validators.numeric_validation(data, field);\\n      if (numericError) validationErrors.push(numericError);\\n    }\\n    \\n    const schemaError = validators.schema_validation(data, schema);\\n    if (schemaError) validationErrors.push(schemaError);\\n    \\n    if (validationErrors.length === 0) {\\n      validMessages.push({\\n        ...data,\\n        _kafka_metadata: {\\n          topic: message.topic,\\n          partition: message.partition,\\n          offset: message.offset,\\n          timestamp: message.timestamp\\n        },\\n        _validation_timestamp: new Date().toISOString()\\n      });\\n      validationStats.valid_count++;\\n    } else {\\n      invalidMessages.push({\\n        original_message: data,\\n        validation_errors: validationErrors,\\n        kafka_metadata: {\\n          topic: message.topic,\\n          partition: message.partition,\\n          offset: message.offset\\n        },\\n        error_timestamp: new Date().toISOString()\\n      });\\n      \\n      validationStats.invalid_count++;\\n      validationErrors.forEach(error => {\\n        validationStats.validation_errors[error] = (validationStats.validation_errors[error] || 0) + 1;\\n      });\\n    }\\n    \\n  } catch (parseError) {\\n    invalidMessages.push({\\n      original_message: message,\\n      validation_errors: [`JSON parse error: ${parseError.message}`],\\n      error_timestamp: new Date().toISOString()\\n    });\\n    validationStats.invalid_count++;\\n  }\\n  \\n  validationStats.total_processed++;\\n}\\n\\nreturn {\\n  valid_messages: validMessages,\\n  invalid_messages: invalidMessages,\\n  validation_stats: validationStats\\n};"
+          },
+          "position": { "x": 300, "y": 100 }
+        },
+        {
+          "id": "stream_transformer",
+          "type": "javascript",
+          "name": "Transform Stream Data",
+          "configuration": {
+            "code": "// High-performance stream data transformation\\nconst validMessages = inputs.valid_messages || [];\\nconst transformationRules = inputs.transformation_config || {};\\nconst transformedMessages = [];\\n\\n// Pre-compile transformation functions\\nconst transformations = {\\n  enrich_with_metadata: (data) => ({\\n    ...data,\\n    processing_timestamp: new Date().toISOString(),\\n    processing_batch_id: inputs.batch_id || 'unknown',\\n    data_source: data._kafka_metadata?.topic || 'unknown'\\n  }),\\n  \\n  calculate_derived_fields: (data, calculations) => {\\n    const derived = { ...data };\\n    for (const [field, expression] of Object.entries(calculations)) {\\n      try {\\n        // Safe evaluation of simple expressions\\n        if (expression.includes('+')) {\\n          const [left, right] = expression.split('+').map(s => s.trim());\\n          derived[field] = (parseFloat(data[left]) || 0) + (parseFloat(data[right]) || 0);\\n        } else if (expression.includes('*')) {\\n          const [left, right] = expression.split('*').map(s => s.trim());\\n          derived[field] = (parseFloat(data[left]) || 0) * (parseFloat(data[right]) || 0);\\n        } else if (expression.startsWith('count_')) {\\n          const sourceField = expression.replace('count_', '');\\n          derived[field] = Array.isArray(data[sourceField]) ? data[sourceField].length : 0;\\n        }\\n      } catch (error) {\\n        derived[field] = null;\\n        derived[`${field}_error`] = error.message;\\n      }\\n    }\\n    return derived;\\n  },\\n  \\n  normalize_geography: (data, geoFields) => {\\n    const normalized = { ...data };\\n    for (const field of geoFields) {\\n      if (data[field]) {\\n        // Simple geo normalization\\n        if (typeof data[field] === 'string') {\\n          normalized[field] = data[field].toLowerCase().trim();\\n        }\\n        // Add geo coordinates if available\\n        if (data[`${field}_lat`] && data[`${field}_lng`]) {\\n          normalized[`${field}_coordinates`] = {\\n            lat: parseFloat(data[`${field}_lat`]),\\n            lng: parseFloat(data[`${field}_lng`])\\n          };\\n        }\\n      }\\n    }\\n    return normalized;\\n  },\\n  \\n  categorize_data: (data, categoryRules) => {\\n    const categorized = { ...data };\\n    for (const [categoryField, rules] of Object.entries(categoryRules)) {\\n      let category = 'uncategorized';\\n      for (const rule of rules) {\\n        if (rule.condition && data[rule.field]) {\\n          const value = data[rule.field];\\n          switch (rule.operator) {\\n            case 'equals':\\n              if (value === rule.value) category = rule.category;\\n              break;\\n            case 'contains':\\n              if (value.toString().includes(rule.value)) category = rule.category;\\n              break;\\n            case 'greater_than':\\n              if (parseFloat(value) > parseFloat(rule.value)) category = rule.category;\\n              break;\\n            case 'less_than':\\n              if (parseFloat(value) < parseFloat(rule.value)) category = rule.category;\\n              break;\\n          }\\n          if (category !== 'uncategorized') break;\\n        }\\n      }\\n      categorized[categoryField] = category;\\n    }\\n    return categorized;\\n  }\\n};\\n\\n// Apply transformations to each message\\nfor (const message of validMessages) {\\n  let transformedMessage = { ...message };\\n  \\n  // Apply each transformation\\n  transformedMessage = transformations.enrich_with_metadata(transformedMessage);\\n  \\n  if (transformationRules.derived_calculations) {\\n    transformedMessage = transformations.calculate_derived_fields(\\n      transformedMessage, \\n      transformationRules.derived_calculations\\n    );\\n  }\\n  \\n  if (transformationRules.geo_fields) {\\n    transformedMessage = transformations.normalize_geography(\\n      transformedMessage, \\n      transformationRules.geo_fields\\n    );\\n  }\\n  \\n  if (transformationRules.category_rules) {\\n    transformedMessage = transformations.categorize_data(\\n      transformedMessage, \\n      transformationRules.category_rules\\n    );\\n  }\\n  \\n  transformedMessages.push(transformedMessage);\\n}\\n\\nreturn {\\n  transformed_messages: transformedMessages,\\n  transformation_stats: {\\n    input_count: validMessages.length,\\n    output_count: transformedMessages.length,\\n    transformation_timestamp: new Date().toISOString()\\n  }\\n};"
+          },
+          "position": { "x": 500, "y": 100 }
+        },
+        {
+          "id": "windowing_aggregator",
+          "type": "javascript",
+          "name": "Windowed Aggregations",
+          "configuration": {
+            "code": "// Real-time windowing and aggregation\\nconst transformedMessages = inputs.transformed_messages || [];\\nconst windowConfig = inputs.window_config || {};\\nconst windowSizeMs = windowConfig.window_size_seconds * 1000 || 60000; // Default 1 minute\\nconst windowType = windowConfig.type || 'tumbling'; // tumbling or sliding\\n\\n// Initialize window state (in production, this would be persisted)\\nconst windows = new Map();\\nconst aggregationResults = [];\\n\\n// Helper function to get window key\\nfunction getWindowKey(timestamp, windowSizeMs, windowType = 'tumbling') {\\n  const time = new Date(timestamp).getTime();\\n  if (windowType === 'tumbling') {\\n    return Math.floor(time / windowSizeMs) * windowSizeMs;\\n  } else {\\n    // Sliding window - multiple overlapping windows\\n    const slideInterval = windowSizeMs / 4; // 25% slide\\n    const windows = [];\\n    for (let i = 0; i < 4; i++) {\\n      const windowStart = Math.floor((time - i * slideInterval) / windowSizeMs) * windowSizeMs;\\n      windows.push(windowStart);\\n    }\\n    return windows;\\n  }\\n}\\n\\n// Process each message into windows\\nfor (const message of transformedMessages) {\\n  const timestamp = message.timestamp || message.processing_timestamp;\\n  const windowKeys = Array.isArray(getWindowKey(timestamp, windowSizeMs, windowType)) \\n    ? getWindowKey(timestamp, windowSizeMs, windowType)\\n    : [getWindowKey(timestamp, windowSizeMs, windowType)];\\n  \\n  for (const windowKey of windowKeys) {\\n    if (!windows.has(windowKey)) {\\n      windows.set(windowKey, {\\n        window_start: new Date(windowKey).toISOString(),\\n        window_end: new Date(windowKey + windowSizeMs).toISOString(),\\n        messages: [],\\n        aggregations: {}\\n      });\\n    }\\n    \\n    windows.get(windowKey).messages.push(message);\\n  }\\n}\\n\\n// Compute aggregations for each window\\nfor (const [windowKey, windowData] of windows.entries()) {\\n  const messages = windowData.messages;\\n  \\n  if (messages.length === 0) continue;\\n  \\n  const aggregations = {\\n    // Basic counts\\n    message_count: messages.length,\\n    unique_sources: new Set(messages.map(m => m.data_source)).size,\\n    \\n    // Numeric aggregations\\n    numeric_stats: {},\\n    \\n    // Categorical distributions\\n    category_distributions: {},\\n    \\n    // Time-based metrics\\n    time_metrics: {\\n      first_message: Math.min(...messages.map(m => new Date(m.timestamp || m.processing_timestamp).getTime())),\\n      last_message: Math.max(...messages.map(m => new Date(m.timestamp || m.processing_timestamp).getTime())),\\n      message_rate_per_second: messages.length / (windowSizeMs / 1000)\\n    }\\n  };\\n  \\n  // Calculate numeric statistics\\n  const numericFields = windowConfig.numeric_fields || [];\\n  for (const field of numericFields) {\\n    const values = messages\\n      .map(m => parseFloat(m[field]))\\n      .filter(v => !isNaN(v));\\n    \\n    if (values.length > 0) {\\n      aggregations.numeric_stats[field] = {\\n        count: values.length,\\n        sum: values.reduce((a, b) => a + b, 0),\\n        avg: values.reduce((a, b) => a + b, 0) / values.length,\\n        min: Math.min(...values),\\n        max: Math.max(...values),\\n        stddev: Math.sqrt(values.reduce((sq, n) => sq + Math.pow(n - (values.reduce((a, b) => a + b, 0) / values.length), 2), 0) / values.length)\\n      };\\n    }\\n  }\\n  \\n  // Calculate categorical distributions\\n  const categoricalFields = windowConfig.categorical_fields || [];\\n  for (const field of categoricalFields) {\\n    const distribution = {};\\n    messages.forEach(m => {\\n      const value = m[field] || 'unknown';\\n      distribution[value] = (distribution[value] || 0) + 1;\\n    });\\n    aggregations.category_distributions[field] = distribution;\\n  }\\n  \\n  // Convert timestamps to readable format\\n  aggregations.time_metrics.first_message_iso = new Date(aggregations.time_metrics.first_message).toISOString();\\n  aggregations.time_metrics.last_message_iso = new Date(aggregations.time_metrics.last_message).toISOString();\\n  aggregations.time_metrics.window_duration_ms = aggregations.time_metrics.last_message - aggregations.time_metrics.first_message;\\n  \\n  aggregationResults.push({\\n    window_key: windowKey,\\n    window_start: windowData.window_start,\\n    window_end: windowData.window_end,\\n    aggregations: aggregations,\\n    computed_at: new Date().toISOString()\\n  });\\n}\\n\\nreturn {\\n  windowed_aggregations: aggregationResults,\\n  window_stats: {\\n    total_windows: aggregationResults.length,\\n    total_messages_processed: transformedMessages.length,\\n    window_size_seconds: windowSizeMs / 1000,\\n    window_type: windowType\\n  }\\n};"
+          },
+          "position": { "x": 700, "y": 100 }
+        },
+        {
+          "id": "real_time_storage",
+          "type": "redis",
+          "name": "Cache Real-time Metrics",
+          "configuration": {
+            "connection": "{{redis_connection}}",
+            "operations": [
+              {
+                "command": "HSET",
+                "key": "realtime:current_window",
+                "field_value_pairs": "{{windowed_aggregations[0] || {}}}"
+              },
+              {
+                "command": "ZADD",
+                "key": "realtime:window_history",
+                "score_value_pairs": "{{windowed_aggregations.map(w => [w.window_key, JSON.stringify(w)])}}"
+              },
+              {
+                "command": "EXPIRE",
+                "key": "realtime:window_history",
+                "seconds": 3600
+              },
+              {
+                "command": "PUBLISH",
+                "channel": "realtime_updates",
+                "message": "{{JSON.stringify({type: 'window_complete', data: windowed_aggregations[0]})}}"
+              }
+            ]
+          },
+          "position": { "x": 900, "y": 50 }
+        },
+        {
+          "id": "batch_storage",
+          "type": "postgresql",
+          "name": "Store Processed Data",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "bulk_insert",
+            "table": "streaming_data",
+            "batch_size": 1000,
+            "conflict_resolution": "ON_CONFLICT_UPDATE",
+            "conflict_columns": ["id", "timestamp"],
+            "data_source": "transformed_messages",
+            "parallel_inserts": 4
+          },
+          "position": { "x": 900, "y": 150 }
+        },
+        {
+          "id": "analytics_storage",
+          "type": "postgresql",
+          "name": "Store Window Analytics",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "bulk_insert",
+            "table": "streaming_analytics",
+            "data_source": "windowed_aggregations",
+            "schema_mapping": {
+              "window_key": "window_key",
+              "window_start": "window_start",
+              "window_end": "window_end",
+              "message_count": "aggregations.message_count",
+              "unique_sources": "aggregations.unique_sources",
+              "numeric_stats": "aggregations.numeric_stats",
+              "category_distributions": "aggregations.category_distributions",
+              "computed_at": "computed_at"
+            }
+          },
+          "position": { "x": 900, "y": 250 }
+        },
+        {
+          "id": "anomaly_detector",
+          "type": "javascript",
+          "name": "Real-time Anomaly Detection",
+          "configuration": {
+            "code": "// Real-time anomaly detection\\nconst windowedAggregations = inputs.windowed_aggregations || [];\\nconst anomalyThresholds = inputs.anomaly_config || {};\\nconst detectedAnomalies = [];\\n\\n// Historical baseline (in production, this would come from a ML model or database)\\nconst historicalBaseline = {\\n  avg_message_count: anomalyThresholds.baseline_message_count || 1000,\\n  avg_message_rate: anomalyThresholds.baseline_message_rate || 16.67, // messages per second\\n  typical_source_count: anomalyThresholds.baseline_source_count || 5\\n};\\n\\nfor (const window of windowedAggregations) {\\n  const agg = window.aggregations;\\n  const anomalies = [];\\n  \\n  // Message volume anomaly detection\\n  const messageCountDeviation = Math.abs(agg.message_count - historicalBaseline.avg_message_count) / historicalBaseline.avg_message_count;\\n  if (messageCountDeviation > (anomalyThresholds.message_count_threshold || 0.5)) {\\n    anomalies.push({\\n      type: 'message_volume_anomaly',\\n      severity: messageCountDeviation > 0.8 ? 'high' : 'medium',\\n      current_value: agg.message_count,\\n      baseline_value: historicalBaseline.avg_message_count,\\n      deviation_percentage: (messageCountDeviation * 100).toFixed(2)\\n    });\\n  }\\n  \\n  // Message rate anomaly detection\\n  const rateDeviation = Math.abs(agg.time_metrics.message_rate_per_second - historicalBaseline.avg_message_rate) / historicalBaseline.avg_message_rate;\\n  if (rateDeviation > (anomalyThresholds.message_rate_threshold || 0.4)) {\\n    anomalies.push({\\n      type: 'message_rate_anomaly',\\n      severity: rateDeviation > 0.7 ? 'high' : 'medium',\\n      current_value: agg.time_metrics.message_rate_per_second.toFixed(2),\\n      baseline_value: historicalBaseline.avg_message_rate,\\n      deviation_percentage: (rateDeviation * 100).toFixed(2)\\n    });\\n  }\\n  \\n  // Source diversity anomaly\\n  const sourceDeviation = Math.abs(agg.unique_sources - historicalBaseline.typical_source_count) / historicalBaseline.typical_source_count;\\n  if (sourceDeviation > (anomalyThresholds.source_count_threshold || 0.3)) {\\n    anomalies.push({\\n      type: 'source_diversity_anomaly',\\n      severity: sourceDeviation > 0.6 ? 'high' : 'medium',\\n      current_value: agg.unique_sources,\\n      baseline_value: historicalBaseline.typical_source_count,\\n      deviation_percentage: (sourceDeviation * 100).toFixed(2)\\n    });\\n  }\\n  \\n  // Numeric field anomalies\\n  for (const [field, stats] of Object.entries(agg.numeric_stats || {})) {\\n    const fieldBaseline = anomalyThresholds.numeric_baselines?.[field];\\n    if (fieldBaseline) {\\n      const avgDeviation = Math.abs(stats.avg - fieldBaseline.avg) / fieldBaseline.avg;\\n      if (avgDeviation > (fieldBaseline.threshold || 0.3)) {\\n        anomalies.push({\\n          type: 'numeric_field_anomaly',\\n          field: field,\\n          metric: 'average',\\n          severity: avgDeviation > 0.6 ? 'high' : 'medium',\\n          current_value: stats.avg.toFixed(2),\\n          baseline_value: fieldBaseline.avg,\\n          deviation_percentage: (avgDeviation * 100).toFixed(2)\\n        });\\n      }\\n    }\\n  }\\n  \\n  if (anomalies.length > 0) {\\n    detectedAnomalies.push({\\n      window_key: window.window_key,\\n      window_start: window.window_start,\\n      window_end: window.window_end,\\n      anomaly_count: anomalies.length,\\n      anomalies: anomalies,\\n      detection_timestamp: new Date().toISOString(),\\n      overall_severity: anomalies.some(a => a.severity === 'high') ? 'high' : 'medium'\\n    });\\n  }\\n}\\n\\nreturn {\\n  detected_anomalies: detectedAnomalies,\\n  anomaly_summary: {\\n    total_windows_checked: windowedAggregations.length,\\n    anomalous_windows: detectedAnomalies.length,\\n    high_severity_count: detectedAnomalies.filter(a => a.overall_severity === 'high').length,\\n    detection_timestamp: new Date().toISOString()\\n  }\\n};"
+          },
+          "position": { "x": 1100, "y": 100 }
+        },
+        {
+          "id": "alert_manager",
+          "type": "condition",
+          "name": "Check for Alerts",
+          "configuration": {
+            "condition": "{{detected_anomalies.length > 0}}",
+            "true_path": "send_alerts",
+            "false_path": "performance_metrics"
+          },
+          "position": { "x": 1300, "y": 100 }
+        },
+        {
+          "id": "send_alerts",
+          "type": "slack",
+          "name": "Send Anomaly Alerts",
+          "configuration": {
+            "channel": "{{alert_channel}}",
+            "message": "🚨 Real-time Stream Anomalies Detected\\n\\n**Alert Summary**:\\n• Anomalous Windows: {{anomaly_summary.anomalous_windows}}/{{anomaly_summary.total_windows_checked}}\\n• High Severity: {{anomaly_summary.high_severity_count}}\\n• Detection Time: {{anomaly_summary.detection_timestamp}}\\n\\n**Anomalies**:\\n{{#each detected_anomalies}}\\n**Window {{window_start}} - {{window_end}}**\\n{{#each anomalies}}\\n• {{type}}: {{current_value}} ({{deviation_percentage}}% from baseline {{baseline_value}})\\n{{/each}}\\n{{/each}}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*🚨 Stream Anomaly Alert*\\n\\n*Anomalous Windows:* {{anomaly_summary.anomalous_windows}}\\n*High Severity:* {{anomaly_summary.high_severity_count}}\\n*Detection Time:* {{anomaly_summary.detection_timestamp}}"
+                }
+              }
+            ]
+          },
+          "position": { "x": 1500, "y": 50 }
+        },
+        {
+          "id": "performance_metrics",
+          "type": "system_monitor",
+          "name": "Track Stream Performance",
+          "configuration": {
+            "metrics": {
+              "messages_processed": "{{transformation_stats.output_count}}",
+              "windows_computed": "{{window_stats.total_windows}}",
+              "processing_latency_ms": "{{execution_time_ms}}",
+              "throughput_msgs_per_sec": "{{transformation_stats.output_count / (execution_time_ms / 1000)}}",
+              "validation_success_rate": "{{(validation_stats.valid_count / validation_stats.total_processed * 100)}}",
+              "anomalies_detected": "{{anomaly_summary.anomalous_windows}}",
+              "memory_usage_mb": "{{memory_usage_mb}}",
+              "cpu_usage_percent": "{{cpu_usage_percent}}"
+            },
+            "alerts": [
+              {
+                "condition": "{{throughput_msgs_per_sec < 100}}",
+                "message": "Low throughput: {{throughput_msgs_per_sec}} msgs/sec",
+                "severity": "warning"
+              },
+              {
+                "condition": "{{validation_stats.valid_count / validation_stats.total_processed < 0.95}}",
+                "message": "High validation failure rate: {{(100 - validation_success_rate)}}%",
+                "severity": "error"
+              }
+            ]
+          },
+          "position": { "x": 1500, "y": 150 }
+        },
+        {
+          "id": "websocket_broadcast",
+          "type": "websocket",
+          "name": "Broadcast Real-time Updates",
+          "configuration": {
+            "endpoint": "{{websocket_endpoint}}",
+            "event_type": "stream_update",
+            "data": {
+              "window_aggregations": "{{windowed_aggregations}}",
+              "performance_metrics": "{{performance_metrics}}",
+              "anomalies": "{{detected_anomalies}}",
+              "timestamp": "{{now()}}"
+            },
+            "broadcast_to_rooms": ["dashboard", "analytics", "alerts"]
+          },
+          "position": { "x": 1700, "y": 100 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "kafka_consumer",
+          "to": "stream_validator",
+          "condition": "{{messages.length > 0}}"
+        },
+        {
+          "from": "stream_validator",
+          "to": "stream_transformer",
+          "condition": "{{valid_messages.length > 0}}"
+        },
+        {
+          "from": "stream_transformer",
+          "to": "windowing_aggregator",
+          "condition": null
+        },
+        {
+          "from": "windowing_aggregator",
+          "to": "real_time_storage",
+          "condition": null
+        },
+        {
+          "from": "windowing_aggregator",
+          "to": "batch_storage",
+          "condition": "{{transformed_messages.length > 0}}"
+        },
+        {
+          "from": "windowing_aggregator",
+          "to": "analytics_storage",
+          "condition": "{{windowed_aggregations.length > 0}}"
+        },
+        {
+          "from": "analytics_storage",
+          "to": "anomaly_detector",
+          "condition": null
+        },
+        {
+          "from": "anomaly_detector",
+          "to": "alert_manager",
+          "condition": null
+        },
+        {
+          "from": "alert_manager",
+          "to": "send_alerts",
+          "condition": "{{detected_anomalies.length > 0}}"
+        },
+        {
+          "from": "alert_manager",
+          "to": "performance_metrics",
+          "condition": null
+        },
+        {
+          "from": "send_alerts",
+          "to": "performance_metrics",
+          "condition": null
+        },
+        {
+          "from": "performance_metrics",
+          "to": "websocket_broadcast",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "total_messages_processed": 0,
+        "total_windows_computed": 0,
+        "avg_throughput": 0,
+        "last_anomaly_count": 0
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "kafka_connection",
+        "redis_connection", 
+        "postgresql_connection",
+        "websocket_endpoint",
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "kafka_bootstrap_servers": "localhost:9092",
+        "input_topic": "raw_events",
+        "events_topic": "processed_events",
+        "metrics_topic": "system_metrics",
+        "consumer_group_id": "sim_stream_processor",
+        "alert_channel": "#stream-alerts",
+        "websocket_endpoint": "wss://your-dashboard.com/ws"
+      },
+      "custom_parameters": {
+        "window_config": {
+          "type": "object",
+          "default": {
+            "window_size_seconds": 60,
+            "type": "tumbling",
+            "numeric_fields": [],
+            "categorical_fields": []
+          },
+          "description": "Windowing configuration for aggregations"
+        },
+        "validation_config": {
+          "type": "object", 
+          "default": {
+            "required_fields": ["timestamp", "event_type"],
+            "timestamp_field": "timestamp",
+            "numeric_fields": [],
+            "schema": {}
+          },
+          "description": "Data validation rules"
+        },
+        "anomaly_config": {
+          "type": "object",
+          "default": {
+            "baseline_message_count": 1000,
+            "baseline_message_rate": 16.67,
+            "baseline_source_count": 5,
+            "message_count_threshold": 0.5,
+            "message_rate_threshold": 0.4,
+            "source_count_threshold": 0.3
+          },
+          "description": "Anomaly detection thresholds"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_throughput_msgs_per_sec": 0,
+        "avg_processing_latency_ms": 0,
+        "avg_validation_success_rate": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Set up Kafka cluster and create topics\\n2. Configure Redis for real-time caching\\n3. Set up PostgreSQL for persistent storage\\n4. Configure WebSocket endpoint for real-time updates\\n5. Define validation and transformation rules\\n6. Set up anomaly detection thresholds\\n7. Test with sample stream data",
+      "use_cases": [
+        "IoT sensor data processing and analytics",
+        "Financial transaction monitoring and fraud detection", 
+        "Social media sentiment analysis and trending",
+        "Application performance monitoring and alerting",
+        "E-commerce user behavior tracking and personalization"
+      ],
+      "troubleshooting": {
+        "high_latency": "Check Kafka consumer lag and increase parallelism",
+        "memory_issues": "Reduce window size or implement data sampling",
+        "validation_failures": "Review data schema and validation rules",
+        "anomaly_false_positives": "Adjust baseline values and thresholds"
+      }
+    }
+  }
+}

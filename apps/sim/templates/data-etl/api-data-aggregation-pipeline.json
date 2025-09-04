@@ -1,0 +1,476 @@
+{
+  "$schema": "https://sim.platform/template-schema/v1.0",
+  "template": {
+    "id": "api-data-aggregation-pipeline-v1.0",
+    "name": "Multi-Source API Data Aggregation Pipeline",
+    "description": "Comprehensive data aggregation template that collects, normalizes, and combines data from multiple REST APIs with rate limiting, caching, and error recovery. Perfect for creating unified dashboards and reports.",
+    "category": "data-etl",
+    "subcategories": ["api", "aggregation", "integration", "multi-source"],
+    "version": "1.0.0",
+    "author": {
+      "id": "sim-platform",
+      "name": "Sim Platform Templates",
+      "verified": true
+    },
+    "metadata": {
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:00:00Z",
+      "status": "published",
+      "visibility": "public",
+      "usage_count": 0,
+      "rating": 0.0,
+      "difficulty": "intermediate"
+    },
+    "tags": ["api", "aggregation", "multi-source", "rest", "data-collection", "etl", "normalization"],
+    "integrations": ["rest_api", "redis", "postgresql", "slack", "webhook"],
+    "workflow_definition": {
+      "blocks": [
+        {
+          "id": "aggregation_scheduler",
+          "type": "schedule",
+          "name": "Data Aggregation Scheduler",
+          "configuration": {
+            "schedule_type": "cron",
+            "cron_expression": "0 */15 * * * *",
+            "timezone": "UTC",
+            "description": "Run every 15 minutes"
+          },
+          "position": { "x": 100, "y": 100 }
+        },
+        {
+          "id": "api_source_1",
+          "type": "rest_api",
+          "name": "Primary API Source",
+          "configuration": {
+            "url": "{{api_endpoints.primary.url}}",
+            "method": "GET",
+            "headers": {
+              "Authorization": "Bearer {{api_endpoints.primary.token}}",
+              "Content-Type": "application/json",
+              "X-RateLimit-App": "sim-aggregator"
+            },
+            "query_params": {
+              "limit": 1000,
+              "since": "{{variables.last_sync_primary}}",
+              "format": "json"
+            },
+            "timeout_ms": 30000,
+            "retry_policy": {
+              "max_retries": 3,
+              "backoff_ms": [1000, 2000, 4000]
+            }
+          },
+          "position": { "x": 300, "y": 50 }
+        },
+        {
+          "id": "api_source_2",
+          "type": "rest_api",
+          "name": "Secondary API Source",
+          "configuration": {
+            "url": "{{api_endpoints.secondary.url}}",
+            "method": "GET",
+            "headers": {
+              "X-API-Key": "{{api_endpoints.secondary.key}}",
+              "Accept": "application/json"
+            },
+            "query_params": {
+              "page_size": 500,
+              "updated_after": "{{variables.last_sync_secondary}}",
+              "include_metadata": true
+            },
+            "timeout_ms": 25000,
+            "retry_policy": {
+              "max_retries": 3,
+              "backoff_ms": [1500, 3000, 6000]
+            }
+          },
+          "position": { "x": 300, "y": 150 }
+        },
+        {
+          "id": "api_source_3",
+          "type": "rest_api",
+          "name": "Tertiary API Source",
+          "configuration": {
+            "url": "{{api_endpoints.tertiary.url}}",
+            "method": "POST",
+            "headers": {
+              "Authorization": "Basic {{api_endpoints.tertiary.auth}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "query": {
+                "filters": {
+                  "modified_since": "{{variables.last_sync_tertiary}}"
+                },
+                "pagination": {
+                  "limit": 750
+                }
+              }
+            },
+            "timeout_ms": 35000
+          },
+          "position": { "x": 300, "y": 250 }
+        },
+        {
+          "id": "rate_limit_manager",
+          "type": "javascript",
+          "name": "Manage API Rate Limits",
+          "configuration": {
+            "code": "// Rate limit management and throttling\\nconst rateLimits = {\\n  primary: { requests: 1000, window: 3600, used: 0 },\\n  secondary: { requests: 500, window: 3600, used: 0 },\\n  tertiary: { requests: 2000, window: 3600, used: 0 }\\n};\\n\\n// Check current usage from cache\\nfor (const [source, limits] of Object.entries(rateLimits)) {\\n  const cacheKey = `rate_limit_${source}`;\\n  const cached = await getFromCache(cacheKey);\\n  if (cached) {\\n    limits.used = cached.used;\\n    limits.reset_time = cached.reset_time;\\n  }\\n}\\n\\n// Calculate delays needed\\nconst delays = {};\\nfor (const [source, limits] of Object.entries(rateLimits)) {\\n  if (limits.used >= limits.requests * 0.8) {\\n    const timeToReset = limits.reset_time - Date.now();\\n    delays[source] = Math.max(0, timeToReset / (limits.requests - limits.used));\\n  } else {\\n    delays[source] = 0;\\n  }\\n}\\n\\nreturn { delays, rate_limits: rateLimits };"
+          },
+          "position": { "x": 500, "y": 150 }
+        },
+        {
+          "id": "data_normalizer",
+          "type": "data_transformer",
+          "name": "Normalize Multi-Source Data",
+          "configuration": {
+            "transformations": [
+              {
+                "source": "primary",
+                "schema_mapping": {
+                  "id": "data.id",
+                  "title": "data.name",
+                  "created_date": "data.created_at",
+                  "modified_date": "data.updated_at",
+                  "category": "data.type",
+                  "source": "'primary_api'"
+                }
+              },
+              {
+                "source": "secondary",
+                "schema_mapping": {
+                  "id": "record.identifier",
+                  "title": "record.display_name",
+                  "created_date": "record.creation_timestamp",
+                  "modified_date": "record.last_modified",
+                  "category": "record.classification",
+                  "source": "'secondary_api'"
+                }
+              },
+              {
+                "source": "tertiary",
+                "schema_mapping": {
+                  "id": "item.uuid",
+                  "title": "item.title",
+                  "created_date": "item.date_created",
+                  "modified_date": "item.date_updated",
+                  "category": "item.category_name",
+                  "source": "'tertiary_api'"
+                }
+              }
+            ],
+            "output_schema": {
+              "id": "string",
+              "title": "string",
+              "created_date": "iso_datetime",
+              "modified_date": "iso_datetime",
+              "category": "string",
+              "source": "string",
+              "aggregated_at": "iso_datetime"
+            },
+            "add_metadata": {
+              "aggregated_at": "{{now()}}",
+              "batch_id": "{{execution_id}}",
+              "version": "1.0"
+            }
+          },
+          "position": { "x": 700, "y": 150 }
+        },
+        {
+          "id": "data_deduplication",
+          "type": "javascript",
+          "name": "Remove Duplicates",
+          "configuration": {
+            "code": "// Advanced deduplication logic\\nconst combinedData = [...inputs.primary_data, ...inputs.secondary_data, ...inputs.tertiary_data];\\n\\n// Create deduplication map\\nconst deduplicationMap = new Map();\\nconst duplicates = [];\\n\\nfor (const record of combinedData) {\\n  // Create composite key for matching\\n  const compositeKey = `${record.title.toLowerCase().trim()}_${record.category}`;\\n  \\n  if (deduplicationMap.has(compositeKey)) {\\n    const existing = deduplicationMap.get(compositeKey);\\n    \\n    // Keep the most recently modified record\\n    if (new Date(record.modified_date) > new Date(existing.modified_date)) {\\n      duplicates.push(existing);\\n      deduplicationMap.set(compositeKey, record);\\n    } else {\\n      duplicates.push(record);\\n    }\\n  } else {\\n    deduplicationMap.set(compositeKey, record);\\n  }\\n}\\n\\nconst uniqueRecords = Array.from(deduplicationMap.values());\\n\\nreturn {\\n  unique_data: uniqueRecords,\\n  duplicates_removed: duplicates.length,\\n  total_input_records: combinedData.length,\\n  final_record_count: uniqueRecords.length\\n};"
+          },
+          "position": { "x": 900, "y": 150 }
+        },
+        {
+          "id": "data_enrichment",
+          "type": "javascript",
+          "name": "Enrich Aggregated Data",
+          "configuration": {
+            "code": "// Data enrichment and quality scoring\\nconst enrichedData = inputs.unique_data.map(record => {\\n  // Calculate data quality score\\n  let qualityScore = 0;\\n  if (record.title && record.title.length > 5) qualityScore += 25;\\n  if (record.category && record.category !== 'unknown') qualityScore += 25;\\n  if (record.created_date && record.modified_date) qualityScore += 25;\\n  if (record.source) qualityScore += 25;\\n  \\n  // Add derived fields\\n  const daysSinceCreated = Math.floor((Date.now() - new Date(record.created_date)) / (1000 * 60 * 60 * 24));\\n  const daysSinceModified = Math.floor((Date.now() - new Date(record.modified_date)) / (1000 * 60 * 60 * 24));\\n  \\n  return {\\n    ...record,\\n    quality_score: qualityScore,\\n    days_since_created: daysSinceCreated,\\n    days_since_modified: daysSinceModified,\\n    freshness_rating: daysSinceModified < 7 ? 'fresh' : daysSinceModified < 30 ? 'moderate' : 'stale',\\n    enriched_at: new Date().toISOString()\\n  };\\n});\\n\\n// Generate summary statistics\\nconst stats = {\\n  total_records: enrichedData.length,\\n  avg_quality_score: enrichedData.reduce((sum, r) => sum + r.quality_score, 0) / enrichedData.length,\\n  source_distribution: enrichedData.reduce((acc, r) => {\\n    acc[r.source] = (acc[r.source] || 0) + 1;\\n    return acc;\\n  }, {}),\\n  category_distribution: enrichedData.reduce((acc, r) => {\\n    acc[r.category] = (acc[r.category] || 0) + 1;\\n    return acc;\\n  }, {}),\\n  freshness_distribution: enrichedData.reduce((acc, r) => {\\n    acc[r.freshness_rating] = (acc[r.freshness_rating] || 0) + 1;\\n    return acc;\\n  }, {})\\n};\\n\\nreturn { enriched_data: enrichedData, aggregation_stats: stats };"
+          },
+          "position": { "x": 1100, "y": 150 }
+        },
+        {
+          "id": "data_storage",
+          "type": "postgresql",
+          "name": "Store Aggregated Data",
+          "configuration": {
+            "connection": "{{postgresql_connection}}",
+            "operation": "bulk_upsert",
+            "table": "aggregated_data",
+            "conflict_resolution": "UPDATE",
+            "conflict_columns": ["id", "source"],
+            "batch_size": 500,
+            "query": "INSERT INTO aggregated_data (id, title, created_date, modified_date, category, source, quality_score, days_since_created, days_since_modified, freshness_rating, aggregated_at, enriched_at) VALUES %VALUES% ON CONFLICT (id, source) DO UPDATE SET title = EXCLUDED.title, modified_date = EXCLUDED.modified_date, category = EXCLUDED.category, quality_score = EXCLUDED.quality_score, days_since_created = EXCLUDED.days_since_created, days_since_modified = EXCLUDED.days_since_modified, freshness_rating = EXCLUDED.freshness_rating, aggregated_at = EXCLUDED.aggregated_at, enriched_at = EXCLUDED.enriched_at"
+          },
+          "position": { "x": 1300, "y": 150 }
+        },
+        {
+          "id": "cache_updates",
+          "type": "redis",
+          "name": "Update Cache & Timestamps",
+          "configuration": {
+            "connection": "{{redis_connection}}",
+            "operations": [
+              {
+                "command": "SET",
+                "key": "last_aggregation_stats",
+                "value": "{{JSON.stringify(aggregation_stats)}}",
+                "ttl": 3600
+              },
+              {
+                "command": "SET",
+                "key": "last_sync_primary",
+                "value": "{{max(primary_data.modified_date)}}",
+                "ttl": 86400
+              },
+              {
+                "command": "SET",
+                "key": "last_sync_secondary",
+                "value": "{{max(secondary_data.modified_date)}}",
+                "ttl": 86400
+              },
+              {
+                "command": "SET",
+                "key": "last_sync_tertiary",
+                "value": "{{max(tertiary_data.modified_date)}}",
+                "ttl": 86400
+              }
+            ]
+          },
+          "position": { "x": 1500, "y": 150 }
+        },
+        {
+          "id": "success_metrics",
+          "type": "system_monitor",
+          "name": "Track Aggregation Metrics",
+          "configuration": {
+            "metrics": {
+              "total_records_processed": "{{enriched_data.length}}",
+              "duplicates_removed": "{{duplicates_removed}}",
+              "avg_quality_score": "{{aggregation_stats.avg_quality_score}}",
+              "processing_time_ms": "{{execution_time_ms}}",
+              "api_calls_made": 3,
+              "sources_processed": "{{Object.keys(aggregation_stats.source_distribution).length}}",
+              "aggregation_timestamp": "{{now()}}"
+            },
+            "alerts": [
+              {
+                "condition": "{{duplicates_removed > total_records_processed * 0.5}}",
+                "message": "High duplicate rate detected: {{duplicates_removed}}/{{total_records_processed}}",
+                "severity": "warning"
+              },
+              {
+                "condition": "{{aggregation_stats.avg_quality_score < 50}}",
+                "message": "Low average data quality score: {{aggregation_stats.avg_quality_score}}",
+                "severity": "warning"
+              }
+            ]
+          },
+          "position": { "x": 1700, "y": 150 }
+        },
+        {
+          "id": "notification_webhook",
+          "type": "webhook",
+          "name": "Send Aggregation Summary",
+          "configuration": {
+            "url": "{{summary_webhook_url}}",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json",
+              "X-Webhook-Source": "sim-aggregator"
+            },
+            "body": {
+              "event_type": "data_aggregation_complete",
+              "timestamp": "{{now()}}",
+              "summary": {
+                "records_processed": "{{enriched_data.length}}",
+                "duplicates_removed": "{{duplicates_removed}}",
+                "quality_score": "{{aggregation_stats.avg_quality_score}}",
+                "source_breakdown": "{{aggregation_stats.source_distribution}}",
+                "processing_time_ms": "{{execution_time_ms}}"
+              },
+              "details": "{{aggregation_stats}}"
+            }
+          },
+          "position": { "x": 1900, "y": 150 }
+        },
+        {
+          "id": "error_handler",
+          "type": "error_handler",
+          "name": "Handle Aggregation Errors",
+          "configuration": {
+            "error_types": ["api_timeout", "rate_limit_exceeded", "data_validation", "database_error"],
+            "retry_policy": {
+              "max_retries": 2,
+              "backoff_strategy": "exponential",
+              "base_delay_ms": 2000
+            },
+            "fallback_actions": [
+              {
+                "condition": "{{error_type === 'rate_limit_exceeded'}}",
+                "action": "delay_and_retry",
+                "delay_ms": 60000
+              },
+              {
+                "condition": "{{error_type === 'api_timeout'}}",
+                "action": "skip_source_and_continue"
+              }
+            ],
+            "notification": {
+              "slack_channel": "{{error_notification_channel}}",
+              "message": "🚨 Data aggregation failed: {{error_message}}\\n\\n**Source**: {{failed_source}}\\n**Error Type**: {{error_type}}\\n**Timestamp**: {{error_timestamp}}"
+            }
+          },
+          "position": { "x": 1100, "y": 400 }
+        }
+      ],
+      "connections": [
+        {
+          "from": "aggregation_scheduler",
+          "to": "rate_limit_manager",
+          "condition": null
+        },
+        {
+          "from": "rate_limit_manager",
+          "to": "api_source_1",
+          "condition": null,
+          "delay_ms": "{{delays.primary}}"
+        },
+        {
+          "from": "rate_limit_manager",
+          "to": "api_source_2",
+          "condition": null,
+          "delay_ms": "{{delays.secondary}}"
+        },
+        {
+          "from": "rate_limit_manager",
+          "to": "api_source_3",
+          "condition": null,
+          "delay_ms": "{{delays.tertiary}}"
+        },
+        {
+          "from": "api_source_1",
+          "to": "data_normalizer",
+          "condition": null,
+          "data_key": "primary_data"
+        },
+        {
+          "from": "api_source_2",
+          "to": "data_normalizer",
+          "condition": null,
+          "data_key": "secondary_data"
+        },
+        {
+          "from": "api_source_3",
+          "to": "data_normalizer",
+          "condition": null,
+          "data_key": "tertiary_data"
+        },
+        {
+          "from": "data_normalizer",
+          "to": "data_deduplication",
+          "condition": null
+        },
+        {
+          "from": "data_deduplication",
+          "to": "data_enrichment",
+          "condition": null
+        },
+        {
+          "from": "data_enrichment",
+          "to": "data_storage",
+          "condition": null
+        },
+        {
+          "from": "data_storage",
+          "to": "cache_updates",
+          "condition": null
+        },
+        {
+          "from": "cache_updates",
+          "to": "success_metrics",
+          "condition": null
+        },
+        {
+          "from": "success_metrics",
+          "to": "notification_webhook",
+          "condition": null
+        }
+      ],
+      "variables": {
+        "last_sync_primary": "1970-01-01T00:00:00Z",
+        "last_sync_secondary": "1970-01-01T00:00:00Z",
+        "last_sync_tertiary": "1970-01-01T00:00:00Z",
+        "total_records_aggregated": 0,
+        "aggregation_run_count": 0
+      }
+    },
+    "configuration": {
+      "required_credentials": [
+        "api_endpoints",
+        "postgresql_connection",
+        "redis_connection",
+        "slack_webhook"
+      ],
+      "environment_variables": {
+        "summary_webhook_url": "https://your-dashboard.com/webhook/aggregation-summary",
+        "error_notification_channel": "#data-alerts",
+        "aggregation_table": "aggregated_data",
+        "cache_ttl_seconds": 3600
+      },
+      "custom_parameters": {
+        "aggregation_frequency": {
+          "type": "string",
+          "default": "0 */15 * * * *",
+          "description": "Cron expression for aggregation schedule"
+        },
+        "max_records_per_source": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Maximum records to fetch from each API source"
+        },
+        "quality_threshold": {
+          "type": "integer",
+          "default": 50,
+          "description": "Minimum quality score threshold for alerts"
+        },
+        "duplicate_threshold": {
+          "type": "float",
+          "default": 0.3,
+          "description": "Maximum acceptable duplicate ratio before alert"
+        }
+      }
+    },
+    "analytics": {
+      "installation_count": 0,
+      "success_rate": 0.0,
+      "performance_metrics": {
+        "avg_execution_time_ms": 0,
+        "avg_records_processed": 0,
+        "avg_api_response_time_ms": 0
+      }
+    },
+    "documentation": {
+      "setup_guide": "1. Configure API endpoints and authentication\\n2. Set up PostgreSQL and Redis connections\\n3. Create aggregated_data table with appropriate schema\\n4. Configure notification channels\\n5. Test with limited data first\\n6. Monitor performance and adjust batch sizes",
+      "use_cases": [
+        "Marketing data aggregation from multiple advertising platforms",
+        "Sales pipeline data consolidation from CRM systems",
+        "IoT sensor data collection and normalization",
+        "Social media metrics aggregation",
+        "E-commerce inventory synchronization"
+      ],
+      "troubleshooting": {
+        "high_duplicate_rate": "Check API data sources for overlapping datasets",
+        "low_quality_scores": "Review data mapping and enrichment rules",
+        "api_timeouts": "Reduce batch sizes or increase timeout values",
+        "rate_limit_errors": "Adjust request timing and implement better throttling"
+      }
+    }
+  }
+}
