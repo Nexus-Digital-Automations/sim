@@ -476,6 +476,12 @@ export function InteractiveTooltip({
             poster={content.mediaUrl.replace('.mp4', '-poster.jpg')}
           >
             <source src={content.mediaUrl} type='video/mp4' />
+            <track
+              kind='captions'
+              src={content.mediaUrl.replace('.mp4', '.vtt')}
+              srcLang='en'
+              label='English captions'
+            />
             Your browser does not support the video tag.
           </video>
         ) : (

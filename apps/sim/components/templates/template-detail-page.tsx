@@ -450,7 +450,7 @@ const RatingAndReviews: React.FC<{
         <CardContent className='space-y-4'>
           {/* Star Rating */}
           <div>
-            <label className='mb-2 block font-medium text-sm'>Rating</label>
+            <span className='mb-2 block font-medium text-sm'>Rating</span>
             <div className='flex gap-1'>
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -471,8 +471,11 @@ const RatingAndReviews: React.FC<{
 
           {/* Review Text */}
           <div>
-            <label className='mb-2 block font-medium text-sm'>Review (Optional)</label>
+            <label htmlFor='review-textarea' className='mb-2 block font-medium text-sm'>
+              Review (Optional)
+            </label>
             <Textarea
+              id='review-textarea'
               value={userReview}
               onChange={(e) => setUserReview(e.target.value)}
               placeholder='Describe your experience with this template...'

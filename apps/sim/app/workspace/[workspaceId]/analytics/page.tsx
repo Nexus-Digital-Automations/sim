@@ -27,7 +27,9 @@ import type {
   WorkflowAnalytics,
 } from '@/lib/monitoring/types'
 
-type AnalyticsPageProps = {}
+interface AnalyticsPageProps extends Record<string, never> {
+  // Empty interface for future page props
+}
 
 interface MetricCardProps {
   title: string

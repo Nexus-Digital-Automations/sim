@@ -1020,8 +1020,11 @@ export const CreatorProfilePortfolio: React.FC<CreatorProfilePortfolioProps> = (
             </DialogHeader>
             <div className='space-y-4'>
               <div className='space-y-2'>
-                <label className='font-medium text-sm'>Message</label>
+                <label htmlFor='message-textarea' className='font-medium text-sm'>
+                  Message
+                </label>
                 <textarea
+                  id='message-textarea'
                   className='h-32 w-full resize-none rounded-lg border p-3'
                   placeholder='Write your message here...'
                 />

@@ -170,21 +170,21 @@ export async function GET(request: NextRequest, { params }: { params: { collecti
           notes: templateCollectionItems.notes,
           addedAt: templateCollectionItems.addedAt,
           template: {
-            id: templatesV2.id,
-            name: templatesV2.name,
-            description: templatesV2.description,
-            category: templatesV2.category,
-            tags: templatesV2.tags,
-            difficulty: templatesV2.difficulty,
-            isPublic: templatesV2.isPublic,
-            usageCount: templatesV2.usageCount,
-            averageRating: templatesV2.averageRating,
-            createdAt: templatesV2.createdAt,
-            createdByUserId: templatesV2.createdByUserId,
+            id: templates.id,
+            name: templates.name,
+            description: templates.description,
+            category: templates.category,
+            tags: templates.tags,
+            difficulty: templates.difficulty,
+            isPublic: templates.isPublic,
+            usageCount: templates.usageCount,
+            averageRating: templates.averageRating,
+            createdAt: templates.createdAt,
+            createdByUserId: templates.createdByUserId,
           },
         })
         .from(templateCollectionItems)
-        .leftJoin(templatesV2, eq(templateCollectionItems.templateId, templatesV2.id))
+        .leftJoin(templates, eq(templateCollectionItems.templateId, templates.id))
         .where(eq(templateCollectionItems.collectionId, collectionId))
         .orderBy(asc(templateCollectionItems.sortOrder))
 
@@ -611,12 +611,12 @@ export async function POST(request: NextRequest, { params }: { params: { collect
     // Validate template exists and is accessible
     const [templateData] = await db
       .select({
-        id: templatesV2.id,
-        isPublic: templatesV2.isPublic,
-        createdByUserId: templatesV2.createdByUserId,
+        id: templates.id,
+        isPublic: templates.isPublic,
+        createdByUserId: templates.createdByUserId,
       })
-      .from(templatesV2)
-      .where(eq(templatesV2.id, validatedData.templateId))
+      .from(templates)
+      .where(eq(templates.id, validatedData.templateId))
 
     if (!templateData) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })

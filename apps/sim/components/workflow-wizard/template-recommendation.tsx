@@ -513,7 +513,7 @@ const DEFAULT_FILTERS: TemplateFilters = {
 /**
  * Template Recommendation Component
  */
-export function TemplateRecommendation({
+export function TemplateRecommendationComponent({
   userContext,
   wizardState,
   selectedGoal,
@@ -1804,4 +1804,6 @@ function TemplateComparison({ templates, onSelect, onRemove, onClose }: Template
   )
 }
 
-export default TemplateRecommendation
+// Note: TemplateRecommendation name conflicts with imported type, use TemplateRecommendationComponent instead
+
+export default TemplateRecommendationComponent

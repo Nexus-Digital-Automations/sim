@@ -88,7 +88,7 @@ export interface UserProfileData {
   reputation: {
     totalPoints: number
     level: number
-    badges: Badge[]
+    badges: UserBadge[]
     achievements: Achievement[]
   }
 
@@ -111,7 +111,7 @@ export interface UserProfileData {
   collections?: CollectionSummary[]
 }
 
-export interface Badge {
+export interface UserBadge {
   id: string
   name: string
   description: string

@@ -141,7 +141,7 @@ export class TutorialSystem {
   private tutorials = new Map<string, Tutorial>()
   private userProgress = new Map<string, TutorialProgress>()
   private activeSession: TutorialSession | null = null
-  private eventHandlers = new Map<string, Function[]>()
+  private eventHandlers = new Map<string, ((...args: any[]) => void)[]>()
   private accessibilityMode = false
   private keyboardNavigation = false
 
@@ -916,13 +916,13 @@ export class TutorialSystem {
     })
   }
 
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: (...args: any[]) => void): void {
     const handlers = this.eventHandlers.get(event) || []
     handlers.push(handler)
     this.eventHandlers.set(event, handlers)
   }
 
-  public off(event: string, handler: Function): void {
+  public off(event: string, handler: (...args: any[]) => void): void {
     const handlers = this.eventHandlers.get(event) || []
     const index = handlers.indexOf(handler)
     if (index > -1) {

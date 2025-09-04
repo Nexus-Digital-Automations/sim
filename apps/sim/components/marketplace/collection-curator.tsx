@@ -204,7 +204,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
   const [currentLayout, setCurrentLayout] = useState<CollectionLayout>('grid')
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const [showThemeEditor, setShowThemeEditor] = useState(false)
-  const [showAnalytics, setShowAnalyticsDashboard] = useState(false)
+  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false)
   const [smartSuggestions, setSmartSuggestions] = useState<SmartSuggestion[]>([])
   const [collectionAnalytics, setCollectionAnalytics] = useState<CollectionAnalytics | null>(null)
   const [saving, setSaving] = useState(false)
@@ -976,7 +976,7 @@ export const CollectionCurator: React.FC<CollectionCuratorProps> = ({
 
         {/* Analytics Dashboard Dialog */}
         {showAnalytics && collectionAnalytics && (
-          <Dialog open={showAnalytics} onOpenChange={setShowAnalyticsDashboard}>
+          <Dialog open={showAnalyticsDashboard} onOpenChange={setShowAnalyticsDashboard}>
             <DialogContent className='max-w-4xl'>
               <DialogHeader>
                 <DialogTitle>Collection Analytics</DialogTitle>

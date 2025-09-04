@@ -251,7 +251,14 @@ const VideoPlayer: React.FC<{
         className='h-auto w-full'
         poster={asset.caption} // Assuming poster image URL in caption for demo
         preload='metadata'
-      />
+      >
+        <track
+          kind='captions'
+          src={asset.url.replace(/\.(mp4|webm|mov)$/i, '.vtt')}
+          srcLang='en'
+          label='English captions'
+        />
+      </video>
 
       {/* Video Controls */}
       <div className='absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100'>

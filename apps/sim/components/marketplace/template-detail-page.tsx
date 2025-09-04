@@ -737,23 +737,23 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                     <CardContent className='space-y-4'>
                       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                         <div>
-                          <label className='font-medium text-sm'>Category</label>
+                          <span className='font-medium text-sm'>Category</span>
                           <p className='text-muted-foreground text-sm'>{template.category}</p>
                         </div>
                         <div>
-                          <label className='font-medium text-sm'>Version</label>
+                          <span className='font-medium text-sm'>Version</span>
                           <p className='text-muted-foreground text-sm'>
                             {template.version || '1.0.0'}
                           </p>
                         </div>
                         <div>
-                          <label className='font-medium text-sm'>License</label>
+                          <span className='font-medium text-sm'>License</span>
                           <p className='text-muted-foreground text-sm'>
                             {template.metadata?.license || 'MIT'}
                           </p>
                         </div>
                         <div>
-                          <label className='font-medium text-sm'>Last Updated</label>
+                          <span className='font-medium text-sm'>Last Updated</span>
                           <p className='text-muted-foreground text-sm'>
                             {new Date(
                               template.updatedAt || template.createdAt
@@ -765,7 +765,7 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                       {/* Tags */}
                       {template.metadata?.tags && (
                         <div>
-                          <label className='font-medium text-sm'>Tags</label>
+                          <span className='font-medium text-sm'>Tags</span>
                           <div className='mt-2 flex flex-wrap gap-2'>
                             {template.metadata.tags.map((tag, index) => (
                               <Badge key={index} variant='secondary'>
@@ -832,7 +832,7 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                         </CardHeader>
                         <CardContent className='space-y-4'>
                           <div>
-                            <label className='font-medium text-sm'>Rating</label>
+                            <span className='font-medium text-sm'>Rating</span>
                             <div className='mt-1 flex items-center gap-1'>
                               {Array.from({ length: 5 }).map((_, index) => (
                                 <button
@@ -853,8 +853,11 @@ export const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({
                             </div>
                           </div>
                           <div>
-                            <label className='font-medium text-sm'>Review</label>
+                            <label htmlFor='user-review-textarea' className='font-medium text-sm'>
+                              Review
+                            </label>
                             <Textarea
+                              id='user-review-textarea'
                               value={userReview}
                               onChange={(e) => setUserReview(e.target.value)}
                               placeholder='Share your experience with this template...'

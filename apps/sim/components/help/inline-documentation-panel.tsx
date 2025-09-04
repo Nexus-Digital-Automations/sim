@@ -762,8 +762,14 @@ export function InlineDocumentationPanel({
               <DropdownMenuContent align='end' className='w-56'>
                 <div className='space-y-3 p-3'>
                   <div>
-                    <label className='font-medium text-muted-foreground text-xs'>Type</label>
+                    <label
+                      htmlFor='type-select'
+                      className='font-medium text-muted-foreground text-xs'
+                    >
+                      Type
+                    </label>
                     <select
+                      id='type-select'
                       value={selectedFilters.type || ''}
                       onChange={(e) =>
                         setSelectedFilters((prev) => ({
@@ -783,8 +789,14 @@ export function InlineDocumentationPanel({
                   </div>
 
                   <div>
-                    <label className='font-medium text-muted-foreground text-xs'>Difficulty</label>
+                    <label
+                      htmlFor='difficulty-select'
+                      className='font-medium text-muted-foreground text-xs'
+                    >
+                      Difficulty
+                    </label>
                     <select
+                      id='difficulty-select'
                       value={selectedFilters.difficulty || ''}
                       onChange={(e) =>
                         setSelectedFilters((prev) => ({
@@ -804,8 +816,14 @@ export function InlineDocumentationPanel({
                   </div>
 
                   <div>
-                    <label className='font-medium text-muted-foreground text-xs'>Category</label>
+                    <label
+                      htmlFor='category-select'
+                      className='font-medium text-muted-foreground text-xs'
+                    >
+                      Category
+                    </label>
                     <select
+                      id='category-select'
                       value={selectedFilters.category || ''}
                       onChange={(e) =>
                         setSelectedFilters((prev) => ({

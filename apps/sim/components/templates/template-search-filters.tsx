@@ -170,7 +170,7 @@ const SORT_OPTIONS = [
 /**
  * Main Template Search and Filters Component
  */
-export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
+export const TemplateSearchFiltersComponent: React.FC<TemplateSearchFiltersProps> = ({
   searchQuery,
   filters,
   categories,
@@ -646,4 +646,6 @@ export const TemplateSearchFilters: React.FC<TemplateSearchFiltersProps> = ({
   )
 }
 
-export default TemplateSearchFilters
+// Note: TemplateSearchFilters name conflicts with imported type, use TemplateSearchFiltersComponent instead
+
+export default TemplateSearchFiltersComponent

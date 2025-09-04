@@ -850,12 +850,15 @@ export const AIRecommendationsEngine: React.FC<AIRecommendationsEngineProps> = (
               {/* Personalization Level */}
               <div className='space-y-3'>
                 <div className='flex items-center justify-between'>
-                  <label className='font-medium'>Personalization Level</label>
+                  <label htmlFor='personalization-slider' className='font-medium'>
+                    Personalization Level
+                  </label>
                   <span className='text-muted-foreground text-sm'>
                     {settings.personalizationLevel}%
                   </span>
                 </div>
                 <Slider
+                  id='personalization-slider'
                   value={[settings.personalizationLevel]}
                   onValueChange={(value) => updateSettings({ personalizationLevel: value[0] })}
                   max={100}
@@ -920,8 +923,11 @@ export const AIRecommendationsEngine: React.FC<AIRecommendationsEngineProps> = (
                 <h3 className='font-medium'>Advanced Settings</h3>
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
-                    <label className='font-medium text-sm'>Diversity Boost</label>
+                    <label htmlFor='diversity-boost-slider' className='font-medium text-sm'>
+                      Diversity Boost
+                    </label>
                     <Slider
+                      id='diversity-boost-slider'
                       value={[settings.diversityBoost]}
                       onValueChange={(value) => updateSettings({ diversityBoost: value[0] })}
                       max={100}
@@ -929,8 +935,11 @@ export const AIRecommendationsEngine: React.FC<AIRecommendationsEngineProps> = (
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='font-medium text-sm'>Novelty Preference</label>
+                    <label htmlFor='novelty-preference-slider' className='font-medium text-sm'>
+                      Novelty Preference
+                    </label>
                     <Slider
+                      id='novelty-preference-slider'
                       value={[settings.noveltyPreference]}
                       onValueChange={(value) => updateSettings({ noveltyPreference: value[0] })}
                       max={100}
@@ -960,9 +969,7 @@ export const AIRecommendationsEngine: React.FC<AIRecommendationsEngineProps> = (
 
               <div className='space-y-4'>
                 <div className='space-y-2'>
-                  <label className='font-medium text-sm'>
-                    How relevant is this recommendation?
-                  </label>
+                  <span className='font-medium text-sm'>How relevant is this recommendation?</span>
                   <div className='flex items-center gap-1'>
                     {Array.from({ length: 5 }).map((_, index) => (
                       <Button key={index} variant='ghost' size='sm' className='p-1'>
