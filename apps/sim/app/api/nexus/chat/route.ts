@@ -432,15 +432,16 @@ const executeNexusTool = async (toolName: string, parameters: any, session: any)
         }
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     logger.error(`[${operationId}] Tool execution failed`, {
       toolName,
-      error: error.message,
+      error: errorMessage,
       userId: session?.user?.id,
     })
 
     return {
       success: false,
-      error: error.message || 'Tool execution failed',
+      error: errorMessage || 'Tool execution failed',
     }
   }
 }
@@ -451,10 +452,11 @@ const executeNexusTool = async (toolName: string, parameters: any, session: any)
  */
 export async function POST(req: NextRequest) {
   const operationId = `nexus-chat-${Date.now()}`
+  let session: any = null
 
   try {
     // Authentication validation
-    const session = await getSession()
+    session = await getSession()
     if (!session?.user) {
       logger.warn(`[${operationId}] Unauthenticated access attempt`)
       return new Response('Unauthorized', { status: 401 })
@@ -549,7 +551,9 @@ You have access to comprehensive tools for managing all aspects of the Sim platf
         temperature,
         tools: Object.entries(nexusTools).map(([id, tool]) => ({
           id,
+          name: id,
           description: tool.description,
+          params: tool.parameters?.properties || {},
           parameters: tool.parameters,
         })),
         stream: true,
@@ -628,9 +632,11 @@ You have access to comprehensive tools for managing all aspects of the Sim platf
       },
     })
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
     logger.error(`[${operationId}] Nexus API error`, {
-      error: error.message,
-      stack: error.stack,
+      error: errorMessage,
+      stack: errorStack,
       userId: session?.user?.id,
     })
 
@@ -638,7 +644,7 @@ You have access to comprehensive tools for managing all aspects of the Sim platf
       JSON.stringify({
         error: 'Internal server error',
         operationId,
-        message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        message: process.env.NODE_ENV === 'development' ? errorMessage : 'An error occurred',
       }),
       {
         status: 500,
@@ -677,13 +683,14 @@ export async function GET() {
       },
     })
   } catch (error) {
-    logger.error('Health check failed', { error: error.message })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    logger.error('Health check failed', { error: errorMessage })
 
     return Response.json(
       {
         status: 'unhealthy',
         service: 'nexus-api',
-        error: error.message,
+        error: errorMessage,
         timestamp: new Date().toISOString(),
       },
       { status: 503 }

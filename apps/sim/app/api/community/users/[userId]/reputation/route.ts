@@ -516,27 +516,23 @@ export async function GET_HISTORY(
       )
     }
 
-    // Build history query
-    const whereConditions = ['user_id = $1']
-    const queryParamsList = [userId]
-
+    // Build history query using drizzle sql template
+    let baseCondition = sql`user_id = ${userId}`
+    
     if (historyParams.changeType) {
-      whereConditions.push(`change_type = $${queryParamsList.length + 1}`)
-      queryParamsList.push(historyParams.changeType)
+      baseCondition = sql`${baseCondition} AND change_type = ${historyParams.changeType}`
     }
-
+    
     if (historyParams.startDate) {
-      whereConditions.push(`created_at >= $${queryParamsList.length + 1}`)
-      queryParamsList.push(historyParams.startDate)
+      baseCondition = sql`${baseCondition} AND created_at >= ${historyParams.startDate}`
     }
-
+    
     if (historyParams.endDate) {
-      whereConditions.push(`created_at <= $${queryParamsList.length + 1}`)
-      queryParamsList.push(historyParams.endDate)
+      baseCondition = sql`${baseCondition} AND created_at <= ${historyParams.endDate}`
     }
 
     // Get history records
-    const historyQuery = `
+    const historyResult = await db.execute(sql`
       SELECT 
         id,
         change_type,
@@ -553,24 +549,18 @@ export async function GET_HISTORY(
         moderator_id,
         created_at
       FROM user_reputation_history
-      WHERE ${whereConditions.join(' AND ')}
+      WHERE ${baseCondition}
       ORDER BY created_at DESC
-      LIMIT $${queryParamsList.length + 1} OFFSET $${queryParamsList.length + 2}
-    `
-
-    queryParamsList.push(historyParams.limit, historyParams.offset)
-
-    const historyResult = await db.execute(sql.raw(historyQuery, queryParamsList))
+      LIMIT ${historyParams.limit} OFFSET ${historyParams.offset}
+    `)
 
     // Get total count
-    const countQuery = `
+    const countResult = await db.execute(sql`
       SELECT COUNT(*) as total
       FROM user_reputation_history
-      WHERE ${whereConditions.join(' AND ')}
-    `
-
-    const countResult = await db.execute(sql.raw(countQuery, queryParamsList.slice(0, -2)))
-    const totalRecords = (countResult[0] as any)?.total || 0
+      WHERE ${baseCondition}
+    `)
+    const totalRecords = Number((countResult[0] as any)?.total || 0)
 
     // Format history records
     const history = historyResult.map((row: any) => ({

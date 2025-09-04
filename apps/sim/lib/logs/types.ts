@@ -52,7 +52,7 @@ export interface ExecutionEnvironment {
 }
 
 export interface ExecutionTrigger {
-  type: 'api' | 'webhook' | 'schedule' | 'manual' | 'chat'
+  type: 'api' | 'webhook' | 'schedule' | 'manual' | 'chat' | 'system'
   source: string
   data?: Record<string, unknown>
   timestamp: string

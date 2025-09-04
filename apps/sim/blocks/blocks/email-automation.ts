@@ -1,8 +1,8 @@
 import { MailIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
-import type { EmailResponse } from '@/tools/email/types'
+import type { GmailToolResponse } from '@/tools/gmail/types'
 
-export const EmailAutomationBlock: BlockConfig<EmailResponse> = {
+export const EmailAutomationBlock: BlockConfig<GmailToolResponse> = {
   type: 'email_automation',
   name: 'Email Automation',
   description: 'Advanced email automation with templates and campaign management',

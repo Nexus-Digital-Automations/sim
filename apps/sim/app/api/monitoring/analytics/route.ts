@@ -216,7 +216,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_PARAMETERS',
             message: 'Invalid request parameters',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch analytics',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -313,7 +313,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_PARAMETERS',
             message: 'Invalid report generation parameters',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'REPORT_GENERATION_ERROR',
           message: 'Failed to generate analytics report',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -385,7 +385,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'CACHE_INVALIDATION_ERROR',
           message: 'Failed to invalidate analytics cache',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }

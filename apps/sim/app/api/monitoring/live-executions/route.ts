@@ -65,16 +65,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply limit
     filteredExecutions = filteredExecutions.slice(0, params.limit)
 
-    // Generate statistics if requested
-    let workspaceStats
-    if (params.includeStats) {
-      const allExecutions = executions
-      workspaceStats = {
-        running: allExecutions.filter((e) => e.status === 'running').length,
-        queued: allExecutions.filter((e) => e.status === 'queued').length,
-        completed: allExecutions.filter((e) => e.status === 'completed').length,
-        failed: allExecutions.filter((e) => e.status === 'failed').length,
-      }
+    // Generate statistics (always provide default values)
+    const allExecutions = executions
+    const workspaceStats = params.includeStats ? {
+      running: allExecutions.filter((e) => e.status === 'running').length,
+      queued: allExecutions.filter((e) => e.status === 'queued').length,
+      completed: allExecutions.filter((e) => e.status === 'completed').length,
+      failed: allExecutions.filter((e) => e.status === 'failed').length,
+    } : {
+      running: 0,
+      queued: 0,
+      completed: 0,
+      failed: 0,
     }
 
     const response: MonitoringApiResponse<LiveExecutionsResponse> = {
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_PARAMETERS',
             message: 'Invalid request parameters',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -112,7 +114,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch live executions',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'UPDATE_ERROR',
           message: 'Failed to update execution status',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }

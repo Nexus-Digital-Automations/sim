@@ -17,6 +17,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { NextRequest } from 'next/server'
 
 // ================================
 // 🚨 CRITICAL: IMPORT MODULE MOCKS FIRST
@@ -72,7 +73,7 @@ function createMockRequest(
   method = 'POST',
   body?: any,
   headers: Record<string, string> = {}
-): Request {
+): NextRequest {
   const baseUrl = 'http://localhost:3000/api/files/delete'
 
   console.log(`🔧 Creating ${method} request to ${baseUrl}`)
@@ -83,14 +84,14 @@ function createMockRequest(
       'Content-Type': 'application/json',
       ...headers,
     }),
+    ...(body && method !== 'GET' && { body: JSON.stringify(body) }),
   }
 
   if (body && method !== 'GET') {
-    requestInit.body = JSON.stringify(body)
     console.log('🔧 Request body size:', JSON.stringify(body).length, 'characters')
   }
 
-  return new Request(baseUrl, requestInit)
+  return new NextRequest(baseUrl, requestInit)
 }
 
 /**
@@ -207,7 +208,7 @@ describe('File Delete API Route', () => {
     it('should handle malformed JSON gracefully', async () => {
       console.log('[TEST] Testing malformed JSON handling')
 
-      const req = new Request('http://localhost:3000/api/files/delete', {
+      const req = new NextRequest('http://localhost:3000/api/files/delete', {
         method: 'POST',
         body: '{invalid-json',
         headers: {

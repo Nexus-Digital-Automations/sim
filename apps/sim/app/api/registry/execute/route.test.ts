@@ -91,7 +91,7 @@ const sampleBlockExecutionRequest = {
 /**
  * Mock fetch responses for webhook execution testing
  */
-function mockWebhookResponse(success = true, data = null, status = 200) {
+function mockWebhookResponse(success = true, data: any = null, status = 200) {
   const responseData =
     data || (success ? { result: 'success', processed: true } : { error: 'failed' })
 

@@ -79,7 +79,16 @@ const sampleBlock = {
 /**
  * Mock fetch responses for webhook validation testing
  */
-function mockValidationResponse(options = {}) {
+function mockValidationResponse(options: {
+  executionOk?: boolean
+  validationOk?: boolean
+  executionStatus?: number
+  validationStatus?: number
+  executionTime?: number
+  validationTime?: number
+  executionData?: any
+  validationData?: any
+} = {}) {
   const {
     executionOk = true,
     validationOk = true,

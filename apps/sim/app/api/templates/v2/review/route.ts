@@ -26,10 +26,10 @@ import { getSession } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import {
-  templateApprovals,
-  templateReviews,
-  templateSubmissions,
   templates,
+  templateRatings,
+  templateStars,
+  templateCategories,
   user,
 } from '@/db/schema'
 

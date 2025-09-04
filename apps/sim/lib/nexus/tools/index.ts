@@ -52,10 +52,10 @@ export { updateWorkflow } from './update-workflow'
  */
 export const nexusToolset = {
   // Workflow Management
-  listWorkflows,
-  createWorkflow,
-  getWorkflowDetails,
-  updateWorkflow,
+  get listWorkflows() { return listWorkflows },
+  get createWorkflow() { return createWorkflow },
+  get getWorkflowDetails() { return getWorkflowDetails },
+  get updateWorkflow() { return updateWorkflow },
 
   // Tool metadata
   version: '1.0.0',
@@ -70,7 +70,7 @@ export const nexusToolset = {
 
   // Get all available tools as array
   getAllTools() {
-    return [this.listWorkflows, this.createWorkflow, this.getWorkflowDetails, this.updateWorkflow]
+    return [listWorkflows, createWorkflow, getWorkflowDetails, updateWorkflow]
   },
 
   // Get tools by category
@@ -78,10 +78,10 @@ export const nexusToolset = {
     switch (category) {
       case 'workflow-management':
         return [
-          this.listWorkflows,
-          this.createWorkflow,
-          this.getWorkflowDetails,
-          this.updateWorkflow,
+          listWorkflows,
+          createWorkflow,
+          getWorkflowDetails,
+          updateWorkflow,
         ]
       default:
         return []
@@ -130,8 +130,8 @@ export const nexusToolset = {
         perHour: 200,
       },
     },
-  },
-}
+  } as const,
+} as const
 
 /**
  * Tool registration helper for AI frameworks
@@ -153,7 +153,7 @@ export function registerNexusTools(categories?: string[]) {
     tools.push(...nexusToolset.getToolsByCategory(category))
   }
 
-  return [...new Set(tools)] // Remove duplicates
+  return Array.from(new Set(tools)) // Remove duplicates
 }
 
 /**
@@ -198,7 +198,7 @@ export function validateNexusToolPermissions(userId: string, toolIds: string[]) 
     rateLimits: Object.fromEntries(
       toolIds.map((toolId) => [
         toolId,
-        nexusToolset.registry[toolId]?.rateLimits || { perMinute: 10, perHour: 100 },
+        (nexusToolset.registry as any)[toolId]?.rateLimits || { perMinute: 10, perHour: 100 },
       ])
     ),
   }

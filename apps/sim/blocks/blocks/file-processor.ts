@@ -1,8 +1,8 @@
 import { ComponentIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
-import type { FileResponse } from '@/tools/file/types'
+import type { FileParserOutput } from '@/tools/file/types'
 
-export const FileProcessorBlock: BlockConfig<FileResponse> = {
+export const FileProcessorBlock: BlockConfig<FileParserOutput> = {
   type: 'file_processor',
   name: 'File Processor',
   description: 'Advanced file processing with format conversion and data extraction',
@@ -105,7 +105,7 @@ export const FileProcessorBlock: BlockConfig<FileResponse> = {
       title: 'Base64 File Content',
       type: 'code',
       layout: 'full',
-      language: 'text',
+      language: 'json',
       placeholder: 'data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iag...',
       condition: { field: 'inputSource', value: 'base64' },
       required: true,
@@ -340,7 +340,7 @@ const patterns = {
         { label: 'Confidence Scoring', id: 'confidence' },
         { label: 'Word Boundaries', id: 'word_boundaries' },
       ],
-      value: () => ['preserve_layout', 'confidence'],
+      value: () => JSON.stringify(['preserve_layout', 'confidence']),
       description: 'OCR processing options',
     },
     // Batch Processing Configuration

@@ -696,7 +696,7 @@ export class HelpContentManager {
 
   private clearContentCache(contentId: string): void {
     // Clear all cache entries related to this content
-    for (const [key] of this.contentCache) {
+    for (const [key] of Array.from(this.contentCache)) {
       if (key.startsWith(contentId)) {
         this.contentCache.delete(key)
         this.cacheExpiry.delete(key)
@@ -721,7 +721,7 @@ export class HelpContentManager {
     setInterval(
       () => {
         const now = Date.now()
-        for (const [key, expiry] of this.cacheExpiry) {
+        for (const [key, expiry] of Array.from(this.cacheExpiry)) {
           if (now >= expiry) {
             this.contentCache.delete(key)
             this.searchCache.delete(key)

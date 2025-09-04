@@ -9,7 +9,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Executor } from '@/executor'
 import { BlockType } from '@/executor/consts'
 import type { ExecutionResult, StreamingExecution } from '@/executor/types'
-import type { SerializedBlock, SerializedWorkflow } from '@/serializer/types'
+import type { SerializedBlock, SerializedWorkflow, SerializedConnection } from '@/serializer/types'
+import type { Position } from '@/stores/workflows/workflow/types'
+import type { ParamType, BlockOutput } from '@/blocks/types'
 
 // Mock dependencies
 const mockLogger = {
@@ -161,68 +163,76 @@ describe('Executor', () => {
 
     // Create a valid test workflow
     validWorkflow = {
-      id: 'test-workflow',
-      name: 'Test Workflow',
-      description: 'A test workflow for unit testing',
+      version: '1.0.0',
       blocks: [
         {
           id: 'starter-block',
           enabled: true,
+          position: { x: 0, y: 0 },
+          config: {
+            tool: BlockType.STARTER,
+            params: {},
+          },
+          inputs: {},
+          outputs: {},
           metadata: {
             id: BlockType.STARTER,
             name: 'Start',
             category: 'blocks',
           },
-          config: {
-            params: {},
-          },
-        } as SerializedBlock,
+        } satisfies SerializedBlock,
         {
           id: 'api-block',
           enabled: true,
-          metadata: {
-            id: BlockType.API,
-            name: 'API Call',
-            category: 'blocks',
-          },
+          position: { x: 100, y: 100 },
           config: {
+            tool: BlockType.API,
             params: {
               url: 'https://api.example.com',
               method: 'GET',
             },
           },
-        } as SerializedBlock,
+          inputs: {},
+          outputs: {},
+          metadata: {
+            id: BlockType.API,
+            name: 'API Call',
+            category: 'blocks',
+          },
+        } satisfies SerializedBlock,
         {
           id: 'response-block',
           enabled: true,
+          position: { x: 200, y: 200 },
+          config: {
+            tool: BlockType.RESPONSE,
+            params: {
+              content: 'Final response',
+            },
+          },
+          inputs: {},
+          outputs: {},
           metadata: {
             id: BlockType.RESPONSE,
             name: 'Response',
             category: 'blocks',
           },
-          config: {
-            params: {
-              content: 'Final response',
-            },
-          },
-        } as SerializedBlock,
+        } satisfies SerializedBlock,
       ],
       connections: [
         {
-          id: 'conn-1',
           source: 'starter-block',
           target: 'api-block',
           sourceHandle: 'source',
           targetHandle: 'target',
         },
         {
-          id: 'conn-2',
           source: 'api-block',
           target: 'response-block',
           sourceHandle: 'source',
           targetHandle: 'target',
         },
-      ],
+      ] satisfies SerializedConnection[],
       loops: {},
       parallels: {},
     }
@@ -236,6 +246,16 @@ describe('Executor', () => {
     )
   })
 
+  // Type guard for ExecutionResult
+  function isExecutionResult(result: ExecutionResult | StreamingExecution): result is ExecutionResult {
+    return 'success' in result && !('stream' in result)
+  }
+
+  // Type guard for StreamingExecution
+  function isStreamingExecution(result: ExecutionResult | StreamingExecution): result is StreamingExecution {
+    return 'stream' in result && 'execution' in result
+  }
+
   describe('Constructor and Initialization', () => {
     it('should initialize with valid workflow', () => {
       expect(mockExecutor).toBeDefined()
@@ -246,9 +266,9 @@ describe('Executor', () => {
     })
 
     it('should handle new constructor format with options object', () => {
-      const options = {
+      const executorWithOptions = new Executor({
         workflow: validWorkflow,
-        currentBlockStates: { 'test-block': { result: 'test' } },
+        currentBlockStates: { 'test-block': { result: 'test' } as BlockOutput },
         envVarValues: { API_KEY: 'test-key' },
         workflowInput: { message: 'hello' },
         workflowVariables: { var1: 'value1' },
@@ -258,9 +278,7 @@ describe('Executor', () => {
           executionId: 'exec-123',
           workspaceId: 'workspace-456',
         },
-      }
-
-      const executorWithOptions = new Executor(options)
+      })
       expect(executorWithOptions).toBeDefined()
     })
 
@@ -277,10 +295,11 @@ describe('Executor', () => {
     })
 
     it('should initialize loop and parallel managers', () => {
-      const workflowWithLoops = {
+      const workflowWithLoops: SerializedWorkflow = {
         ...validWorkflow,
         loops: {
           'loop-1': {
+            id: 'loop-1',
             nodes: ['api-block'],
             iterations: 3,
             loopType: 'for' as const,
@@ -288,8 +307,9 @@ describe('Executor', () => {
         },
         parallels: {
           'parallel-1': {
+            id: 'parallel-1',
             nodes: ['api-block'],
-            parallelCount: 2,
+            count: 2,
             parallelType: 'count' as const,
           },
         },
@@ -304,7 +324,11 @@ describe('Executor', () => {
     it('should validate workflow with starter block successfully', async () => {
       const result = await mockExecutor.execute('test-workflow-id')
       expect(result).toBeDefined()
-      expect(result.success).toBe(true)
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+      } else {
+        expect(result.execution.success).toBe(true)
+      }
     })
 
     it('should fail validation for workflow without starter block', () => {
@@ -352,18 +376,24 @@ describe('Executor', () => {
     })
 
     it('should validate with specific start block ID', async () => {
-      const triggerBlock = {
+      const triggerBlock: SerializedBlock = {
         id: 'trigger-block',
         enabled: true,
+        position: { x: 300, y: 300 },
+        config: {
+          tool: BlockType.TRIGGER,
+          params: {},
+        },
+        inputs: {},
+        outputs: {},
         metadata: {
           id: BlockType.TRIGGER,
           name: 'Trigger',
           category: 'triggers',
         },
-        config: { params: {} },
-      } as SerializedBlock
+      }
 
-      const workflowWithTrigger = {
+      const workflowWithTrigger: SerializedWorkflow = {
         ...validWorkflow,
         blocks: [...validWorkflow.blocks, triggerBlock],
       }
@@ -372,7 +402,11 @@ describe('Executor', () => {
       const result = await executorWithTrigger.execute('test-workflow-id', 'trigger-block')
 
       expect(result).toBeDefined()
-      expect(result.success).toBe(true)
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+      } else {
+        expect(result.execution.success).toBe(true)
+      }
     })
 
     it('should fail validation for non-existent start block', () => {
@@ -382,12 +416,11 @@ describe('Executor', () => {
     })
 
     it('should validate connections reference existing blocks', () => {
-      const workflowWithInvalidConnection = {
+      const workflowWithInvalidConnection: SerializedWorkflow = {
         ...validWorkflow,
         connections: [
           ...validWorkflow.connections,
           {
-            id: 'invalid-conn',
             source: 'non-existent-block',
             target: 'api-block',
             sourceHandle: 'source',
@@ -402,10 +435,11 @@ describe('Executor', () => {
     })
 
     it('should validate loop configurations', () => {
-      const workflowWithInvalidLoop = {
+      const workflowWithInvalidLoop: SerializedWorkflow = {
         ...validWorkflow,
         loops: {
           'invalid-loop': {
+            id: 'invalid-loop',
             nodes: ['non-existent-block'],
             iterations: 3,
             loopType: 'for' as const,
@@ -419,10 +453,11 @@ describe('Executor', () => {
     })
 
     it('should validate forEach loop has collection', () => {
-      const workflowWithInvalidForEachLoop = {
+      const workflowWithInvalidForEachLoop: SerializedWorkflow = {
         ...validWorkflow,
         loops: {
           'foreach-loop': {
+            id: 'foreach-loop',
             nodes: ['api-block'],
             iterations: 0,
             loopType: 'forEach' as const,
@@ -437,10 +472,11 @@ describe('Executor', () => {
     })
 
     it('should validate positive loop iterations', () => {
-      const workflowWithZeroIterations = {
+      const workflowWithZeroIterations: SerializedWorkflow = {
         ...validWorkflow,
         loops: {
           'zero-loop': {
+            id: 'zero-loop',
             nodes: ['api-block'],
             iterations: 0,
             loopType: 'for' as const,
@@ -459,9 +495,15 @@ describe('Executor', () => {
       const result = await mockExecutor.execute('test-workflow-id')
 
       expect(result).toBeDefined()
-      expect(result.success).toBe(true)
-      expect(result.logs).toBeDefined()
-      expect(Array.isArray(result.logs)).toBe(true)
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+        expect(result.logs).toBeDefined()
+        expect(Array.isArray(result.logs)).toBe(true)
+      } else {
+        expect(result.execution.success).toBe(true)
+        expect(result.execution.logs).toBeDefined()
+        expect(Array.isArray(result.execution.logs)).toBe(true)
+      }
     })
 
     it('should handle structured workflow input', async () => {
@@ -486,18 +528,24 @@ describe('Executor', () => {
 
       const result = await executorWithStructuredInput.execute('test-workflow-id')
 
-      expect(result.success).toBe(true)
-      expect(result.logs).toBeDefined()
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+        expect(result.logs).toBeDefined()
+      } else {
+        expect(result.execution.success).toBe(true)
+        expect(result.execution.logs).toBeDefined()
+      }
     })
 
     it('should handle input format processing', async () => {
-      const workflowWithInputFormat = {
+      const workflowWithInputFormat: SerializedWorkflow = {
         ...validWorkflow,
         blocks: validWorkflow.blocks.map((b) =>
           b.metadata?.id === BlockType.STARTER
             ? {
                 ...b,
                 config: {
+                  tool: BlockType.STARTER,
                   params: {
                     inputFormat: [
                       { name: 'message', type: 'string' },
@@ -519,7 +567,11 @@ describe('Executor', () => {
 
       const result = await executorWithInputFormat.execute('test-workflow-id')
 
-      expect(result.success).toBe(true)
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+      } else {
+        expect(result.execution.success).toBe(true)
+      }
     })
 
     it('should initialize with environment and workflow variables', async () => {
@@ -533,7 +585,11 @@ describe('Executor', () => {
 
       const result = await executor.execute('test-workflow-id')
 
-      expect(result.success).toBe(true)
+      if (isExecutionResult(result)) {
+        expect(result.success).toBe(true)
+      } else {
+        expect(result.execution.success).toBe(true)
+      }
     })
   })
 

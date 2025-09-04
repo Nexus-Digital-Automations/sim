@@ -57,7 +57,7 @@ let mockPathConfig = {
 
 let mockFileSystemConfig = {
   accessSuccess: true,
-  fileContent: Buffer.from('test file content'),
+  fileContent: Buffer.from('test file content') as Buffer,
   statResult: { isFile: () => true },
 }
 
@@ -90,7 +90,7 @@ const fileParsingMockControls = {
   },
 
   setFileContent: (content: Buffer | string) => {
-    mockFileSystemConfig.fileContent = Buffer.isBuffer(content) ? content : Buffer.from(content)
+    mockFileSystemConfig.fileContent = Buffer.isBuffer(content) ? content as Buffer : Buffer.from(content) as Buffer
     console.log('🔧 File content set, size:', mockFileSystemConfig.fileContent.length)
   },
 
@@ -123,7 +123,7 @@ const fileParsingMockControls = {
     }
     mockFileSystemConfig = {
       accessSuccess: true,
-      fileContent: Buffer.from('test file content'),
+      fileContent: Buffer.from('test file content') as Buffer,
       statResult: { isFile: () => true },
     }
     console.log('🔧 File parsing mocks reset to defaults')

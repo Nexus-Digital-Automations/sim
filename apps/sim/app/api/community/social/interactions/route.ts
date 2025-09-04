@@ -407,7 +407,8 @@ export async function GET(request: NextRequest) {
 
     // Execute interactions query with proper parameter binding
     // Database results return direct array, not .rows property
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(mainQuery))
 
     // Get total count
     const countQuery = `
@@ -418,7 +419,8 @@ export async function GET(request: NextRequest) {
 
     // Execute count query for pagination metadata
     // Access result directly as array, not via .rows property
-    const countResult = await db.execute(sql.raw(countQuery, queryValues.slice(0, -2)))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const countResult = await db.execute(sql.raw(countQuery))
     const totalInteractions = (countResult[0] as any)?.total || 0
 
     // Format interactions from database result array
@@ -450,8 +452,14 @@ export async function GET(request: NextRequest) {
       GROUP BY engagement_type
     `
 
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
     const metricsResult = await db.execute(
-      sql.raw(metricsQuery, [params.targetId, params.targetType])
+      sql.raw(`
+        SELECT engagement_type, COUNT(*) as count
+        FROM community_activity_engagement
+        WHERE target_id = '${params.targetId}' AND target_type = '${params.targetType}'
+        GROUP BY engagement_type
+      `)
     )
     // Reduce metrics from direct result array, not .rows property
     const metrics = metricsResult.reduce((acc: any, row: any) => {
@@ -468,8 +476,13 @@ export async function GET(request: NextRequest) {
         WHERE target_id = $1 AND target_type = $2 AND user_id = $3
       `
 
+      // Fix: sql.raw() expects single parameter with values embedded directly in query
       const userResult = await db.execute(
-        sql.raw(userInteractionsQuery, [params.targetId, params.targetType, currentUserId])
+        sql.raw(`
+          SELECT engagement_type
+          FROM community_activity_engagement
+          WHERE target_id = '${params.targetId}' AND target_type = '${params.targetType}' AND user_id = '${currentUserId}'
+        `)
       )
 
       userInteractions = userResult.reduce((acc: any, row: any) => {
@@ -577,7 +590,8 @@ async function validateTarget(targetType: string, targetId: string, userId: stri
         return { exists: false, canInteract: false, title: null }
     }
 
-    const result = await db.execute(sql.raw(query, [targetId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(query.replace('$1', `'${targetId}'`)))
 
     // Check target existence - direct array access, not .rows
     if (result.length === 0) {
@@ -640,10 +654,11 @@ async function updateEngagementCounts(
         if (engagementType === 'like') {
           query = `
             UPDATE community_user_activities 
-            SET like_count = GREATEST(0, like_count + $2), updated_at = NOW()
-            WHERE id = $1
+            SET like_count = GREATEST(0, like_count + ${delta}), updated_at = NOW()
+            WHERE id = '${targetId}'
           `
-          await db.execute(sql.raw(query, [targetId, delta]))
+          // Fix: sql.raw() expects single parameter with values embedded directly in query
+          await db.execute(sql.raw(query))
         }
         break
       }
@@ -652,10 +667,11 @@ async function updateEngagementCounts(
         if (engagementType === 'like') {
           query = `
             UPDATE templates 
-            SET like_count = GREATEST(0, like_count + $2), updated_at = NOW()
-            WHERE id = $1
+            SET like_count = GREATEST(0, like_count + ${delta}), updated_at = NOW()
+            WHERE id = '${targetId}'
           `
-          await db.execute(sql.raw(query, [targetId, delta]))
+          // Fix: sql.raw() expects single parameter with values embedded directly in query
+          await db.execute(sql.raw(query))
         }
         break
 
@@ -689,7 +705,8 @@ async function getContentCreator(targetType: string, targetId: string): Promise<
         return null
     }
 
-    const result = await db.execute(sql.raw(query, [targetId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(query.replace('$1', `'${targetId}'`)))
     // Return creator from direct result array, not .rows property
     return result.length > 0 ? (result[0] as any).user_id : null
   } catch (error) {
@@ -713,7 +730,13 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
       GROUP BY engagement_type
     `
 
-    const metricsResult = await db.execute(sql.raw(metricsQuery, [targetId, targetType]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const metricsResult = await db.execute(sql.raw(`
+      SELECT engagement_type, COUNT(*) as count
+      FROM community_activity_engagement
+      WHERE target_id = '${targetId}' AND target_type = '${targetType}'
+      GROUP BY engagement_type
+    `))
     // Process metrics from direct result array, not .rows property
     const counts = metricsResult.reduce((acc: any, row: any) => {
       acc[`${row.engagement_type}Count`] = Number.parseInt(row.count)
@@ -729,7 +752,12 @@ async function getEngagementMetrics(targetType: string, targetId: string, curren
         WHERE target_id = $1 AND target_type = $2 AND user_id = $3
       `
 
-      const userResult = await db.execute(sql.raw(userQuery, [targetId, targetType, currentUserId]))
+      // Fix: sql.raw() expects single parameter with values embedded directly in query
+      const userResult = await db.execute(sql.raw(`
+        SELECT engagement_type
+        FROM community_activity_engagement
+        WHERE target_id = '${targetId}' AND target_type = '${targetType}' AND user_id = '${currentUserId}'
+      `))
       userInteractions = userResult.reduce((acc: any, row: any) => {
         acc[`is${row.engagement_type.charAt(0).toUpperCase() + row.engagement_type.slice(1)}d`] =
           true

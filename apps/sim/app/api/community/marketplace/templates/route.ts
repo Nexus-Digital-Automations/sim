@@ -15,8 +15,15 @@
  * - Real-time analytics tracking and performance metrics
  * - GDPR-compliant data handling and privacy protection
  *
+ * Technical Notes:
+ * - Complex Drizzle ORM query handling with proper type assertions
+ * - Dynamic query builder construction for count queries
+ * - Safe array type handling for database result processing
+ * - Integration with enhanced schema properties from Wave 1 fixes
+ *
  * @author Claude Code Template Marketplace System
  * @version 1.0.0
+ * @fixed Wave 2 TypeScript Error Elimination - Complex DB Query Types
  */
 
 import { and, desc, eq, gte, ilike, or, sql } from 'drizzle-orm'
@@ -229,13 +236,15 @@ export async function GET(request: NextRequest) {
       .offset(offset)
 
     // Get total count for pagination
-    const countQuery = await db
+    // Build count query with proper type handling for complex Drizzle ORM queries
+    // This handles the complex database query result type mismatch by properly constructing
+    // the count query based on the same conditions as the main query
+    let countQueryBuilder = db
       .select({ count: sql<number>`count(DISTINCT ${templates.id})` })
       .from(templates)
       .leftJoin(templateCategories, eq(templates.categoryId, templateCategories.id))
 
-    let countQueryBuilder = countQuery
-
+    // Apply same joins as main query for accurate counting
     if (tags.length > 0) {
       countQueryBuilder = db
         .select({ count: sql<number>`count(DISTINCT ${templates.id})` })
@@ -244,13 +253,21 @@ export async function GET(request: NextRequest) {
         .innerJoin(templateTags, eq(templateTagAssignments.tagId, templateTags.id))
     }
 
+    // Add starred join for count query if filtering by starred templates
     if (starred && userId) {
-      countQueryBuilder = countQueryBuilder as any
-      // Add starred join for count query
+      countQueryBuilder = countQueryBuilder.leftJoin(
+        templateStars,
+        and(
+          eq(templateStars.templateId, templates.id),
+          eq(templateStars.userId, userId)
+        )
+      )
     }
 
-    const totalCountResult = await (countQueryBuilder as any).where(and(...conditions))
-    const totalCount = totalCountResult[0]?.count || 0
+    // Execute count query with proper type assertion for Drizzle ORM result
+    // The complex query builder result needs explicit typing to handle array interface
+    const totalCountResult = await countQueryBuilder.where(and(...conditions))
+    const totalCount = Array.isArray(totalCountResult) ? totalCountResult[0]?.count || 0 : 0
 
     // Fetch tags for each template if metadata is included
     let templatesWithTags = results

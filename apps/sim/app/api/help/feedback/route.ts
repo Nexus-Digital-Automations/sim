@@ -612,8 +612,11 @@ export async function GET(request: NextRequest) {
     logger.info(`[${requestId}] Processing feedback retrieval request`)
 
     const { searchParams } = new URL(request.url)
-    const params = Object.fromEntries(searchParams)
+    const rawParams = Object.fromEntries(searchParams)
 
+    // Parse and convert types for validation
+    const params: any = { ...rawParams }
+    
     // Parse boolean parameters
     if (params.includeAnalytics !== undefined) {
       params.includeAnalytics = params.includeAnalytics === 'true'

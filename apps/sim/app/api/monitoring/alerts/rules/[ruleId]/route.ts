@@ -142,7 +142,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch alert rule',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -196,7 +196,7 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
           error: {
             code: 'INVALID_UPDATE_DATA',
             message: 'Invalid alert rule update data',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -223,7 +223,7 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
         error: {
           code: 'UPDATE_ERROR',
           message: 'Failed to update alert rule',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -284,7 +284,7 @@ export async function DELETE(request: NextRequest, context: RouteContext): Promi
         error: {
           code: 'DELETE_ERROR',
           message: 'Failed to delete alert rule',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }

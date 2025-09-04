@@ -201,7 +201,7 @@ function transform(data, context) {
       title: 'SQL Transform Query',
       type: 'code',
       layout: 'full',
-      language: 'sql',
+      language: 'javascript',
       placeholder: `SELECT 
   id,
   CONCAT(firstName, ' ', lastName) as fullName,

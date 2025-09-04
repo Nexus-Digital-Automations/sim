@@ -139,9 +139,10 @@ export async function GET(request: NextRequest) {
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url)
-    const params = Object.fromEntries(searchParams)
+    const rawParams = Object.fromEntries(searchParams)
 
-    // Convert boolean strings
+    // Convert types for validation
+    const params: any = { ...rawParams }
     if (params.includeMetadata) params.includeMetadata = params.includeMetadata === 'true'
     if (params.includeAnalytics) params.includeAnalytics = params.includeAnalytics === 'true'
     if (params.version) params.version = Number.parseInt(params.version, 10)

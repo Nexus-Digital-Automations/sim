@@ -9,12 +9,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   AlertCircle,
+  Brain,
   Clock,
   Cpu,
+  DollarSign,
   Eye,
   MemoryStick,
+  Network,
   Play,
+  Shield,
   Square,
+  Target,
   TrendingUp,
   Zap,
 } from 'lucide-react'
@@ -42,12 +47,46 @@ interface WorkflowMonitoringPanelProps {
   className?: string
 }
 
+// Business and system health types for extended monitoring
+interface BusinessMetrics {
+  costSavings: number
+  timeSaved: number
+  tasksAutomated: number
+  roinPercentage: number
+}
+
+interface SystemHealth {
+  status: 'healthy' | 'degraded' | 'critical'
+}
+
+interface DetectedAnomaly {
+  type: string
+  recommendations: Array<{
+    title: string
+    description: string
+    expectedBenefit: string
+    estimatedEffort: string
+  }>
+}
+
+interface ConnectionStats {
+  connected: boolean
+  latency: number
+  messagesSent: number
+  messagesReceived: number
+}
+
 interface MonitoringData {
   liveExecutions: LiveExecutionStatus[]
   currentExecution?: LiveExecutionStatus
   recentMetrics: PerformanceMetrics[]
   activeAlerts: AlertInstance[]
   analytics?: WorkflowAnalytics
+  businessMetrics?: BusinessMetrics
+  systemHealth?: SystemHealth
+  detectedAnomalies?: DetectedAnomaly[]
+  realtimeEvents?: unknown[]
+  connectionStats?: ConnectionStats
 }
 
 export function WorkflowMonitoringPanel({
@@ -62,6 +101,23 @@ export function WorkflowMonitoringPanel({
     liveExecutions: [],
     recentMetrics: [],
     activeAlerts: [],
+    businessMetrics: {
+      costSavings: 0,
+      timeSaved: 0,
+      tasksAutomated: 0,
+      roinPercentage: 0,
+    },
+    systemHealth: {
+      status: 'healthy',
+    },
+    detectedAnomalies: [],
+    realtimeEvents: [],
+    connectionStats: {
+      connected: true,
+      latency: 0,
+      messagesSent: 0,
+      messagesReceived: 0,
+    },
   })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -103,7 +159,7 @@ export function WorkflowMonitoringPanel({
       // Update state
       setMonitoringData({
         liveExecutions,
-        currentExecution: liveExecutions.find((exec) => exec.status === 'running'),
+        currentExecution: liveExecutions.find((exec: LiveExecutionStatus) => exec.status === 'running'),
         recentMetrics: metricsData.data?.metrics || [],
         activeAlerts:
           alertsData.data?.alerts?.filter(
@@ -376,7 +432,23 @@ export function WorkflowMonitoringPanel({
 
   // Render business intelligence insights
   const renderBusinessIntelligence = () => {
-    const { businessMetrics } = monitoringData
+    // Provide defaults if properties are undefined
+    const businessMetrics = monitoringData.businessMetrics || {
+      costSavings: 0,
+      timeSaved: 0,
+      tasksAutomated: 0,
+      roinPercentage: 0,
+    }
+    
+    const systemHealth = monitoringData.systemHealth || { status: 'healthy' as const }
+    const detectedAnomalies = monitoringData.detectedAnomalies || []
+    const realtimeEvents = monitoringData.realtimeEvents || []
+    const connectionStats = monitoringData.connectionStats || {
+      connected: true,
+      latency: 0,
+      messagesSent: 0,
+      messagesReceived: 0,
+    }
 
     return (
       <div className='space-y-4'>
@@ -438,15 +510,15 @@ export function WorkflowMonitoringPanel({
               </span>
               <span
                 className={`font-medium ${
-                  monitoringData.systemHealth.status === 'healthy'
+                  systemHealth.status === 'healthy'
                     ? 'text-green-600'
-                    : monitoringData.systemHealth.status === 'degraded'
+                    : systemHealth.status === 'degraded'
                       ? 'text-yellow-600'
                       : 'text-red-600'
                 }`}
               >
-                {monitoringData.systemHealth.status.charAt(0).toUpperCase() +
-                  monitoringData.systemHealth.status.slice(1)}
+                {systemHealth.status.charAt(0).toUpperCase() +
+                  systemHealth.status.slice(1)}
               </span>
             </div>
 
@@ -455,7 +527,7 @@ export function WorkflowMonitoringPanel({
                 <Brain className='h-4 w-4 text-purple-500' />
                 <span>ML Anomalies Detected</span>
               </span>
-              <span className='font-medium'>{monitoringData.detectedAnomalies.length}</span>
+              <span className='font-medium'>{detectedAnomalies.length}</span>
             </div>
 
             <div className='flex justify-between rounded bg-muted p-3 text-sm'>
@@ -463,7 +535,7 @@ export function WorkflowMonitoringPanel({
                 <Network className='h-4 w-4 text-blue-500' />
                 <span>Real-time Events</span>
               </span>
-              <span className='font-medium'>{monitoringData.realtimeEvents.length}</span>
+              <span className='font-medium'>{realtimeEvents.length}</span>
             </div>
           </div>
         </div>
@@ -476,34 +548,34 @@ export function WorkflowMonitoringPanel({
               <span>Status:</span>
               <span
                 className={`font-medium ${
-                  monitoringData.connectionStats.connected ? 'text-green-600' : 'text-red-600'
+                  connectionStats.connected ? 'text-green-600' : 'text-red-600'
                 }`}
               >
-                {monitoringData.connectionStats.connected ? 'Connected' : 'Disconnected'}
+                {connectionStats.connected ? 'Connected' : 'Disconnected'}
               </span>
             </div>
             <div className='flex justify-between'>
               <span>Latency:</span>
-              <span className='font-medium'>{monitoringData.connectionStats.latency}ms</span>
+              <span className='font-medium'>{connectionStats.latency}ms</span>
             </div>
             <div className='flex justify-between'>
               <span>Messages Sent:</span>
-              <span className='font-medium'>{monitoringData.connectionStats.messagesSent}</span>
+              <span className='font-medium'>{connectionStats.messagesSent}</span>
             </div>
             <div className='flex justify-between'>
               <span>Messages Received:</span>
-              <span className='font-medium'>{monitoringData.connectionStats.messagesReceived}</span>
+              <span className='font-medium'>{connectionStats.messagesReceived}</span>
             </div>
           </div>
         </div>
 
         {/* Recent anomaly recommendations */}
-        {monitoringData.detectedAnomalies.length > 0 && (
+        {detectedAnomalies.length > 0 && (
           <div>
             <div className='mb-2 font-medium text-sm'>Latest Recommendations</div>
             <ScrollArea className='h-32'>
               <div className='space-y-2'>
-                {monitoringData.detectedAnomalies.slice(0, 3).map((anomaly, index) => (
+                {detectedAnomalies.slice(0, 3).map((anomaly, index) => (
                   <div key={index} className='rounded bg-muted p-3'>
                     <div className='mb-1 font-medium text-xs'>
                       {anomaly.type.replace(/_/g, ' ').toUpperCase()}

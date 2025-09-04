@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest'
 import { setupFileApiMocks } from '@/app/api/__test-utils__/utils'
 
 describe('/api/files/presigned', () => {

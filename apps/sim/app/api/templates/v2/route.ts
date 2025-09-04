@@ -667,6 +667,7 @@ export async function GET(request: NextRequest) {
           },
           sortOrder: `${params.sortBy}:${params.sortOrder}`,
           resultsCount: results.length,
+          clickedTemplateIds: [],
           sessionId: request.headers.get('x-session-id') || undefined,
         },
         userId

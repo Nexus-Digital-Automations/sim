@@ -156,53 +156,53 @@ export async function GET(request: NextRequest) {
       "cup.profile_visibility = 'public'", // Only show public profiles
       'ur.total_points IS NOT NULL', // Ensure reputation exists
     ]
-    const queryParams: any[] = []
+    const sqlParams: any[] = []
 
     // Add search filters
     if (params.query) {
       whereConditions.push(`(
-        LOWER(u.name) LIKE LOWER($${queryParams.length + 1}) OR
-        LOWER(cup.display_name) LIKE LOWER($${queryParams.length + 1}) OR
-        LOWER(cup.bio) LIKE LOWER($${queryParams.length + 1}) OR
-        LOWER(cup.title) LIKE LOWER($${queryParams.length + 1}) OR
-        LOWER(cup.company) LIKE LOWER($${queryParams.length + 1})
+        LOWER(u.name) LIKE LOWER($${sqlParams.length + 1}) OR
+        LOWER(cup.display_name) LIKE LOWER($${sqlParams.length + 1}) OR
+        LOWER(cup.bio) LIKE LOWER($${sqlParams.length + 1}) OR
+        LOWER(cup.title) LIKE LOWER($${sqlParams.length + 1}) OR
+        LOWER(cup.company) LIKE LOWER($${sqlParams.length + 1})
       )`)
-      queryParams.push(`%${params.query}%`)
+      sqlParams.push(`%${params.query}%`)
     }
 
     if (params.specialization) {
-      whereConditions.push(`cup.specializations ? $${queryParams.length + 1}`)
-      queryParams.push(params.specialization)
+      whereConditions.push(`cup.specializations ? $${sqlParams.length + 1}`)
+      sqlParams.push(params.specialization)
     }
 
     if (params.skill) {
-      whereConditions.push(`cup.skills ? $${queryParams.length + 1}`)
-      queryParams.push(params.skill)
+      whereConditions.push(`cup.skills ? $${sqlParams.length + 1}`)
+      sqlParams.push(params.skill)
     }
 
     if (params.industry) {
-      whereConditions.push(`cup.industries ? $${queryParams.length + 1}`)
-      queryParams.push(params.industry)
+      whereConditions.push(`cup.industries ? $${sqlParams.length + 1}`)
+      sqlParams.push(params.industry)
     }
 
     if (params.location) {
-      whereConditions.push(`LOWER(cup.location) LIKE LOWER($${queryParams.length + 1})`)
-      queryParams.push(`%${params.location}%`)
+      whereConditions.push(`LOWER(cup.location) LIKE LOWER($${sqlParams.length + 1})`)
+      sqlParams.push(`%${params.location}%`)
     }
 
     if (params.minReputation !== undefined) {
-      whereConditions.push(`ur.total_points >= $${queryParams.length + 1}`)
-      queryParams.push(params.minReputation)
+      whereConditions.push(`ur.total_points >= $${sqlParams.length + 1}`)
+      sqlParams.push(params.minReputation)
     }
 
     if (params.maxReputation !== undefined) {
-      whereConditions.push(`ur.total_points <= $${queryParams.length + 1}`)
-      queryParams.push(params.maxReputation)
+      whereConditions.push(`ur.total_points <= $${sqlParams.length + 1}`)
+      sqlParams.push(params.maxReputation)
     }
 
     if (params.verified !== undefined) {
-      whereConditions.push(`cup.is_verified = $${queryParams.length + 1}`)
-      queryParams.push(params.verified)
+      whereConditions.push(`cup.is_verified = $${sqlParams.length + 1}`)
+      sqlParams.push(params.verified)
     }
 
     // Build sort clause
@@ -291,13 +291,13 @@ export async function GET(request: NextRequest) {
       ) social_stats ON u.id = social_stats.user_id
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY ${sortColumn} ${sortDirection} NULLS LAST
-      LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+      LIMIT $${sqlParams.length + 1} OFFSET $${sqlParams.length + 2}
     `
 
-    queryParams.push(params.limit, params.offset)
+    sqlParams.push(params.limit, params.offset)
 
-    console.log('[CommunityUsersAPI] Executing search query with parameters:', queryParams.length)
-    const result = await db.execute(sql.raw(searchQuery, queryParams))
+    console.log('[CommunityUsersAPI] Executing search query with parameters:', sqlParams.length)
+    const result = await db.execute(sql.raw(searchQuery))
 
     // Get total count for pagination
     const countQuery = `
@@ -308,7 +308,7 @@ export async function GET(request: NextRequest) {
       WHERE ${whereConditions.join(' AND ')}
     `
 
-    const countResult = await db.execute(sql.raw(countQuery, queryParams.slice(0, -2)))
+    const countResult = await db.execute(sql.raw(countQuery))
     const totalUsers = (countResult[0] as any)?.total || 0
 
     // Format results

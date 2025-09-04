@@ -60,7 +60,7 @@ export function useTemplateCategories(
    * Process categories with template counts and filtering
    */
   const processedCategories = useMemo(() => {
-    let processed = TEMPLATE_CATEGORIES.map(category => ({
+    let processed = Object.values(TEMPLATE_CATEGORIES).map(category => ({
       ...category,
       templateCount: templateCounts[category.id] || 0
     }))
@@ -69,7 +69,7 @@ export function useTemplateCategories(
     if (!includeEmpty) {
       processed = processed.filter(category => 
         category.templateCount > 0 || 
-        category.children?.some(child => templateCounts[child.id] > 0)
+        category.subcategories?.some(child => templateCounts[child.id] > 0)
       )
     }
 
@@ -85,8 +85,8 @@ export function useTemplateCategories(
     const addToMap = (categories: TemplateCategory[]) => {
       categories.forEach(category => {
         map.set(category.id, category)
-        if (category.children) {
-          addToMap(category.children)
+        if (category.subcategories) {
+          addToMap(category.subcategories)
         }
       })
     }
@@ -116,7 +116,7 @@ export function useTemplateCategories(
       if (!category) break
       
       path.unshift(category)
-      currentId = category.parentId || null
+      currentId = category.parentId || ''
     }
     
     return path
@@ -218,7 +218,7 @@ export function useTemplateCategories(
       if (!category) break
       
       path.unshift(category)
-      currentId = category.parentId || null
+      currentId = category.parentId || ''
     }
     
     return path
@@ -229,7 +229,7 @@ export function useTemplateCategories(
    */
   const getCategoryChildren = useCallback((categoryId: string): TemplateCategory[] => {
     const category = categoriesMap.get(categoryId)
-    return category?.children || []
+    return category?.subcategories || []
   }, [categoriesMap])
 
   /**
@@ -250,7 +250,7 @@ export function useTemplateCategories(
    * Initialize categories on mount
    */
   useEffect(() => {
-    setCategories(TEMPLATE_CATEGORIES)
+    setCategories(Object.values(TEMPLATE_CATEGORIES))
     if (loadCounts) {
       loadTemplateCounts()
     }

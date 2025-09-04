@@ -1,8 +1,8 @@
 import { ApiIcon } from '@/components/icons'
 import type { BlockConfig } from '@/blocks/types'
-import type { WebhookResponse } from '@/tools/webhook/types'
+import type { ToolResponse } from '@/tools/types'
 
-export const WebhookProcessorBlock: BlockConfig<WebhookResponse> = {
+export const WebhookProcessorBlock: BlockConfig<ToolResponse> = {
   type: 'webhook_processor',
   name: 'Webhook Processor',
   description: 'Advanced webhook processing with payload validation and transformation',
@@ -34,7 +34,7 @@ export const WebhookProcessorBlock: BlockConfig<WebhookResponse> = {
         { label: 'GET', id: 'GET' },
         { label: 'DELETE', id: 'DELETE' },
       ],
-      value: () => ['POST'],
+      value: () => JSON.stringify(['POST']),
       required: true,
     },
     {
@@ -241,7 +241,7 @@ function transform(payload, headers, query) {
       type: 'switch',
       layout: 'half',
       description: 'Log all webhook requests for debugging',
-      value: () => true,
+      value: () => 'true',
     },
     {
       id: 'rateLimiting',

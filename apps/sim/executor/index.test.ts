@@ -7,7 +7,7 @@
  * running workflow blocks in topological order, handling the execution flow,
  * resolving inputs and dependencies, and managing errors.
  */
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { BlockOutput, ParamType } from '@/blocks/types'
 import { Executor } from '@/executor'
 import {

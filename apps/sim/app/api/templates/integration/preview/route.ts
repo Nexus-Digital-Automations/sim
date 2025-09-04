@@ -128,7 +128,7 @@ async function generateTemplatePreview(templateData: any, customizations: any, o
   } catch (error) {
     logger.error('Failed to generate template preview', {
       templateId: templateData.id,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       processingTime: Date.now() - startTime,
     })
     throw error
@@ -202,7 +202,7 @@ function generatePreviewMetrics(previewState: any, templateData: any) {
  * Detect potential conflicts with existing workflow elements
  */
 function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
-  const conflicts = []
+  const conflicts: any[] = []
   const blocks = previewState.blocks || {}
 
   // Simulate conflict detection (in real implementation, would compare with target workflow)
@@ -257,7 +257,7 @@ function detectPotentialConflicts(previewState: any, mergeStrategy: string) {
  * Validate template dependencies and requirements
  */
 async function validateTemplateDependencies(previewState: any) {
-  const dependencies = []
+  const dependencies: any[] = []
   const blocks = previewState.blocks || {}
 
   // Analyze block dependencies

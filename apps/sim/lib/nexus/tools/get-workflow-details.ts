@@ -243,7 +243,7 @@ class GetWorkflowDetailsTool extends BaseNexusTool {
 
     const results = await query
 
-    if (results.length === 0) {
+    if (!Array.isArray(results) || results.length === 0) {
       throw new Error('Workflow not found')
     }
 
@@ -268,7 +268,7 @@ class GetWorkflowDetailsTool extends BaseNexusTool {
       .where(eq(workflowBlocks.workflowId, workflowId))
       .orderBy(workflowBlocks.positionY, workflowBlocks.positionX)
 
-    return blocks.map((block) => ({
+    return blocks.map((block: any) => ({
       id: block.id,
       type: block.type,
       name: block.name,
@@ -300,7 +300,7 @@ class GetWorkflowDetailsTool extends BaseNexusTool {
       .where(eq(workflowEdges.workflowId, workflowId))
       .orderBy(workflowEdges.createdAt)
 
-    return edges.map((edge) => ({
+    return edges.map((edge: any) => ({
       id: edge.id,
       sourceBlockId: edge.sourceBlockId,
       targetBlockId: edge.targetBlockId,
@@ -324,7 +324,7 @@ class GetWorkflowDetailsTool extends BaseNexusTool {
       .orderBy(desc(workflowExecutionLogs.startedAt))
       .limit(limit)
 
-    return executions.map((execution) => ({
+    return executions.map((execution: any) => ({
       id: execution.id,
       executionId: execution.executionId,
       level: execution.level,
@@ -349,7 +349,7 @@ class GetWorkflowDetailsTool extends BaseNexusTool {
       .orderBy(desc(workflowVersions.createdAt))
       .limit(limit)
 
-    return versions.map((version) => ({
+    return versions.map((version: any) => ({
       id: version.id,
       versionNumber: version.versionNumber,
       versionType: version.versionType,

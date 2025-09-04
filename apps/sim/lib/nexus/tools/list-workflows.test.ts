@@ -61,7 +61,7 @@ describe('ListWorkflows Tool', () => {
       vi.mocked(getSession).mockResolvedValue(createMockSession())
 
       const result = await listWorkflows.execute({
-        // @ts-expect-error - Testing missing workspaceId
+        // Testing missing workspaceId - should cause validation error
         limit: 10,
       })
 

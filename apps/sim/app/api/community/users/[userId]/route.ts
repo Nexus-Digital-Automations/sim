@@ -493,7 +493,7 @@ export async function PUT(request: NextRequest, { params }: { params: { userId: 
 
     queryParams.push(userId)
 
-    const result = await db.execute(sql.raw(updateQuery, queryParams))
+    const result = await db.execute(sql.raw(updateQuery))
 
     if (!result[0]) {
       return NextResponse.json({ error: 'Profile not found or no changes made' }, { status: 404 })

@@ -99,7 +99,7 @@ async function importTemplateToWorkflow(
 
     // Apply merge strategy
     const mergedState = await applyMergeStrategy(
-      targetWorkflow.state,
+      targetWorkflow.deployedState,
       processedTemplateState,
       options.mergeStrategy,
       options.preserveExisting
@@ -158,7 +158,7 @@ async function importTemplateToWorkflow(
       templateId: templateData.id,
       targetWorkflowId,
       processingTime,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     })
 
     // Attempt rollback on failure
@@ -168,7 +168,7 @@ async function importTemplateToWorkflow(
     } catch (rollbackError) {
       logger.error('Import rollback failed', {
         importId,
-        rollbackError: rollbackError.message,
+        rollbackError: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
       })
     }
 
@@ -185,7 +185,7 @@ async function fetchTargetWorkflow(workflowId: string, userId: string) {
       id: workflow.id,
       name: workflow.name,
       description: workflow.description,
-      state: workflow.state,
+      deployedState: workflow.deployedState,
       userId: workflow.userId,
       workspaceId: workflow.workspaceId,
     })
@@ -430,13 +430,9 @@ async function trackTemplateUsage(
       templateId,
       userId,
       eventType,
-      usageTimestamp: new Date(),
       executionSuccess: true,
       setupTimeSeconds: Math.round((metadata.processingTime || 0) / 1000),
-      estimatedTimeSaved: 300, // 5 minutes saved estimate
-      estimatedCostSaved: 25.0, // $25 saved estimate
-      userSatisfactionScore: 5, // Default high satisfaction
-      metadata: {
+      eventContext: {
         ...metadata,
         eventSource: 'template_import_api',
       },
@@ -452,7 +448,7 @@ async function trackTemplateUsage(
       templateId,
       userId,
       eventType,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     })
     // Don't throw error as usage tracking is not critical
   }

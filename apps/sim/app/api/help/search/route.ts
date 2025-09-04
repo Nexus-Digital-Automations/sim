@@ -84,6 +84,11 @@ interface EnhancedSearchResult extends ContentSearchResult {
   suggestions?: string[]
   queryTime: number
   cached: boolean
+  meta?: {
+    requestId?: string
+    processingTimeMs?: number
+    [key: string]: any
+  }
 }
 
 class SearchEngine {
@@ -452,7 +457,10 @@ export async function GET(request: NextRequest) {
     logger.info(`[${requestId}] Processing help search request`)
 
     const { searchParams } = new URL(request.url)
-    const params = Object.fromEntries(searchParams)
+    const rawParams = Object.fromEntries(searchParams)
+
+    // Parse and convert types for validation
+    const params: any = { ...rawParams }
 
     // Parse array parameters
     if (params.categories) params.categories = params.categories.split(',')

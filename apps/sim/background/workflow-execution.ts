@@ -19,9 +19,9 @@ const logger = createLogger('TriggerWorkflowExecution')
 export type WorkflowExecutionPayload = {
   workflowId: string
   userId: string
-  input?: any
+  input?: Record<string, unknown>
   triggerType?: 'api' | 'webhook' | 'schedule' | 'manual' | 'chat'
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export async function executeWorkflowJob(payload: WorkflowExecutionPayload) {
@@ -72,11 +72,11 @@ export async function executeWorkflowJob(payload: WorkflowExecutionPayload) {
             subAcc[key] = subBlock.value
             return subAcc
           },
-          {} as Record<string, any>
+          {} as Record<string, unknown>
         )
         return acc
       },
-      {} as Record<string, Record<string, any>>
+      {} as Record<string, Record<string, unknown>>
     )
 
     // Get environment variables
@@ -88,14 +88,16 @@ export async function executeWorkflowJob(payload: WorkflowExecutionPayload) {
 
     let decryptedEnvVars: Record<string, string> = {}
     if (userEnv) {
-      const decryptionPromises = Object.entries((userEnv.variables as any) || {}).map(
+      const variables = userEnv.variables as Record<string, string> | null || {}
+      const decryptionPromises = Object.entries(variables).map(
         async ([key, encryptedValue]) => {
           try {
             const { decrypted } = await decryptSecret(encryptedValue as string)
             return [key, decrypted] as const
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
             logger.error(`[${requestId}] Failed to decrypt environment variable "${key}":`, error)
-            throw new Error(`Failed to decrypt environment variable "${key}": ${error.message}`)
+            throw new Error(`Failed to decrypt environment variable "${key}": ${errorMessage}`)
           }
         }
       )
@@ -178,7 +180,7 @@ export async function executeWorkflowJob(payload: WorkflowExecutionPayload) {
       endedAt: new Date().toISOString(),
       totalDurationMs: totalDuration || 0,
       finalOutput: executionResult.output || {},
-      traceSpans: traceSpans as any,
+      traceSpans,
     })
 
     return {
@@ -189,18 +191,20 @@ export async function executeWorkflowJob(payload: WorkflowExecutionPayload) {
       executedAt: new Date().toISOString(),
       metadata: payload.metadata,
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
     logger.error(`[${requestId}] Workflow execution failed: ${workflowId}`, {
-      error: error.message,
-      stack: error.stack,
+      error: errorMessage,
+      stack: errorStack,
     })
 
     await loggingSession.safeCompleteWithError({
       endedAt: new Date().toISOString(),
       totalDurationMs: 0,
       error: {
-        message: error.message || 'Workflow execution failed',
-        stackTrace: error.stack,
+        message: errorMessage || 'Workflow execution failed',
+        stackTrace: errorStack,
       },
     })
 

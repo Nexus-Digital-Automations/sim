@@ -31,6 +31,9 @@ import type {
   IntegrationConnector,
 } from './index'
 
+// Re-export types for external consumption
+export type { IntegrationCategory, AuthMethod, IntegrationConnection, IntegrationConnector } from './index'
+
 const logger = createLogger('IntegrationRegistry')
 
 // ====================================================================

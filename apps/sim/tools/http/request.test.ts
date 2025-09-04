@@ -6,7 +6,7 @@
  * This file contains unit tests for the HTTP Request tool, which is used
  * to make HTTP requests to external APIs and services.
  */
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockHttpResponses } from '@/tools/__test-utils__/mock-data'
 import { ToolTester } from '@/tools/__test-utils__/test-tools'
 import { requestTool } from '@/tools/http/request'

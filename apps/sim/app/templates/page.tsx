@@ -137,8 +137,8 @@ export default function TemplatesPage() {
     hasNextPage,
   } = useTemplateSearch(searchQueryData)
 
-  const { categories, categoriesLoading } = useTemplateCategories()
-  const { collections, collectionsLoading } = useUserCollections()
+  const { categories, loading: categoriesLoading } = useTemplateCategories()
+  const { collections, loading: collectionsLoading } = useUserCollections()
 
   // Event handlers
   const handleSearchChange = useCallback((value: string) => {
@@ -233,7 +233,7 @@ export default function TemplatesPage() {
   )
 
   // Helper function to map sort options to API format
-  function mapSortOptionToAPI(sort: SortOption): string {
+  function mapSortOptionToAPI(sort: SortOption): 'name' | 'createdAt' | 'updatedAt' | 'views' | 'stars' | 'rating' | 'relevance' | 'trending' {
     switch (sort) {
       case 'relevance':
         return 'relevance'
@@ -587,10 +587,15 @@ export default function TemplatesPage() {
       <AdvancedSearchDialog
         open={showAdvancedSearch}
         onOpenChange={setShowAdvancedSearch}
-        filters={filters}
-        onFiltersChange={handleFilterChange}
+        filters={filters as any}
+        onFiltersChange={handleFilterChange as any}
         categories={Object.values(TEMPLATE_CATEGORIES)}
-        facets={facets}
+        facets={facets ? {
+          categories: facets.categories,
+          tags: facets.tags,
+          authors: facets.authors,
+          difficulties: facets.difficulty.map(d => ({ name: d.level, count: d.count }))
+        } : undefined}
       />
 
       <TemplatePreviewDialog

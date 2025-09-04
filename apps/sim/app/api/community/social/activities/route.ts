@@ -30,6 +30,7 @@ import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
+import { getUserRole, AuthHelpers } from '@/lib/auth/types'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -300,7 +301,73 @@ export async function GET(request: NextRequest) {
     console.log('[SocialActivities] Executing activity feed query')
     // Execute main activity query with proper parameter binding
     // Database results return direct array, not .rows property
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(`
+      SELECT 
+        cua.id,
+        cua.user_id,
+        cua.activity_type,
+        cua.activity_data,
+        cua.target_type,
+        cua.target_id,
+        cua.target_title,
+        cua.visibility,
+        cua.is_featured,
+        cua.like_count,
+        cua.comment_count,
+        cua.created_at,
+        cua.updated_at,
+        -- User information
+        u.name as user_name,
+        u.image as user_image,
+        cup.display_name as user_display_name,
+        cup.is_verified as user_is_verified,
+        ur.total_points as user_reputation_points,
+        ur.reputation_level as user_reputation_level,
+        -- Engagement data for current user
+        ${
+          currentUserId
+            ? `
+        CASE WHEN ual.user_id IS NOT NULL THEN true ELSE false END as is_liked,
+        CASE WHEN uab.user_id IS NOT NULL THEN true ELSE false END as is_bookmarked,
+        `
+            : `
+        false as is_liked,
+        false as is_bookmarked,
+        `
+        }
+        -- Share count (computed from shares)
+        COALESCE(share_counts.share_count, 0) as share_count
+      FROM community_user_activities cua
+      ${joinConditions}
+      INNER JOIN "user" u ON cua.user_id = u.id
+      LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+      LEFT JOIN user_reputation ur ON u.id = ur.user_id
+      ${
+        currentUserId
+          ? `
+      LEFT JOIN (
+        SELECT activity_id, user_id FROM community_activity_engagement 
+        WHERE user_id = '${currentUserId}' AND engagement_type = 'like'
+      ) ual ON cua.id = ual.activity_id
+      LEFT JOIN (
+        SELECT activity_id, user_id FROM community_activity_engagement 
+        WHERE user_id = '${currentUserId}' AND engagement_type = 'bookmark'
+      ) uab ON cua.id = uab.activity_id
+      `
+          : ''
+      }
+      LEFT JOIN (
+        SELECT activity_id, COUNT(*) as share_count 
+        FROM community_activity_engagement 
+        WHERE engagement_type = 'share'
+        GROUP BY activity_id
+      ) share_counts ON cua.id = share_counts.activity_id
+      WHERE ${whereConditions.join(' AND ')}
+      ORDER BY ${orderByClause}
+      LIMIT ${currentUserId ? params.limit : params.limit} 
+      OFFSET ${currentUserId ? params.offset : params.offset}
+    `))
 
     // Get total count for pagination
     const countQuery = `
@@ -311,9 +378,15 @@ export async function GET(request: NextRequest) {
     `
 
     const countValues = queryValues.slice(0, -2) // Remove limit and offset
-    // Execute count query for pagination metadata
+    // Execute count query for pagination metadata  
     // Access result directly as array, not via .rows property
-    const countResult = await db.execute(sql.raw(countQuery, countValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const countResult = await db.execute(sql.raw(`
+      SELECT COUNT(*) as total
+      FROM community_user_activities cua
+      ${joinConditions}
+      WHERE ${whereConditions.join(' AND ')}
+    `))
     const totalActivities = (countResult[0] as any)?.total || 0
 
     // Format activities from database result array
@@ -528,7 +601,21 @@ export async function POST(request: NextRequest) {
 
     // Retrieve created activity with user details
     // Database result is direct array, not nested in .rows
-    const activityResult = await db.execute(sql.raw(createdActivityQuery, [activityId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const activityResult = await db.execute(sql.raw(`
+      SELECT 
+        cua.id, cua.user_id, cua.activity_type, cua.activity_data,
+        cua.target_type, cua.target_id, cua.target_title, cua.visibility,
+        cua.is_featured, cua.like_count, cua.comment_count, cua.created_at,
+        u.name as user_name, u.image as user_image,
+        cup.display_name as user_display_name, cup.is_verified as user_is_verified,
+        ur.total_points as user_reputation_points, ur.reputation_level as user_reputation_level
+      FROM community_user_activities cua
+      INNER JOIN "user" u ON cua.user_id = u.id
+      LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+      LEFT JOIN user_reputation ur ON u.id = ur.user_id
+      WHERE cua.id = '${activityId}'
+    `))
     const activityRow = activityResult[0] as any
 
     const createdActivity = {
@@ -653,10 +740,10 @@ export async function PUT(request: NextRequest) {
     const activityUserId = (activityResult[0] as any).user_id
 
     // Check permissions (user can update own activities, moderators can update any)
+    // Using safe role access patterns for type-safe authorization checks
     const canUpdate =
       activityUserId === userId ||
-      session.user.role === 'admin' ||
-      session.user.role === 'moderator'
+      AuthHelpers.canModerate(session.user)
 
     if (!canUpdate) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
@@ -703,7 +790,13 @@ export async function PUT(request: NextRequest) {
       RETURNING id, updated_at
     `
 
-    const result = await db.execute(sql.raw(updateQuery, updateValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(`
+      UPDATE community_user_activities 
+      SET ${updateFields.join(', ')}
+      WHERE id = '${activityId}'
+      RETURNING id, updated_at
+    `))
 
     const executionTime = Date.now() - startTime
     console.log(

@@ -141,7 +141,28 @@ export function createMockSession(user?: Partial<MockUser>) {
   const mockUser = createMockUser(user)
 
   return {
-    user: mockUser,
+    user: {
+      id: mockUser.id,
+      email: mockUser.email,
+      emailVerified: true,
+      name: mockUser.name,
+      createdAt: mockUser.createdAt,
+      updatedAt: mockUser.createdAt,
+      image: null,
+    },
+    session: {
+      id: `session_${nanoid(32)}`,
+      userId: mockUser.id,
+      sessionToken: `session_${nanoid(32)}`,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      accessToken: `access_${nanoid(32)}`,
+      refreshToken: `refresh_${nanoid(32)}`,
+      tokenType: 'bearer' as const,
+      scope: 'read write',
+      idToken: `id_${nanoid(32)}`,
+      sessionState: null,
+      userAgent: 'test-agent',
+    },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
     sessionToken: `session_${nanoid(32)}`,
   }

@@ -21,7 +21,7 @@
  * @created 2025-09-04
  */
 
-import { randomUUID } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
@@ -155,7 +155,7 @@ function anonymizeUserData(data: any, anonymize = true): any {
   return {
     ...data,
     userId: data.userId
-      ? `anon_${crypto.createHash('sha256').update(data.userId).digest('hex').slice(0, 8)}`
+      ? `anon_${createHash('sha256').update(data.userId).digest('hex').slice(0, 8)}`
       : undefined,
     userAgent: undefined,
     referrer: undefined,

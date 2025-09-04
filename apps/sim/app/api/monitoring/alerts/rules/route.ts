@@ -180,7 +180,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_PARAMETERS',
             message: 'Invalid request parameters',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch alert rules',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_RULE_DATA',
             message: 'Invalid alert rule data',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -267,7 +267,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'CREATION_ERROR',
           message: 'Failed to create alert rule',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }

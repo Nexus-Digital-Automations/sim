@@ -29,6 +29,7 @@ import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
+import { getUserRole, AuthHelpers } from '@/lib/auth/types'
 import { CommunityUtils } from '@/lib/community'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
@@ -245,7 +246,109 @@ export async function GET(request: NextRequest) {
     console.log('[Comments] Executing comments query')
     // Execute comments query with proper parameter binding
     // Database results return direct array, not .rows property
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(`
+      WITH RECURSIVE comment_tree AS (
+        -- Base case: top-level comments or specified parent
+        SELECT 
+          cc.id,
+          cc.user_id,
+          cc.target_id,
+          cc.target_type,
+          cc.parent_id,
+          cc.content,
+          cc.like_count,
+          cc.reply_count,
+          cc.is_pinned,
+          cc.is_edited,
+          cc.created_at,
+          cc.updated_at,
+          -- User information
+          u.name as user_name,
+          u.image as user_image,
+          cup.display_name as user_display_name,
+          cup.is_verified as user_is_verified,
+          ur.total_points as user_reputation,
+          -- Thread information
+          0 as depth,
+          cc.id::text as thread_path,
+          -- User interactions
+          ${
+            currentUserId
+              ? `
+          CASE WHEN ccl.user_id IS NOT NULL THEN true ELSE false END as is_liked
+          `
+              : 'false as is_liked'
+          }
+        FROM community_comments cc
+        INNER JOIN "user" u ON cc.user_id = u.id
+        LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+        LEFT JOIN user_reputation ur ON u.id = ur.user_id
+        ${
+          currentUserId
+            ? `
+        LEFT JOIN (
+          SELECT target_id, user_id 
+          FROM community_activity_engagement 
+          WHERE target_type = 'comment' AND engagement_type = 'like' AND user_id = '${currentUserId}'
+        ) ccl ON cc.id = ccl.target_id
+        `
+            : ''
+        }
+        WHERE ${whereConditions.join(' AND ')}
+
+        UNION ALL
+
+        -- Recursive case: replies to comments
+        SELECT 
+          cc.id,
+          cc.user_id,
+          cc.target_id,
+          cc.target_type,
+          cc.parent_id,
+          cc.content,
+          cc.like_count,
+          cc.reply_count,
+          cc.is_pinned,
+          cc.is_edited,
+          cc.created_at,
+          cc.updated_at,
+          u.name,
+          u.image,
+          cup.display_name,
+          cup.is_verified,
+          ur.total_points,
+          ct.depth + 1,
+          ct.thread_path || '/' || cc.id::text,
+          ${
+            currentUserId
+              ? `
+          CASE WHEN ccl.user_id IS NOT NULL THEN true ELSE false END as is_liked
+          `
+              : 'false as is_liked'
+          }
+        FROM community_comments cc
+        INNER JOIN comment_tree ct ON cc.parent_id = ct.id
+        INNER JOIN "user" u ON cc.user_id = u.id
+        LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+        LEFT JOIN user_reputation ur ON u.id = ur.user_id
+        ${
+          currentUserId
+            ? `
+        LEFT JOIN (
+          SELECT target_id, user_id 
+          FROM community_activity_engagement 
+          WHERE target_type = 'comment' AND engagement_type = 'like' AND user_id = '${currentUserId}'
+        ) ccl ON cc.id = ccl.target_id
+        `
+            : ''
+        }
+        WHERE cc.is_deleted = false AND ct.depth < ${params.maxDepth}
+      )
+      SELECT * FROM comment_tree
+      ORDER BY depth ASC, ${sortColumn} ${sortDirection}
+      LIMIT ${params.limit} OFFSET ${params.offset}
+    `))
 
     // Get total count
     const countQuery = `
@@ -256,7 +359,12 @@ export async function GET(request: NextRequest) {
     const countValues = queryValues.slice(0, whereConditions.length)
     // Execute count query for pagination metadata
     // Access result directly as array, not via .rows property
-    const countResult = await db.execute(sql.raw(countQuery, countValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const countResult = await db.execute(sql.raw(`
+      SELECT COUNT(*) as total
+      FROM community_comments cc
+      WHERE ${whereConditions.join(' AND ')}
+    `))
     const totalComments = (countResult[0] as any)?.total || 0
 
     // Build comment tree structure
@@ -532,7 +640,21 @@ export async function POST(request: NextRequest) {
 
     // Retrieve created comment with user details
     // Database result is direct array, not nested in .rows
-    const commentResult = await db.execute(sql.raw(createdCommentQuery, [commentId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const commentResult = await db.execute(sql.raw(`
+      SELECT 
+        cc.id, cc.user_id, cc.target_id, cc.target_type, cc.parent_id,
+        cc.content, cc.like_count, cc.reply_count, cc.is_pinned, cc.is_edited,
+        cc.created_at, cc.updated_at,
+        u.name as user_name, u.image as user_image,
+        cup.display_name as user_display_name, cup.is_verified as user_is_verified,
+        ur.total_points as user_reputation
+      FROM community_comments cc
+      INNER JOIN "user" u ON cc.user_id = u.id
+      LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+      LEFT JOIN user_reputation ur ON u.id = ur.user_id
+      WHERE cc.id = '${commentId}'
+    `))
     const commentRow = commentResult[0] as any
 
     const createdComment = {
@@ -645,17 +767,18 @@ export async function PUT(request: NextRequest) {
     }
 
     const comment = commentCheck[0] as any
+    // Check permissions using safe role access patterns for type-safe authorization checks
     const canEdit =
       comment.user_id === userId ||
-      session.user.role === 'admin' ||
-      session.user.role === 'moderator'
+      AuthHelpers.canModerate(session.user)
 
     if (!canEdit) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
     }
 
     // Check edit time limit (15 minutes for regular users)
-    const isAdmin = session.user.role === 'admin' || session.user.role === 'moderator'
+    // Using safe role access patterns for type-safe authorization checks
+    const isAdmin = AuthHelpers.canModerate(session.user)
     const editTimeLimit = 15 * 60 * 1000 // 15 minutes in milliseconds
     const commentAge = Date.now() - new Date(comment.created_at).getTime()
 
@@ -698,7 +821,21 @@ export async function PUT(request: NextRequest) {
 
     // Retrieve updated comment with user details
     // Database result is direct array, not nested in .rows
-    const updatedResult = await db.execute(sql.raw(updatedCommentQuery, [commentId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const updatedResult = await db.execute(sql.raw(`
+      SELECT 
+        cc.id, cc.user_id, cc.target_id, cc.target_type, cc.parent_id,
+        cc.content, cc.like_count, cc.reply_count, cc.is_pinned, cc.is_edited,
+        cc.created_at, cc.updated_at,
+        u.name as user_name, u.image as user_image,
+        cup.display_name as user_display_name, cup.is_verified as user_is_verified,
+        ur.total_points as user_reputation
+      FROM community_comments cc
+      INNER JOIN "user" u ON cc.user_id = u.id
+      LEFT JOIN community_user_profiles cup ON u.id = cup.user_id
+      LEFT JOIN user_reputation ur ON u.id = ur.user_id
+      WHERE cc.id = '${commentId}'
+    `))
     const updatedRow = updatedResult[0] as any
 
     const updatedComment = {
@@ -799,10 +936,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     const comment = commentCheck[0] as any
+    // Check permissions using safe role access patterns for type-safe authorization checks
     const canDelete =
       comment.user_id === userId ||
-      session.user.role === 'admin' ||
-      session.user.role === 'moderator'
+      AuthHelpers.canModerate(session.user)
 
     if (!canDelete) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
@@ -904,7 +1041,22 @@ async function validateCommentTarget(targetType: string, targetId: string, userI
         return { exists: false, canComment: false }
     }
 
-    const result = await db.execute(sql.raw(query, [targetId]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(`
+      ${targetType === 'activity' ? `
+        SELECT cua.id, cua.visibility, cua.user_id
+        FROM community_user_activities cua
+        WHERE cua.id = '${targetId}' AND cua.is_hidden = false
+      ` : targetType === 'template' ? `
+        SELECT t.id, t.visibility, t.created_by_user_id as user_id
+        FROM templates t
+        WHERE t.id = '${targetId}' AND t.status = 'approved'
+      ` : targetType === 'collection' ? `
+        SELECT tc.id, tc.visibility, tc.user_id
+        FROM template_collections tc
+        WHERE tc.id = '${targetId}'
+      ` : 'SELECT NULL LIMIT 0'}
+    `))
 
     // Check target existence - direct array access, not .rows
     if (result.length === 0) {
@@ -963,7 +1115,18 @@ async function updateTargetCommentCount(targetType: string, targetId: string, de
         return
     }
 
-    await db.execute(sql.raw(query, [targetId, delta]))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    await db.execute(sql.raw(`
+      ${targetType === 'activity' ? `
+        UPDATE community_user_activities 
+        SET comment_count = GREATEST(0, comment_count + ${delta}), updated_at = NOW()
+        WHERE id = '${targetId}'
+      ` : targetType === 'template' ? `
+        UPDATE templates 
+        SET comment_count = GREATEST(0, comment_count + ${delta}), updated_at = NOW()
+        WHERE id = '${targetId}'
+      ` : 'SELECT 1 WHERE 1=0'}
+    `))
   } catch (error) {
     console.error('[Comments] Failed to update target comment count:', error)
   }

@@ -79,10 +79,10 @@ function createMockRequest(
       'Content-Type': 'application/json',
       ...headers,
     }),
+    ...(body && method !== 'GET' && { body: JSON.stringify(body) }),
   }
 
   if (body && method !== 'GET') {
-    requestInit.body = JSON.stringify(body)
     console.log('🔧 Request body size:', JSON.stringify(body).length, 'characters')
   }
 

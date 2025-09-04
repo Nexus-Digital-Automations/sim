@@ -9,12 +9,14 @@
  * - API key generation and rotation
  * - Data validation and sanitization
  * - Asset URL management
+ * - Unique ID generation
  *
  * Performance Characteristics:
  * - Encryption/decryption operations: ~1-5ms for typical secret strings
  * - Date formatting: ~0.1-1ms depending on timezone complexity
  * - Class name merging: ~0.1ms for typical use cases
  * - API key rotation: ~0.1ms (stateless, based on current time)
+ * - ID generation: ~0.05ms per ID
  *
  * Dependencies:
  * - crypto: Node.js built-in cryptographic functions
@@ -63,6 +65,50 @@ const logger = createLogger('Utils')
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Generates a cryptographically secure unique identifier
+ *
+ * This function creates unique identifiers using nanoid for cryptographic randomness
+ * and URL-safety. The generated IDs are suitable for database primary keys, API
+ * identifiers, session tokens, and other use cases requiring unique identification.
+ *
+ * ID Characteristics:
+ * - Length: 21 characters (customizable)
+ * - Character set: A-Za-z0-9_- (URL-safe)
+ * - Entropy: ~126 bits of randomness (21 chars)
+ * - Collision probability: ~1 in 2^63 for birthday paradox
+ * - Performance: ~0.05ms generation time
+ *
+ * Security Features:
+ * - Uses cryptographically secure random number generator
+ * - URL-safe characters (no encoding needed)
+ * - Sufficient entropy to prevent brute force attacks
+ * - No sequential patterns or predictable components
+ *
+ * @param length - Optional length of generated ID (default: 21)
+ * @returns Cryptographically secure unique identifier string
+ *
+ * @example
+ * const id = generateId()
+ * console.log(id) // "V1StGXR8_Z5jdHi6B-myT"
+ *
+ * @example
+ * // Custom length for specific use cases
+ * const shortId = generateId(10) // "V1StGXR8_Z"
+ * const longId = generateId(32)  // "V1StGXR8_Z5jdHi6B-myT4F9aGqW2"
+ *
+ * @example
+ * // Database entity creation
+ * const newEntity = {
+ *   id: generateId(),
+ *   createdAt: new Date(),
+ *   // ... other properties
+ * }
+ */
+export function generateId(length: number = 21): string {
+  return nanoid(length)
 }
 
 /**

@@ -97,7 +97,7 @@ export const NEXUS_TOOLS = {
       'bottleneck-identification',
     ],
   },
-} as const
+}
 
 /**
  * Tool capability constants for feature checking
@@ -119,7 +119,7 @@ export const NEXUS_CAPABILITIES = {
   COST_TRACKING: 'cost-tracking',
   LOG_ANALYSIS: 'log-analysis',
   BOTTLENECK_IDENTIFICATION: 'bottleneck-identification',
-} as const
+}
 
 /**
  * Default configuration values for Nexus tools
@@ -137,7 +137,7 @@ export const NEXUS_DEFAULTS = {
   REALTIME_POLL_INTERVAL: 1000, // 1 second
   MAX_TRACE_SPANS: 1000,
   MAX_LOG_ENTRIES: 1000,
-} as const
+}
 
 /**
  * Error codes for Nexus tools
@@ -154,7 +154,7 @@ export const NEXUS_ERROR_CODES = {
   SYSTEM_ERROR: 'NEXUS_SYSTEM_ERROR',
   DATABASE_ERROR: 'NEXUS_DATABASE_ERROR',
   MONITORING_ERROR: 'NEXUS_MONITORING_ERROR',
-} as const
+}
 
 /**
  * Success status codes for consistent response handling
@@ -167,14 +167,14 @@ export const NEXUS_STATUS_CODES = {
   COMPLETED: 'completed',
   FAILED: 'failed',
   CANCELLED: 'cancelled',
-} as const
+}
 
 /**
  * Helper function to check if a tool has a specific capability
  */
 export function hasCapability(toolId: keyof typeof NEXUS_TOOLS, capability: string): boolean {
   const tool = NEXUS_TOOLS[toolId]
-  return tool?.capabilities.includes(capability) ?? false
+  return (tool?.capabilities as any)?.includes(capability) ?? false
 }
 
 /**
@@ -187,7 +187,7 @@ export function getAllCapabilities(): string[] {
 /**
  * Helper function to validate execution parameters
  */
-export function validateExecutionParams(params: Partial<ExecuteWorkflowParams>): string[] {
+export function validateExecutionParams(params: Partial<import('./types').ExecuteWorkflowParams>): string[] {
   const errors: string[] = []
 
   if (!params.workflowId) {
@@ -219,7 +219,7 @@ export function validateExecutionParams(params: Partial<ExecuteWorkflowParams>):
 /**
  * Helper function to validate monitoring parameters
  */
-export function validateMonitoringParams(params: Partial<MonitorWorkflowsParams>): string[] {
+export function validateMonitoringParams(params: Partial<import('./types').MonitorWorkflowsParams>): string[] {
   const errors: string[] = []
 
   if (!params.action) {

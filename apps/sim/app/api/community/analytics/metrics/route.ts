@@ -28,6 +28,7 @@ import { sql } from 'drizzle-orm'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/lib/auth'
+import { getUserRole } from '@/lib/auth/types'
 import { ratelimit } from '@/lib/ratelimit'
 import { db } from '@/db'
 
@@ -93,7 +94,8 @@ export async function GET(request: NextRequest) {
     // Uses getSession() instead of auth() for proper session management
     const currentUser = await getSession()
     const currentUserId = currentUser?.user?.id
-    const userRole = (currentUser?.user as any)?.role || 'user'
+    // Using safe role access patterns for type-safe authorization checks
+    const userRole = currentUser?.user ? getUserRole(currentUser.user) : 'user'
 
     // Rate limiting
     const clientId = request.headers.get('x-forwarded-for') || currentUserId || 'anonymous'

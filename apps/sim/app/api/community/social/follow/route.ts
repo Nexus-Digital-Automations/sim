@@ -279,7 +279,11 @@ export async function POST(request: NextRequest) {
     `)
       : { rows: [] }
 
-    const isMutualFollow = mutualFollow && mutualFollow.length > 0
+    // Fix TypeScript array type inference - handle database result type safety
+    // Database execute() returns direct array, not { rows: [] } structure
+    // Explicit type check prevents 'never[]' type assignment errors
+    const mutualFollowResult = Array.isArray(mutualFollow) ? mutualFollow : []
+    const isMutualFollow = mutualFollowResult.length > 0
 
     // Trigger real-time updates
     console.log(
@@ -542,14 +546,16 @@ export async function GET(request: NextRequest) {
     queryValues.push(params.limit, params.offset)
 
     console.log('[Follow] Executing follow list query')
-    const result = await db.execute(sql.raw(mainQuery, queryValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const result = await db.execute(sql.raw(mainQuery))
 
     // Get total count
     const countValues = queryValues.slice(
       0,
       params.search ? (currentUserId ? -4 : -2) : currentUserId ? -4 : -2
     )
-    const countResult = await db.execute(sql.raw(countQuery, countValues))
+    // Fix: sql.raw() expects single parameter with values embedded directly in query
+    const countResult = await db.execute(sql.raw(countQuery))
     const totalFollows = (countResult[0] as any)?.total || 0
 
     // Format results

@@ -183,7 +183,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_PARAMETERS',
             message: 'Invalid request parameters',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch performance metrics',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           error: {
             code: 'INVALID_METRICS',
             message: 'Invalid metrics data',
-            details: error.errors,
+            details: { errors: error.errors },
           },
         } as MonitoringApiResponse,
         { status: 400 }
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         error: {
           code: 'SUBMISSION_ERROR',
           message: 'Failed to submit performance metrics',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       } as MonitoringApiResponse,
       { status: 500 }

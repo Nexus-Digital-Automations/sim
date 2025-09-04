@@ -1,15 +1,15 @@
 {
   "execution": {
-    "timestamp": "2025-09-04T10:38:05.654Z",
+    "timestamp": "2025-09-04T13:36:12.238Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim",
     "hookVersion": "1.0.0",
     "nodeVersion": "v22.19.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 79738,
+    "pid": 73536,
     "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim",
-    "endTimestamp": "2025-09-04T10:38:05.659Z",
-    "durationMs": 5
+    "endTimestamp": "2025-09-04T13:36:12.244Z",
+    "durationMs": 6
   },
   "input": {
     "sessionId": "8a00aa98-ff7b-483e-94b8-6ffc43860fbb",
@@ -27,47 +27,47 @@
   "decisions": [],
   "flow": [
     {
-      "timestamp": "2025-09-04T10:38:05.654Z",
+      "timestamp": "2025-09-04T13:36:12.238Z",
       "message": "Raw input data: \"{\"session_id\":\"8a00aa98-ff7b-483e-94b8-6ffc43860fbb\",\"transcript_path\":\"/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-sim/8a00aa98-ff7b-483e-94b8-6ffc43860fbb.jsonl\",\"cwd\":\"/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":true}\""
     },
     {
-      "timestamp": "2025-09-04T10:38:05.654Z",
+      "timestamp": "2025-09-04T13:36:12.238Z",
       "message": "Input data length: 329"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.654Z",
+      "timestamp": "2025-09-04T13:36:12.238Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.654Z",
+      "timestamp": "2025-09-04T13:36:12.238Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.657Z",
+      "timestamp": "2025-09-04T13:36:12.241Z",
       "message": "Found 1 total agents in TODO.json"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.657Z",
-      "message": "Agent development_session_1756980562101_1_general_81c95ee5: heartbeat=2025-09-04T10:09:22.102Z, timeSince=1724s, isActive=false"
+      "timestamp": "2025-09-04T13:36:12.241Z",
+      "message": "Agent development_session_1756991206435_1_general_b30bd323: heartbeat=2025-09-04T13:06:46.437Z, timeSince=1766s, isActive=false"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.657Z",
-      "message": "Removed stale agent: development_session_1756980562101_1_general_81c95ee5"
+      "timestamp": "2025-09-04T13:36:12.241Z",
+      "message": "Removed stale agent: development_session_1756991206435_1_general_b30bd323"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.659Z",
+      "timestamp": "2025-09-04T13:36:12.244Z",
       "message": "Removed 1 stale agents from TODO.json"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.659Z",
+      "timestamp": "2025-09-04T13:36:12.244Z",
       "message": "Active agents found: 0, Stale agents removed: 1, Stale tasks reset: 0"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.659Z",
+      "timestamp": "2025-09-04T13:36:12.244Z",
       "message": "No active agents detected - need agent initialization"
     },
     {
-      "timestamp": "2025-09-04T10:38:05.659Z",
+      "timestamp": "2025-09-04T13:36:12.244Z",
       "message": "Exiting with code 2: No active agents - providing initialization guidance"
     }
   ],

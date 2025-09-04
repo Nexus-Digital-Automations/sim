@@ -2,6 +2,23 @@
   "project": "sim",
   "tasks": [
     {
+      "id": "task_1756988816474_q62zmzt80",
+      "title": "WAVE 3: Deploy concurrent subagents for final TypeScript error elimination push",
+      "description": "Deploy Wave 3 concurrent subagents to eliminate remaining 1,124 TypeScript errors and achieve <800 error build stability milestone. Focus on TS2304/TS2307 import errors (~161), remaining TS2345/TS2554 function signatures (~104), and miscellaneous error types. Deploy maximum 10 concurrent subagents for systematic error pattern elimination using proven fix strategies from Wave 1 and Wave 2 success.",
+      "mode": "DEVELOPMENT",
+      "category": "linter-error",
+      "priority": "highest",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": false,
+      "subtasks": [],
+      "created_at": "2025-09-04T12:26:56.474Z",
+      "auto_research_created": false
+    },
+    {
       "id": "task_1756975070972_ixzcdn5xi",
       "title": "Complete community marketplace with social features and integration discovery",
       "description": "Implement comprehensive community marketplace ecosystem with social features platform, integration discovery system, advanced analytics dashboard, and API integration. Includes activity feeds, template collections, following/followers system, community-contributed connectors marketplace, community health metrics, and social interaction APIs.",
@@ -43,7 +60,7 @@
       "mode": "DEVELOPMENT",
       "category": "missing-feature",
       "priority": "critical",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
@@ -55,9 +72,9 @@
       "subtasks": [],
       "created_at": "2025-09-03T21:12:26.750Z",
       "auto_research_created": true,
-      "assigned_agent": "--agent",
-      "started_at": "2025-09-04T09:18:09.183Z",
-      "claimed_by": "--agent",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1756944532359_1_general_ead55683",
@@ -91,6 +108,12 @@
           "assignedAt": "2025-09-04T09:18:09.183Z",
           "reassignReason": null,
           "claimPriority": "development_session_1756977466828_1_general_3595d04a"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-04T10:09:14.499Z",
+          "reason": "Task stale for 51 minutes"
         }
       ]
     },
@@ -694,13 +717,13 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1756978229871_1_general_02c2737c": {
+    "development_session_1756990109422_1_general_805bb949": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T09:30:29.872Z",
+      "lastHeartbeat": "2025-09-04T12:48:29.423Z",
       "parentAgentId": null,
       "capabilities": [
         "file-operations",
@@ -711,8 +734,8 @@
       ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T09:30:29.872Z",
-      "sessionId": "session_1756978229871",
+      "createdAt": "2025-09-04T12:48:29.423Z",
+      "sessionId": "session_1756990109422",
       "metadata": {}
     }
   },

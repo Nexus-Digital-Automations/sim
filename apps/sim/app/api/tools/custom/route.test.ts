@@ -23,7 +23,7 @@
  * @vitest-environment node
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Import the new bun-compatible test infrastructure
 import '@/app/api/__test-utils__/module-mocks'

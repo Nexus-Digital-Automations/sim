@@ -830,6 +830,82 @@ export class AnalyticsService implements IAnalyticsService {
   }
 
   /**
+   * Invalidate cache entries based on criteria
+   */
+  async invalidateCache(criteria: {
+    workflowId?: string
+    workspaceId?: string
+    timeRange?: TimeRange
+    pattern?: string
+  }): Promise<void> {
+    const operationId = `cache-invalidation-${Date.now()}`
+    logger.debug(`[${operationId}] Invalidating cache`, { criteria })
+
+    let invalidatedCount = 0
+
+    for (const [key, cached] of this.cache.entries()) {
+      let shouldInvalidate = false
+
+      // Match by workflow ID
+      if (criteria.workflowId && key.includes(`workflow:${criteria.workflowId}`)) {
+        shouldInvalidate = true
+      }
+
+      // Match by workspace ID
+      if (criteria.workspaceId && key.includes(`business:${criteria.workspaceId}`)) {
+        shouldInvalidate = true
+      }
+
+      // Match by pattern
+      if (criteria.pattern && key.includes(criteria.pattern)) {
+        shouldInvalidate = true
+      }
+
+      // Match by time range (invalidate overlapping cache entries)
+      if (criteria.timeRange && this.doesCacheKeyOverlapTimeRange(key, criteria.timeRange)) {
+        shouldInvalidate = true
+      }
+
+      if (shouldInvalidate) {
+        this.cache.delete(key)
+        invalidatedCount++
+      }
+    }
+
+    logger.info(`[${operationId}] Cache invalidation complete`, {
+      criteria,
+      invalidatedEntries: invalidatedCount,
+      remainingCacheSize: this.cache.size,
+    })
+  }
+
+  /**
+   * Check if a cache key overlaps with a given time range
+   */
+  private doesCacheKeyOverlapTimeRange(cacheKey: string, timeRange: TimeRange): boolean {
+    try {
+      // Extract time range from cache key (format: prefix:id:start:end:granularity)
+      const keyParts = cacheKey.split(':')
+      if (keyParts.length >= 4) {
+        const keyStart = keyParts[2]
+        const keyEnd = keyParts[3]
+        
+        const keyStartTime = new Date(keyStart).getTime()
+        const keyEndTime = new Date(keyEnd).getTime()
+        const rangeStartTime = new Date(timeRange.start).getTime()
+        const rangeEndTime = new Date(timeRange.end).getTime()
+
+        // Check for overlap
+        return keyStartTime <= rangeEndTime && keyEndTime >= rangeStartTime
+      }
+    } catch (error) {
+      logger.warn('Failed to parse cache key for time range overlap check', { cacheKey, error })
+    }
+
+    return false
+  }
+
+  /**
    * Get analytics service statistics
    */
   getServiceStats(): {

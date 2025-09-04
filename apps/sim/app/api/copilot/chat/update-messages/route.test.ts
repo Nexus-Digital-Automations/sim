@@ -129,6 +129,18 @@ interface MockControls {
   setDatabaseResults: (results: any[][]) => void
   throwError: (error: Error | string) => void
   reset: () => void
+  auth: {
+    setAuthenticated: (user?: any) => void
+    setUnauthenticated: () => void
+  }
+  database: {
+    setSelectResults: (results: any[][]) => void
+    setInsertResults: (results: any[]) => void
+    setUpdateResults: (results: any[]) => void
+    setDeleteResults: (results: any[]) => void
+    resetDatabase: () => void
+    throwError: (error: Error | string) => void
+  }
 }
 
 const testMocks: MockControls = {
@@ -154,6 +166,40 @@ const testMocks: MockControls = {
     mockState.databaseError = null
     mockState.permissionLevel = 'admin'
     console.log('🔧 All mocks reset to defaults')
+  },
+  auth: {
+    setAuthenticated: (user = { id: 'user-123', email: 'test@example.com', name: 'Test User' }) => {
+      mockState.currentUser = user
+      console.log('🔧 Auth set to authenticated user:', user.id)
+    },
+    setUnauthenticated: () => {
+      mockState.currentUser = null
+      console.log('🔧 Auth set to unauthenticated')
+    },
+  },
+  database: {
+    setSelectResults: (results: any[][]) => {
+      mockState.databaseResults = results
+      console.log('🔧 Database results set:', results.length, 'result sets')
+    },
+    setInsertResults: (results: any[]) => {
+      console.log('🔧 Database insert results set:', results.length, 'results')
+    },
+    setUpdateResults: (results: any[]) => {
+      console.log('🔧 Database update results set:', results.length, 'results')
+    },
+    setDeleteResults: (results: any[]) => {
+      console.log('🔧 Database delete results set:', results.length, 'results')
+    },
+    resetDatabase: () => {
+      mockState.databaseResults = [[]]
+      mockState.databaseError = null
+      console.log('🔧 Database reset to defaults')
+    },
+    throwError: (error: Error | string) => {
+      mockState.databaseError = error
+      console.log('🔧 Database configured to throw:', error instanceof Error ? error.message : error)
+    },
   },
 }
 
@@ -211,10 +257,10 @@ function createMockRequest(
       'Content-Type': 'application/json',
       ...headers,
     }),
+    ...(body && method !== 'GET' && { body: JSON.stringify(body) }),
   }
 
   if (body && method !== 'GET') {
-    requestInit.body = JSON.stringify(body)
     console.log('🔧 Request body size:', JSON.stringify(body).length, 'characters')
   }
 

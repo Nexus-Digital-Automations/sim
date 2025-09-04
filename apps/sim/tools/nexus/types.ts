@@ -6,8 +6,110 @@
  * @version 1.0.0
  */
 
-import type { ExecutionEnvironment, ExecutionTrigger, TraceSpan } from '@/lib/logs/types'
-import type { ToolResponse } from '@/tools/types'
+// Core type definitions for workflow execution
+
+/**
+ * Execution environment interface
+ * Contains context information for workflow execution
+ */
+export interface ExecutionEnvironment {
+  variables: Record<string, unknown>
+  workflowId: string
+  executionId: string
+  userId: string
+  workspaceId: string
+  [key: string]: unknown
+}
+
+/**
+ * Execution trigger interface
+ * Contains information about what triggered the workflow
+ */
+export interface ExecutionTrigger {
+  type: 'manual' | 'api' | 'schedule' | 'webhook' | 'nexus'
+  source: string
+  data?: Record<string, unknown>
+  timestamp: string
+  [key: string]: unknown
+}
+
+/**
+ * Trace span interface for execution tracking
+ * Represents a single operation during workflow execution
+ */
+export interface TraceSpan {
+  id: string
+  name: string
+  type: string
+  duration: number
+  startTime: string
+  endTime: string
+  blockId: string
+  status: 'success' | 'error' | 'warning'
+  input: Record<string, unknown>
+  output: Record<string, unknown>
+  error?: string
+  metadata?: Record<string, unknown>
+}
+
+/**
+ * Tool response interface
+ * Standard response structure for all tools
+ */
+export interface ToolResponse {
+  status: 'success' | 'error'
+  message?: string
+  error?: string
+  data?: unknown
+  [key: string]: unknown
+}
+
+/**
+ * Workflow execution log interface
+ * Database record structure for execution logs
+ */
+export interface WorkflowExecutionLog {
+  id: string
+  workflowId: string
+  executionId: string
+  stateSnapshotId: string
+  level: 'info' | 'error' | 'warning'
+  trigger: string
+  startedAt: string
+  endedAt: string
+  totalDurationMs: number
+  executionData: {
+    environment?: ExecutionEnvironment
+    trigger?: ExecutionTrigger
+    traceSpans?: TraceSpan[]
+    errorDetails?: ErrorDetails
+    [key: string]: unknown
+  }
+  files?: unknown
+  cost?: unknown
+  createdAt: Date
+}
+
+/**
+ * Workflow state interface
+ * Represents the complete structure of a workflow
+ */
+export interface WorkflowState {
+  nodes: Array<{
+    id: string
+    type: string
+    position: { x: number; y: number }
+    data: Record<string, unknown>
+  }>
+  edges: Array<{
+    id: string
+    source: string
+    target: string
+    sourceHandle?: string
+    targetHandle?: string
+  }>
+  [key: string]: unknown
+}
 
 /**
  * Workflow execution request parameters
@@ -15,7 +117,7 @@ import type { ToolResponse } from '@/tools/types'
 export interface ExecuteWorkflowParams {
   workflowId: string
   executionMode?: 'async' | 'sync' | 'debug'
-  inputs?: Record<string, any>
+  inputs?: Record<string, unknown>
   triggerSource?: 'manual' | 'api' | 'schedule' | 'webhook' | 'nexus'
   priority?: 'low' | 'normal' | 'high' | 'urgent'
   timeout?: number
@@ -34,7 +136,7 @@ export interface ExecuteWorkflowResponse extends ToolResponse {
       workflowName: string
       status: 'running' | 'completed' | 'failed' | 'cancelled'
       executionMode: 'async' | 'sync' | 'debug'
-      outputs?: Record<string, any>
+      outputs?: Record<string, unknown>
       error?: string
       executionTimeMs?: number
       startedAt: string
@@ -124,10 +226,10 @@ export interface ExecutionDetail {
   status: 'running' | 'completed' | 'failed' | 'cancelled'
   trigger: string
   startedAt: string
-  endedAt: string | null
-  executionTimeMs: number | null
-  cost: ExecutionCostSummary | null
-  files: FileInfo[] | null
+  completedAt: string
+  executionTimeMs: number
+  cost?: ExecutionCostSummary
+  files?: FileInfo[]
   environment: ExecutionEnvironment
   triggerData: ExecutionTrigger
   errorDetails?: ErrorDetails
@@ -144,14 +246,11 @@ export interface ExecutionSummary {
   status: 'running' | 'completed' | 'failed' | 'cancelled'
   trigger: string
   startedAt: string
-  endedAt: string | null
-  executionTimeMs: number | null
-  cost: ExecutionCostSummary | null
-  errorSummary?: {
-    blockId: string
-    blockName: string
-    message: string
-  }
+  completedAt: string
+  executionTimeMs: number
+  cost?: ExecutionCostSummary
+  errorDetails?: ErrorDetails
+  traceSpans?: TraceSpan[]
 }
 
 /**
@@ -351,8 +450,8 @@ export interface WorkflowExecution {
   triggerSource: 'manual' | 'api' | 'schedule' | 'webhook' | 'nexus'
   status: 'running' | 'completed' | 'failed' | 'cancelled'
   priority: 'low' | 'normal' | 'high' | 'urgent'
-  inputs: Record<string, any>
-  outputs?: Record<string, any>
+  inputs: Record<string, unknown>
+  outputs?: Record<string, unknown>
   error?: string
   startedAt: Date
   completedAt?: Date
@@ -368,7 +467,7 @@ export interface WorkflowExecution {
  */
 export interface ExecutionResult {
   success: boolean
-  outputs?: Record<string, any>
+  outputs?: Record<string, unknown>
   error?: string
   errorBlockId?: string
   errorBlockName?: string
@@ -381,23 +480,25 @@ export interface ExecutionResult {
  * Execution context for node processing
  */
 export interface ExecutionContext {
-  inputs: Record<string, any>
-  outputs: Record<string, any>
-  variables: Record<string, any>
-  nodeResults: Map<string, any>
+  inputs: Record<string, unknown>
+  outputs: Record<string, unknown>
+  variables: Record<string, unknown>
+  nodeResults: Map<string, unknown>
   environment: ExecutionEnvironment
   trigger: ExecutionTrigger
 }
 
 /**
- * Node execution result
+ * Node execution result with proper type definitions
  */
 export interface NodeExecutionResult {
-  value: any
-  success?: boolean
+  value: unknown
+  success: boolean
   error?: string
   warning?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
+  // Additional properties for specific node types
+  [key: string]: unknown
 }
 
 /**

@@ -1,7 +1,25 @@
+/**
+ * Enhanced User interface aligned with database schema
+ *
+ * This interface includes the role property that was added to the database schema
+ * in the monitoring/community schema extensions. The role property supports
+ * user authorization and permission checks across the application.
+ *
+ * ALIGNMENT WITH DATABASE SCHEMA:
+ * - Matches the user table definition in /apps/sim/db/schema.ts
+ * - Includes role property for authorization (admin, user, moderator)
+ * - Maintains backward compatibility with existing User interface consumers
+ *
+ * SAFE ACCESS PATTERNS:
+ * - Role property defaults to 'user' in database schema
+ * - Use role || 'user' for safe access in legacy code
+ * - Type-safe access available for new implementations
+ */
 export interface User {
   name?: string
   email?: string
   id?: string
+  role?: string // User role: admin, user, moderator - aligned with database schema
 }
 
 export interface Member {

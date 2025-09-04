@@ -81,10 +81,7 @@ function createMockRequest(
     headers: new Headers({
       ...headers,
     }),
-  }
-
-  if (body && method !== 'GET') {
-    requestInit.body = body
+    ...(body && method !== 'GET' && { body }),
   }
 
   return new NextRequest(baseUrl, requestInit)

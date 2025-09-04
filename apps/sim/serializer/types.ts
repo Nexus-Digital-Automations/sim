@@ -2,6 +2,9 @@ import type { BlockOutput, ParamType } from '@/blocks/types'
 import type { Position } from '@/stores/workflows/workflow/types'
 
 export interface SerializedWorkflow {
+  id?: string
+  name?: string
+  description?: string
   version: string
   blocks: SerializedBlock[]
   connections: SerializedConnection[]
@@ -22,6 +25,8 @@ export interface SerializedConnection {
 
 export interface SerializedBlock {
   id: string
+  name?: string
+  type?: string
   position: Position
   config: {
     tool: string
@@ -37,6 +42,7 @@ export interface SerializedBlock {
     icon?: string
     color?: string
   }
+  subblocks?: SerializedBlock[]
   enabled: boolean
 }
 
