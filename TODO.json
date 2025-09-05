@@ -1227,23 +1227,6 @@
       "auto_research_created": false
     },
     {
-      "id": "task_1757036233928_ntoh4zf4u",
-      "title": "Research Privacy Compliance and Data Protection Requirements for Analytics Systems",
-      "description": "Comprehensive research on privacy regulations, data protection requirements, and compliance frameworks for analytics tracking systems in global SaaS platforms",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "medium",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-05T01:37:13.928Z",
-      "auto_research_created": false
-    },
-    {
       "id": "task_1757035022945_7c8owantp",
       "title": "Research Multi-Turn Conversation Management Systems",
       "description": "Comprehensive research on conversation state management, multi-turn patterns, data architecture, and advanced conversation features for intelligent chatbots",
