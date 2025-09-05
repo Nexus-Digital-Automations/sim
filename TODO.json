@@ -2,44 +2,6 @@
   "project": "sim",
   "tasks": [
     {
-      "id": "task_1757026686191_a1b79tpbn",
-      "title": "Research: Implement intelligent chatbot with contextual awareness",
-      "description": "Research and analysis required for implementing: \"Implement intelligent chatbot with contextual awareness\"\n\n**Implementation Task Details:**\nBuild sophisticated AI-powered conversational help system with deep contextual awareness, real-time messaging, multi-turn conversations, and integration with all help system components\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757026686190_7n813iw4t\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
-      "mode": "RESEARCH",
-      "category": "research",
-      "priority": "high",
-      "status": "in_progress",
-      "dependencies": [],
-      "important_files": [
-        "./development/research-reports/research-report-task_1757026686191_a1b79tpbn.md"
-      ],
-      "success_criteria": [
-        "Research methodology and approach documented",
-        "Key findings and recommendations provided",
-        "Implementation guidance and best practices identified",
-        "Risk assessment and mitigation strategies outlined",
-        "Research report created: ./development/research-reports/research-report-task_1757026686191_a1b79tpbn.md"
-      ],
-      "estimate": "1-2 hours",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-04T22:58:06.191Z",
-      "created_by": "auto-research-system",
-      "auto_created_for": "task_1757026686190_7n813iw4t",
-      "assigned_agent": "development_session_1757034817798_1_general_e5790ca1",
-      "started_at": "2025-09-05T01:14:38.687Z",
-      "claimed_by": "development_session_1757034817798_1_general_e5790ca1",
-      "agent_assignment_history": [
-        {
-          "agentId": "development_session_1757034817798_1_general_e5790ca1",
-          "role": "primary",
-          "assignedAt": "2025-09-05T01:14:38.687Z",
-          "reassignReason": null,
-          "claimPriority": "normal"
-        }
-      ]
-    },
-    {
       "id": "task_1757026454717_g4z6nbiix",
       "title": "Research: Implement comprehensive help system UI components with contextual panels, search interface, tutorials, and AI chat",
       "description": "Research and analysis required for implementing: \"Implement comprehensive help system UI components with contextual panels, search interface, tutorials, and AI chat\"\n\n**Implementation Task Details:**\nBuild complete help system UI including contextual panels, advanced search, tutorial components, and AI chat interface\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757026454716_mtnnrzslq\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
@@ -524,6 +486,28 @@
       "requires_research": true,
       "subtasks": [],
       "created_at": "2025-09-03T21:10:03.046Z",
+      "auto_research_created": true
+    },
+    {
+      "id": "task_1757026686190_7n813iw4t",
+      "title": "Implement intelligent chatbot with contextual awareness",
+      "description": "Build sophisticated AI-powered conversational help system with deep contextual awareness, real-time messaging, multi-turn conversations, and integration with all help system components",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "high",
+      "status": "pending",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/intelligent-chatbot.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/help/intelligent-chat-interface.tsx",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/help/chat/route.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/ai-help-engine-core-architecture-research-1757016976.md"
+      ],
+      "success_criteria": [],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T22:58:06.194Z",
       "auto_research_created": true
     },
     {
@@ -1791,30 +1775,6 @@
       "requires_research": true,
       "subtasks": [],
       "created_at": "2025-09-04T18:16:29.918Z",
-      "auto_research_created": true
-    },
-    {
-      "id": "task_1757026686190_7n813iw4t",
-      "title": "Implement intelligent chatbot with contextual awareness",
-      "description": "Build sophisticated AI-powered conversational help system with deep contextual awareness, real-time messaging, multi-turn conversations, and integration with all help system components",
-      "mode": "DEVELOPMENT",
-      "category": "missing-feature",
-      "priority": "high",
-      "status": "pending",
-      "dependencies": [
-        "task_1757026686191_a1b79tpbn"
-      ],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/intelligent-chatbot.ts",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/help/intelligent-chat-interface.tsx",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/help/chat/route.ts",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/development/research-reports/ai-help-engine-core-architecture-research-1757016976.md"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": true,
-      "subtasks": [],
-      "created_at": "2025-09-04T22:58:06.194Z",
       "auto_research_created": true
     },
     {
