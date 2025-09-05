@@ -112,6 +112,18 @@ export type ConnectionStatus =
   | 'locked';
 
 /**
+ * Extended connection status for socket client
+ */
+export interface ConnectionStatusDetails {
+  connected: boolean;
+  authenticated: boolean;
+  serverUrl: string;
+  lastHeartbeat?: Date | null;
+  latency?: number;
+  uptime: number;
+}
+
+/**
  * Agent status information
  */
 export interface AgentStatus {
@@ -240,19 +252,22 @@ export type WorkflowExecutionStatus =
   | 'timeout';
 
 /**
- * Workflow execution progress
+ * Workflow execution progress (extended with all needed fields)
  */
 export interface WorkflowProgress {
-  executionId: string;
-  workflowId: string;
+  executionId?: string;
+  workflowId?: string;
   percentage: number;
-  stepIndex: number;
+  stepIndex?: number;
+  currentStep?: number;
+  totalSteps?: number;
   stepName: string;
   stepDescription?: string;
-  duration: number;
+  duration?: number;
   estimatedTimeRemaining?: number;
   metrics?: Record<string, any>;
   screenshot?: string; // Base64 encoded
+  message?: string;
 }
 
 /**
@@ -273,21 +288,24 @@ export interface WorkflowError {
 }
 
 /**
- * Workflow execution result
+ * Workflow execution result (extended with all needed fields)
  */
 export interface WorkflowResult {
+  status: 'completed' | 'failed' | 'pending' | 'running' | 'paused' | 'cancelled' | 'timeout';
   executionId: string;
   workflowId: string;
-  status: WorkflowExecutionStatus;
   startTime: Date;
   endTime: Date;
   duration: number;
-  stepsExecuted: number;
-  stepsSkipped: number;
-  stepsFailed: number;
+  result?: any;
+  steps?: any[];
+  error?: string | null;
+  stepsExecuted?: number;
+  stepsSkipped?: number;
+  stepsFailed?: number;
   data?: Record<string, any>;
   screenshots?: string[]; // Base64 encoded
-  metrics: {
+  metrics?: {
     performanceScore: number;
     reliability: number;
     resourceUsage: {
@@ -295,7 +313,7 @@ export interface WorkflowResult {
       cpu: number;
     };
   };
-  errors: WorkflowError[];
+  errors?: WorkflowError[];
 }
 
 // ================================
@@ -339,16 +357,19 @@ export interface IRPAEngine {
 }
 
 /**
- * Engine status
+ * Engine status (extended with all needed fields)
  */
 export interface EngineStatus {
-  name: string;
-  type: RPAEngineType;
-  status: 'initializing' | 'ready' | 'busy' | 'error' | 'shutdown';
+  status: 'initializing' | 'ready' | 'busy' | 'error' | 'shutdown' | 'stopped';
+  lastActivity: Date;
   activeExecutions: number;
   totalExecutions: number;
-  successRate: number;
-  lastActivity?: Date;
+  successfulExecutions?: number;
+  failedExecutions?: number;
+  errorRate?: number;
+  name?: string;
+  type?: RPAEngineType;
+  successRate?: number;
   errorMessage?: string;
 }
 
@@ -376,7 +397,7 @@ export interface EngineMetrics {
 // ================================
 
 /**
- * Security event types
+ * Security event types (extended with all needed events)
  */
 export type SecurityEventType = 
   | 'unauthorized-access'
@@ -391,7 +412,31 @@ export type SecurityEventType =
   | 'authentication-failure'
   | 'permission-violation'
   | 'code-injection'
-  | 'suspicious-behavior';
+  | 'suspicious-behavior'
+  | 'uncaught-exception'
+  | 'unhandled-rejection'
+  | 'monitoring-started'
+  | 'monitoring-stopped'
+  | 'window-monitoring-started'
+  | 'window-monitoring-stopped'
+  | 'maintenance'
+  | 'permission-granted'
+  | 'permission-denied'
+  | 'unauthorized-permission-check'
+  | 'protocol-request'
+  | 'unauthorized-navigation'
+  | 'blocked-popup'
+  | 'dom-ready'
+  | 'console-error'
+  | 'dev-tools-attempt'
+  | 'window-moved'
+  | 'window-focus'
+  | 'window-blur'
+  | 'renderer-crash'
+  | 'renderer-unresponsive'
+  | 'renderer-responsive'
+  | 'certificate-exception'
+  | 'security-config-update';
 
 /**
  * Security event severity levels
@@ -746,6 +791,93 @@ export interface SearchParams {
     end: Date;
   };
 }
+
+// ================================
+// Additional Missing Types
+// ================================
+
+/**
+ * Alternative name for RPAWorkflowStep (for compatibility)
+ */
+export type WorkflowStep = RPAWorkflowStep;
+
+/**
+ * Server message interface
+ */
+export interface ServerMessage {
+  type: string;
+  data: any;
+  timestamp: Date;
+  serverId?: string;
+}
+
+/**
+ * Agent message interface
+ */
+export interface AgentMessage {
+  type: string;
+  data: any;
+  timestamp: Date;
+  agentId: string;
+}
+
+/**
+ * UI Inspector Types
+ */
+export interface UIElement {
+  id: string;
+  position: { x: number; y: number };
+  region: { x: number; y: number; width: number; height: number };
+  identificationMethods: ElementIdentificationMethod[];
+  selectors: ElementSelector[];
+  text: string;
+  attributes: Record<string, any>;
+  confidence: number;
+  timestamp: Date;
+}
+
+export type ElementIdentificationMethod = 'coordinates' | 'image-recognition' | 'ocr' | 'accessibility';
+
+export interface UIInspectionResult {
+  sessionId: string;
+  startTime: Date;
+  endTime: Date;
+  elementsFound: number;
+  elements: UIElement[];
+  screenshots: string[];
+  summary: any;
+}
+
+export interface AutomationAction {
+  id: string;
+  type: string;
+  elementId: string;
+  selector: ElementSelector;
+  parameters: Record<string, any>;
+  timeout: number;
+  retryCount: number;
+}
+
+export interface ScreenRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface OCRResult {
+  text: string;
+  confidence: number;
+  words: Array<{
+    text: string;
+    confidence: number;
+    bbox: { x0: number; y0: number; x1: number; y1: number };
+  }>;
+  blocks: any[];
+}
+
+
+
 
 /**
  * Export types

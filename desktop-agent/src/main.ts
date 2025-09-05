@@ -19,17 +19,11 @@ import os from 'os';
 import { machineIdSync } from 'node-machine-id';
 
 // Internal imports
-import { SecureElectronApp } from './security/secure-electron-app';
-import { SecureSocketClient } from './services/secure-socket-client';
+import { createSecureWindow } from './security/secure-electron-app';
+import { SecureSocketClient } from './communication/socket-client';
 import { RPAEngineController } from './engines/rpa-engine-controller';
 import { SecurityMonitor } from './security/security-monitor';
-import { ConfigManager } from './services/config-manager';
-import { DatabaseManager } from './services/database-manager';
-import { LoggingService } from './services/logging-service';
-import { UpdateManager } from './services/update-manager';
-import { TrayManager } from './services/tray-manager';
-import { MenuManager } from './services/menu-manager';
-import { IPCHandlerManager } from './services/ipc-handler-manager';
+import { UIInspector } from './tools/ui-inspector';
 import { DesktopAgentConfig, AgentCapabilities, ConnectionStatus } from './types/agent-types';
 
 /**
@@ -40,20 +34,11 @@ import { DesktopAgentConfig, AgentCapabilities, ConnectionStatus } from './types
  */
 class DesktopAgentApp {
     // Core components
-    private secureApp: SecureElectronApp;
     private mainWindow: BrowserWindow | null = null;
     private socketClient: SecureSocketClient | null = null;
     private rpaEngine: RPAEngineController | null = null;
     private securityMonitor: SecurityMonitor;
-    
-    // Service managers
-    private configManager: ConfigManager;
-    private databaseManager: DatabaseManager;
-    private loggingService: LoggingService;
-    private updateManager: UpdateManager;
-    private trayManager: TrayManager | null = null;
-    private menuManager: MenuManager;
-    private ipcHandler: IPCHandlerManager;
+    private uiInspector: UIInspector | null = null;
     
     // Application state
     private isInitialized = false;
@@ -69,29 +54,49 @@ class DesktopAgentApp {
         this.agentId = this.generateAgentId();
         
         // Initialize core services
-        this.loggingService = new LoggingService();
-        this.configManager = new ConfigManager();
-        this.databaseManager = new DatabaseManager();
-        this.secureApp = new SecureElectronApp();
         this.securityMonitor = new SecurityMonitor();
-        this.updateManager = new UpdateManager();
-        this.menuManager = new MenuManager();
-        this.ipcHandler = new IPCHandlerManager();
         
         // Load configuration
-        this.config = this.configManager.getConfig();
+        this.config = this.getDefaultConfig();
         
         // Setup application event handlers
         this.setupAppEventHandlers();
         this.setupProcessEventHandlers();
         
-        this.loggingService.info('Desktop Agent initialized', {
+        console.log('🚀 Desktop Agent initialized', {
             agentId: this.agentId,
             machineId: this.machineId,
             version: app.getVersion(),
             platform: process.platform,
             arch: process.arch
         });
+    }
+
+    /**
+     * Get default configuration
+     */
+    private getDefaultConfig(): DesktopAgentConfig {
+        return {
+            agent: {
+                id: this.agentId,
+                name: `Desktop Agent ${process.platform}`,
+                version: app.getVersion(),
+                machineId: this.machineId
+            },
+            server: {
+                url: process.env.SIM_SERVER_URL || 'http://localhost:3000',
+                timeout: 30000,
+                encryptionEnabled: true
+            },
+            rpa: {
+                logLevel: 'info',
+                maxConcurrentExecutions: 5
+            },
+            security: {
+                enableMonitoring: true,
+                enableThreatDetection: true
+            }
+        };
     }
 
     /**
@@ -104,24 +109,22 @@ class DesktopAgentApp {
      */
     public async initialize(): Promise<boolean> {
         try {
-            this.loggingService.info('Starting Desktop Agent initialization...');
+            console.log('🚀 Starting Desktop Agent initialization...');
             
             // Wait for Electron app to be ready
             await app.whenReady();
             
-            // Initialize core services in dependency order
-            await this.initializeCoreServices();
-            await this.initializeDatabase();
+            // Initialize core components in dependency order
             await this.initializeSecurityFramework();
             await this.initializeRPAEngines();
+            await this.initializeUIInspector();
             await this.initializeUserInterface();
             await this.initializeServerCommunication();
-            await this.initializeAutoUpdater();
             
             // Mark as initialized
             this.isInitialized = true;
             
-            this.loggingService.info('Desktop Agent initialization completed successfully', {
+            console.log('✅ Desktop Agent initialization completed successfully', {
                 agentId: this.agentId,
                 capabilities: this.capabilities,
                 connectionStatus: this.connectionStatus
@@ -130,71 +133,33 @@ class DesktopAgentApp {
             return true;
             
         } catch (error) {
-            this.loggingService.error('Desktop Agent initialization failed', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                stack: error instanceof Error ? error.stack : undefined
-            });
-            
+            console.error('❌ Desktop Agent initialization failed:', error);
             await this.handleInitializationError(error);
             return false;
         }
     }
 
     /**
-     * Initialize core services required for basic operation
+     * Initialize UI Inspector tool
      */
-    private async initializeCoreServices(): Promise<void> {
-        this.loggingService.info('Initializing core services...');
+    private async initializeUIInspector(): Promise<void> {
+        console.log('🔍 Initializing UI Inspector...');
         
-        // Configure application security
-        app.setAsDefaultProtocolClient('sim-desktop-agent');
+        this.uiInspector = new UIInspector();
+        const success = await this.uiInspector.initialize();
         
-        // Set application user model ID for Windows
-        if (process.platform === 'win32') {
-            app.setAppUserModelId('com.sim.desktop-agent');
+        if (!success) {
+            throw new Error('Failed to initialize UI Inspector');
         }
         
-        // Configure Content Security Policy
-        this.setupContentSecurityPolicy();
-        
-        // Initialize configuration manager
-        await this.configManager.initialize();
-        this.config = this.configManager.getConfig();
-        
-        this.loggingService.info('Core services initialized successfully');
-    }
-
-    /**
-     * Initialize database connection and schema
-     */
-    private async initializeDatabase(): Promise<void> {
-        this.loggingService.info('Initializing database...');
-        
-        const dbPath = path.join(app.getPath('userData'), 'agent-data.db');
-        await this.databaseManager.initialize(dbPath);
-        
-        // Create required tables
-        await this.databaseManager.createTables();
-        
-        // Store agent information
-        await this.databaseManager.upsertAgentInfo({
-            agentId: this.agentId,
-            machineId: this.machineId,
-            version: app.getVersion(),
-            platform: process.platform,
-            arch: process.arch,
-            lastStartup: new Date(),
-            capabilities: this.getAgentCapabilities()
-        });
-        
-        this.loggingService.info('Database initialized successfully');
+        console.log('✅ UI Inspector initialized successfully');
     }
 
     /**
      * Initialize comprehensive security framework
      */
     private async initializeSecurityFramework(): Promise<void> {
-        this.loggingService.info('Initializing security framework...');
+        console.log('🔒 Initializing security framework...');
         
         // Start security monitoring
         await this.securityMonitor.initialize();
@@ -203,26 +168,21 @@ class DesktopAgentApp {
         // Setup security event handlers
         this.securityMonitor.on('securityEvent', this.handleSecurityEvent.bind(this));
         this.securityMonitor.on('threatDetected', this.handleThreatDetection.bind(this));
-        this.securityMonitor.on('violationThreshold', this.handleViolationThreshold.bind(this));
         
-        // Initialize resource monitoring
-        this.startResourceMonitoring();
-        
-        this.loggingService.info('Security framework initialized successfully');
+        console.log('✅ Security framework initialized successfully');
     }
 
     /**
      * Initialize RPA automation engines
      */
     private async initializeRPAEngines(): Promise<void> {
-        this.loggingService.info('Initializing RPA engines...');
+        console.log('⚙️ Initializing RPA engines...');
         
         // Create RPA engine controller
         this.rpaEngine = new RPAEngineController({
             logLevel: this.config.rpa.logLevel,
             enablePerformanceMetrics: true,
-            maxConcurrentExecutions: this.config.rpa.maxConcurrentExecutions,
-            executionTimeout: this.config.rpa.executionTimeout
+            maxConcurrentExecutions: this.config.rpa.maxConcurrentExecutions
         });
         
         // Initialize supported engines
@@ -236,12 +196,11 @@ class DesktopAgentApp {
         this.capabilities = this.rpaEngine.getCapabilities();
         
         // Setup RPA event handlers
-        this.rpaEngine.on('workflowStarted', this.handleWorkflowStarted.bind(this));
-        this.rpaEngine.on('workflowProgress', this.handleWorkflowProgress.bind(this));
-        this.rpaEngine.on('workflowCompleted', this.handleWorkflowCompleted.bind(this));
-        this.rpaEngine.on('workflowError', this.handleWorkflowError.bind(this));
+        this.rpaEngine.on('workflowStarted', this.handleWorkflowEvent.bind(this));
+        this.rpaEngine.on('workflowCompleted', this.handleWorkflowEvent.bind(this));
+        this.rpaEngine.on('workflowError', this.handleWorkflowEvent.bind(this));
         
-        this.loggingService.info('RPA engines initialized successfully', {
+        console.log('✅ RPA engines initialized successfully', {
             capabilities: this.capabilities,
             engines: this.rpaEngine.getActiveEngines()
         });
@@ -251,100 +210,72 @@ class DesktopAgentApp {
      * Initialize user interface components
      */
     private async initializeUserInterface(): Promise<void> {
-        this.loggingService.info('Initializing user interface...');
+        console.log('🖥️ Initializing user interface...');
         
-        // Create main window
-        this.mainWindow = this.secureApp.createSecureWindow();
+        // Create main window using secure window function
+        this.mainWindow = createSecureWindow();
         
         // Setup window event handlers
         this.setupWindowEventHandlers();
         
-        // Create system tray
-        this.trayManager = new TrayManager({
-            onShowWindow: () => this.showMainWindow(),
-            onHideWindow: () => this.hideMainWindow(),
-            onQuit: () => this.gracefulShutdown(),
-            onToggleConnection: () => this.toggleConnection()
-        });
-        
-        await this.trayManager.initialize();
-        this.updateTrayStatus();
-        
-        // Setup application menu
-        this.menuManager.createApplicationMenu({
-            onPreferences: () => this.showPreferences(),
-            onAbout: () => this.showAbout(),
-            onQuit: () => this.gracefulShutdown()
-        });
-        
-        // Setup IPC handlers
-        this.ipcHandler.setupHandlers({
-            onGetAgentStatus: () => this.getAgentStatus(),
-            onGetConfiguration: () => this.config,
-            onUpdateConfiguration: (newConfig) => this.updateConfiguration(newConfig),
-            onStartWorkflow: (workflow) => this.executeWorkflow(workflow),
-            onStopWorkflow: (executionId) => this.stopWorkflow(executionId),
-            onGetSystemInfo: () => this.getSystemInfo(),
-            onToggleConnection: () => this.toggleConnection()
-        });
-        
-        this.loggingService.info('User interface initialized successfully');
+        console.log('✅ User interface initialized successfully');
     }
 
     /**
      * Initialize server communication
      */
     private async initializeServerCommunication(): Promise<void> {
-        this.loggingService.info('Initializing server communication...');
+        console.log('🌐 Initializing server communication...');
         
         // Create secure socket client
-        this.socketClient = new SecureSocketClient(
-            this.config.server.url,
-            {
-                timeout: this.config.server.timeout,
-                reconnectionDelay: this.config.server.reconnectionDelay,
-                maxReconnectionAttempts: this.config.server.maxReconnectionAttempts,
-                encryptionEnabled: this.config.server.encryptionEnabled
-            }
-        );
+        this.socketClient = new SecureSocketClient(this.config);
         
         // Setup socket event handlers
-        this.socketClient.on('connected', this.handleServerConnected.bind(this));
-        this.socketClient.on('disconnected', this.handleServerDisconnected.bind(this));
-        this.socketClient.on('authenticated', this.handleServerAuthenticated.bind(this));
-        this.socketClient.on('authenticationError', this.handleAuthenticationError.bind(this));
-        this.socketClient.on('rpaWorkflow', this.handleRemoteWorkflow.bind(this));
-        this.socketClient.on('systemCommand', this.handleSystemCommand.bind(this));
+        this.socketClient.on('connected', () => {
+            this.connectionStatus = 'connected';
+            console.log('✅ Connected to Sim server');
+        });
         
-        // Attempt initial connection if auto-connect is enabled
-        if (this.config.server.autoConnect) {
-            await this.connectToServer();
-        }
+        this.socketClient.on('disconnected', () => {
+            this.connectionStatus = 'disconnected';
+            console.log('🔌 Disconnected from Sim server');
+        });
         
-        this.loggingService.info('Server communication initialized successfully');
+        this.socketClient.on('workflowStart', this.handleWorkflowEvent.bind(this));
+        this.socketClient.on('workflowStop', this.handleWorkflowEvent.bind(this));
+        
+        console.log('✅ Server communication initialized successfully');
     }
 
     /**
-     * Initialize auto-updater
+     * Generate unique agent identifier
      */
-    private async initializeAutoUpdater(): Promise<void> {
-        this.loggingService.info('Initializing auto-updater...');
-        
-        await this.updateManager.initialize();
-        
-        // Setup update event handlers
-        this.updateManager.on('updateAvailable', this.handleUpdateAvailable.bind(this));
-        this.updateManager.on('updateDownloaded', this.handleUpdateDownloaded.bind(this));
-        this.updateManager.on('updateError', this.handleUpdateError.bind(this));
-        
-        // Check for updates if enabled
-        if (this.config.updates.autoCheck) {
-            setTimeout(() => {
-                this.updateManager.checkForUpdates();
-            }, 5000); // Check after 5 seconds
-        }
-        
-        this.loggingService.info('Auto-updater initialized successfully');
+    private generateAgentId(): string {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(2, 8);
+        const platform = process.platform.substring(0, 3);
+        return `sim-agent-${platform}-${timestamp}-${random}`;
+    }
+
+    /**
+     * Handle workflow events
+     */
+    private handleWorkflowEvent(data: any): void {
+        console.log('🔄 Workflow event:', data);
+    }
+
+    /**
+     * Handle security events
+     */
+    private handleSecurityEvent(event: any): void {
+        console.log('🚨 Security event:', event);
+    }
+
+    /**
+     * Handle threat detection
+     */
+    private handleThreatDetection(threat: any): void {
+        console.error('⚠️ Threat detected:', threat);
     }
 
     /**
@@ -376,16 +307,6 @@ class DesktopAgentApp {
                 await this.gracefulShutdown();
             }
         });
-
-        // Handle certificate error
-        app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-            this.handleCertificateError(event, url, error, certificate, callback);
-        });
-
-        // Handle web contents created
-        app.on('web-contents-created', (event, contents) => {
-            this.secureWebContents(contents);
-        });
     }
 
     /**
@@ -394,198 +315,39 @@ class DesktopAgentApp {
     private setupProcessEventHandlers(): void {
         // Handle uncaught exceptions
         process.on('uncaughtException', (error) => {
-            this.loggingService.error('Uncaught exception', {
-                error: error.message,
-                stack: error.stack
-            });
+            console.error('❌ Uncaught exception:', error);
             
             this.securityMonitor.logSecurityEvent({
                 type: 'uncaught-exception',
                 severity: 'high',
-                error: error.message,
-                stack: error.stack
+                message: error.message,
+                details: { stack: error.stack }
             });
         });
 
         // Handle unhandled promise rejections
         process.on('unhandledRejection', (reason, promise) => {
-            this.loggingService.error('Unhandled promise rejection', {
-                reason: reason instanceof Error ? reason.message : reason,
-                stack: reason instanceof Error ? reason.stack : undefined
-            });
+            console.error('❌ Unhandled promise rejection:', reason);
             
             this.securityMonitor.logSecurityEvent({
-                type: 'unhandled-rejection',
-                severity: 'high',
-                reason: reason instanceof Error ? reason.message : reason
+                type: 'suspicious-behavior',
+                severity: 'medium',
+                message: 'Unhandled promise rejection',
+                details: { reason: reason instanceof Error ? reason.message : String(reason) }
             });
         });
 
         // Handle SIGINT (Ctrl+C)
         process.on('SIGINT', () => {
-            this.loggingService.info('Received SIGINT, initiating graceful shutdown');
+            console.log('🛑 Received SIGINT, initiating graceful shutdown');
             this.gracefulShutdown();
         });
 
         // Handle SIGTERM
         process.on('SIGTERM', () => {
-            this.loggingService.info('Received SIGTERM, initiating graceful shutdown');
+            console.log('🛑 Received SIGTERM, initiating graceful shutdown');
             this.gracefulShutdown();
         });
-    }
-
-    /**
-     * Setup Content Security Policy
-     */
-    private setupContentSecurityPolicy(): void {
-        protocol.registerSchemesAsPrivileged([
-            {
-                scheme: 'sim-agent',
-                privileges: {
-                    standard: true,
-                    secure: true,
-                    supportFetchAPI: true
-                }
-            }
-        ]);
-    }
-
-    /**
-     * Generate unique agent identifier
-     */
-    private generateAgentId(): string {
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(2, 8);
-        const platform = process.platform.substring(0, 3);
-        return `sim-agent-${platform}-${timestamp}-${random}`;
-    }
-
-    /**
-     * Get agent capabilities based on available engines
-     */
-    private getAgentCapabilities(): AgentCapabilities[] {
-        const capabilities: AgentCapabilities[] = [
-            'desktop-automation',
-            'system-monitoring',
-            'file-operations',
-            'cross-platform-support'
-        ];
-
-        // Add capabilities based on available engines
-        if (this.rpaEngine?.hasEngine('nutjs')) {
-            capabilities.push('image-recognition', 'ocr-processing');
-        }
-        
-        if (this.rpaEngine?.hasEngine('playwright')) {
-            capabilities.push('web-automation');
-        }
-
-        return capabilities;
-    }
-
-    /**
-     * Handle security events from security monitor
-     */
-    private handleSecurityEvent(event: any): void {
-        this.loggingService.warn('Security event detected', event);
-        
-        // Report to server if connected
-        if (this.socketClient?.isConnected()) {
-            this.socketClient.emit('security-event', event);
-        }
-        
-        // Store in database
-        this.databaseManager.insertSecurityEvent(event);
-    }
-
-    /**
-     * Handle threat detection
-     */
-    private handleThreatDetection(threat: any): void {
-        this.loggingService.error('Threat detected', threat);
-        
-        // Immediate response based on threat severity
-        if (threat.severity === 'critical') {
-            this.initiateLockdown();
-        }
-        
-        // Notify server immediately
-        if (this.socketClient?.isConnected()) {
-            this.socketClient.emit('threat-detected', threat);
-        }
-    }
-
-    /**
-     * Initiate security lockdown
-     */
-    private async initiateLockdown(): Promise<void> {
-        this.loggingService.error('Initiating security lockdown');
-        
-        // Disconnect from server
-        if (this.socketClient) {
-            this.socketClient.disconnect();
-        }
-        
-        // Stop all RPA executions
-        if (this.rpaEngine) {
-            await this.rpaEngine.stopAllExecutions();
-        }
-        
-        // Hide main window
-        if (this.mainWindow) {
-            this.mainWindow.hide();
-        }
-        
-        // Update connection status
-        this.connectionStatus = 'locked';
-        this.updateTrayStatus();
-        
-        // Show security alert
-        dialog.showErrorBox(
-            'Security Alert',
-            'A critical security threat has been detected. The agent has been locked down for protection.'
-        );
-    }
-
-    /**
-     * Start resource monitoring
-     */
-    private startResourceMonitoring(): void {
-        setInterval(() => {
-            const memUsage = process.memoryUsage();
-            const cpuUsage = process.cpuUsage();
-            
-            const metrics = {
-                memory: {
-                    rss: Math.round(memUsage.rss / 1024 / 1024), // MB
-                    heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
-                    heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) // MB
-                },
-                cpu: {
-                    user: cpuUsage.user,
-                    system: cpuUsage.system
-                },
-                uptime: process.uptime()
-            };
-            
-            // Check for resource violations
-            if (metrics.memory.heapUsed > this.config.monitoring.maxMemoryMB) {
-                this.securityMonitor.logSecurityEvent({
-                    type: 'resource-violation',
-                    severity: 'medium',
-                    message: 'High memory usage detected',
-                    memoryUsage: metrics.memory.heapUsed
-                });
-            }
-            
-            // Update database with metrics
-            this.databaseManager.insertSystemMetrics({
-                agentId: this.agentId,
-                timestamp: new Date(),
-                ...metrics
-            });
-            
-        }, this.config.monitoring.metricsInterval);
     }
 
     /**
@@ -593,7 +355,7 @@ class DesktopAgentApp {
      */
     private showMainWindow(): void {
         if (!this.mainWindow) {
-            this.mainWindow = this.secureApp.createSecureWindow();
+            this.mainWindow = createSecureWindow();
             this.setupWindowEventHandlers();
         }
         
@@ -637,63 +399,6 @@ class DesktopAgentApp {
         this.mainWindow.on('minimize', () => {
             this.hideMainWindow();
         });
-        
-        this.mainWindow.webContents.on('before-input-event', (event, input) => {
-            // Handle keyboard shortcuts
-            if (input.control && input.key.toLowerCase() === 'q') {
-                this.gracefulShutdown();
-            }
-        });
-    }
-
-    /**
-     * Update system tray status
-     */
-    private updateTrayStatus(): void {
-        if (this.trayManager) {
-            this.trayManager.updateStatus(this.connectionStatus, {
-                agentId: this.agentId,
-                capabilities: this.capabilities.length,
-                rpaEngines: this.rpaEngine?.getActiveEngines().length || 0
-            });
-        }
-    }
-
-    /**
-     * Connect to Sim server
-     */
-    private async connectToServer(): Promise<boolean> {
-        if (!this.socketClient) return false;
-        
-        try {
-            const credentials = await this.getServerCredentials();
-            const success = await this.socketClient.connect(credentials);
-            
-            if (success) {
-                this.connectionStatus = 'connected';
-                this.updateTrayStatus();
-            }
-            
-            return success;
-        } catch (error) {
-            this.loggingService.error('Failed to connect to server', {
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
-            return false;
-        }
-    }
-
-    /**
-     * Get server authentication credentials
-     */
-    private async getServerCredentials(): Promise<any> {
-        // In production, this would retrieve stored credentials securely
-        return {
-            token: this.config.server.authToken,
-            agentId: this.agentId,
-            machineId: this.machineId,
-            capabilities: this.capabilities
-        };
     }
 
     /**
@@ -705,7 +410,7 @@ class DesktopAgentApp {
         if (this.isShuttingDown) return;
         this.isShuttingDown = true;
         
-        this.loggingService.info('Initiating graceful shutdown...');
+        console.log('🛑 Initiating graceful shutdown...');
         
         try {
             // Stop security monitoring
@@ -713,32 +418,25 @@ class DesktopAgentApp {
                 this.securityMonitor.stopMonitoring();
             }
             
-            // Stop all RPA executions
+            // Shutdown RPA engines
             if (this.rpaEngine) {
-                await this.rpaEngine.stopAllExecutions();
+                await this.rpaEngine.shutdown();
+            }
+            
+            // Shutdown UI Inspector
+            if (this.uiInspector) {
+                await this.uiInspector.shutdown();
             }
             
             // Disconnect from server
             if (this.socketClient) {
-                this.socketClient.disconnect();
+                await this.socketClient.disconnect();
             }
             
-            // Close database connection
-            if (this.databaseManager) {
-                await this.databaseManager.close();
-            }
-            
-            // Save configuration
-            if (this.configManager) {
-                await this.configManager.saveConfig(this.config);
-            }
-            
-            this.loggingService.info('Graceful shutdown completed');
+            console.log('✅ Graceful shutdown completed');
             
         } catch (error) {
-            this.loggingService.error('Error during shutdown', {
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            console.error('❌ Error during shutdown:', error);
         } finally {
             app.quit();
         }
@@ -757,6 +455,7 @@ class DesktopAgentApp {
         
         await this.gracefulShutdown();
     }
+
 }
 
 // Application entry point
