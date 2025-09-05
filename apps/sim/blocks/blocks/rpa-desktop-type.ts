@@ -302,10 +302,10 @@ export const RPADesktopTypeBlock: BlockConfig<RPADesktopTypeResponse> = {
       layout: 'half',
       placeholder: '100',
       mode: 'advanced',
-      condition: (params: Record<string, any>) => ({
+      condition: {
         field: 'repeatCount',
-        value: parseInt(params.repeatCount) > 1,
-      }),
+        value: ['2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      },
       description: 'Delay between repetitions in milliseconds',
     },
 

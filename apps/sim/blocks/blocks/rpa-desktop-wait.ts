@@ -141,14 +141,10 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
       layout: 'full',
       acceptedTypes: 'image/png,image/jpeg,image/bmp',
       maxSize: 10, // 10MB max
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'image',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears', 'image_appears', 'image_disappears'],
-        },
-      }),
+      condition: {
+        field: 'waitType',
+        value: ['image_appears', 'image_disappears'],
+      },
       description: 'Upload template image to detect',
     },
 
@@ -160,14 +156,10 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
       min: 0.1,
       max: 1.0,
       step: 0.01,
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'image',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears', 'image_appears', 'image_disappears'],
-        },
-      }),
+      condition: {
+        field: 'waitType',
+        value: ['image_appears', 'image_disappears'],
+      },
       value: () => 0.8,
       description: 'Minimum confidence for image match',
     },
@@ -179,14 +171,7 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
       type: 'short-input',
       layout: 'full',
       placeholder: 'Text to wait for...',
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'text',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears'],
-        },
-      }) || {
+      condition: {
         field: 'waitType',
         value: ['text_appears', 'text_disappears'],
       },
@@ -206,14 +191,7 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
         { label: 'Regular Expression', id: 'regex' },
       ],
       value: () => 'contains',
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'text',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears'],
-        },
-      }) || {
+      condition: {
         field: 'waitType',
         value: ['text_appears', 'text_disappears'],
       },
@@ -225,14 +203,7 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
       title: 'Case Sensitive',
       type: 'switch',
       layout: 'half',
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'text',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears'],
-        },
-      }) || {
+      condition: {
         field: 'waitType',
         value: ['text_appears', 'text_disappears'],
       },
@@ -256,14 +227,7 @@ export const RPADesktopWaitBlock: BlockConfig<RPADesktopWaitResponse> = {
         { label: 'Auto-detect', id: 'auto' },
       ],
       value: () => 'eng',
-      condition: (params: Record<string, any>) => ({
-        field: 'elementSelector',
-        value: 'text',
-        and: {
-          field: 'waitType',
-          value: ['element_appears', 'element_disappears'],
-        },
-      }) || {
+      condition: {
         field: 'waitType',
         value: ['text_appears', 'text_disappears'],
       },
