@@ -398,7 +398,9 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/lib/workflows/versioning.ts"],
+      "important_files": [
+        "apps/sim/lib/workflows/versioning.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -498,7 +500,10 @@
       "priority": 1,
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/db/schema.ts", "apps/sim/app/api/workflows/"],
+      "important_files": [
+        "apps/sim/db/schema.ts",
+        "apps/sim/app/api/workflows/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -774,7 +779,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["apps/sim/serializer/", "apps/sim/tools/", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        "apps/sim/serializer/",
+        "apps/sim/tools/",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -892,7 +901,11 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": [".github/workflows/", "vitest.config.ts", "apps/sim/vitest.config.ts"],
+      "important_files": [
+        ".github/workflows/",
+        "vitest.config.ts",
+        "apps/sim/vitest.config.ts"
+      ],
       "success_criteria": [],
       "estimate": "1 week",
       "requires_research": false,
@@ -1127,7 +1140,10 @@
       "priority": "critical",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["TODO.json", "DONE.json"],
+      "important_files": [
+        "TODO.json",
+        "DONE.json"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3590,7 +3606,9 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3622,7 +3640,10 @@
       "priority": "medium",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/", "development/reports/"],
+      "important_files": [
+        "development/research-reports/",
+        "development/reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -3654,7 +3675,9 @@
       "priority": "high",
       "status": "completed",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -4324,8 +4347,13 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "completed",
-      "dependencies": ["task_1757026458238_tm9ex5kg7"],
-      "important_files": ["lib/help/ai/semantic-search.ts", "prisma/schema.prisma"],
+      "dependencies": [
+        "task_1757026458238_tm9ex5kg7"
+      ],
+      "important_files": [
+        "lib/help/ai/semantic-search.ts",
+        "prisma/schema.prisma"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": true,
@@ -4348,9 +4376,62 @@
       "needs_linter_feedback": true,
       "linter_feedback_generated": false,
       "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
+    },
+    {
+      "id": "task_1757011756024_tddfvc62d",
+      "title": "Extend vector infrastructure for help content embeddings",
+      "description": "Extend the existing pgvector and embedding infrastructure to support help content specific vector embeddings. Create database schema extensions for help content embeddings table, implement help-specific embedding generation and indexing, and set up vector similarity search optimized for help content discovery.",
+      "mode": "DEVELOPMENT",
+      "category": "missing-feature",
+      "priority": "critical",
+      "status": "completed",
+      "dependencies": [],
+      "important_files": [
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
+        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/embedding-service.ts"
+      ],
+      "success_criteria": [
+        "Help content embeddings database schema created",
+        "Help-specific embedding generation implemented",
+        "Vector indexing for help content operational",
+        "HNSW indexes optimized for help content similarity search",
+        "Integration with existing vector infrastructure complete"
+      ],
+      "estimate": "",
+      "requires_research": true,
+      "subtasks": [],
+      "created_at": "2025-09-04T18:49:16.029Z",
+      "auto_research_created": true,
+      "assigned_agent": "development_session_1757034132802_1_general_443d6071",
+      "started_at": "2025-09-05T01:02:37.461Z",
+      "claimed_by": "development_session_1757034132802_1_general_443d6071",
+      "agent_assignment_history": [
+        {
+          "agentId": "development_session_1757034132802_1_general_443d6071",
+          "role": "primary",
+          "assignedAt": "2025-09-05T01:02:37.461Z",
+          "reassignReason": null,
+          "claimPriority": "normal"
+        }
+      ],
+      "access_history": [
+        {
+          "agentId": "system",
+          "timestamp": "2025-09-05T01:12:52.485Z",
+          "action": "status_change",
+          "details": {
+            "oldStatus": "in_progress",
+            "newStatus": "completed"
+          }
+        }
+      ],
+      "completed_at": "2025-09-05T01:12:52.485Z",
+      "needs_linter_feedback": true,
+      "linter_feedback_generated": false,
+      "archived_from_todo": "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/TODO.json"
     }
   ],
-  "total_completed": 91,
-  "last_completion": "2025-09-04T23:12:36.171Z",
+  "total_completed": 92,
+  "last_completion": "2025-09-05T01:12:52.485Z",
   "created_at": "2025-09-02T02:59:28.425Z"
 }

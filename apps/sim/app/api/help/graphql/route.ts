@@ -453,6 +453,7 @@ const resolvers = {
         blockType: ctx.blockType,
         errorState: ctx.errorState,
         lastAction: ctx.lastAction,
+        timestamp: new Date(),
       })
 
       const limitedContents = contents.slice(0, limit)
@@ -611,9 +612,8 @@ const yoga = createYoga({
       dataloaders: createDataLoaders(),
     }
   },
-  resolvers,
   cors: {
-    origin: true,
+    origin: '*',
     credentials: true,
   },
   logging: {
@@ -632,7 +632,7 @@ const yoga = createYoga({
         })
 
         return {
-          onResponse: async ({ response }) => {
+          onResponse: async ({ response }: { response: any }) => {
             const processingTime = Date.now() - startTime
             logger.info('GraphQL request completed', {
               status: response.status,

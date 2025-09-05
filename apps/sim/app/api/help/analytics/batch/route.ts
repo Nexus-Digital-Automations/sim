@@ -123,7 +123,7 @@ class BatchEventProcessor {
       sessionId,
       priority: options.priority,
       processingMode: options.processingMode,
-    })
+    } as any)
 
     // Validate batch size
     if (events.length > this.MAX_BATCH_SIZE) {
@@ -158,7 +158,7 @@ class BatchEventProcessor {
         failed: result.failed,
         processingTimeMs: result.processingTime,
         mode: shouldUseRealTime ? 'realtime' : 'batch',
-      })
+      } as any)
 
       return result
     } catch (error) {
@@ -173,7 +173,7 @@ class BatchEventProcessor {
         error: error instanceof Error ? error.message : String(error),
         eventCount: events.length,
         processingTimeMs: result.processingTime,
-      })
+      } as any)
 
       return result
     }
@@ -182,7 +182,7 @@ class BatchEventProcessor {
   private async processRealTime(
     events: any[],
     sessionId: string,
-    userId: string,
+    userId: string | undefined,
     result: ProcessingResult
   ): Promise<void> {
     // Process events individually for real-time response
@@ -208,7 +208,7 @@ class BatchEventProcessor {
           eventIndex: i,
           eventType: event.eventType,
           batchId: result.batchId,
-        })
+        } as any)
       } catch (error) {
         result.failed++
         result.errors.push({
@@ -220,7 +220,7 @@ class BatchEventProcessor {
           eventIndex: i,
           eventType: event.eventType,
           error: error instanceof Error ? error.message : String(error),
-        })
+        } as any)
       }
     }
   }
@@ -228,7 +228,7 @@ class BatchEventProcessor {
   private async processBatchMode(
     events: any[],
     sessionId: string,
-    userId: string,
+    userId: string | undefined,
     result: ProcessingResult
   ): Promise<void> {
     // Process events in chunks for batch mode
@@ -269,7 +269,7 @@ class BatchEventProcessor {
           chunkIndex,
           chunkSize: chunk.length,
           batchId: result.batchId,
-        })
+        } as any)
       } catch (error) {
         // Mark entire chunk as failed
         chunk.forEach((_, eventIndex) => {
@@ -284,7 +284,7 @@ class BatchEventProcessor {
         logger.error('Batch chunk failed', {
           chunkIndex,
           error: error instanceof Error ? error.message : String(error),
-        })
+        } as any)
       }
     }
   }
@@ -361,7 +361,7 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       logger.warn(`[${requestId}] Invalid batch request`, {
         errors: validationResult.error.format(),
-      })
+      } as any)
       return NextResponse.json(
         {
           error: 'Invalid request body',
@@ -385,7 +385,7 @@ export async function POST(request: NextRequest) {
         clientIP,
         userId,
         eventCount: events.length,
-      })
+      } as any)
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
@@ -404,7 +404,7 @@ export async function POST(request: NextRequest) {
       failed: processingResult.failed,
       processingTimeMs: totalProcessingTime,
       batchId: processingResult.batchId,
-    })
+    } as any)
 
     return NextResponse.json(
       {
@@ -436,7 +436,7 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       processingTimeMs: processingTime,
-    })
+    } as any)
 
     return NextResponse.json(
       {
@@ -460,7 +460,7 @@ export async function GET(request: NextRequest) {
 
     const stats = await batchProcessor.getProcessingStats()
 
-    logger.info(`[${requestId}] Batch stats retrieved`, { stats })
+    logger.info(`[${requestId}] Batch stats retrieved`, { stats } as any)
 
     return NextResponse.json({
       success: true,
@@ -473,7 +473,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error(`[${requestId}] Failed to get batch stats`, {
       error: error instanceof Error ? error.message : String(error),
-    })
+    } as any)
 
     return NextResponse.json(
       {

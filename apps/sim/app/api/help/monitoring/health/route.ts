@@ -78,7 +78,10 @@ function calculateHealthScore(components: Record<string, any>): number {
   })
 
   return componentScores.length > 0
-    ? Math.round(componentScores.reduce((sum, score) => sum + score, 0) / componentScores.length)
+    ? Math.round(
+        (componentScores as number[]).reduce((sum, score) => sum + score, 0) /
+          componentScores.length
+      )
     : 0
 }
 
@@ -171,12 +174,14 @@ function formatPrometheusMetrics(health: any): string {
   // Component-specific metrics
   Object.entries(health.components).forEach(([componentName, component]: [string, any]) => {
     const statusValue =
-      {
-        healthy: 1,
-        warning: 0.5,
-        critical: 0.2,
-        offline: 0,
-      }[component.status] || 0
+      (
+        {
+          healthy: 1,
+          warning: 0.5,
+          critical: 0.2,
+          offline: 0,
+        } as Record<string, number>
+      )[component.status] || 0
 
     metrics.push(
       `# HELP help_component_status Status of help system component (1=healthy, 0.5=warning, 0.2=critical, 0=offline)`
@@ -255,12 +260,14 @@ function formatNewRelicMetrics(health: any): any {
       // Component metrics
       ...Object.entries(health.components).map(([componentName, component]: [string, any]) => {
         const statusValue =
-          {
-            healthy: 1,
-            warning: 0.5,
-            critical: 0.2,
-            offline: 0,
-          }[component.status] || 0
+          (
+            {
+              healthy: 1,
+              warning: 0.5,
+              critical: 0.2,
+              offline: 0,
+            } as Record<string, number>
+          )[component.status] || 0
 
         return {
           name: 'help.component.status',
@@ -288,7 +295,7 @@ function handleError(error: any, requestId: string, operation: string, startTime
     error: error instanceof Error ? error.message : String(error),
     stack: error instanceof Error ? error.stack : undefined,
     processingTimeMs: processingTime,
-  })
+  } as any)
 
   return NextResponse.json(
     {
@@ -339,7 +346,7 @@ export async function GET(request: NextRequest) {
     if (!validationResult.success) {
       logger.warn(`[${requestId}] Invalid health check parameters`, {
         errors: validationResult.error.format(),
-      })
+      } as any)
       return NextResponse.json(
         {
           status: 'error',
@@ -411,7 +418,7 @@ export async function GET(request: NextRequest) {
 
     // Filter components if specific component requested
     const componentsToInclude = component
-      ? { [component]: systemHealth.components[component] }
+      ? { [component]: (systemHealth.components as any)[component] }
       : systemHealth.components
 
     // Process component information

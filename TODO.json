@@ -2,32 +2,6 @@
   "project": "sim",
   "tasks": [
     {
-      "id": "task_1757011756024_tddfvc62d",
-      "title": "Extend vector infrastructure for help content embeddings",
-      "description": "Extend the existing pgvector and embedding infrastructure to support help content specific vector embeddings. Create database schema extensions for help content embeddings table, implement help-specific embedding generation and indexing, and set up vector similarity search optimized for help content discovery.",
-      "mode": "DEVELOPMENT",
-      "category": "missing-feature",
-      "priority": "critical",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/db/schema.ts",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/embedding-service.ts"
-      ],
-      "success_criteria": [
-        "Help content embeddings database schema created",
-        "Help-specific embedding generation implemented",
-        "Vector indexing for help content operational",
-        "HNSW indexes optimized for help content similarity search",
-        "Integration with existing vector infrastructure complete"
-      ],
-      "estimate": "",
-      "requires_research": true,
-      "subtasks": [],
-      "created_at": "2025-09-04T18:49:16.029Z",
-      "auto_research_created": true
-    },
-    {
       "id": "task_1757026686191_a1b79tpbn",
       "title": "Research: Implement intelligent chatbot with contextual awareness",
       "description": "Research and analysis required for implementing: \"Implement intelligent chatbot with contextual awareness\"\n\n**Implementation Task Details:**\nBuild sophisticated AI-powered conversational help system with deep contextual awareness, real-time messaging, multi-turn conversations, and integration with all help system components\n\n**Research Objectives:**\n1. Investigate best practices and methodologies for this implementation\n2. Identify potential challenges, risks, and mitigation strategies  \n3. Research relevant technologies, frameworks, and tools\n4. Define implementation approach and architecture decisions\n5. Provide actionable recommendations and guidance\n\n**Implementation Task ID:** task_1757026686190_7n813iw4t\n\n**Auto-created by:** TaskManager research dependency system\n**Research Priority:** This research task must be completed before implementation begins",
@@ -996,7 +970,10 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/research-reports/", "development/essentials/"],
+      "important_files": [
+        "development/research-reports/",
+        "development/essentials/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1052,7 +1029,9 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["./development/research-reports/"],
+      "important_files": [
+        "./development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1069,7 +1048,10 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/research-reports/", "lib/help/ai/"],
+      "important_files": [
+        "development/research-reports/",
+        "lib/help/ai/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1125,7 +1107,9 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1143,7 +1127,9 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/research-reports/"],
+      "important_files": [
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1176,7 +1162,10 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/research-reports/", "development/reports/"],
+      "important_files": [
+        "development/research-reports/",
+        "development/reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1412,7 +1401,10 @@
       "priority": "medium",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["development/reports/", "development/research-reports/"],
+      "important_files": [
+        "development/reports/",
+        "development/research-reports/"
+      ],
       "success_criteria": [],
       "estimate": "",
       "requires_research": false,
@@ -1589,7 +1581,10 @@
       "priority": "high",
       "status": "pending",
       "dependencies": [],
-      "important_files": ["apps/sim/app/api/__test-utils__/", "apps/sim/app/api/**/*.test.ts"],
+      "important_files": [
+        "apps/sim/app/api/__test-utils__/",
+        "apps/sim/app/api/**/*.test.ts"
+      ],
       "success_criteria": [],
       "estimate": "1-2 weeks",
       "requires_research": false,
@@ -1699,7 +1694,9 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": ["task_1757011756024_tddfvc62d"],
+      "dependencies": [
+        "task_1757011756024_tddfvc62d"
+      ],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/app/api/help/search/route.ts",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/semantic-search.ts"
@@ -1726,7 +1723,9 @@
       "category": "missing-feature",
       "priority": "critical",
       "status": "pending",
-      "dependencies": ["task_1757009789910_6sxvzjavd"],
+      "dependencies": [
+        "task_1757009789910_6sxvzjavd"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1743,7 +1742,9 @@
       "category": "missing-feature",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757026686191_a1b79tpbn"],
+      "dependencies": [
+        "task_1757026686191_a1b79tpbn"
+      ],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/lib/help/ai/intelligent-chatbot.ts",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/help/intelligent-chat-interface.tsx",
@@ -1765,7 +1766,9 @@
       "category": "missing-feature",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757026454717_g4z6nbiix"],
+      "dependencies": [
+        "task_1757026454717_g4z6nbiix"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1782,7 +1785,9 @@
       "category": "missing-feature",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757011676893_mu4480p13"],
+      "dependencies": [
+        "task_1757011676893_mu4480p13"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1799,7 +1804,9 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757011763326_55ahgwlf6"],
+      "dependencies": [
+        "task_1757011763326_55ahgwlf6"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1816,7 +1823,9 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757011763325_vfaj4s003"],
+      "dependencies": [
+        "task_1757011763325_vfaj4s003"
+      ],
       "important_files": [
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/templates/template-browser.tsx",
         "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/apps/sim/components/workflow-wizard/workflow-wizard.tsx"
@@ -1836,7 +1845,9 @@
       "category": "enhancement",
       "priority": "high",
       "status": "pending",
-      "dependencies": ["task_1757011763323_adpd2dq7d"],
+      "dependencies": [
+        "task_1757011763323_adpd2dq7d"
+      ],
       "important_files": [],
       "success_criteria": [],
       "estimate": "",
@@ -1853,107 +1864,32 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1757026269982_1_general_a66f42fd": {
+    "development_session_1757034132802_1_general_443d6071": {
       "name": "development Agent",
       "role": "development",
       "specialization": [],
       "status": "active",
       "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:51:09.983Z",
+      "lastHeartbeat": "2025-09-05T01:02:12.803Z",
       "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
       "workload": 0,
       "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:51:09.983Z",
-      "sessionId": "session_1757026269982",
-      "metadata": {}
-    },
-    "development_session_1757026375157_1_general_0096fcbd": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:52:55.159Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:52:55.159Z",
-      "sessionId": "session_1757026375157",
+      "createdAt": "2025-09-05T01:02:12.803Z",
+      "sessionId": "session_1757034132802",
       "metadata": {
-        "renewedAt": "2025-09-04T22:53:46.646Z",
+        "renewedAt": "2025-09-05T01:02:17.234Z",
         "renewalReason": "Agent reinitialization requested"
       },
-      "lastRenewal": "2025-09-04T22:53:21.890Z",
+      "lastRenewal": "2025-09-05T01:02:17.234Z",
       "renewalCount": 1,
-      "agentId": "development_session_1757026375157_1_general_0096fcbd"
-    },
-    "development_session_1757026380467_1_general_4f37733a": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:53:00.468Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:53:00.468Z",
-      "sessionId": "session_1757026380467",
-      "metadata": {
-        "renewedAt": "2025-09-04T22:53:33.720Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-04T22:53:33.720Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757026380467_1_general_4f37733a"
-    },
-    "development_session_1757026380470_1_general_c7de02c3": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:53:00.471Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:53:00.471Z",
-      "sessionId": "session_1757026380470",
-      "metadata": {}
-    },
-    "development_session_1757026380474_1_general_14f7f735": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:53:00.475Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:53:00.475Z",
-      "sessionId": "session_1757026380474",
-      "metadata": {}
-    },
-    "development_session_1757026409666_1_general_acaa4ae7": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-04T22:53:29.667Z",
-      "parentAgentId": null,
-      "capabilities": ["file-operations", "linting", "testing", "build-fixes", "refactoring"],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-04T22:53:29.667Z",
-      "sessionId": "session_1757026409666",
-      "metadata": {}
+      "agentId": "development_session_1757034132802_1_general_443d6071"
     }
   },
   "settings": {

@@ -260,14 +260,15 @@ export async function GET(req: NextRequest) {
     const params = Object.fromEntries(searchParams)
 
     // Parse boolean parameters
+    const processedParams: Record<string, any> = { ...params }
     if (params.includeMetrics !== undefined) {
-      params.includeMetrics = params.includeMetrics === 'true'
+      processedParams.includeMetrics = params.includeMetrics === 'true'
     }
     if (params.includeComponentHealth !== undefined) {
-      params.includeComponentHealth = params.includeComponentHealth === 'true'
+      processedParams.includeComponentHealth = params.includeComponentHealth === 'true'
     }
 
-    const validationResult = healthCheckSchema.safeParse(params)
+    const validationResult = healthCheckSchema.safeParse(processedParams)
     if (!validationResult.success) {
       return NextResponse.json(
         { error: 'Invalid parameters', details: validationResult.error.format() },

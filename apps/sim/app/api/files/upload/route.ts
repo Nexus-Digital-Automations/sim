@@ -93,14 +93,12 @@ export async function POST(request: NextRequest) {
         // Use the dedicated execution file storage system
         const { uploadExecutionFile } = await import('@/lib/workflows/execution-file-storage')
         const userFile = await uploadExecutionFile(
-          {
-            workspaceId: workspaceId || '',
-            workflowId,
-            executionId,
-          },
           buffer,
           originalName,
-          file.type
+          file.type,
+          executionId,
+          workflowId,
+          workspaceId || ''
         )
 
         uploadResults.push(userFile)

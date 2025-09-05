@@ -220,11 +220,12 @@ export async function GET(request: NextRequest) {
       // Contextual content for component
       const context = {
         component,
-        page: searchParams.get('page') || window?.location?.pathname || '/',
+        page: searchParams.get('page') || '/',
         userLevel: userLevel || 'beginner',
         workflowState: searchParams.get('workflowState') as any,
         blockType: searchParams.get('blockType') || undefined,
         errorState: searchParams.get('errorState') === 'true',
+        timestamp: new Date(),
       }
 
       content = await helpContentManager.getContextualContent(context)
@@ -294,6 +295,7 @@ export async function GET(request: NextRequest) {
             component: component || 'api',
             page: searchParams.get('page') || '/',
             userLevel: userLevel || 'beginner',
+            timestamp: new Date(),
           },
           userId
         )
@@ -384,6 +386,7 @@ export async function POST(request: NextRequest) {
       blockType,
       errorState,
       lastAction,
+      timestamp: new Date(),
     }
 
     // Get contextual help content

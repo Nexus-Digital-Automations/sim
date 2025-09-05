@@ -119,7 +119,7 @@ class RealTimeMonitoringManager {
       } catch (error) {
         logger.error('Error in real-time monitoring cycle', {
           error: error instanceof Error ? error.message : String(error),
-        })
+        } as any)
       }
     }, 5000) // Update every 5 seconds
   }
@@ -209,7 +209,7 @@ class RealTimeMonitoringManager {
     }
   }
 
-  private broadcastToClients(): void {
+  public broadcastToClients(): void {
     const message = {
       type: 'metrics_update',
       timestamp: new Date().toISOString(),
@@ -228,7 +228,7 @@ class RealTimeMonitoringManager {
         logger.error('Failed to send message to client', {
           clientId,
           error: error instanceof Error ? error.message : String(error),
-        })
+        } as any)
         this.removeClient(clientId)
       }
     })
@@ -266,16 +266,16 @@ class RealTimeMonitoringManager {
       logger.error('Failed to send initial message to client', {
         clientId,
         error: error instanceof Error ? error.message : String(error),
-      })
+      } as any)
     }
 
-    logger.info('Real-time client connected', { clientId, filters })
+    logger.info('Real-time client connected', { clientId, filters } as any)
   }
 
   public removeClient(clientId: string): void {
     if (this.clients.has(clientId)) {
       this.clients.delete(clientId)
-      logger.info('Real-time client disconnected', { clientId })
+      logger.info('Real-time client disconnected', { clientId } as any)
     }
   }
 
@@ -314,6 +314,14 @@ class RealTimeMonitoringManager {
 
   public getPerformanceSnapshots(limit = 50): PerformanceSnapshot[] {
     return this.performanceSnapshots.slice(-limit)
+  }
+
+  public addActivityEvent(event: LiveActivityEvent): void {
+    this.activityStream.push(event)
+
+    if (this.activityStream.length > this.MAX_ACTIVITY) {
+      this.activityStream.splice(0, this.activityStream.length - this.MAX_ACTIVITY)
+    }
   }
 
   public getClientStats(): {
@@ -403,7 +411,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    logger.info(`[${requestId}] Real-time stream established`, { clientId, filters })
+    logger.info(`[${requestId}] Real-time stream established`, { clientId, filters } as any)
 
     return new Response(stream, {
       headers: {
@@ -418,7 +426,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error(`[${requestId}] Real-time stream setup failed`, {
       error: error instanceof Error ? error.message : String(error),
-    })
+    } as any)
 
     return NextResponse.json(
       {
@@ -450,7 +458,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add to activity stream
-    monitoringManager.activityStream.push(activityEvent)
+    monitoringManager.addActivityEvent(activityEvent)
 
     // Trigger immediate broadcast for high priority events
     if (priority === 'high') {
@@ -460,7 +468,7 @@ export async function POST(request: NextRequest) {
     logger.info(`[${requestId}] Real-time event processed`, {
       eventType,
       priority,
-    })
+    } as any)
 
     return NextResponse.json({
       success: true,
@@ -470,7 +478,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error(`[${requestId}] Real-time event processing failed`, {
       error: error instanceof Error ? error.message : String(error),
-    })
+    } as any)
 
     return NextResponse.json(
       {
@@ -506,7 +514,7 @@ export async function HEAD(request: NextRequest) {
       connectedClients: stats.monitoringStats.connectedClients,
       metricsCount: stats.metricsHistory.length,
       activityCount: stats.recentActivity.length,
-    })
+    } as any)
 
     return NextResponse.json({
       success: true,
@@ -519,7 +527,7 @@ export async function HEAD(request: NextRequest) {
   } catch (error) {
     logger.error(`[${requestId}] Real-time stats generation failed`, {
       error: error instanceof Error ? error.message : String(error),
-    })
+    } as any)
 
     return NextResponse.json(
       {

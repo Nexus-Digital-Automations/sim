@@ -94,19 +94,11 @@ async function downloadKBFile(cloudKey: string): Promise<Buffer> {
 
   if ((storageProvider as string) === 'blob') {
     const { BLOB_KB_CONFIG } = await import('@/lib/uploads/setup')
-    return downloadFile(cloudKey, {
-      containerName: BLOB_KB_CONFIG.containerName,
-      accountName: BLOB_KB_CONFIG.accountName,
-      accountKey: BLOB_KB_CONFIG.accountKey,
-      connectionString: BLOB_KB_CONFIG.connectionString,
-    })
+    return downloadFile(cloudKey, BLOB_KB_CONFIG as any)
   }
 
   if ((storageProvider as string) === 's3') {
-    return downloadFile(cloudKey, {
-      bucket: S3_KB_CONFIG.bucket,
-      region: S3_KB_CONFIG.region,
-    })
+    return downloadFile(cloudKey, S3_KB_CONFIG as any)
   }
 
   throw new Error(`Unsupported storage provider for KB files: ${storageProvider}`)
@@ -132,18 +124,10 @@ async function handleCloudProxy(
 
       if ((storageProvider as string) === 's3') {
         const { S3_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
-        fileBuffer = await downloadFile(cloudKey, {
-          bucket: S3_COPILOT_CONFIG.bucket,
-          region: S3_COPILOT_CONFIG.region,
-        })
+        fileBuffer = await downloadFile(cloudKey, S3_COPILOT_CONFIG as any)
       } else if ((storageProvider as string) === 'blob') {
-        const { BLOB_COPILOT_CONFIG } = await import('@/lib/uploads/setup')
-        fileBuffer = await downloadFile(cloudKey, {
-          containerName: BLOB_COPILOT_CONFIG.containerName,
-          accountName: BLOB_COPILOT_CONFIG.accountName,
-          accountKey: BLOB_COPILOT_CONFIG.accountKey,
-          connectionString: BLOB_COPILOT_CONFIG.connectionString,
-        })
+        const { BLOB_EXECUTION_FILES_CONFIG } = await import('@/lib/uploads/setup')
+        fileBuffer = await downloadFile(cloudKey, BLOB_EXECUTION_FILES_CONFIG as any)
       } else {
         fileBuffer = await downloadFile(cloudKey)
       }

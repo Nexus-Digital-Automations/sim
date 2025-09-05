@@ -758,20 +758,71 @@ export class HelpContentManager {
     page: number,
     pageSize: number
   ): Promise<ContentSearchResult> {
-    // TODO: Implement actual search
-    logger.debug('Performing search in database (mock)', { query, filters })
+    logger.debug('Performing search with semantic search integration', { query, filters })
 
-    return {
-      documents: [],
-      total: 0,
-      page,
-      pageSize,
-      facets: {
-        components: [],
-        tags: [],
-        categories: [],
-        contentTypes: [],
-      },
+    try {
+      // Import semantic search service
+      const { semanticHelpSearch } = await import('./semantic-help-search')
+
+      // Determine search strategy based on query
+      const useSemanticSearch = query.trim().length > 0
+      const useHybridSearch = query.trim().length > 2 // Use hybrid for longer queries
+
+      // Configure search options
+      const searchOptions = {
+        useSemanticSearch,
+        useHybridSearch,
+        semanticWeight: 0.7,
+        keywordWeight: 0.3,
+        vectorType: 'combined' as const,
+        minSimilarityScore: 0.6,
+      }
+
+      // Perform semantic search
+      const semanticResult = await semanticHelpSearch.searchContent(
+        query,
+        filters,
+        page,
+        pageSize,
+        searchOptions
+      )
+
+      // Convert semantic result to content search result
+      const result: ContentSearchResult = {
+        documents: semanticResult.documents,
+        total: semanticResult.total,
+        page: semanticResult.page,
+        pageSize: semanticResult.pageSize,
+        facets: semanticResult.facets,
+      }
+
+      logger.info('Search completed with semantic search', {
+        query,
+        resultsCount: result.documents.length,
+        total: result.total,
+        searchMethod: semanticResult.searchMethod,
+      })
+
+      return result
+    } catch (error) {
+      logger.error('Semantic search failed, falling back to basic search', {
+        query,
+        error: error instanceof Error ? error.message : String(error),
+      })
+
+      // Fallback to basic empty result for now
+      return {
+        documents: [],
+        total: 0,
+        page,
+        pageSize,
+        facets: {
+          components: [],
+          tags: [],
+          categories: [],
+          contentTypes: [],
+        },
+      }
     }
   }
 
