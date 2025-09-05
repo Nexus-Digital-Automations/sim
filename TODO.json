@@ -8,7 +8,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "high",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757026454717_g4z6nbiix.md"
@@ -26,9 +26,9 @@
       "created_at": "2025-09-04T22:54:14.717Z",
       "created_by": "auto-research-system",
       "auto_created_for": "task_1757026454716_mtnnrzslq",
-      "assigned_agent": "development_session_1757035013014_1_general_3670d9bd",
-      "started_at": "2025-09-05T01:17:21.232Z",
-      "claimed_by": "development_session_1757035013014_1_general_3670d9bd",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1757035013014_1_general_3670d9bd",
@@ -36,6 +36,12 @@
           "assignedAt": "2025-09-05T01:17:21.232Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-05T02:13:05.325Z",
+          "reason": "Task stale for 56 minutes"
         }
       ]
     },
@@ -46,7 +52,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "high",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757011763326_55ahgwlf6.md"
@@ -64,9 +70,9 @@
       "created_at": "2025-09-04T18:49:23.326Z",
       "created_by": "auto-research-system",
       "auto_created_for": "task_1757011763322_chfqg3500",
-      "assigned_agent": "development_session_1757034817798_1_general_e5790ca1",
-      "started_at": "2025-09-05T01:34:34.283Z",
-      "claimed_by": "development_session_1757034817798_1_general_e5790ca1",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "development_session_1757024432810_1_general_d3598808",
@@ -87,6 +93,12 @@
           "assignedAt": "2025-09-05T01:34:34.283Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-05T02:13:05.325Z",
+          "reason": "Task stale for 39 minutes"
         }
       ]
     },
@@ -97,7 +109,7 @@
       "mode": "RESEARCH",
       "category": "research",
       "priority": "high",
-      "status": "in_progress",
+      "status": "pending",
       "dependencies": [],
       "important_files": [
         "./development/research-reports/research-report-task_1757011763325_vfaj4s003.md"
@@ -115,9 +127,9 @@
       "created_at": "2025-09-04T18:49:23.325Z",
       "created_by": "auto-research-system",
       "auto_created_for": "task_1757011763322_g4kdsbkr2",
-      "assigned_agent": "development_session_1757036222494_1_general_7a454dd1",
-      "started_at": "2025-09-05T01:39:43.553Z",
-      "claimed_by": "development_session_1757036222494_1_general_7a454dd1",
+      "assigned_agent": null,
+      "started_at": null,
+      "claimed_by": null,
       "agent_assignment_history": [
         {
           "agentId": "--agent-id",
@@ -138,6 +150,12 @@
           "assignedAt": "2025-09-05T01:39:43.553Z",
           "reassignReason": null,
           "claimPriority": "normal"
+        },
+        {
+          "agent": "system",
+          "action": "auto_reset_stale",
+          "timestamp": "2025-09-05T02:13:05.325Z",
+          "reason": "Task stale for 33 minutes"
         }
       ]
     },
@@ -1084,61 +1102,6 @@
       "requires_research": false,
       "subtasks": [],
       "created_at": "2025-09-03T21:10:41.142Z",
-      "auto_research_created": false
-    },
-    {
-      "id": "task_1757038250799_i9ihhja7p",
-      "title": "Research international privacy laws for global analytics compliance framework",
-      "description": "Comprehensive analysis of international privacy regulations beyond US/EU for analytics tracking systems, focusing on Asia-Pacific, Americas, cross-border transfers, emerging trends, and multi-jurisdictional compliance strategies",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": "HIGH",
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-05T02:10:50.800Z",
-      "auto_research_created": false
-    },
-    {
-      "id": "task_1757037962122_q0iiyxkuk",
-      "title": "Research UI element identification and interaction methods for desktop automation",
-      "description": "Research and analyze various approaches for identifying and interacting with UI elements in desktop automation including coordinate-based clicking, image recognition, OCR, accessibility APIs, and element selectors. Compare accuracy, reliability, and cross-platform compatibility.",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": 5,
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/blocks/blocks/stagehand.ts",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/blocks/blocks/stagehand_agent.ts",
-        "/Users/jeremyparker/Desktop/Claude Coding Projects/sim/blocks/blocks/browser_use.ts"
-      ],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-05T02:06:02.122Z",
-      "auto_research_created": false
-    },
-    {
-      "id": "task_1757037930479_26e5vg9ev",
-      "title": "Research comprehensive desktop automation security frameworks and enterprise-grade best practices",
-      "description": "Conduct comprehensive research on security frameworks and best practices for desktop automation including sandboxing techniques, user permission models, audit logging requirements, secure communication protocols, authentication mechanisms, and threat mitigation strategies with focus on enterprise-grade security requirements",
-      "mode": "DEVELOPMENT",
-      "category": "research",
-      "priority": 1,
-      "status": "pending",
-      "dependencies": [],
-      "important_files": [],
-      "success_criteria": [],
-      "estimate": "",
-      "requires_research": false,
-      "subtasks": [],
-      "created_at": "2025-09-05T02:05:30.479Z",
       "auto_research_created": false
     },
     {
@@ -2126,351 +2089,6 @@
   "strikes_completed_last_run": false,
   "last_hook_activation": 1756781766326,
   "agents": {
-    "development_session_1757034132802_1_general_443d6071": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:02:12.803Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:02:12.803Z",
-      "sessionId": "session_1757034132802",
-      "metadata": {
-        "renewedAt": "2025-09-05T01:02:17.234Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-05T01:02:17.234Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757034132802_1_general_443d6071"
-    },
-    "development_session_1757034817798_1_general_e5790ca1": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:13:37.799Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:13:37.799Z",
-      "sessionId": "session_1757034817798",
-      "metadata": {
-        "renewedAt": "2025-09-05T01:34:18.736Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-05T01:13:42.942Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757034817798_1_general_e5790ca1"
-    },
-    "development_session_1757035011624_1_general_fdac43a2": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:51.625Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:51.625Z",
-      "sessionId": "session_1757035011624",
-      "metadata": {}
-    },
-    "development_session_1757035012609_1_general_dbb51111": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:52.611Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:52.611Z",
-      "sessionId": "session_1757035012609",
-      "metadata": {}
-    },
-    "development_session_1757035012612_1_general_2f7832d2": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:52.614Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:52.614Z",
-      "sessionId": "session_1757035012612",
-      "metadata": {
-        "renewedAt": "2025-09-05T01:17:00.664Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-05T01:17:00.664Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757035012612_1_general_2f7832d2"
-    },
-    "development_session_1757035012619_1_general_e6d0f56c": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:52.620Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:52.620Z",
-      "sessionId": "session_1757035012619",
-      "metadata": {}
-    },
-    "development_session_1757035013014_1_general_3670d9bd": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:53.015Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:53.015Z",
-      "sessionId": "session_1757035013014",
-      "metadata": {}
-    },
-    "development_session_1757035014731_1_general_5304a4e0": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:16:54.732Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:16:54.732Z",
-      "sessionId": "session_1757035014731",
-      "metadata": {}
-    },
-    "development_session_1757036221564_1_general_0cfe2533": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:01.565Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:01.565Z",
-      "sessionId": "session_1757036221564",
-      "metadata": {}
-    },
-    "development_session_1757036221740_1_general_88e3d703": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:01.741Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:01.741Z",
-      "sessionId": "session_1757036221740",
-      "metadata": {
-        "renewedAt": "2025-09-05T01:37:12.039Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-05T01:37:12.039Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757036221740_1_general_88e3d703"
-    },
-    "development_session_1757036222432_1_general_81a18759": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:02.434Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:02.434Z",
-      "sessionId": "session_1757036222432",
-      "metadata": {
-        "renewedAt": "2025-09-05T01:37:11.270Z",
-        "renewalReason": "Agent reinitialization requested"
-      },
-      "lastRenewal": "2025-09-05T01:37:11.270Z",
-      "renewalCount": 1,
-      "agentId": "development_session_1757036222432_1_general_81a18759"
-    },
-    "development_session_1757036222492_1_general_a8ab97f4": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:02.494Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:02.494Z",
-      "sessionId": "session_1757036222492",
-      "metadata": {}
-    },
-    "development_session_1757036222494_1_general_7a454dd1": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:02.495Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:02.495Z",
-      "sessionId": "session_1757036222494",
-      "metadata": {}
-    },
-    "development_session_1757036230706_1_general_92357d5b": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:37:10.707Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:37:10.707Z",
-      "sessionId": "session_1757036230706",
-      "metadata": {}
-    },
-    "development_session_1757037329059_1_general_ba980b91": {
-      "name": "development Agent",
-      "role": "development",
-      "specialization": [],
-      "status": "active",
-      "assignedTasks": [],
-      "lastHeartbeat": "2025-09-05T01:55:29.061Z",
-      "parentAgentId": null,
-      "capabilities": [
-        "file-operations",
-        "linting",
-        "testing",
-        "build-fixes",
-        "refactoring"
-      ],
-      "workload": 0,
-      "maxConcurrentTasks": 5,
-      "createdAt": "2025-09-05T01:55:29.061Z",
-      "sessionId": "session_1757037329059",
-      "metadata": {}
-    },
     "development_session_1757037704732_1_general_1a5099e8": {
       "name": "development Agent",
       "role": "development",
@@ -2581,6 +2199,33 @@
       "createdAt": "2025-09-05T02:10:42.453Z",
       "sessionId": "session_1757038242452",
       "metadata": {}
+    },
+    "development_session_1757038390106_1_general_b272eea9": {
+      "name": "development Agent",
+      "role": "development",
+      "specialization": [],
+      "status": "active",
+      "assignedTasks": [],
+      "lastHeartbeat": "2025-09-05T02:13:10.107Z",
+      "parentAgentId": null,
+      "capabilities": [
+        "file-operations",
+        "linting",
+        "testing",
+        "build-fixes",
+        "refactoring"
+      ],
+      "workload": 0,
+      "maxConcurrentTasks": 5,
+      "createdAt": "2025-09-05T02:13:10.107Z",
+      "sessionId": "session_1757038390106",
+      "metadata": {
+        "renewedAt": "2025-09-05T02:13:15.192Z",
+        "renewalReason": "Agent reinitialization requested"
+      },
+      "lastRenewal": "2025-09-05T02:13:15.192Z",
+      "renewalCount": 1,
+      "agentId": "development_session_1757038390106_1_general_b272eea9"
     }
   },
   "settings": {

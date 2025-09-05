@@ -1,0 +1,170 @@
+{
+  "name": "sim-desktop-agent",
+  "version": "1.0.0",
+  "description": "Sim Desktop Agent - Secure RPA automation for desktop applications",
+  "main": "src/main.js",
+  "private": true,
+  "author": "Sim Platform",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sim-platform/sim-desktop-agent.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "cross-env NODE_ENV=development electron . --inspect=9229",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:main": "webpack --config webpack.main.config.js",
+    "build:renderer": "webpack --config webpack.renderer.config.js",
+    "pack": "electron-builder --publish=never",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/ --ext .js,.ts,.tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist/ build/ coverage/",
+    "postinstall": "electron-builder install-app-deps",
+    "security-audit": "npm audit && electron-builder --publish=never --config.nsis.runAfterFinish=false"
+  },
+  "keywords": [
+    "electron",
+    "rpa",
+    "automation",
+    "desktop",
+    "sim",
+    "workflow",
+    "robotics"
+  ],
+  "homepage": "https://sim.platform",
+  "build": {
+    "appId": "com.sim.desktop-agent",
+    "productName": "Sim Desktop Agent",
+    "directories": {
+      "output": "dist/",
+      "buildResources": "build/"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icons/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "assets/icons/icon.ico",
+      "publisherName": "Sim Platform Inc.",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icons/",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false
+    },
+    "publish": null,
+    "compression": "maximum",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+  },
+  "dependencies": {
+    "@nut-tree/nut-js": "^4.2.0",
+    "socket.io-client": "^4.8.1",
+    "playwright": "^1.40.0",
+    "axios": "^1.6.8",
+    "crypto-js": "^4.2.0",
+    "node-machine-id": "^1.1.12",
+    "winston": "^3.11.0",
+    "sqlite3": "^5.1.6",
+    "keytar": "^7.9.0",
+    "auto-launch": "^5.0.6",
+    "systray2": "^2.0.5",
+    "screenshot-desktop": "^1.15.0",
+    "jimp": "^0.22.10",
+    "opencv4nodejs": "^5.6.0",
+    "tesseract.js": "^5.0.5",
+    "robotjs": "^0.6.0",
+    "ffi-napi": "^4.0.3",
+    "ref-napi": "^3.0.3"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-devtools-installer": "^3.2.0",
+    "@types/node": "^20.10.0",
+    "@types/jest": "^29.5.8",
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "html-webpack-plugin": "^5.5.3",
+    "css-loader": "^6.8.1",
+    "style-loader": "^3.3.3",
+    "file-loader": "^6.2.0",
+    "url-loader": "^4.1.1",
+    "ts-loader": "^9.5.1",
+    "source-map-loader": "^4.0.1",
+    "cross-env": "^7.0.3",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint-plugin-security": "^1.7.1",
+    "eslint-plugin-node": "^11.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "@jest/types": "^29.6.3",
+    "rimraf": "^5.0.5",
+    "nodemon": "^3.0.2",
+    "electron-reload": "^2.0.0-alpha.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "security": {
+    "audit": {
+      "skipUnusedPackages": false,
+      "skipDevDependencies": false
+    }
+  },
+  "electronVersion": "32.0.0"
+}
