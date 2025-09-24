@@ -406,7 +406,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 51,
+      "total_reinitializations": 53,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
@@ -423,7 +423,7 @@
         },
         "23:00-03:59": {
           "init": 7,
-          "reinit": 37
+          "reinit": 39
         },
         "04:00-08:59": {
           "init": 0,
@@ -432,7 +432,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T06:36:46.450Z"
+      "last_updated": "2025-09-24T06:37:33.418Z"
     },
     "approval_history": [
       {
@@ -687,11 +687,13 @@
       "previousSessions": []
     },
     "conversational-interface-agent": {
-      "lastHeartbeat": "2025-09-24T06:12:32.846Z",
+      "lastHeartbeat": "2025-09-24T06:37:32.738Z",
       "status": "active",
-      "reinitialized": "2025-09-24T06:12:32.846Z",
-      "sessionId": "0045194efdffd125",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T06:37:32.738Z",
+      "sessionId": "d952d457db032b8f",
+      "previousSessions": [
+        "0045194efdffd125"
+      ]
     },
     "conversion-engine-agent": {
       "lastHeartbeat": "2025-09-24T06:12:33.428Z",
@@ -745,11 +747,13 @@
       "previousSessions": []
     },
     "template-system-agent": {
-      "lastHeartbeat": "2025-09-24T06:19:03.330Z",
+      "lastHeartbeat": "2025-09-24T06:37:33.415Z",
       "status": "active",
-      "reinitialized": "2025-09-24T06:19:03.330Z",
-      "sessionId": "a5f87d210c9f770a",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T06:37:33.415Z",
+      "sessionId": "c9dd2e10e5c5c47e",
+      "previousSessions": [
+        "a5f87d210c9f770a"
+      ]
     },
     "workflow-preservation-agent": {
       "lastHeartbeat": "2025-09-24T06:19:05.634Z",

@@ -7,25 +7,21 @@
  */
 
 import type {
-  SimWorkflowDefinition,
-  ReactFlowNode,
-  ReactFlowEdge,
-  WorkflowAnalysisResult,
-  WorkflowStructure,
-  DependencyGraph,
-  ExecutionPath,
-  ConditionalNode,
-  ParallelSection,
-  ParallelBranch,
-  LoopStructure,
   AlternativePath,
   CircularDependency,
-  DependencyNode,
-  DependencyEdge,
+  ConditionalNode,
   ConversionContext,
-  JourneyStateDefinition,
-  JourneyTransitionDefinition,
-  SimBlockType
+  DependencyEdge,
+  DependencyGraph,
+  DependencyNode,
+  ExecutionPath,
+  LoopStructure,
+  ParallelBranch,
+  ParallelSection,
+  ReactFlowEdge,
+  ReactFlowNode,
+  SimWorkflowDefinition,
+  WorkflowStructure,
 } from './types'
 
 /**
@@ -160,8 +156,8 @@ export class GraphAnalyzer {
     nodes: ReactFlowNode[],
     edges: ReactFlowEdge[],
     nodeWeights: Map<string, number> = new Map()
-  ): { path: string[], length: number } {
-    const topologicalOrder = this.topologicalSort(nodes, edges)
+  ): { path: string[]; length: number } {
+    const topologicalOrder = GraphAnalyzer.topologicalSort(nodes, edges)
     const distances = new Map<string, number>()
     const predecessors = new Map<string, string | null>()
 
@@ -304,7 +300,7 @@ export class ExecutionPathAnalyzer {
           estimatedDuration: this.estimatePathDuration(nodePath, workflow),
           resourceRequirements: this.calculatePathResources(nodePath, workflow),
           errorProbability: this.calculatePathErrorProbability(nodePath, workflow),
-          criticalPath: this.isCriticalPath(nodePath, workflow, structure)
+          criticalPath: this.isCriticalPath(nodePath, workflow, structure),
         }
 
         paths.push(executionPath)
@@ -334,7 +330,7 @@ export class ExecutionPathAnalyzer {
     const newPath = [...currentPath, nodeId]
 
     // Find outgoing edges
-    const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+    const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
 
     // If no outgoing edges, this is a terminal node
     if (outgoingEdges.length === 0) {
@@ -345,13 +341,7 @@ export class ExecutionPathAnalyzer {
     const allPaths: string[][] = []
 
     for (const edge of outgoingEdges) {
-      const branchPaths = this.tracePathsFromNode(
-        edge.target,
-        nodes,
-        edges,
-        newVisited,
-        newPath
-      )
+      const branchPaths = this.tracePathsFromNode(edge.target, nodes, edges, newVisited, newPath)
 
       allPaths.push(...branchPaths)
     }
@@ -370,17 +360,15 @@ export class ExecutionPathAnalyzer {
       const nextNode = path[i + 1]
 
       // Find the edge between these nodes
-      const edge = workflow.edges.find(
-        e => e.source === currentNode && e.target === nextNode
-      )
+      const edge = workflow.edges.find((e) => e.source === currentNode && e.target === nextNode)
 
       if (edge?.data?.probability) {
         probability *= edge.data.probability
       } else {
         // If no probability specified, assume equal distribution among alternatives
-        const outgoingEdges = workflow.edges.filter(e => e.source === currentNode)
+        const outgoingEdges = workflow.edges.filter((e) => e.source === currentNode)
         if (outgoingEdges.length > 1) {
-          probability *= (1 / outgoingEdges.length)
+          probability *= 1 / outgoingEdges.length
         }
       }
     }
@@ -395,7 +383,7 @@ export class ExecutionPathAnalyzer {
     let totalDuration = 0
 
     for (const nodeId of path) {
-      const node = workflow.nodes.find(n => n.id === nodeId)
+      const node = workflow.nodes.find((n) => n.id === nodeId)
       if (node) {
         totalDuration += this.estimateNodeDuration(node)
       }
@@ -410,27 +398,27 @@ export class ExecutionPathAnalyzer {
   private estimateNodeDuration(node: ReactFlowNode): number {
     // Base durations by node type (in milliseconds)
     const baseDurations: Record<string, number> = {
-      'start': 0,
-      'end': 0,
-      'tool': 2000,
-      'condition': 100,
-      'user_input': 30000, // 30 seconds for user interaction
-      'merge': 50,
-      'parallel_split': 100,
-      'parallel_join': 100,
-      'loop': 500,
-      'api_call': 3000,
-      'database_operation': 1000,
-      'notification': 500,
-      'file_operation': 2000,
-      'data_transform': 1000
+      start: 0,
+      end: 0,
+      tool: 2000,
+      condition: 100,
+      user_input: 30000, // 30 seconds for user interaction
+      merge: 50,
+      parallel_split: 100,
+      parallel_join: 100,
+      loop: 500,
+      api_call: 3000,
+      database_operation: 1000,
+      notification: 500,
+      file_operation: 2000,
+      data_transform: 1000,
     }
 
     let baseDuration = baseDurations[node.type] || 1000
 
     // Apply complexity multiplier
     const complexity = this.calculateNodeComplexity(node)
-    baseDuration *= (1 + complexity * 0.5)
+    baseDuration *= 1 + complexity * 0.5
 
     // Apply custom duration if specified
     if (node.data?.estimatedDuration) {
@@ -455,7 +443,7 @@ export class ExecutionPathAnalyzer {
     if (node.data?.condition) {
       const conditionLength = node.data.condition.length
       const operatorCount = (node.data.condition.match(/&&|\|\||==|!=|>|</g) || []).length
-      complexity += (conditionLength / 50) + (operatorCount * 0.2)
+      complexity += conditionLength / 50 + operatorCount * 0.2
     }
 
     // Loop complexity
@@ -479,11 +467,11 @@ export class ExecutionPathAnalyzer {
     const resources: any[] = []
 
     for (const nodeId of path) {
-      const node = workflow.nodes.find(n => n.id === nodeId)
+      const node = workflow.nodes.find((n) => n.id === nodeId)
       if (node?.data?.resources) {
         resources.push({
           nodeId,
-          ...node.data.resources
+          ...node.data.resources,
         })
       }
     }
@@ -498,11 +486,11 @@ export class ExecutionPathAnalyzer {
     let errorProbability = 0
 
     for (const nodeId of path) {
-      const node = workflow.nodes.find(n => n.id === nodeId)
+      const node = workflow.nodes.find((n) => n.id === nodeId)
       if (node) {
         const nodeErrorProbability = this.getNodeErrorProbability(node)
         // Combine probabilities (1 - (1-p1)(1-p2)...)
-        errorProbability = 1 - ((1 - errorProbability) * (1 - nodeErrorProbability))
+        errorProbability = 1 - (1 - errorProbability) * (1 - nodeErrorProbability)
       }
     }
 
@@ -519,15 +507,15 @@ export class ExecutionPathAnalyzer {
 
     // Default error probabilities by node type
     const errorProbabilities: Record<string, number> = {
-      'start': 0,
-      'end': 0,
-      'tool': 0.05, // 5% chance of tool failure
-      'condition': 0.01,
-      'user_input': 0.1, // 10% chance user provides invalid input
-      'api_call': 0.15, // 15% chance of API failure
-      'database_operation': 0.08,
-      'file_operation': 0.1,
-      'notification': 0.05
+      start: 0,
+      end: 0,
+      tool: 0.05, // 5% chance of tool failure
+      condition: 0.01,
+      user_input: 0.1, // 10% chance user provides invalid input
+      api_call: 0.15, // 15% chance of API failure
+      database_operation: 0.08,
+      file_operation: 0.1,
+      notification: 0.05,
     }
 
     return errorProbabilities[node.type] || 0.03 // Default 3% error rate
@@ -546,7 +534,7 @@ export class ExecutionPathAnalyzer {
     const pathNodes = new Set(path)
 
     // Calculate overlap
-    const overlap = [...criticalPathNodes].filter(node => pathNodes.has(node))
+    const overlap = [...criticalPathNodes].filter((node) => pathNodes.has(node))
 
     // Path is critical if it has significant overlap with the critical path
     return overlap.length >= Math.min(criticalPathNodes.size * 0.7, pathNodes.size * 0.7)
@@ -588,16 +576,12 @@ export class ParallelExecutionAnalyzer {
   /**
    * Analyze parallel execution sections in the workflow
    */
-  analyzeParallelSections(
-    nodes: ReactFlowNode[],
-    edges: ReactFlowEdge[]
-  ): ParallelSection[] {
+  analyzeParallelSections(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ParallelSection[] {
     const parallelSections: ParallelSection[] = []
 
     // Find parallel split nodes
-    const splitNodes = nodes.filter(node =>
-      node.type === 'parallel_split' ||
-      this.hasMultipleOutgoingEdges(node.id, edges)
+    const splitNodes = nodes.filter(
+      (node) => node.type === 'parallel_split' || this.hasMultipleOutgoingEdges(node.id, edges)
     )
 
     for (const splitNode of splitNodes) {
@@ -618,7 +602,7 @@ export class ParallelExecutionAnalyzer {
     nodes: ReactFlowNode[],
     edges: ReactFlowEdge[]
   ): ParallelSection | null {
-    const outgoingEdges = edges.filter(edge => edge.source === splitNode.id)
+    const outgoingEdges = edges.filter((edge) => edge.source === splitNode.id)
 
     if (outgoingEdges.length < 2) {
       return null // Not actually parallel
@@ -648,7 +632,7 @@ export class ParallelExecutionAnalyzer {
       branches,
       synchronizationType: this.determineSynchronizationType(splitNode),
       timeout: splitNode.data?.timeout,
-      errorHandling: splitNode.data?.errorHandling || 'fail_fast'
+      errorHandling: splitNode.data?.errorHandling || 'fail_fast',
     }
   }
 
@@ -662,18 +646,17 @@ export class ParallelExecutionAnalyzer {
     edges: ReactFlowEdge[]
   ): ReactFlowNode | null {
     // Look for explicit join/merge nodes
-    const explicitJoinNodes = nodes.filter(node =>
-      node.type === 'parallel_join' ||
-      node.type === 'merge'
+    const explicitJoinNodes = nodes.filter(
+      (node) => node.type === 'parallel_join' || node.type === 'merge'
     )
 
     // Find join node that all branches converge to
     for (const joinNode of explicitJoinNodes) {
-      const convergingPaths = outgoingEdges.map(edge =>
+      const convergingPaths = outgoingEdges.map((edge) =>
         this.hasPathBetween(edge.target, joinNode.id, nodes, edges)
       )
 
-      if (convergingPaths.every(hasPath => hasPath)) {
+      if (convergingPaths.every((hasPath) => hasPath)) {
         return joinNode
       }
     }
@@ -683,7 +666,7 @@ export class ParallelExecutionAnalyzer {
 
     if (convergencePoints.length > 0) {
       // Return the earliest convergence point
-      return nodes.find(node => node.id === convergencePoints[0]) || null
+      return nodes.find((node) => node.id === convergencePoints[0]) || null
     }
 
     return null
@@ -711,8 +694,8 @@ export class ParallelExecutionAnalyzer {
 
       if (current === toId) return true
 
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
     return false
@@ -738,7 +721,7 @@ export class ParallelExecutionAnalyzer {
     if (branchPaths.length === 0) return []
 
     const intersection = branchPaths.reduce((common, current) => {
-      return new Set([...common].filter(nodeId => current.has(nodeId)))
+      return new Set([...common].filter((nodeId) => current.has(nodeId)))
     })
 
     return Array.from(intersection)
@@ -761,8 +744,8 @@ export class ParallelExecutionAnalyzer {
       if (reachable.has(current)) continue
       reachable.add(current)
 
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
     return reachable
@@ -792,7 +775,7 @@ export class ParallelExecutionAnalyzer {
       branches,
       synchronizationType: 'any', // Don't wait for all branches
       timeout: splitNode.data?.timeout,
-      errorHandling: 'continue' // Continue even if some branches fail
+      errorHandling: 'continue', // Continue even if some branches fail
     }
   }
 
@@ -816,7 +799,7 @@ export class ParallelExecutionAnalyzer {
       estimatedDuration: this.estimateBranchDuration(branchNodes, nodes),
       priority: this.getBranchPriority(startId, nodes),
       resources: this.calculateBranchResources(branchNodes, nodes),
-      canFail: this.canBranchFail(startId, nodes)
+      canFail: this.canBranchFail(startId, nodes),
     }
   }
 
@@ -843,8 +826,8 @@ export class ParallelExecutionAnalyzer {
       visited.add(current)
       path.push(current)
 
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
     return path
@@ -869,7 +852,7 @@ export class ParallelExecutionAnalyzer {
     let totalDuration = 0
 
     for (const nodeId of branchNodes) {
-      const node = nodes.find(n => n.id === nodeId)
+      const node = nodes.find((n) => n.id === nodeId)
       if (node) {
         totalDuration += this.estimateNodeDuration(node)
       }
@@ -881,11 +864,11 @@ export class ParallelExecutionAnalyzer {
   private estimateNodeDuration(node: ReactFlowNode): number {
     // Reuse logic from ExecutionPathAnalyzer
     const baseDurations: Record<string, number> = {
-      'tool': 2000,
-      'condition': 100,
-      'user_input': 30000,
-      'api_call': 3000,
-      'database_operation': 1000
+      tool: 2000,
+      condition: 100,
+      user_input: 30000,
+      api_call: 3000,
+      database_operation: 1000,
     }
 
     return baseDurations[node.type] || 1000
@@ -895,7 +878,7 @@ export class ParallelExecutionAnalyzer {
    * Get branch priority from node configuration
    */
   private getBranchPriority(startId: string, nodes: ReactFlowNode[]): number {
-    const node = nodes.find(n => n.id === startId)
+    const node = nodes.find((n) => n.id === startId)
     return node?.data?.priority || 1
   }
 
@@ -906,7 +889,7 @@ export class ParallelExecutionAnalyzer {
     const resources: any[] = []
 
     for (const nodeId of branchNodes) {
-      const node = nodes.find(n => n.id === nodeId)
+      const node = nodes.find((n) => n.id === nodeId)
       if (node?.data?.resources) {
         resources.push({
           nodeId,
@@ -915,7 +898,7 @@ export class ParallelExecutionAnalyzer {
           unit: 'cores',
           duration: this.estimateNodeDuration(node),
           shared: false,
-          critical: false
+          critical: false,
         })
       }
     }
@@ -927,7 +910,7 @@ export class ParallelExecutionAnalyzer {
    * Determine if a branch can fail without affecting the overall execution
    */
   private canBranchFail(startId: string, nodes: ReactFlowNode[]): boolean {
-    const node = nodes.find(n => n.id === startId)
+    const node = nodes.find((n) => n.id === startId)
     return node?.data?.canFail !== false // Default to true
   }
 
@@ -935,7 +918,7 @@ export class ParallelExecutionAnalyzer {
    * Check if a node has multiple outgoing edges (potential parallel split)
    */
   private hasMultipleOutgoingEdges(nodeId: string, edges: ReactFlowEdge[]): boolean {
-    const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+    const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
     return outgoingEdges.length > 1
   }
 
@@ -994,7 +977,7 @@ export class LoopStructureAnalyzer {
       visited.add(nodeId)
       recursionStack.add(nodeId)
 
-      const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+      const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
 
       for (const edge of outgoingEdges) {
         if (!visited.has(edge.target)) {
@@ -1027,7 +1010,7 @@ export class LoopStructureAnalyzer {
     edges: ReactFlowEdge[]
   ): LoopStructure | null {
     const entryNode = backEdge.target // Where the loop starts
-    const exitNode = backEdge.source  // Where the loop ends/continues
+    const exitNode = backEdge.source // Where the loop ends/continues
 
     // Find the loop body (all nodes in the cycle)
     const bodyNodes = this.findLoopBody(entryNode, exitNode, nodes, edges)
@@ -1036,7 +1019,7 @@ export class LoopStructureAnalyzer {
       return null
     }
 
-    const entryNodeData = nodes.find(n => n.id === entryNode)
+    const entryNodeData = nodes.find((n) => n.id === entryNode)
     const condition = this.extractLoopCondition(backEdge, entryNodeData)
     const loopType = this.determineLoopType(condition, entryNodeData)
 
@@ -1049,7 +1032,7 @@ export class LoopStructureAnalyzer {
       loopType,
       maxIterations: entryNodeData?.data?.maxIterations,
       iterationVariable: entryNodeData?.data?.iterationVariable,
-      exitConditions: this.findLoopExitConditions(bodyNodes, edges)
+      exitConditions: this.findLoopExitConditions(bodyNodes, edges),
     }
   }
 
@@ -1073,7 +1056,7 @@ export class LoopStructureAnalyzer {
 
       if (current === exitNode) continue // Don't traverse past exit
 
-      const outgoing = edges.filter(edge => edge.source === current)
+      const outgoing = edges.filter((edge) => edge.source === current)
       for (const edge of outgoing) {
         if (!bodyNodes.has(edge.target)) {
           queue.push(edge.target)
@@ -1150,7 +1133,7 @@ export class LoopStructureAnalyzer {
     const exitConditions: string[] = []
 
     for (const nodeId of bodyNodes) {
-      const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+      const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
 
       for (const edge of outgoingEdges) {
         // If edge goes outside the loop body and has a condition, it's an exit condition
@@ -1169,7 +1152,7 @@ export class LoopStructureAnalyzer {
   private findExplicitLoops(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): LoopStructure[] {
     const explicitLoops: LoopStructure[] = []
 
-    const loopNodes = nodes.filter(node => node.type === 'loop')
+    const loopNodes = nodes.filter((node) => node.type === 'loop')
 
     for (const loopNode of loopNodes) {
       const structure = this.analyzeExplicitLoop(loopNode, nodes, edges)
@@ -1190,7 +1173,7 @@ export class LoopStructureAnalyzer {
     edges: ReactFlowEdge[]
   ): LoopStructure | null {
     // Find the loop body by tracing outgoing edges
-    const outgoingEdges = edges.filter(edge => edge.source === loopNode.id)
+    const outgoingEdges = edges.filter((edge) => edge.source === loopNode.id)
 
     if (outgoingEdges.length === 0) {
       return null
@@ -1211,7 +1194,7 @@ export class LoopStructureAnalyzer {
       loopType,
       maxIterations: loopNode.data?.maxIterations,
       iterationVariable: loopNode.data?.iterationVariable,
-      exitConditions: loopNode.data?.exitConditions || []
+      exitConditions: loopNode.data?.exitConditions || [],
     }
   }
 
@@ -1237,7 +1220,7 @@ export class LoopStructureAnalyzer {
         bodyNodes.add(current)
       }
 
-      const outgoing = edges.filter(edge => edge.source === current)
+      const outgoing = edges.filter((edge) => edge.source === current)
       for (const edge of outgoing) {
         // Stop if we return to the loop node (loop back edge)
         if (edge.target === loopNodeId) continue
@@ -1270,9 +1253,7 @@ export class WorkflowStructureProcessor {
   /**
    * Process workflow structure and generate comprehensive analysis
    */
-  async processWorkflowStructure(
-    workflow: SimWorkflowDefinition
-  ): Promise<{
+  async processWorkflowStructure(workflow: SimWorkflowDefinition): Promise<{
     structure: WorkflowStructure
     executionPaths: ExecutionPath[]
     dependencies: DependencyGraph
@@ -1282,7 +1263,7 @@ export class WorkflowStructureProcessor {
     this.log('info', 'Processing workflow structure', {
       workflowId: workflow.id,
       nodeCount: nodes.length,
-      edgeCount: edges.length
+      edgeCount: edges.length,
     })
 
     // Analyze basic structure
@@ -1300,13 +1281,13 @@ export class WorkflowStructureProcessor {
       exitPoints: structure.exitPoints.length,
       executionPaths: executionPaths.length,
       parallelSections: structure.parallelSections.length,
-      loops: structure.loopStructures.length
+      loops: structure.loopStructures.length,
     })
 
     return {
       structure,
       executionPaths,
-      dependencies
+      dependencies,
     }
   }
 
@@ -1345,33 +1326,33 @@ export class WorkflowStructureProcessor {
       criticalPath,
       alternativePaths,
       unreachableNodes,
-      orphanedNodes
+      orphanedNodes,
     }
   }
 
   private findEntryPoints(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
-    const targets = new Set(edges.map(edge => edge.target))
+    const targets = new Set(edges.map((edge) => edge.target))
     const entryPoints = nodes
-      .filter(node => !targets.has(node.id) || node.type === 'start')
-      .map(node => node.id)
+      .filter((node) => !targets.has(node.id) || node.type === 'start')
+      .map((node) => node.id)
 
     return entryPoints.length > 0 ? entryPoints : [nodes[0]?.id].filter(Boolean)
   }
 
   private findExitPoints(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
-    const sources = new Set(edges.map(edge => edge.source))
+    const sources = new Set(edges.map((edge) => edge.source))
     const exitPoints = nodes
-      .filter(node => !sources.has(node.id) || node.type === 'end')
-      .map(node => node.id)
+      .filter((node) => !sources.has(node.id) || node.type === 'end')
+      .map((node) => node.id)
 
     return exitPoints.length > 0 ? exitPoints : [nodes[nodes.length - 1]?.id].filter(Boolean)
   }
 
   private findConditionalNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ConditionalNode[] {
     return nodes
-      .filter(node => node.type === 'condition' || node.data?.condition)
-      .map(node => {
-        const outgoingEdges = edges.filter(edge => edge.source === node.id)
+      .filter((node) => node.type === 'condition' || node.data?.condition)
+      .map((node) => {
+        const outgoingEdges = edges.filter((edge) => edge.source === node.id)
         const condition = node.data?.condition || 'true'
 
         return {
@@ -1380,23 +1361,29 @@ export class WorkflowStructureProcessor {
           truePath: this.getConditionalPath(node.id, edges, 'true'),
           falsePath: this.getConditionalPath(node.id, edges, 'false'),
           variables: this.extractVariablesFromCondition(condition),
-          complexity: this.calculateConditionComplexity(condition)
+          complexity: this.calculateConditionComplexity(condition),
         }
       })
   }
 
   private getConditionalPath(nodeId: string, edges: ReactFlowEdge[], branch: string): string[] {
-    const relevantEdges = edges.filter(edge =>
-      edge.source === nodeId &&
-      (edge.data?.condition === branch || (!edge.data?.condition && branch === 'true'))
+    const relevantEdges = edges.filter(
+      (edge) =>
+        edge.source === nodeId &&
+        (edge.data?.condition === branch || (!edge.data?.condition && branch === 'true'))
     )
 
-    return relevantEdges.map(edge => edge.target)
+    return relevantEdges.map((edge) => edge.target)
   }
 
   private extractVariablesFromCondition(condition: string): string[] {
-    const matches = condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
-    return [...new Set(matches.filter(match => !['true', 'false', 'null', 'undefined'].includes(match)))]
+    const matches =
+      condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
+    return [
+      ...new Set(
+        matches.filter((match) => !['true', 'false', 'null', 'undefined'].includes(match))
+      ),
+    ]
   }
 
   private calculateConditionComplexity(condition: string): number {
@@ -1404,20 +1391,18 @@ export class WorkflowStructureProcessor {
     const variables = (condition.match(/\w+/g) || []).length
     const functions = (condition.match(/\w+\(/g) || []).length
 
-    return (operators * 0.1) + (variables * 0.05) + (functions * 0.2)
+    return operators * 0.1 + variables * 0.05 + functions * 0.2
   }
 
   private calculateCriticalPath(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
     try {
-      const nodeWeights = new Map(
-        nodes.map(node => [node.id, this.estimateNodeWeight(node)])
-      )
+      const nodeWeights = new Map(nodes.map((node) => [node.id, this.estimateNodeWeight(node)]))
 
       const { path } = GraphAnalyzer.findLongestPath(nodes, edges, nodeWeights)
       return path
     } catch (error) {
       this.log('warn', 'Could not calculate critical path, using simple traversal', {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       // Fallback to simple traversal from first entry point
@@ -1428,14 +1413,14 @@ export class WorkflowStructureProcessor {
 
   private estimateNodeWeight(node: ReactFlowNode): number {
     const weights: Record<string, number> = {
-      'start': 0,
-      'end': 0,
-      'tool': 5,
-      'condition': 1,
-      'user_input': 10,
-      'loop': 3,
-      'parallel_split': 2,
-      'merge': 1
+      start: 0,
+      end: 0,
+      tool: 5,
+      condition: 1,
+      user_input: 10,
+      loop: 3,
+      parallel_split: 2,
+      merge: 1,
     }
 
     return weights[node.type] || 2
@@ -1455,7 +1440,7 @@ export class WorkflowStructureProcessor {
           alternativePath: conditionalNode.falsePath,
           condition: conditionalNode.condition,
           trigger: 'condition',
-          probability: 0.5
+          probability: 0.5,
         })
       }
     }
@@ -1476,44 +1461,44 @@ export class WorkflowStructureProcessor {
       if (reachable.has(current)) continue
 
       reachable.add(current)
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
-    return nodes.filter(node => !reachable.has(node.id)).map(node => node.id)
+    return nodes.filter((node) => !reachable.has(node.id)).map((node) => node.id)
   }
 
   private findOrphanedNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
     const connected = new Set<string>()
 
-    edges.forEach(edge => {
+    edges.forEach((edge) => {
       connected.add(edge.source)
       connected.add(edge.target)
     })
 
-    return nodes.filter(node => !connected.has(node.id)).map(node => node.id)
+    return nodes.filter((node) => !connected.has(node.id)).map((node) => node.id)
   }
 
   private buildDependencyGraph(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): DependencyGraph {
-    const dependencyNodes: DependencyNode[] = nodes.map(node => {
-      const incoming = edges.filter(edge => edge.target === node.id)
-      const outgoing = edges.filter(edge => edge.source === node.id)
+    const dependencyNodes: DependencyNode[] = nodes.map((node) => {
+      const incoming = edges.filter((edge) => edge.target === node.id)
+      const outgoing = edges.filter((edge) => edge.source === node.id)
 
       return {
         nodeId: node.id,
-        dependencies: incoming.map(edge => edge.source),
-        dependents: outgoing.map(edge => edge.target),
+        dependencies: incoming.map((edge) => edge.source),
+        dependents: outgoing.map((edge) => edge.target),
         level: 0, // Will be calculated
-        criticalPath: false // Will be calculated
+        criticalPath: false, // Will be calculated
       }
     })
 
-    const dependencyEdges: DependencyEdge[] = edges.map(edge => ({
+    const dependencyEdges: DependencyEdge[] = edges.map((edge) => ({
       from: edge.source,
       to: edge.target,
       type: 'control',
       strength: 'strong',
-      condition: edge.data?.condition
+      condition: edge.data?.condition,
     }))
 
     // Find strongly connected components
@@ -1525,16 +1510,18 @@ export class WorkflowStructureProcessor {
       topologicalOrder = GraphAnalyzer.topologicalSort(nodes, edges)
     } catch (error) {
       this.log('warn', 'Could not calculate topological order due to cycles')
-      topologicalOrder = nodes.map(n => n.id)
+      topologicalOrder = nodes.map((n) => n.id)
     }
 
     // Find circular dependencies
-    const circularDependencies: CircularDependency[] = stronglyConnectedComponents.map(component => ({
-      nodes: component,
-      type: 'control',
-      severity: 'warning',
-      resolution: `Consider restructuring nodes: ${component.join(', ')}`
-    }))
+    const circularDependencies: CircularDependency[] = stronglyConnectedComponents.map(
+      (component) => ({
+        nodes: component,
+        type: 'control',
+        severity: 'warning',
+        resolution: `Consider restructuring nodes: ${component.join(', ')}`,
+      })
+    )
 
     // Calculate dependency levels
     const dependencyLevels: Record<string, number> = {}
@@ -1548,7 +1535,7 @@ export class WorkflowStructureProcessor {
       stronglyConnectedComponents,
       topologicalOrder,
       circularDependencies,
-      dependencyLevels
+      dependencyLevels,
     }
   }
 
@@ -1564,5 +1551,5 @@ export {
   ExecutionPathAnalyzer,
   ParallelExecutionAnalyzer,
   LoopStructureAnalyzer,
-  WorkflowStructureProcessor
+  WorkflowStructureProcessor,
 }
