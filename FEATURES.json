@@ -420,12 +420,12 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 32,
-      "total_reinitializations": 93,
+      "total_reinitializations": 94,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
           "init": 25,
-          "reinit": 40
+          "reinit": 41
         },
         "13:00-17:59": {
           "init": 0,
@@ -446,7 +446,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T16:52:46.573Z"
+      "last_updated": "2025-09-24T16:53:15.249Z"
     },
     "approval_history": [
       {
@@ -732,12 +732,13 @@
       ]
     },
     "CHAT_TESTING_AGENT": {
-      "lastHeartbeat": "2025-09-24T16:39:28.816Z",
+      "lastHeartbeat": "2025-09-24T16:53:15.244Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:39:28.816Z",
-      "sessionId": "003647555964bd85",
+      "reinitialized": "2025-09-24T16:53:15.244Z",
+      "sessionId": "5e6c4ba1c3043079",
       "previousSessions": [
-        "5faffc6de15391d7"
+        "5faffc6de15391d7",
+        "003647555964bd85"
       ]
     },
     "multitenant-messaging-agent": {
