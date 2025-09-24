@@ -2,7 +2,10 @@
  * TypeScript definitions for Parlant Chat integration
  */
 
-import type { ChatProps } from 'parlant-chat-react'
+import type Chatbox from 'parlant-chat-react'
+
+// Extract ChatProps from the Chatbox component type
+type ChatProps = Parameters<typeof Chatbox>[0]
 import type { ReactNode } from 'react'
 
 /**
