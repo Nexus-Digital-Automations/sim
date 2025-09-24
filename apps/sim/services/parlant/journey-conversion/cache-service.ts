@@ -10,7 +10,8 @@ import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/db'
 import { parlantConversionCache } from '@/db/parlant-schema'
 import { eq, and, lt, desc, asc, sql } from 'drizzle-orm'
-import { generateId, createHash } from '@/lib/utils'
+import { generateId } from '@/lib/utils'
+import { createHash } from '@/lib/utils/hash'
 import {
   type JourneyConversionResult,
   type ConversionCacheEntry,
