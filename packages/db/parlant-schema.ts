@@ -12,7 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { user, workspace } from './schema'
+import { user, workspace, knowledgeBase, customTools, workflowBlocks, mcpServers, workflow, apiKey } from './schema'
 
 /**
  * Parlant Database Schema Extension
@@ -73,9 +73,31 @@ export const parlantAgent = pgTable(
     temperature: integer('temperature').default(70), // 0-100 scale for easier UI handling
     maxTokens: integer('max_tokens').default(2000),
 
+    // Advanced configuration
+    responseTimeoutMs: integer('response_timeout_ms').default(30000), // Max response time
+    maxContextLength: integer('max_context_length').default(8000), // Context window size
+    systemInstructions: text('system_instructions'), // Additional system-level instructions
+
+    // Behavior controls
+    allowInterruption: boolean('allow_interruption').notNull().default(true), // Can be interrupted mid-response
+    allowProactiveMessages: boolean('allow_proactive_messages').notNull().default(false), // Can send unsolicited messages
+    conversationStyle: text('conversation_style').default('professional'), // 'casual', 'professional', 'technical', 'friendly'
+
+    // Privacy and security
+    dataRetentionDays: integer('data_retention_days').default(30), // How long to keep session data
+    allowDataExport: boolean('allow_data_export').notNull().default(true),
+    piiHandlingMode: text('pii_handling_mode').default('standard'), // 'strict', 'standard', 'relaxed'
+
+    // Integration metadata
+    integrationMetadata: jsonb('integration_metadata').default('{}'), // External system metadata
+    customConfig: jsonb('custom_config').default('{}'), // Flexible custom configuration
+
     // Usage tracking
     totalSessions: integer('total_sessions').notNull().default(0),
     totalMessages: integer('total_messages').notNull().default(0),
+    totalTokensUsed: integer('total_tokens_used').notNull().default(0),
+    totalCost: integer('total_cost').notNull().default(0), // Cost in cents
+    averageSessionDuration: integer('average_session_duration'), // In seconds
     lastActiveAt: timestamp('last_active_at'),
 
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -89,6 +111,10 @@ export const parlantAgent = pgTable(
     workspaceStatusIdx: index('parlant_agent_workspace_status_idx').on(table.workspaceId, table.status),
     deletedAtIdx: index('parlant_agent_deleted_at_idx').on(table.deletedAt),
     lastActiveIdx: index('parlant_agent_last_active_idx').on(table.lastActiveAt),
+    compositionModeIdx: index('parlant_agent_composition_mode_idx').on(table.compositionMode),
+    modelProviderIdx: index('parlant_agent_model_provider_idx').on(table.modelProvider),
+    conversationStyleIdx: index('parlant_agent_conversation_style_idx').on(table.conversationStyle),
+    workspaceActiveIdx: index('parlant_agent_workspace_active_idx').on(table.workspaceId, table.lastActiveAt),
   })
 )
 
@@ -124,9 +150,26 @@ export const parlantSession = pgTable(
     currentStateId: uuid('current_state_id'), // Current state in journey
     variables: jsonb('variables').default('{}'), // Session-specific variables
 
-    // Tracking
+    // Session analytics and tracking
     eventCount: integer('event_count').notNull().default(0),
     messageCount: integer('message_count').notNull().default(0),
+    tokensUsed: integer('tokens_used').notNull().default(0),
+    cost: integer('cost').notNull().default(0), // Cost in cents
+
+    // Performance metrics
+    averageResponseTime: integer('average_response_time'), // In milliseconds
+    satisfactionScore: integer('satisfaction_score'), // 1-5 rating if collected
+
+    // Session categorization
+    sessionType: text('session_type').default('conversation'), // 'conversation', 'support', 'onboarding', 'survey'
+    tags: jsonb('tags').default('[]'), // Array of tags for categorization
+
+    // User context
+    userAgent: text('user_agent'), // Browser/app info
+    ipAddress: text('ip_address'), // For analytics (anonymized)
+    referrer: text('referrer'), // How they arrived
+    locale: text('locale').default('en'), // User language preference
+    timezone: text('timezone').default('UTC'), // User timezone
 
     // Timing
     startedAt: timestamp('started_at').notNull().defaultNow(),
@@ -144,6 +187,11 @@ export const parlantSession = pgTable(
     agentStatusIdx: index('parlant_session_agent_status_idx').on(table.agentId, table.status),
     lastActivityIdx: index('parlant_session_last_activity_idx').on(table.lastActivityAt),
     currentJourneyIdx: index('parlant_session_current_journey_idx').on(table.currentJourneyId),
+    sessionTypeIdx: index('parlant_session_type_idx').on(table.sessionType),
+    localeIdx: index('parlant_session_locale_idx').on(table.locale),
+    satisfactionIdx: index('parlant_session_satisfaction_idx').on(table.satisfactionScore),
+    workspaceTypeIdx: index('parlant_session_workspace_type_idx').on(table.workspaceId, table.sessionType),
+    agentActiveIdx: index('parlant_session_agent_active_idx').on(table.agentId, table.lastActivityAt),
   })
 )
 
@@ -410,10 +458,22 @@ export const parlantTool = pgTable(
     // Behavior configuration
     usageGuidelines: text('usage_guidelines'), // When and how to use this tool
     errorHandling: jsonb('error_handling').default('{}'),
+    executionTimeout: integer('execution_timeout').default(30000), // Max execution time in ms
+    retryPolicy: jsonb('retry_policy').default('{"max_attempts": 3, "backoff_ms": 1000}'),
+
+    // Rate limiting and throttling
+    rateLimitPerMinute: integer('rate_limit_per_minute').default(60), // Calls per minute limit
+    rateLimitPerHour: integer('rate_limit_per_hour').default(1000), // Calls per hour limit
+
+    // Authentication and security
+    requiresAuth: boolean('requires_auth').notNull().default(false),
+    authType: text('auth_type'), // 'api_key', 'oauth', 'basic', 'none'
+    authConfig: jsonb('auth_config').default('{}'), // Auth-specific configuration
 
     // Status and access
     enabled: boolean('enabled').notNull().default(true),
     isPublic: boolean('is_public').notNull().default(false),
+    isDeprecated: boolean('is_deprecated').notNull().default(false),
 
     // Usage tracking
     useCount: integer('use_count').notNull().default(0),
@@ -513,8 +573,297 @@ export const parlantCannedResponse = pgTable(
   })
 )
 
+/**
+ * Workspace Integration Tables
+ * These tables connect Parlant entities with existing Sim workspace resources
+ */
+
+/**
+ * Parlant Agent Workflows - Connect agents to Sim workflows for enhanced capabilities
+ * Enables agents to trigger or monitor specific workflows
+ */
+export const parlantAgentWorkflow = pgTable(
+  'parlant_agent_workflow',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => parlantAgent.id, { onDelete: 'cascade' }),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+
+    // Configuration for workflow integration
+    integrationType: text('integration_type').notNull(), // 'trigger', 'monitor', 'both'
+    enabled: boolean('enabled').notNull().default(true),
+
+    // Trigger configuration
+    triggerConditions: jsonb('trigger_conditions').default('[]'), // When to trigger workflow
+    inputMapping: jsonb('input_mapping').default('{}'), // Map session data to workflow inputs
+
+    // Monitoring configuration
+    monitorEvents: jsonb('monitor_events').default('[]'), // Which workflow events to track
+    outputMapping: jsonb('output_mapping').default('{}'), // Map workflow outputs to session
+
+    // Usage tracking
+    triggerCount: integer('trigger_count').notNull().default(0),
+    lastTriggeredAt: timestamp('last_triggered_at'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    agentIdIdx: index('parlant_agent_workflow_agent_id_idx').on(table.agentId),
+    workflowIdIdx: index('parlant_agent_workflow_workflow_id_idx').on(table.workflowId),
+    workspaceIdIdx: index('parlant_agent_workflow_workspace_id_idx').on(table.workspaceId),
+    agentWorkflowUnique: uniqueIndex('parlant_agent_workflow_unique').on(table.agentId, table.workflowId),
+    integrationTypeIdx: index('parlant_agent_workflow_type_idx').on(table.integrationType),
+    agentEnabledIdx: index('parlant_agent_workflow_agent_enabled_idx').on(table.agentId, table.enabled),
+  })
+)
+
+/**
+ * Parlant Agent API Keys - Connect agents to workspace API keys for external service access
+ * Enables agents to use specific API keys for tool executions
+ */
+export const parlantAgentApiKey = pgTable(
+  'parlant_agent_api_key',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => parlantAgent.id, { onDelete: 'cascade' }),
+    apiKeyId: text('api_key_id')
+      .notNull()
+      .references(() => apiKey.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+
+    // Configuration
+    purpose: text('purpose').notNull(), // 'tools', 'llm', 'external_service'
+    enabled: boolean('enabled').notNull().default(true),
+    priority: integer('priority').notNull().default(100), // Key selection priority
+
+    // Usage tracking
+    useCount: integer('use_count').notNull().default(0),
+    lastUsedAt: timestamp('last_used_at'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    agentIdIdx: index('parlant_agent_api_key_agent_id_idx').on(table.agentId),
+    apiKeyIdIdx: index('parlant_agent_api_key_api_key_id_idx').on(table.apiKeyId),
+    workspaceIdIdx: index('parlant_agent_api_key_workspace_id_idx').on(table.workspaceId),
+    agentApiKeyUnique: uniqueIndex('parlant_agent_api_key_unique').on(table.agentId, table.apiKeyId),
+    purposeIdx: index('parlant_agent_api_key_purpose_idx').on(table.purpose),
+    agentEnabledIdx: index('parlant_agent_api_key_agent_enabled_idx').on(table.agentId, table.enabled),
+  })
+)
+
+/**
+ * Parlant Session Workflows - Track workflow executions initiated by sessions
+ * Maintains the connection between agent conversations and triggered workflows
+ */
+export const parlantSessionWorkflow = pgTable(
+  'parlant_session_workflow',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => parlantSession.id, { onDelete: 'cascade' }),
+    workflowId: text('workflow_id')
+      .notNull()
+      .references(() => workflow.id, { onDelete: 'cascade' }),
+    executionId: text('execution_id'), // Reference to workflow execution
+
+    // Execution context
+    triggerReason: text('trigger_reason').notNull(), // Why this workflow was triggered
+    inputData: jsonb('input_data').default('{}'), // Data passed to workflow
+    outputData: jsonb('output_data').default('{}'), // Data returned from workflow
+
+    // Status tracking
+    status: text('status').notNull().default('pending'), // 'pending', 'running', 'completed', 'failed'
+    startedAt: timestamp('started_at').notNull().defaultNow(),
+    completedAt: timestamp('completed_at'),
+    errorMessage: text('error_message'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    sessionIdIdx: index('parlant_session_workflow_session_id_idx').on(table.sessionId),
+    workflowIdIdx: index('parlant_session_workflow_workflow_id_idx').on(table.workflowId),
+    executionIdIdx: index('parlant_session_workflow_execution_id_idx').on(table.executionId),
+    statusIdx: index('parlant_session_workflow_status_idx').on(table.status),
+    sessionStatusIdx: index('parlant_session_workflow_session_status_idx').on(table.sessionId, table.status),
+    startedAtIdx: index('parlant_session_workflow_started_at_idx').on(table.startedAt),
+  })
+)
+
+/**
+ * Junction Tables for Many-to-Many Relationships
+ */
+
+/**
+ * Parlant Agent Tools - Many-to-many relationship between agents and tools
+ * Allows agents to have access to multiple tools with specific configurations
+ */
+export const parlantAgentTool = pgTable(
+  'parlant_agent_tool',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => parlantAgent.id, { onDelete: 'cascade' }),
+    toolId: uuid('tool_id')
+      .notNull()
+      .references(() => parlantTool.id, { onDelete: 'cascade' }),
+
+    // Configuration for this specific agent-tool combination
+    configuration: jsonb('configuration').default('{}'), // Tool-specific config
+    enabled: boolean('enabled').notNull().default(true),
+    priority: integer('priority').notNull().default(100), // Execution priority
+
+    // Usage tracking for this specific combination
+    useCount: integer('use_count').notNull().default(0),
+    lastUsedAt: timestamp('last_used_at'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    agentIdIdx: index('parlant_agent_tool_agent_id_idx').on(table.agentId),
+    toolIdIdx: index('parlant_agent_tool_tool_id_idx').on(table.toolId),
+    agentToolUnique: uniqueIndex('parlant_agent_tool_unique').on(table.agentId, table.toolId),
+    agentEnabledIdx: index('parlant_agent_tool_agent_enabled_idx').on(table.agentId, table.enabled),
+    priorityIdx: index('parlant_agent_tool_priority_idx').on(table.priority),
+  })
+)
+
+/**
+ * Parlant Journey Guidelines - Many-to-many relationship between journeys and guidelines
+ * Allows journeys to inherit guidelines from the agent with journey-specific overrides
+ */
+export const parlantJourneyGuideline = pgTable(
+  'parlant_journey_guideline',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    journeyId: uuid('journey_id')
+      .notNull()
+      .references(() => parlantJourney.id, { onDelete: 'cascade' }),
+    guidelineId: uuid('guideline_id')
+      .notNull()
+      .references(() => parlantGuideline.id, { onDelete: 'cascade' }),
+
+    // Override configuration for this journey context
+    priorityOverride: integer('priority_override'), // Override default guideline priority
+    enabled: boolean('enabled').notNull().default(true),
+    journeySpecificCondition: text('journey_specific_condition'), // Additional context-specific condition
+
+    // Usage tracking in this journey context
+    matchCount: integer('match_count').notNull().default(0),
+    lastMatchedAt: timestamp('last_matched_at'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    journeyIdIdx: index('parlant_journey_guideline_journey_id_idx').on(table.journeyId),
+    guidelineIdIdx: index('parlant_journey_guideline_guideline_id_idx').on(table.guidelineId),
+    journeyGuidelineUnique: uniqueIndex('parlant_journey_guideline_unique').on(table.journeyId, table.guidelineId),
+    journeyEnabledIdx: index('parlant_journey_guideline_journey_enabled_idx').on(table.journeyId, table.enabled),
+    priorityOverrideIdx: index('parlant_journey_guideline_priority_override_idx').on(table.priorityOverride),
+  })
+)
+
+/**
+ * Parlant Agent Knowledge Base - Connection between agents and Sim's knowledge bases
+ * Enables agents to access workspace knowledge bases for RAG operations
+ */
+export const parlantAgentKnowledgeBase = pgTable(
+  'parlant_agent_knowledge_base',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => parlantAgent.id, { onDelete: 'cascade' }),
+    knowledgeBaseId: text('knowledge_base_id')
+      .notNull()
+      .references(() => knowledgeBase.id, { onDelete: 'cascade' }),
+
+    // Configuration for knowledge base usage
+    enabled: boolean('enabled').notNull().default(true),
+    searchThreshold: integer('search_threshold').default(80), // Similarity threshold 0-100
+    maxResults: integer('max_results').default(5), // Max chunks to retrieve
+    priority: integer('priority').notNull().default(100), // Search priority
+
+    // Usage tracking
+    searchCount: integer('search_count').notNull().default(0),
+    lastSearchedAt: timestamp('last_searched_at'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    agentIdIdx: index('parlant_agent_kb_agent_id_idx').on(table.agentId),
+    knowledgeBaseIdIdx: index('parlant_agent_kb_kb_id_idx').on(table.knowledgeBaseId),
+    agentKbUnique: uniqueIndex('parlant_agent_kb_unique').on(table.agentId, table.knowledgeBaseId),
+    agentEnabledIdx: index('parlant_agent_kb_agent_enabled_idx').on(table.agentId, table.enabled),
+    priorityIdx: index('parlant_agent_kb_priority_idx').on(table.priority),
+  })
+)
+
+/**
+ * Parlant Tool Integrations - Connection between Parlant tools and Sim's existing tools
+ * Maps Parlant tool definitions to actual Sim workflow tools and custom tools
+ */
+export const parlantToolIntegration = pgTable(
+  'parlant_tool_integration',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    parlantToolId: uuid('parlant_tool_id')
+      .notNull()
+      .references(() => parlantTool.id, { onDelete: 'cascade' }),
+
+    // Integration type and target references
+    integrationType: text('integration_type').notNull(), // 'custom_tool', 'workflow_block', 'mcp_server'
+    targetId: text('target_id').notNull(), // ID of the target (customTools.id, workflowBlocks.id, etc.)
+
+    // Integration configuration
+    configuration: jsonb('configuration').default('{}'), // Integration-specific settings
+    enabled: boolean('enabled').notNull().default(true),
+
+    // Mapping configuration for parameter translation
+    parameterMapping: jsonb('parameter_mapping').default('{}'), // Maps Parlant params to target params
+    responseMapping: jsonb('response_mapping').default('{}'), // Maps target response to Parlant format
+
+    // Health and monitoring
+    lastHealthCheck: timestamp('last_health_check'),
+    healthStatus: text('health_status').default('unknown'), // 'healthy', 'degraded', 'unhealthy', 'unknown'
+    errorCount: integer('error_count').notNull().default(0),
+    lastError: text('last_error'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    parlantToolIdIdx: index('parlant_tool_integration_parlant_tool_idx').on(table.parlantToolId),
+    integrationTypeIdx: index('parlant_tool_integration_type_idx').on(table.integrationType),
+    targetIdIdx: index('parlant_tool_integration_target_idx').on(table.targetId),
+    typeTargetIdx: index('parlant_tool_integration_type_target_idx').on(table.integrationType, table.targetId),
+    healthStatusIdx: index('parlant_tool_integration_health_idx').on(table.healthStatus),
+    parlantToolUniqueTarget: uniqueIndex('parlant_tool_integration_unique').on(table.parlantToolId, table.integrationType, table.targetId),
+  })
+)
+
 // Export all Parlant tables for use in the main schema
 export const parlantTables = {
+  // Core Parlant tables
   parlantAgent,
   parlantSession,
   parlantEvent,
@@ -526,6 +875,17 @@ export const parlantTables = {
   parlantTool,
   parlantTerm,
   parlantCannedResponse,
+
+  // Workspace integration tables
+  parlantAgentWorkflow,
+  parlantAgentApiKey,
+  parlantSessionWorkflow,
+
+  // Junction tables
+  parlantAgentTool,
+  parlantJourneyGuideline,
+  parlantAgentKnowledgeBase,
+  parlantToolIntegration,
 }
 
 // Export enums for type checking
