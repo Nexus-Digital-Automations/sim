@@ -14,8 +14,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import uvicorn
 
 from auth.sim_auth_bridge import SimAuthBridge
-from auth.middleware import auth_middleware
-from database.connection import get_database_url, create_engine, get_db_session
+from auth.middleware import auth_middleware, set_auth_bridge
+from database.connection import get_database_url, test_connection
 from api.v1 import agents, auth as auth_router
 from config.settings import get_settings
 
@@ -33,20 +33,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan management."""
     logger.info("Starting Parlant Server with Sim Auth Bridge")
 
-    # Initialize database connection
+    # Test database connection
     try:
-        engine = create_engine(get_database_url())
-        logger.info("Database connection established")
+        if test_connection():
+            logger.info("✅ Database connection established")
+        else:
+            logger.warning("⚠️ Database connection test failed")
     except Exception as e:
-        logger.error(f"Failed to connect to database: {e}")
+        logger.error(f"❌ Failed to connect to database: {e}")
         raise
 
     # Initialize auth bridge
     try:
         await auth_bridge.initialize()
-        logger.info("Sim Auth Bridge initialized")
+        set_auth_bridge(auth_bridge)
+        logger.info("✅ Sim Auth Bridge initialized")
     except Exception as e:
-        logger.error(f"Failed to initialize auth bridge: {e}")
+        logger.error(f"❌ Failed to initialize auth bridge: {e}")
         raise
 
     yield

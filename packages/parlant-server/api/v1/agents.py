@@ -10,7 +10,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel
 
-from auth.middleware import get_current_session, require_workspace_access
+from auth.middleware import get_current_session, get_auth_bridge
 from auth.sim_auth_bridge import SimSession
 
 
