@@ -585,6 +585,269 @@ export const customTools = pgTable('custom_tools', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+// Tool Registry System - Comprehensive tool management and discovery
+export const toolCategories = pgTable('tool_categories', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  icon: text('icon'), // Icon identifier for UI
+  sortOrder: integer('sort_order').notNull().default(0),
+  color: text('color').default('#6B7280'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const toolStatusEnum = pgEnum('tool_status', ['active', 'inactive', 'deprecated', 'maintenance'])
+export const toolScopeEnum = pgEnum('tool_scope', ['global', 'workspace', 'user'])
+export const toolTypeEnum = pgEnum('tool_type', ['builtin', 'custom', 'integration', 'plugin'])
+
+export const toolRegistry = pgTable(
+  'tool_registry',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    displayName: text('display_name').notNull(),
+    description: text('description').notNull(),
+    longDescription: text('long_description'),
+
+    // Tool identification and versioning
+    version: text('version').notNull().default('1.0.0'),
+    toolType: toolTypeEnum('tool_type').notNull().default('builtin'),
+    scope: toolScopeEnum('scope').notNull().default('global'),
+    status: toolStatusEnum('status').notNull().default('active'),
+
+    // Categorization and discovery
+    categoryId: text('category_id').references(() => toolCategories.id, { onDelete: 'set null' }),
+    tags: json('tags').default('[]'), // Array of tags for search/filtering
+    keywords: json('keywords').default('[]'), // Array of keywords for enhanced search
+
+    // Tool configuration
+    schema: json('schema').notNull(), // Tool parameter schema (Zod-compatible)
+    resultSchema: json('result_schema'), // Expected result schema
+    metadata: json('metadata').default('{}'), // Additional metadata (author, docs, etc.)
+
+    // Implementation details
+    implementationType: text('implementation_type').notNull(), // 'client', 'server', 'hybrid'
+    executionContext: json('execution_context').default('{}'), // Runtime requirements
+
+    // Usage tracking and analytics
+    usageCount: integer('usage_count').notNull().default(0),
+    successRate: decimal('success_rate', { precision: 5, scale: 4 }).default('0.0000'),
+    avgExecutionTimeMs: integer('avg_execution_time_ms').default(0),
+    lastUsed: timestamp('last_used'),
+
+    // Health monitoring
+    healthStatus: text('health_status').default('unknown'), // 'healthy', 'warning', 'error', 'unknown'
+    lastHealthCheck: timestamp('last_health_check'),
+    healthCheckDetails: json('health_check_details').default('{}'),
+
+    // Access control and permissions
+    isPublic: boolean('is_public').notNull().default(true),
+    requiresAuth: boolean('requires_auth').notNull().default(false),
+    requiredPermissions: json('required_permissions').default('[]'),
+
+    // Natural language enhancement
+    naturalLanguageDescription: text('natural_language_description'),
+    usageExamples: json('usage_examples').default('[]'), // Array of example use cases
+    commonQuestions: json('common_questions').default('[]'), // FAQ for tool usage
+
+    // Audit trail
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Search and discovery indexes
+    nameIdx: index('tool_registry_name_idx').on(table.name),
+    displayNameIdx: index('tool_registry_display_name_idx').on(table.displayName),
+    categoryIdx: index('tool_registry_category_idx').on(table.categoryId),
+    typeIdx: index('tool_registry_type_idx').on(table.toolType),
+    scopeIdx: index('tool_registry_scope_idx').on(table.scope),
+    statusIdx: index('tool_registry_status_idx').on(table.status),
+
+    // Performance indexes
+    usageCountIdx: index('tool_registry_usage_count_idx').on(table.usageCount),
+    healthStatusIdx: index('tool_registry_health_status_idx').on(table.healthStatus),
+    lastUsedIdx: index('tool_registry_last_used_idx').on(table.lastUsed),
+
+    // Composite indexes for common queries
+    activePublicIdx: index('tool_registry_active_public_idx').on(table.status, table.isPublic),
+    categoryTypeIdx: index('tool_registry_category_type_idx').on(table.categoryId, table.toolType),
+
+    // Full-text search preparation
+    nameDisplayNameIdx: index('tool_registry_name_display_name_idx').on(table.name, table.displayName),
+  })
+)
+
+export const toolConfigurations = pgTable(
+  'tool_configurations',
+  {
+    id: text('id').primaryKey(),
+    toolId: text('tool_id')
+      .notNull()
+      .references(() => toolRegistry.id, { onDelete: 'cascade' }),
+
+    // Context for configuration
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+
+    // Configuration data
+    name: text('name').notNull(), // Configuration name/label
+    description: text('description'),
+    configuration: json('configuration').notNull().default('{}'), // Tool-specific config
+
+    // Environment and credentials
+    environmentVariables: json('environment_variables').default('{}'),
+    credentials: json('credentials').default('{}'), // Encrypted credential references
+
+    // Status and validation
+    isActive: boolean('is_active').notNull().default(true),
+    isValid: boolean('is_valid').notNull().default(true),
+    validationErrors: json('validation_errors').default('[]'),
+    lastValidated: timestamp('last_validated'),
+
+    // Usage tracking
+    usageCount: integer('usage_count').notNull().default(0),
+    lastUsed: timestamp('last_used'),
+
+    // Audit trail
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Primary access patterns
+    toolIdIdx: index('tool_configurations_tool_id_idx').on(table.toolId),
+    workspaceIdIdx: index('tool_configurations_workspace_id_idx').on(table.workspaceId),
+    userIdIdx: index('tool_configurations_user_id_idx').on(table.userId),
+
+    // Composite queries
+    toolWorkspaceIdx: index('tool_configurations_tool_workspace_idx').on(table.toolId, table.workspaceId),
+    toolUserIdx: index('tool_configurations_tool_user_idx').on(table.toolId, table.userId),
+    workspaceActiveIdx: index('tool_configurations_workspace_active_idx').on(table.workspaceId, table.isActive),
+
+    // Constraint: Either workspace OR user scoped, not both
+    scopeConstraint: check(
+      'tool_configurations_scope_constraint',
+      sql`(workspace_id IS NULL AND user_id IS NOT NULL) OR (workspace_id IS NOT NULL AND user_id IS NULL)`
+    ),
+  })
+)
+
+export const toolUsageAnalytics = pgTable(
+  'tool_usage_analytics',
+  {
+    id: text('id').primaryKey(),
+    toolId: text('tool_id')
+      .notNull()
+      .references(() => toolRegistry.id, { onDelete: 'cascade' }),
+    configurationId: text('configuration_id').references(() => toolConfigurations.id, { onDelete: 'cascade' }),
+
+    // Context
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'set null' }),
+    sessionId: text('session_id'),
+
+    // Execution details
+    executionId: text('execution_id').notNull(),
+    startTime: timestamp('start_time').notNull(),
+    endTime: timestamp('end_time'),
+    durationMs: integer('duration_ms'),
+
+    // Results and performance
+    success: boolean('success').notNull(),
+    errorType: text('error_type'),
+    errorMessage: text('error_message'),
+
+    // Input/Output tracking (sanitized)
+    inputSize: integer('input_size'), // Size of input parameters
+    outputSize: integer('output_size'), // Size of output data
+    inputParameters: json('input_parameters'), // Sanitized input (no secrets)
+
+    // Performance metrics
+    cpuUsage: decimal('cpu_usage', { precision: 5, scale: 2 }),
+    memoryUsage: integer('memory_usage'), // Memory in bytes
+    networkCalls: integer('network_calls'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Analytics queries
+    toolIdTimeIdx: index('tool_usage_analytics_tool_time_idx').on(table.toolId, table.startTime),
+    workspaceTimeIdx: index('tool_usage_analytics_workspace_time_idx').on(table.workspaceId, table.startTime),
+    userTimeIdx: index('tool_usage_analytics_user_time_idx').on(table.userId, table.startTime),
+    successIdx: index('tool_usage_analytics_success_idx').on(table.success),
+
+    // Performance analysis
+    durationIdx: index('tool_usage_analytics_duration_idx').on(table.durationMs),
+    errorTypeIdx: index('tool_usage_analytics_error_type_idx').on(table.errorType),
+
+    // Session and execution tracking
+    sessionIdx: index('tool_usage_analytics_session_idx').on(table.sessionId),
+    executionIdx: index('tool_usage_analytics_execution_idx').on(table.executionId),
+  })
+)
+
+export const toolRecommendations = pgTable(
+  'tool_recommendations',
+  {
+    id: text('id').primaryKey(),
+
+    // Context for recommendation
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
+    sessionId: text('session_id'),
+
+    // Recommendation details
+    recommendedToolId: text('recommended_tool_id')
+      .notNull()
+      .references(() => toolRegistry.id, { onDelete: 'cascade' }),
+    recommendationType: text('recommendation_type').notNull(), // 'contextual', 'popular', 'similar', 'workflow'
+
+    // Recommendation scoring
+    score: decimal('score', { precision: 5, scale: 4 }).notNull(),
+    confidence: decimal('confidence', { precision: 5, scale: 4 }).notNull(),
+
+    // Context that triggered recommendation
+    contextType: text('context_type'), // 'task', 'workflow', 'conversation', 'usage_pattern'
+    contextData: json('context_data').default('{}'),
+    triggerEvent: text('trigger_event'), // What caused this recommendation
+
+    // User interaction
+    presented: boolean('presented').notNull().default(false),
+    clicked: boolean('clicked').notNull().default(false),
+    used: boolean('used').notNull().default(false),
+    dismissed: boolean('dismissed').notNull().default(false),
+    presentedAt: timestamp('presented_at'),
+    interactedAt: timestamp('interacted_at'),
+
+    // Feedback and learning
+    userFeedback: integer('user_feedback'), // Rating 1-5
+    feedbackText: text('feedback_text'),
+    effectiveness: decimal('effectiveness', { precision: 5, scale: 4 }), // Measured effectiveness
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Recommendation queries
+    userIdx: index('tool_recommendations_user_idx').on(table.userId),
+    workspaceIdx: index('tool_recommendations_workspace_idx').on(table.workspaceId),
+    toolIdx: index('tool_recommendations_tool_idx').on(table.recommendedToolId),
+
+    // Performance analysis
+    typeScoreIdx: index('tool_recommendations_type_score_idx').on(table.recommendationType, table.score),
+    presentedIdx: index('tool_recommendations_presented_idx').on(table.presented),
+    usedIdx: index('tool_recommendations_used_idx').on(table.used),
+
+    // Learning and feedback
+    feedbackIdx: index('tool_recommendations_feedback_idx').on(table.userFeedback),
+    effectivenessIdx: index('tool_recommendations_effectiveness_idx').on(table.effectiveness),
+  })
+)
+
 export const subscription = pgTable(
   'subscription',
   {

@@ -380,8 +380,8 @@
     "version": "1.0.0",
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
-      "total_initializations": 0,
-      "total_reinitializations": 22,
+      "total_initializations": 7,
+      "total_reinitializations": 36,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
@@ -397,8 +397,8 @@
           "reinit": 0
         },
         "23:00-03:59": {
-          "init": 0,
-          "reinit": 8
+          "init": 7,
+          "reinit": 22
         },
         "04:00-08:59": {
           "init": 0,
@@ -407,7 +407,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T05:29:25.718Z"
+      "last_updated": "2025-09-24T05:47:47.579Z"
     },
     "approval_history": [
       {
@@ -498,61 +498,17 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "claude-code-agent-1758687590": {
-      "lastHeartbeat": "2025-09-24T04:19:50.572Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:19:50.572Z",
-      "sessionId": "47f6606580ff6245",
-      "previousSessions": []
-    },
-    "testing-validation-agent": {
-      "lastHeartbeat": "2025-09-24T04:27:30.425Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:27:30.425Z",
-      "sessionId": "7cf644dab2e70993",
-      "previousSessions": [
-        "355e4fba51b88674"
-      ]
-    },
-    "CONFIG_MGMT_AGENT": {
-      "lastHeartbeat": "2025-09-24T04:21:33.827Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:21:33.827Z",
-      "sessionId": "e465dc3612cd056a",
-      "previousSessions": []
-    },
     "claude-code-agent": {
-      "lastHeartbeat": "2025-09-24T05:07:19.656Z",
+      "lastHeartbeat": "2025-09-24T05:45:10.121Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:07:19.656Z",
-      "sessionId": "e1e37b837972fd46",
+      "reinitialized": "2025-09-24T05:45:10.121Z",
+      "sessionId": "98c054fc4283c2a3",
       "previousSessions": [
         "d6ccb4edf09ffee8",
-        "ac54e63f90c940a7"
+        "ac54e63f90c940a7",
+        "e1e37b837972fd46",
+        "232172551fdc7293"
       ]
-    },
-    "monitoring-health-agent": {
-      "lastHeartbeat": "2025-09-24T04:27:31.067Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:27:31.067Z",
-      "sessionId": "88b1567f701cdbea",
-      "previousSessions": []
-    },
-    "auth-bridge-agent": {
-      "lastHeartbeat": "2025-09-24T04:46:52.509Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:46:52.509Z",
-      "sessionId": "fd0ed5ae595664f9",
-      "previousSessions": [
-        "9e30a1f637db636c"
-      ]
-    },
-    "claude-code-agent-1758689044": {
-      "lastHeartbeat": "2025-09-24T04:44:04.413Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T04:44:04.413Z",
-      "sessionId": "3bf266584adfb5da",
-      "previousSessions": []
     },
     "TESTING_VALIDATION_AGENT": {
       "lastHeartbeat": "2025-09-24T05:29:25.716Z",
@@ -563,67 +519,130 @@
         "f56b457808e87edd"
       ]
     },
-    "API_MANAGEMENT_AGENT": {
-      "lastHeartbeat": "2025-09-24T04:45:30.997Z",
+    "adapter-pattern-design-agent": {
+      "lastHeartbeat": "2025-09-24T05:37:22.363Z",
       "status": "active",
-      "reinitialized": "2025-09-24T04:45:30.997Z",
-      "sessionId": "e7e2d48649acb021",
+      "reinitialized": "2025-09-24T05:37:22.363Z",
+      "sessionId": "ac11a32c9e7b512f",
       "previousSessions": []
     },
-    "INTEGRATION_TESTING_AGENT": {
-      "lastHeartbeat": "2025-09-24T04:46:49.239Z",
+    "core_tool_implementation_agent": {
+      "lastHeartbeat": "2025-09-24T05:37:22.436Z",
       "status": "active",
-      "reinitialized": "2025-09-24T04:46:49.239Z",
-      "sessionId": "11a0f486093b00f9",
+      "reinitialized": "2025-09-24T05:37:22.436Z",
+      "sessionId": "53059b18d7c20418",
       "previousSessions": []
     },
-    "error-handling-agent": {
-      "lastHeartbeat": "2025-09-24T04:46:53.222Z",
+    "extended-tool-agent": {
+      "lastHeartbeat": "2025-09-24T05:37:22.661Z",
       "status": "active",
-      "reinitialized": "2025-09-24T04:46:53.222Z",
-      "sessionId": "183299f5fc61199d",
+      "reinitialized": "2025-09-24T05:37:22.661Z",
+      "sessionId": "0700b482a489892d",
       "previousSessions": []
     },
-    "db_testing_agent": {
-      "lastHeartbeat": "2025-09-24T05:07:28.284Z",
+    "NATURAL_LANGUAGE_AGENT": {
+      "lastHeartbeat": "2025-09-24T05:37:22.741Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:07:28.284Z",
-      "sessionId": "55764433b8b9f4cd",
+      "reinitialized": "2025-09-24T05:37:22.741Z",
+      "sessionId": "49b77376f2508541",
       "previousSessions": []
     },
-    "DATABASE_DOCUMENTATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:07:28.845Z",
+    "integration-testing-agent": {
+      "lastHeartbeat": "2025-09-24T05:37:23.282Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:07:28.845Z",
-      "sessionId": "145741255a5da6b3",
+      "reinitialized": "2025-09-24T05:37:23.282Z",
+      "sessionId": "279b70e33b9299bc",
       "previousSessions": []
     },
-    "database-performance-agent": {
-      "lastHeartbeat": "2025-09-24T05:07:29.275Z",
+    "tool-registry-agent": {
+      "lastHeartbeat": "2025-09-24T05:37:44.985Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:07:29.275Z",
-      "sessionId": "ec5c07ed59fc99f7",
+      "reinitialized": "2025-09-24T05:37:44.985Z",
+      "sessionId": "195b5ebdd6956293",
       "previousSessions": []
     },
-    "DATA_VALIDATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:07:29.490Z",
+    "tool-recommendation-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:34.220Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:07:29.490Z",
-      "sessionId": "3c602b4b47506cc3",
+      "reinitialized": "2025-09-24T05:38:34.220Z",
+      "sessionId": "a9012c9644058547",
       "previousSessions": []
     },
-    "DOCUMENTATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:09:07.326Z",
+    "realtime-suggestion-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.500Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:09:07.326Z",
-      "sessionId": "721746cb707ffb21",
+      "initialized": "2025-09-24T05:38:51.500Z",
+      "sessionId": "d37bfeb3e601fcbe"
+    },
+    "recommendation-testing-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.504Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.504Z",
+      "sessionId": "b355fbbb09d7bae2"
+    },
+    "user-behavior-tracking-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.510Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.510Z",
+      "sessionId": "5aee5fe2367d68d1"
+    },
+    "natural-language-integration-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.512Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.512Z",
+      "sessionId": "e110e679d2177087"
+    },
+    "personalization-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.516Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.516Z",
+      "sessionId": "62b7a8ddc079864d"
+    },
+    "ml-recommendation-engine-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.522Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.522Z",
+      "sessionId": "acf2602bf7ea5023"
+    },
+    "workspace-pattern-agent": {
+      "lastHeartbeat": "2025-09-24T05:38:51.529Z",
+      "status": "active",
+      "initialized": "2025-09-24T05:38:51.529Z",
+      "sessionId": "2361e1aeed694df3"
+    },
+    "TOOL_DISCOVERY_AGENT": {
+      "lastHeartbeat": "2025-09-24T05:47:33.232Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T05:47:33.232Z",
+      "sessionId": "a8e8c8567b467d91",
       "previousSessions": []
     },
-    "typescript-orm-agent": {
-      "lastHeartbeat": "2025-09-24T05:09:14.183Z",
+    "PERFORMANCE_MONITORING_AGENT": {
+      "lastHeartbeat": "2025-09-24T05:47:34.261Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:09:14.183Z",
-      "sessionId": "f518a8a20f3e78eb",
+      "reinitialized": "2025-09-24T05:47:34.261Z",
+      "sessionId": "505c3eb23b884b90",
+      "previousSessions": []
+    },
+    "integration_testing_agent": {
+      "lastHeartbeat": "2025-09-24T05:47:39.688Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T05:47:39.688Z",
+      "sessionId": "6627803908838b81",
+      "previousSessions": []
+    },
+    "RESULT_FORMATTING_AGENT": {
+      "lastHeartbeat": "2025-09-24T05:47:41.700Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T05:47:41.700Z",
+      "sessionId": "c6f2fdbee977daed",
+      "previousSessions": []
+    },
+    "SPECIFIC_TOOL_ADAPTERS_AGENT": {
+      "lastHeartbeat": "2025-09-24T05:47:47.577Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T05:47:47.577Z",
+      "sessionId": "b88ff2e6f3d8e483",
       "previousSessions": []
     }
   },
