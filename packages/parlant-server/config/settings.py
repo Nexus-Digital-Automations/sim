@@ -66,6 +66,10 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = False
 
+    def get_database_url(self) -> str:
+        """Get the database URL, preferring POSTGRES_URL (Vercel) over DATABASE_URL."""
+        return self.postgres_url or self.database_url
+
     def get_sim_base_url(self) -> str:
         """Get the base URL for Sim application."""
         return self.better_auth_url or self.sim_app_url

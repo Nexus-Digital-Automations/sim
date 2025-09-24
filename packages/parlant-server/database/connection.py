@@ -25,9 +25,9 @@ _async_session_factory = None
 
 
 def get_database_url() -> str:
-    """Get database URL from settings or environment."""
+    """Get database URL from settings, preferring POSTGRES_URL over DATABASE_URL."""
     settings = get_settings()
-    return settings.database_url
+    return settings.get_database_url()
 
 
 def get_async_database_url() -> str:

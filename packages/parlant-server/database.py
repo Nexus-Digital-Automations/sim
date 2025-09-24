@@ -27,7 +27,7 @@ from contextlib import asynccontextmanager
 logger = logging.getLogger(__name__)
 
 # Database configuration from environment
-DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
+DATABASE_URL = os.getenv('POSTGRES_URL') or os.getenv('DATABASE_URL')
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL or POSTGRES_URL environment variable is required")
 
@@ -127,6 +127,46 @@ class ParlantDatabaseManager:
             logger.error(f"Connection setup failed: {e}")
             raise
 
+    async def _verify_schema_compatibility(self) -> None:
+        """Verify that required database schema exists"""
+        try:
+            async with self.get_connection() as conn:
+                # Check if key Parlant tables exist
+                key_tables = ['parlant_agent', 'parlant_session', 'parlant_event']
+                missing_tables = []
+
+                for table in key_tables:
+                    exists = await conn.fetchval("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables
+                            WHERE table_schema = 'public' AND table_name = $1
+                        )
+                    """, table)
+
+                    if not exists:
+                        missing_tables.append(table)
+
+                if missing_tables:
+                    logger.warning(f"Missing Parlant tables: {missing_tables}. "
+                                 "Database migrations may need to be run.")
+                else:
+                    logger.info("Parlant database schema verification successful")
+
+                # Check workspace table dependency
+                workspace_exists = await conn.fetchval("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables
+                        WHERE table_schema = 'public' AND table_name = 'workspace'
+                    )
+                """)
+
+                if not workspace_exists:
+                    logger.error("Missing 'workspace' table - required for Parlant workspace isolation")
+
+        except Exception as e:
+            logger.error(f"Schema compatibility check failed: {e}")
+            # Don't raise here to allow server to start even if schema check fails
+
     async def initialize(self) -> None:
         """Initialize the database connection pool with enhanced configuration"""
         if not self._pool:
@@ -144,6 +184,9 @@ class ParlantDatabaseManager:
                 }
             )
             logger.info("Parlant PostgreSQL connection pool initialized")
+
+            # Verify schema compatibility after initialization
+            await self._verify_schema_compatibility()
 
     async def close(self) -> None:
         """Close the database connection pool"""
