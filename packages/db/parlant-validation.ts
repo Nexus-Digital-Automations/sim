@@ -311,9 +311,9 @@ export const journeyResponseSchema = createJourneySchema.extend({
 // =============================================================================
 
 /**
- * Journey state creation schema
+ * Journey state base schema (without refinements)
  */
-export const createJourneyStateSchema = z.object({
+const journeyStateBaseSchema = z.object({
   journeyId: uuidSchema,
   name: z.string().min(1, 'State name is required').max(255, 'State name is too long'),
   stateType: journeyStateTypeSchema,
@@ -330,7 +330,12 @@ export const createJourneyStateSchema = z.object({
   allowSkip: z.boolean().default(true),
 
   metadata: jsonObjectSchema.default({}),
-}).refine((data) => {
+})
+
+/**
+ * Journey state creation schema (with validation refinements)
+ */
+export const createJourneyStateSchema = journeyStateBaseSchema.refine((data) => {
   // Validate state type requirements
   if (data.stateType === 'chat' && !data.chatPrompt) {
     return false
@@ -349,7 +354,7 @@ export const createJourneyStateSchema = z.object({
 /**
  * Journey state response schema
  */
-export const journeyStateResponseSchema = createJourneyStateSchema.extend({
+export const journeyStateResponseSchema = journeyStateBaseSchema.extend({
   id: uuidSchema,
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
@@ -415,9 +420,9 @@ export const toolResponseSchema = createToolSchema.extend({
 // =============================================================================
 
 /**
- * Variable creation schema
+ * Variable base schema (without refinements)
  */
-export const createVariableSchema = z.object({
+const variableBaseSchema = z.object({
   agentId: uuidSchema,
   sessionId: uuidSchema.optional(),
   key: z.string().min(1, 'Variable key is required').max(255, 'Variable key is too long')
@@ -427,7 +432,12 @@ export const createVariableSchema = z.object({
   valueType: z.enum(['string', 'number', 'boolean', 'object', 'array']),
   isPrivate: z.boolean().default(false),
   description: z.string().max(500, 'Description is too long').optional(),
-}).refine((data) => {
+})
+
+/**
+ * Variable creation schema (with validation refinements)
+ */
+export const createVariableSchema = variableBaseSchema.refine((data) => {
   // Validate value matches valueType
   const value = data.value
   switch (data.valueType) {
@@ -451,7 +461,7 @@ export const createVariableSchema = z.object({
 /**
  * Variable response schema
  */
-export const variableResponseSchema = createVariableSchema.extend({
+export const variableResponseSchema = variableBaseSchema.extend({
   id: uuidSchema,
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
