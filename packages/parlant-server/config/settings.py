@@ -19,10 +19,13 @@ class Settings(BaseSettings):
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8001, env="PORT")
 
-    # Database configuration
-    database_url: str = Field(..., env="DATABASE_URL")
+    # Database configuration - inherits from Sim's existing setup
+    database_url: str = Field(..., env="DATABASE_URL")  # Primary database URL
+    postgres_url: Optional[str] = Field(default=None, env="POSTGRES_URL")  # Alternative URL (Vercel)
     db_pool_size: int = Field(default=10, env="DB_POOL_SIZE")
-    db_max_overflow: int = Field(default=20, env="DB_MAX_OVERFLOW")
+    db_max_overflow: int = Field(default=15, env="DB_MAX_OVERFLOW")  # Conservative for shared DB
+    db_pool_timeout: int = Field(default=30, env="DB_POOL_TIMEOUT")
+    db_connection_timeout: int = Field(default=10, env="DB_CONNECTION_TIMEOUT")
 
     # Sim authentication configuration
     sim_app_url: str = Field(..., env="NEXT_PUBLIC_APP_URL")

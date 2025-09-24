@@ -69,6 +69,49 @@ services:
     command: ['bun', 'run', 'db:migrate']
     restart: 'no'
 
+  parlant-server:
+    image: ghcr.io/simstudioai/parlant-server:latest
+    restart: unless-stopped
+    ports:
+      - '8001:8001'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-simstudio}
+      - PARLANT_HOST=0.0.0.0
+      - PARLANT_PORT=8001
+      - AI_PROVIDER=openai
+      - AI_MODEL=gpt-4o
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SIM_API_URL=http://simstudio:3000
+      - SIM_API_KEY=${SIM_API_KEY}
+      - LOG_LEVEL=WARN
+      - SESSION_STORAGE=postgresql
+      - SESSION_TIMEOUT=7200
+      - MAX_CONCURRENT_SESSIONS=1000
+      - CACHE_TTL=1800
+      - DEBUG=false
+      - ENABLE_CORS=true
+      - ALLOWED_ORIGINS=${NEXT_PUBLIC_APP_URL}
+      - RATE_LIMITING=true
+      - MAX_REQUESTS_PER_MINUTE=500
+      - HEALTH_CHECK_ENABLED=true
+      - METRICS_ENABLED=true
+      - BACKUP_ENABLED=true
+      - BACKUP_SCHEDULE="0 2 * * *"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   db:
     image: pgvector/pgvector:pg17
     restart: unless-stopped

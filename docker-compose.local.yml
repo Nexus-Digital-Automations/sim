@@ -73,6 +73,46 @@ services:
     command: ['bun', 'run', 'db:migrate']
     restart: 'no'
 
+  parlant-server:
+    build:
+      context: ./packages/parlant-server
+      dockerfile: Dockerfile
+    ports:
+      - '8001:8001'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-simstudio}
+      - PARLANT_HOST=0.0.0.0
+      - PARLANT_PORT=8001
+      - AI_PROVIDER=openai
+      - AI_MODEL=gpt-4o-mini
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SIM_API_URL=http://simstudio:3000
+      - SIM_API_KEY=${SIM_API_KEY:-your_sim_api_key_here}
+      - LOG_LEVEL=DEBUG
+      - SESSION_STORAGE=postgresql
+      - SESSION_TIMEOUT=3600
+      - MAX_CONCURRENT_SESSIONS=100
+      - CACHE_TTL=300
+      - DEBUG=true
+      - OLLAMA_URL=http://host.docker.internal:11434
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - ./packages/parlant-server/logs:/app/logs
+
   db:
     image: pgvector/pgvector:pg17
     restart: always

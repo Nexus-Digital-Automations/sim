@@ -15,12 +15,16 @@ Key features:
 import os
 import json
 import uuid
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict
 import asyncpg
 import asyncio
 from contextlib import asynccontextmanager
+
+# Set up logging for database operations
+logger = logging.getLogger(__name__)
 
 # Database configuration from environment
 DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
@@ -112,18 +116,34 @@ class ParlantDatabaseManager:
         self.database_url = database_url or DATABASE_URL
         self._pool: Optional[asyncpg.Pool] = None
 
+    async def _connection_setup(self, connection):
+        """Setup callback for new database connections"""
+        try:
+            # Set connection parameters for optimal performance
+            await connection.execute("SET timezone='UTC'")
+            await connection.execute("SET application_name='parlant-server'")
+            logger.debug("Database connection setup completed")
+        except Exception as e:
+            logger.error(f"Connection setup failed: {e}")
+            raise
+
     async def initialize(self) -> None:
-        """Initialize the database connection pool"""
+        """Initialize the database connection pool with enhanced configuration"""
         if not self._pool:
+            # Enhanced connection pool configuration optimized for Parlant server
             self._pool = await asyncpg.create_pool(
                 self.database_url,
-                min_size=5,
-                max_size=20,
-                command_timeout=60,
+                min_size=5,  # Minimum connections to maintain
+                max_size=15,  # Reduced from 20 to be conservative with Sim's 60 connection limit
+                command_timeout=60,  # Query timeout
+                max_inactive_connection_lifetime=300,  # 5 minutes
+                setup=self._connection_setup,  # Connection setup callback
                 server_settings={
-                    'application_name': 'parlant-server'
+                    'application_name': 'parlant-server',
+                    'timezone': 'UTC'
                 }
             )
+            logger.info("Parlant PostgreSQL connection pool initialized")
 
     async def close(self) -> None:
         """Close the database connection pool"""
@@ -133,12 +153,29 @@ class ParlantDatabaseManager:
 
     @asynccontextmanager
     async def get_connection(self):
-        """Get a database connection from the pool"""
+        """Get a database connection from the pool with error handling"""
         if not self._pool:
             await self.initialize()
 
-        async with self._pool.acquire() as connection:
+        connection = None
+        try:
+            connection = await self._pool.acquire()
+            # Test connection before yielding
+            await connection.execute("SELECT 1")
             yield connection
+        except asyncpg.exceptions.ConnectionDoesNotExistError:
+            logger.error("Database connection lost, attempting to reconnect")
+            # Reinitialize pool and retry
+            await self.close()
+            await self.initialize()
+            async with self._pool.acquire() as new_connection:
+                yield new_connection
+        except Exception as e:
+            logger.error(f"Database connection error: {e}")
+            raise
+        finally:
+            if connection:
+                await self._pool.release(connection)
 
     # Agent Management
     async def create_agent(self, agent: ParlantAgent) -> str:
@@ -513,11 +550,20 @@ class ParlantDatabaseManager:
 
     # Health check and utilities
     async def health_check(self) -> Dict[str, Any]:
-        """Perform a database health check"""
+        """Perform a comprehensive database health check"""
+        start_time = datetime.utcnow()
+
         try:
             async with self.get_connection() as conn:
                 # Test basic connectivity
                 result = await conn.fetchval("SELECT 1")
+
+                # Get database version and connection info
+                db_version = await conn.fetchval("SELECT version()")
+                connection_count = await conn.fetchval("""
+                    SELECT count(*) FROM pg_stat_activity
+                    WHERE application_name = 'parlant-server'
+                """)
 
                 # Get some basic stats
                 agent_count = await conn.fetchval("""
@@ -528,17 +574,35 @@ class ParlantDatabaseManager:
                     SELECT COUNT(*) FROM parlant_session WHERE status = 'active'
                 """)
 
+                total_events = await conn.fetchval("""
+                    SELECT COUNT(*) FROM parlant_event
+                    WHERE created_at > NOW() - INTERVAL '24 hours'
+                """)
+
+                # Calculate response time
+                response_time_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+
                 return {
                     'status': 'healthy',
                     'connected': result == 1,
-                    'total_agents': agent_count,
-                    'active_sessions': session_count,
+                    'database_version': db_version.split()[0] if db_version else 'unknown',
+                    'connection_count': connection_count,
+                    'pool_size': f"{self._pool.get_size()}/{self._pool.get_max_size()}" if self._pool else 'not initialized',
+                    'response_time_ms': round(response_time_ms, 2),
+                    'stats': {
+                        'total_agents': agent_count,
+                        'active_sessions': session_count,
+                        'events_24h': total_events
+                    },
                     'timestamp': datetime.utcnow().isoformat()
                 }
         except Exception as e:
+            logger.error(f"Database health check failed: {e}")
             return {
                 'status': 'unhealthy',
                 'error': str(e),
+                'error_type': type(e).__name__,
+                'pool_status': 'closed' if not self._pool else 'error',
                 'timestamp': datetime.utcnow().isoformat()
             }
 

@@ -42,12 +42,13 @@ def get_async_database_url() -> str:
 
 
 def create_engine_instance() -> Engine:
-    """Create a SQLAlchemy engine instance."""
+    """Create a SQLAlchemy engine instance with optimized connection pooling."""
     settings = get_settings()
     database_url = get_database_url()
 
     logger.info(f"Creating database engine for URL: {database_url.split('@')[0]}@***")
 
+    # Enhanced connection pool configuration for Parlant server
     engine = create_engine(
         database_url,
         poolclass=QueuePool,
@@ -55,6 +56,12 @@ def create_engine_instance() -> Engine:
         max_overflow=settings.db_max_overflow,
         pool_pre_ping=True,  # Validate connections before use
         pool_recycle=3600,  # Recycle connections after 1 hour
+        pool_timeout=30,  # Connection timeout in seconds
+        connect_args={
+            "application_name": "parlant-server",
+            "options": "-c timezone=utc",
+            "connect_timeout": 10,  # Connection establishment timeout
+        },
         echo=settings.debug,  # Log SQL queries in debug mode
     )
 
@@ -89,19 +96,28 @@ def get_db_session() -> Generator[Session, None, None]:
 
 
 def create_async_engine_instance():
-    """Create an async SQLAlchemy engine instance."""
+    """Create an async SQLAlchemy engine instance with optimized connection pooling."""
     settings = get_settings()
     async_url = get_async_database_url()
 
     logger.info(f"Creating async database engine for URL: {async_url.split('@')[0]}@***")
 
+    # Enhanced async connection pool configuration for Parlant server
     engine = create_async_engine(
         async_url,
         pool_size=settings.db_pool_size,
         max_overflow=settings.db_max_overflow,
-        pool_pre_ping=True,
-        pool_recycle=3600,
-        echo=settings.debug,
+        pool_pre_ping=True,  # Validate connections before use
+        pool_recycle=3600,  # Recycle connections after 1 hour
+        pool_timeout=30,  # Connection timeout in seconds
+        connect_args={
+            "application_name": "parlant-server",
+            "server_settings": {
+                "timezone": "utc",
+                "application_name": "parlant-server"
+            }
+        },
+        echo=settings.debug,  # Log SQL queries in debug mode
     )
 
     return engine

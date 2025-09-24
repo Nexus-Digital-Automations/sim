@@ -11,7 +11,16 @@
     "test": "python -m pytest tests/",
     "lint": "python -m pylint server.py",
     "format": "python -m black .",
-    "type-check": "python -m mypy server.py"
+    "type-check": "python -m mypy server.py",
+    "validate": "node validate-config.js development",
+    "validate:staging": "node validate-config.js staging",
+    "validate:production": "node validate-config.js production",
+    "validate:example": "node validate-config.js example",
+    "validate:python": "python validate-config.py development",
+    "validate:python:all": "python validate-config.py development && python validate-config.py staging && python validate-config.py production",
+    "health": "curl -f http://localhost:8001/health || echo 'Server not running'",
+    "docker:build": "docker build -t sim-parlant-server .",
+    "docker:run": "docker run -p 8001:8001 --env-file .env sim-parlant-server"
   },
   "keywords": [
     "parlant",
