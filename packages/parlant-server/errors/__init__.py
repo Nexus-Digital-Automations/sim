@@ -52,7 +52,59 @@ from .validation import (
 from .monitoring import (
     ErrorMetrics,
     ErrorLogger,
-    setup_error_monitoring
+    setup_error_monitoring,
+    get_error_metrics,
+    get_error_logger
+)
+
+from .connectivity import (
+    ConnectivityManager,
+    get_connectivity_manager,
+    make_request,
+    check_service_health,
+    check_all_services_health
+)
+
+from .rate_limiting import (
+    RateLimiter,
+    RateLimitScope,
+    RateLimit,
+    RateLimitResult,
+    get_rate_limiter,
+    check_user_rate_limit,
+    check_ip_rate_limit,
+    check_workspace_rate_limit
+)
+
+from .auth_errors import (
+    AuthenticationErrorHandler,
+    AuthorizationErrorHandler,
+    get_authentication_handler,
+    get_authorization_handler,
+    validate_authentication,
+    validate_workspace_authorization,
+    validate_permissions
+)
+
+from .workspace_errors import (
+    WorkspaceIsolationValidator,
+    get_workspace_validator,
+    validate_agent_workspace_access,
+    validate_session_workspace_access,
+    validate_workspace_data_export
+)
+
+from .config import (
+    ErrorHandlingConfig,
+    ParlantErrorHandlingSystem,
+    get_error_system,
+    initialize_error_handling,
+    get_error_handling_health,
+    get_comprehensive_error_stats,
+    setup_fastapi_error_handling,
+    create_development_config,
+    create_production_config,
+    create_testing_config
 )
 
 __all__ = [
@@ -94,5 +146,52 @@ __all__ = [
     # Monitoring
     'ErrorMetrics',
     'ErrorLogger',
-    'setup_error_monitoring'
+    'setup_error_monitoring',
+    'get_error_metrics',
+    'get_error_logger',
+
+    # Connectivity and Circuit Breakers
+    'ConnectivityManager',
+    'get_connectivity_manager',
+    'make_request',
+    'check_service_health',
+    'check_all_services_health',
+
+    # Rate Limiting
+    'RateLimiter',
+    'RateLimitScope',
+    'RateLimit',
+    'RateLimitResult',
+    'get_rate_limiter',
+    'check_user_rate_limit',
+    'check_ip_rate_limit',
+    'check_workspace_rate_limit',
+
+    # Authentication and Authorization
+    'AuthenticationErrorHandler',
+    'AuthorizationErrorHandler',
+    'get_authentication_handler',
+    'get_authorization_handler',
+    'validate_authentication',
+    'validate_workspace_authorization',
+    'validate_permissions',
+
+    # Workspace Isolation
+    'WorkspaceIsolationValidator',
+    'get_workspace_validator',
+    'validate_agent_workspace_access',
+    'validate_session_workspace_access',
+    'validate_workspace_data_export',
+
+    # Configuration and Setup
+    'ErrorHandlingConfig',
+    'ParlantErrorHandlingSystem',
+    'get_error_system',
+    'initialize_error_handling',
+    'get_error_handling_health',
+    'get_comprehensive_error_stats',
+    'setup_fastapi_error_handling',
+    'create_development_config',
+    'create_production_config',
+    'create_testing_config'
 ]
