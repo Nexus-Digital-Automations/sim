@@ -51,6 +51,15 @@ export {
   type ContextualAdapter,
 } from './enhanced-intelligence/contextual-adapters'
 export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
+export {
+  SemanticSearchEngine,
+  createSemanticSearchEngine,
+  DEFAULT_SEMANTIC_SEARCH_CONFIG,
+  type SemanticSearchConfig,
+  type EnhancedSearchQuery,
+  type EnhancedSemanticSearchResult,
+  type SearchFeedback,
+} from './enhanced-intelligence/semantic-search-engine'
 export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Error types
 export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'

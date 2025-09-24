@@ -293,51 +293,34 @@ export class NaturalLanguageRegistryIntegration {
     availableEntries: AdapterRegistryEntry[],
     userContext?: ExtendedUsageContext
   ): Promise<SemanticSearchResult[]> {
-    const cacheKey = `search:${searchQuery}:${userContext?.userProfile?.userId || 'anonymous'}`
-
-    // Check cache first
-    if (this.config.performance.cacheResults && this.searchCache.has(cacheKey)) {
-      logger.debug('Returning cached search results')
-      return this.searchCache.get(cacheKey)!
-    }
-
     logger.debug('Performing semantic search on tool descriptions', {
       query: searchQuery,
       entriesCount: availableEntries.length
     })
 
     try {
-      // Analyze search query using NLP processor
-      const queryAnalysis = await this.nlpProcessor.extractKeyInformation({
-        name: 'search_query',
-        description: searchQuery,
-        parameters: {}
-      })
+      // Use the semantic search engine for advanced search capabilities
+      const enhancedResults = await this.semanticSearchEngine.search(
+        searchQuery,
+        availableEntries,
+        userContext as any // Convert to compatible type
+      )
 
-      const results: SemanticSearchResult[] = []
-
-      // Process each tool entry for semantic matching
-      for (const entry of availableEntries) {
-        const searchResult = await this.performSemanticMatchingForEntry(
-          entry,
-          searchQuery,
-          queryAnalysis,
-          userContext
-        )
-
-        if (searchResult.relevanceScore >= this.config.semanticSearch.relevanceThreshold) {
-          results.push(searchResult)
+      // Convert enhanced results to our SemanticSearchResult format
+      const results: SemanticSearchResult[] = enhancedResults.map(result => ({
+        toolId: result.toolId,
+        title: result.title,
+        description: result.description,
+        relevanceScore: result.scoring.finalScore,
+        conceptMatches: result.matchDetails.conceptMatches,
+        semanticSimilarity: result.semanticSimilarity,
+        contextualRelevance: result.contextualRelevance,
+        adaptedContent: {
+          roleBasedDescription: result.adaptationData?.roleSpecificGuidance,
+          skillLevelDescription: result.adaptationData?.skillLevelAdvice,
+          domainSpecificDescription: result.adaptationData?.domainContext
         }
-      }
-
-      // Sort by relevance score
-      results.sort((a, b) => b.relevanceScore - a.relevanceScore)
-
-      // Cache results if enabled
-      if (this.config.performance.cacheResults) {
-        this.searchCache.set(cacheKey, results)
-        setTimeout(() => this.searchCache.delete(cacheKey), this.config.performance.cacheTTL)
-      }
+      }))
 
       logger.info('Semantic search completed', {
         query: searchQuery,
@@ -354,6 +337,169 @@ export class NaturalLanguageRegistryIntegration {
       })
       throw error
     }
+  }
+
+  /**
+   * Advanced semantic search with enhanced query capabilities
+   */
+  async advancedSemanticSearch(
+    query: string,
+    availableEntries: AdapterRegistryEntry[],
+    userContext?: ExtendedUsageContext,
+    options?: {
+      filters?: {
+        categories?: string[]
+        tags?: string[]
+        capabilities?: string[]
+      }
+      ranking?: {
+        prioritizePopular?: boolean
+        prioritizeRecent?: boolean
+        personalizedRanking?: boolean
+      }
+      maxResults?: number
+    }
+  ): Promise<{
+    results: SemanticSearchResult[]
+    suggestions?: string[]
+    analytics?: any
+  }> {
+    logger.debug('Performing advanced semantic search', {
+      query,
+      hasFilters: !!options?.filters,
+      hasRanking: !!options?.ranking
+    })
+
+    try {
+      // Create enhanced query
+      const enhancedQuery = {
+        originalQuery: query,
+        processedQuery: query.toLowerCase().trim(),
+        extractedEntities: [],
+        identifiedConcepts: [],
+        recognizedIntent: 'search',
+        queryComplexity: 'moderate' as const,
+        userContext: userContext as any,
+        searchContext: {
+          timestamp: new Date(),
+          sessionId: userContext?.sessionContext?.sessionId,
+          previousQueries: [],
+          userFeedback: []
+        },
+        filters: {
+          categories: options?.filters?.categories || [],
+          tags: options?.filters?.tags || [],
+          capabilities: options?.filters?.capabilities || [],
+          domains: []
+        },
+        rankingPreferences: {
+          prioritizePopular: options?.ranking?.prioritizePopular || false,
+          prioritizeRecentlyUsed: options?.ranking?.prioritizeRecent || false,
+          personalizedRanking: options?.ranking?.personalizedRanking || !!userContext
+        }
+      }
+
+      // Perform advanced search
+      const searchResult = await this.semanticSearchEngine.advancedSearch(
+        enhancedQuery,
+        availableEntries
+      )
+
+      // Convert results
+      const results: SemanticSearchResult[] = searchResult.results.map(result => ({
+        toolId: result.toolId,
+        title: result.title,
+        description: result.description,
+        relevanceScore: result.scoring.finalScore,
+        conceptMatches: result.matchDetails.conceptMatches,
+        semanticSimilarity: result.semanticSimilarity,
+        contextualRelevance: result.contextualRelevance,
+        adaptedContent: {
+          roleBasedDescription: result.adaptationData?.roleSpecificGuidance,
+          skillLevelDescription: result.adaptationData?.skillLevelAdvice,
+          domainSpecificDescription: result.adaptationData?.domainContext
+        }
+      }))
+
+      // Get suggestions
+      const suggestionResult = await this.semanticSearchEngine.getSearchSuggestions(
+        query,
+        userContext as any
+      )
+
+      return {
+        results: results.slice(0, options?.maxResults || 20),
+        suggestions: suggestionResult.suggestions,
+        analytics: searchResult.searchMetadata
+      }
+
+    } catch (error) {
+      logger.error('Advanced semantic search failed', {
+        query,
+        error: error.message
+      })
+      throw error
+    }
+  }
+
+  /**
+   * Get search suggestions for query completion
+   */
+  async getSearchSuggestions(
+    partialQuery: string,
+    userContext?: ExtendedUsageContext
+  ): Promise<string[]> {
+    try {
+      const suggestions = await this.semanticSearchEngine.getSearchSuggestions(
+        partialQuery,
+        userContext as any
+      )
+
+      return [
+        ...suggestions.suggestions,
+        ...suggestions.contextualSuggestions,
+        ...suggestions.popularQueries
+      ].slice(0, 10) // Return top 10 suggestions
+
+    } catch (error) {
+      logger.error('Failed to get search suggestions', {
+        partialQuery,
+        error: error.message
+      })
+      return []
+    }
+  }
+
+  /**
+   * Record search feedback for learning
+   */
+  async recordSearchFeedback(feedback: {
+    queryId: string
+    resultId: string
+    relevanceRating: number
+    userAction: 'clicked' | 'used' | 'dismissed' | 'bookmarked'
+    feedback?: string
+  }): Promise<void> {
+    try {
+      await this.semanticSearchEngine.recordFeedback({
+        ...feedback,
+        timestamp: new Date()
+      })
+
+      logger.debug('Search feedback recorded successfully')
+
+    } catch (error) {
+      logger.error('Failed to record search feedback', {
+        error: error.message
+      })
+    }
+  }
+
+  /**
+   * Get search analytics
+   */
+  getSearchAnalytics(): any {
+    return this.semanticSearchEngine.getSearchAnalytics()
   }
 
   /**
@@ -988,12 +1134,7 @@ export const DEFAULT_REGISTRY_INTEGRATION_CONFIG: RegistryIntegrationConfig = {
     multiLevelDescriptions: true,
     personalizationEnabled: true
   },
-  semanticSearch: {
-    enabled: true,
-    vectorSimilarity: true,
-    conceptMatching: true,
-    relevanceThreshold: 0.3
-  },
+  semanticSearch: DEFAULT_SEMANTIC_SEARCH_CONFIG,
   performance: {
     cacheResults: true,
     cacheTTL: 300000, // 5 minutes

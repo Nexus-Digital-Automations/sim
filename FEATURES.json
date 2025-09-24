@@ -420,12 +420,12 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 74,
+      "total_reinitializations": 81,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
           "init": 0,
-          "reinit": 21
+          "reinit": 28
         },
         "13:00-17:59": {
           "init": 0,
@@ -446,7 +446,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T16:25:36.732Z"
+      "last_updated": "2025-09-24T16:36:10.585Z"
     },
     "approval_history": [
       {
@@ -678,6 +678,55 @@
       "previousSessions": [
         "fcb4b8475fe7fe82"
       ]
+    },
+    "workspace-messaging-agent": {
+      "lastHeartbeat": "2025-09-24T16:36:08.466Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:08.466Z",
+      "sessionId": "85599a25ad541457",
+      "previousSessions": []
+    },
+    "agent_selection_interface": {
+      "lastHeartbeat": "2025-09-24T16:36:08.475Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:08.475Z",
+      "sessionId": "829ab9734d2f6023",
+      "previousSessions": []
+    },
+    "parlant-chat-widget-agent": {
+      "lastHeartbeat": "2025-09-24T16:36:08.802Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:08.802Z",
+      "sessionId": "2c0a7edee7bb35f3",
+      "previousSessions": []
+    },
+    "chat-routes-agent": {
+      "lastHeartbeat": "2025-09-24T16:36:08.832Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:08.832Z",
+      "sessionId": "c8540e9507e3bea1",
+      "previousSessions": []
+    },
+    "agent-lifecycle-mgmt": {
+      "lastHeartbeat": "2025-09-24T16:36:08.862Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:08.862Z",
+      "sessionId": "c4cf56b9698afa21",
+      "previousSessions": []
+    },
+    "chat-persistence-agent": {
+      "lastHeartbeat": "2025-09-24T16:36:10.118Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:10.118Z",
+      "sessionId": "3dd6e055de5d36c3",
+      "previousSessions": []
+    },
+    "CHAT_TESTING_AGENT": {
+      "lastHeartbeat": "2025-09-24T16:36:10.575Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:36:10.575Z",
+      "sessionId": "5faffc6de15391d7",
+      "previousSessions": []
     }
   },
   "settings": {
