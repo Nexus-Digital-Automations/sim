@@ -1,5 +1,6 @@
 import { setupConnectionHandlers } from '@/socket-server/handlers/connection'
 import { setupOperationsHandlers } from '@/socket-server/handlers/operations'
+import { setupParlantHandlers } from '@/socket-server/handlers/parlant'
 import { setupPresenceHandlers } from '@/socket-server/handlers/presence'
 import { setupSubblocksHandlers } from '@/socket-server/handlers/subblocks'
 import { setupVariablesHandlers } from '@/socket-server/handlers/variables'
@@ -21,6 +22,7 @@ export function setupAllHandlers(socket: AuthenticatedSocket, roomManager: RoomM
   setupVariablesHandlers(socket, roomManager)
   setupPresenceHandlers(socket, roomManager)
   setupConnectionHandlers(socket, roomManager)
+  setupParlantHandlers(socket, roomManager)
 }
 
 export {
@@ -30,4 +32,5 @@ export {
   setupVariablesHandlers,
   setupPresenceHandlers,
   setupConnectionHandlers,
+  setupParlantHandlers,
 }

@@ -1,4 +1,5 @@
 export { Account } from './account/account'
+export { Agents } from './agents/agents'
 export { ApiKeys } from './api-keys/api-keys'
 export { Copilot } from './copilot/copilot'
 export { Credentials } from './credentials/credentials'

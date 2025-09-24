@@ -3,6 +3,7 @@ import { env } from '@/lib/env'
 import { createLogger } from '@/lib/logs/console/logger'
 import { createSocketIOServer } from '@/socket-server/config/socket'
 import { setupAllHandlers } from '@/socket-server/handlers'
+import { initializeParlantHooks } from '@/socket-server/integrations/parlant-hooks'
 import { type AuthenticatedSocket, authenticateSocket } from '@/socket-server/middleware/auth'
 import { RoomManager } from '@/socket-server/rooms/manager'
 import { createHttpHandler } from '@/socket-server/routes/http'
@@ -16,6 +17,9 @@ const io = createSocketIOServer(httpServer)
 
 // Initialize room manager after io is created
 const roomManager = new RoomManager(io)
+
+// Initialize Parlant integration hooks
+initializeParlantHooks(io, roomManager)
 
 io.use(authenticateSocket)
 

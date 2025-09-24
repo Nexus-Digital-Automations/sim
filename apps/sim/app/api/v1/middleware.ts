@@ -18,7 +18,7 @@ export interface RateLimitResult {
 
 export async function checkRateLimit(
   request: NextRequest,
-  endpoint: 'logs' | 'logs-detail' = 'logs'
+  endpoint: 'logs' | 'logs-detail' | 'agents' | 'agent-sessions' | 'agent-status' = 'logs'
 ): Promise<RateLimitResult> {
   try {
     const auth = await authenticateV1Request(request)

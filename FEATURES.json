@@ -355,7 +355,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 0,
-      "total_reinitializations": 8,
+      "total_reinitializations": 14,
       "current_day": "2025-09-24",
       "time_buckets": {
         "07:00-11:59": {
@@ -372,7 +372,7 @@
         },
         "22:00-02:59": {
           "init": 0,
-          "reinit": 8
+          "reinit": 14
         },
         "03:00-07:59": {
           "init": 0,
@@ -381,7 +381,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T04:19:50.574Z",
-      "last_updated": "2025-09-24T04:27:37.805Z"
+      "last_updated": "2025-09-24T04:46:53.224Z"
     },
     "approval_history": [
       {
@@ -512,10 +512,47 @@
       "previousSessions": []
     },
     "auth-bridge-agent": {
-      "lastHeartbeat": "2025-09-24T04:27:37.797Z",
+      "lastHeartbeat": "2025-09-24T04:46:52.509Z",
       "status": "active",
-      "reinitialized": "2025-09-24T04:27:37.797Z",
-      "sessionId": "9e30a1f637db636c",
+      "reinitialized": "2025-09-24T04:46:52.509Z",
+      "sessionId": "fd0ed5ae595664f9",
+      "previousSessions": [
+        "9e30a1f637db636c"
+      ]
+    },
+    "claude-code-agent-1758689044": {
+      "lastHeartbeat": "2025-09-24T04:44:04.413Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:44:04.413Z",
+      "sessionId": "3bf266584adfb5da",
+      "previousSessions": []
+    },
+    "TESTING_VALIDATION_AGENT": {
+      "lastHeartbeat": "2025-09-24T04:45:26.234Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:45:26.234Z",
+      "sessionId": "f56b457808e87edd",
+      "previousSessions": []
+    },
+    "API_MANAGEMENT_AGENT": {
+      "lastHeartbeat": "2025-09-24T04:45:30.997Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:45:30.997Z",
+      "sessionId": "e7e2d48649acb021",
+      "previousSessions": []
+    },
+    "INTEGRATION_TESTING_AGENT": {
+      "lastHeartbeat": "2025-09-24T04:46:49.239Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:46:49.239Z",
+      "sessionId": "11a0f486093b00f9",
+      "previousSessions": []
+    },
+    "error-handling-agent": {
+      "lastHeartbeat": "2025-09-24T04:46:53.222Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:46:53.222Z",
+      "sessionId": "183299f5fc61199d",
       "previousSessions": []
     }
   },

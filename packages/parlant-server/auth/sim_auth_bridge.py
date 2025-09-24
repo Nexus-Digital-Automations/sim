@@ -206,21 +206,42 @@ class SimAuthBridge:
 
     async def _get_user_workspaces(self, user_id: str) -> List[Dict[str, Any]]:
         """Get list of workspaces for a user from Sim database."""
-        # This would typically query the Sim database directly
-        # For now, we'll return a mock implementation
-        # In production, this should query the actual workspace and permissions tables
-
         try:
-            # We would use the database connection here to query workspaces
-            # For now, return a placeholder
-            return [
-                {
-                    "id": "default-workspace",
-                    "name": "Default Workspace",
-                    "role": "admin",
-                    "permissions": ["read", "write", "admin"]
-                }
-            ]
+            # Call Sim API to get user's workspaces with permissions
+            response = await self.http_client.get(
+                f"/api/v1/users/{user_id}/workspaces",
+                headers={"Authorization": f"Bearer {self._jwt_secret}"}  # Internal auth
+            )
+
+            if response.status_code == 200:
+                workspaces_data = response.json()
+
+                # Transform the workspace data to include permissions
+                workspaces = []
+                for workspace in workspaces_data.get("workspaces", []):
+                    workspace_info = {
+                        "id": workspace["id"],
+                        "name": workspace["name"],
+                        "role": workspace.get("role", "member"),
+                        "permissions": workspace.get("permissions", ["read"]),
+                        "owner_id": workspace.get("owner_id"),
+                        "created_at": workspace.get("created_at"),
+                    }
+                    workspaces.append(workspace_info)
+
+                logger.debug(f"Found {len(workspaces)} workspaces for user {user_id}")
+                return workspaces
+
+            elif response.status_code == 404:
+                logger.info(f"No workspaces found for user {user_id}")
+                return []
+            else:
+                logger.error(f"Failed to fetch workspaces: {response.status_code}")
+                return []
+
+        except httpx.RequestError as e:
+            logger.error(f"Network error fetching workspaces for user {user_id}: {e}")
+            return []
         except Exception as e:
             logger.error(f"Error fetching workspaces for user {user_id}: {e}")
             return []

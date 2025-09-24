@@ -82,9 +82,30 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         request.state.session = session
         request.state.user = session.user
 
+        # Add workspace validation if X-Workspace-Id header is present
+        workspace_id = request.headers.get("X-Workspace-Id")
+        if workspace_id:
+            has_access = await self._validate_workspace_access(session, workspace_id)
+            if not has_access:
+                logger.warning(f"User {session.user.email} denied access to workspace {workspace_id}")
+                return Response(
+                    content='{"detail": "Access denied to workspace"}',
+                    status_code=403,
+                    media_type="application/json"
+                )
+            request.state.workspace_id = workspace_id
+
         logger.debug(f"Authenticated request for user {session.user.email}")
 
         return await call_next(request)
+
+    async def _validate_workspace_access(self, session: SimSession, workspace_id: str) -> bool:
+        """Validate that user has access to the specified workspace."""
+        try:
+            return await self.auth_bridge.validate_workspace_access(session, workspace_id)
+        except Exception as e:
+            logger.error(f"Error validating workspace access: {e}")
+            return False
 
     def _is_public_endpoint(self, path: str) -> bool:
         """Check if endpoint is public (doesn't require authentication)."""
@@ -115,10 +136,49 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         # Validate session token
         try:
             session = await self.auth_bridge.authenticate_request(authorization)
+
+            # If we have user context from Sim frontend, enrich the session
+            if session and request.headers.get("X-User-Context"):
+                session = await self._enrich_session_with_context(session, request)
+
             return session
         except Exception as e:
             logger.error(f"Authentication error: {e}")
             return None
+
+    async def _enrich_session_with_context(self, session: SimSession, request: Request) -> SimSession:
+        """Enrich session with additional context from Sim frontend."""
+        try:
+            import base64
+            import json
+
+            context_header = request.headers.get("X-User-Context")
+            if not context_header:
+                return session
+
+            # Decode user context from header
+            decoded_context = base64.b64decode(context_header).decode('utf-8')
+            user_context = json.loads(decoded_context)
+
+            # Validate that context matches the session user
+            if user_context.get("user_id") != session.user.id:
+                logger.warning(f"User context mismatch: {user_context.get('user_id')} != {session.user.id}")
+                return session
+
+            # Update session with enriched workspace information
+            if "workspaces" in user_context:
+                session.user.workspaces = user_context["workspaces"]
+
+            # Set active organization from context if provided
+            if user_context.get("active_organization_id"):
+                session.active_organization_id = user_context["active_organization_id"]
+
+            logger.debug(f"Enriched session with context for user {session.user.email}")
+            return session
+
+        except Exception as e:
+            logger.error(f"Error enriching session with context: {e}")
+            return session  # Return original session on error
 
 
 async def auth_middleware(request: Request, call_next):
