@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
+import { AlertTriangle, ArrowLeft, MessageCircle, RefreshCw } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, RefreshCw, ArrowLeft, MessageCircle } from 'lucide-react'
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('ConversationChatError')
@@ -52,53 +52,49 @@ export default function ConversationChatError({ error, reset }: ConversationChat
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className='flex h-screen flex-col bg-gray-50'>
       {/* Header */}
-      <div className="bg-white border-b flex-shrink-0">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-3">
+      <div className='flex-shrink-0 border-b bg-white'>
+        <div className='mx-auto max-w-4xl px-4 py-4'>
+          <div className='flex items-center space-x-3'>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => router.push(`/chat/workspace/${workspaceId}/agent/${agentId}`)}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className='h-4 w-4' />
             </Button>
-            <div className="flex items-center space-x-2">
-              <MessageCircle className="h-5 w-5 text-gray-400" />
-              <span className="text-sm text-gray-500">Conversation</span>
+            <div className='flex items-center space-x-2'>
+              <MessageCircle className='h-5 w-5 text-gray-400' />
+              <span className='text-gray-500 text-sm'>Conversation</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Error content */}
-      <div className="flex-1 flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="mx-auto mb-6 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+      <div className='flex flex-1 items-center justify-center px-4'>
+        <div className='max-w-md text-center'>
+          <div className='mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100'>
+            <AlertTriangle className='h-8 w-8 text-red-600' />
           </div>
 
-          <h1 className="text-2xl font-semibold text-gray-900 mb-3">
-            Conversation Unavailable
-          </h1>
+          <h1 className='mb-3 font-semibold text-2xl text-gray-900'>Conversation Unavailable</h1>
 
-          <p className="text-gray-600 mb-8">
-            {getErrorMessage()}
-          </p>
+          <p className='mb-8 text-gray-600'>{getErrorMessage()}</p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={reset} className="min-w-[120px]">
-              <RefreshCw className="h-4 w-4 mr-2" />
+          <div className='flex flex-col justify-center gap-3 sm:flex-row'>
+            <Button onClick={reset} className='min-w-[120px]'>
+              <RefreshCw className='mr-2 h-4 w-4' />
               Try Again
             </Button>
 
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => router.push(`/chat/workspace/${workspaceId}/agent/${agentId}`)}
-              className="min-w-[120px]"
+              className='min-w-[120px]'
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className='mr-2 h-4 w-4' />
               Back to Agent
             </Button>
           </div>
