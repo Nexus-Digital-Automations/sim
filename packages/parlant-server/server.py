@@ -18,6 +18,10 @@ import logging
 from typing import Dict, Any, Optional
 import parlant.sdk as p
 from database import PostgreSQLSessionStore, db_manager, ParlantAgent
+from workspace_isolation import workspace_isolation_manager
+from auth.workspace_access_control import workspace_access_controller
+from database.workspace_session_store import create_workspace_session_store
+from api.workspace_agents import router as workspace_agents_router
 
 # Configure logging
 logging.basicConfig(
@@ -61,12 +65,19 @@ class SimParlantServer:
         # Initialize database manager
         await db_manager.initialize()
 
+        # Initialize workspace isolation system
+        await workspace_isolation_manager.initialize()
+        logger.info("Workspace isolation system initialized")
+
+        # Initialize workspace access controller
+        # workspace_access_controller doesn't need explicit initialization
+
         # Create server with custom configuration
         self.server = p.Server(
             host=SERVER_HOST,
             port=SERVER_PORT,
-            # Use PostgreSQL for session storage instead of default memory storage
-            session_store_factory=self._create_session_store,
+            # Use workspace-scoped session storage
+            session_store_factory=self._create_workspace_session_store,
             # Configure AI providers based on available API keys
             llm_providers=self._configure_llm_providers(),
             # Enable CORS for integration with Sim frontend
@@ -77,10 +88,21 @@ class SimParlantServer:
             enable_health_checks=True
         )
 
-        logger.info(f"Parlant server initialized on {SERVER_HOST}:{SERVER_PORT}")
+        # Add workspace-scoped API routes
+        self.server.app.include_router(workspace_agents_router)
+
+        logger.info(f"Parlant server initialized with workspace isolation on {SERVER_HOST}:{SERVER_PORT}")
+
+    def _create_workspace_session_store(self, workspace_id: str = None):
+        """Create a workspace-scoped session store with complete isolation"""
+        if not workspace_id:
+            raise ValueError("Workspace ID is required for session store creation")
+
+        # Use the new workspace-isolated session store
+        return create_workspace_session_store(workspace_id)
 
     def _create_session_store(self, workspace_id: str = None) -> PostgreSQLSessionStore:
-        """Create a workspace-scoped session store"""
+        """Legacy method - maintained for backwards compatibility"""
         if workspace_id not in self.session_stores:
             self.session_stores[workspace_id] = PostgreSQLSessionStore(workspace_id)
         return self.session_stores[workspace_id]

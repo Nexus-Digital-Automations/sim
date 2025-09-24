@@ -7,6 +7,7 @@ import { isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import {
   Account,
+  Agents,
   ApiKeys,
   Copilot,
   Credentials,
@@ -41,6 +42,7 @@ type SettingsSection =
   | 'privacy'
   | 'copilot'
   | 'mcp'
+  | 'agents'
 
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('general')
@@ -187,6 +189,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             {activeSection === 'mcp' && (
               <div className='h-full'>
                 <MCP />
+              </div>
+            )}
+            {activeSection === 'agents' && (
+              <div className='h-full'>
+                <Agents />
               </div>
             )}
           </div>

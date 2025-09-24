@@ -31,6 +31,7 @@ interface SettingsNavigationProps {
       | 'privacy'
       | 'copilot'
       | 'mcp'
+      | 'agents'
   ) => void
   hasOrganization: boolean
 }
@@ -47,6 +48,7 @@ type NavigationItem = {
     | 'copilot'
     | 'privacy'
     | 'mcp'
+    | 'agents'
   label: string
   icon: React.ComponentType<{ className?: string }>
   hideWhenBillingDisabled?: boolean
@@ -68,6 +70,11 @@ const allNavigationItems: NavigationItem[] = [
     id: 'mcp',
     label: 'MCP Servers',
     icon: Server,
+  },
+  {
+    id: 'agents',
+    label: 'AI Agents',
+    icon: Bot,
   },
   {
     id: 'environment',

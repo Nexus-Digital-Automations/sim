@@ -5,6 +5,7 @@ import { createSocketIOServer } from '@/socket-server/config/socket'
 import { setupAllHandlers } from '@/socket-server/handlers'
 import { initializeParlantHooks } from '@/socket-server/integrations/parlant-hooks'
 import { type AuthenticatedSocket, authenticateSocket } from '@/socket-server/middleware/auth'
+import { initializeParlantSecurity } from '@/socket-server/middleware/parlant-security'
 import { RoomManager } from '@/socket-server/rooms/manager'
 import { createHttpHandler } from '@/socket-server/routes/http'
 
@@ -20,6 +21,9 @@ const roomManager = new RoomManager(io)
 
 // Initialize Parlant integration hooks
 initializeParlantHooks(io, roomManager)
+
+// Initialize Parlant security monitoring
+initializeParlantSecurity(io)
 
 io.use(authenticateSocket)
 

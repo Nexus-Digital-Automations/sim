@@ -27,6 +27,17 @@ const logger = createLogger('ParlantHandlers')
 export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: RoomManager) {
   logger.info(`Setting up Parlant handlers for socket ${socket.id}`)
 
+  // Track this connection for security monitoring
+  if (socket.userId) {
+    const trackingResult = connectionTracker.trackConnection(socket.userId, socket.id)
+    if (!trackingResult.allowed) {
+      logSecurityEvent('Connection denied', socket.userId, socket.id, { reason: trackingResult.reason })
+      socket.disconnect(true)
+      return
+    }
+    logSecurityEvent('Connection established', socket.userId, socket.id)
+  }
+
   /**
    * Join agent room for real-time agent updates
    * Enables receiving agent lifecycle events (status changes, configuration updates)
@@ -295,7 +306,7 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
    * Handle socket disconnection cleanup
    * Removes socket from all Parlant rooms and cleans up resources
    */
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
     try {
       const userId = socket.userId
       const parlantRooms = socket.data?.parlantRooms
@@ -303,7 +314,8 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       if (parlantRooms && parlantRooms.size > 0) {
         logger.info(`Cleaning up Parlant rooms for disconnected socket ${socket.id} (user: ${userId})`, {
           roomCount: parlantRooms.size,
-          rooms: Array.from(parlantRooms)
+          rooms: Array.from(parlantRooms),
+          reason
         })
 
         // Leave all Parlant rooms
@@ -313,6 +325,12 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
 
         // Clear stored room memberships
         parlantRooms.clear()
+      }
+
+      // Remove from connection tracking
+      if (userId) {
+        connectionTracker.removeConnection(userId, socket.id)
+        logSecurityEvent('Connection disconnected', userId, socket.id, { reason })
       }
     } catch (error) {
       logger.error('Error during Parlant room cleanup on disconnect:', error)
