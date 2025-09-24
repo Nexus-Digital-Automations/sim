@@ -7,12 +7,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  AccessibilityPreferences,
   HelpContent,
   HelpContext,
-  HelpDeliveryMode,
   HelpDeliveryConfig,
+  HelpDeliveryMode,
   VoiceGuidanceConfig,
-  AccessibilityPreferences,
 } from '../types'
 
 const logger = createLogger('MultiModalDelivery')
@@ -118,7 +118,10 @@ export class MultiModalDelivery {
       )
 
       // Start voice guidance if enabled
-      if (context.userState.accessibility.voiceGuidance && content.accessibility?.screenReaderText) {
+      if (
+        context.userState.accessibility.voiceGuidance &&
+        content.accessibility?.screenReaderText
+      ) {
         await this.voiceEngine.announceContent(
           content.accessibility.screenReaderText,
           context.userState.accessibility
@@ -219,7 +222,10 @@ export class MultiModalDelivery {
   /**
    * Dismiss help delivery
    */
-  async dismissDelivery(deliveryId: string, reason: 'user' | 'timeout' | 'completed'): Promise<void> {
+  async dismissDelivery(
+    deliveryId: string,
+    reason: 'user' | 'timeout' | 'completed'
+  ): Promise<void> {
     const activeDelivery = this.activeDeliveries.get(deliveryId)
     if (!activeDelivery) {
       logger.warn('Active delivery not found for dismissal', { deliveryId })
@@ -236,7 +242,8 @@ export class MultiModalDelivery {
       activeDelivery.status = 'dismissed'
       activeDelivery.endTime = new Date()
       activeDelivery.endReason = reason
-      activeDelivery.duration = activeDelivery.endTime.getTime() - activeDelivery.startTime.getTime()
+      activeDelivery.duration =
+        activeDelivery.endTime.getTime() - activeDelivery.startTime.getTime()
 
       // Clean up accessibility enhancements
       await this.cleanupAccessibilityEnhancements(deliveryId)
@@ -247,7 +254,11 @@ export class MultiModalDelivery {
       // Remove from active deliveries
       this.activeDeliveries.delete(deliveryId)
 
-      logger.info(`Help delivery dismissed`, { deliveryId, reason, duration: activeDelivery.duration })
+      logger.info(`Help delivery dismissed`, {
+        deliveryId,
+        reason,
+        duration: activeDelivery.duration,
+      })
     } catch (error) {
       logger.error('Error dismissing help delivery', {
         error: error instanceof Error ? error.message : String(error),
@@ -457,7 +468,7 @@ export class MultiModalDelivery {
       case 'tooltip':
         // Truncate content for tooltip
         if (typeof adaptedContent.content === 'string' && adaptedContent.content.length > 200) {
-          adaptedContent.content = adaptedContent.content.substring(0, 197) + '...'
+          adaptedContent.content = `${adaptedContent.content.substring(0, 197)}...`
         }
         break
 
@@ -541,9 +552,7 @@ export class MultiModalDelivery {
     }
 
     if (Array.isArray(content)) {
-      return content
-        .map(block => block.content || '')
-        .join('. ')
+      return content.map((block) => block.content || '').join('. ')
     }
 
     return ''
@@ -551,10 +560,10 @@ export class MultiModalDelivery {
 
   private formatForChat(content: string): string {
     // Break content into chat-sized chunks
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim())
+    const sentences = content.split(/[.!?]+/).filter((s) => s.trim())
     return sentences
-      .map(sentence => sentence.trim())
-      .filter(sentence => sentence.length > 0)
+      .map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.length > 0)
       .join('\n\n')
   }
 
@@ -603,11 +612,7 @@ export class MultiModalDelivery {
         const adapter = this.deliveryAdapters.get(fallbackMode)
         if (!adapter) continue
 
-        const preparedContent = await this.prepareContentForDelivery(
-          content,
-          fallbackMode,
-          context
-        )
+        const preparedContent = await this.prepareContentForDelivery(content, fallbackMode, context)
 
         await adapter.deliver(preparedContent, context, fallbackConfig)
 
@@ -633,7 +638,6 @@ export class MultiModalDelivery {
           fallbackMode,
           error: error instanceof Error ? error.message : String(error),
         })
-        continue
       }
     }
 
@@ -755,7 +759,14 @@ export class MultiModalDelivery {
   private startDeliveryAnalytics(): void {
     // Initialize analytics for all delivery modes
     const modes: HelpDeliveryMode[] = [
-      'tooltip', 'sidebar', 'modal', 'inline', 'overlay', 'voice', 'chat', 'notification'
+      'tooltip',
+      'sidebar',
+      'modal',
+      'inline',
+      'overlay',
+      'voice',
+      'chat',
+      'notification',
     ]
 
     for (const mode of modes) {

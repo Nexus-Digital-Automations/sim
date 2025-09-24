@@ -7,13 +7,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  GuidanceStep,
-  GuidanceTutorial,
-  GuidanceAction,
-  HelpContext,
-  InteractiveElement,
-} from '../types'
+import type { GuidanceStep, GuidanceTutorial, HelpContext, InteractiveElement } from '../types'
 
 const logger = createLogger('InteractiveGuidance')
 
@@ -167,30 +161,23 @@ export class InteractiveGuidance {
 
         if (result.success) {
           // Validate step completion
-          const validationResult = await this.validateStepCompletion(
-            sessionId,
-            currentStep,
-            data
-          )
+          const validationResult = await this.validateStepCompletion(sessionId, currentStep, data)
 
           if (validationResult.isValid) {
             return await this.advanceToNextStep(sessionId)
-          } else {
-            return {
-              result: 'failure',
-              message: validationResult.errorMessage || 'Step validation failed',
-            }
           }
-        } else {
           return {
             result: 'failure',
-            message: result.message || 'Interaction failed',
+            message: validationResult.errorMessage || 'Step validation failed',
           }
         }
-      } else {
-        // Default processing
-        return await this.processDefaultInteraction(sessionId, interactionType, data)
+        return {
+          result: 'failure',
+          message: result.message || 'Interaction failed',
+        }
       }
+      // Default processing
+      return await this.processDefaultInteraction(sessionId, interactionType, data)
     } catch (error) {
       logger.error('Error processing tutorial interaction', {
         error: error instanceof Error ? error.message : String(error),
@@ -242,8 +229,11 @@ export class InteractiveGuidance {
     // Update estimated time remaining
     const elapsedTime = Date.now() - activeTutorial.startTime.getTime()
     const averageStepTime = elapsedTime / activeTutorial.completedSteps.size
-    const remainingSteps = activeTutorial.progress.totalSteps - activeTutorial.progress.completedSteps
-    activeTutorial.progress.estimatedTimeRemaining = Math.round(averageStepTime * remainingSteps / 1000)
+    const remainingSteps =
+      activeTutorial.progress.totalSteps - activeTutorial.progress.completedSteps
+    activeTutorial.progress.estimatedTimeRemaining = Math.round(
+      (averageStepTime * remainingSteps) / 1000
+    )
 
     // Set up interactive elements for next step
     await this.setupInteractiveElements(sessionId, nextStep)
@@ -267,7 +257,10 @@ export class InteractiveGuidance {
   /**
    * Skip current step in tutorial
    */
-  async skipCurrentStep(sessionId: string, reason?: string): Promise<{
+  async skipCurrentStep(
+    sessionId: string,
+    reason?: string
+  ): Promise<{
     result: 'success' | 'not_allowed'
     nextStep?: GuidanceStep
     updatedProgress?: TutorialProgress
@@ -441,7 +434,8 @@ export class InteractiveGuidance {
       // Apply filters
       if (filters?.category && tutorial.category !== filters.category) continue
       if (filters?.difficulty && tutorial.difficulty !== filters.difficulty) continue
-      if (filters?.estimatedDuration && tutorial.estimatedDuration > filters.estimatedDuration) continue
+      if (filters?.estimatedDuration && tutorial.estimatedDuration > filters.estimatedDuration)
+        continue
 
       // Check if user meets prerequisites
       if (await this.checkPrerequisites(tutorial, context)) {
@@ -552,7 +546,8 @@ export class InteractiveGuidance {
             validation: {
               type: 'element_exists',
               condition: '[data-testid="workflow-editor"]',
-              errorMessage: 'The workflow editor should have opened. Please try clicking the create button again.',
+              errorMessage:
+                'The workflow editor should have opened. Please try clicking the create button again.',
             },
             nextSteps: {
               success: 'add_first_block',
@@ -591,7 +586,9 @@ export class InteractiveGuidance {
         const matches = currentUrl.includes(condition)
         return {
           isValid: matches,
-          errorMessage: matches ? undefined : `Expected URL to contain "${condition}", but got "${currentUrl}"`,
+          errorMessage: matches
+            ? undefined
+            : `Expected URL to contain "${condition}", but got "${currentUrl}"`,
         }
       },
     })
@@ -616,7 +613,9 @@ export class InteractiveGuidance {
         const matches = actualValue === expectedValue
         return {
           isValid: matches,
-          errorMessage: matches ? undefined : `Expected value "${expectedValue}", but got "${actualValue}"`,
+          errorMessage: matches
+            ? undefined
+            : `Expected value "${expectedValue}", but got "${actualValue}"`,
         }
       },
     })
@@ -629,11 +628,10 @@ export class InteractiveGuidance {
       try {
         const element = document.querySelector(data.target)
         if (element) {
-          (element as HTMLElement).click()
+          ;(element as HTMLElement).click()
           return { success: true }
-        } else {
-          return { success: false, message: `Element not found: ${data.target}` }
         }
+        return { success: false, message: `Element not found: ${data.target}` }
       } catch (error) {
         return { success: false, message: `Click failed: ${error}` }
       }
@@ -646,9 +644,8 @@ export class InteractiveGuidance {
           element.value = data.value
           element.dispatchEvent(new Event('input', { bubbles: true }))
           return { success: true }
-        } else {
-          return { success: false, message: `Input element not found: ${data.target}` }
         }
+        return { success: false, message: `Input element not found: ${data.target}` }
       } catch (error) {
         return { success: false, message: `Type failed: ${error}` }
       }
@@ -666,7 +663,10 @@ export class InteractiveGuidance {
     logger.info(`Initialized ${this.interactionHandlers.size} interaction handlers`)
   }
 
-  private async validatePrerequisites(tutorial: GuidanceTutorial, context: HelpContext): Promise<void> {
+  private async validatePrerequisites(
+    tutorial: GuidanceTutorial,
+    context: HelpContext
+  ): Promise<void> {
     if (!tutorial.prerequisites || tutorial.prerequisites.length === 0) {
       return
     }
@@ -684,7 +684,10 @@ export class InteractiveGuidance {
     }
   }
 
-  private async checkPrerequisites(tutorial: GuidanceTutorial, context: HelpContext): Promise<boolean> {
+  private async checkPrerequisites(
+    tutorial: GuidanceTutorial,
+    context: HelpContext
+  ): Promise<boolean> {
     if (!tutorial.prerequisites || tutorial.prerequisites.length === 0) {
       return true
     }
@@ -713,7 +716,10 @@ export class InteractiveGuidance {
     }
   }
 
-  private async createInteractiveElement(element: InteractiveElement, sessionId: string): Promise<void> {
+  private async createInteractiveElement(
+    element: InteractiveElement,
+    sessionId: string
+  ): Promise<void> {
     try {
       switch (element.type) {
         case 'highlight':
@@ -883,8 +889,10 @@ export class InteractiveGuidance {
 
   private cleanupInteractiveElements(sessionId: string): void {
     // Remove any tutorial-specific elements from the DOM
-    const tutorialElements = document.querySelectorAll('.tutorial-highlight, .tutorial-tooltip, .tutorial-overlay')
-    tutorialElements.forEach(element => element.remove())
+    const tutorialElements = document.querySelectorAll(
+      '.tutorial-highlight, .tutorial-tooltip, .tutorial-overlay'
+    )
+    tutorialElements.forEach((element) => element.remove())
   }
 
   private initializeSessionAnalytics(sessionId: string, tutorial: GuidanceTutorial): void {
@@ -892,17 +900,27 @@ export class InteractiveGuidance {
     logger.info(`Initialized session analytics`, { sessionId, tutorialId: tutorial.id })
   }
 
-  private updateStepAnalytics(sessionId: string, step: GuidanceStep, action: 'completed' | 'skipped' | 'failed'): void {
+  private updateStepAnalytics(
+    sessionId: string,
+    step: GuidanceStep,
+    action: 'completed' | 'skipped' | 'failed'
+  ): void {
     // Update analytics for individual step
     logger.info(`Updated step analytics`, { sessionId, stepId: step.id, action })
   }
 
-  private updateSessionAnalytics(sessionId: string, action: 'started' | 'paused' | 'resumed' | 'completed' | 'abandoned'): void {
+  private updateSessionAnalytics(
+    sessionId: string,
+    action: 'started' | 'paused' | 'resumed' | 'completed' | 'abandoned'
+  ): void {
     // Update session-level analytics
     logger.info(`Updated session analytics`, { sessionId, action })
   }
 
-  private updateTutorialAnalytics(tutorialId: string, completionData: TutorialCompletionData): void {
+  private updateTutorialAnalytics(
+    tutorialId: string,
+    completionData: TutorialCompletionData
+  ): void {
     const analytics = this.guidanceAnalytics.get(tutorialId) || this.createEmptyAnalytics()
 
     // Update completion statistics
@@ -915,7 +933,12 @@ export class InteractiveGuidance {
 
     // Update step analytics
     for (const stepId of completionData.struggledSteps) {
-      const stepStats = analytics.stepAnalytics.get(stepId) || { completions: 0, skips: 0, failures: 0, avgDuration: 0 }
+      const stepStats = analytics.stepAnalytics.get(stepId) || {
+        completions: 0,
+        skips: 0,
+        failures: 0,
+        avgDuration: 0,
+      }
       stepStats.failures++
       analytics.stepAnalytics.set(stepId, stepStats)
     }
@@ -943,9 +966,12 @@ export class InteractiveGuidance {
 
   private startAnalyticsCollection(): void {
     // Start periodic analytics collection and aggregation
-    setInterval(() => {
-      this.aggregateAnalytics()
-    }, 5 * 60 * 1000) // Every 5 minutes
+    setInterval(
+      () => {
+        this.aggregateAnalytics()
+      },
+      5 * 60 * 1000
+    ) // Every 5 minutes
 
     logger.info('Started analytics collection for guidance system')
   }
@@ -997,18 +1023,23 @@ interface TutorialCompletionData {
 }
 
 interface StepValidator {
-  validate: (condition: string | any, context: any) => Promise<{
+  validate: (
+    condition: string | any,
+    context: any
+  ) => Promise<{
     isValid: boolean
     errorMessage?: string
   }>
 }
 
-interface InteractionHandler {
-  (sessionId: string, step: GuidanceStep, data: any): Promise<{
-    success: boolean
-    message?: string
-  }>
-}
+type InteractionHandler = (
+  sessionId: string,
+  step: GuidanceStep,
+  data: any
+) => Promise<{
+  success: boolean
+  message?: string
+}>
 
 interface GuidanceAnalytics {
   totalStarts: number
@@ -1017,12 +1048,15 @@ interface GuidanceAnalytics {
   averageDuration: number
   averageRating: number
   totalRatings: number
-  stepAnalytics: Map<string, {
-    completions: number
-    skips: number
-    failures: number
-    avgDuration: number
-  }>
+  stepAnalytics: Map<
+    string,
+    {
+      completions: number
+      skips: number
+      failures: number
+      avgDuration: number
+    }
+  >
   userSegmentAnalytics: {
     beginner: { starts: number; completions: number; avgDuration: number }
     intermediate: { starts: number; completions: number; avgDuration: number }

@@ -11,18 +11,17 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  HelpContext,
+  ContextualDescriptions,
+  EnhancedDescriptionSchema,
+  UsageGuidance,
+} from '@/packages/universal-tool-adapter/src/enhanced-intelligence/natural-language-description-framework'
+import type {
+  GuidanceStep,
+  GuidanceTutorial,
   HelpContent,
   HelpContentBlock,
-  GuidanceTutorial,
-  GuidanceStep
+  HelpContext,
 } from '../types'
-import type {
-  EnhancedDescriptionSchema,
-  ContextualDescriptions,
-  DescriptionLevels,
-  UsageGuidance
-} from '@/packages/universal-tool-adapter/src/enhanced-intelligence/natural-language-description-framework'
 
 const logger = createLogger('NLFrameworkIntegration')
 
@@ -88,7 +87,7 @@ export class NLFrameworkIntegrationService {
   async generateHelpContent(config: NLHelpContentConfig): Promise<GeneratedHelpContent> {
     logger.info(`Generating help content for tool: ${config.toolId}`, {
       expertiseLevel: config.userExpertiseLevel,
-      contentType: config.contentType
+      contentType: config.contentType,
     })
 
     try {
@@ -119,17 +118,16 @@ export class NLFrameworkIntegrationService {
           frameworkVersion: '2.0.0',
           generationTime: new Date(),
           adaptationRules: this.getAppliedAdaptationRules(config),
-          qualityScore
-        }
+          qualityScore,
+        },
       }
 
       logger.info('Help content generated successfully', {
         contentId: result.primaryContent.id,
-        qualityScore: result.generationMetadata.qualityScore
+        qualityScore: result.generationMetadata.qualityScore,
       })
 
       return result
-
     } catch (error) {
       logger.error('Failed to generate help content', { error, config })
       throw new Error(`Help content generation failed: ${error.message}`)
@@ -160,7 +158,11 @@ export class NLFrameworkIntegrationService {
       const tutorial: GuidanceTutorial = {
         id: `tutorial_${toolId}_${tutorialType}_${Date.now()}`,
         title: await this.generateTutorialTitle(descriptionSchema, tutorialType, userContext),
-        description: await this.generateTutorialDescription(descriptionSchema, tutorialType, userContext),
+        description: await this.generateTutorialDescription(
+          descriptionSchema,
+          tutorialType,
+          userContext
+        ),
         category: descriptionSchema.category,
         difficulty: this.mapExpertiseToDifficulty(userContext.userState.expertiseLevel),
         estimatedDuration: this.calculateEstimatedDuration(steps),
@@ -168,23 +170,22 @@ export class NLFrameworkIntegrationService {
         steps,
         completionCriteria: {
           type: 'key_steps',
-          requiredSteps: steps.filter(step => step.type === 'validation').map(step => step.id)
+          requiredSteps: steps.filter((step) => step.type === 'validation').map((step) => step.id),
         },
         metadata: {
           version: '1.0.0',
           author: 'NL Framework Integration',
           lastUpdated: new Date(),
-          tags: this.generateTutorialTags(descriptionSchema, tutorialType)
-        }
+          tags: this.generateTutorialTags(descriptionSchema, tutorialType),
+        },
       }
 
       logger.info('Interactive tutorial generated', {
         tutorialId: tutorial.id,
-        stepCount: steps.length
+        stepCount: steps.length,
       })
 
       return tutorial
-
     } catch (error) {
       logger.error('Failed to generate interactive tutorial', { error, toolId, tutorialType })
       throw new Error(`Tutorial generation failed: ${error.message}`)
@@ -200,7 +201,7 @@ export class NLFrameworkIntegrationService {
   ): Promise<HelpContent> {
     logger.info(`Adapting content for new context`, {
       contentId: existingContent.id,
-      newExpertiseLevel: newContext.userState.expertiseLevel
+      newExpertiseLevel: newContext.userState.expertiseLevel,
     })
 
     try {
@@ -214,16 +215,15 @@ export class NLFrameworkIntegrationService {
       adaptedContent.analytics = {
         ...existingContent.analytics,
         views: existingContent.analytics.views + 1,
-        lastViewed: new Date()
+        lastViewed: new Date(),
       }
 
       logger.info('Content adapted successfully', {
         originalContentId: existingContent.id,
-        adaptedContentId: adaptedContent.id
+        adaptedContentId: adaptedContent.id,
       })
 
       return adaptedContent
-
     } catch (error) {
       logger.error('Failed to adapt content', { error, existingContent: existingContent.id })
       throw new Error(`Content adaptation failed: ${error.message}`)
@@ -253,7 +253,6 @@ export class NLFrameworkIntegrationService {
       this.descriptionCache.set(toolId, schema)
 
       return schema
-
     } catch (error) {
       logger.error('Failed to get tool description schema', { error, toolId })
       throw new Error(`Description schema retrieval failed: ${error.message}`)
@@ -277,7 +276,10 @@ export class NLFrameworkIntegrationService {
 
     // Apply accessibility adaptations if needed
     if (adaptToAccessibility && currentContext.userState.accessibility) {
-      return this.applyAccessibilityAdaptations(contextualDescriptions, currentContext.userState.accessibility)
+      return this.applyAccessibilityAdaptations(
+        contextualDescriptions,
+        currentContext.userState.accessibility
+      )
     }
 
     return contextualDescriptions
@@ -306,7 +308,7 @@ export class NLFrameworkIntegrationService {
       accessibility: this.generateAccessibility(adaptedContent, config),
       version: '1.0.0',
       lastUpdated: new Date(),
-      analytics: this.initializeAnalytics()
+      analytics: this.initializeAnalytics(),
     }
   }
 
@@ -318,7 +320,13 @@ export class NLFrameworkIntegrationService {
     config: NLHelpContentConfig
   ): Promise<HelpContent[]> {
     const alternatives: HelpContent[] = []
-    const alternativeTypes: Array<typeof config.contentType> = ['tooltip', 'panel', 'modal', 'inline', 'voice']
+    const alternativeTypes: Array<typeof config.contentType> = [
+      'tooltip',
+      'panel',
+      'modal',
+      'inline',
+      'voice',
+    ]
 
     for (const type of alternativeTypes) {
       if (type !== config.contentType) {
@@ -350,9 +358,9 @@ export class NLFrameworkIntegrationService {
   // Helper methods for content generation
   private mapExpertiseToDescriptionLevel(expertise: string): string {
     const mapping = {
-      'beginner': 'detailed',
-      'intermediate': 'standard',
-      'advanced': 'brief'
+      beginner: 'detailed',
+      intermediate: 'standard',
+      advanced: 'brief',
     }
     return mapping[expertise] || 'standard'
   }
@@ -386,12 +394,18 @@ export class NLFrameworkIntegrationService {
     return [config.toolName, config.userExpertiseLevel, config.contentType]
   }
 
-  private async generateMultimedia(adaptedContent: ContextualDescriptions, config: NLHelpContentConfig): Promise<any> {
+  private async generateMultimedia(
+    adaptedContent: ContextualDescriptions,
+    config: NLHelpContentConfig
+  ): Promise<any> {
     // Generate multimedia content
     return undefined
   }
 
-  private generateAccessibility(adaptedContent: ContextualDescriptions, config: NLHelpContentConfig): any {
+  private generateAccessibility(
+    adaptedContent: ContextualDescriptions,
+    config: NLHelpContentConfig
+  ): any {
     // Generate accessibility information
     return undefined
   }
@@ -410,7 +424,7 @@ export class NLFrameworkIntegrationService {
       deliveryModes: {},
       completionRate: 0,
       averageDuration: 0,
-      dropOffPoints: []
+      dropOffPoints: [],
     }
   }
 
@@ -435,7 +449,10 @@ export class NLFrameworkIntegrationService {
     return []
   }
 
-  private async calculateContentQuality(content: HelpContent, config: NLHelpContentConfig): Promise<number> {
+  private async calculateContentQuality(
+    content: HelpContent,
+    config: NLHelpContentConfig
+  ): Promise<number> {
     return 0.85 // Placeholder quality score
   }
 
@@ -443,15 +460,26 @@ export class NLFrameworkIntegrationService {
     return steps.length * 2 // 2 minutes per step average
   }
 
-  private async generateTutorialTitle(schema: EnhancedDescriptionSchema, type: string, context: HelpContext): Promise<string> {
+  private async generateTutorialTitle(
+    schema: EnhancedDescriptionSchema,
+    type: string,
+    context: HelpContext
+  ): Promise<string> {
     return `${schema.toolName} ${type} Tutorial`
   }
 
-  private async generateTutorialDescription(schema: EnhancedDescriptionSchema, type: string, context: HelpContext): Promise<string> {
+  private async generateTutorialDescription(
+    schema: EnhancedDescriptionSchema,
+    type: string,
+    context: HelpContext
+  ): Promise<string> {
     return `Learn how to use ${schema.toolName} effectively`
   }
 
-  private async generatePrerequisites(schema: EnhancedDescriptionSchema, context: HelpContext): Promise<string[]> {
+  private async generatePrerequisites(
+    schema: EnhancedDescriptionSchema,
+    context: HelpContext
+  ): Promise<string[]> {
     return []
   }
 
@@ -459,7 +487,10 @@ export class NLFrameworkIntegrationService {
     return [schema.category, type, schema.toolName]
   }
 
-  private applyAccessibilityAdaptations(descriptions: ContextualDescriptions, accessibility: any): ContextualDescriptions {
+  private applyAccessibilityAdaptations(
+    descriptions: ContextualDescriptions,
+    accessibility: any
+  ): ContextualDescriptions {
     // Apply accessibility adaptations
     return descriptions
   }

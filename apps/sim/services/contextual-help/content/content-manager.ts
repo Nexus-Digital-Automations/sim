@@ -7,13 +7,13 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  ContentRecommendation,
+  ContentVersion,
+  HelpAnalytics,
   HelpContent,
   HelpContext,
-  ContentVersion,
-  ContentRecommendation,
   HelpSearchQuery,
   HelpSearchResult,
-  HelpAnalytics,
 } from '../types'
 
 const logger = createLogger('HelpContentManager')
@@ -250,7 +250,7 @@ export class HelpContentManager {
       }
 
       // Tag matching
-      const tagMatches = content.tags.filter(tag =>
+      const tagMatches = content.tags.filter((tag) =>
         tag.toLowerCase().includes(normalizedQuery)
       ).length
       score += tagMatches * 2
@@ -279,9 +279,7 @@ export class HelpContentManager {
 
     // Sort by relevance and limit results
     const maxResults = query.options?.maxResults || 20
-    const sortedResults = results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxResults)
+    const sortedResults = results.sort((a, b) => b.score - a.score).slice(0, maxResults)
 
     // Create search results with snippets and highlights
     const searchResults: HelpSearchResult[] = []
@@ -302,7 +300,7 @@ export class HelpContentManager {
     logger.info(`Search completed`, {
       query: query.query,
       resultCount: searchResults.length,
-      maxScore: searchResults[0]?.relevanceScore || 0
+      maxScore: searchResults[0]?.relevanceScore || 0,
     })
 
     return searchResults
@@ -315,7 +313,7 @@ export class HelpContentManager {
     logger.info(`Getting content recommendations`, {
       userId: context.userId,
       route: context.currentRoute,
-      toolContext: context.toolContext?.toolId
+      toolContext: context.toolContext?.toolId,
     })
 
     return await this.contentRecommendationEngine.generateRecommendations(context, limit)
@@ -331,11 +329,15 @@ export class HelpContentManager {
   /**
    * Rollback content to previous version
    */
-  async rollbackContent(contentId: string, targetVersion: string, authorId: string): Promise<HelpContent> {
+  async rollbackContent(
+    contentId: string,
+    targetVersion: string,
+    authorId: string
+  ): Promise<HelpContent> {
     logger.info(`Rolling back content`, { contentId, targetVersion })
 
     const versions = this.contentVersions.get(contentId) || []
-    const targetVersionRecord = versions.find(v => v.version === targetVersion)
+    const targetVersionRecord = versions.find((v) => v.version === targetVersion)
 
     if (!targetVersionRecord || !targetVersionRecord.rollbackAvailable) {
       throw new Error(`Cannot rollback to version ${targetVersion}`)
@@ -391,7 +393,7 @@ export class HelpContentManager {
     logger.info(`Content rolled back successfully`, {
       contentId,
       targetVersion,
-      newVersion: rolledBackContent.version
+      newVersion: rolledBackContent.version,
     })
 
     return rolledBackContent
@@ -408,7 +410,7 @@ export class HelpContentManager {
     logger.info(`Approving content version`, { contentId, version })
 
     const versions = this.contentVersions.get(contentId) || []
-    const versionRecord = versions.find(v => v.version === version)
+    const versionRecord = versions.find((v) => v.version === version)
 
     if (!versionRecord) {
       throw new Error(`Version not found: ${version}`)
@@ -479,7 +481,8 @@ export class HelpContentManager {
       stats.contentByType[content.type] = (stats.contentByType[content.type] || 0) + 1
 
       // Count by priority
-      stats.contentByPriority[content.priority] = (stats.contentByPriority[content.priority] || 0) + 1
+      stats.contentByPriority[content.priority] =
+        (stats.contentByPriority[content.priority] || 0) + 1
 
       // Aggregate ratings
       if (content.analytics.averageRating > 0) {
@@ -513,7 +516,7 @@ export class HelpContentManager {
         title: content.title.toLowerCase(),
         description: content.description.toLowerCase(),
         content: this.extractTextFromContent(content.content).toLowerCase(),
-        tags: content.tags.map(tag => tag.toLowerCase()),
+        tags: content.tags.map((tag) => tag.toLowerCase()),
         type: content.type,
         priority: content.priority,
         lastIndexed: new Date(),
@@ -531,7 +534,7 @@ export class HelpContentManager {
       title: content.title.toLowerCase(),
       description: content.description.toLowerCase(),
       content: this.extractTextFromContent(content.content).toLowerCase(),
-      tags: content.tags.map(tag => tag.toLowerCase()),
+      tags: content.tags.map((tag) => tag.toLowerCase()),
       type: content.type,
       priority: content.priority,
       lastIndexed: new Date(),
@@ -546,9 +549,7 @@ export class HelpContentManager {
     }
 
     if (Array.isArray(content)) {
-      return content
-        .map(block => block.content || '')
-        .join(' ')
+      return content.map((block) => block.content || '').join(' ')
     }
 
     return ''
@@ -565,13 +566,15 @@ export class HelpContentManager {
           }
           break
         case 'priority':
-          if (Array.isArray(value) ? !value.includes(content.priority) : content.priority !== value) {
+          if (
+            Array.isArray(value) ? !value.includes(content.priority) : content.priority !== value
+          ) {
             return false
           }
           break
         case 'tags':
           if (Array.isArray(value)) {
-            const hasAnyTag = value.some(tag => content.tags.includes(tag))
+            const hasAnyTag = value.some((tag) => content.tags.includes(tag))
             if (!hasAnyTag) return false
           }
           break
@@ -584,13 +587,18 @@ export class HelpContentManager {
     return true
   }
 
-  private async calculateContextRelevance(content: HelpContent, context: HelpContext): Promise<number> {
+  private async calculateContextRelevance(
+    content: HelpContent,
+    context: HelpContext
+  ): Promise<number> {
     let relevance = 0
 
     // Route matching
-    if (content.triggers.some(trigger =>
-      trigger.type === 'route' && context.currentRoute.includes(trigger.condition)
-    )) {
+    if (
+      content.triggers.some(
+        (trigger) => trigger.type === 'route' && context.currentRoute.includes(trigger.condition)
+      )
+    ) {
       relevance += 0.5
     }
 
@@ -600,10 +608,13 @@ export class HelpContentManager {
     }
 
     // User state matching
-    if (content.conditions.some(condition =>
-      condition.type === 'user_expertise' &&
-      condition.value === context.userState.expertiseLevel
-    )) {
+    if (
+      content.conditions.some(
+        (condition) =>
+          condition.type === 'user_expertise' &&
+          condition.value === context.userState.expertiseLevel
+      )
+    ) {
       relevance += 0.2
     }
 
@@ -654,20 +665,20 @@ export class HelpContentManager {
     const end = Math.min(text.length, bestIndex + 75)
     let snippet = text.substring(start, end)
 
-    if (start > 0) snippet = '...' + snippet
-    if (end < text.length) snippet = snippet + '...'
+    if (start > 0) snippet = `...${snippet}`
+    if (end < text.length) snippet = `${snippet}...`
 
     return snippet
   }
 
   private extractHighlightedTerms(content: HelpContent, query: string): string[] {
-    const queryWords = query.split(/\s+/).map(w => w.toLowerCase())
+    const queryWords = query.split(/\s+/).map((w) => w.toLowerCase())
     const highlighted: string[] = []
 
     // Find matching terms in title
     const titleWords = content.title.toLowerCase().split(/\s+/)
     for (const word of titleWords) {
-      if (queryWords.some(qw => word.includes(qw)) && !highlighted.includes(word)) {
+      if (queryWords.some((qw) => word.includes(qw)) && !highlighted.includes(word)) {
         highlighted.push(word)
       }
     }
@@ -675,7 +686,7 @@ export class HelpContentManager {
     // Find matching terms in tags
     for (const tag of content.tags) {
       const tagLower = tag.toLowerCase()
-      if (queryWords.some(qw => tagLower.includes(qw)) && !highlighted.includes(tag)) {
+      if (queryWords.some((qw) => tagLower.includes(qw)) && !highlighted.includes(tag)) {
         highlighted.push(tag)
       }
     }
@@ -695,7 +706,7 @@ export class HelpContentManager {
       let similarity = 0
 
       // Tag similarity
-      const commonTags = targetContent.tags.filter(tag => content.tags.includes(tag))
+      const commonTags = targetContent.tags.filter((tag) => content.tags.includes(tag))
       similarity += commonTags.length * 0.3
 
       // Type similarity
@@ -718,7 +729,7 @@ export class HelpContentManager {
     return similarities
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
-      .map(s => s.content)
+      .map((s) => s.content)
   }
 
   private calculateCommonWords(text1: string, text2: string): number {
@@ -727,7 +738,8 @@ export class HelpContentManager {
 
     let commonCount = 0
     for (const word of words1) {
-      if (words2.has(word) && word.length > 3) { // Only count words longer than 3 chars
+      if (words2.has(word) && word.length > 3) {
+        // Only count words longer than 3 chars
         commonCount++
       }
     }
@@ -774,11 +786,23 @@ export class HelpContentManager {
     logger.info('Content validation passed', { contentId: content.id })
   }
 
-  private calculateChanges(oldContent: HelpContent, newContent: HelpContent): ContentVersion['changes'] {
+  private calculateChanges(
+    oldContent: HelpContent,
+    newContent: HelpContent
+  ): ContentVersion['changes'] {
     const changes: ContentVersion['changes'] = []
 
     // Compare all fields
-    const fields = ['title', 'description', 'content', 'type', 'priority', 'triggers', 'conditions', 'tags']
+    const fields = [
+      'title',
+      'description',
+      'content',
+      'type',
+      'priority',
+      'triggers',
+      'conditions',
+      'tags',
+    ]
 
     for (const field of fields) {
       const oldValue = (oldContent as any)[field]
@@ -831,9 +855,12 @@ export class HelpContentManager {
 
   private startContentOptimization(): void {
     // Start background content optimization
-    setInterval(() => {
-      this.contentOptimizer.optimizeContent()
-    }, 60 * 60 * 1000) // Every hour
+    setInterval(
+      () => {
+        this.contentOptimizer.optimizeContent()
+      },
+      60 * 60 * 1000
+    ) // Every hour
 
     logger.info('Started content optimization background tasks')
   }
@@ -848,7 +875,10 @@ class ContentRecommendationEngine {
     logger.info('Content recommendation engine initialized')
   }
 
-  async generateRecommendations(context: HelpContext, limit: number): Promise<ContentRecommendation[]> {
+  async generateRecommendations(
+    context: HelpContext,
+    limit: number
+  ): Promise<ContentRecommendation[]> {
     const recommendations: ContentRecommendation[] = []
 
     // Algorithm 1: Context-based recommendations
@@ -856,9 +886,11 @@ class ContentRecommendationEngine {
       let score = 0
 
       // Route matching
-      if (content.triggers.some(trigger =>
-        trigger.type === 'route' && context.currentRoute.includes(trigger.condition)
-      )) {
+      if (
+        content.triggers.some(
+          (trigger) => trigger.type === 'route' && context.currentRoute.includes(trigger.condition)
+        )
+      ) {
         score += 0.4
       }
 
@@ -868,9 +900,13 @@ class ContentRecommendationEngine {
       }
 
       // User expertise matching
-      if (content.conditions.some(condition =>
-        condition.type === 'user_expertise' && condition.value === context.userState.expertiseLevel
-      )) {
+      if (
+        content.conditions.some(
+          (condition) =>
+            condition.type === 'user_expertise' &&
+            condition.value === context.userState.expertiseLevel
+        )
+      ) {
         score += 0.2
       }
 
@@ -893,9 +929,7 @@ class ContentRecommendationEngine {
       }
     }
 
-    return recommendations
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, limit)
+    return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, limit)
   }
 }
 

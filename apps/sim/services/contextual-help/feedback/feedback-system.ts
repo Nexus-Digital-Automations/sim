@@ -6,12 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  FeedbackData,
-  HelpContext,
-  HelpContent,
-  HelpAnalytics,
-} from '../types'
+import type { FeedbackData, HelpContext } from '../types'
 
 const logger = createLogger('UserFeedbackSystem')
 
@@ -51,9 +46,7 @@ export class UserFeedbackSystem {
   /**
    * Collect user feedback for help content
    */
-  async collectFeedback(
-    feedbackData: Omit<FeedbackData, 'id' | 'metadata' | 'status'>
-  ): Promise<{
+  async collectFeedback(feedbackData: Omit<FeedbackData, 'id' | 'metadata' | 'status'>): Promise<{
     feedbackId: string
     acknowledged: boolean
     followUpActions?: string[]
@@ -70,12 +63,11 @@ export class UserFeedbackSystem {
       ...feedbackData,
       id: feedbackId,
       metadata: {
-        ...feedbackData.metadata || {},
+        ...(feedbackData.metadata || {}),
         timestamp: new Date(),
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-        screenResolution: typeof screen !== 'undefined'
-          ? `${screen.width}x${screen.height}`
-          : 'unknown',
+        screenResolution:
+          typeof screen !== 'undefined' ? `${screen.width}x${screen.height}` : 'unknown',
       },
       status: 'pending',
     }
@@ -113,17 +105,15 @@ export class UserFeedbackSystem {
   /**
    * Collect implicit feedback from user behavior
    */
-  async collectImplicitFeedback(
-    behaviorData: {
-      userId: string
-      sessionId: string
-      helpContentId?: string
-      action: 'viewed' | 'dismissed_quickly' | 'completed' | 'struggled' | 'sought_help'
-      duration?: number
-      context: HelpContext
-      metadata?: Record<string, any>
-    }
-  ): Promise<void> {
+  async collectImplicitFeedback(behaviorData: {
+    userId: string
+    sessionId: string
+    helpContentId?: string
+    action: 'viewed' | 'dismissed_quickly' | 'completed' | 'struggled' | 'sought_help'
+    duration?: number
+    context: HelpContext
+    metadata?: Record<string, any>
+  }): Promise<void> {
     logger.info(`Collecting implicit feedback`, {
       action: behaviorData.action,
       userId: behaviorData.userId,
@@ -181,8 +171,9 @@ export class UserFeedbackSystem {
     const suggestions: ImprovementSuggestion[] = []
 
     if (contentId) {
-      const contentSuggestions = Array.from(this.improvementSuggestions.values())
-        .filter(s => s.contentId === contentId)
+      const contentSuggestions = Array.from(this.improvementSuggestions.values()).filter(
+        (s) => s.contentId === contentId
+      )
 
       suggestions.push(...contentSuggestions)
     } else {
@@ -190,9 +181,7 @@ export class UserFeedbackSystem {
     }
 
     // Filter by priority if specified
-    const filtered = priority
-      ? suggestions.filter(s => s.priority === priority)
-      : suggestions
+    const filtered = priority ? suggestions.filter((s) => s.priority === priority) : suggestions
 
     // Sort by priority and confidence
     return filtered.sort((a, b) => {
@@ -213,17 +202,23 @@ export class UserFeedbackSystem {
       satisfactionTrend: number
       netPromoterScore: number
     }
-    byContent: Map<string, {
-      averageRating: number
-      feedbackCount: number
-      satisfactionScore: number
-      improvementOpportunities: string[]
-    }>
-    byDeliveryMode: Map<string, {
-      averageRating: number
-      feedbackCount: number
-      effectivenessScore: number
-    }>
+    byContent: Map<
+      string,
+      {
+        averageRating: number
+        feedbackCount: number
+        satisfactionScore: number
+        improvementOpportunities: string[]
+      }
+    >
+    byDeliveryMode: Map<
+      string,
+      {
+        averageRating: number
+        feedbackCount: number
+        effectivenessScore: number
+      }
+    >
     temporalTrends: Array<{
       period: string
       averageRating: number
@@ -341,8 +336,9 @@ export class UserFeedbackSystem {
     let contentUpdates = 0
     let newSuggestions = 0
 
-    const pendingFeedback = Array.from(this.feedbackStore.values())
-      .filter(f => f.status === 'pending')
+    const pendingFeedback = Array.from(this.feedbackStore.values()).filter(
+      (f) => f.status === 'pending'
+    )
 
     for (const feedback of pendingFeedback) {
       try {
@@ -408,7 +404,7 @@ export class UserFeedbackSystem {
           actionRequired: insights.sentiment < -0.5,
           insights: [
             `Comment sentiment: ${insights.sentiment > 0 ? 'positive' : insights.sentiment < 0 ? 'negative' : 'neutral'}`,
-            ...insights.keywords.map(k => `Keyword: ${k}`),
+            ...insights.keywords.map((k) => `Keyword: ${k}`),
           ],
           contentUpdateRecommended: insights.sentiment < -0.3,
           improvementSuggestionGenerated: insights.actionableItems.length > 0,
@@ -451,10 +447,13 @@ export class UserFeedbackSystem {
 
   private startFeedbackAnalysis(): void {
     // Start periodic feedback analysis
-    setInterval(() => {
-      this.analyzeFeedbackTrends()
-      this.generateImprovementSuggestions()
-    }, 30 * 60 * 1000) // Every 30 minutes
+    setInterval(
+      () => {
+        this.analyzeFeedbackTrends()
+        this.generateImprovementSuggestions()
+      },
+      30 * 60 * 1000
+    ) // Every 30 minutes
 
     logger.info('Started periodic feedback analysis')
   }
@@ -498,7 +497,7 @@ export class UserFeedbackSystem {
         actions.push('add_to_feature_backlog')
         break
 
-      case 'comment':
+      case 'comment': {
         const sentiment = this.analyzeCommentSentiment(feedback.comment || '')
         if (sentiment.sentiment < -0.5) {
           actions.push('escalate_to_support')
@@ -507,6 +506,7 @@ export class UserFeedbackSystem {
           actions.push('extract_actionable_items')
         }
         break
+      }
     }
 
     return actions
@@ -557,7 +557,10 @@ export class UserFeedbackSystem {
 
       // Update rating distribution
       const ratingKey = `rating_${feedback.rating}`
-      analytics.ratingDistribution.set(ratingKey, (analytics.ratingDistribution.get(ratingKey) || 0) + 1)
+      analytics.ratingDistribution.set(
+        ratingKey,
+        (analytics.ratingDistribution.get(ratingKey) || 0) + 1
+      )
     }
 
     // Update sentiment if comment
@@ -583,9 +586,36 @@ export class UserFeedbackSystem {
     actionableItems: string[]
   } {
     // Simple sentiment analysis (in production, use more sophisticated NLP)
-    const positiveWords = ['good', 'great', 'helpful', 'useful', 'clear', 'easy', 'love', 'excellent']
-    const negativeWords = ['bad', 'confusing', 'difficult', 'unclear', 'broken', 'useless', 'hate', 'frustrating']
-    const actionableWords = ['should', 'could', 'needs', 'missing', 'add', 'remove', 'improve', 'fix']
+    const positiveWords = [
+      'good',
+      'great',
+      'helpful',
+      'useful',
+      'clear',
+      'easy',
+      'love',
+      'excellent',
+    ]
+    const negativeWords = [
+      'bad',
+      'confusing',
+      'difficult',
+      'unclear',
+      'broken',
+      'useless',
+      'hate',
+      'frustrating',
+    ]
+    const actionableWords = [
+      'should',
+      'could',
+      'needs',
+      'missing',
+      'add',
+      'remove',
+      'improve',
+      'fix',
+    ]
 
     const words = comment.toLowerCase().split(/\s+/)
     let sentiment = 0
@@ -663,9 +693,8 @@ export class UserFeedbackSystem {
     }
 
     const averageRating = totalRatings > 0 ? totalRating / totalRatings : 0
-    const netPromoterScore = totalFeedback > 0
-      ? ((promoters - detractors) / totalFeedback) * 100
-      : 0
+    const netPromoterScore =
+      totalFeedback > 0 ? ((promoters - detractors) / totalFeedback) * 100 : 0
 
     return {
       averageRating,
@@ -675,12 +704,15 @@ export class UserFeedbackSystem {
     }
   }
 
-  private calculateContentSatisfaction(): Map<string, {
-    averageRating: number
-    feedbackCount: number
-    satisfactionScore: number
-    improvementOpportunities: string[]
-  }> {
+  private calculateContentSatisfaction(): Map<
+    string,
+    {
+      averageRating: number
+      feedbackCount: number
+      satisfactionScore: number
+      improvementOpportunities: string[]
+    }
+  > {
     const contentSatisfaction = new Map()
 
     for (const [contentId, analytics] of this.feedbackAnalytics) {
@@ -697,11 +729,14 @@ export class UserFeedbackSystem {
     return contentSatisfaction
   }
 
-  private calculateDeliveryModeSatisfaction(): Map<string, {
-    averageRating: number
-    feedbackCount: number
-    effectivenessScore: number
-  }> {
+  private calculateDeliveryModeSatisfaction(): Map<
+    string,
+    {
+      averageRating: number
+      feedbackCount: number
+      effectivenessScore: number
+    }
+  > {
     const modeSatisfaction = new Map()
 
     // TODO: Implement delivery mode satisfaction calculation
@@ -721,11 +756,10 @@ export class UserFeedbackSystem {
   }
 
   private filterFeedbackByTimeRange(timeRange: { start: Date; end: Date }): FeedbackData[] {
-    return Array.from(this.feedbackStore.values())
-      .filter(feedback => {
-        const timestamp = feedback.metadata.timestamp
-        return timestamp >= timeRange.start && timestamp <= timeRange.end
-      })
+    return Array.from(this.feedbackStore.values()).filter((feedback) => {
+      const timestamp = feedback.metadata.timestamp
+      return timestamp >= timeRange.start && timestamp <= timeRange.end
+    })
   }
 
   private applyFeedbackFilters(
@@ -736,7 +770,7 @@ export class UserFeedbackSystem {
       feedbackTypes?: string[]
     }
   ): FeedbackData[] {
-    return feedback.filter(f => {
+    return feedback.filter((f) => {
       if (filters.feedbackTypes && !filters.feedbackTypes.includes(f.type)) {
         return false
       }
@@ -783,7 +817,7 @@ export class UserFeedbackSystem {
       averageRating: ratingCount > 0 ? totalRating / ratingCount : 0,
       totalResponses: feedback.length,
       ratingResponses: ratingCount,
-      satisfactionIndex: ratingCount > 0 ? (totalRating / ratingCount) / 5 : 0,
+      satisfactionIndex: ratingCount > 0 ? totalRating / ratingCount / 5 : 0,
     }
   }
 
@@ -792,7 +826,9 @@ export class UserFeedbackSystem {
     return []
   }
 
-  private generateImprovementRecommendations(feedback: FeedbackData[]): ImprovementRecommendation[] {
+  private generateImprovementRecommendations(
+    feedback: FeedbackData[]
+  ): ImprovementRecommendation[] {
     // TODO: Implement AI-driven improvement recommendations
     return []
   }

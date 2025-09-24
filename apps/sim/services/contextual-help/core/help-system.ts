@@ -9,13 +9,13 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import { contextAnalyzer } from '../../tool-recommendation/context-analyzer'
 import type {
-  HelpContext,
-  HelpContent,
-  HelpDeliveryConfig,
-  HelpSystemMetrics,
-  HelpEvent,
   ContentRecommendation,
+  HelpContent,
+  HelpContext,
+  HelpDeliveryConfig,
+  HelpEvent,
   HelpSystemError,
+  HelpSystemMetrics,
 } from '../types'
 
 const logger = createLogger('ContextualHelpSystem')
@@ -141,10 +141,7 @@ export class ContextualHelpSystem {
   /**
    * Get contextual help content based on current user state
    */
-  async getContextualHelp(
-    context: HelpContext,
-    contentType?: string
-  ): Promise<HelpContent | null> {
+  async getContextualHelp(context: HelpContext, contentType?: string): Promise<HelpContent | null> {
     logger.info(`Getting contextual help content`, {
       userId: context.userId,
       contentType,
@@ -153,7 +150,7 @@ export class ContextualHelpSystem {
 
     // Check for active help session
     const session = this.activeHelpSessions.get(context.sessionId)
-    if (session && session.currentContent) {
+    if (session?.currentContent) {
       return session.currentContent
     }
 
@@ -447,9 +444,10 @@ export class ContextualHelpSystem {
       },
       {
         id: 'error_state_detection',
-        condition: (context) => context.conversationContext?.messages.some(
-          (msg) => msg.metadata?.intent?.primary === 'error_report'
-        ),
+        condition: (context) =>
+          context.conversationContext?.messages.some(
+            (msg) => msg.metadata?.intent?.primary === 'error_report'
+          ),
         helpPriority: 'critical',
         contentTypes: ['modal', 'inline'],
       },
@@ -576,9 +574,7 @@ export class ContextualHelpSystem {
       }
     }
 
-    return recommendations
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 10) // Limit recommendations
+    return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, 10) // Limit recommendations
   }
 
   private async checkUrgentHelpNeeds(
@@ -800,8 +796,7 @@ export class ContextualHelpSystem {
     if (duration) {
       // Update response time
       const currentAvg = this.systemMetrics.systemPerformance.averageResponseTime
-      this.systemMetrics.systemPerformance.averageResponseTime =
-        (currentAvg + duration) / 2
+      this.systemMetrics.systemPerformance.averageResponseTime = (currentAvg + duration) / 2
     }
 
     // TODO: Update other metrics based on operation
@@ -815,22 +810,25 @@ export class ContextualHelpSystem {
   }
 
   private startMaintenanceLoop(): void {
-    setInterval(() => {
-      // Clean up expired sessions
-      const now = Date.now()
-      const sessionTimeout = 30 * 60 * 1000 // 30 minutes
+    setInterval(
+      () => {
+        // Clean up expired sessions
+        const now = Date.now()
+        const sessionTimeout = 30 * 60 * 1000 // 30 minutes
 
-      for (const [sessionId, session] of this.activeHelpSessions) {
-        if (now - session.startTime.getTime() > sessionTimeout) {
-          this.endHelpSession(sessionId, 'timeout')
+        for (const [sessionId, session] of this.activeHelpSessions) {
+          if (now - session.startTime.getTime() > sessionTimeout) {
+            this.endHelpSession(sessionId, 'timeout')
+          }
         }
-      }
 
-      // Process queued events
-      if (this.eventQueue.length > 0) {
-        this.processEventQueue()
-      }
-    }, 5 * 60 * 1000) // Every 5 minutes
+        // Process queued events
+        if (this.eventQueue.length > 0) {
+          this.processEventQueue()
+        }
+      },
+      5 * 60 * 1000
+    ) // Every 5 minutes
 
     logger.info('Started help system maintenance loop')
   }

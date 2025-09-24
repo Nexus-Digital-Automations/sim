@@ -6,18 +6,18 @@
  * multi-modal delivery, and user feedback.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest'
-import { ContextualHelpSystem } from '../core/help-system'
-import { InteractiveGuidance } from '../guidance/interactive-guidance'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HelpContentManager } from '../content/content-manager'
+import { ContextualHelpSystem } from '../core/help-system'
 import { MultiModalDelivery } from '../delivery/multi-modal-delivery'
 import { UserFeedbackSystem } from '../feedback/feedback-system'
+import { InteractiveGuidance } from '../guidance/interactive-guidance'
 import type {
+  GuidanceStep,
+  GuidanceTutorial,
   HelpContent,
   HelpContext,
   HelpDeliveryConfig,
-  GuidanceTutorial,
-  GuidanceStep,
 } from '../types'
 
 // Mock DOM APIs
@@ -226,9 +226,7 @@ describe('ContextualHelpSystem', () => {
       const sessionId = 'test-session-1'
 
       // This should not throw
-      await expect(
-        helpSystem.endHelpSession(sessionId, 'completed')
-      ).resolves.not.toThrow()
+      await expect(helpSystem.endHelpSession(sessionId, 'completed')).resolves.not.toThrow()
     })
   })
 
@@ -243,11 +241,9 @@ describe('ContextualHelpSystem', () => {
     })
 
     it('should search help content with filters', async () => {
-      const results = await helpSystem.searchHelpContent(
-        'workflow',
-        mockHelpContext,
-        { type: 'tutorial' }
-      )
+      const results = await helpSystem.searchHelpContent('workflow', mockHelpContext, {
+        type: 'tutorial',
+      })
 
       expect(results).toBeInstanceOf(Array)
     })
@@ -326,9 +322,9 @@ describe('InteractiveGuidance', () => {
     })
 
     it('should handle tutorial not found error', async () => {
-      await expect(
-        guidance.startTutorial('nonexistent-tutorial', mockHelpContext)
-      ).rejects.toThrow('Tutorial not found')
+      await expect(guidance.startTutorial('nonexistent-tutorial', mockHelpContext)).rejects.toThrow(
+        'Tutorial not found'
+      )
     })
 
     it('should process user interactions', async () => {
@@ -340,11 +336,9 @@ describe('InteractiveGuidance', () => {
 
       const startResult = await guidance.startTutorial('tutorial-1', mockHelpContext)
 
-      const interactionResult = await guidance.processInteraction(
-        startResult.sessionId,
-        'click',
-        { target: 'nav [href="/workflows"]' }
-      )
+      const interactionResult = await guidance.processInteraction(startResult.sessionId, 'click', {
+        target: 'nav [href="/workflows"]',
+      })
 
       expect(interactionResult).toHaveProperty('result')
       expect(['success', 'failure', 'waiting', 'skip']).toContain(interactionResult.result)
@@ -374,10 +368,7 @@ describe('InteractiveGuidance', () => {
 
       expect(pauseResult).toHaveProperty('resumeToken')
 
-      const resumeResult = await guidance.resumeTutorial(
-        pauseResult.resumeToken,
-        mockHelpContext
-      )
+      const resumeResult = await guidance.resumeTutorial(pauseResult.resumeToken, mockHelpContext)
 
       expect(resumeResult).toHaveProperty('sessionId')
       expect(resumeResult).toHaveProperty('currentStep')
@@ -491,9 +482,7 @@ describe('HelpContentManager', () => {
 
       const content = await contentManager.createContent(contentData, 'test-author')
 
-      await expect(
-        contentManager.deleteContent(content.id, 'test-author')
-      ).resolves.not.toThrow()
+      await expect(contentManager.deleteContent(content.id, 'test-author')).resolves.not.toThrow()
 
       expect(contentManager.getContent(content.id)).toBeNull()
     })
@@ -752,9 +741,7 @@ describe('UserFeedbackSystem', () => {
         context: mockHelpContext,
       }
 
-      await expect(
-        feedbackSystem.collectImplicitFeedback(behaviorData)
-      ).resolves.not.toThrow()
+      await expect(feedbackSystem.collectImplicitFeedback(behaviorData)).resolves.not.toThrow()
     })
 
     it('should generate follow-up actions for feedback', async () => {
@@ -870,16 +857,19 @@ describe('Integration Tests', () => {
 
   it('should work together for end-to-end help delivery', async () => {
     // 1. Create help content
-    const content = await contentManager.createContent({
-      title: 'Test Integration',
-      description: 'Integration test content',
-      content: 'This tests the full help flow',
-      type: 'tutorial',
-      priority: 'medium',
-      triggers: [{ type: 'route', condition: '/test' }],
-      conditions: [],
-      tags: ['test', 'integration'],
-    }, 'test-author')
+    const content = await contentManager.createContent(
+      {
+        title: 'Test Integration',
+        description: 'Integration test content',
+        content: 'This tests the full help flow',
+        type: 'tutorial',
+        priority: 'medium',
+        triggers: [{ type: 'route', condition: '/test' }],
+        conditions: [],
+        tags: ['test', 'integration'],
+      },
+      'test-author'
+    )
 
     // 2. Get contextual help
     const contextualContent = await helpSystem.getContextualHelp({
@@ -890,11 +880,7 @@ describe('Integration Tests', () => {
     // 3. Deliver help (if content found)
     if (contextualContent) {
       const config: HelpDeliveryConfig = { mode: 'modal' }
-      const deliveryResult = await delivery.deliverHelp(
-        contextualContent,
-        mockHelpContext,
-        config
-      )
+      const deliveryResult = await delivery.deliverHelp(contextualContent, mockHelpContext, config)
 
       expect(deliveryResult.success).toBe(true)
 

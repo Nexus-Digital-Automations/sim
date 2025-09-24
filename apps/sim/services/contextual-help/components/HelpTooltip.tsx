@@ -8,9 +8,10 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { HelpContent } from '../types'
 import { useContextualHelp } from './ContextualHelpProvider'
-import type { HelpContent, HelpDeliveryConfig } from '../types'
 
 export interface HelpTooltipProps {
   // Core Props
@@ -76,7 +77,7 @@ export function HelpTooltip({
   onShow,
   onHide,
   onFeedback,
-  children
+  children,
 }: HelpTooltipProps) {
   const { state, getContextualHelp, generateIntelligentHelp, submitFeedback } = useContextualHelp()
 
@@ -138,8 +139,8 @@ export function HelpTooltip({
             deliveryModes: {},
             completionRate: 0,
             averageDuration: 0,
-            dropOffPoints: []
-          }
+            dropOffPoints: [],
+          },
         }
         setCurrentContent(helpContent)
         setIsLoading(false)
@@ -158,12 +159,12 @@ export function HelpTooltip({
             toolContext: {
               toolId,
               toolName,
-              currentStep: currentAction
-            }
+              currentStep: currentAction,
+            },
           },
           contentType: helpType,
           deliveryMode: 'tooltip',
-          adaptToAccessibility: state.userContext.userState.accessibility.screenReader
+          adaptToAccessibility: state.userContext.userState.accessibility.screenReader,
         })
 
         // Use the generated content
@@ -175,7 +176,7 @@ export function HelpTooltip({
         await getContextualHelp({
           mode: helpType,
           styling: { maxWidth, theme },
-          behavior: { persistent, autoClose }
+          behavior: { persistent, autoClose },
         })
 
         if (state.currentHelpContent.length > 0) {
@@ -202,7 +203,7 @@ export function HelpTooltip({
     maxWidth,
     theme,
     persistent,
-    autoClose
+    autoClose,
   ])
 
   // Show tooltip
@@ -277,22 +278,25 @@ export function HelpTooltip({
   }, [position, getTriggerElement])
 
   // Handle feedback submission
-  const handleFeedback = useCallback(async (rating: number, comment?: string) => {
-    if (!currentContent || !state.userContext) return
+  const handleFeedback = useCallback(
+    async (rating: number, comment?: string) => {
+      if (!currentContent || !state.userContext) return
 
-    await submitFeedback({
-      userId: state.userContext.userId,
-      sessionId: state.userContext.sessionId,
-      helpContentId: currentContent.id,
-      type: 'rating',
-      rating,
-      comment,
-      category: 'tooltip_feedback'
-    })
+      await submitFeedback({
+        userId: state.userContext.userId,
+        sessionId: state.userContext.sessionId,
+        helpContentId: currentContent.id,
+        type: 'rating',
+        rating,
+        comment,
+        category: 'tooltip_feedback',
+      })
 
-    onFeedback?.(rating, comment)
-    setFeedbackVisible(false)
-  }, [currentContent, state.userContext, submitFeedback, onFeedback])
+      onFeedback?.(rating, comment)
+      setFeedbackVisible(false)
+    },
+    [currentContent, state.userContext, submitFeedback, onFeedback]
+  )
 
   // Event handlers
   const handleMouseEnter = useCallback(() => {
@@ -403,43 +407,45 @@ export function HelpTooltip({
         className={`contextual-help-tooltip contextual-help-tooltip--${computedPosition} contextual-help-tooltip--${theme} ${className}`}
         style={{
           maxWidth,
-          ...style
+          ...style,
         }}
-        role="tooltip"
+        role='tooltip'
         aria-label={ariaLabel}
         aria-describedby={currentContent?.id}
       >
         {isLoading ? (
-          <div className="contextual-help-tooltip__loading">
-            <div className="spinner" />
+          <div className='contextual-help-tooltip__loading'>
+            <div className='spinner' />
             <span>Loading help...</span>
           </div>
         ) : currentContent ? (
-          <div className="contextual-help-tooltip__content">
-            <div className="contextual-help-tooltip__header">
-              <h4 className="contextual-help-tooltip__title">
-                {currentContent.title}
-              </h4>
+          <div className='contextual-help-tooltip__content'>
+            <div className='contextual-help-tooltip__header'>
+              <h4 className='contextual-help-tooltip__title'>{currentContent.title}</h4>
               {!persistent && (
                 <button
-                  className="contextual-help-tooltip__close"
+                  className='contextual-help-tooltip__close'
                   onClick={hideTooltip}
-                  aria-label="Close help"
+                  aria-label='Close help'
                 >
                   ×
                 </button>
               )}
             </div>
 
-            <div className="contextual-help-tooltip__body">
+            <div className='contextual-help-tooltip__body'>
               {typeof currentContent.content === 'string' ? (
                 <p>{currentContent.content}</p>
               ) : (
-                <div className="contextual-help-tooltip__blocks">
+                <div className='contextual-help-tooltip__blocks'>
                   {currentContent.content.map((block, index) => (
                     <div key={block.id} className={`help-block help-block--${block.type}`}>
                       {block.type === 'text' && <p>{block.content}</p>}
-                      {block.type === 'code' && <pre><code>{block.content}</code></pre>}
+                      {block.type === 'code' && (
+                        <pre>
+                          <code>{block.content}</code>
+                        </pre>
+                      )}
                       {block.type === 'link' && <a href={block.content}>Learn more</a>}
                     </div>
                   ))}
@@ -448,22 +454,22 @@ export function HelpTooltip({
             </div>
 
             {!feedbackVisible ? (
-              <div className="contextual-help-tooltip__actions">
+              <div className='contextual-help-tooltip__actions'>
                 <button
-                  className="contextual-help-tooltip__feedback-btn"
+                  className='contextual-help-tooltip__feedback-btn'
                   onClick={() => setFeedbackVisible(true)}
                 >
                   Was this helpful?
                 </button>
               </div>
             ) : (
-              <div className="contextual-help-tooltip__feedback">
+              <div className='contextual-help-tooltip__feedback'>
                 <p>Rate this help:</p>
-                <div className="rating-buttons">
-                  {[1, 2, 3, 4, 5].map(rating => (
+                <div className='rating-buttons'>
+                  {[1, 2, 3, 4, 5].map((rating) => (
                     <button
                       key={rating}
-                      className="rating-btn"
+                      className='rating-btn'
                       onClick={() => handleFeedback(rating)}
                       aria-label={`Rate ${rating} stars`}
                     >
@@ -476,7 +482,9 @@ export function HelpTooltip({
           </div>
         ) : null}
 
-        <div className={`contextual-help-tooltip__arrow contextual-help-tooltip__arrow--${computedPosition}`} />
+        <div
+          className={`contextual-help-tooltip__arrow contextual-help-tooltip__arrow--${computedPosition}`}
+        />
       </div>
     </>
   )

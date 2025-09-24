@@ -10,24 +10,23 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { contextualHelpSystem } from '../core/help-system'
-import { interactiveGuidance } from '../guidance/interactive-guidance'
 import { helpContentManager } from '../content/content-manager'
-import { multiModalDelivery } from '../delivery/multi-modal-delivery'
-import { userFeedbackSystem } from '../feedback/feedback-system'
+import type { GeneratedHelpContent, NLHelpContentConfig } from '../content/nl-framework-integration'
 import { nlFrameworkIntegration } from '../content/nl-framework-integration'
+import { contextualHelpSystem } from '../core/help-system'
+import { userFeedbackSystem } from '../feedback/feedback-system'
+import { interactiveGuidance } from '../guidance/interactive-guidance'
 import type {
-  HelpContext,
-  HelpContent,
+  FeedbackData,
   GuidanceTutorial,
+  HelpContent,
+  HelpContext,
   HelpDeliveryConfig,
+  HelpEvent,
   HelpSearchQuery,
   HelpSearchResult,
-  FeedbackData,
   HelpSystemMetrics,
-  HelpEvent
 } from '../types'
-import type { NLHelpContentConfig, GeneratedHelpContent } from '../content/nl-framework-integration'
 
 const logger = createLogger('ContextualHelpAPI')
 
@@ -80,7 +79,7 @@ export class ContextualHelpAPI {
     logger.info('Getting contextual help', {
       userId: context.userId,
       toolContext: context.toolContext,
-      expertiseLevel: context.userState.expertiseLevel
+      expertiseLevel: context.userState.expertiseLevel,
     })
 
     try {
@@ -99,7 +98,7 @@ export class ContextualHelpAPI {
         userId: context.userId,
         sessionId: context.sessionId,
         context,
-        data: { helpNeedsCount: helpNeeds.length }
+        data: { helpNeedsCount: helpNeeds.length },
       })
 
       return {
@@ -110,11 +109,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to get contextual help', { error, context })
       return {
@@ -122,16 +120,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'HELP_RETRIEVAL_FAILED',
           message: 'Failed to retrieve contextual help',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -147,7 +145,7 @@ export class ContextualHelpAPI {
     logger.info('Generating intelligent help content', {
       toolId: config.toolId,
       expertiseLevel: config.userExpertiseLevel,
-      contentType: config.contentType
+      contentType: config.contentType,
     })
 
     try {
@@ -165,8 +163,8 @@ export class ContextualHelpAPI {
         context: config.currentContext,
         data: {
           generationType: 'intelligent',
-          qualityScore: generatedContent.generationMetadata.qualityScore
-        }
+          qualityScore: generatedContent.generationMetadata.qualityScore,
+        },
       })
 
       return {
@@ -177,11 +175,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to generate intelligent help', { error, config })
       return {
@@ -189,16 +186,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'INTELLIGENT_HELP_GENERATION_FAILED',
           message: 'Failed to generate intelligent help content',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -233,7 +230,7 @@ export class ContextualHelpAPI {
         userId: userContext.userId,
         sessionId: userContext.sessionId,
         context: userContext,
-        data: { action: 'guidance_started', tutorialType }
+        data: { action: 'guidance_started', tutorialType },
       })
 
       return {
@@ -244,11 +241,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to start interactive guidance', { error, toolId, tutorialType })
       return {
@@ -256,16 +252,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'GUIDANCE_START_FAILED',
           message: 'Failed to start interactive guidance',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -296,8 +292,8 @@ export class ContextualHelpAPI {
         data: {
           action: 'search',
           query: query.query,
-          resultCount: enhancedResults.length
-        }
+          resultCount: enhancedResults.length,
+        },
       })
 
       return {
@@ -308,11 +304,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to search help content', { error, query })
       return {
@@ -320,16 +315,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'HELP_SEARCH_FAILED',
           message: 'Failed to search help content',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -344,7 +339,7 @@ export class ContextualHelpAPI {
     const startTime = Date.now()
     logger.info('Submitting help feedback', {
       type: feedbackData.type,
-      userId: feedbackData.userId
+      userId: feedbackData.userId,
     })
 
     try {
@@ -359,8 +354,8 @@ export class ContextualHelpAPI {
         context: feedbackData.metadata.context,
         data: {
           feedbackType: feedbackData.type,
-          rating: feedbackData.rating
-        }
+          rating: feedbackData.rating,
+        },
       })
 
       return {
@@ -371,11 +366,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to submit feedback', { error, feedbackData })
       return {
@@ -383,16 +377,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'FEEDBACK_SUBMISSION_FAILED',
           message: 'Failed to submit feedback',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -419,11 +413,10 @@ export class ContextualHelpAPI {
           requestId: requestContext?.requestId || 'internal',
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to get help metrics', { error })
       return {
@@ -431,16 +424,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'METRICS_RETRIEVAL_FAILED',
           message: 'Failed to retrieve help system metrics',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext?.requestId || 'internal',
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -476,7 +469,7 @@ export class ContextualHelpAPI {
         userId: newContext.userId,
         sessionId: newContext.sessionId,
         context: newContext,
-        data: { action: 'content_adapted', originalContentId: contentId }
+        data: { action: 'content_adapted', originalContentId: contentId },
       })
 
       return {
@@ -487,11 +480,10 @@ export class ContextualHelpAPI {
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
-
     } catch (error) {
       logger.error('Failed to adapt help content', { error, contentId })
       return {
@@ -499,16 +491,16 @@ export class ContextualHelpAPI {
         error: {
           code: 'CONTENT_ADAPTATION_FAILED',
           message: 'Failed to adapt help content',
-          details: error.message
+          details: error.message,
         },
         metadata: {
           timestamp: new Date(),
           requestId: requestContext.requestId,
           performance: {
             duration: Date.now() - startTime,
-            cacheHit: false
-          }
-        }
+            cacheHit: false,
+          },
+        },
       }
     }
   }
@@ -521,18 +513,18 @@ export class ContextualHelpAPI {
       styling: {
         theme: 'auto',
         animation: 'fade',
-        zIndex: 1000
+        zIndex: 1000,
       },
       behavior: {
         autoClose: 10000,
         persistent: false,
-        dismissible: true
+        dismissible: true,
       },
       accessibility: {
         announceToScreenReader: context.userState.accessibility.screenReader,
         trapFocus: true,
-        returnFocus: true
-      }
+        returnFocus: true,
+      },
     }
   }
 
@@ -541,16 +533,15 @@ export class ContextualHelpAPI {
     query: HelpSearchQuery
   ): Promise<HelpSearchResult[]> {
     // Enhance search results with contextual relevance
-    return results.map(result => ({
-      ...result,
-      relevanceScore: this.calculateContextualRelevance(result, query)
-    })).sort((a, b) => b.relevanceScore - a.relevanceScore)
+    return results
+      .map((result) => ({
+        ...result,
+        relevanceScore: this.calculateContextualRelevance(result, query),
+      }))
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
   }
 
-  private calculateContextualRelevance(
-    result: HelpSearchResult,
-    query: HelpSearchQuery
-  ): number {
+  private calculateContextualRelevance(result: HelpSearchResult, query: HelpSearchQuery): number {
     let relevance = result.relevanceScore
 
     // Boost relevance based on user context
@@ -576,7 +567,7 @@ export class ContextualHelpAPI {
     const event: HelpEvent = {
       id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
-      ...eventData
+      ...eventData,
     }
 
     // Log to help system for analytics

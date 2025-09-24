@@ -8,9 +8,10 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { GuidanceStep, GuidanceTutorial, InteractiveElement } from '../types'
 import { useContextualHelp } from './ContextualHelpProvider'
-import type { GuidanceTutorial, GuidanceStep, InteractiveElement } from '../types'
 
 export interface InteractiveGuidancePanelProps {
   // Core Props
@@ -64,7 +65,7 @@ export function InteractiveGuidancePanel({
   style,
   onStepChange,
   onTutorialComplete,
-  onTutorialSkip
+  onTutorialSkip,
 }: InteractiveGuidancePanelProps) {
   const {
     state,
@@ -72,7 +73,7 @@ export function InteractiveGuidancePanel({
     nextGuidanceStep,
     previousGuidanceStep,
     endGuidance,
-    submitFeedback
+    submitFeedback,
   } = useContextualHelp()
 
   // State
@@ -88,7 +89,8 @@ export function InteractiveGuidancePanel({
   const { activeGuidance } = state
   const currentTutorial = activeGuidance.tutorial
   const currentStep = currentTutorial?.steps[activeGuidance.currentStepIndex]
-  const isLastStep = currentTutorial && activeGuidance.currentStepIndex === currentTutorial.steps.length - 1
+  const isLastStep =
+    currentTutorial && activeGuidance.currentStepIndex === currentTutorial.steps.length - 1
   const progressPercentage = currentTutorial
     ? ((activeGuidance.currentStepIndex + 1) / currentTutorial.steps.length) * 100
     : 0
@@ -160,13 +162,16 @@ export function InteractiveGuidancePanel({
   }, [endGuidance, onClose])
 
   // Handle step action execution
-  const handleExecuteAction = useCallback(async (action: any) => {
-    // This would integrate with the actual action execution system
-    console.log('Executing step action:', action)
+  const handleExecuteAction = useCallback(
+    async (action: any) => {
+      // This would integrate with the actual action execution system
+      console.log('Executing step action:', action)
 
-    // For now, just advance to next step
-    setTimeout(handleNextStep, 1000)
-  }, [handleNextStep])
+      // For now, just advance to next step
+      setTimeout(handleNextStep, 1000)
+    },
+    [handleNextStep]
+  )
 
   // Handle completion feedback submission
   const handleSubmitCompletionFeedback = useCallback(async () => {
@@ -179,30 +184,36 @@ export function InteractiveGuidancePanel({
       type: 'completion',
       rating: completionFeedback.rating,
       comment: completionFeedback.comment,
-      category: 'tutorial_completion'
+      category: 'tutorial_completion',
     })
 
     handleCloseTutorial()
   }, [currentTutorial, state.userContext, completionFeedback, submitFeedback, handleCloseTutorial])
 
   // Drag handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!draggable) return
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!draggable) return
 
-    setIsDragging(true)
-    const rect = (e.target as HTMLElement).getBoundingClientRect()
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    })
-  }, [draggable])
+      setIsDragging(true)
+      const rect = (e.target as HTMLElement).getBoundingClientRect()
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    },
+    [draggable]
+  )
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !draggable) return
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !draggable) return
 
-    // Update panel position based on mouse movement
-    // This would be implemented with actual positioning logic
-  }, [isDragging, draggable])
+      // Update panel position based on mouse movement
+      // This would be implemented with actual positioning logic
+    },
+    [isDragging, draggable]
+  )
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false)
@@ -233,25 +244,22 @@ export function InteractiveGuidancePanel({
       style={{
         width,
         height,
-        ...style
+        ...style,
       }}
     >
       {/* Header */}
-      <div
-        className="interactive-guidance-panel__header"
-        onMouseDown={handleMouseDown}
-      >
-        <div className="interactive-guidance-panel__title">
+      <div className='interactive-guidance-panel__header' onMouseDown={handleMouseDown}>
+        <div className='interactive-guidance-panel__title'>
           <h3>{currentTutorial.title}</h3>
-          <span className="difficulty-badge difficulty-badge--{currentTutorial.difficulty}">
+          <span className='difficulty-badge difficulty-badge--{currentTutorial.difficulty}'>
             {currentTutorial.difficulty}
           </span>
         </div>
 
-        <div className="interactive-guidance-panel__controls">
+        <div className='interactive-guidance-panel__controls'>
           {minimizable && (
             <button
-              className="panel-control-btn"
+              className='panel-control-btn'
               onClick={() => setIsMinimized(!isMinimized)}
               aria-label={isMinimized ? 'Maximize panel' : 'Minimize panel'}
             >
@@ -260,9 +268,9 @@ export function InteractiveGuidancePanel({
           )}
 
           <button
-            className="panel-control-btn"
+            className='panel-control-btn'
             onClick={handleCloseTutorial}
-            aria-label="Close guidance"
+            aria-label='Close guidance'
           >
             ×
           </button>
@@ -273,12 +281,9 @@ export function InteractiveGuidancePanel({
         <>
           {/* Progress Bar */}
           {showProgress && (
-            <div className="interactive-guidance-panel__progress">
-              <div
-                className="progress-bar"
-                style={{ width: `${progressPercentage}%` }}
-              />
-              <span className="progress-text">
+            <div className='interactive-guidance-panel__progress'>
+              <div className='progress-bar' style={{ width: `${progressPercentage}%` }} />
+              <span className='progress-text'>
                 Step {activeGuidance.currentStepIndex + 1} of {currentTutorial.steps.length}
               </span>
             </div>
@@ -286,14 +291,12 @@ export function InteractiveGuidancePanel({
 
           {/* Tutorial Description */}
           {activeGuidance.currentStepIndex === 0 && (
-            <div className="interactive-guidance-panel__description">
+            <div className='interactive-guidance-panel__description'>
               <p>{currentTutorial.description}</p>
-              <div className="tutorial-meta">
-                <span className="estimated-time">
-                  ⏱️ ~{currentTutorial.estimatedDuration} min
-                </span>
+              <div className='tutorial-meta'>
+                <span className='estimated-time'>⏱️ ~{currentTutorial.estimatedDuration} min</span>
                 {currentTutorial.prerequisites && currentTutorial.prerequisites.length > 0 && (
-                  <div className="prerequisites">
+                  <div className='prerequisites'>
                     <strong>Prerequisites:</strong>
                     <ul>
                       {currentTutorial.prerequisites.map((prereq, index) => (
@@ -308,29 +311,27 @@ export function InteractiveGuidancePanel({
 
           {/* Current Step Content */}
           {currentStep && (
-            <div className="interactive-guidance-panel__step">
-              <div className="step-header">
-                <h4 className="step-title">{currentStep.title}</h4>
-                <span className="step-type step-type--{currentStep.type}">
-                  {currentStep.type}
-                </span>
+            <div className='interactive-guidance-panel__step'>
+              <div className='step-header'>
+                <h4 className='step-title'>{currentStep.title}</h4>
+                <span className='step-type step-type--{currentStep.type}'>{currentStep.type}</span>
               </div>
 
-              <div className="step-content">
-                <p className="step-description">{currentStep.description}</p>
+              <div className='step-content'>
+                <p className='step-description'>{currentStep.description}</p>
 
                 {currentStep.content.multimedia?.screenshot && (
-                  <div className="step-media">
+                  <div className='step-media'>
                     <img
                       src={currentStep.content.multimedia.screenshot}
                       alt={`Step ${activeGuidance.currentStepIndex + 1} screenshot`}
-                      className="step-screenshot"
+                      className='step-screenshot'
                     />
                   </div>
                 )}
 
                 {currentStep.content.interactiveElements && (
-                  <div className="step-interactive-elements">
+                  <div className='step-interactive-elements'>
                     {currentStep.content.interactiveElements.map((element, index) => (
                       <InteractiveElementRenderer
                         key={element.id}
@@ -344,12 +345,12 @@ export function InteractiveGuidancePanel({
 
               {/* Step Actions */}
               {currentStep.actions && currentStep.actions.length > 0 && (
-                <div className="step-actions">
+                <div className='step-actions'>
                   <h5>Actions:</h5>
                   {currentStep.actions.map((action, index) => (
                     <button
                       key={index}
-                      className="step-action-btn"
+                      className='step-action-btn'
                       onClick={() => handleExecuteAction(action)}
                     >
                       {action.type}: {action.target}
@@ -360,7 +361,7 @@ export function InteractiveGuidancePanel({
 
               {/* Auto-advance indicator */}
               {autoAdvance && currentStep.timing?.autoAdvance && (
-                <div className="auto-advance-indicator">
+                <div className='auto-advance-indicator'>
                   <span>Auto-advancing in {Math.ceil(currentStep.timing.autoAdvance / 1000)}s</span>
                   <button onClick={() => autoAdvanceTimer && clearTimeout(autoAdvanceTimer)}>
                     Pause
@@ -371,59 +372,55 @@ export function InteractiveGuidancePanel({
           )}
 
           {/* Navigation Controls */}
-          <div className="interactive-guidance-panel__navigation">
+          <div className='interactive-guidance-panel__navigation'>
             <button
-              className="nav-btn nav-btn--previous"
+              className='nav-btn nav-btn--previous'
               onClick={handlePreviousStep}
               disabled={activeGuidance.currentStepIndex === 0}
             >
               ← Previous
             </button>
 
-            <div className="nav-center">
+            <div className='nav-center'>
               {allowSkip && (
-                <button
-                  className="nav-btn nav-btn--skip"
-                  onClick={handleSkipTutorial}
-                >
+                <button className='nav-btn nav-btn--skip' onClick={handleSkipTutorial}>
                   Skip Tutorial
                 </button>
               )}
             </div>
 
-            <button
-              className="nav-btn nav-btn--next"
-              onClick={handleNextStep}
-            >
+            <button className='nav-btn nav-btn--next' onClick={handleNextStep}>
               {isLastStep ? 'Complete' : 'Next →'}
             </button>
           </div>
 
           {/* Completion Feedback Form */}
           {isLastStep && Object.keys(completionFeedback).length === 0 && (
-            <div className="completion-feedback">
+            <div className='completion-feedback'>
               <h4>How was this tutorial?</h4>
-              <div className="rating-section">
+              <div className='rating-section'>
                 <span>Rating:</span>
-                {[1, 2, 3, 4, 5].map(rating => (
+                {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
                     className={`rating-btn ${completionFeedback.rating === rating ? 'selected' : ''}`}
-                    onClick={() => setCompletionFeedback(prev => ({ ...prev, rating }))}
+                    onClick={() => setCompletionFeedback((prev) => ({ ...prev, rating }))}
                   >
                     ★
                   </button>
                 ))}
               </div>
-              <div className="comment-section">
+              <div className='comment-section'>
                 <textarea
-                  placeholder="Any additional feedback? (optional)"
+                  placeholder='Any additional feedback? (optional)'
                   value={completionFeedback.comment || ''}
-                  onChange={(e) => setCompletionFeedback(prev => ({ ...prev, comment: e.target.value }))}
+                  onChange={(e) =>
+                    setCompletionFeedback((prev) => ({ ...prev, comment: e.target.value }))
+                  }
                   rows={3}
                 />
               </div>
-              <div className="feedback-actions">
+              <div className='feedback-actions'>
                 <button onClick={handleCloseTutorial}>Skip Feedback</button>
                 <button
                   onClick={handleSubmitCompletionFeedback}
@@ -457,7 +454,7 @@ function InteractiveElementRenderer({ element, onAction }: InteractiveElementRen
     case 'button':
       return (
         <button
-          className="interactive-element interactive-element--button"
+          className='interactive-element interactive-element--button'
           onClick={handleElementAction}
           style={element.style}
         >
@@ -468,23 +465,20 @@ function InteractiveElementRenderer({ element, onAction }: InteractiveElementRen
     case 'highlight':
       return (
         <div
-          className="interactive-element interactive-element--highlight"
+          className='interactive-element interactive-element--highlight'
           style={{
             position: 'absolute',
             ...element.style,
             border: '2px solid #ff6b35',
             backgroundColor: 'rgba(255, 107, 53, 0.1)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}
         />
       )
 
     case 'tooltip':
       return (
-        <div
-          className="interactive-element interactive-element--tooltip"
-          style={element.style}
-        >
+        <div className='interactive-element interactive-element--tooltip' style={element.style}>
           {element.content}
         </div>
       )
