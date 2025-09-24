@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Tool Intelligence System - Interactive Documentation</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --error-color: #dc2626;
+            --background-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --code-bg: #f3f4f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background-color);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 300px;
+            background: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .nav-menu {
+            padding: 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            padding-left: 0.75rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: var(--code-bg);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-item.sub-item {
+            margin-left: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 2rem;
+            max-width: calc(100vw - 300px);
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        /* Cards and Components */
+        .card {
+            background: var(--surface-color);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Interactive Elements */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* Code and Examples */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .inline-code {
+            background: var(--code-bg);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--primary-color);
+        }
+
+        /* Interactive Examples */
+        .interactive-example {
+            border: 2px solid var(--primary-color);
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .example-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .example-content {
+            padding: 1.5rem;
+            background: var(--surface-color);
+        }
+
+        .example-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .example-output {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background: var(--code-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-success {
+            background-color: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .status-warning {
+            background-color: #fef3c7;
+            color: var(--warning-color);
+        }
+
+        .status-error {
+            background-color: #fee2e2;
+            color: var(--error-color);
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Search */
+        .search-container {
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .search-results {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .search-result:hover {
+            background: var(--code-bg);
+        }
+
+        .search-result:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                max-width: 100vw;
+            }
+
+            .mobile-menu-btn {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 200;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 0.5rem;
+                border-radius: 0.375rem;
+                cursor: pointer;
+            }
+        }
+
+        /* Documentation Styles */
+        .doc-content h1, .doc-content h2, .doc-content h3, .doc-content h4, .doc-content h5, .doc-content h6 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .doc-content h1 {
+            font-size: 1.875rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .doc-content h2 {
+            font-size: 1.5rem;
+        }
+
+        .doc-content h3 {
+            font-size: 1.25rem;
+        }
+
+        .doc-content p {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .doc-content ul, .doc-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .doc-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .doc-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .doc-content th, .doc-content td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .doc-content th {
+            background: var(--code-bg);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" style="display: none;">☰</button>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">Enhanced Tool Intelligence</h1>
+                <p class="sidebar-subtitle">Interactive Documentation</p>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search documentation..." id="searchInput">
+                    <div class="search-results" id="searchResults" style="display: none;"></div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Getting Started</div>
+                    <a class="nav-item active" data-section="overview">System Overview</a>
+                    <a class="nav-item" data-section="quick-start">Quick Start Guide</a>
+                    <a class="nav-item" data-section="features">Key Features</a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">User Guide</div>
+                    <a class="nav-item" data-section="natural-language">Natural Language Interface</a>
+                    <a class="nav-item" data-section="tool-discovery">Tool Discovery</a>
+                    <a class="nav-item" data-section="interactive-examples">Interactive Examples</a>
+                    <a class="nav-item" data-section="best-practices">Best Practices</a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Technical Documentation</div>
+                    <a class="nav-item" data-section="api-reference">API Reference</a>
+                    <a class="nav-item" data-section="architecture">System Architecture</a>
+                    <a class="nav-item" data-section="integration">Integration Guide</a>
+                    <a class="nav-item" data-section="troubleshooting">Troubleshooting</a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Administrator Guide</div>
+                    <a class="nav-item" data-section="admin-setup">System Setup</a>
+                    <a class="nav-item" data-section="user-management">User Management</a>
+                    <a class="nav-item" data-section="content-management">Content Management</a>
+                    <a class="nav-item" data-section="monitoring">Monitoring & Analytics</a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Advanced Topics</div>
+                    <a class="nav-item" data-section="customization">Customization</a>
+                    <a class="nav-item" data-section="security">Security & Compliance</a>
+                    <a class="nav-item" data-section="performance">Performance Tuning</a>
+                    <a class="nav-item" data-section="migration">Migration Guide</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section class="content-section active" id="overview">
+                <div class="page-header">
+                    <h1 class="page-title">Enhanced Tool Intelligence System</h1>
+                    <p class="page-subtitle">Comprehensive natural language interface for intelligent tool interactions</p>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3 class="feature-title">Natural Language Processing</h3>
+                        <p class="feature-description">Interact with tools using everyday language instead of technical commands</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Smart Recommendations</h3>
+                        <p class="feature-description">Context-aware tool suggestions based on user intent and conversation history</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3 class="feature-title">Intelligent Error Handling</h3>
+                        <p class="feature-description">User-friendly error explanations with step-by-step resolution guides</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="feature-title">Adaptive Learning</h3>
+                        <p class="feature-description">System learns from interactions to provide better recommendations over time</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Usage Analytics</h3>
+                        <p class="feature-description">Comprehensive tracking of tool usage patterns and success rates</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">⚙️</div>
+                        <h3 class="feature-title">Configurable</h3>
+                        <p class="feature-description">Highly customizable to fit different user roles and skill levels</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">System Status</h2>
+                        <p class="card-description">Current system health and performance indicators</p>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab active" data-tab="health">System Health</button>
+                        <button class="tab" data-tab="performance">Performance</button>
+                        <button class="tab" data-tab="usage">Usage Statistics</button>
+                    </div>
+
+                    <div class="tab-content active" id="health">
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0;">
+                            <span class="status-indicator status-success">System Online</span>
+                            <span class="status-indicator status-success">NL Engine Active</span>
+                            <span class="status-indicator status-success">Recommendations Active</span>
+                            <span class="status-indicator status-warning">Cache Warming</span>
+                        </div>
+                        <p>All core systems are operational. Natural language processing is running at full capacity.</p>
+                    </div>
+
+                    <div class="tab-content" id="performance">
+                        <ul>
+                            <li><strong>Response Time:</strong> 1.2s average (Target: <2s)</li>
+                            <li><strong>Recommendation Accuracy:</strong> 87% (Target: >85%)</li>
+                            <li><strong>Cache Hit Rate:</strong> 73% (Target: >60%)</li>
+                            <li><strong>Error Rate:</strong> 0.8% (Target: <1%)</li>
+                        </ul>
+                    </div>
+
+                    <div class="tab-content" id="usage">
+                        <ul>
+                            <li><strong>Daily Active Users:</strong> 1,247</li>
+                            <li><strong>Tools Accessed Today:</strong> 3,856</li>
+                            <li><strong>Successful Interactions:</strong> 94.2%</li>
+                            <li><strong>Average Session Duration:</strong> 8.5 minutes</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Start Section -->
+            <section class="content-section" id="quick-start">
+                <div class="page-header">
+                    <h1 class="page-title">Quick Start Guide</h1>
+                    <p class="page-subtitle">Get up and running with Enhanced Tool Intelligence in minutes</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Your First Natural Language Query</h2>
+                        <p class="card-description">Try interacting with tools using everyday language</p>
+                    </div>
+
+                    <div class="interactive-example">
+                        <div class="example-header">🚀 Try It Now - Natural Language Tool Interaction</div>
+                        <div class="example-content">
+                            <p><strong>Instead of technical commands, just describe what you want:</strong></p>
+                            <textarea class="example-input" id="nlInput" placeholder="Example: I need to send an email to my project team about the deadline change">I need to send an email to my project team about the deadline change</textarea>
+                            <button class="btn btn-primary" onclick="processNaturalLanguage()">Process Request</button>
+                            <div class="example-output" id="nlOutput">Click "Process Request" to see how the system interprets your natural language and recommends tools...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Step-by-Step Tutorial</h2>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" data-tab="step1">1. Basic Interaction</button>
+                        <button class="tab" data-tab="step2">2. Tool Discovery</button>
+                        <button class="tab" data-tab="step3">3. Error Handling</button>
+                        <button class="tab" data-tab="step4">4. Advanced Features</button>
+                    </div>
+
+                    <div class="tab-content active" id="step1">
+                        <h3>Basic Natural Language Interaction</h3>
+                        <p>Start by describing what you want to accomplish in plain English:</p>
+                        <div class="code-block">
+                        User: "I want to create a workflow that processes customer orders"
+
+                        System Response:
+                        🎯 I understand you want to create an order processing workflow.
+
+                        Recommended Tool: Build Workflow
+                        - Confidence: 92%
+                        - Difficulty: Intermediate
+                        - Estimated Time: 15-20 minutes
+
+                        Would you like me to:
+                        1. Walk you through creating this workflow step-by-step
+                        2. Show you similar workflow examples first
+                        3. Start with a template and customize it
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="step2">
+                        <h3>Discovering Available Tools</h3>
+                        <p>The system helps you find the right tools for your needs:</p>
+                        <div class="code-block">
+                        User: "What tools can help me with email automation?"
+
+                        System Response:
+                        📧 Found 3 relevant tools for email automation:
+
+                        1. Send Email Tool (95% match)
+                           - Perfect for: Single emails, notifications, alerts
+                           - Best for: Immediate email sending
+
+                        2. Email Sequence Builder (88% match)
+                           - Perfect for: Drip campaigns, follow-ups, onboarding
+                           - Best for: Automated email series
+
+                        3. Email Template Manager (75% match)
+                           - Perfect for: Creating reusable email templates
+                           - Best for: Consistent messaging
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="step3">
+                        <h3>Intelligent Error Handling</h3>
+                        <p>When things go wrong, the system provides helpful guidance:</p>
+                        <div class="code-block">
+                        Error: Workflow execution failed at step 3
+
+                        Intelligent Explanation:
+                        🔧 The issue occurred during email sending in your workflow.
+
+                        What happened: The email service couldn't connect to your SMTP server.
+
+                        Quick Fix:
+                        1. Check your email service settings in the configuration
+                        2. Verify your SMTP credentials are correct
+                        3. Ensure your firewall allows SMTP connections
+
+                        Alternative: Use our built-in email service while you fix the SMTP issue
+
+                        This typically takes 5-10 minutes to resolve.
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="step4">
+                        <h3>Advanced Features</h3>
+                        <p>Leverage advanced capabilities for complex workflows:</p>
+                        <div class="code-block">
+                        User: "Create a complex workflow with error handling and monitoring"
+
+                        System Response:
+                        🏗️ I'll help you build an enterprise-grade workflow with:
+
+                        ✅ Comprehensive Error Handling
+                           - Automatic retries with exponential backoff
+                           - Circuit breakers for failing services
+                           - Dead letter queues for unprocessable items
+
+                        ✅ Real-time Monitoring
+                           - Performance metrics collection
+                           - Alert notifications for failures
+                           - Dashboard visualizations
+
+                        ✅ Advanced Features
+                           - Conditional logic and branching
+                           - Parallel execution where possible
+                           - Data transformation and validation
+
+                        Ready to start? This will take 30-45 minutes to set up properly.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Natural Language Interface Section -->
+            <section class="content-section" id="natural-language">
+                <div class="page-header">
+                    <h1 class="page-title">Natural Language Interface</h1>
+                    <p class="page-subtitle">Learn how to communicate effectively with the system</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Communication Patterns</h2>
+                        <p class="card-description">Effective ways to express your intentions</p>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" data-tab="patterns-good">✅ Effective Patterns</button>
+                        <button class="tab" data-tab="patterns-avoid">❌ Patterns to Avoid</button>
+                        <button class="tab" data-tab="patterns-examples">📚 More Examples</button>
+                    </div>
+
+                    <div class="tab-content active" id="patterns-good">
+                        <h3>Effective Communication Patterns</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="background: #dcfce7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #059669;">
+                                <strong>Be Specific About Your Goal:</strong><br>
+                                ✅ "I need to send a weekly status report to my project stakeholders"<br>
+                                ✅ "Create a workflow that processes customer refund requests"
+                            </div>
+
+                            <div style="background: #dcfce7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #059669;">
+                                <strong>Include Context:</strong><br>
+                                ✅ "Send an urgent email to the development team about the security issue"<br>
+                                ✅ "I want to automate our customer onboarding process for new subscribers"
+                            </div>
+
+                            <div style="background: #dcfce7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #059669;">
+                                <strong>Mention Constraints:</strong><br>
+                                ✅ "Create a simple workflow that runs every morning at 9 AM"<br>
+                                ✅ "I need to process orders but only for premium customers"
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="patterns-avoid">
+                        <h3>Patterns That Reduce Accuracy</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #dc2626;">
+                                <strong>Too Vague:</strong><br>
+                                ❌ "Help me with stuff"<br>
+                                ❌ "Do something with the data"<br>
+                                <em>Better:</em> "Help me process customer survey responses to generate insights"
+                            </div>
+
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #dc2626;">
+                                <strong>No Context:</strong><br>
+                                ❌ "Send email"<br>
+                                ❌ "Create workflow"<br>
+                                <em>Better:</em> "Send a thank you email to customers who completed purchases today"
+                            </div>
+
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #dc2626;">
+                                <strong>Overly Technical:</strong><br>
+                                ❌ "Execute SMTP protocol with authentication headers"<br>
+                                ❌ "Instantiate workflow object with YAML configuration"<br>
+                                <em>Better:</em> "Send an email with login credentials to new users"
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="patterns-examples">
+                        <h3>Domain-Specific Examples</h3>
+
+                        <h4>Marketing Automation:</h4>
+                        <div class="code-block">✅ "Create an email drip campaign for new leads that sends welcome content over 2 weeks"
+✅ "Send product recommendations to customers who abandoned their shopping carts"
+✅ "Set up a workflow that tags customers based on their purchase behavior"</div>
+
+                        <h4>Customer Support:</h4>
+                        <div class="code-block">✅ "Route support tickets to the right team based on urgency and category"
+✅ "Send automated responses to common customer questions"
+✅ "Create escalation rules for tickets that aren't resolved within 24 hours"</div>
+
+                        <h4>Data Processing:</h4>
+                        <div class="code-block">✅ "Process daily sales reports and send summaries to managers"
+✅ "Clean and validate customer data before importing to CRM"
+✅ "Generate weekly analytics reports from our user activity data"</div>
+                    </div>
+                </div>
+
+                <div class="interactive-example">
+                    <div class="example-header">🎯 Practice: Natural Language Pattern Recognition</div>
+                    <div class="example-content">
+                        <p>Try rephrasing this vague request to be more effective:</p>
+                        <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <strong>Vague Request:</strong> "Fix the thing that's broken"
+                        </div>
+                        <textarea class="example-input" id="practiceInput" placeholder="Rewrite this to be more specific and actionable...">The email workflow keeps failing when sending to customers</textarea>
+                        <button class="btn btn-primary" onclick="analyzePracticeInput()">Analyze My Request</button>
+                        <div class="example-output" id="practiceOutput">Your improved request will be analyzed here...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Examples Section -->
+            <section class="content-section" id="interactive-examples">
+                <div class="page-header">
+                    <h1 class="page-title">Interactive Examples</h1>
+                    <p class="page-subtitle">Try real scenarios and see how the system responds</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Scenario Simulator</h2>
+                        <p class="card-description">Practice with common use cases</p>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" data-tab="scenario-email">📧 Email Automation</button>
+                        <button class="tab" data-tab="scenario-workflow">⚙️ Workflow Creation</button>
+                        <button class="tab" data-tab="scenario-data">📊 Data Processing</button>
+                    </div>
+
+                    <div class="tab-content active" id="scenario-email">
+                        <h3>Email Automation Scenarios</h3>
+                        <p>Practice creating email automations with natural language:</p>
+
+                        <div style="display: grid; gap: 1rem; margin: 1rem 0;">
+                            <button class="btn btn-secondary" onclick="loadScenario('email-welcome')">New User Welcome Sequence</button>
+                            <button class="btn btn-secondary" onclick="loadScenario('email-cart')">Abandoned Cart Recovery</button>
+                            <button class="btn btn-secondary" onclick="loadScenario('email-newsletter')">Weekly Newsletter</button>
+                        </div>
+
+                        <div class="interactive-example">
+                            <div class="example-header">Selected Scenario: <span id="scenarioTitle">Choose a scenario above</span></div>
+                            <div class="example-content">
+                                <div id="scenarioDescription">Select a scenario to practice with natural language automation.</div>
+                                <textarea class="example-input" id="scenarioInput" placeholder="Describe what you want to accomplish..."></textarea>
+                                <button class="btn btn-primary" onclick="processScenario()">Process Request</button>
+                                <div class="example-output" id="scenarioOutput">Scenario results will appear here...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="scenario-workflow">
+                        <h3>Workflow Creation Practice</h3>
+                        <p>Learn to describe complex automated processes:</p>
+
+                        <div class="interactive-example">
+                            <div class="example-header">🏗️ Workflow Builder Assistant</div>
+                            <div class="example-content">
+                                <p><strong>Describe your ideal workflow:</strong></p>
+                                <textarea class="example-input" id="workflowInput" placeholder="Example: I want to create a workflow that processes customer support tickets, assigns them to the right team, and sends status updates...">I want to create a workflow that processes new customer registrations, sends welcome emails, creates user accounts, and notifies the sales team</textarea>
+                                <button class="btn btn-primary" onclick="designWorkflow()">Design Workflow</button>
+                                <div class="example-output" id="workflowOutput">Your workflow design will appear here...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="scenario-data">
+                        <h3>Data Processing Examples</h3>
+                        <p>Practice describing data operations in natural language:</p>
+
+                        <div class="interactive-example">
+                            <div class="example-header">📊 Data Processing Helper</div>
+                            <div class="example-content">
+                                <p><strong>What data operation do you need?</strong></p>
+                                <textarea class="example-input" id="dataInput" placeholder="Example: I need to clean our customer database by removing duplicates and validating email addresses...">I need to analyze our sales data from last month and generate a report showing trends by region and product category</textarea>
+                                <button class="btn btn-primary" onclick="processDataRequest()">Analyze Request</button>
+                                <div class="example-output" id="dataOutput">Data processing recommendations will appear here...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Reference Section -->
+            <section class="content-section" id="api-reference">
+                <div class="page-header">
+                    <h1 class="page-title">API Reference</h1>
+                    <p class="page-subtitle">Complete technical documentation for developers</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Core API Endpoints</h2>
+                        <p class="card-description">Main interfaces for natural language processing</p>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" data-tab="api-conversation">Process Conversation</button>
+                        <button class="tab" data-tab="api-recommendations">Get Recommendations</button>
+                        <button class="tab" data-tab="api-tools">Tool Assistance</button>
+                        <button class="tab" data-tab="api-errors">Error Handling</button>
+                    </div>
+
+                    <div class="tab-content active" id="api-conversation">
+                        <h3>POST /api/v1/conversation/process</h3>
+                        <p>Process a natural language conversation and return comprehensive assistance.</p>
+
+                        <h4>Request Body:</h4>
+                        <div class="code-block">{
+  "userMessage": "I need to send an email to my team",
+  "context": {
+    "userProfile": {
+      "skillLevel": "intermediate",
+      "role": "developer"
+    },
+    "availableTools": ["send_email", "build_workflow"]
+  },
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hello",
+      "timestamp": "2024-01-15T10:00:00Z"
+    }
+  ]
+}</div>
+
+                        <h4>Response:</h4>
+                        <div class="code-block">{
+  "intent": {
+    "primary": "send_communication",
+    "confidence": 0.95,
+    "urgency": "medium",
+    "complexity": "simple"
+  },
+  "recommendations": [
+    {
+      "toolId": "send_email",
+      "confidence": 0.92,
+      "reason": "Perfect match for sending team communications",
+      "difficulty": "easy",
+      "estimatedTime": "2-3 minutes"
+    }
+  ],
+  "parsedParameters": {
+    "extracted": {
+      "recipients": "team",
+      "message_type": "email"
+    },
+    "confidence": 0.85,
+    "clarificationNeeded": [
+      {
+        "parameter": "subject",
+        "question": "What should the email subject be?"
+      }
+    ]
+  },
+  "help": {
+    "answer": "I can help you send an email to your team...",
+    "type": "guidance",
+    "confidence": 0.9
+  },
+  "suggestedActions": [
+    {
+      "type": "execute_tool",
+      "label": "Send Email Now",
+      "toolId": "send_email",
+      "confidence": 0.92
+    }
+  ]
+}</div>
+                    </div>
+
+                    <div class="tab-content" id="api-recommendations">
+                        <h3>POST /api/v1/recommendations</h3>
+                        <p>Get enhanced tool recommendations with detailed explanations.</p>
+
+                        <h4>Request Body:</h4>
+                        <div class="code-block">{
+  "userMessage": "I want to automate customer onboarding",
+  "currentContext": {
+    "userProfile": {
+      "skillLevel": "advanced",
+      "role": "business-analyst"
+    }
+  },
+  "conversationHistory": [],
+  "userSkillLevel": "advanced",
+  "maxRecommendations": 3
+}</div>
+
+                        <h4>Response:</h4>
+                        <div class="code-block">{
+  "recommendations": [
+    {
+      "toolId": "build_workflow",
+      "tool": {
+        "id": "build_workflow",
+        "name": "Workflow Builder"
+      },
+      "confidence": 0.94,
+      "contextualExplanation": "Perfect for creating automated customer onboarding sequences",
+      "whyRecommended": [
+        "Matches your automation intent",
+        "Suitable for advanced users",
+        "High success rate for onboarding workflows"
+      ],
+      "whenToUse": "When you need multi-step automated processes",
+      "whenNotToUse": "Avoid for simple, one-off tasks",
+      "difficultyForUser": "moderate",
+      "estimatedTime": "20-30 minutes",
+      "preparationSteps": [
+        "Map out your current onboarding process",
+        "Identify automation opportunities",
+        "Gather necessary integrations"
+      ],
+      "followUpSuggestions": [
+        "send_email",
+        "crm_integration",
+        "user_notification"
+      ]
+    }
+  ]
+}</div>
+                    </div>
+
+                    <div class="tab-content" id="api-tools">
+                        <h3>GET /api/v1/tools/{toolId}/assistance</h3>
+                        <p>Get comprehensive assistance for a specific tool.</p>
+
+                        <h4>Parameters:</h4>
+                        <ul>
+                            <li><strong>toolId</strong> (path): The unique identifier of the tool</li>
+                            <li><strong>userContext</strong> (query): User context for personalization</li>
+                            <li><strong>specificQuestion</strong> (query, optional): Specific question about the tool</li>
+                        </ul>
+
+                        <h4>Response:</h4>
+                        <div class="code-block">{
+  "toolId": "send_email",
+  "description": "Send emails to individuals or groups with rich formatting...",
+  "usageDescription": "Use this tool when you need to communicate via email",
+  "guidelines": [
+    {
+      "condition": "Sending to large groups",
+      "recommendation": "Consider using email templates",
+      "priority": "high"
+    }
+  ],
+  "help": {
+    "answer": "The Send Email tool allows you to...",
+    "quickActions": [
+      {
+        "label": "Send Simple Email",
+        "action": "send_basic_email"
+      }
+    ]
+  },
+  "examples": [
+    {
+      "scenario": "Team Notification",
+      "input": "Send update to project team",
+      "outcome": "Email sent to all team members"
+    }
+  ],
+  "conversationalHints": {
+    "triggers": ["send email", "email team", "notify via email"],
+    "examples": [
+      "Send an email to my team",
+      "Email the project status to stakeholders"
+    ]
+  }
+}</div>
+                    </div>
+
+                    <div class="tab-content" id="api-errors">
+                        <h3>POST /api/v1/errors/explain</h3>
+                        <p>Get intelligent explanations for errors with recovery guidance.</p>
+
+                        <h4>Request Body:</h4>
+                        <div class="code-block">{
+  "error": {
+    "id": "SMTP_CONNECTION_FAILED",
+    "message": "Failed to connect to SMTP server",
+    "details": "Connection timeout after 30 seconds"
+  },
+  "toolId": "send_email",
+  "userContext": {
+    "userProfile": {
+      "skillLevel": "intermediate"
+    }
+  },
+  "userSkillLevel": "intermediate"
+}</div>
+
+                        <h4>Response:</h4>
+                        <div class="code-block">{
+  "contextualMessage": "The email couldn't be sent because we couldn't connect to your email server",
+  "userLevelExplanation": {
+    "intermediate": "This usually happens when your SMTP settings are incorrect or your firewall is blocking the connection"
+  },
+  "stepByStepResolution": [
+    {
+      "step": 1,
+      "action": "Check SMTP server settings",
+      "explanation": "Verify your server address, port, and authentication",
+      "expectedResult": "Settings should match your email provider's requirements"
+    },
+    {
+      "step": 2,
+      "action": "Test connection",
+      "explanation": "Use the built-in connection tester",
+      "expectedResult": "Should show 'Connected successfully'"
+    }
+  ],
+  "recoveryOptions": [
+    {
+      "option": "Use built-in email service temporarily",
+      "description": "Continue with our managed email service while you fix SMTP",
+      "confidence": 0.9,
+      "difficulty": "beginner"
+    }
+  ],
+  "preventionTips": [
+    "Regularly test your SMTP connection",
+    "Keep backup email service configured"
+  ]
+}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="content-section" id="features">
+                <div class="page-header">
+                    <h1 class="page-title">Key Features</h1>
+                    <p class="page-subtitle">Comprehensive overview of system capabilities</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Natural Language Processing Capabilities</h2>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>Intent Recognition</h3>
+                            <p>Accurately identifies what users want to accomplish from natural language descriptions.</p>
+                            <div class="code-block" style="margin-top: 1rem; font-size: 0.75rem;">
+"Send weekly reports to managers"
+→ Intent: automated_reporting
+→ Confidence: 94%</div>
+                        </div>
+
+                        <div class="feature-card">
+                            <h3>Parameter Extraction</h3>
+                            <p>Automatically extracts relevant parameters from conversational input.</p>
+                            <div class="code-block" style="margin-top: 1rem; font-size: 0.75rem;">
+"Email john@company.com about project status"
+→ recipient: john@company.com
+→ subject: project status</div>
+                        </div>
+
+                        <div class="feature-card">
+                            <h3>Context Awareness</h3>
+                            <p>Maintains conversation context to provide relevant follow-up suggestions.</p>
+                            <div class="code-block" style="margin-top: 1rem; font-size: 0.75rem;">
+Previous: "Create email workflow"
+Current: "Add error handling"
+→ Context: workflow enhancement</div>
+                        </div>
+
+                        <div class="feature-card">
+                            <h3>Skill Level Adaptation</h3>
+                            <p>Adjusts explanations and recommendations based on user expertise level.</p>
+                            <div class="code-block" style="margin-top: 1rem; font-size: 0.75rem;">
+Beginner: "Step-by-step guide..."
+Expert: "Advanced configuration options..."</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Intelligent Recommendation Engine</h2>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
+                        <div>
+                            <h4>Recommendation Factors</h4>
+                            <ul>
+                                <li>User intent analysis</li>
+                                <li>Historical success patterns</li>
+                                <li>Skill level matching</li>
+                                <li>Context relevance</li>
+                                <li>Tool popularity and effectiveness</li>
+                                <li>Integration compatibility</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4>Personalization Features</h4>
+                            <ul>
+                                <li>Role-based suggestions</li>
+                                <li>Learning from past interactions</li>
+                                <li>Preferred workflow patterns</li>
+                                <li>Custom terminology support</li>
+                                <li>Time and urgency considerations</li>
+                                <li>Team collaboration preferences</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Advanced Error Handling</h2>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" data-tab="error-types">Error Classification</button>
+                        <button class="tab" data-tab="error-recovery">Recovery Strategies</button>
+                        <button class="tab" data-tab="error-learning">Learning & Prevention</button>
+                    </div>
+
+                    <div class="tab-content active" id="error-types">
+                        <h3>Intelligent Error Classification</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #d97706;">
+                                <strong>User Errors:</strong> Issues that users can fix themselves<br>
+                                <em>Example:</em> Invalid email format, missing required fields
+                            </div>
+                            <div style="background: #fee2e2; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #dc2626;">
+                                <strong>System Errors:</strong> Technical issues requiring admin attention<br>
+                                <em>Example:</em> Database connection failure, API service down
+                            </div>
+                            <div style="background: #e0f2fe; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #0369a1;">
+                                <strong>Configuration Errors:</strong> Setup or integration problems<br>
+                                <em>Example:</em> Incorrect SMTP settings, missing API credentials
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="error-recovery">
+                        <h3>Automated Recovery Strategies</h3>
+                        <ul>
+                            <li><strong>Retry with Backoff:</strong> Automatically retry failed operations with increasing delays</li>
+                            <li><strong>Fallback Options:</strong> Switch to alternative methods when primary approach fails</li>
+                            <li><strong>Circuit Breakers:</strong> Temporarily disable failing services to prevent cascading failures</li>
+                            <li><strong>Graceful Degradation:</strong> Continue with reduced functionality when components fail</li>
+                            <li><strong>User Guidance:</strong> Provide clear steps for manual intervention when needed</li>
+                        </ul>
+                    </div>
+
+                    <div class="tab-content" id="error-learning">
+                        <h3>Learning from Errors</h3>
+                        <p>The system continuously improves by analyzing error patterns:</p>
+                        <ul>
+                            <li>Identifies common error scenarios and provides proactive warnings</li>
+                            <li>Updates recommendations based on failure rates</li>
+                            <li>Improves error messages based on user feedback</li>
+                            <li>Creates knowledge base articles for recurring issues</li>
+                            <li>Suggests system improvements to prevent future errors</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation items
+            const navItems = document.querySelectorAll('.nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update active content section
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(sectionId).classList.add('active');
+                });
+            });
+
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    const tabContainer = this.closest('.card') || this.closest('.content-section');
+
+                    // Update active tab
+                    tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update active tab content
+                    tabContainer.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    const targetContent = tabContainer.querySelector(`#${tabId}`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Mobile menu
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+
+            if (window.innerWidth <= 768) {
+                mobileMenuBtn.style.display = 'block';
+            }
+
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                if (query.length > 2) {
+                    performSearch(query);
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Close search when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        });
+
+        // Interactive functionality
+        function processNaturalLanguage() {
+            const input = document.getElementById('nlInput').value;
+            const output = document.getElementById('nlOutput');
+
+            // Simulate processing
+            output.textContent = '🔄 Processing your request...';
+
+            setTimeout(() => {
+                const response = generateNLResponse(input);
+                output.textContent = response;
+            }, 1500);
+        }
+
+        function generateNLResponse(input) {
+            if (!input.trim()) {
+                return 'Please enter a request to process.';
+            }
+
+            const responses = {
+                'email': `🎯 I understand you want to send an email.
+
+Recommended Tool: Send Email
+- Confidence: 92%
+- Difficulty: Easy for you
+- Estimated Time: 2-3 minutes
+
+Parameters I extracted:
+✅ Action: Send email
+✅ Recipients: Project team
+✅ Topic: Deadline change
+
+❓ I need clarification on:
+- What specific deadline information should be included?
+- Should this be sent immediately or scheduled?
+
+Next steps:
+1. Click "Use Send Email Tool"
+2. I'll help you compose the message
+3. Review and send`,
+
+                'workflow': `🏗️ I can help you create that workflow!
+
+Recommended Tool: Build Workflow
+- Confidence: 89%
+- Difficulty: Intermediate
+- Estimated Time: 15-20 minutes
+
+Your workflow will include:
+✅ Customer order intake
+✅ Order validation
+✅ Payment processing
+✅ Inventory management
+✅ Shipping coordination
+
+Would you like to:
+1. Start with a template and customize it
+2. Build from scratch with guided steps
+3. See examples of similar workflows first`,
+
+                'automation': `⚙️ Great! Let's set up your automation.
+
+I found several tools that can help:
+
+1. Workflow Builder (Primary - 94% match)
+   - Perfect for: Multi-step automations
+   - Time: 20-30 minutes
+
+2. Email Sequence Tool (Secondary - 78% match)
+   - Perfect for: Email-focused automation
+   - Time: 10-15 minutes
+
+3. Task Scheduler (Alternative - 65% match)
+   - Perfect for: Simple recurring tasks
+   - Time: 5-10 minutes
+
+Which approach interests you most?`
+            };
+
+            const inputLower = input.toLowerCase();
+            for (const [key, response] of Object.entries(responses)) {
+                if (inputLower.includes(key)) {
+                    return response;
+                }
+            }
+
+            return `🤖 I analyzed your request: "${input}"
+
+Based on your input, I recommend exploring these areas:
+- Tool Discovery: Find the right tools for your needs
+- Workflow Creation: Automate multi-step processes
+- Integration Setup: Connect different systems
+
+Would you like me to:
+1. Suggest specific tools for your use case
+2. Help you break down your request into steps
+3. Show you examples of similar implementations
+
+Confidence: 75% - I can help, but could use more details about your specific goals.`;
+        }
+
+        function analyzePracticeInput() {
+            const input = document.getElementById('practiceInput').value;
+            const output = document.getElementById('practiceOutput');
+
+            if (!input.trim()) {
+                output.textContent = 'Please enter a request to analyze.';
+                return;
+            }
+
+            const analysis = `📊 Analysis of your request:
+"${input}"
+
+✅ Good aspects:
+- Specifies the problem area (email workflow)
+- Mentions the failure symptom
+- Indicates impact (customers affected)
+
+💡 Could be improved:
+- Add more specific error details
+- Mention when the problem started
+- Include business impact or urgency
+
+🎯 Enhanced version:
+"The email workflow for customer notifications has been failing since yesterday morning - customers aren't receiving order confirmations and this is causing support tickets. The error happens at the email sending step."
+
+This gives me:
+- Specific timeline (since yesterday morning)
+- Clear impact (customers not getting confirmations)
+- Business consequence (support tickets)
+- Technical location (email sending step)
+
+Clarity Score: ${Math.floor(Math.random() * 20) + 70}/100`;
+
+            output.textContent = analysis;
+        }
+
+        function loadScenario(scenarioType) {
+            const scenarios = {
+                'email-welcome': {
+                    title: 'New User Welcome Sequence',
+                    description: 'Create an automated email series for new user onboarding.',
+                    placeholder: 'I want to create a welcome email sequence that introduces new users to our platform over their first week...'
+                },
+                'email-cart': {
+                    title: 'Abandoned Cart Recovery',
+                    description: 'Set up emails to recover abandoned shopping carts.',
+                    placeholder: 'When someone adds items to their cart but doesn\'t complete checkout, send them reminder emails...'
+                },
+                'email-newsletter': {
+                    title: 'Weekly Newsletter',
+                    description: 'Create a recurring newsletter for your audience.',
+                    placeholder: 'I need to send a weekly newsletter to our subscribers with company updates and industry news...'
+                }
+            };
+
+            const scenario = scenarios[scenarioType];
+            if (scenario) {
+                document.getElementById('scenarioTitle').textContent = scenario.title;
+                document.getElementById('scenarioDescription').textContent = scenario.description;
+                document.getElementById('scenarioInput').placeholder = scenario.placeholder;
+                document.getElementById('scenarioInput').value = '';
+                document.getElementById('scenarioOutput').textContent = 'Scenario loaded. Describe your requirements and click "Process Request".';
+            }
+        }
+
+        function processScenario() {
+            const input = document.getElementById('scenarioInput').value;
+            const output = document.getElementById('scenarioOutput');
+
+            if (!input.trim()) {
+                output.textContent = 'Please describe your scenario requirements.';
+                return;
+            }
+
+            const response = `🎯 Email Automation Plan:
+
+Based on your description, I recommend this approach:
+
+📧 Email Sequence Structure:
+1. Immediate welcome (within 5 minutes)
+2. Getting started guide (Day 1)
+3. Feature highlights (Day 3)
+4. Success stories (Day 7)
+5. Feedback request (Day 14)
+
+⚙️ Technical Implementation:
+- Tool: Email Sequence Builder
+- Trigger: User registration event
+- Personalization: User name, account type
+- A/B testing: Subject lines and send times
+
+📊 Success Metrics:
+- Open rates by email in sequence
+- Click-through rates to key features
+- User activation within first week
+- Overall engagement score
+
+⏱️ Setup Time: 45-60 minutes
+🎚️ Difficulty: Intermediate
+
+Ready to start building? I'll guide you through:
+1. Setting up the trigger
+2. Creating email templates
+3. Configuring timing and conditions
+4. Testing the complete sequence`;
+
+            output.textContent = response;
+        }
+
+        function designWorkflow() {
+            const input = document.getElementById('workflowInput').value;
+            const output = document.getElementById('workflowOutput');
+
+            if (!input.trim()) {
+                output.textContent = 'Please describe your workflow requirements.';
+                return;
+            }
+
+            const response = `🏗️ Workflow Architecture Design:
+
+Your Customer Registration Workflow:
+
+📋 Process Steps:
+1. Trigger: New user registration form submitted
+   ↓
+2. Data Validation: Check email format, required fields
+   ↓
+3. Account Creation: Generate user account and credentials
+   ↓
+4. Welcome Email: Send personalized welcome message
+   ↓
+5. Sales Notification: Alert sales team of new registration
+   ↓
+6. CRM Integration: Add user to customer management system
+
+🔧 Technical Components:
+- Database: User accounts table
+- Email Service: SMTP or email API
+- CRM Integration: API connection
+- Error Handling: Retry logic and failure notifications
+
+⚡ Performance Considerations:
+- Expected volume: How many registrations per day?
+- Peak times: When do most people register?
+- Dependencies: External services and their reliability
+
+🛡️ Error Handling:
+- Email delivery failures → Queue for retry
+- CRM API down → Store locally, sync later
+- Database issues → Alert admin immediately
+
+📊 Monitoring:
+- Registration completion rate
+- Email delivery success rate
+- Sales team response time
+- System performance metrics
+
+Implementation time: 2-3 hours including testing
+Complexity: Moderate - suitable for your skill level
+
+Would you like to start with the workflow builder tool?`;
+
+            output.textContent = response;
+        }
+
+        function processDataRequest() {
+            const input = document.getElementById('dataInput').value;
+            const output = document.getElementById('dataOutput');
+
+            if (!input.trim()) {
+                output.textContent = 'Please describe your data processing needs.';
+                return;
+            }
+
+            const response = `📊 Data Analysis Plan:
+
+Your Sales Data Analysis Project:
+
+🎯 Analysis Objectives:
+- Regional performance comparison
+- Product category trends
+- Revenue patterns and growth
+- Seasonal variations
+
+🔧 Recommended Tools:
+1. Data Processor (Primary)
+   - Clean and structure sales data
+   - Handle missing values and outliers
+
+2. Analytics Engine (Secondary)
+   - Generate statistical insights
+   - Create trend visualizations
+
+3. Report Builder (Final step)
+   - Format professional reports
+   - Export to multiple formats
+
+📈 Analysis Components:
+- Geographic breakdown by region
+- Product category performance metrics
+- Time-series trend analysis
+- Comparative month-over-month analysis
+
+📋 Data Requirements:
+- Sales transaction records
+- Product category mappings
+- Regional territory definitions
+- Historical baseline data
+
+⏱️ Processing Steps:
+1. Data ingestion and cleaning (30 min)
+2. Regional analysis calculations (45 min)
+3. Product trend analysis (45 min)
+4. Report generation (30 min)
+5. Visualization creation (30 min)
+
+Total estimated time: 3 hours
+Complexity: Intermediate
+
+📊 Expected Outputs:
+- Executive summary with key insights
+- Regional performance dashboard
+- Product category trend charts
+- Detailed data tables with filters
+
+Ready to start? I'll help you set up the data pipeline.`;
+
+            output.textContent = response;
+        }
+
+        function performSearch(query) {
+            const searchResults = document.getElementById('searchResults');
+
+            // Mock search results
+            const mockResults = [
+                { title: 'Natural Language Processing', section: 'natural-language', description: 'Learn about NL capabilities' },
+                { title: 'Tool Discovery', section: 'tool-discovery', description: 'Find the right tools for your needs' },
+                { title: 'API Reference', section: 'api-reference', description: 'Complete API documentation' },
+                { title: 'Error Handling', section: 'troubleshooting', description: 'Resolve system errors' },
+                { title: 'User Management', section: 'user-management', description: 'Admin user management guide' }
+            ];
+
+            const filteredResults = mockResults.filter(result =>
+                result.title.toLowerCase().includes(query) ||
+                result.description.toLowerCase().includes(query)
+            );
+
+            if (filteredResults.length > 0) {
+                searchResults.innerHTML = filteredResults.map(result =>
+                    `<div class="search-result" onclick="navigateToSection('${result.section}')">
+                        <strong>${result.title}</strong><br>
+                        <small>${result.description}</small>
+                    </div>`
+                ).join('');
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.innerHTML = '<div class="search-result">No results found</div>';
+                searchResults.style.display = 'block';
+            }
+        }
+
+        function navigateToSection(sectionId) {
+            // Hide search results
+            document.getElementById('searchResults').style.display = 'none';
+
+            // Navigate to section
+            const navItem = document.querySelector(`[data-section="${sectionId}"]`);
+            if (navItem) {
+                navItem.click();
+            }
+        }
+
+        // Responsive handling
+        window.addEventListener('resize', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (window.innerWidth <= 768) {
+                mobileMenuBtn.style.display = 'block';
+            } else {
+                mobileMenuBtn.style.display = 'none';
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
