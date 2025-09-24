@@ -63,9 +63,27 @@ python master_validation_runner.py --verbose
 python master_validation_runner.py --output-dir /path/to/results
 ```
 
-### Using Pytest
+### JavaScript Integration Tests (Recommended)
 ```bash
-# Run all tests
+# Run complete integration test suite with orchestrated execution
+node integration/test-runner.js
+
+# Run individual test suites
+npm test -- integration/comprehensive-integration.test.js
+npm test -- integration/realtime-communication.test.js
+npm test -- performance/load-testing.test.js
+
+# Run with custom timeouts
+npm test -- --testTimeout=300000
+
+# Run specific acceptance criteria
+npm test -- --testNamePattern="AC1"
+npm test -- --testNamePattern="workspace.*isolation"
+```
+
+### Using Pytest (Python Tests)
+```bash
+# Run all Python tests
 pytest
 
 # Run specific test files
@@ -84,7 +102,13 @@ pytest -v --tb=long
 
 ## Test Files
 
-### Core Test Suites
+### JavaScript Integration Test Suites (New)
+- **`integration/comprehensive-integration.test.js`** - Complete end-to-end acceptance criteria validation
+- **`integration/realtime-communication.test.js`** - Socket.io integration and real-time communication testing
+- **`integration/test-runner.js`** - Orchestrated test execution with comprehensive reporting
+- **`performance/load-testing.test.js`** - Performance benchmarking and concurrent load testing
+
+### Python Test Suites (Existing)
 - **`integration_test_suite.py`** - Main acceptance criteria validation
 - **`edge_case_tests.py`** - Security and error scenario testing
 - **`performance_load_tests.py`** - Performance benchmarks and load testing

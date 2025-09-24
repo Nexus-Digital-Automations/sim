@@ -22,6 +22,7 @@ from workspace_isolation import workspace_isolation_manager
 from auth.workspace_access_control import workspace_access_controller
 from database.workspace_session_store import create_workspace_session_store
 from api.workspace_agents import router as workspace_agents_router
+from api.sim_integration import router as sim_integration_router
 
 # Configure logging
 logging.basicConfig(
@@ -90,6 +91,9 @@ class SimParlantServer:
 
         # Add workspace-scoped API routes
         self.server.app.include_router(workspace_agents_router)
+
+        # Add Sim integration API routes
+        self.server.app.include_router(sim_integration_router)
 
         logger.info(f"Parlant server initialized with workspace isolation on {SERVER_HOST}:{SERVER_PORT}")
 

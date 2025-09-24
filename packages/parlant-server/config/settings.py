@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     jwt_expire_hours: int = Field(default=24, env="JWT_EXPIRE_HOURS")
 
+    # Webhook configuration for Sim integration
+    sim_webhook_secret: Optional[str] = Field(default=None, env="SIM_WEBHOOK_SECRET")
+    webhook_timeout: int = Field(default=30, env="WEBHOOK_TIMEOUT")
+    webhook_retry_attempts: int = Field(default=3, env="WEBHOOK_RETRY_ATTEMPTS")
+
     # Redis configuration for session storage
     redis_url: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
     redis_key_prefix: str = Field(default="parlant:", env="REDIS_KEY_PREFIX")

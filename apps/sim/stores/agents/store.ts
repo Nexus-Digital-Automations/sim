@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { createLogger } from '@/lib/logs/console/logger'
+import { agentService, createAuthContext, errorHandler } from '@/services/parlant'
 import type {
   AgentManagementStore,
   ParlantAgent,
@@ -33,24 +34,17 @@ export const useAgentManagementStore = create<AgentManagementStore>()(
 
         const handleApiError = (error: any, operation: string): string => {
           logger.error(`Error in ${operation}:`, error)
-
-          if (error.response?.data?.error) {
-            return error.response.data.error
-          }
-
-          if (error.message) {
-            return error.message
-          }
-
-          return `Failed to ${operation}. Please try again.`
+          return errorHandler.formatErrorForUser(error, operation)
         }
 
-        const buildApiUrl = (endpoint: string, workspaceId?: string): string => {
-          const baseUrl = '/api/agents'
-          if (workspaceId) {
-            return `/api/workspaces/${workspaceId}/agents${endpoint ? `/${endpoint}` : ''}`
+        const getAuthContext = (workspaceId?: string) => {
+          // Get current user from session or auth context
+          // This is a simplified version - in practice, you'd get this from your auth system
+          if (typeof window !== 'undefined') {
+            const userId = window.localStorage.getItem('userId') || 'anonymous'
+            return createAuthContext(userId, workspaceId)
           }
-          return `${baseUrl}${endpoint ? `/${endpoint}` : ''}`
+          return createAuthContext('anonymous', workspaceId)
         }
 
         return {
@@ -79,17 +73,61 @@ export const useAgentManagementStore = create<AgentManagementStore>()(
             try {
               set({ isLoading: true, error: null })
 
-              const response = await fetch(buildApiUrl('', workspaceId))
+              const authContext = getAuthContext(workspaceId)
+              const response = await agentService.listAgents({ workspace_id: workspaceId }, authContext)
 
-              if (!response.ok) {
-                const errorData: AgentApiError = await response.json()
-                throw new Error(errorData.error || 'Failed to load agents')
-              }
-
-              const result: AgentApiResponse<ParlantAgent[]> = await response.json()
+              // Convert Parlant Agent format to our ParlantAgent format
+              const agents: ParlantAgent[] = response.data.map(agent => ({
+                id: agent.id,
+                name: agent.name,
+                description: agent.description || '',
+                workspaceId: agent.workspace_id,
+                createdBy: agent.created_by || authContext.user_id,
+                createdAt: agent.created_at,
+                updatedAt: agent.updated_at,
+                status: (agent.status as any) || 'active',
+                lastActiveAt: agent.last_active_at,
+                conversationCount: agent.conversation_count || 0,
+                configuration: {
+                  model: agent.config?.model || 'gpt-3.5-turbo',
+                  temperature: agent.config?.temperature || 0.7,
+                  maxTokens: agent.config?.max_tokens || 4096,
+                  systemPrompt: agent.config?.system_prompt || '',
+                  toolsEnabled: agent.config?.tools_enabled || false,
+                  availableTools: agent.config?.available_tools || [],
+                  knowledgeBaseIds: agent.config?.knowledge_base_ids || [],
+                  responseFormat: (agent.config?.response_format as any) || 'text',
+                  personality: {
+                    tone: (agent.config?.personality?.tone as any) || 'professional',
+                    verbosity: (agent.config?.personality?.verbosity as any) || 'detailed',
+                    style: agent.config?.personality?.style || 'Clear and direct communication style.',
+                  },
+                },
+                guidelines: agent.guidelines?.map(g => ({
+                  id: g.id,
+                  title: g.title || '',
+                  description: g.description || '',
+                  content: g.content || '',
+                  priority: (g.priority as any) || 'medium',
+                  enabled: g.enabled !== false,
+                  createdAt: g.created_at || new Date().toISOString(),
+                  updatedAt: g.updated_at || new Date().toISOString(),
+                })) || [],
+                journeys: agent.journeys?.map(j => ({
+                  id: j.id,
+                  name: j.name || '',
+                  description: j.description || '',
+                  states: j.states || [],
+                  triggers: j.triggers || [],
+                  enabled: j.enabled !== false,
+                  createdAt: j.created_at || new Date().toISOString(),
+                  updatedAt: j.updated_at || new Date().toISOString(),
+                })) || [],
+                metadata: agent.metadata || {},
+              }))
 
               set({
-                agents: result.data,
+                agents,
                 isLoading: false,
                 error: null,
               })
@@ -97,7 +135,7 @@ export const useAgentManagementStore = create<AgentManagementStore>()(
               lastLoadTime = now
               errorRetryCount = 0
 
-              logger.info(`Loaded ${result.data.length} agents for workspace ${workspaceId}`)
+              logger.info(`Loaded ${agents.length} agents for workspace ${workspaceId}`)
             } catch (error) {
               const errorMessage = handleApiError(error, 'load agents')
               set({
@@ -106,7 +144,7 @@ export const useAgentManagementStore = create<AgentManagementStore>()(
               })
 
               // Retry logic for network errors
-              if (errorRetryCount < MAX_ERROR_RETRIES && error instanceof TypeError) {
+              if (errorRetryCount < MAX_ERROR_RETRIES) {
                 errorRetryCount++
                 logger.warn(`Retrying load agents (attempt ${errorRetryCount})`)
                 setTimeout(() => get().loadAgents(workspaceId, force), 1000 * errorRetryCount)
@@ -132,21 +170,96 @@ export const useAgentManagementStore = create<AgentManagementStore>()(
                 throw new Error('Workspace context not found')
               }
 
-              const response = await fetch(buildApiUrl('', workspaceId), {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(agentData),
-              })
+              const authContext = getAuthContext(workspaceId)
 
-              if (!response.ok) {
-                const errorData: AgentApiError = await response.json()
-                throw new Error(errorData.error || 'Failed to create agent')
+              // Convert our CreateAgentRequest to Parlant AgentCreateRequest
+              const parlantRequest = {
+                name: agentData.name,
+                description: agentData.description,
+                workspace_id: workspaceId,
+                config: {
+                  model: agentData.configuration?.model || 'gpt-3.5-turbo',
+                  temperature: agentData.configuration?.temperature || 0.7,
+                  max_tokens: agentData.configuration?.maxTokens || 4096,
+                  system_prompt: agentData.configuration?.systemPrompt || '',
+                  tools_enabled: agentData.configuration?.toolsEnabled || false,
+                  available_tools: agentData.configuration?.availableTools || [],
+                  knowledge_base_ids: agentData.configuration?.knowledgeBaseIds || [],
+                  response_format: agentData.configuration?.responseFormat || 'text',
+                  personality: {
+                    tone: agentData.configuration?.personality?.tone || 'professional',
+                    verbosity: agentData.configuration?.personality?.verbosity || 'detailed',
+                    style: agentData.configuration?.personality?.style || 'Clear and direct communication style.',
+                  },
+                },
+                guidelines: agentData.guidelines?.map(g => ({
+                  title: g.title,
+                  description: g.description,
+                  content: g.content,
+                  priority: g.priority,
+                  enabled: g.enabled,
+                })) || [],
+                journeys: agentData.journeys?.map(j => ({
+                  name: j.name,
+                  description: j.description,
+                  states: j.states,
+                  triggers: j.triggers,
+                  enabled: j.enabled,
+                })) || [],
               }
 
-              const result: AgentApiResponse<ParlantAgent> = await response.json()
-              const newAgent = result.data
+              const response = await agentService.createAgent(parlantRequest, authContext)
+
+              // Convert back to our ParlantAgent format
+              const agent = response.data
+              const newAgent: ParlantAgent = {
+                id: agent.id,
+                name: agent.name,
+                description: agent.description || '',
+                workspaceId: agent.workspace_id,
+                createdBy: agent.created_by || authContext.user_id,
+                createdAt: agent.created_at,
+                updatedAt: agent.updated_at,
+                status: (agent.status as any) || 'active',
+                lastActiveAt: agent.last_active_at,
+                conversationCount: agent.conversation_count || 0,
+                configuration: {
+                  model: agent.config?.model || 'gpt-3.5-turbo',
+                  temperature: agent.config?.temperature || 0.7,
+                  maxTokens: agent.config?.max_tokens || 4096,
+                  systemPrompt: agent.config?.system_prompt || '',
+                  toolsEnabled: agent.config?.tools_enabled || false,
+                  availableTools: agent.config?.available_tools || [],
+                  knowledgeBaseIds: agent.config?.knowledge_base_ids || [],
+                  responseFormat: (agent.config?.response_format as any) || 'text',
+                  personality: {
+                    tone: (agent.config?.personality?.tone as any) || 'professional',
+                    verbosity: (agent.config?.personality?.verbosity as any) || 'detailed',
+                    style: agent.config?.personality?.style || 'Clear and direct communication style.',
+                  },
+                },
+                guidelines: agent.guidelines?.map(g => ({
+                  id: g.id,
+                  title: g.title || '',
+                  description: g.description || '',
+                  content: g.content || '',
+                  priority: (g.priority as any) || 'medium',
+                  enabled: g.enabled !== false,
+                  createdAt: g.created_at || new Date().toISOString(),
+                  updatedAt: g.updated_at || new Date().toISOString(),
+                })) || [],
+                journeys: agent.journeys?.map(j => ({
+                  id: j.id,
+                  name: j.name || '',
+                  description: j.description || '',
+                  states: j.states || [],
+                  triggers: j.triggers || [],
+                  enabled: j.enabled !== false,
+                  createdAt: j.created_at || new Date().toISOString(),
+                  updatedAt: j.updated_at || new Date().toISOString(),
+                })) || [],
+                metadata: agent.metadata || {},
+              }
 
               // Add to local state
               set(state => ({
