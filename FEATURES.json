@@ -406,12 +406,12 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 53,
+      "total_reinitializations": 68,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
           "init": 0,
-          "reinit": 0
+          "reinit": 15
         },
         "13:00-17:59": {
           "init": 0,
@@ -432,7 +432,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T06:37:33.418Z"
+      "last_updated": "2025-09-24T16:13:10.118Z"
     },
     "approval_history": [
       {
@@ -576,6 +576,86 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:19:07.244Z",
       "sessionId": "1e880e644d84b9e2",
+      "previousSessions": []
+    },
+    "natural-language-framework-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:08.802Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:08.802Z",
+      "sessionId": "8309f68c55878043",
+      "previousSessions": [
+        "f9f927944dcda22c"
+      ]
+    },
+    "docs-agent-001": {
+      "lastHeartbeat": "2025-09-24T16:01:27.132Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:01:27.132Z",
+      "sessionId": "bf2706915f4543fe",
+      "previousSessions": []
+    },
+    "contextual-tool-recommendation-engine-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:08.046Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:08.046Z",
+      "sessionId": "32836b8c3ff8e6f7",
+      "previousSessions": [
+        "c03bb703b3cc225b"
+      ]
+    },
+    "contextual-help-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:09.521Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:09.521Z",
+      "sessionId": "d26a133844fdd166",
+      "previousSessions": [
+        "7b3e298b7bf2a75a"
+      ]
+    },
+    "tool-description-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:09.585Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:09.585Z",
+      "sessionId": "20dc6ce48fc96a72",
+      "previousSessions": [
+        "efebc86aa1da9722"
+      ]
+    },
+    "intelligent-error-handling-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:08.665Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:08.665Z",
+      "sessionId": "c0b012507a1012d7",
+      "previousSessions": [
+        "44c9c82bdc630071"
+      ]
+    },
+    "CLAUDE-MAIN": {
+      "lastHeartbeat": "2025-09-24T16:11:41.128Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:11:41.128Z",
+      "sessionId": "d98d45a044695a23",
+      "previousSessions": []
+    },
+    "intelligence-integration-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:09.613Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:09.613Z",
+      "sessionId": "6c60ee9515bd744f",
+      "previousSessions": []
+    },
+    "enhanced-tool-docs-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:10.038Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:10.038Z",
+      "sessionId": "a07c13dbfaf36e08",
+      "previousSessions": []
+    },
+    "enhanced-tool-validation-agent": {
+      "lastHeartbeat": "2025-09-24T16:13:10.116Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:13:10.116Z",
+      "sessionId": "fcb4b8475fe7fe82",
       "previousSessions": []
     }
   },

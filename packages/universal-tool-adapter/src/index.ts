@@ -32,6 +32,17 @@ export { PluginSystem } from './plugins/plugin-system'
 export { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
 // Testing framework
 export { AdapterTestFramework } from './testing/test-framework'
+// Enhanced Intelligence Components
+export {
+  IntelligenceIntegrationLayer,
+  createIntelligenceEnhancedAdapter,
+  createFullyIntelligentAdapter,
+  checkIntelligenceCapabilities
+} from './enhanced-intelligence/intelligence-integration-layer'
+export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
+export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
+export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
+export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Types and interfaces
 export type * from './types/adapter-interfaces'
 export type * from './types/parlant-interfaces'
@@ -45,6 +56,7 @@ export { ValidationEngine } from './validation/validation-engine'
  * Complete Universal Tool Adapter System
  *
  * Orchestrates all framework components for comprehensive tool adaptation
+ * with enhanced intelligence capabilities
  */
 export class UniversalToolAdapterSystem {
   // Core components
@@ -56,6 +68,9 @@ export class UniversalToolAdapterSystem {
   public readonly plugins: PluginSystem
   public readonly analytics: AnalyticsSystem
   public readonly testing: AdapterTestFramework
+
+  // Enhanced Intelligence layer (optional)
+  public readonly intelligence?: IntelligenceIntegrationLayer
 
   constructor(config: UniversalAdapterConfig = {}) {
     // Initialize core framework
@@ -79,6 +94,11 @@ export class UniversalToolAdapterSystem {
 
     // Initialize testing framework
     this.testing = new AdapterTestFramework(this.framework, config.testing)
+
+    // Initialize intelligence layer if configured
+    if (config.enableIntelligence !== false) {
+      this.intelligence = new IntelligenceIntegrationLayer(this.registry, config.intelligence)
+    }
   }
 
   /**
@@ -88,11 +108,18 @@ export class UniversalToolAdapterSystem {
     // Initialize plugins first (they might be needed by other systems)
     await this.plugins.initialize()
 
+    // Initialize intelligence layer if available
+    if (this.intelligence) {
+      await this.intelligence.initialize()
+    }
+
     // Initialize auto-discovery
     await this.discovery.performFullDiscovery()
 
     // System is ready
-    console.log('Universal Tool Adapter System initialized successfully')
+    console.log('Universal Tool Adapter System initialized successfully', {
+      intelligenceEnabled: !!this.intelligence
+    })
   }
 
   /**
@@ -166,6 +193,7 @@ export class UniversalToolAdapterSystem {
       plugins: this.plugins.getSystemStats(),
       testing: this.testing.getTestStatistics(),
       discovery: this.discovery.getDiscoveryStats(),
+      intelligence: this.intelligence?.getIntelligenceMetrics(),
     }
   }
 
@@ -179,6 +207,12 @@ export class UniversalToolAdapterSystem {
     await this.testing.cleanup()
     await this.discovery.shutdown()
     await this.analytics.shutdown()
+
+    // Shutdown intelligence layer if available
+    if (this.intelligence) {
+      await this.intelligence.shutdown()
+    }
+
     await this.plugins.shutdown()
     await this.performance.shutdown()
     await this.registry.shutdown()
@@ -227,6 +261,14 @@ export async function quickSetup(
       enabled: options.enableAutoDiscovery ?? true,
       scanPaths: options.scanPaths || ['./blocks', './adapters'],
     },
+    // Intelligence configuration
+    enableIntelligence: options.enableIntelligence ?? true,
+    intelligence: {
+      enableNaturalLanguageDescriptions: options.intelligenceFeatures?.naturalLanguage ?? true,
+      enableContextualRecommendations: options.intelligenceFeatures?.contextualRecommendations ?? true,
+      enableIntelligentErrorHandling: options.intelligenceFeatures?.intelligentErrorHandling ?? true,
+      enablePerformanceOptimization: true,
+    },
   })
 
   if (options.initialize !== false) {
@@ -246,6 +288,9 @@ interface UniversalAdapterConfig {
   analytics?: any
   discovery?: any
   testing?: any
+  // Intelligence integration
+  enableIntelligence?: boolean
+  intelligence?: IntelligenceConfiguration
 }
 
 interface QuickSetupOptions {
@@ -257,6 +302,13 @@ interface QuickSetupOptions {
   healthCheckInterval?: number
   scanPaths?: string[]
   initialize?: boolean
+  // Intelligence features
+  enableIntelligence?: boolean
+  intelligenceFeatures?: {
+    naturalLanguage?: boolean
+    contextualRecommendations?: boolean
+    intelligentErrorHandling?: boolean
+  }
 }
 
 interface SystemStatus {
@@ -267,6 +319,7 @@ interface SystemStatus {
   plugins: any
   testing: any
   discovery: any
+  intelligence?: any
 }
 
 // Default export for convenience
