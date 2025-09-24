@@ -16,6 +16,30 @@
     "./schema": {
       "types": "./schema.ts",
       "default": "./schema.ts"
+    },
+    "./parlant": {
+      "types": "./parlant-exports.ts",
+      "default": "./parlant-exports.ts"
+    },
+    "./parlant-types": {
+      "types": "./parlant-types.ts",
+      "default": "./parlant-types.ts"
+    },
+    "./parlant-queries": {
+      "types": "./parlant-queries.ts",
+      "default": "./parlant-queries.ts"
+    },
+    "./parlant-validation": {
+      "types": "./parlant-validation.ts",
+      "default": "./parlant-validation.ts"
+    },
+    "./parlant-unions": {
+      "types": "./parlant-unions.ts",
+      "default": "./parlant-unions.ts"
+    },
+    "./parlant-schema": {
+      "types": "./parlant-schema.ts",
+      "default": "./parlant-schema.ts"
     }
   },
   "scripts": {

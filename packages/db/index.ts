@@ -6,6 +6,9 @@ import * as schema from './schema'
 export * from './schema'
 export type { PostgresJsDatabase }
 
+// Re-export Parlant types and utilities
+export * from './parlant-exports'
+
 // In production, use the Vercel-generated POSTGRES_URL
 // In development, use the direct DATABASE_URL
 const connectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL ?? ''
