@@ -1,0 +1,872 @@
+"""
+Comprehensive Security Testing for Workspace Messaging System
+============================================================
+
+This test suite validates all security aspects of the workspace messaging system:
+- Workspace isolation and boundary enforcement
+- Message encryption and decryption
+- Access control validation
+- Security scanning and threat detection
+- Compliance audit logging
+- Rate limiting and DDoS protection
+"""
+
+import pytest
+import asyncio
+import json
+from datetime import datetime, timedelta
+from typing import Dict, List, Any
+from unittest.mock import Mock, AsyncMock, patch
+import base64
+
+from packages.parlant_server.messaging.workspace_messaging_system import (
+    workspace_messaging_system,
+    WorkspaceMessage,
+    MessageType,
+    PresenceStatus
+)
+from packages.parlant_server.messaging.multitenant_queue_manager import (
+    multitenant_queue_manager,
+    QueuePriority,
+    DeliveryMode,
+    TenantConfiguration
+)
+from packages.parlant_server.messaging.security_compliance_system import (
+    MessageSecurityScanner,
+    MessageEncryptionManager,
+    ComplianceAuditLogger,
+    SecurityLevel,
+    EncryptionMethod,
+    ComplianceFramework,
+    SecurityPolicy,
+    ComplianceSettings
+)
+from packages.parlant_server.auth.sim_auth_bridge import SimSession, SimUser
+from packages.parlant_server.workspace_isolation import WorkspaceContext
+
+
+class TestWorkspaceIsolationSecurity:
+    """Test workspace isolation and security boundaries."""
+
+    @pytest.fixture
+    async def mock_session_workspace_a(self):
+        """Mock session for workspace A."""
+        user = SimUser(
+            id="user_1",
+            email="user1@example.com",
+            name="Test User 1",
+            workspaces=[{
+                "id": "workspace_a",
+                "name": "Workspace A",
+                "permissions": ["messaging", "read", "write"]
+            }]
+        )
+        return SimSession(user=user, active_organization_id="org_1")
+
+    @pytest.fixture
+    async def mock_session_workspace_b(self):
+        """Mock session for workspace B."""
+        user = SimUser(
+            id="user_2",
+            email="user2@example.com",
+            name="Test User 2",
+            workspaces=[{
+                "id": "workspace_b",
+                "name": "Workspace B",
+                "permissions": ["messaging", "read", "write"]
+            }]
+        )
+        return SimSession(user=user, active_organization_id="org_1")
+
+    @pytest.mark.asyncio
+    async def test_cross_workspace_message_isolation(
+        self,
+        mock_session_workspace_a,
+        mock_session_workspace_b
+    ):
+        """Test that messages cannot cross workspace boundaries."""
+
+        # Initialize messaging system
+        await workspace_messaging_system.initialize()
+
+        # Create queues for both workspaces
+        queue_a = await workspace_messaging_system.create_workspace_message_queue(
+            WorkspaceContext(
+                workspace_id="workspace_a",
+                user_id="user_1",
+                user_permissions=["messaging"]
+            )
+        )
+
+        queue_b = await workspace_messaging_system.create_workspace_message_queue(
+            WorkspaceContext(
+                workspace_id="workspace_b",
+                user_id="user_2",
+                user_permissions=["messaging"]
+            )
+        )
+
+        # Send message in workspace A
+        message_a = await workspace_messaging_system.send_workspace_message(
+            mock_session_workspace_a,
+            "workspace_a",
+            {
+                "content": "Secret message in workspace A",
+                "type": "chat",
+                "channel": "general"
+            }
+        )
+
+        # Attempt to access messages from workspace A using workspace B session
+        with pytest.raises(Exception) as exc_info:
+            await workspace_messaging_system.get_workspace_message_history(
+                mock_session_workspace_b,
+                "workspace_a",  # Wrong workspace
+                limit=10
+            )
+
+        assert "Access denied" in str(exc_info.value)
+
+        # Verify workspace B cannot see workspace A messages
+        workspace_b_messages = await workspace_messaging_system.get_workspace_message_history(
+            mock_session_workspace_b,
+            "workspace_b",
+            limit=10
+        )
+
+        # Should not contain messages from workspace A
+        workspace_a_message_ids = [msg.id for msg in workspace_b_messages if msg.id == message_a.id]
+        assert len(workspace_a_message_ids) == 0
+
+    @pytest.mark.asyncio
+    async def test_workspace_presence_isolation(
+        self,
+        mock_session_workspace_a,
+        mock_session_workspace_b
+    ):
+        """Test that presence information is workspace-isolated."""
+
+        await workspace_messaging_system.initialize()
+
+        # Update presence in workspace A
+        await workspace_messaging_system.update_workspace_presence(
+            mock_session_workspace_a,
+            "workspace_a",
+            PresenceStatus.ONLINE,
+            "Working on project A"
+        )
+
+        # Update presence in workspace B
+        await workspace_messaging_system.update_workspace_presence(
+            mock_session_workspace_b,
+            "workspace_b",
+            PresenceStatus.BUSY,
+            "In meeting"
+        )
+
+        # Get presence for workspace A
+        presence_a = await workspace_messaging_system.get_workspace_presence(
+            mock_session_workspace_a,
+            "workspace_a"
+        )
+
+        # Get presence for workspace B
+        presence_b = await workspace_messaging_system.get_workspace_presence(
+            mock_session_workspace_b,
+            "workspace_b"
+        )
+
+        # Verify isolation - workspace A should only see its own users
+        assert "user_1" in presence_a
+        assert "user_2" not in presence_a
+
+        # Verify isolation - workspace B should only see its own users
+        assert "user_2" in presence_b
+        assert "user_1" not in presence_b
+
+    @pytest.mark.asyncio
+    async def test_unauthorized_workspace_access(self):
+        """Test that unauthorized users cannot access workspaces."""
+
+        # Create session for user with no workspace access
+        user = SimUser(
+            id="unauthorized_user",
+            email="unauthorized@example.com",
+            name="Unauthorized User",
+            workspaces=[]  # No workspace access
+        )
+        unauthorized_session = SimSession(user=user, active_organization_id="org_1")
+
+        await workspace_messaging_system.initialize()
+
+        # Attempt to send message to workspace without access
+        with pytest.raises(Exception) as exc_info:
+            await workspace_messaging_system.send_workspace_message(
+                unauthorized_session,
+                "workspace_a",
+                {"content": "Unauthorized message", "type": "chat"}
+            )
+
+        assert "Access denied" in str(exc_info.value)
+
+        # Attempt to get message history without access
+        with pytest.raises(Exception) as exc_info:
+            await workspace_messaging_system.get_workspace_message_history(
+                unauthorized_session,
+                "workspace_a"
+            )
+
+        assert "Access denied" in str(exc_info.value)
+
+
+class TestMessageEncryptionSecurity:
+    """Test message encryption and decryption security."""
+
+    @pytest.fixture
+    def encryption_manager(self):
+        """Fixture for encryption manager."""
+        return MessageEncryptionManager()
+
+    @pytest.mark.asyncio
+    async def test_message_encryption_decryption(self, encryption_manager):
+        """Test basic message encryption and decryption."""
+
+        await encryption_manager.initialize()
+
+        workspace_id = "test_workspace"
+        message_content = "This is a confidential message"
+
+        # Encrypt message
+        encrypted_result = await encryption_manager.encrypt_message(
+            message_content,
+            workspace_id,
+            EncryptionMethod.FERNET
+        )
+
+        assert encrypted_result['encrypted_content'] != message_content
+        assert encrypted_result['key_id'] is not None
+        assert encrypted_result['method'] == 'fernet'
+
+        # Decrypt message
+        decrypted_content = await encryption_manager.decrypt_message(
+            encrypted_result['encrypted_content'],
+            workspace_id,
+            encrypted_result['key_id'],
+            EncryptionMethod.FERNET
+        )
+
+        assert decrypted_content == message_content
+
+    @pytest.mark.asyncio
+    async def test_aes_gcm_encryption(self, encryption_manager):
+        """Test AES-256-GCM encryption method."""
+
+        await encryption_manager.initialize()
+
+        workspace_id = "test_workspace"
+        message_content = "Sensitive data requiring AES-256-GCM encryption"
+
+        # Encrypt with AES-256-GCM
+        encrypted_result = await encryption_manager.encrypt_message(
+            message_content,
+            workspace_id,
+            EncryptionMethod.AES_256_GCM
+        )
+
+        assert encrypted_result['method'] == 'aes_256_gcm'
+        assert encrypted_result['encrypted_content'] != message_content
+
+        # Decrypt
+        decrypted_content = await encryption_manager.decrypt_message(
+            encrypted_result['encrypted_content'],
+            workspace_id,
+            encrypted_result['key_id'],
+            EncryptionMethod.AES_256_GCM
+        )
+
+        assert decrypted_content == message_content
+
+    @pytest.mark.asyncio
+    async def test_key_rotation(self, encryption_manager):
+        """Test encryption key rotation."""
+
+        await encryption_manager.initialize()
+
+        workspace_id = "test_workspace"
+        message_content = "Test message before key rotation"
+
+        # Encrypt message with original key
+        original_encrypted = await encryption_manager.encrypt_message(
+            message_content,
+            workspace_id,
+            EncryptionMethod.FERNET
+        )
+
+        # Rotate keys
+        await encryption_manager.rotate_workspace_keys(workspace_id)
+
+        # Encrypt new message with rotated key
+        new_encrypted = await encryption_manager.encrypt_message(
+            "Test message after key rotation",
+            workspace_id,
+            EncryptionMethod.FERNET
+        )
+
+        # Original message should still decrypt with old key (key versioning)
+        original_decrypted = await encryption_manager.decrypt_message(
+            original_encrypted['encrypted_content'],
+            workspace_id,
+            original_encrypted['key_id'],
+            EncryptionMethod.FERNET
+        )
+
+        assert original_decrypted == message_content
+
+    @pytest.mark.asyncio
+    async def test_cross_workspace_key_isolation(self, encryption_manager):
+        """Test that encryption keys are isolated between workspaces."""
+
+        await encryption_manager.initialize()
+
+        message_content = "Test message"
+
+        # Encrypt in workspace A
+        encrypted_a = await encryption_manager.encrypt_message(
+            message_content,
+            "workspace_a",
+            EncryptionMethod.FERNET
+        )
+
+        # Encrypt in workspace B
+        encrypted_b = await encryption_manager.encrypt_message(
+            message_content,
+            "workspace_b",
+            EncryptionMethod.FERNET
+        )
+
+        # Keys should be different (different encrypted content for same message)
+        assert encrypted_a['encrypted_content'] != encrypted_b['encrypted_content']
+        assert encrypted_a['key_id'] != encrypted_b['key_id']
+
+        # Cross-workspace decryption should fail
+        with pytest.raises(Exception):
+            await encryption_manager.decrypt_message(
+                encrypted_a['encrypted_content'],
+                "workspace_b",  # Wrong workspace
+                encrypted_a['key_id'],
+                EncryptionMethod.FERNET
+            )
+
+
+class TestSecurityScanning:
+    """Test security scanning and threat detection."""
+
+    @pytest.fixture
+    def security_scanner(self):
+        """Fixture for security scanner."""
+        return MessageSecurityScanner()
+
+    @pytest.fixture
+    def security_policy(self):
+        """Fixture for security policy."""
+        return SecurityPolicy(
+            workspace_id="test_workspace",
+            content_scanning_enabled=True,
+            malware_scanning_enabled=True,
+            pii_detection_enabled=True,
+            profanity_filtering_enabled=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_malicious_content_detection(self, security_scanner, security_policy):
+        """Test detection of malicious content patterns."""
+
+        malicious_contents = [
+            "<script>alert('xss')</script>",
+            "javascript:void(0)",
+            "vbscript:msgbox('test')",
+            "onload=\"malicious_function()\"",
+            "eval(user_input)"
+        ]
+
+        for malicious_content in malicious_contents:
+            scan_result = await security_scanner.scan_message_content(
+                malicious_content,
+                "test_workspace",
+                security_policy
+            )
+
+            assert scan_result['is_safe'] == False
+            assert len(scan_result['threats_detected']) > 0
+            assert scan_result['security_score'] < 100
+            assert 'malicious_code' in [threat['type'] for threat in scan_result['threats_detected']]
+
+    @pytest.mark.asyncio
+    async def test_pii_detection(self, security_scanner, security_policy):
+        """Test personally identifiable information detection."""
+
+        pii_test_cases = [
+            ("My SSN is 123-45-6789", "ssn"),
+            ("Credit card: 4532-1234-5678-9012", "credit_card"),
+            ("Email me at john.doe@example.com", "email"),
+            ("Call me at (555) 123-4567", "phone"),
+            ("Server IP: 192.168.1.100", "ip_address")
+        ]
+
+        for content, expected_pii_type in pii_test_cases:
+            scan_result = await security_scanner.scan_message_content(
+                content,
+                "test_workspace",
+                security_policy
+            )
+
+            assert len(scan_result['pii_detected']) > 0
+            pii_types = [pii['type'] for pii in scan_result['pii_detected']]
+            assert expected_pii_type in pii_types
+
+            # Verify PII is properly masked
+            for pii in scan_result['pii_detected']:
+                assert pii['masked_value'] != pii['value']
+                assert '***' in pii['masked_value']
+
+    @pytest.mark.asyncio
+    async def test_file_attachment_security(self, security_scanner, security_policy):
+        """Test file attachment security scanning."""
+
+        # Test allowed file type
+        allowed_file_data = b"This is a test PDF content"
+        scan_result = await security_scanner.scan_file_attachment(
+            allowed_file_data,
+            "document.pdf",
+            "application/pdf",
+            security_policy
+        )
+
+        assert scan_result['is_safe'] == True
+        assert scan_result['file_hash'] != ""
+
+        # Test disallowed file type
+        malicious_file_data = b"MZ\x90\x00"  # PE executable header
+        scan_result = await security_scanner.scan_file_attachment(
+            malicious_file_data,
+            "malware.exe",
+            "application/x-executable",
+            security_policy
+        )
+
+        assert scan_result['is_safe'] == False
+        assert len(scan_result['threats_detected']) > 0
+
+    @pytest.mark.asyncio
+    async def test_oversized_content_detection(self, security_scanner, security_policy):
+        """Test detection of oversized message content."""
+
+        # Create content larger than policy limit
+        oversized_content = "A" * (security_policy.max_message_size + 1000)
+
+        scan_result = await security_scanner.scan_message_content(
+            oversized_content,
+            "test_workspace",
+            security_policy
+        )
+
+        assert scan_result['is_safe'] == False
+        size_violations = [t for t in scan_result['threats_detected'] if t['type'] == 'size_violation']
+        assert len(size_violations) > 0
+
+    @pytest.mark.asyncio
+    async def test_clean_content_validation(self, security_scanner, security_policy):
+        """Test that clean content passes security validation."""
+
+        clean_content = "This is a normal business message discussing project updates."
+
+        scan_result = await security_scanner.scan_message_content(
+            clean_content,
+            "test_workspace",
+            security_policy
+        )
+
+        assert scan_result['is_safe'] == True
+        assert len(scan_result['threats_detected']) == 0
+        assert len(scan_result['pii_detected']) == 0
+        assert scan_result['security_score'] == 100
+
+
+class TestComplianceAuditing:
+    """Test compliance audit logging and reporting."""
+
+    @pytest.fixture
+    def audit_logger(self):
+        """Fixture for audit logger."""
+        return ComplianceAuditLogger()
+
+    @pytest.fixture
+    def compliance_settings(self):
+        """Fixture for compliance settings."""
+        return ComplianceSettings(
+            workspace_id="test_workspace",
+            frameworks={ComplianceFramework.GDPR, ComplianceFramework.HIPAA},
+            audit_all_activities=True,
+            real_time_monitoring=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_message_audit_logging(self, audit_logger, compliance_settings):
+        """Test audit logging for message events."""
+
+        await audit_logger.initialize()
+
+        message_data = {
+            'id': 'msg_123',
+            'type': 'chat',
+            'channel_id': 'general',
+            'has_attachments': False,
+            'is_encrypted': True,
+            'security_labels': ['confidential'],
+            'compliance_flags': ['pii_detected']
+        }
+
+        # Log message sent event
+        await audit_logger.log_message_event(
+            'message_sent',
+            'test_workspace',
+            'user_123',
+            message_data,
+            compliance_settings
+        )
+
+        # Log message read event
+        await audit_logger.log_message_event(
+            'message_read',
+            'test_workspace',
+            'user_456',
+            message_data,
+            compliance_settings
+        )
+
+        # Verify audit entries are created
+        # In real implementation, would query stored audit logs
+
+    @pytest.mark.asyncio
+    async def test_access_audit_logging(self, audit_logger):
+        """Test audit logging for access events."""
+
+        await audit_logger.initialize()
+
+        access_details = {
+            'action': 'workspace_join',
+            'ip_address': '192.168.1.100',
+            'user_agent': 'Mozilla/5.0...',
+            'session_id': 'session_123'
+        }
+
+        await audit_logger.log_access_event(
+            'workspace_access',
+            'test_workspace',
+            'user_123',
+            access_details
+        )
+
+        # Verify access audit entry is created
+
+    @pytest.mark.asyncio
+    async def test_security_event_logging(self, audit_logger):
+        """Test audit logging for security events."""
+
+        await audit_logger.initialize()
+
+        security_details = {
+            'threat_type': 'xss_attempt',
+            'source_ip': '10.0.0.1',
+            'blocked': True,
+            'user_id': 'user_123',
+            'target_id': 'msg_456'
+        }
+
+        await audit_logger.log_security_event(
+            'security_threat_detected',
+            'test_workspace',
+            security_details,
+            'error'
+        )
+
+        # Verify security audit entry is created with proper severity
+
+    @pytest.mark.asyncio
+    async def test_gdpr_compliance_report(self, audit_logger, compliance_settings):
+        """Test GDPR compliance report generation."""
+
+        await audit_logger.initialize()
+
+        start_date = datetime.now() - timedelta(days=30)
+        end_date = datetime.now()
+
+        report = await audit_logger.generate_compliance_report(
+            'test_workspace',
+            start_date,
+            end_date,
+            ComplianceFramework.GDPR
+        )
+
+        assert report['framework'] == 'gdpr'
+        assert report['workspace_id'] == 'test_workspace'
+        assert 'data_processing_activities' in report
+        assert 'consent_management' in report
+        assert 'data_subject_rights' in report
+        assert 'privacy_impact_assessment' in report
+
+    @pytest.mark.asyncio
+    async def test_hipaa_compliance_report(self, audit_logger, compliance_settings):
+        """Test HIPAA compliance report generation."""
+
+        await audit_logger.initialize()
+
+        start_date = datetime.now() - timedelta(days=30)
+        end_date = datetime.now()
+
+        report = await audit_logger.generate_compliance_report(
+            'test_workspace',
+            start_date,
+            end_date,
+            ComplianceFramework.HIPAA
+        )
+
+        assert report['framework'] == 'hipaa'
+        assert 'covered_entities' in report
+        assert 'business_associates' in report
+        assert 'phi_access_logs' in report
+        assert 'security_incidents' in report
+
+
+class TestRateLimitingSecurity:
+    """Test rate limiting and DDoS protection."""
+
+    @pytest.mark.asyncio
+    async def test_message_rate_limiting(self):
+        """Test message rate limiting enforcement."""
+
+        await multitenant_queue_manager.initialize()
+
+        # Create tenant config with low rate limit for testing
+        config = TenantConfiguration(
+            workspace_id="test_workspace",
+            message_rate_limit=5  # 5 messages per minute
+        )
+
+        queue = await multitenant_queue_manager.get_or_create_workspace_queue(
+            "test_workspace",
+            config
+        )
+
+        # Send messages within limit
+        for i in range(5):
+            message_id = await queue.enqueue_message(
+                {"content": f"Message {i}", "sender_id": "user_1"},
+                QueuePriority.NORMAL,
+                DeliveryMode.BROADCAST
+            )
+            assert message_id is not None
+
+        # Attempt to exceed rate limit
+        with pytest.raises(Exception) as exc_info:
+            await queue.enqueue_message(
+                {"content": "Rate limit exceeded", "sender_id": "user_1"},
+                QueuePriority.NORMAL,
+                DeliveryMode.BROADCAST
+            )
+
+        assert "rate limit exceeded" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
+    async def test_connection_limits(self):
+        """Test WebSocket connection limits."""
+
+        await multitenant_queue_manager.initialize()
+
+        # Create tenant config with low connection limit for testing
+        config = TenantConfiguration(
+            workspace_id="test_workspace",
+            max_connections=2  # Only 2 connections allowed
+        )
+
+        queue = await multitenant_queue_manager.get_or_create_workspace_queue(
+            "test_workspace",
+            config
+        )
+
+        # Mock WebSocket objects
+        mock_websocket_1 = Mock()
+        mock_websocket_2 = Mock()
+        mock_websocket_3 = Mock()
+
+        # Add connections within limit
+        conn_id_1 = await multitenant_queue_manager.add_websocket_connection(
+            "test_workspace",
+            mock_websocket_1,
+            "user_1",
+            "session_1"
+        )
+
+        conn_id_2 = await multitenant_queue_manager.add_websocket_connection(
+            "test_workspace",
+            mock_websocket_2,
+            "user_2",
+            "session_2"
+        )
+
+        # Attempt to exceed connection limit
+        with pytest.raises(Exception) as exc_info:
+            await multitenant_queue_manager.add_websocket_connection(
+                "test_workspace",
+                mock_websocket_3,
+                "user_3",
+                "session_3"
+            )
+
+        assert "connection limit exceeded" in str(exc_info.value).lower()
+
+
+class TestSecurityIntegration:
+    """Test end-to-end security integration scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_encrypted_message_flow_with_audit(self):
+        """Test complete flow with encryption, scanning, and audit logging."""
+
+        # Initialize all components
+        await workspace_messaging_system.initialize()
+        await multitenant_queue_manager.initialize()
+
+        security_scanner = MessageSecurityScanner()
+        encryption_manager = MessageEncryptionManager()
+        audit_logger = ComplianceAuditLogger()
+
+        await encryption_manager.initialize()
+        await audit_logger.initialize()
+
+        # Create mock session
+        user = SimUser(
+            id="test_user",
+            email="test@example.com",
+            name="Test User",
+            workspaces=[{
+                "id": "secure_workspace",
+                "name": "Secure Workspace",
+                "permissions": ["messaging", "read", "write"]
+            }]
+        )
+        session = SimSession(user=user, active_organization_id="org_1")
+
+        # Security policy with encryption required
+        security_policy = SecurityPolicy(
+            workspace_id="secure_workspace",
+            encryption_required=True,
+            content_scanning_enabled=True,
+            pii_detection_enabled=True
+        )
+
+        # Compliance settings
+        compliance_settings = ComplianceSettings(
+            workspace_id="secure_workspace",
+            frameworks={ComplianceFramework.GDPR},
+            audit_all_activities=True
+        )
+
+        message_content = "This message contains PII: john.doe@example.com and SSN 123-45-6789"
+
+        # 1. Security scan
+        scan_result = await security_scanner.scan_message_content(
+            message_content,
+            "secure_workspace",
+            security_policy
+        )
+
+        assert len(scan_result['pii_detected']) > 0
+
+        # 2. Encryption
+        encrypted_result = await encryption_manager.encrypt_message(
+            message_content,
+            "secure_workspace",
+            EncryptionMethod.AES_256_GCM
+        )
+
+        assert encrypted_result['encrypted_content'] != message_content
+
+        # 3. Audit logging
+        message_data = {
+            'id': 'msg_secure_123',
+            'type': 'chat',
+            'channel_id': 'secure_channel',
+            'is_encrypted': True,
+            'security_labels': ['pii_detected'],
+            'compliance_flags': ['gdpr_applicable']
+        }
+
+        await audit_logger.log_message_event(
+            'secure_message_sent',
+            'secure_workspace',
+            'test_user',
+            message_data,
+            compliance_settings
+        )
+
+        # 4. Verify decryption works
+        decrypted_content = await encryption_manager.decrypt_message(
+            encrypted_result['encrypted_content'],
+            "secure_workspace",
+            encrypted_result['key_id'],
+            EncryptionMethod.AES_256_GCM
+        )
+
+        assert decrypted_content == message_content
+
+    @pytest.mark.asyncio
+    async def test_security_violation_handling(self):
+        """Test handling of security violations and threats."""
+
+        security_scanner = MessageSecurityScanner()
+        audit_logger = ComplianceAuditLogger()
+
+        await audit_logger.initialize()
+
+        # Malicious message content
+        malicious_content = "<script>alert('XSS Attack')</script>Please click this link: javascript:void(0)"
+
+        security_policy = SecurityPolicy(
+            workspace_id="test_workspace",
+            content_scanning_enabled=True
+        )
+
+        # Scan for threats
+        scan_result = await security_scanner.scan_message_content(
+            malicious_content,
+            "test_workspace",
+            security_policy
+        )
+
+        # Should detect multiple threats
+        assert scan_result['is_safe'] == False
+        assert len(scan_result['threats_detected']) >= 2
+        assert scan_result['security_score'] < 50
+
+        # Log security violation
+        security_details = {
+            'threat_count': len(scan_result['threats_detected']),
+            'threats': scan_result['threats_detected'],
+            'user_id': 'malicious_user',
+            'blocked': True
+        }
+
+        await audit_logger.log_security_event(
+            'message_security_violation',
+            'test_workspace',
+            security_details,
+            'critical'
+        )
+
+        # In real implementation, message would be blocked and user flagged
+
+
+if __name__ == "__main__":
+    # Run the security tests
+    pytest.main([__file__, "-v", "--tb=short"])

@@ -1,0 +1,331 @@
+/**
+ * Custom styles for Parlant Chat integration with Sim's design system
+ */
+
+/* ==========================================================================
+   THEME VARIABLES
+   ========================================================================== */
+
+.sim-parlant-chatbox {
+  /* Light theme (default) */
+  --parlant-primary: hsl(var(--brand-primary-hex, 263 85% 70%));
+  --parlant-primary-hover: hsl(var(--brand-primary-hover-hex, 263 85% 65%));
+  --parlant-background: hsl(var(--background, 0 0% 100%));
+  --parlant-foreground: hsl(var(--foreground, 0 0% 3.9%));
+  --parlant-muted: hsl(var(--muted, 0 0% 96.1%));
+  --parlant-muted-foreground: hsl(var(--muted-foreground, 0 0% 46.9%));
+  --parlant-border: hsl(var(--border, 0 0% 89.8%));
+  --parlant-card: hsl(var(--card, 0 0% 99.2%));
+  --parlant-card-foreground: hsl(var(--card-foreground, 0 0% 3.9%));
+  --parlant-accent: hsl(var(--brand-accent-hex, 263 85% 70%));
+  --parlant-radius: var(--radius, 0.5rem);
+}
+
+.sim-parlant-chatbox--dark {
+  /* Dark theme overrides */
+  --parlant-background: hsl(var(--background, 0 0% 3.9%));
+  --parlant-foreground: hsl(var(--foreground, 0 0% 98%));
+  --parlant-muted: hsl(var(--muted, 0 0% 17.5%));
+  --parlant-muted-foreground: hsl(var(--muted-foreground, 0 0% 65.1%));
+  --parlant-border: hsl(var(--border, 0 0% 16.1%));
+  --parlant-card: hsl(var(--card, 0 0% 9.0%));
+  --parlant-card-foreground: hsl(var(--card-foreground, 0 0% 98%));
+}
+
+/* ==========================================================================
+   CHATBOX OVERRIDES
+   ========================================================================== */
+
+/* Override parlant-chat-react default styles */
+.sim-parlant-chatbox .parlant-chatbox {
+  font-family: var(--font-geist-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  background: var(--parlant-background);
+  color: var(--parlant-foreground);
+  border: 1px solid var(--parlant-border);
+  border-radius: var(--parlant-radius);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.sim-parlant-chatbox--dark .parlant-chatbox {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Messages area */
+.sim-parlant-chatbox .parlant-messages {
+  background: transparent;
+  padding: 1rem;
+  gap: 0.75rem;
+}
+
+/* Message styling */
+.sim-parlant-chatbox .parlant-message {
+  margin-bottom: 0.75rem;
+}
+
+.sim-parlant-chatbox .parlant-message--user {
+  justify-content: flex-end;
+}
+
+.sim-parlant-chatbox .parlant-message--agent {
+  justify-content: flex-start;
+}
+
+.sim-parlant-chatbox .parlant-message-content {
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--parlant-radius);
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.sim-parlant-chatbox .parlant-message--user .parlant-message-content {
+  background: var(--parlant-primary);
+  color: white;
+  margin-left: auto;
+}
+
+.sim-parlant-chatbox .parlant-message--agent .parlant-message-content {
+  background: var(--parlant-card);
+  color: var(--parlant-card-foreground);
+  border: 1px solid var(--parlant-border);
+}
+
+/* Input area */
+.sim-parlant-chatbox .parlant-input-container {
+  padding: 1rem;
+  border-top: 1px solid var(--parlant-border);
+  background: var(--parlant-background);
+}
+
+.sim-parlant-chatbox .parlant-input {
+  background: var(--parlant-background);
+  border: 1px solid var(--parlant-border);
+  color: var(--parlant-foreground);
+  border-radius: var(--parlant-radius);
+  padding: 0.75rem;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.sim-parlant-chatbox .parlant-input:focus {
+  border-color: var(--parlant-primary);
+  box-shadow: 0 0 0 2px rgba(var(--parlant-primary), 0.1);
+}
+
+.sim-parlant-chatbox .parlant-input::placeholder {
+  color: var(--parlant-muted-foreground);
+}
+
+/* Send button */
+.sim-parlant-chatbox .parlant-send-button {
+  background: var(--parlant-primary);
+  color: white;
+  border: none;
+  border-radius: var(--parlant-radius);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sim-parlant-chatbox .parlant-send-button:hover {
+  background: var(--parlant-primary-hover);
+  transform: translateY(-1px);
+}
+
+.sim-parlant-chatbox .parlant-send-button:active {
+  transform: translateY(0);
+}
+
+.sim-parlant-chatbox .parlant-send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Header */
+.sim-parlant-chatbox .parlant-header {
+  background: var(--parlant-card);
+  border-bottom: 1px solid var(--parlant-border);
+  color: var(--parlant-card-foreground);
+  padding: 1rem;
+}
+
+/* Popup button */
+.sim-chat-popup-button {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.sim-chat-popup-button:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.sim-chat-popup-button:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+
+.sim-parlant-chatbox--animated .parlant-chatbox {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-parlant-chatbox--animated .parlant-message {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.sim-parlant-chatbox--animated .sim-chat-popup-button {
+  animation: bounceIn 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pulse ring animation for popup button */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--parlant-primary), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--parlant-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--parlant-primary), 0);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .sim-parlant-chatbox .parlant-chatbox {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+  }
+
+  .sim-chat-popup-button {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-parlant-chatbox--animated .parlant-chatbox,
+  .sim-parlant-chatbox--animated .parlant-message,
+  .sim-parlant-chatbox--animated .sim-chat-popup-button {
+    animation: none;
+    transition: none;
+  }
+
+  .animate-pulse-ring {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+.sim-parlant-chatbox .parlant-input:focus,
+.sim-parlant-chatbox .parlant-send-button:focus,
+.sim-chat-popup-button:focus {
+  outline: 2px solid var(--parlant-primary);
+  outline-offset: 2px;
+}
+
+.sim-parlant-chatbox [role="button"]:focus-visible,
+.sim-chat-popup-button:focus-visible {
+  outline: 2px solid var(--parlant-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .sim-parlant-chatbox .parlant-chatbox {
+    border-width: 2px;
+  }
+
+  .sim-parlant-chatbox .parlant-message-content {
+    border-width: 2px;
+  }
+
+  .sim-parlant-chatbox .parlant-input {
+    border-width: 2px;
+  }
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  .sim-parlant-chatbox,
+  .sim-chat-popup-button {
+    display: none !important;
+  }
+}

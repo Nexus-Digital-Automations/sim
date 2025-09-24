@@ -5,7 +5,9 @@ import { createSocketIOServer } from '@/socket-server/config/socket'
 import { setupAllHandlers } from '@/socket-server/handlers'
 import { initializeParlantHooks } from '@/socket-server/integrations/parlant-hooks'
 import { type AuthenticatedSocket, authenticateSocket } from '@/socket-server/middleware/auth'
+import { initializeChatSecurity } from '@/socket-server/middleware/chat-security'
 import { initializeParlantSecurity } from '@/socket-server/middleware/parlant-security'
+import { chatMetricsCollector, chatPerformanceOptimizer } from '@/socket-server/monitoring/chat-metrics'
 import { RoomManager } from '@/socket-server/rooms/manager'
 import { createHttpHandler } from '@/socket-server/routes/http'
 
@@ -22,8 +24,9 @@ const roomManager = new RoomManager(io)
 // Initialize Parlant integration hooks
 initializeParlantHooks(io, roomManager)
 
-// Initialize Parlant security monitoring
+// Initialize security monitoring
 initializeParlantSecurity(io)
+initializeChatSecurity()
 
 io.use(authenticateSocket)
 
@@ -55,7 +58,21 @@ io.engine.on('connection_error', (err) => {
 io.on('connection', (socket: AuthenticatedSocket) => {
   logger.info(`New socket connection: ${socket.id}`)
 
+  // Track connection for metrics
+  if (socket.userId) {
+    chatMetricsCollector.trackConnection(socket.id)
+  }
+
+  // Setup all handlers including enhanced chat handlers
   setupAllHandlers(socket, roomManager)
+
+  // Handle disconnection for metrics
+  socket.on('disconnect', (reason) => {
+    logger.info(`Socket disconnected: ${socket.id}, reason: ${reason}`)
+    if (socket.userId) {
+      chatMetricsCollector.trackDisconnection(socket.id)
+    }
+  })
 })
 
 httpServer.on('request', (req, res) => {
@@ -96,6 +113,20 @@ logger.info('Starting Socket.IO server...', {
 httpServer.listen(PORT, '0.0.0.0', () => {
   logger.info(`Socket.IO server running on port ${PORT}`)
   logger.info(`🏥 Health check available at: http://localhost:${PORT}/health`)
+
+  // Start periodic metrics logging every 5 minutes
+  setInterval(() => {
+    chatMetricsCollector.logMetrics()
+
+    // Apply automatic optimizations if needed
+    chatPerformanceOptimizer.applyAutomaticOptimizations()
+  }, 5 * 60 * 1000) // 5 minutes
+
+  // Log initial metrics after 30 seconds
+  setTimeout(() => {
+    chatMetricsCollector.logMetrics()
+    logger.info('Chat metrics logging initialized')
+  }, 30000)
 })
 
 httpServer.on('error', (error) => {

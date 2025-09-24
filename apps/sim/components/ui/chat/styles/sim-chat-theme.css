@@ -1,0 +1,457 @@
+/**
+ * Sim Chat Widget Theme Integration
+ *
+ * This CSS file integrates the Parlant chat widget with Sim's design system,
+ * ensuring consistent theming across light/dark modes and maintaining
+ * visual harmony with the rest of the application.
+ */
+
+/* ==========================================================================
+   CHAT WIDGET THEME INTEGRATION
+   ========================================================================== */
+
+.parlant-chat-widget {
+  /* Base Properties */
+  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+
+  /* CSS Custom Properties for Chat Widget */
+  --chat-primary: hsl(var(--primary));
+  --chat-primary-foreground: hsl(var(--primary-foreground));
+  --chat-secondary: hsl(var(--secondary));
+  --chat-secondary-foreground: hsl(var(--secondary-foreground));
+  --chat-background: hsl(var(--background));
+  --chat-foreground: hsl(var(--foreground));
+  --chat-muted: hsl(var(--muted));
+  --chat-muted-foreground: hsl(var(--muted-foreground));
+  --chat-border: hsl(var(--border));
+  --chat-accent: hsl(var(--accent));
+  --chat-accent-foreground: hsl(var(--accent-foreground));
+  --chat-destructive: hsl(var(--destructive));
+  --chat-destructive-foreground: hsl(var(--destructive-foreground));
+  --chat-radius: var(--radius);
+
+  /* Chat-specific colors */
+  --chat-user-message-bg: hsl(var(--primary));
+  --chat-user-message-text: hsl(var(--primary-foreground));
+  --chat-agent-message-bg: hsl(var(--muted));
+  --chat-agent-message-text: hsl(var(--foreground));
+  --chat-input-bg: hsl(var(--background));
+  --chat-input-border: hsl(var(--border));
+  --chat-input-focus-border: hsl(var(--primary));
+  --chat-header-bg: hsl(var(--primary));
+  --chat-header-text: hsl(var(--primary-foreground));
+  --chat-timestamp-text: hsl(var(--muted-foreground));
+
+  /* Animation & Transition Properties */
+  --chat-animation-duration: 200ms;
+  --chat-animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing & Layout */
+  --chat-spacing-xs: 0.25rem;
+  --chat-spacing-sm: 0.5rem;
+  --chat-spacing-md: 0.75rem;
+  --chat-spacing-lg: 1rem;
+  --chat-spacing-xl: 1.5rem;
+
+  /* Shadow & Elevation */
+  --chat-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --chat-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --chat-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* ==========================================================================
+   CHAT WIDGET COMPONENT STYLES
+   ========================================================================== */
+
+/* Chat Container */
+.parlant-chat-widget .chatbox-wrapper {
+  background: var(--chat-background);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--chat-radius);
+  box-shadow: var(--chat-shadow-lg);
+  backdrop-filter: blur(8px);
+  background: hsl(var(--background) / 0.95);
+}
+
+/* Chat Header */
+.parlant-chat-widget .chat-header {
+  background: var(--chat-header-bg);
+  color: var(--chat-header-text);
+  border-radius: var(--chat-radius) var(--chat-radius) 0 0;
+  padding: var(--chat-spacing-lg);
+  border-bottom: 1px solid hsl(var(--primary-foreground) / 0.1);
+}
+
+/* Messages Area */
+.parlant-chat-widget .messages-area {
+  background: var(--chat-background);
+  padding: var(--chat-spacing-lg);
+  max-height: 400px;
+  overflow-y: auto;
+
+  /* Custom Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted)) transparent;
+}
+
+.parlant-chat-widget .messages-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.parlant-chat-widget .messages-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.parlant-chat-widget .messages-area::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+.parlant-chat-widget .messages-area::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Message Bubbles */
+.parlant-chat-widget .message-bubble {
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-sm) var(--chat-spacing-md);
+  margin-bottom: var(--chat-spacing-sm);
+  max-width: 85%;
+  word-wrap: break-word;
+  position: relative;
+
+  /* Message Animation */
+  animation: fadeInUp var(--chat-animation-duration) var(--chat-animation-easing);
+}
+
+.parlant-chat-widget .message-bubble.user-message {
+  background: var(--chat-user-message-bg);
+  color: var(--chat-user-message-text);
+  margin-left: auto;
+  border-bottom-right-radius: var(--chat-spacing-xs);
+}
+
+.parlant-chat-widget .message-bubble.agent-message {
+  background: var(--chat-agent-message-bg);
+  color: var(--chat-agent-message-text);
+  margin-right: auto;
+  border-bottom-left-radius: var(--chat-spacing-xs);
+}
+
+/* Message Timestamp */
+.parlant-chat-widget .message-timestamp {
+  font-size: 0.75rem;
+  color: var(--chat-timestamp-text);
+  margin-top: var(--chat-spacing-xs);
+  opacity: 0.7;
+}
+
+/* Typing Indicator */
+.parlant-chat-widget .typing-indicator {
+  background: var(--chat-agent-message-bg);
+  color: var(--chat-agent-message-text);
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-sm) var(--chat-spacing-md);
+  margin-bottom: var(--chat-spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--chat-spacing-xs);
+}
+
+.parlant-chat-widget .typing-indicator .dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: typingPulse 1.5s ease-in-out infinite;
+}
+
+.parlant-chat-widget .typing-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.parlant-chat-widget .typing-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Input Area */
+.parlant-chat-widget .chat-input-area {
+  background: var(--chat-background);
+  border-top: 1px solid var(--chat-border);
+  padding: var(--chat-spacing-lg);
+  border-radius: 0 0 var(--chat-radius) var(--chat-radius);
+}
+
+.parlant-chat-widget .chat-input {
+  background: var(--chat-input-bg);
+  border: 1px solid var(--chat-input-border);
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-sm) var(--chat-spacing-md);
+  color: var(--chat-foreground);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  width: 100%;
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+
+  transition: border-color var(--chat-animation-duration) var(--chat-animation-easing);
+}
+
+.parlant-chat-widget .chat-input:focus {
+  outline: none;
+  border-color: var(--chat-input-focus-border);
+  box-shadow: 0 0 0 1px var(--chat-input-focus-border);
+}
+
+.parlant-chat-widget .chat-input::placeholder {
+  color: var(--chat-muted-foreground);
+}
+
+/* Send Button */
+.parlant-chat-widget .send-button {
+  background: var(--chat-primary);
+  color: var(--chat-primary-foreground);
+  border: none;
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-sm);
+  margin-left: var(--chat-spacing-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+
+  transition: background-color var(--chat-animation-duration) var(--chat-animation-easing);
+}
+
+.parlant-chat-widget .send-button:hover {
+  background: hsl(var(--primary) / 0.9);
+}
+
+.parlant-chat-widget .send-button:disabled {
+  background: var(--chat-muted);
+  color: var(--chat-muted-foreground);
+  cursor: not-allowed;
+}
+
+/* Popup Button */
+.parlant-chat-widget .popup-button {
+  background: var(--chat-primary);
+  color: var(--chat-primary-foreground);
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  box-shadow: var(--chat-shadow-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  transition: all var(--chat-animation-duration) var(--chat-animation-easing);
+}
+
+.parlant-chat-widget .popup-button:hover {
+  transform: scale(1.05);
+  background: hsl(var(--primary) / 0.9);
+}
+
+.parlant-chat-widget .popup-button:active {
+  transform: scale(0.95);
+}
+
+/* Notification Badge */
+.parlant-chat-widget .notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--chat-destructive);
+  color: var(--chat-destructive-foreground);
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  animation: notificationPulse 2s ease-in-out infinite;
+}
+
+/* Chat Description */
+.parlant-chat-widget .chat-description {
+  background: hsl(var(--muted) / 0.5);
+  color: var(--chat-muted-foreground);
+  padding: var(--chat-spacing-sm) var(--chat-spacing-lg);
+  border-bottom: 1px solid var(--chat-border);
+  font-size: 0.875rem;
+}
+
+/* Error States */
+.parlant-chat-widget .error-message {
+  background: hsl(var(--destructive) / 0.1);
+  color: var(--chat-destructive);
+  border: 1px solid hsl(var(--destructive) / 0.2);
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-sm) var(--chat-spacing-md);
+  margin-bottom: var(--chat-spacing-sm);
+  font-size: 0.875rem;
+}
+
+.parlant-chat-widget .retry-button {
+  background: var(--chat-destructive);
+  color: var(--chat-destructive-foreground);
+  border: none;
+  border-radius: var(--chat-radius);
+  padding: var(--chat-spacing-xs) var(--chat-spacing-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-top: var(--chat-spacing-xs);
+
+  transition: background-color var(--chat-animation-duration) var(--chat-animation-easing);
+}
+
+.parlant-chat-widget .retry-button:hover {
+  background: hsl(var(--destructive) / 0.9);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .parlant-chat-widget .chatbox-wrapper {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+  }
+
+  .parlant-chat-widget .messages-area {
+    max-height: calc(100vh - 140px);
+  }
+}
+
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingPulse {
+  0%, 60%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes notificationPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* ==========================================================================
+   DARK MODE ADJUSTMENTS
+   ========================================================================== */
+
+.dark .parlant-chat-widget {
+  /* Enhance shadows for dark mode */
+  --chat-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --chat-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --chat-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+
+  /* Adjust backdrop blur for dark mode */
+  .chatbox-wrapper {
+    background: hsl(var(--background) / 0.9);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY & MOTION PREFERENCES
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .parlant-chat-widget * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .parlant-chat-widget {
+    --chat-border: hsl(var(--foreground));
+    --chat-input-border: hsl(var(--foreground));
+  }
+
+  .parlant-chat-widget .message-bubble {
+    border: 2px solid var(--chat-border);
+  }
+
+  .parlant-chat-widget .chat-input:focus {
+    border-width: 2px;
+  }
+}
+
+/* ==========================================================================
+   FOCUS MANAGEMENT
+   ========================================================================== */
+
+.parlant-chat-widget *:focus-visible {
+  outline: 2px solid var(--chat-primary);
+  outline-offset: 2px;
+}
+
+.parlant-chat-widget .popup-button:focus-visible {
+  outline: 2px solid var(--chat-primary);
+  outline-offset: 4px;
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+.parlant-chat-widget .visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

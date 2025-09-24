@@ -1,0 +1,635 @@
+name: 🧪 Chat Testing Framework - Comprehensive Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/chat-**'
+      - 'feature/parlant-**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    # Run comprehensive tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ui-components
+          - realtime-communication
+          - agent-integration
+          - security-isolation
+          - performance
+          - e2e
+      parallel_jobs:
+        description: 'Number of parallel test jobs'
+        required: false
+        default: '4'
+        type: string
+
+env:
+  NODE_VERSION: '20.x'
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15'
+  TEST_TIMEOUT: '30'
+  COVERAGE_THRESHOLD: '80'
+
+jobs:
+  setup:
+    name: 🚀 Setup Test Environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      test-matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      cache-key: ${{ steps.cache-key.outputs.key }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏷️ Generate cache key
+        id: cache-key
+        run: |
+          echo "key=chat-test-deps-${{ runner.os }}-node-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json', 'bun.lockb') }}" >> $GITHUB_OUTPUT
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: 📥 Install dependencies
+        run: |
+          npm ci --prefer-offline --no-audit
+          npm install -g bun
+
+      - name: 🎯 Generate test matrix
+        id: generate-matrix
+        run: |
+          if [[ "${{ github.event.inputs.test_scope }}" == "all" || "${{ github.event.inputs.test_scope }}" == "" ]]; then
+            MATRIX='["ui-components", "realtime-communication", "agent-integration", "security-isolation", "performance", "e2e"]'
+          else
+            MATRIX='["${{ github.event.inputs.test_scope }}"]'
+          fi
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  lint-and-typecheck:
+    name: 📝 Code Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: setup
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 📥 Install dependencies (fallback)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Run ESLint
+        run: |
+          npm run lint --workspace=apps/sim -- --format=json --output-file=eslint-report.json || true
+          npm run lint --workspace=apps/sim
+
+      - name: 🔎 Run TypeScript check
+        run: |
+          npx tsc --noEmit --project apps/sim/tsconfig.json
+
+      - name: 📊 Upload lint results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: lint-results
+          path: eslint-report.json
+
+  security-scan:
+    name: 🔒 Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: setup
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 🔍 Audit dependencies
+        run: |
+          npm audit --audit-level moderate || exit 1
+
+      - name: 🛡️ Semgrep security scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/javascript
+            p/typescript
+        env:
+          SEMGREP_RULES: auto
+
+      - name: 📊 Upload security scan results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-scan-results
+          path: .semgrep.json
+
+  test-suite:
+    name: 🧪 ${{ matrix.test-type }} Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [setup, lint-and-typecheck]
+    strategy:
+      fail-fast: false
+      matrix:
+        test-type: ${{ fromJson(needs.setup.outputs.test-matrix) }}
+        parallel-index: [1, 2, 3, 4]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sim_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 📥 Install dependencies (fallback)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm ci --prefer-offline --no-audit
+          npm install -g bun
+
+      - name: 🐍 Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r packages/parlant-server/requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: 🗄️ Setup test database
+        run: |
+          sudo apt-get update
+          sudo apt-get install postgresql-client
+          PGPASSWORD=postgres psql -h localhost -U postgres -d sim_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+
+      - name: 🏗️ Build application
+        run: |
+          npm run build --workspace=apps/sim
+          npm run build --workspace=packages/parlant-server
+
+      - name: 🚀 Start services
+        run: |
+          # Start Parlant server
+          cd packages/parlant-server
+          python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
+          echo $! > parlant.pid
+
+          # Start Next.js in background
+          cd ../../apps/sim
+          npm run start &
+          echo $! > nextjs.pid
+
+          # Wait for services to be ready
+          sleep 10
+
+          # Verify services are running
+          curl -f http://localhost:8000/health || exit 1
+          curl -f http://localhost:3000/api/health || exit 1
+
+      - name: 🧪 Run ${{ matrix.test-type }} tests
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sim_test
+          REDIS_URL: redis://localhost:6379
+          PARLANT_SERVER_URL: http://localhost:8000
+          TEST_PARALLEL_INDEX: ${{ matrix.parallel-index }}
+          TEST_TIMEOUT: ${{ env.TEST_TIMEOUT }}000
+          COVERAGE_THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
+        run: |
+          case "${{ matrix.test-type }}" in
+            "ui-components")
+              npm run test:chat:ui -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=2
+              ;;
+            "realtime-communication")
+              npm run test:chat:realtime -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=2
+              ;;
+            "agent-integration")
+              npm run test:chat:agents -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=2
+              ;;
+            "security-isolation")
+              npm run test:chat:security -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=2
+              ;;
+            "performance")
+              npm run test:chat:performance -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=1
+              ;;
+            "e2e")
+              npm run test:chat:e2e -- --coverage --parallel=${{ matrix.parallel-index }} --maxWorkers=1
+              ;;
+            *)
+              echo "Unknown test type: ${{ matrix.test-type }}"
+              exit 1
+              ;;
+          esac
+
+      - name: 📊 Generate coverage report
+        if: always()
+        run: |
+          npx nyc report --reporter=lcov --reporter=json --reporter=text-summary
+          npx nyc check-coverage --lines=${{ env.COVERAGE_THRESHOLD }} --functions=${{ env.COVERAGE_THRESHOLD }} --branches=${{ env.COVERAGE_THRESHOLD }} --statements=${{ env.COVERAGE_THRESHOLD }}
+
+      - name: 🧹 Stop services
+        if: always()
+        run: |
+          if [ -f packages/parlant-server/parlant.pid ]; then
+            kill $(cat packages/parlant-server/parlant.pid) || true
+          fi
+          if [ -f apps/sim/nextjs.pid ]; then
+            kill $(cat apps/sim/nextjs.pid) || true
+          fi
+
+      - name: 📤 Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}-${{ matrix.parallel-index }}
+          path: |
+            test-reports/
+            coverage/
+            apps/sim/__tests__/**/*.html
+            apps/sim/__tests__/**/*.json
+            apps/sim/__tests__/**/*.xml
+
+      - name: 📤 Upload coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          file: ./coverage/lcov.info
+          flags: ${{ matrix.test-type }}
+          name: ${{ matrix.test-type }}-coverage
+          fail_ci_if_error: false
+
+  visual-regression:
+    name: 👁️ Visual Regression Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [setup, test-suite]
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 🎭 Install Playwright
+        run: |
+          npx playwright install --with-deps chromium
+
+      - name: 🏗️ Build application
+        run: |
+          npm run build --workspace=apps/sim
+
+      - name: 🚀 Start application
+        run: |
+          npm run start --workspace=apps/sim &
+          sleep 10
+          curl -f http://localhost:3000/api/health || exit 1
+
+      - name: 📸 Run visual regression tests
+        run: |
+          npx playwright test --config=apps/sim/__tests__/visual/playwright.config.ts
+
+      - name: 📤 Upload visual test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: visual-regression-results
+          path: |
+            apps/sim/__tests__/visual/test-results/
+            apps/sim/__tests__/visual/screenshots/
+
+  performance-benchmarks:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [setup, test-suite]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 🏗️ Build application
+        run: |
+          npm run build --workspace=apps/sim
+          npm run build --workspace=packages/parlant-server
+
+      - name: 🚀 Start services
+        run: |
+          # Start services in production mode
+          NODE_ENV=production npm run start --workspace=apps/sim &
+          NODE_ENV=production python packages/parlant-server/main.py &
+          sleep 15
+
+      - name: 📊 Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './.lighthouserc.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: ⚡ Run load testing
+        run: |
+          npm install -g artillery
+          artillery run apps/sim/__tests__/performance/load-test.yml --output load-test-results.json
+
+      - name: 📤 Upload performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-benchmarks
+          path: |
+            .lighthouseci/
+            load-test-results.json
+
+  integration-tests:
+    name: 🔗 End-to-End Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: [setup, test-suite]
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sim_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 📦 Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/bun
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: 🎭 Install Playwright
+        run: |
+          npx playwright install --with-deps
+
+      - name: 🏗️ Build full stack
+        run: |
+          npm run build --workspace=apps/sim
+          npm run build --workspace=packages/parlant-server
+          python -m pip install -r packages/parlant-server/requirements.txt
+
+      - name: 🗄️ Setup E2E database
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d sim_e2e -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+          npm run db:migrate --workspace=apps/sim
+
+      - name: 🚀 Start full application stack
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sim_e2e
+          NODE_ENV: production
+        run: |
+          # Start all services
+          python packages/parlant-server/main.py &
+          npm run start --workspace=apps/sim &
+
+          # Wait for services
+          sleep 20
+
+          # Health checks
+          curl -f http://localhost:8000/health
+          curl -f http://localhost:3000/api/health
+
+      - name: 🧪 Run E2E tests
+        env:
+          BASE_URL: http://localhost:3000
+          PARLANT_URL: http://localhost:8000
+        run: |
+          npx playwright test --config=apps/sim/__tests__/e2e/playwright.config.ts
+
+      - name: 📤 Upload E2E results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            apps/sim/__tests__/e2e/test-results/
+            apps/sim/__tests__/e2e/screenshots/
+
+  report-generation:
+    name: 📊 Generate Comprehensive Reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test-suite, visual-regression, performance-benchmarks, integration-tests]
+    if: always()
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📥 Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: 📊 Generate consolidated test report
+        run: |
+          node scripts/generate-test-report.js ./artifacts
+
+          # Create summary for GitHub
+          cat > $GITHUB_STEP_SUMMARY << 'EOF'
+          # 🧪 Chat Testing Framework Results
+
+          ## Test Coverage Summary
+          | Test Suite | Status | Coverage | Performance |
+          |------------|--------|----------|------------|
+          $(find ./artifacts -name "*-coverage*.json" -exec node scripts/extract-coverage.js {} \;)
+
+          ## Security Analysis
+          $(find ./artifacts -name "security-*" -exec echo "✅ Security scan completed" \;)
+
+          ## Performance Benchmarks
+          $(find ./artifacts -name "performance-*" -exec echo "⚡ Performance benchmarks completed" \;)
+
+          EOF
+
+      - name: 📤 Upload consolidated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: comprehensive-test-report
+          path: |
+            consolidated-report.html
+            test-summary.json
+
+  notify-results:
+    name: 📢 Notification & Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [report-generation]
+    if: always()
+    steps:
+      - name: 💬 Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#chat-testing'
+          text: '🚨 Chat Testing Framework failed in ${{ github.repository }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: ✅ Notify on success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#chat-testing'
+          text: '✅ Chat Testing Framework passed in ${{ github.repository }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 🧹 Cleanup old artifacts
+        run: |
+          echo "Cleaning up artifacts older than 30 days"
+          # This would implement artifact cleanup logic

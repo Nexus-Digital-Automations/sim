@@ -419,13 +419,13 @@
     "version": "1.0.0",
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
-      "total_initializations": 7,
-      "total_reinitializations": 81,
+      "total_initializations": 32,
+      "total_reinitializations": 90,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
-          "init": 0,
-          "reinit": 28
+          "init": 25,
+          "reinit": 37
         },
         "13:00-17:59": {
           "init": 0,
@@ -446,7 +446,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T16:36:10.585Z"
+      "last_updated": "2025-09-24T16:39:29.902Z"
     },
     "approval_history": [
       {
@@ -687,25 +687,31 @@
       "previousSessions": []
     },
     "agent_selection_interface": {
-      "lastHeartbeat": "2025-09-24T16:36:08.475Z",
+      "lastHeartbeat": "2025-09-24T16:39:28.731Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:08.475Z",
-      "sessionId": "829ab9734d2f6023",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:39:28.731Z",
+      "sessionId": "662a7d39411cddab",
+      "previousSessions": [
+        "829ab9734d2f6023"
+      ]
     },
     "parlant-chat-widget-agent": {
-      "lastHeartbeat": "2025-09-24T16:36:08.802Z",
+      "lastHeartbeat": "2025-09-24T16:39:28.021Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:08.802Z",
-      "sessionId": "2c0a7edee7bb35f3",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:39:28.021Z",
+      "sessionId": "6fcad61fc9963cfd",
+      "previousSessions": [
+        "2c0a7edee7bb35f3"
+      ]
     },
     "chat-routes-agent": {
-      "lastHeartbeat": "2025-09-24T16:36:08.832Z",
+      "lastHeartbeat": "2025-09-24T16:39:27.818Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:08.832Z",
-      "sessionId": "c8540e9507e3bea1",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:39:27.818Z",
+      "sessionId": "fcc8942ca9c34740",
+      "previousSessions": [
+        "c8540e9507e3bea1"
+      ]
     },
     "agent-lifecycle-mgmt": {
       "lastHeartbeat": "2025-09-24T16:36:08.862Z",
@@ -715,17 +721,135 @@
       "previousSessions": []
     },
     "chat-persistence-agent": {
-      "lastHeartbeat": "2025-09-24T16:36:10.118Z",
+      "lastHeartbeat": "2025-09-24T16:39:29.895Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:10.118Z",
-      "sessionId": "3dd6e055de5d36c3",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:39:29.895Z",
+      "sessionId": "e752131f52e3f0b9",
+      "previousSessions": [
+        "3dd6e055de5d36c3"
+      ]
     },
     "CHAT_TESTING_AGENT": {
-      "lastHeartbeat": "2025-09-24T16:36:10.575Z",
+      "lastHeartbeat": "2025-09-24T16:39:28.816Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:10.575Z",
-      "sessionId": "5faffc6de15391d7",
+      "reinitialized": "2025-09-24T16:39:28.816Z",
+      "sessionId": "003647555964bd85",
+      "previousSessions": [
+        "5faffc6de15391d7"
+      ]
+    },
+    "multitenant-messaging-agent": {
+      "lastHeartbeat": "2025-09-24T16:39:28.695Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:50.584Z",
+      "sessionId": "20c73ec133b09404",
+      "reinitialized": "2025-09-24T16:39:28.695Z",
+      "previousSessions": [
+        "5d228ab2c4031f2d"
+      ]
+    },
+    "workspace-integration-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.300Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.300Z",
+      "sessionId": "e59a9fa45f1098e8"
+    },
+    "encryption-security-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.329Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.329Z",
+      "sessionId": "07a135d3988ec13f"
+    },
+    "workspace-infrastructure-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.290Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.290Z",
+      "sessionId": "f243aa13ce22f4c9"
+    },
+    "message-routing-security-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.307Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.307Z",
+      "sessionId": "4cef5baec48260a1"
+    },
+    "security-testing-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.336Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.336Z",
+      "sessionId": "2442f1047f000a21"
+    },
+    "admin-controls-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.320Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.320Z",
+      "sessionId": "401cc7e93a40d98b"
+    },
+    "audit-compliance-agent": {
+      "lastHeartbeat": "2025-09-24T16:38:08.315Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:38:08.315Z",
+      "sessionId": "cb9e7d0f14ddf390"
+    },
+    "agent-config-framework": {
+      "lastHeartbeat": "2025-09-24T16:37:29.572Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.572Z",
+      "sessionId": "932e0ca85726aca0"
+    },
+    "agent-session-lifecycle": {
+      "lastHeartbeat": "2025-09-24T16:37:29.587Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.587Z",
+      "sessionId": "3fb31e7e9db700c7"
+    },
+    "agent-performance-monitoring": {
+      "lastHeartbeat": "2025-09-24T16:37:29.596Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.596Z",
+      "sessionId": "7873ed408ab1bc62"
+    },
+    "agent-resource-management": {
+      "lastHeartbeat": "2025-09-24T16:37:29.605Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.605Z",
+      "sessionId": "a2260c64dba2e9ec"
+    },
+    "multi-agent-coordination": {
+      "lastHeartbeat": "2025-09-24T16:37:29.616Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.616Z",
+      "sessionId": "4097c154164a1131"
+    },
+    "lifecycle-docs-agent": {
+      "lastHeartbeat": "2025-09-24T16:37:29.629Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.629Z",
+      "sessionId": "a6c4f5534328836d"
+    },
+    "realtime-integration-agent": {
+      "lastHeartbeat": "2025-09-24T16:37:29.650Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.650Z",
+      "sessionId": "6cf3f4013c6bc9ed"
+    },
+    "lifecycle-testing-agent": {
+      "lastHeartbeat": "2025-09-24T16:37:29.682Z",
+      "status": "active",
+      "initialized": "2025-09-24T16:37:29.682Z",
+      "sessionId": "366ed3a9ddd411a4"
+    },
+    "frontend-architecture-agent": {
+      "lastHeartbeat": "2025-09-24T16:39:26.856Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:39:26.856Z",
+      "sessionId": "da935a3ae2a8c5f8",
+      "previousSessions": []
+    },
+    "socketio-integration-agent": {
+      "lastHeartbeat": "2025-09-24T16:39:28.789Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T16:39:28.789Z",
+      "sessionId": "0dcff7ce45fabb64",
       "previousSessions": []
     }
   },

@@ -1,3 +1,4 @@
+import { setupChatHandlers } from '@/socket-server/handlers/chat'
 import { setupConnectionHandlers } from '@/socket-server/handlers/connection'
 import { setupConversationalWorkflowHandlers } from '@/socket-server/handlers/conversational-workflows'
 import { setupOperationsHandlers } from '@/socket-server/handlers/operations'
@@ -25,6 +26,7 @@ export function setupAllHandlers(socket: AuthenticatedSocket, roomManager: RoomM
   setupConnectionHandlers(socket, roomManager)
   setupParlantHandlers(socket, roomManager)
   setupConversationalWorkflowHandlers(socket, roomManager)
+  setupChatHandlers(socket, roomManager)
 }
 
 export {
