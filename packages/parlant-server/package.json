@@ -8,9 +8,17 @@
     "dev": "python server.py --reload",
     "install": "./install.sh",
     "activate": "source venv/bin/activate",
-    "test": "jest",
+    "test": "node run-tests.js",
+    "test:integration": "jest tests/integration/ --verbose",
+    "test:database": "jest tests/database/ --verbose",
+    "test:auth": "jest tests/auth/ --verbose",
+    "test:health": "jest tests/health/ --verbose",
+    "test:api": "jest tests/api/ --verbose",
+    "test:performance": "jest tests/performance/ --verbose --testTimeout=180000",
     "test:python": "python -m pytest tests/",
     "test:js": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "python -m pylint server.py",
     "format": "python -m black .",
     "type-check": "python -m mypy server.py",
@@ -45,7 +53,28 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "axios": "^1.12.2",
+    "dotenv": "^17.2.2",
     "jest": "^30.1.3",
     "jsonwebtoken": "^9.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testTimeout": 30000,
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!node_modules/**",
+      "!coverage/**",
+      "!run-tests.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "verbose": true
   }
 }

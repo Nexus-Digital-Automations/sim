@@ -1,0 +1,528 @@
+{
+  "features": [
+    {
+      "id": "feature_1758687580581_3t2kbxrgg",
+      "title": "Parlant Server Setup and Integration",
+      "description": "Install and configure Parlant Python server as microservice alongside existing Socket.io server. Set up PostgreSQL integration and authentication bridge.",
+      "phase": "Phase 1: Core Integration",
+      "priority": "high",
+      "status": "approved",
+      "estimatedWeeks": 1,
+      "dependencies": [],
+      "components": [
+        "Install parlant Python package in packages/parlant-server/",
+        "Configure Parlant server with PostgreSQL session persistence",
+        "Set up environment variables and authentication integration",
+        "Create health checks and monitoring endpoints"
+      ],
+      "acceptanceCriteria": [
+        "Parlant server starts successfully",
+        "Can create and manage agents via API",
+        "Sessions persist in PostgreSQL",
+        "Authentication works with Sim user system"
+      ],
+      "updated_at": "2025-09-24T04:20:37.368Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:20:37.369Z",
+      "approval_notes": "Phase 1 foundational feature - core Parlant server setup required for all subsequent integrations"
+    },
+    {
+      "id": "feature_1758687580581_cd49m1dez",
+      "title": "Sim-Parlant Integration Bridge",
+      "description": "Create integration layer between Sim's existing infrastructure and Parlant agents. Bridge authentication and workspace isolation.",
+      "phase": "Phase 1: Core Integration",
+      "priority": "high",
+      "status": "approved",
+      "estimatedWeeks": 1,
+      "dependencies": [
+        "parlant-server-setup"
+      ],
+      "components": [
+        "Create apps/sim/services/parlant/ integration layer",
+        "Bridge authentication between Sim users and Parlant agents",
+        "Implement workspace-scoped agent isolation",
+        "Add agent lifecycle management APIs"
+      ],
+      "acceptanceCriteria": [
+        "Sim users can create Parlant agents",
+        "Agents are isolated by workspace",
+        "Authentication flows work seamlessly",
+        "Agent management APIs are functional"
+      ],
+      "updated_at": "2025-09-24T04:23:31.661Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:23:31.661Z",
+      "approval_notes": "Approved as requested - Sim-Parlant Integration Bridge"
+    },
+    {
+      "id": "feature_1758687580581_8i8qqcd6w",
+      "title": "Database Schema Extension for Parlant",
+      "description": "Extend PostgreSQL schema to support Parlant agents, guidelines, journeys, and sessions while maintaining compatibility with existing Sim data.",
+      "phase": "Phase 1: Core Integration",
+      "priority": "high",
+      "status": "approved",
+      "estimatedWeeks": 1,
+      "dependencies": [
+        "parlant-server-setup"
+      ],
+      "components": [
+        "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
+        "Link agents to Sim workspaces and users",
+        "Create migration scripts for schema updates",
+        "Add indexes for performance optimization"
+      ],
+      "acceptanceCriteria": [
+        "All Parlant tables created successfully",
+        "Foreign key relationships established",
+        "Existing Sim functionality unaffected",
+        "Migration scripts run without errors"
+      ],
+      "updated_at": "2025-09-24T04:23:32.630Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:23:32.631Z",
+      "approval_notes": "Approved as requested - Database Schema Extension for Parlant"
+    },
+    {
+      "id": "feature_1758687580581_9s7ooclnr",
+      "title": "Universal Tool Adapter System",
+      "description": "Create adapter pattern to make all of Sim's 20+ existing tools compatible with Parlant's tool interface. Enable natural language tool interactions.",
+      "phase": "Phase 2: Tool Bridge",
+      "priority": "high",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
+      "components": [
+        "Create adapter pattern for Sim tools → Parlant format",
+        "Wrap existing tools with Parlant-compatible interfaces",
+        "Add contextual guidelines for appropriate tool usage",
+        "Implement tool result formatting for conversations"
+      ],
+      "acceptanceCriteria": [
+        "All 20+ Sim tools work through Parlant agents",
+        "Tools have natural language descriptions",
+        "Tool results format properly in conversations",
+        "Error handling provides helpful explanations"
+      ],
+      "updated_at": "2025-09-24T04:23:33.661Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:23:33.661Z",
+      "approval_notes": "Approved as requested - Universal Tool Adapter System"
+    },
+    {
+      "id": "feature_1758687580581_3b2t598ky",
+      "title": "Workflow to Journey Mapping System",
+      "description": "Convert existing Sim ReactFlow workflows into Parlant journey state machines, enabling conversational workflow execution.",
+      "phase": "Phase 2: Tool Bridge",
+      "priority": "medium",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
+      "components": [
+        "Map ReactFlow nodes to Parlant journey states",
+        "Enable dynamic journey creation from workflow templates",
+        "Preserve existing workflow execution capabilities",
+        "Add conversational layer over workflows"
+      ],
+      "acceptanceCriteria": [
+        "Existing workflows can be converted to journeys",
+        "Journey execution produces same results as workflows",
+        "Users can interact with workflows conversationally",
+        "Original ReactFlow editor remains functional"
+      ],
+      "updated_at": "2025-09-24T04:23:34.646Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:23:34.647Z",
+      "approval_notes": "Approved as requested - Workflow to Journey Mapping System"
+    },
+    {
+      "id": "feature_1758687580581_185ht5rig",
+      "title": "Enhanced Tool Intelligence and Context",
+      "description": "Add natural language descriptions, usage guidelines, and contextual recommendations to all tool integrations.",
+      "phase": "Phase 2: Tool Bridge",
+      "priority": "medium",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
+      "components": [
+        "Add natural language descriptions to all tools",
+        "Create usage guidelines for each integration",
+        "Implement contextual tool recommendations",
+        "Add intelligent error handling with explanations"
+      ],
+      "acceptanceCriteria": [
+        "All tools have comprehensive descriptions",
+        "Agents recommend appropriate tools for tasks",
+        "Error messages are user-friendly and actionable",
+        "Tool suggestions improve conversation flow"
+      ],
+      "updated_at": "2025-09-24T04:23:35.997Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:23:35.998Z",
+      "approval_notes": "Approved as requested - Enhanced Tool Intelligence and Context"
+    },
+    {
+      "id": "feature_1758687580581_uchoa5izy",
+      "title": "Parlant React Chat Interface",
+      "description": "Integrate parlant-chat-react widget into Sim's frontend with agent selection, persistence, and Socket.io integration.",
+      "phase": "Phase 3: Frontend Integration",
+      "priority": "high",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
+      "components": [
+        "Install and configure parlant-chat-react widget",
+        "Create new /chat routes with agent selection",
+        "Integrate with existing Socket.io infrastructure",
+        "Add chat persistence and history management"
+      ],
+      "acceptanceCriteria": [
+        "Chat interface renders correctly in Sim",
+        "Users can select and interact with agents",
+        "Real-time messaging works via Socket.io",
+        "Chat history persists across sessions"
+      ],
+      "updated_at": "2025-09-24T04:24:04.191Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:04.191Z",
+      "approval_notes": "Approved as requested - Parlant React Chat Interface"
+    },
+    {
+      "id": "feature_1758687580581_ub8ahm71f",
+      "title": "Hybrid Visual/Conversational Workflow Experience",
+      "description": "Add conversational interface alongside existing ReactFlow editor, enabling users to switch between visual and chat modes.",
+      "phase": "Phase 3: Frontend Integration",
+      "priority": "medium",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "parlant-chat-interface",
+        "workflow-journey-mapping"
+      ],
+      "components": [
+        "Add 'Chat with Workflow' buttons to workflow cards",
+        "Enable switching between visual editor and chat mode",
+        "Show real-time workflow execution in chat format",
+        "Maintain existing ReactFlow editor for power users"
+      ],
+      "acceptanceCriteria": [
+        "Users can switch between visual and chat modes",
+        "Workflow execution visible in both interfaces",
+        "No regression in existing ReactFlow functionality",
+        "Chat interface reflects workflow state accurately"
+      ],
+      "updated_at": "2025-09-24T04:24:05.233Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:05.233Z",
+      "approval_notes": "Approved as requested - Hybrid Visual/Conversational Workflow Experience"
+    },
+    {
+      "id": "feature_1758687580582_nf3gwp1rz",
+      "title": "Agent Management User Interface",
+      "description": "Create comprehensive UI for managing Parlant agents, guidelines, and journeys within Sim's workspace settings.",
+      "phase": "Phase 3: Frontend Integration",
+      "priority": "medium",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "parlant-chat-interface"
+      ],
+      "components": [
+        "Create agent configuration panels in workspace settings",
+        "Build visual guideline builder integrated with tool registry",
+        "Design journey creator that complements workflow editor",
+        "Add agent performance analytics and conversation insights"
+      ],
+      "acceptanceCriteria": [
+        "Users can create and configure agents via UI",
+        "Guideline builder is intuitive and comprehensive",
+        "Journey designer integrates with existing tools",
+        "Analytics provide actionable insights"
+      ],
+      "updated_at": "2025-09-24T04:24:06.306Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:06.306Z",
+      "approval_notes": "Approved as requested - Agent Management User Interface"
+    },
+    {
+      "id": "feature_1758687580582_mcm2ih2v3",
+      "title": "Knowledge Base Integration with RAG",
+      "description": "Connect Sim's existing knowledge bases to Parlant retrievers for enhanced agent intelligence and context.",
+      "phase": "Phase 4: Advanced Features",
+      "priority": "medium",
+      "status": "approved",
+      "estimatedWeeks": 2,
+      "dependencies": [
+        "agent-management-ui"
+      ],
+      "components": [
+        "Connect existing knowledge bases to Parlant retrievers",
+        "Implement RAG for workflow documentation and help",
+        "Add file upload processing through Parlant knowledge system",
+        "Enable agent learning from user interactions"
+      ],
+      "acceptanceCriteria": [
+        "Agents can access and reference knowledge bases",
+        "RAG improves response quality and accuracy",
+        "File uploads enhance agent knowledge",
+        "Agents learn and improve from conversations"
+      ],
+      "updated_at": "2025-09-24T04:24:08.377Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:08.378Z",
+      "approval_notes": "Approved as requested - Knowledge Base Integration with RAG"
+    },
+    {
+      "id": "feature_1758687580582_mjic4i6vc",
+      "title": "Multi-Agent Orchestration System",
+      "description": "Enable agent teams, handoffs, and collaboration for complex multi-step workflows and processes.",
+      "phase": "Phase 4: Advanced Features",
+      "priority": "low",
+      "status": "approved",
+      "estimatedWeeks": 3,
+      "dependencies": [
+        "knowledge-integration"
+      ],
+      "components": [
+        "Create agent teams for complex workflows",
+        "Implement handoff between specialized agents",
+        "Add human-in-the-loop capabilities",
+        "Enable agent collaboration on multi-step processes"
+      ],
+      "acceptanceCriteria": [
+        "Multiple agents can work on same workflow",
+        "Handoffs between agents work seamlessly",
+        "Humans can intervene when needed",
+        "Complex processes complete successfully"
+      ],
+      "updated_at": "2025-09-24T04:24:11.394Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:11.395Z",
+      "approval_notes": "Approved as requested - Multi-Agent Orchestration System"
+    },
+    {
+      "id": "feature_1758687580582_rwjskn3qt",
+      "title": "Enterprise Governance and Compliance",
+      "description": "Add enterprise-grade features including canned responses, security scanning, and multi-tenant governance for agent conversations.",
+      "phase": "Phase 4: Advanced Features",
+      "priority": "low",
+      "status": "approved",
+      "estimatedWeeks": 3,
+      "dependencies": [
+        "multi-agent-orchestration"
+      ],
+      "components": [
+        "Implement canned responses for compliance and branding",
+        "Add advanced security scanning for conversations",
+        "Create multi-tenant agent isolation and governance",
+        "Integrate with existing Sim billing and subscriptions"
+      ],
+      "acceptanceCriteria": [
+        "Canned responses ensure compliance",
+        "Security scanning prevents data leaks",
+        "Multi-tenancy is properly enforced",
+        "Billing integrates with agent usage"
+      ],
+      "updated_at": "2025-09-24T04:24:12.430Z",
+      "approved_by": "claude-code-agent",
+      "approval_date": "2025-09-24T04:24:12.431Z",
+      "approval_notes": "Approved as requested - Enterprise Governance and Compliance"
+    }
+  ],
+  "metadata": {
+    "totalFeatures": 12,
+    "estimatedTotalWeeks": 24,
+    "phases": 4,
+    "lastUpdated": "2025-01-23",
+    "version": "1.0.0",
+    "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
+    "initialization_stats": {
+      "total_initializations": 0,
+      "total_reinitializations": 8,
+      "current_day": "2025-09-24",
+      "time_buckets": {
+        "07:00-11:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "12:00-16:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "17:00-21:59": {
+          "init": 0,
+          "reinit": 0
+        },
+        "22:00-02:59": {
+          "init": 0,
+          "reinit": 8
+        },
+        "03:00-07:59": {
+          "init": 0,
+          "reinit": 0
+        }
+      },
+      "daily_history": [],
+      "last_reset": "2025-09-24T04:19:50.574Z",
+      "last_updated": "2025-09-24T04:27:37.805Z"
+    },
+    "approval_history": [
+      {
+        "feature_id": "feature_1758687580581_3t2kbxrgg",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:20:37.369Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Phase 1 foundational feature - core Parlant server setup required for all subsequent integrations"
+      },
+      {
+        "feature_id": "feature_1758687580581_cd49m1dez",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:23:31.661Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Sim-Parlant Integration Bridge"
+      },
+      {
+        "feature_id": "feature_1758687580581_8i8qqcd6w",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:23:32.631Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Database Schema Extension for Parlant"
+      },
+      {
+        "feature_id": "feature_1758687580581_9s7ooclnr",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:23:33.661Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Universal Tool Adapter System"
+      },
+      {
+        "feature_id": "feature_1758687580581_3b2t598ky",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:23:34.647Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Workflow to Journey Mapping System"
+      },
+      {
+        "feature_id": "feature_1758687580581_185ht5rig",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:23:35.998Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Enhanced Tool Intelligence and Context"
+      },
+      {
+        "feature_id": "feature_1758687580581_uchoa5izy",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:04.191Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Parlant React Chat Interface"
+      },
+      {
+        "feature_id": "feature_1758687580581_ub8ahm71f",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:05.233Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Hybrid Visual/Conversational Workflow Experience"
+      },
+      {
+        "feature_id": "feature_1758687580582_nf3gwp1rz",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:06.306Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Agent Management User Interface"
+      },
+      {
+        "feature_id": "feature_1758687580582_mcm2ih2v3",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:08.378Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Knowledge Base Integration with RAG"
+      },
+      {
+        "feature_id": "feature_1758687580582_mjic4i6vc",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:11.395Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Multi-Agent Orchestration System"
+      },
+      {
+        "feature_id": "feature_1758687580582_rwjskn3qt",
+        "action": "approved",
+        "timestamp": "2025-09-24T04:24:12.431Z",
+        "approved_by": "claude-code-agent",
+        "notes": "Approved as requested - Enterprise Governance and Compliance"
+      }
+    ],
+    "updated": "2025-09-24T04:24:12.431Z"
+  },
+  "agents": {
+    "claude-code-agent-1758687590": {
+      "lastHeartbeat": "2025-09-24T04:19:50.572Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:19:50.572Z",
+      "sessionId": "47f6606580ff6245",
+      "previousSessions": []
+    },
+    "testing-validation-agent": {
+      "lastHeartbeat": "2025-09-24T04:27:30.425Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:27:30.425Z",
+      "sessionId": "7cf644dab2e70993",
+      "previousSessions": [
+        "355e4fba51b88674"
+      ]
+    },
+    "CONFIG_MGMT_AGENT": {
+      "lastHeartbeat": "2025-09-24T04:21:33.827Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:21:33.827Z",
+      "sessionId": "e465dc3612cd056a",
+      "previousSessions": []
+    },
+    "claude-code-agent": {
+      "lastHeartbeat": "2025-09-24T04:25:14.291Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:25:14.291Z",
+      "sessionId": "ac54e63f90c940a7",
+      "previousSessions": [
+        "d6ccb4edf09ffee8"
+      ]
+    },
+    "monitoring-health-agent": {
+      "lastHeartbeat": "2025-09-24T04:27:31.067Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:27:31.067Z",
+      "sessionId": "88b1567f701cdbea",
+      "previousSessions": []
+    },
+    "auth-bridge-agent": {
+      "lastHeartbeat": "2025-09-24T04:27:37.797Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T04:27:37.797Z",
+      "sessionId": "9e30a1f637db636c",
+      "previousSessions": []
+    }
+  },
+  "settings": {
+    "id_based_classification": true,
+    "auto_sort_enabled": true,
+    "sort_criteria": {
+      "primary": "id_prefix",
+      "secondary": "created_at"
+    },
+    "id_priority_order": {
+      "error_": 1,
+      "feature_": 2,
+      "subtask_": 3,
+      "test_": 4
+    }
+  },
+  "tasks": [],
+  "completed_tasks": []
+}

@@ -2,6 +2,36 @@
 
 This package contains the Python-based Parlant server that integrates with Sim's existing Next.js + PostgreSQL platform to provide conversational AI agent capabilities.
 
+## 🧪 Testing Framework
+
+**Status:** ✅ **Production-Ready Testing Infrastructure**
+
+A comprehensive testing framework has been implemented to validate all acceptance criteria and ensure production readiness. Run the complete test suite with:
+
+```bash
+npm test
+```
+
+### Test Coverage
+- ✅ **Integration Tests** - Core server functionality validation
+- ✅ **Database Tests** - PostgreSQL session persistence verification
+- ✅ **Authentication Tests** - JWT integration with Sim's Better Auth
+- ✅ **Health Monitoring** - Production monitoring endpoints
+- ✅ **API Endpoint Tests** - Complete agent management API validation
+- ✅ **Performance Tests** - Load testing and stress validation
+
+### Quick Test Commands
+```bash
+npm run test:integration    # Core functionality
+npm run test:database      # Database integration
+npm run test:auth          # Authentication bridge
+npm run test:health        # Health monitoring
+npm run test:api           # API endpoints
+npm run test:performance   # Load testing
+```
+
+**See `TESTING_VALIDATION_REPORT.md` for complete testing documentation.**
+
 ## Overview
 
 The Parlant server acts as a microservice that:

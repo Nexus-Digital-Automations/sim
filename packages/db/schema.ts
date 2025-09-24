@@ -1305,6 +1305,9 @@ export const copilotFeedback = pgTable(
   })
 )
 
+// Import and export Parlant schema
+export * from './parlant-schema'
+
 // Tracks immutable deployment versions for each workflow
 export const workflowDeploymentVersion = pgTable(
   'workflow_deployment_version',
