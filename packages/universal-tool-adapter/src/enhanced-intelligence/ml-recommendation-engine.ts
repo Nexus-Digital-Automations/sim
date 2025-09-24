@@ -17,14 +17,8 @@
  * @version 2.0.0
  */
 
-import type {
-  ContextualRecommendationRequest,
-  AdvancedUsageContext,
-  UserBehaviorHistory,
-  ToolUsagePattern,
-  ToolSequence
-} from './contextual-recommendation-engine'
 import { createLogger } from '../utils/logger'
+import type { ContextualRecommendationRequest } from './contextual-recommendation-engine'
 
 const logger = createLogger('MLRecommendationEngine')
 
@@ -391,7 +385,7 @@ export class MLRecommendationEngine {
         itemSimilarityThreshold: 0.3,
         neighborhoodSize: 20,
         coldStartStrategy: 'hybrid',
-        minInteractions: 5
+        minInteractions: 5,
       },
       contentBasedConfig: {
         textFeatures: true,
@@ -401,14 +395,14 @@ export class MLRecommendationEngine {
         similarityMetric: 'cosine',
         featureWeights: { text: 0.4, category: 0.3, usage: 0.2, temporal: 0.1 },
         dimensionalityReduction: true,
-        maxFeatures: 1000
+        maxFeatures: 1000,
       },
       hybridConfig: {
         ensembleMethod: 'weighted',
         modelWeights: { collaborative: 0.4, content: 0.3, sequential: 0.3 },
         metaLearningEnabled: true,
         contextualWeighting: true,
-        dynamicWeightAdjustment: true
+        dynamicWeightAdjustment: true,
       },
       trainingConfig: {
         validationSplit: 0.2,
@@ -418,13 +412,13 @@ export class MLRecommendationEngine {
         featureNormalization: true,
         outlierDetection: true,
         evaluationMetrics: ['precision', 'recall', 'f1', 'ndcg'],
-        testSetSize: 0.1
+        testSetSize: 0.1,
       },
       batchSize: 1000,
       maxTrainingTime: 30000, // 30 seconds
       modelUpdateFrequency: 3600000, // 1 hour
       featureUpdateFrequency: 1800000, // 30 minutes
-      ...config
+      ...config,
     }
 
     this.initializeModels()
@@ -441,7 +435,7 @@ export class MLRecommendationEngine {
   async generateRecommendations(
     request: ContextualRecommendationRequest,
     availableTools: string[],
-    maxRecommendations: number = 10
+    maxRecommendations = 10
   ): Promise<MLRecommendation[]> {
     const startTime = Date.now()
 
@@ -470,13 +464,15 @@ export class MLRecommendationEngine {
       logger.info('ML recommendations generated', {
         userId: request.currentContext.userId,
         count: processedRecommendations.length,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
       })
 
       return processedRecommendations
-
     } catch (error) {
-      logger.error('Error generating ML recommendations', { error, userId: request.currentContext.userId })
+      logger.error('Error generating ML recommendations', {
+        error,
+        userId: request.currentContext.userId,
+      })
       return this.getFallbackRecommendations(request, availableTools, maxRecommendations)
     }
   }
@@ -503,9 +499,8 @@ export class MLRecommendationEngine {
       logger.debug('Interaction recorded', {
         userId: interaction.userId,
         toolId: interaction.toolId,
-        outcome: interaction.outcome.successful
+        outcome: interaction.outcome.successful,
       })
-
     } catch (error) {
       logger.error('Error recording interaction', { error, interaction })
     }
@@ -514,24 +509,25 @@ export class MLRecommendationEngine {
   /**
    * Train or update ML models
    */
-  async trainModels(fullRetraining: boolean = false): Promise<TrainingResult> {
+  async trainModels(fullRetraining = false): Promise<TrainingResult> {
     const startTime = Date.now()
 
     try {
-      logger.info('Starting model training', { fullRetraining, queueSize: this.trainingQueue.length })
+      logger.info('Starting model training', {
+        fullRetraining,
+        queueSize: this.trainingQueue.length,
+      })
 
       const result: TrainingResult = {
         modelsUpdated: [],
         performanceImprovements: {},
         trainingTime: 0,
         dataProcessed: this.trainingQueue.length,
-        errors: []
+        errors: [],
       }
 
       // Prepare training data
-      const trainingData = fullRetraining
-        ? this.interactionHistory
-        : this.trainingQueue
+      const trainingData = fullRetraining ? this.interactionHistory : this.trainingQueue
 
       if (trainingData.length === 0) {
         logger.info('No training data available')
@@ -594,11 +590,10 @@ export class MLRecommendationEngine {
         modelsUpdated: result.modelsUpdated,
         trainingTime: result.trainingTime,
         dataProcessed: result.dataProcessed,
-        errors: result.errors.length
+        errors: result.errors.length,
       })
 
       return result
-
     } catch (error) {
       logger.error('Error in model training', { error })
       throw error
@@ -617,7 +612,7 @@ export class MLRecommendationEngine {
       modelHealth: this.assessModelHealth(),
       recommendationQuality: this.assessRecommendationQuality(),
       userEngagement: this.calculateUserEngagement(),
-      systemLoad: this.getSystemLoadMetrics()
+      systemLoad: this.getSystemLoadMetrics(),
     }
   }
 
@@ -645,8 +640,10 @@ export class MLRecommendationEngine {
   private async ensureModelsAreTrained(): Promise<void> {
     const timeSinceLastTraining = Date.now() - this.lastTrainingTime.getTime()
 
-    if (timeSinceLastTraining > this.config.modelUpdateFrequency ||
-        this.trainingQueue.length > this.config.batchSize) {
+    if (
+      timeSinceLastTraining > this.config.modelUpdateFrequency ||
+      this.trainingQueue.length > this.config.batchSize
+    ) {
       await this.trainModels()
     }
   }
@@ -681,9 +678,7 @@ export class MLRecommendationEngine {
     )
 
     // Sort by score and limit to max recommendations
-    return hybridRecs
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxRecommendations)
+    return hybridRecs.sort((a, b) => b.score - a.score).slice(0, maxRecommendations)
   }
 
   private async getUserProfile(userId: string): Promise<UserProfile> {
@@ -818,7 +813,7 @@ export class MLRecommendationEngine {
       itemBiases: [],
       globalMean: 0,
       userSimilarities: new Map(),
-      itemSimilarities: new Map()
+      itemSimilarities: new Map(),
     }
   }
 
@@ -828,7 +823,7 @@ export class MLRecommendationEngine {
       userProfiles: new Map(),
       featureWeights: [],
       similarityMatrix: [],
-      featureImportance: {}
+      featureImportance: {},
     }
   }
 
@@ -837,7 +832,7 @@ export class MLRecommendationEngine {
       transitionMatrix: new Map(),
       sequencePatterns: [],
       temporalWeights: [],
-      contextualTransitions: new Map()
+      contextualTransitions: new Map(),
     }
   }
 
@@ -846,7 +841,7 @@ export class MLRecommendationEngine {
       modelWeights: this.config.hybridConfig.modelWeights,
       metaModel: null,
       contextualWeightingFunction: () => this.config.hybridConfig.modelWeights,
-      performanceHistory: []
+      performanceHistory: [],
     }
   }
 
@@ -860,7 +855,7 @@ export class MLRecommendationEngine {
         complexityPreference: 'moderate',
         interactionStyle: 'guided',
         feedbackFrequency: 'moderate',
-        personalizedExperience: true
+        personalizedExperience: true,
       },
       usagePatterns: [],
       toolAffinities: {},
@@ -872,7 +867,7 @@ export class MLRecommendationEngine {
       adaptabilityScore: 0.6,
       workflowContexts: [],
       collaborationStyle: 'moderate',
-      workingSchedule: []
+      workingSchedule: [],
     }
   }
 
@@ -896,7 +891,7 @@ export class MLRecommendationEngine {
       catalogCoverage: 0.0,
       userCoverage: 0.0,
       novelty: 0.0,
-      diversity: 0.0
+      diversity: 0.0,
     }
   }
 
@@ -908,7 +903,7 @@ export class MLRecommendationEngine {
       sequential: 0.8,
       hybrid: 0.8,
       issues: [],
-      recommendations: []
+      recommendations: [],
     }
   }
 
@@ -918,7 +913,7 @@ export class MLRecommendationEngine {
       diversity: 0.7,
       novelty: 0.6,
       coverage: 0.8,
-      freshness: 0.9
+      freshness: 0.9,
     }
   }
 
@@ -928,7 +923,7 @@ export class MLRecommendationEngine {
       toolAdoptionRate: 0,
       userRetention: 0,
       feedbackRate: 0,
-      satisfactionTrend: 0
+      satisfactionTrend: 0,
     }
   }
 
@@ -938,7 +933,7 @@ export class MLRecommendationEngine {
       cpuUsage: 0,
       responseTime: 0,
       throughput: 0,
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -1060,15 +1055,15 @@ export function createProductionMLEngine(): MLRecommendationEngine {
       itemSimilarityThreshold: 0.2,
       neighborhoodSize: 50,
       coldStartStrategy: 'hybrid',
-      minInteractions: 3
+      minInteractions: 3,
     },
     hybridConfig: {
       ensembleMethod: 'stacking',
       modelWeights: { collaborative: 0.4, content: 0.35, sequential: 0.25 },
       metaLearningEnabled: true,
       contextualWeighting: true,
-      dynamicWeightAdjustment: true
-    }
+      dynamicWeightAdjustment: true,
+    },
   }
 
   return new MLRecommendationEngine(productionConfig)

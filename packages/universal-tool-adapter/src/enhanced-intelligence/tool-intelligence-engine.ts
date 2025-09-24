@@ -16,12 +16,11 @@
  * @version 1.0.0
  */
 
-import type { ToolConfig } from '@/tools/types'
-import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
-import type { ToolRecommendationWithDetails } from '../natural-language/recommendation-engine'
 import type { ToolErrorExplanation } from '../error-handling/comprehensive-error-manager'
-import { createLogger } from '../utils/logger'
 import { NaturalLanguageEngine } from '../natural-language'
+import type { ToolRecommendationWithDetails } from '../natural-language/recommendation-engine'
+import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
+import { createLogger } from '../utils/logger'
 
 const logger = createLogger('EnhancedToolIntelligence')
 
@@ -257,7 +256,8 @@ export class EnhancedToolIntelligenceEngine {
     const personalizedDescription = await this.personalizeDescription(baseDescription, userContext)
 
     // Update with latest learning data
-    personalizedDescription.learningData = this.learningData.get(toolId) || this.createEmptyLearningData()
+    personalizedDescription.learningData =
+      this.learningData.get(toolId) || this.createEmptyLearningData()
 
     return personalizedDescription
   }
@@ -274,7 +274,7 @@ export class EnhancedToolIntelligenceEngine {
       conversationContext: request.conversationHistory,
       userContext: request.currentContext,
       availableTools: [], // Would be populated from registry
-      maxRecommendations: 5
+      maxRecommendations: 5,
     })
 
     // Enhance each recommendation
@@ -310,7 +310,7 @@ export class EnhancedToolIntelligenceEngine {
       preventionSteps: [],
       relatedErrors: [],
       recoveryTime: '5 minutes',
-      additionalContext: {}
+      additionalContext: {},
     }
 
     // Create intelligent explanation
@@ -324,7 +324,7 @@ export class EnhancedToolIntelligenceEngine {
       learningMoments: this.identifyLearningMoments(error, toolId),
       skillDevelopmentTips: this.generateSkillDevelopmentTips(error, toolId, userSkillLevel),
       recoveryOptions: await this.generateRecoveryOptions(error, toolId, userContext),
-      alternativeActions: this.suggestAlternativeActions(toolId, userContext)
+      alternativeActions: this.suggestAlternativeActions(toolId, userContext),
     }
 
     // Record error for learning
@@ -365,8 +365,9 @@ export class EnhancedToolIntelligenceEngine {
       displayName: 'Get Current Workflow',
       category: 'Workflow Management',
       briefDescription: 'Retrieve your current workflow configuration and structure',
-      detailedDescription: 'Fetches the complete workflow that you are currently working on, including all blocks, connections, and configuration settings. This tool provides access to the workflow structure, metadata, and current state.',
-      conversationalDescription: 'Get the workflow I\'m currently working on',
+      detailedDescription:
+        'Fetches the complete workflow that you are currently working on, including all blocks, connections, and configuration settings. This tool provides access to the workflow structure, metadata, and current state.',
+      conversationalDescription: "Get the workflow I'm currently working on",
       usageScenarios: [
         {
           scenario: 'Workflow Review',
@@ -375,7 +376,7 @@ export class EnhancedToolIntelligenceEngine {
           exampleInput: 'Show me my current workflow',
           expectedOutcome: 'Complete workflow structure and configuration',
           difficulty: 'beginner',
-          estimatedTime: '30 seconds'
+          estimatedTime: '30 seconds',
         },
         {
           scenario: 'Debugging',
@@ -384,37 +385,54 @@ export class EnhancedToolIntelligenceEngine {
           exampleInput: 'What does my workflow contain?',
           expectedOutcome: 'Detailed workflow analysis for debugging',
           difficulty: 'intermediate',
-          estimatedTime: '2 minutes'
-        }
+          estimatedTime: '2 minutes',
+        },
       ],
       userRoleDescriptions: {
-        'developer': 'Access workflow configuration for development and debugging',
+        developer: 'Access workflow configuration for development and debugging',
         'business-user': 'Review your automated process structure',
-        'admin': 'Examine workflow for compliance and optimization'
+        admin: 'Examine workflow for compliance and optimization',
       },
       skillLevelGuidance: {
-        'beginner': {
+        beginner: {
           description: 'Simply ask to see your workflow',
           recommendedApproach: 'Use natural language like "show me my workflow"',
-          warningsAndTips: ['This is a read-only operation', 'Review the structure before making changes']
+          warningsAndTips: [
+            'This is a read-only operation',
+            'Review the structure before making changes',
+          ],
         },
-        'intermediate': {
+        intermediate: {
           description: 'Use for workflow analysis and planning',
           recommendedApproach: 'Request specific aspects like "show me the data flow"',
-          warningsAndTips: ['Consider workflow optimization opportunities', 'Document any issues you notice']
+          warningsAndTips: [
+            'Consider workflow optimization opportunities',
+            'Document any issues you notice',
+          ],
         },
-        'advanced': {
+        advanced: {
           description: 'Deep workflow introspection for complex operations',
           recommendedApproach: 'Analyze specific components and relationships',
-          warningsAndTips: ['Review for performance bottlenecks', 'Consider scalability implications']
+          warningsAndTips: [
+            'Review for performance bottlenecks',
+            'Consider scalability implications',
+          ],
         },
-        'expert': {
+        expert: {
           description: 'Comprehensive workflow analysis for system optimization',
           recommendedApproach: 'Perform systematic architecture review',
-          warningsAndTips: ['Evaluate against enterprise patterns', 'Consider migration strategies']
-        }
+          warningsAndTips: [
+            'Evaluate against enterprise patterns',
+            'Consider migration strategies',
+          ],
+        },
       },
-      conversationalTriggers: ['show workflow', 'current workflow', 'my workflow', 'workflow status'],
+      conversationalTriggers: [
+        'show workflow',
+        'current workflow',
+        'my workflow',
+        'workflow status',
+      ],
       alternativeNames: ['current process', 'active workflow', 'working flow'],
       relatedTerms: ['automation', 'process', 'pipeline', 'configuration'],
       quickStartGuide: [
@@ -422,15 +440,15 @@ export class EnhancedToolIntelligenceEngine {
           step: 1,
           title: 'Request Your Workflow',
           description: 'Simply ask to see your current workflow',
-          exampleInput: 'Show me my current workflow'
-        }
+          exampleInput: 'Show me my current workflow',
+        },
       ],
       troubleshootingTips: [
         {
           problem: 'No workflow found',
           solution: 'Create a new workflow first',
-          prevention: 'Always ensure you have an active workflow before requesting it'
-        }
+          prevention: 'Always ensure you have an active workflow before requesting it',
+        },
       ],
       bestPractices: [
         {
@@ -438,14 +456,17 @@ export class EnhancedToolIntelligenceEngine {
           description: 'Always check your workflow before making modifications',
           doThis: 'Get current workflow, review structure, then make changes',
           avoidThis: 'Making blind changes without understanding current state',
-          reasoning: 'Prevents unintended consequences and helps plan better changes'
-        }
+          reasoning: 'Prevents unintended consequences and helps plan better changes',
+        },
       ],
       workflowIntegration: {
         integratesWell: ['edit_workflow', 'build_workflow', 'run_workflow'],
-        commonSequences: [['get_user_workflow', 'edit_workflow'], ['get_user_workflow', 'run_workflow']],
+        commonSequences: [
+          ['get_user_workflow', 'edit_workflow'],
+          ['get_user_workflow', 'run_workflow'],
+        ],
         replacementSuggestions: [],
-        complementaryTools: ['get_workflow_console', 'get_blocks_metadata']
+        complementaryTools: ['get_workflow_console', 'get_blocks_metadata'],
       },
       commonCombinations: [
         {
@@ -453,10 +474,10 @@ export class EnhancedToolIntelligenceEngine {
           purpose: 'Review and modify workflow',
           workflow: 'First get current workflow, then edit specific parts',
           benefits: ['Safe modification', 'Informed changes', 'Better planning'],
-          complexity: 'simple'
-        }
+          complexity: 'simple',
+        },
       ],
-      learningData: this.createEmptyLearningData()
+      learningData: this.createEmptyLearningData(),
     })
 
     this.registerEnhancedDescription('build_workflow', {
@@ -464,7 +485,8 @@ export class EnhancedToolIntelligenceEngine {
       displayName: 'Build New Workflow',
       category: 'Workflow Management',
       briefDescription: 'Create a new workflow from YAML definition',
-      detailedDescription: 'Builds and compiles a complete workflow from a YAML definition. This tool processes the workflow specification, validates the structure, and creates an executable workflow with all blocks, connections, and configurations.',
+      detailedDescription:
+        'Builds and compiles a complete workflow from a YAML definition. This tool processes the workflow specification, validates the structure, and creates an executable workflow with all blocks, connections, and configurations.',
       conversationalDescription: 'Create a new automated workflow from a description',
       usageScenarios: [
         {
@@ -475,7 +497,7 @@ export class EnhancedToolIntelligenceEngine {
           expectedOutcome: 'Fully functional new workflow',
           difficulty: 'intermediate',
           estimatedTime: '5-10 minutes',
-          prerequisites: ['YAML knowledge', 'Workflow design understanding']
+          prerequisites: ['YAML knowledge', 'Workflow design understanding'],
         },
         {
           scenario: 'Template Implementation',
@@ -484,38 +506,55 @@ export class EnhancedToolIntelligenceEngine {
           exampleInput: 'Build this workflow: [YAML content]',
           expectedOutcome: 'Workflow created from specification',
           difficulty: 'advanced',
-          estimatedTime: '10-20 minutes'
-        }
+          estimatedTime: '10-20 minutes',
+        },
       ],
       userRoleDescriptions: {
-        'developer': 'Create complex workflows with custom logic and integrations',
+        developer: 'Create complex workflows with custom logic and integrations',
         'business-user': 'Build simple automation workflows for business processes',
-        'admin': 'Create standardized workflows for organizational use'
+        admin: 'Create standardized workflows for organizational use',
       },
       skillLevelGuidance: {
-        'beginner': {
+        beginner: {
           description: 'Start with simple, linear workflows',
           recommendedApproach: 'Use workflow templates and modify them',
           warningsAndTips: ['Start simple', 'Test frequently', 'Use visual editor when possible'],
-          additionalResources: ['Workflow YAML tutorial', 'Template gallery']
+          additionalResources: ['Workflow YAML tutorial', 'Template gallery'],
         },
-        'intermediate': {
+        intermediate: {
           description: 'Create moderately complex workflows with branching',
           recommendedApproach: 'Plan structure first, then implement step by step',
-          warningsAndTips: ['Validate YAML syntax', 'Consider error handling', 'Document complex logic']
+          warningsAndTips: [
+            'Validate YAML syntax',
+            'Consider error handling',
+            'Document complex logic',
+          ],
         },
-        'advanced': {
+        advanced: {
           description: 'Build sophisticated workflows with complex integrations',
           recommendedApproach: 'Design architecture, implement with best practices',
-          warningsAndTips: ['Plan for scalability', 'Implement comprehensive error handling', 'Use modular design']
+          warningsAndTips: [
+            'Plan for scalability',
+            'Implement comprehensive error handling',
+            'Use modular design',
+          ],
         },
-        'expert': {
+        expert: {
           description: 'Create enterprise-grade workflows with optimal performance',
           recommendedApproach: 'Full lifecycle development with testing and monitoring',
-          warningsAndTips: ['Consider enterprise patterns', 'Implement monitoring', 'Plan for maintenance']
-        }
+          warningsAndTips: [
+            'Consider enterprise patterns',
+            'Implement monitoring',
+            'Plan for maintenance',
+          ],
+        },
       },
-      conversationalTriggers: ['build workflow', 'create workflow', 'new workflow', 'make workflow'],
+      conversationalTriggers: [
+        'build workflow',
+        'create workflow',
+        'new workflow',
+        'make workflow',
+      ],
       alternativeNames: ['create process', 'new automation', 'workflow creation'],
       relatedTerms: ['YAML', 'automation', 'process builder', 'workflow designer'],
       quickStartGuide: [
@@ -523,32 +562,32 @@ export class EnhancedToolIntelligenceEngine {
           step: 1,
           title: 'Plan Your Workflow',
           description: 'Define what your workflow should accomplish',
-          tips: ['List the steps', 'Identify inputs and outputs', 'Consider error cases']
+          tips: ['List the steps', 'Identify inputs and outputs', 'Consider error cases'],
         },
         {
           step: 2,
           title: 'Write or Generate YAML',
           description: 'Create the YAML definition for your workflow',
-          tips: ['Start with a template', 'Validate syntax', 'Test with simple data']
+          tips: ['Start with a template', 'Validate syntax', 'Test with simple data'],
         },
         {
           step: 3,
           title: 'Build and Test',
           description: 'Use the build tool to create your workflow',
-          exampleInput: 'Build this workflow: [your YAML here]'
-        }
+          exampleInput: 'Build this workflow: [your YAML here]',
+        },
       ],
       troubleshootingTips: [
         {
           problem: 'YAML syntax errors',
           solution: 'Validate YAML format and fix syntax issues',
-          prevention: 'Use YAML validator tools before building'
+          prevention: 'Use YAML validator tools before building',
         },
         {
           problem: 'Invalid block references',
           solution: 'Check that all referenced blocks exist and are properly configured',
-          prevention: 'Use get_blocks_and_tools to verify available blocks'
-        }
+          prevention: 'Use get_blocks_and_tools to verify available blocks',
+        },
       ],
       bestPractices: [
         {
@@ -556,14 +595,14 @@ export class EnhancedToolIntelligenceEngine {
           description: 'Design your workflow structure before implementation',
           doThis: 'Create a flowchart or outline first',
           avoidThis: 'Starting to build without a clear plan',
-          reasoning: 'Prevents rework and ensures better workflow design'
-        }
+          reasoning: 'Prevents rework and ensures better workflow design',
+        },
       ],
       workflowIntegration: {
         integratesWell: ['get_blocks_and_tools', 'run_workflow', 'get_workflow_console'],
         commonSequences: [['get_blocks_and_tools', 'build_workflow', 'run_workflow']],
         replacementSuggestions: ['edit_workflow for modifications'],
-        complementaryTools: ['get_blocks_metadata', 'search_documentation']
+        complementaryTools: ['get_blocks_metadata', 'search_documentation'],
       },
       commonCombinations: [
         {
@@ -571,10 +610,10 @@ export class EnhancedToolIntelligenceEngine {
           purpose: 'Research and create workflow',
           workflow: 'First check available blocks, then build workflow using them',
           benefits: ['Informed design', 'Valid block references', 'Better functionality'],
-          complexity: 'moderate'
-        }
+          complexity: 'moderate',
+        },
       ],
-      learningData: this.createEmptyLearningData()
+      learningData: this.createEmptyLearningData(),
     })
 
     // Add more tool descriptions here...
@@ -602,8 +641,8 @@ export class EnhancedToolIntelligenceEngine {
     const userSkillLevel = userContext.userProfile?.skillLevel || 'intermediate'
 
     // Personalize scenarios based on skill level
-    personalized.usageScenarios = baseDescription.usageScenarios.filter(
-      scenario => this.isScenarioAppropriate(scenario, userSkillLevel)
+    personalized.usageScenarios = baseDescription.usageScenarios.filter((scenario) =>
+      this.isScenarioAppropriate(scenario, userSkillLevel)
     )
 
     return personalized
@@ -636,7 +675,7 @@ export class EnhancedToolIntelligenceEngine {
       postActionSteps: this.generatePostActionSteps(baseRec, request),
       alternativeApproaches: this.generateAlternativeApproaches(baseRec, request),
       followUpSuggestions: this.generateFollowUpSuggestions(baseRec, request),
-      relatedQuestions: this.generateRelatedQuestions(baseRec, request)
+      relatedQuestions: this.generateRelatedQuestions(baseRec, request),
     }
   }
 
@@ -658,7 +697,7 @@ export class EnhancedToolIntelligenceEngine {
       `Matches your intent: ${this.extractIntent(request.userMessage)}`,
       `Appropriate for your skill level: ${request.userSkillLevel}`,
       `Fits your current context and available time`,
-      `Has high success rate for similar requests`
+      `Has high success rate for similar requests`,
     ]
   }
 
@@ -678,7 +717,10 @@ export class EnhancedToolIntelligenceEngine {
     return 'challenging'
   }
 
-  private estimateTimeForUser(rec: ToolRecommendationWithDetails, skillLevel: UserSkillLevel): string {
+  private estimateTimeForUser(
+    rec: ToolRecommendationWithDetails,
+    skillLevel: UserSkillLevel
+  ): string {
     const baseTime = this.getBaseExecutionTime(rec.toolId)
     const skillMultiplier = this.getSkillTimeMultiplier(skillLevel)
 
@@ -694,7 +736,7 @@ export class EnhancedToolIntelligenceEngine {
     request: ContextualRecommendationRequest
   ): string[] {
     const toolDesc = this.toolDescriptions.get(rec.toolId)
-    return toolDesc?.quickStartGuide.map(step => step.description) || []
+    return toolDesc?.quickStartGuide.map((step) => step.description) || []
   }
 
   private generatePostActionSteps(
@@ -704,7 +746,7 @@ export class EnhancedToolIntelligenceEngine {
     return [
       'Review the results to ensure they meet your expectations',
       'Consider next steps based on the output',
-      'Save or document important results for future reference'
+      'Save or document important results for future reference',
     ]
   }
 
@@ -721,7 +763,9 @@ export class EnhancedToolIntelligenceEngine {
     request: ContextualRecommendationRequest
   ): string[] {
     const toolDesc = this.toolDescriptions.get(rec.toolId)
-    return toolDesc?.workflowIntegration.commonSequences.flat().filter(t => t !== rec.toolId) || []
+    return (
+      toolDesc?.workflowIntegration.commonSequences.flat().filter((t) => t !== rec.toolId) || []
+    )
   }
 
   private generateRelatedQuestions(
@@ -731,7 +775,7 @@ export class EnhancedToolIntelligenceEngine {
     return [
       `How do I optimize the use of ${rec.tool.name}?`,
       `What are the best practices for ${rec.tool.name}?`,
-      `Can I combine ${rec.tool.name} with other tools?`
+      `Can I combine ${rec.tool.name} with other tools?`,
     ]
   }
 
@@ -745,42 +789,87 @@ export class EnhancedToolIntelligenceEngine {
         averageExecutionTime: 0,
         successRate: 1,
         errorRate: 0,
-        userSatisfaction: 4.5
-      }
+        userSatisfaction: 4.5,
+      },
     }
   }
 
   // Additional helper methods would be implemented here...
-  private categorizeError(error: any): any { return 'general_error' }
-  private assessErrorSeverity(error: any): any { return 'medium' }
-  private assessErrorImpact(error: any): any { return 'medium' }
-  private createContextualErrorMessage(error: any, toolId: string, context: UsageContext): Promise<string> {
+  private categorizeError(error: any): any {
+    return 'general_error'
+  }
+  private assessErrorSeverity(error: any): any {
+    return 'medium'
+  }
+  private assessErrorImpact(error: any): any {
+    return 'medium'
+  }
+  private createContextualErrorMessage(
+    error: any,
+    toolId: string,
+    context: UsageContext
+  ): Promise<string> {
     return Promise.resolve(`Error occurred while using ${toolId}: ${error.message}`)
   }
-  private createUserLevelExplanations(error: any, toolId: string): Record<UserSkillLevel, string> { return {} as any }
-  private createResolutionSteps(error: any, toolId: string, skillLevel: UserSkillLevel): Promise<ResolutionStep[]> {
+  private createUserLevelExplanations(error: any, toolId: string): Record<UserSkillLevel, string> {
+    return {} as any
+  }
+  private createResolutionSteps(
+    error: any,
+    toolId: string,
+    skillLevel: UserSkillLevel
+  ): Promise<ResolutionStep[]> {
     return Promise.resolve([])
   }
-  private generatePreventionTips(error: any, toolId: string): string[] { return [] }
-  private findRelatedDocumentation(error: any, toolId: string): string[] { return [] }
-  private identifyLearningMoments(error: any, toolId: string): string[] { return [] }
-  private generateSkillDevelopmentTips(error: any, toolId: string, skillLevel: UserSkillLevel): string[] { return [] }
-  private generateRecoveryOptions(error: any, toolId: string, context: UsageContext): Promise<RecoveryOption[]> {
+  private generatePreventionTips(error: any, toolId: string): string[] {
+    return []
+  }
+  private findRelatedDocumentation(error: any, toolId: string): string[] {
+    return []
+  }
+  private identifyLearningMoments(error: any, toolId: string): string[] {
+    return []
+  }
+  private generateSkillDevelopmentTips(
+    error: any,
+    toolId: string,
+    skillLevel: UserSkillLevel
+  ): string[] {
+    return []
+  }
+  private generateRecoveryOptions(
+    error: any,
+    toolId: string,
+    context: UsageContext
+  ): Promise<RecoveryOption[]> {
     return Promise.resolve([])
   }
-  private suggestAlternativeActions(toolId: string, context: UsageContext): string[] { return [] }
+  private suggestAlternativeActions(toolId: string, context: UsageContext): string[] {
+    return []
+  }
   private recordErrorForLearning(toolId: string, error: any, context: UsageContext): void {}
-  private analyzeConversationPatterns(history: ConversationMessage[]): any[] { return [] }
-  private generateToolSuggestionsForPattern(pattern: any, context: UsageContext): Promise<FlowSuggestion[]> {
+  private analyzeConversationPatterns(history: ConversationMessage[]): any[] {
+    return []
+  }
+  private generateToolSuggestionsForPattern(
+    pattern: any,
+    context: UsageContext
+  ): Promise<FlowSuggestion[]> {
     return Promise.resolve([])
   }
-  private extractIntent(message: string): string { return 'general' }
-  private getToolComplexity(toolId: string): number { return 2 }
+  private extractIntent(message: string): string {
+    return 'general'
+  }
+  private getToolComplexity(toolId: string): number {
+    return 2
+  }
   private skillLevelToNumeric(level: UserSkillLevel): number {
     const map = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 }
     return map[level]
   }
-  private getBaseExecutionTime(toolId: string): number { return 2 }
+  private getBaseExecutionTime(toolId: string): number {
+    return 2
+  }
   private getSkillTimeMultiplier(level: UserSkillLevel): number {
     const map = { beginner: 2, intermediate: 1, advanced: 0.8, expert: 0.5 }
     return map[level]

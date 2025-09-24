@@ -9,15 +9,15 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
+import type { UsageContext } from '../../natural-language/usage-guidelines'
 import {
-  EnhancedToolIntelligenceEngine,
-  ContextualRecommendationRequest,
-  UserSkillLevel,
-  createEnhancedToolIntelligenceEngine
+  type ContextualRecommendationRequest,
+  createEnhancedToolIntelligenceEngine,
+  type EnhancedToolIntelligenceEngine,
+  type UserSkillLevel,
 } from '../tool-intelligence-engine'
 import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
-import type { UsageContext } from '../../natural-language/usage-guidelines'
 
 // =============================================================================
 // Automated Testing Suite
@@ -73,7 +73,7 @@ export class AutomatedTestingSuite {
         regressionResults.overallScore,
         loadTestResults.overallScore,
         integrationResults.overallScore,
-        monitoringResults.overallScore
+        monitoringResults.overallScore,
       ]),
       testResults: {
         intelligence: intelligenceReport,
@@ -81,12 +81,12 @@ export class AutomatedTestingSuite {
         regression: regressionResults,
         load: loadTestResults,
         integration: integrationResults,
-        monitoring: monitoringResults
+        monitoring: monitoringResults,
       },
       performanceMetrics: this.performanceMetrics,
       regressionStatus: this.analyzeRegressionStatus(regressionResults),
       recommendations: this.generateAutomatedRecommendations(),
-      cicdCompatibility: this.assessCicdCompatibility()
+      cicdCompatibility: this.assessCicdCompatibility(),
     }
 
     console.log('✅ Automated Testing Suite Complete')
@@ -138,10 +138,10 @@ export class AutomatedTestingSuite {
         peakMemoryUsage: this.calculatePeakMemoryUsage(tests),
         concurrentCapacity: this.calculateConcurrentCapacity(tests),
         throughput: this.calculateThroughput(tests),
-        errorRate: this.calculateErrorRate(tests)
+        errorRate: this.calculateErrorRate(tests),
       },
       performanceTrends: this.analyzePerformanceTrends(tests),
-      bottlenecks: this.identifyBottlenecks(tests)
+      bottlenecks: this.identifyBottlenecks(tests),
     }
   }
 
@@ -186,9 +186,9 @@ export class AutomatedTestingSuite {
       baselineVersion: this.regressionBaseline.version,
       currentVersion: '1.0.0',
       tests,
-      regressions: tests.filter(t => t.hasRegression),
-      improvements: tests.filter(t => t.hasImprovement),
-      summary: this.generateRegressionSummary(tests)
+      regressions: tests.filter((t) => t.hasRegression),
+      improvements: tests.filter((t) => t.hasImprovement),
+      summary: this.generateRegressionSummary(tests),
     }
   }
 
@@ -229,10 +229,10 @@ export class AutomatedTestingSuite {
       loadCapacity: {
         maxConcurrentUsers: this.determineMaxConcurrentUsers(tests),
         optimalLoad: this.determineOptimalLoad(tests),
-        breakingPoint: this.determineBreakingPoint(tests)
+        breakingPoint: this.determineBreakingPoint(tests),
       },
       scalabilityAnalysis: this.analyzeScalability(tests),
-      recommendations: this.generateLoadTestRecommendations(tests)
+      recommendations: this.generateLoadTestRecommendations(tests),
     }
   }
 
@@ -276,7 +276,7 @@ export class AutomatedTestingSuite {
       tests,
       integrationHealth: this.assessIntegrationHealth(tests),
       dataFlowValidation: this.validateDataFlow(tests),
-      compatibilityMatrix: this.buildCompatibilityMatrix(tests)
+      compatibilityMatrix: this.buildCompatibilityMatrix(tests),
     }
   }
 
@@ -318,9 +318,9 @@ export class AutomatedTestingSuite {
         metricsAvailability: this.assessMetricsAvailability(tests),
         alertingEffectiveness: this.assessAlertingEffectiveness(tests),
         loggingQuality: this.assessLoggingQuality(tests),
-        dashboardUsability: this.assessDashboardUsability(tests)
+        dashboardUsability: this.assessDashboardUsability(tests),
       },
-      productionReadiness: this.assessProductionReadiness(tests)
+      productionReadiness: this.assessProductionReadiness(tests),
     }
   }
 
@@ -337,7 +337,7 @@ export class AutomatedTestingSuite {
       userMessage: 'I want to create a workflow',
       currentContext: this.createMockContext(),
       conversationHistory: [],
-      userSkillLevel: 'intermediate'
+      userSkillLevel: 'intermediate',
     }
 
     try {
@@ -367,16 +367,20 @@ export class AutomatedTestingSuite {
           averageResponseTime,
           maxResponseTime,
           minResponseTime,
-          standardDeviation: this.calculateStandardDeviation(responseTimes)
+          standardDeviation: this.calculateStandardDeviation(responseTimes),
         },
         status: score >= 70 ? 'passed' : 'failed',
         details: {
           responseTimes: responseTimes.slice(0, 10), // First 10 for debugging
-          performanceGrade: this.gradePerformance(averageResponseTime)
-        }
+          performanceGrade: this.gradePerformance(averageResponseTime),
+        },
       }
     } catch (error) {
-      return this.createFailedPerformanceTest('Recommendation Speed', error, performance.now() - startTime)
+      return this.createFailedPerformanceTest(
+        'Recommendation Speed',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -394,7 +398,7 @@ export class AutomatedTestingSuite {
           userMessage: `Test request ${i}`,
           currentContext: this.createMockContext(),
           conversationHistory: [],
-          userSkillLevel: 'intermediate'
+          userSkillLevel: 'intermediate',
         }
         await this.engine.getEnhancedRecommendations(request)
       }
@@ -418,12 +422,17 @@ export class AutomatedTestingSuite {
           finalMemory,
           memoryIncrease,
           memoryPerOperation,
-          iterations
+          iterations,
         },
         status: score >= 70 ? 'passed' : 'failed',
         details: {
-          memoryEfficiency: memoryPerOperation < 1 ? 'excellent' : memoryPerOperation < 5 ? 'good' : 'needs-improvement'
-        }
+          memoryEfficiency:
+            memoryPerOperation < 1
+              ? 'excellent'
+              : memoryPerOperation < 5
+                ? 'good'
+                : 'needs-improvement',
+        },
       }
     } catch (error) {
       return this.createFailedPerformanceTest('Memory Usage', error, performance.now() - startTime)
@@ -439,16 +448,14 @@ export class AutomatedTestingSuite {
         userMessage: `Concurrent request ${i}`,
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate' as UserSkillLevel
+        userSkillLevel: 'intermediate' as UserSkillLevel,
       }))
 
-      const promises = requests.map(request =>
-        this.engine.getEnhancedRecommendations(request)
-      )
+      const promises = requests.map((request) => this.engine.getEnhancedRecommendations(request))
 
       const results = await Promise.allSettled(promises)
-      const successful = results.filter(r => r.status === 'fulfilled').length
-      const failed = results.filter(r => r.status === 'rejected').length
+      const successful = results.filter((r) => r.status === 'fulfilled').length
+      const failed = results.filter((r) => r.status === 'rejected').length
 
       const successRate = (successful / concurrentRequests) * 100
 
@@ -464,15 +471,20 @@ export class AutomatedTestingSuite {
           concurrentRequests,
           successful,
           failed,
-          successRate
+          successRate,
         },
         status: successRate >= 95 ? 'passed' : 'failed',
         details: {
-          concurrencyHandling: successRate === 100 ? 'excellent' : successRate >= 95 ? 'good' : 'needs-improvement'
-        }
+          concurrencyHandling:
+            successRate === 100 ? 'excellent' : successRate >= 95 ? 'good' : 'needs-improvement',
+        },
       }
     } catch (error) {
-      return this.createFailedPerformanceTest('Concurrent Requests', error, performance.now() - startTime)
+      return this.createFailedPerformanceTest(
+        'Concurrent Requests',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -484,7 +496,7 @@ export class AutomatedTestingSuite {
         userMessage: 'Test caching performance',
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       }
 
       // First request (should be cached)
@@ -513,15 +525,20 @@ export class AutomatedTestingSuite {
           firstRequestTime,
           secondRequestTime,
           cacheSpeedup,
-          cacheHitRatio
+          cacheHitRatio,
         },
         status: cacheHitRatio >= 80 ? 'passed' : 'failed',
         details: {
-          cachingEffectiveness: cacheSpeedup > 2 ? 'excellent' : cacheSpeedup > 1.2 ? 'good' : 'minimal'
-        }
+          cachingEffectiveness:
+            cacheSpeedup > 2 ? 'excellent' : cacheSpeedup > 1.2 ? 'good' : 'minimal',
+        },
       }
     } catch (error) {
-      return this.createFailedPerformanceTest('Caching Performance', error, performance.now() - startTime)
+      return this.createFailedPerformanceTest(
+        'Caching Performance',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -530,12 +547,13 @@ export class AutomatedTestingSuite {
 
     try {
       const testSizes = [1, 10, 50, 100]
-      const results: Array<{ size: number, avgTime: number }> = []
+      const results: Array<{ size: number; avgTime: number }> = []
 
       for (const size of testSizes) {
         const times: number[] = []
 
-        for (let i = 0; i < 5; i++) { // 5 iterations per size
+        for (let i = 0; i < 5; i++) {
+          // 5 iterations per size
           const iterationStart = performance.now()
 
           // Simulate processing different sizes of data
@@ -543,7 +561,7 @@ export class AutomatedTestingSuite {
             userMessage: `Scalability test ${j}`,
             currentContext: this.createMockContext(),
             conversationHistory: [],
-            userSkillLevel: 'intermediate' as UserSkillLevel
+            userSkillLevel: 'intermediate' as UserSkillLevel,
           }))
 
           for (const request of requests) {
@@ -567,15 +585,19 @@ export class AutomatedTestingSuite {
         metrics: {
           testSizes,
           results,
-          scalabilityRatio: results[results.length - 1].avgTime / results[0].avgTime
+          scalabilityRatio: results[results.length - 1].avgTime / results[0].avgTime,
         },
         status: scalabilityScore >= 70 ? 'passed' : 'failed',
         details: {
-          scalabilityGrade: this.gradeScalability(scalabilityScore)
-        }
+          scalabilityGrade: this.gradeScalability(scalabilityScore),
+        },
       }
     } catch (error) {
-      return this.createFailedPerformanceTest('Scalability Performance', error, performance.now() - startTime)
+      return this.createFailedPerformanceTest(
+        'Scalability Performance',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -587,10 +609,10 @@ export class AutomatedTestingSuite {
         'invalid_tool_id',
         'malformed_request',
         'context_missing',
-        'timeout_simulation'
+        'timeout_simulation',
       ]
 
-      const results: Array<{ scenario: string, time: number, handled: boolean }> = []
+      const results: Array<{ scenario: string; time: number; handled: boolean }> = []
 
       for (const scenario of errorScenarios) {
         const scenarioStart = performance.now()
@@ -610,7 +632,7 @@ export class AutomatedTestingSuite {
         results.push({ scenario, time, handled })
       }
 
-      const handledCount = results.filter(r => r.handled).length
+      const handledCount = results.filter((r) => r.handled).length
       const avgErrorHandlingTime = results.reduce((sum, r) => sum + r.time, 0) / results.length
 
       // Score based on error handling speed and completeness
@@ -625,15 +647,20 @@ export class AutomatedTestingSuite {
           totalScenarios: errorScenarios.length,
           handledScenarios: handledCount,
           avgErrorHandlingTime,
-          results
+          results,
         },
         status: handledCount === errorScenarios.length ? 'passed' : 'failed',
         details: {
-          errorHandlingEfficiency: avgErrorHandlingTime < 100 ? 'excellent' : avgErrorHandlingTime < 500 ? 'good' : 'slow'
-        }
+          errorHandlingEfficiency:
+            avgErrorHandlingTime < 100 ? 'excellent' : avgErrorHandlingTime < 500 ? 'good' : 'slow',
+        },
       }
     } catch (error) {
-      return this.createFailedPerformanceTest('Error Handling Performance', error, performance.now() - startTime)
+      return this.createFailedPerformanceTest(
+        'Error Handling Performance',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -649,13 +676,13 @@ export class AutomatedTestingSuite {
         averageRecommendationAccuracy: 85,
         averageResponseTime: 200,
         averageMemoryUsage: 50,
-        errorRate: 2
+        errorRate: 2,
       },
       functionalityChecksums: new Map([
         ['recommendation_engine', 'baseline_checksum_1'],
         ['error_handling', 'baseline_checksum_2'],
-        ['natural_language', 'baseline_checksum_3']
-      ])
+        ['natural_language', 'baseline_checksum_3'],
+      ]),
     }
   }
 
@@ -667,7 +694,7 @@ export class AutomatedTestingSuite {
       const testCases = [
         { message: 'create workflow', expected: 'build_workflow' },
         { message: 'show current workflow', expected: 'get_user_workflow' },
-        { message: 'edit workflow', expected: 'edit_workflow' }
+        { message: 'edit workflow', expected: 'edit_workflow' },
       ]
 
       let correctRecommendations = 0
@@ -676,7 +703,7 @@ export class AutomatedTestingSuite {
           userMessage: testCase.message,
           currentContext: this.createMockContext(),
           conversationHistory: [],
-          userSkillLevel: 'intermediate'
+          userSkillLevel: 'intermediate',
         }
 
         const recommendations = await this.engine.getEnhancedRecommendations(request)
@@ -705,11 +732,15 @@ export class AutomatedTestingSuite {
         details: {
           testCases: testCases.length,
           correctRecommendations,
-          changePercentage: ((change / baselineAccuracy) * 100).toFixed(2)
-        }
+          changePercentage: ((change / baselineAccuracy) * 100).toFixed(2),
+        },
       }
     } catch (error) {
-      return this.createFailedRegressionTest('Recommendation Accuracy Regression', error, performance.now() - startTime)
+      return this.createFailedRegressionTest(
+        'Recommendation Accuracy Regression',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -727,7 +758,7 @@ export class AutomatedTestingSuite {
           userMessage: 'performance test',
           currentContext: this.createMockContext(),
           conversationHistory: [],
-          userSkillLevel: 'intermediate'
+          userSkillLevel: 'intermediate',
         })
         times.push(performance.now() - iterationStart)
       }
@@ -741,7 +772,7 @@ export class AutomatedTestingSuite {
 
       return {
         testName: 'Performance Regression',
-        score: Math.max(0, 100 - (change / baselineAvgTime * 100)),
+        score: Math.max(0, 100 - (change / baselineAvgTime) * 100),
         duration: performance.now() - startTime,
         baselineValue: baselineAvgTime,
         currentValue: currentAvgTime,
@@ -752,11 +783,15 @@ export class AutomatedTestingSuite {
         details: {
           iterations,
           changeMs: change.toFixed(2),
-          changePercentage: ((change / baselineAvgTime) * 100).toFixed(2)
-        }
+          changePercentage: ((change / baselineAvgTime) * 100).toFixed(2),
+        },
       }
     } catch (error) {
-      return this.createFailedRegressionTest('Performance Regression', error, performance.now() - startTime)
+      return this.createFailedRegressionTest(
+        'Performance Regression',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -769,30 +804,35 @@ export class AutomatedTestingSuite {
         'getEnhancedToolDescription',
         'getEnhancedRecommendations',
         'explainErrorIntelligently',
-        'suggestFlowImprovements'
+        'suggestFlowImprovements',
       ]
 
       let workingFunctions = 0
-      const results: Array<{ function: string, working: boolean }> = []
+      const results: Array<{ function: string; working: boolean }> = []
 
       for (const funcName of functionalityTests) {
         let working = false
         try {
           switch (funcName) {
-            case 'getEnhancedToolDescription':
-              const desc = await this.engine.getEnhancedToolDescription('get_user_workflow', this.createMockContext())
+            case 'getEnhancedToolDescription': {
+              const desc = await this.engine.getEnhancedToolDescription(
+                'get_user_workflow',
+                this.createMockContext()
+              )
               working = !!desc
               break
-            case 'getEnhancedRecommendations':
+            }
+            case 'getEnhancedRecommendations': {
               const recs = await this.engine.getEnhancedRecommendations({
                 userMessage: 'test',
                 currentContext: this.createMockContext(),
                 conversationHistory: [],
-                userSkillLevel: 'intermediate'
+                userSkillLevel: 'intermediate',
               })
               working = recs.length > 0
               break
-            case 'explainErrorIntelligently':
+            }
+            case 'explainErrorIntelligently': {
               const exp = await this.engine.explainErrorIntelligently(
                 new Error('test'),
                 'test_tool',
@@ -801,10 +841,15 @@ export class AutomatedTestingSuite {
               )
               working = !!exp.contextualMessage
               break
-            case 'suggestFlowImprovements':
-              const suggestions = await this.engine.suggestFlowImprovements([], this.createMockContext())
+            }
+            case 'suggestFlowImprovements': {
+              const suggestions = await this.engine.suggestFlowImprovements(
+                [],
+                this.createMockContext()
+              )
               working = Array.isArray(suggestions)
               break
+            }
           }
 
           if (working) workingFunctions++
@@ -830,11 +875,15 @@ export class AutomatedTestingSuite {
         details: {
           totalFunctions: functionalityTests.length,
           workingFunctions,
-          results
-        }
+          results,
+        },
       }
     } catch (error) {
-      return this.createFailedRegressionTest('Functionality Regression', error, performance.now() - startTime)
+      return this.createFailedRegressionTest(
+        'Functionality Regression',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -847,13 +896,25 @@ export class AutomatedTestingSuite {
 
       // Check method existence and basic compatibility
       const apiTests = [
-        { method: 'getEnhancedToolDescription', hasMethod: typeof engine.getEnhancedToolDescription === 'function' },
-        { method: 'getEnhancedRecommendations', hasMethod: typeof engine.getEnhancedRecommendations === 'function' },
-        { method: 'explainErrorIntelligently', hasMethod: typeof engine.explainErrorIntelligently === 'function' },
-        { method: 'suggestFlowImprovements', hasMethod: typeof engine.suggestFlowImprovements === 'function' }
+        {
+          method: 'getEnhancedToolDescription',
+          hasMethod: typeof engine.getEnhancedToolDescription === 'function',
+        },
+        {
+          method: 'getEnhancedRecommendations',
+          hasMethod: typeof engine.getEnhancedRecommendations === 'function',
+        },
+        {
+          method: 'explainErrorIntelligently',
+          hasMethod: typeof engine.explainErrorIntelligently === 'function',
+        },
+        {
+          method: 'suggestFlowImprovements',
+          hasMethod: typeof engine.suggestFlowImprovements === 'function',
+        },
       ]
 
-      const compatibleMethods = apiTests.filter(t => t.hasMethod).length
+      const compatibleMethods = apiTests.filter((t) => t.hasMethod).length
       const compatibilityScore = (compatibleMethods / apiTests.length) * 100
 
       const hasRegression = compatibilityScore < 100
@@ -871,11 +932,15 @@ export class AutomatedTestingSuite {
         details: {
           totalMethods: apiTests.length,
           compatibleMethods,
-          apiTests
-        }
+          apiTests,
+        },
       }
     } catch (error) {
-      return this.createFailedRegressionTest('API Compatibility Regression', error, performance.now() - startTime)
+      return this.createFailedRegressionTest(
+        'API Compatibility Regression',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -887,7 +952,7 @@ export class AutomatedTestingSuite {
       const errorTests = [
         { scenario: 'invalid_tool_id', shouldThrow: false }, // Should handle gracefully
         { scenario: 'null_context', shouldThrow: false },
-        { scenario: 'empty_message', shouldThrow: false }
+        { scenario: 'empty_message', shouldThrow: false },
       ]
 
       let properlyHandled = 0
@@ -902,7 +967,7 @@ export class AutomatedTestingSuite {
                 userMessage: 'test with invalid tool',
                 currentContext: this.createMockContext(),
                 conversationHistory: [],
-                userSkillLevel: 'intermediate'
+                userSkillLevel: 'intermediate',
               }
               break
             case 'null_context':
@@ -910,7 +975,7 @@ export class AutomatedTestingSuite {
                 userMessage: 'test',
                 currentContext: null as any,
                 conversationHistory: [],
-                userSkillLevel: 'intermediate'
+                userSkillLevel: 'intermediate',
               }
               break
             case 'empty_message':
@@ -918,7 +983,7 @@ export class AutomatedTestingSuite {
                 userMessage: '',
                 currentContext: this.createMockContext(),
                 conversationHistory: [],
-                userSkillLevel: 'intermediate'
+                userSkillLevel: 'intermediate',
               }
               break
             default:
@@ -950,11 +1015,15 @@ export class AutomatedTestingSuite {
         details: {
           totalTests: errorTests.length,
           properlyHandled,
-          errorTests
-        }
+          errorTests,
+        },
       }
     } catch (error) {
-      return this.createFailedRegressionTest('Error Handling Regression', error, performance.now() - startTime)
+      return this.createFailedRegressionTest(
+        'Error Handling Regression',
+        error,
+        performance.now() - startTime
+      )
     }
   }
 
@@ -982,7 +1051,12 @@ export class AutomatedTestingSuite {
     return this.runLoadTest('Spike Test', 200, 100, true)
   }
 
-  private async runLoadTest(testName: string, users: number, duration: number, isSpike = false): Promise<LoadTest> {
+  private async runLoadTest(
+    testName: string,
+    users: number,
+    duration: number,
+    isSpike = false
+  ): Promise<LoadTest> {
     const startTime = performance.now()
 
     try {
@@ -990,7 +1064,7 @@ export class AutomatedTestingSuite {
         userMessage: `Load test user ${i}`,
         currentContext: this.createMockContext(),
         conversationHistory: [],
-        userSkillLevel: 'intermediate' as UserSkillLevel
+        userSkillLevel: 'intermediate' as UserSkillLevel,
       }))
 
       let successful = 0
@@ -1023,12 +1097,15 @@ export class AutomatedTestingSuite {
           }
 
           // Small delay between requests to simulate real load
-          await new Promise(resolve => setTimeout(resolve, 10))
+          await new Promise((resolve) => setTimeout(resolve, 10))
         }
       }
 
       const successRate = (successful / users) * 100
-      const avgResponseTime = responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0
+      const avgResponseTime =
+        responseTimes.length > 0
+          ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+          : 0
 
       // Score based on success rate and response time under load
       let score = successRate
@@ -1050,8 +1127,8 @@ export class AutomatedTestingSuite {
         details: {
           loadType: isSpike ? 'spike' : 'gradual',
           throughput: successful / (duration / 1000),
-          errorRate: (failed / users) * 100
-        }
+          errorRate: (failed / users) * 100,
+        },
       }
     } catch (error) {
       return {
@@ -1066,7 +1143,7 @@ export class AutomatedTestingSuite {
         maxResponseTime: 0,
         minResponseTime: 0,
         status: 'failed',
-        details: { error: error.toString() }
+        details: { error: error.toString() },
       }
     }
   }
@@ -1084,7 +1161,7 @@ export class AutomatedTestingSuite {
       component: 'workflow_system',
       dataFlow: 'bidirectional',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1097,7 +1174,7 @@ export class AutomatedTestingSuite {
       component: 'tool_registry',
       dataFlow: 'input',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1110,7 +1187,7 @@ export class AutomatedTestingSuite {
       component: 'nl_engine',
       dataFlow: 'bidirectional',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1123,7 +1200,7 @@ export class AutomatedTestingSuite {
       component: 'error_system',
       dataFlow: 'output',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1136,7 +1213,7 @@ export class AutomatedTestingSuite {
       component: 'database',
       dataFlow: 'bidirectional',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1149,7 +1226,7 @@ export class AutomatedTestingSuite {
       component: 'api_layer',
       dataFlow: 'bidirectional',
       apiCompatibility: 'compatible',
-      details: { integration: 'successful' }
+      details: { integration: 'successful' },
     }
   }
 
@@ -1166,7 +1243,7 @@ export class AutomatedTestingSuite {
       monitoringAspect: 'health',
       availability: 'high',
       dataQuality: 'excellent',
-      details: { healthStatus: 'all systems operational' }
+      details: { healthStatus: 'all systems operational' },
     }
   }
 
@@ -1179,7 +1256,7 @@ export class AutomatedTestingSuite {
       monitoringAspect: 'metrics',
       availability: 'high',
       dataQuality: 'good',
-      details: { metricsAvailable: ['response_time', 'error_rate', 'throughput'] }
+      details: { metricsAvailable: ['response_time', 'error_rate', 'throughput'] },
     }
   }
 
@@ -1192,7 +1269,7 @@ export class AutomatedTestingSuite {
       monitoringAspect: 'alerting',
       availability: 'medium',
       dataQuality: 'good',
-      details: { alertTypes: ['performance', 'errors', 'availability'] }
+      details: { alertTypes: ['performance', 'errors', 'availability'] },
     }
   }
 
@@ -1205,7 +1282,7 @@ export class AutomatedTestingSuite {
       monitoringAspect: 'logging',
       availability: 'high',
       dataQuality: 'excellent',
-      details: { logLevels: ['debug', 'info', 'warn', 'error'] }
+      details: { logLevels: ['debug', 'info', 'warn', 'error'] },
     }
   }
 
@@ -1218,7 +1295,7 @@ export class AutomatedTestingSuite {
       monitoringAspect: 'dashboard',
       availability: 'high',
       dataQuality: 'good',
-      details: { dashboardFeatures: ['real-time metrics', 'historical data', 'alerts'] }
+      details: { dashboardFeatures: ['real-time metrics', 'historical data', 'alerts'] },
     }
   }
 
@@ -1232,7 +1309,7 @@ export class AutomatedTestingSuite {
       throughput: { requestsPerSecond: 0, peakRps: 0 },
       errorRate: { percentage: 0, totalErrors: 0 },
       memoryUsage: { current: 0, peak: 0, average: 0 },
-      cpuUsage: { current: 0, peak: 0, average: 0 }
+      cpuUsage: { current: 0, peak: 0, average: 0 },
     }
   }
 
@@ -1245,19 +1322,19 @@ export class AutomatedTestingSuite {
         preferences: {
           verbosity: 'detailed',
           examples: true,
-          stepByStep: true
-        }
+          stepByStep: true,
+        },
       },
       sessionContext: {
         currentTask: 'testing',
         timeAvailable: 'moderate',
-        urgency: 'medium'
+        urgency: 'medium',
       },
       workflowContext: {
         currentWorkflow: 'test_workflow',
         workflowComplexity: 'simple',
-        lastActions: []
-      }
+        lastActions: [],
+      },
     }
   }
 
@@ -1266,7 +1343,7 @@ export class AutomatedTestingSuite {
       userMessage: 'test',
       currentContext: this.createMockContext(),
       conversationHistory: [],
-      userSkillLevel: 'intermediate' as UserSkillLevel
+      userSkillLevel: 'intermediate' as UserSkillLevel,
     }
 
     switch (scenario) {
@@ -1293,7 +1370,7 @@ export class AutomatedTestingSuite {
 
   private calculateStandardDeviation(values: number[]): number {
     const avg = values.reduce((a, b) => a + b, 0) / values.length
-    const squareDiffs = values.map(value => Math.pow(value - avg, 2))
+    const squareDiffs = values.map((value) => (value - avg) ** 2)
     const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length
     return Math.sqrt(avgSquareDiff)
   }
@@ -1305,7 +1382,7 @@ export class AutomatedTestingSuite {
     return 'needs-improvement'
   }
 
-  private analyzeScalabilityTrend(results: Array<{ size: number, avgTime: number }>): number {
+  private analyzeScalabilityTrend(results: Array<{ size: number; avgTime: number }>): number {
     // Simple linear regression to check if scaling is reasonable
     if (results.length < 2) return 100
 
@@ -1331,18 +1408,26 @@ export class AutomatedTestingSuite {
     return 'poor'
   }
 
-  private createFailedPerformanceTest(testName: string, error: any, duration: number): PerformanceTest {
+  private createFailedPerformanceTest(
+    testName: string,
+    error: any,
+    duration: number
+  ): PerformanceTest {
     return {
       testName,
       score: 0,
       duration,
       metrics: {},
       status: 'failed',
-      details: { error: error.toString() }
+      details: { error: error.toString() },
     }
   }
 
-  private createFailedRegressionTest(testName: string, error: any, duration: number): RegressionTest {
+  private createFailedRegressionTest(
+    testName: string,
+    error: any,
+    duration: number
+  ): RegressionTest {
     return {
       testName,
       score: 0,
@@ -1353,7 +1438,7 @@ export class AutomatedTestingSuite {
       hasRegression: true,
       hasImprovement: false,
       status: 'failed',
-      details: { error: error.toString() }
+      details: { error: error.toString() },
     }
   }
 
@@ -1363,17 +1448,17 @@ export class AutomatedTestingSuite {
   }
 
   private calculateAverageResponseTime(tests: PerformanceTest[]): number {
-    const times = tests.map(t => t.metrics.averageResponseTime || 0).filter(t => t > 0)
+    const times = tests.map((t) => t.metrics.averageResponseTime || 0).filter((t) => t > 0)
     return times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
   }
 
   private calculatePeakMemoryUsage(tests: PerformanceTest[]): number {
-    const memories = tests.map(t => t.metrics.finalMemory || 0).filter(m => m > 0)
+    const memories = tests.map((t) => t.metrics.finalMemory || 0).filter((m) => m > 0)
     return memories.length > 0 ? Math.max(...memories) : 0
   }
 
   private calculateConcurrentCapacity(tests: PerformanceTest[]): number {
-    const concurrentTest = tests.find(t => t.testName === 'Concurrent Requests')
+    const concurrentTest = tests.find((t) => t.testName === 'Concurrent Requests')
     return concurrentTest?.metrics?.concurrentRequests || 0
   }
 
@@ -1383,22 +1468,22 @@ export class AutomatedTestingSuite {
   }
 
   private calculateErrorRate(tests: PerformanceTest[]): number {
-    const errorTest = tests.find(t => t.testName === 'Error Handling Performance')
-    return errorTest ? (100 - errorTest.score) : 0
+    const errorTest = tests.find((t) => t.testName === 'Error Handling Performance')
+    return errorTest ? 100 - errorTest.score : 0
   }
 
   private analyzePerformanceTrends(tests: PerformanceTest[]): string[] {
     return [
       'Response times are within acceptable ranges',
       'Memory usage is stable across operations',
-      'Concurrent request handling is effective'
+      'Concurrent request handling is effective',
     ]
   }
 
   private identifyBottlenecks(tests: PerformanceTest[]): string[] {
     const bottlenecks: string[] = []
 
-    tests.forEach(test => {
+    tests.forEach((test) => {
       if (test.score < 70) {
         bottlenecks.push(`${test.testName}: Score ${test.score}`)
       }
@@ -1420,7 +1505,7 @@ export class AutomatedTestingSuite {
       'Optimize memory usage during concurrent operations',
       'Add circuit breaker pattern for error resilience',
       'Enhance monitoring and alerting capabilities',
-      'Consider horizontal scaling for high load scenarios'
+      'Consider horizontal scaling for high load scenarios',
     ]
   }
 
@@ -1431,13 +1516,13 @@ export class AutomatedTestingSuite {
       gitlabCiCompatible: true,
       testReportFormat: 'junit',
       metricsExport: 'json',
-      failureCriteria: 'configurable'
+      failureCriteria: 'configurable',
     }
   }
 
   private generateRegressionSummary(tests: RegressionTest[]): string {
-    const regressions = tests.filter(t => t.hasRegression).length
-    const improvements = tests.filter(t => t.hasImprovement).length
+    const regressions = tests.filter((t) => t.hasRegression).length
+    const improvements = tests.filter((t) => t.hasImprovement).length
     const stable = tests.length - regressions - improvements
 
     return `Regression Analysis: ${regressions} regressions, ${improvements} improvements, ${stable} stable`
@@ -1445,25 +1530,25 @@ export class AutomatedTestingSuite {
 
   private determineMaxConcurrentUsers(tests: LoadTest[]): number {
     // Find the highest user count where success rate was >= 95%
-    const successfulTests = tests.filter(t => t.successRate >= 95)
-    return successfulTests.length > 0 ? Math.max(...successfulTests.map(t => t.users)) : 0
+    const successfulTests = tests.filter((t) => t.successRate >= 95)
+    return successfulTests.length > 0 ? Math.max(...successfulTests.map((t) => t.users)) : 0
   }
 
   private determineOptimalLoad(tests: LoadTest[]): number {
     // Find the sweet spot with good performance and high success rate
-    const optimalTests = tests.filter(t => t.successRate >= 98 && t.avgResponseTime < 1000)
-    return optimalTests.length > 0 ? Math.max(...optimalTests.map(t => t.users)) : 0
+    const optimalTests = tests.filter((t) => t.successRate >= 98 && t.avgResponseTime < 1000)
+    return optimalTests.length > 0 ? Math.max(...optimalTests.map((t) => t.users)) : 0
   }
 
   private determineBreakingPoint(tests: LoadTest[]): number {
     // Find where performance degrades significantly
-    const failingTests = tests.filter(t => t.successRate < 90 || t.avgResponseTime > 5000)
-    return failingTests.length > 0 ? Math.min(...failingTests.map(t => t.users)) : 0
+    const failingTests = tests.filter((t) => t.successRate < 90 || t.avgResponseTime > 5000)
+    return failingTests.length > 0 ? Math.min(...failingTests.map((t) => t.users)) : 0
   }
 
   private analyzeScalability(tests: LoadTest[]): string {
-    const lowLoadTest = tests.find(t => t.testName.includes('Low Load'))
-    const highLoadTest = tests.find(t => t.testName.includes('High Load'))
+    const lowLoadTest = tests.find((t) => t.testName.includes('Low Load'))
+    const highLoadTest = tests.find((t) => t.testName.includes('High Load'))
 
     if (!lowLoadTest || !highLoadTest) return 'insufficient-data'
 
@@ -1478,12 +1563,12 @@ export class AutomatedTestingSuite {
   private generateLoadTestRecommendations(tests: LoadTest[]): string[] {
     const recommendations: string[] = []
 
-    const stressTest = tests.find(t => t.testName.includes('Stress'))
+    const stressTest = tests.find((t) => t.testName.includes('Stress'))
     if (stressTest && stressTest.successRate < 90) {
       recommendations.push('Consider implementing load balancing for high-stress scenarios')
     }
 
-    const spikeTest = tests.find(t => t.testName.includes('Spike'))
+    const spikeTest = tests.find((t) => t.testName.includes('Spike'))
     if (spikeTest && spikeTest.avgResponseTime > 2000) {
       recommendations.push('Implement request queuing and rate limiting for spike handling')
     }
@@ -1492,7 +1577,7 @@ export class AutomatedTestingSuite {
   }
 
   private assessIntegrationHealth(tests: IntegrationTest[]): string {
-    const passedTests = tests.filter(t => t.status === 'passed').length
+    const passedTests = tests.filter((t) => t.status === 'passed').length
     const percentage = (passedTests / tests.length) * 100
 
     if (percentage >= 95) return 'excellent'
@@ -1502,51 +1587,54 @@ export class AutomatedTestingSuite {
   }
 
   private validateDataFlow(tests: IntegrationTest[]): boolean {
-    return tests.every(t => t.dataFlow && ['input', 'output', 'bidirectional'].includes(t.dataFlow))
+    return tests.every(
+      (t) => t.dataFlow && ['input', 'output', 'bidirectional'].includes(t.dataFlow)
+    )
   }
 
   private buildCompatibilityMatrix(tests: IntegrationTest[]): Record<string, string> {
     const matrix: Record<string, string> = {}
-    tests.forEach(test => {
+    tests.forEach((test) => {
       matrix[test.component] = test.apiCompatibility
     })
     return matrix
   }
 
   private assessMetricsAvailability(tests: MonitoringTest[]): string {
-    const metricsTest = tests.find(t => t.monitoringAspect === 'metrics')
+    const metricsTest = tests.find((t) => t.monitoringAspect === 'metrics')
     return metricsTest?.availability || 'unknown'
   }
 
   private assessAlertingEffectiveness(tests: MonitoringTest[]): string {
-    const alertingTest = tests.find(t => t.monitoringAspect === 'alerting')
+    const alertingTest = tests.find((t) => t.monitoringAspect === 'alerting')
     return alertingTest?.availability || 'unknown'
   }
 
   private assessLoggingQuality(tests: MonitoringTest[]): string {
-    const loggingTest = tests.find(t => t.monitoringAspect === 'logging')
+    const loggingTest = tests.find((t) => t.monitoringAspect === 'logging')
     return loggingTest?.dataQuality || 'unknown'
   }
 
   private assessDashboardUsability(tests: MonitoringTest[]): string {
-    const dashboardTest = tests.find(t => t.monitoringAspect === 'dashboard')
+    const dashboardTest = tests.find((t) => t.monitoringAspect === 'dashboard')
     return dashboardTest?.dataQuality || 'unknown'
   }
 
   private assessProductionReadiness(tests: MonitoringTest[]): ProductionReadiness {
-    const passedTests = tests.filter(t => t.status === 'passed').length
+    const passedTests = tests.filter((t) => t.status === 'passed').length
     const readinessScore = (passedTests / tests.length) * 100
 
     return {
       score: readinessScore,
-      status: readinessScore >= 90 ? 'ready' : readinessScore >= 70 ? 'needs-improvement' : 'not-ready',
+      status:
+        readinessScore >= 90 ? 'ready' : readinessScore >= 70 ? 'needs-improvement' : 'not-ready',
       checklist: {
         monitoring: readinessScore >= 90,
         logging: true,
         alerting: true,
         healthChecks: true,
-        documentation: true
-      }
+        documentation: true,
+      },
     }
   }
 }
@@ -1556,11 +1644,11 @@ export class AutomatedTestingSuite {
 // =============================================================================
 
 interface PerformanceMetrics {
-  responseTime: { min: number, max: number, avg: number, p95: number, p99: number }
-  throughput: { requestsPerSecond: number, peakRps: number }
-  errorRate: { percentage: number, totalErrors: number }
-  memoryUsage: { current: number, peak: number, average: number }
-  cpuUsage: { current: number, peak: number, average: number }
+  responseTime: { min: number; max: number; avg: number; p95: number; p99: number }
+  throughput: { requestsPerSecond: number; peakRps: number }
+  errorRate: { percentage: number; totalErrors: number }
+  memoryUsage: { current: number; peak: number; average: number }
+  cpuUsage: { current: number; peak: number; average: number }
 }
 
 interface RegressionBaseline {

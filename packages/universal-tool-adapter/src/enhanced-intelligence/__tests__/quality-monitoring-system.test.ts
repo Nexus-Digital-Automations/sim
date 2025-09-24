@@ -9,14 +9,11 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
-  EnhancedToolIntelligenceEngine,
-  ContextualRecommendationRequest,
-  UserSkillLevel,
-  createEnhancedToolIntelligenceEngine
+  createEnhancedToolIntelligenceEngine,
+  type EnhancedToolIntelligenceEngine,
 } from '../tool-intelligence-engine'
-import type { UsageContext } from '../../natural-language/usage-guidelines'
 
 // =============================================================================
 // Quality Monitoring System
@@ -78,7 +75,7 @@ export class QualityMonitoringSystem {
       systemHealth,
       dashboardData,
       recommendations: this.generateQualityRecommendations(currentMetrics, qualityAlerts),
-      nextMonitoringSchedule: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
+      nextMonitoringSchedule: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
     }
 
     console.log('✅ Quality Monitoring Complete')
@@ -129,8 +126,8 @@ export class QualityMonitoringSystem {
         errorHandling: errorHandlingMetrics,
         performance: performanceMetrics,
         userExperience: uxMetrics,
-        reliability: reliabilityMetrics
-      })
+        reliability: reliabilityMetrics,
+      }),
     }
   }
 
@@ -151,7 +148,8 @@ export class QualityMonitoringSystem {
       currentValue: currentMetrics.recommendation.accuracy,
       previousValue: currentMetrics.recommendation.accuracy - 2.3,
       significance: 'positive',
-      analysis: 'Recommendation accuracy has improved by 2.3% over the past week due to enhanced NLP processing'
+      analysis:
+        'Recommendation accuracy has improved by 2.3% over the past week due to enhanced NLP processing',
     })
 
     // Analyze response time trend
@@ -163,7 +161,7 @@ export class QualityMonitoringSystem {
       currentValue: currentMetrics.performance.responseTime.average,
       previousValue: currentMetrics.performance.responseTime.average + 0.1,
       significance: 'neutral',
-      analysis: 'Response times remain stable with minimal fluctuation'
+      analysis: 'Response times remain stable with minimal fluctuation',
     })
 
     // Analyze error rate trend
@@ -175,7 +173,7 @@ export class QualityMonitoringSystem {
       currentValue: currentMetrics.errorHandling.errorRate,
       previousValue: currentMetrics.errorHandling.errorRate - 1.2,
       significance: 'negative',
-      analysis: 'Error rate has increased by 1.2%, requires investigation'
+      analysis: 'Error rate has increased by 1.2%, requires investigation',
     })
 
     // Analyze user satisfaction trend
@@ -187,7 +185,7 @@ export class QualityMonitoringSystem {
       currentValue: currentMetrics.userExperience.satisfactionScore,
       previousValue: currentMetrics.userExperience.satisfactionScore - 5.7,
       significance: 'positive',
-      analysis: 'User satisfaction has significantly improved following UX enhancements'
+      analysis: 'User satisfaction has significantly improved following UX enhancements',
     })
 
     return trends
@@ -202,7 +200,10 @@ export class QualityMonitoringSystem {
     const alerts: QualityAlert[] = []
 
     // Check recommendation accuracy threshold
-    if (currentMetrics.recommendation.accuracy < this.qualityThresholds.recommendation.accuracy.critical) {
+    if (
+      currentMetrics.recommendation.accuracy <
+      this.qualityThresholds.recommendation.accuracy.critical
+    ) {
       alerts.push({
         id: 'REC_001',
         severity: 'critical',
@@ -215,12 +216,15 @@ export class QualityMonitoringSystem {
         suggestedActions: [
           'Review and retrain recommendation models',
           'Analyze user feedback for recommendation quality',
-          'Check for data drift in user behavior patterns'
+          'Check for data drift in user behavior patterns',
         ],
         timestamp: new Date(),
-        isResolved: false
+        isResolved: false,
       })
-    } else if (currentMetrics.recommendation.accuracy < this.qualityThresholds.recommendation.accuracy.warning) {
+    } else if (
+      currentMetrics.recommendation.accuracy <
+      this.qualityThresholds.recommendation.accuracy.warning
+    ) {
       alerts.push({
         id: 'REC_002',
         severity: 'warning',
@@ -233,15 +237,18 @@ export class QualityMonitoringSystem {
         suggestedActions: [
           'Monitor recommendation patterns',
           'Review recent model updates',
-          'Analyze user feedback trends'
+          'Analyze user feedback trends',
         ],
         timestamp: new Date(),
-        isResolved: false
+        isResolved: false,
       })
     }
 
     // Check response time threshold
-    if (currentMetrics.performance.responseTime.average > this.qualityThresholds.performance.responseTime.critical) {
+    if (
+      currentMetrics.performance.responseTime.average >
+      this.qualityThresholds.performance.responseTime.critical
+    ) {
       alerts.push({
         id: 'PERF_001',
         severity: 'critical',
@@ -255,15 +262,18 @@ export class QualityMonitoringSystem {
           'Investigate performance bottlenecks',
           'Review system resource utilization',
           'Consider scaling infrastructure',
-          'Optimize critical code paths'
+          'Optimize critical code paths',
         ],
         timestamp: new Date(),
-        isResolved: false
+        isResolved: false,
       })
     }
 
     // Check error rate threshold
-    if (currentMetrics.errorHandling.errorRate > this.qualityThresholds.errorHandling.errorRate.warning) {
+    if (
+      currentMetrics.errorHandling.errorRate >
+      this.qualityThresholds.errorHandling.errorRate.warning
+    ) {
       alerts.push({
         id: 'ERR_001',
         severity: 'warning',
@@ -277,15 +287,18 @@ export class QualityMonitoringSystem {
           'Analyze error patterns and root causes',
           'Review recent code changes',
           'Improve error handling mechanisms',
-          'Enhance error prevention measures'
+          'Enhance error prevention measures',
         ],
         timestamp: new Date(),
-        isResolved: false
+        isResolved: false,
       })
     }
 
     // Check user satisfaction threshold
-    if (currentMetrics.userExperience.satisfactionScore < this.qualityThresholds.userExperience.satisfaction.warning) {
+    if (
+      currentMetrics.userExperience.satisfactionScore <
+      this.qualityThresholds.userExperience.satisfaction.warning
+    ) {
       alerts.push({
         id: 'UX_001',
         severity: 'warning',
@@ -299,10 +312,10 @@ export class QualityMonitoringSystem {
           'Conduct user experience research',
           'Review and improve user interfaces',
           'Analyze user feedback and complaints',
-          'Implement UX improvements based on data'
+          'Implement UX improvements based on data',
         ],
         timestamp: new Date(),
-        isResolved: false
+        isResolved: false,
       })
     }
 
@@ -318,12 +331,16 @@ export class QualityMonitoringSystem {
     const scores: QualityScores = {
       overall: 0,
       categories: {
-        recommendation: this.qualityAnalyzer.calculateRecommendationScore(currentMetrics.recommendation),
+        recommendation: this.qualityAnalyzer.calculateRecommendationScore(
+          currentMetrics.recommendation
+        ),
         naturalLanguage: this.qualityAnalyzer.calculateNLPScore(currentMetrics.nlp),
-        errorHandling: this.qualityAnalyzer.calculateErrorHandlingScore(currentMetrics.errorHandling),
+        errorHandling: this.qualityAnalyzer.calculateErrorHandlingScore(
+          currentMetrics.errorHandling
+        ),
         performance: this.qualityAnalyzer.calculatePerformanceScore(currentMetrics.performance),
         userExperience: this.qualityAnalyzer.calculateUXScore(currentMetrics.userExperience),
-        reliability: this.qualityAnalyzer.calculateReliabilityScore(currentMetrics.reliability)
+        reliability: this.qualityAnalyzer.calculateReliabilityScore(currentMetrics.reliability),
       },
       weightedScores: {
         recommendation: 0,
@@ -331,7 +348,7 @@ export class QualityMonitoringSystem {
         errorHandling: 0,
         performance: 0,
         userExperience: 0,
-        reliability: 0
+        reliability: 0,
       },
       qualityGrades: {
         recommendation: 'A',
@@ -339,22 +356,23 @@ export class QualityMonitoringSystem {
         errorHandling: 'B+',
         performance: 'A',
         userExperience: 'A-',
-        reliability: 'A'
-      }
+        reliability: 'A',
+      },
     }
 
     // Calculate weighted scores based on business importance
     const weights = {
       recommendation: 0.25,
-      naturalLanguage: 0.20,
+      naturalLanguage: 0.2,
       errorHandling: 0.15,
-      performance: 0.20,
+      performance: 0.2,
       userExperience: 0.15,
-      reliability: 0.05
+      reliability: 0.05,
     }
 
     scores.weightedScores.recommendation = scores.categories.recommendation * weights.recommendation
-    scores.weightedScores.naturalLanguage = scores.categories.naturalLanguage * weights.naturalLanguage
+    scores.weightedScores.naturalLanguage =
+      scores.categories.naturalLanguage * weights.naturalLanguage
     scores.weightedScores.errorHandling = scores.categories.errorHandling * weights.errorHandling
     scores.weightedScores.performance = scores.categories.performance * weights.performance
     scores.weightedScores.userExperience = scores.categories.userExperience * weights.userExperience
@@ -380,25 +398,25 @@ export class QualityMonitoringSystem {
       status: currentMetrics.recommendation.accuracy >= 80 ? 'healthy' : 'degraded',
       score: currentMetrics.recommendation.accuracy,
       lastCheck: new Date(),
-      issues: currentMetrics.recommendation.accuracy < 80 ? ['Low accuracy detected'] : []
+      issues: currentMetrics.recommendation.accuracy < 80 ? ['Low accuracy detected'] : [],
     })
 
     // Performance health
     healthChecks.push({
       component: 'performance',
       status: currentMetrics.performance.responseTime.average <= 1000 ? 'healthy' : 'degraded',
-      score: Math.max(0, 100 - (currentMetrics.performance.responseTime.average / 10)),
+      score: Math.max(0, 100 - currentMetrics.performance.responseTime.average / 10),
       lastCheck: new Date(),
-      issues: currentMetrics.performance.responseTime.average > 1000 ? ['High response times'] : []
+      issues: currentMetrics.performance.responseTime.average > 1000 ? ['High response times'] : [],
     })
 
     // Error handling health
     healthChecks.push({
       component: 'error_handling',
       status: currentMetrics.errorHandling.errorRate <= 5 ? 'healthy' : 'unhealthy',
-      score: Math.max(0, 100 - (currentMetrics.errorHandling.errorRate * 10)),
+      score: Math.max(0, 100 - currentMetrics.errorHandling.errorRate * 10),
       lastCheck: new Date(),
-      issues: currentMetrics.errorHandling.errorRate > 5 ? ['High error rate'] : []
+      issues: currentMetrics.errorHandling.errorRate > 5 ? ['High error rate'] : [],
     })
 
     // User experience health
@@ -407,21 +425,23 @@ export class QualityMonitoringSystem {
       status: currentMetrics.userExperience.satisfactionScore >= 4.0 ? 'healthy' : 'degraded',
       score: (currentMetrics.userExperience.satisfactionScore / 5) * 100,
       lastCheck: new Date(),
-      issues: currentMetrics.userExperience.satisfactionScore < 4.0 ? ['Low user satisfaction'] : []
+      issues:
+        currentMetrics.userExperience.satisfactionScore < 4.0 ? ['Low user satisfaction'] : [],
     })
 
-    const healthyComponents = healthChecks.filter(check => check.status === 'healthy').length
+    const healthyComponents = healthChecks.filter((check) => check.status === 'healthy').length
     const totalComponents = healthChecks.length
     const overallHealth = (healthyComponents / totalComponents) * 100
 
     return {
-      overallStatus: overallHealth >= 80 ? 'healthy' : overallHealth >= 60 ? 'degraded' : 'unhealthy',
+      overallStatus:
+        overallHealth >= 80 ? 'healthy' : overallHealth >= 60 ? 'degraded' : 'unhealthy',
       overallScore: overallHealth,
       componentHealth: healthChecks,
-      criticalIssues: healthChecks.filter(check => check.status === 'unhealthy').length,
-      warnings: healthChecks.filter(check => check.status === 'degraded').length,
+      criticalIssues: healthChecks.filter((check) => check.status === 'unhealthy').length,
+      warnings: healthChecks.filter((check) => check.status === 'degraded').length,
       lastHealthCheck: new Date(),
-      nextHealthCheck: new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
+      nextHealthCheck: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
     }
   }
 
@@ -443,34 +463,34 @@ export class QualityMonitoringSystem {
       recommendation: {
         accuracy: { warning: 85, critical: 75 },
         relevance: { warning: 80, critical: 70 },
-        diversity: { warning: 70, critical: 60 }
+        diversity: { warning: 70, critical: 60 },
       },
       performance: {
         responseTime: { warning: 1000, critical: 2000 },
         throughput: { warning: 100, critical: 50 },
-        memoryUsage: { warning: 80, critical: 90 }
+        memoryUsage: { warning: 80, critical: 90 },
       },
       errorHandling: {
         errorRate: { warning: 3, critical: 5 },
         recoveryRate: { warning: 80, critical: 70 },
-        resolutionTime: { warning: 300, critical: 600 }
+        resolutionTime: { warning: 300, critical: 600 },
       },
       userExperience: {
         satisfaction: { warning: 4.0, critical: 3.5 },
         taskCompletion: { warning: 85, critical: 75 },
-        timeToValue: { warning: 300, critical: 600 }
-      }
+        timeToValue: { warning: 300, critical: 600 },
+      },
     }
   }
 
   private calculateAggregatedScore(metrics: any): number {
     const weights = {
       recommendation: 0.25,
-      nlp: 0.20,
+      nlp: 0.2,
       errorHandling: 0.15,
-      performance: 0.20,
+      performance: 0.2,
       userExperience: 0.15,
-      reliability: 0.05
+      reliability: 0.05,
     }
 
     return (
@@ -483,7 +503,10 @@ export class QualityMonitoringSystem {
     )
   }
 
-  private generateQualityRecommendations(metrics: QualityMetrics, alerts: QualityAlert[]): QualityRecommendation[] {
+  private generateQualityRecommendations(
+    metrics: QualityMetrics,
+    alerts: QualityAlert[]
+  ): QualityRecommendation[] {
     const recommendations: QualityRecommendation[] = []
 
     // Generate recommendations based on alerts
@@ -495,7 +518,7 @@ export class QualityMonitoringSystem {
         description: alert.suggestedActions[0],
         expectedImpact: this.estimateImpact(alert.category),
         estimatedEffort: this.estimateEffort(alert.severity),
-        relatedMetrics: [alert.category]
+        relatedMetrics: [alert.category],
       })
     }
 
@@ -508,11 +531,14 @@ export class QualityMonitoringSystem {
         description: 'Fine-tune recommendation models to achieve >90% accuracy',
         expectedImpact: 'Improve user satisfaction by 10-15%',
         estimatedEffort: 'medium',
-        relatedMetrics: ['recommendation_accuracy', 'user_satisfaction']
+        relatedMetrics: ['recommendation_accuracy', 'user_satisfaction'],
       })
     }
 
-    if (metrics.performance.responseTime.average > 500 && metrics.performance.responseTime.average <= 1000) {
+    if (
+      metrics.performance.responseTime.average > 500 &&
+      metrics.performance.responseTime.average <= 1000
+    ) {
       recommendations.push({
         priority: 'medium',
         category: 'performance',
@@ -520,7 +546,7 @@ export class QualityMonitoringSystem {
         description: 'Optimize response times to achieve sub-500ms performance',
         expectedImpact: 'Improve user experience and system throughput',
         estimatedEffort: 'high',
-        relatedMetrics: ['response_time', 'throughput']
+        relatedMetrics: ['response_time', 'throughput'],
       })
     }
 
@@ -532,7 +558,7 @@ export class QualityMonitoringSystem {
       recommendation: 'High impact on user productivity and satisfaction',
       performance: 'Significant impact on user experience and system scalability',
       error_handling: 'Medium impact on system reliability and user trust',
-      user_experience: 'High impact on user retention and engagement'
+      user_experience: 'High impact on user retention and engagement',
     }
 
     return impactMap[category as keyof typeof impactMap] || 'Impact varies by implementation'
@@ -542,7 +568,7 @@ export class QualityMonitoringSystem {
     const effortMap = {
       critical: 'high' as const,
       warning: 'medium' as const,
-      info: 'low' as const
+      info: 'low' as const,
     }
 
     return effortMap[severity as keyof typeof effortMap] || 'medium'
@@ -563,7 +589,7 @@ class MetricsCollector {
       responseTime: 245,
       userSatisfactionWithRecommendations: 4.2,
       clickThroughRate: 34.7,
-      conversionRate: 12.8
+      conversionRate: 12.8,
     }
   }
 
@@ -575,7 +601,7 @@ class MetricsCollector {
       entityExtraction: 93.4,
       contextRetention: 85.9,
       languageCoverage: 92.1,
-      processingSpeed: 89
+      processingSpeed: 89,
     }
   }
 
@@ -587,7 +613,7 @@ class MetricsCollector {
       averageResolutionTime: 187,
       errorCategorization: 94.3,
       userSatisfactionWithErrorHandling: 3.8,
-      preventionEffectiveness: 82.1
+      preventionEffectiveness: 82.1,
     }
   }
 
@@ -598,19 +624,19 @@ class MetricsCollector {
         average: 423,
         p50: 387,
         p95: 756,
-        p99: 1243
+        p99: 1243,
       },
       throughput: {
         requestsPerSecond: 147,
-        peakRps: 312
+        peakRps: 312,
       },
       resourceUtilization: {
         cpu: 34.7,
         memory: 67.2,
-        disk: 23.4
+        disk: 23.4,
       },
       scalability: 88.9,
-      reliability: 99.2
+      reliability: 99.2,
     }
   }
 
@@ -623,7 +649,7 @@ class MetricsCollector {
       discoverabilityScore: 82.7,
       usabilityScore: 87.1,
       accessibilityScore: 79.3,
-      npsScore: 52
+      npsScore: 52,
     }
   }
 
@@ -633,10 +659,10 @@ class MetricsCollector {
       uptime: 99.8,
       availability: 99.9,
       mtbf: 720, // Mean time between failures in hours
-      mttr: 23,  // Mean time to recovery in minutes
+      mttr: 23, // Mean time to recovery in minutes
       dataIntegrity: 99.95,
       backupSuccess: 100,
-      failoverSuccess: 95.2
+      failoverSuccess: 95.2,
     }
   }
 }
@@ -649,10 +675,10 @@ class QualityAnalyzer {
       diversity: 0.15,
       responseTime: 0.1,
       satisfaction: 0.15,
-      conversionRate: 0.05
+      conversionRate: 0.05,
     }
 
-    const normalizedResponseTime = Math.max(0, 100 - (metrics.responseTime / 10))
+    const normalizedResponseTime = Math.max(0, 100 - metrics.responseTime / 10)
     const normalizedSatisfaction = (metrics.userSatisfactionWithRecommendations / 5) * 100
 
     return (
@@ -672,7 +698,7 @@ class QualityAnalyzer {
       entityExtraction: 0.2,
       contextRetention: 0.15,
       languageCoverage: 0.1,
-      processingSpeed: 0.05
+      processingSpeed: 0.05,
     }
 
     return (
@@ -692,11 +718,11 @@ class QualityAnalyzer {
       resolutionTime: 0.2,
       categorization: 0.1,
       satisfaction: 0.1,
-      prevention: 0.05
+      prevention: 0.05,
     }
 
-    const normalizedErrorRate = Math.max(0, 100 - (metrics.errorRate * 5))
-    const normalizedResolutionTime = Math.max(0, 100 - (metrics.averageResolutionTime / 5))
+    const normalizedErrorRate = Math.max(0, 100 - metrics.errorRate * 5)
+    const normalizedResolutionTime = Math.max(0, 100 - metrics.averageResolutionTime / 5)
     const normalizedSatisfaction = (metrics.userSatisfactionWithErrorHandling / 5) * 100
 
     return (
@@ -715,12 +741,15 @@ class QualityAnalyzer {
       throughput: 0.25,
       resourceUtilization: 0.2,
       scalability: 0.15,
-      reliability: 0.05
+      reliability: 0.05,
     }
 
-    const normalizedResponseTime = Math.max(0, 100 - (metrics.responseTime.average / 20))
+    const normalizedResponseTime = Math.max(0, 100 - metrics.responseTime.average / 20)
     const normalizedThroughput = Math.min(100, metrics.throughput.requestsPerSecond / 2)
-    const normalizedResourceUsage = Math.max(0, 100 - Math.max(metrics.resourceUtilization.cpu, metrics.resourceUtilization.memory))
+    const normalizedResourceUsage = Math.max(
+      0,
+      100 - Math.max(metrics.resourceUtilization.cpu, metrics.resourceUtilization.memory)
+    )
 
     return (
       normalizedResponseTime * weights.responseTime +
@@ -738,11 +767,11 @@ class QualityAnalyzer {
       timeToValue: 0.15,
       discoverability: 0.15,
       usability: 0.1,
-      accessibility: 0.05
+      accessibility: 0.05,
     }
 
     const normalizedSatisfaction = (metrics.satisfactionScore / 5) * 100
-    const normalizedTimeToValue = Math.max(0, 100 - (metrics.timeToValue / 10))
+    const normalizedTimeToValue = Math.max(0, 100 - metrics.timeToValue / 10)
 
     return (
       normalizedSatisfaction * weights.satisfaction +
@@ -761,11 +790,11 @@ class QualityAnalyzer {
       mtbf: 0.2,
       mttr: 0.1,
       dataIntegrity: 0.1,
-      backupSuccess: 0.05
+      backupSuccess: 0.05,
     }
 
     const normalizedMTBF = Math.min(100, metrics.mtbf / 10)
-    const normalizedMTTR = Math.max(0, 100 - (metrics.mttr / 2))
+    const normalizedMTTR = Math.max(0, 100 - metrics.mttr / 2)
 
     return (
       metrics.uptime * weights.uptime +
@@ -795,16 +824,21 @@ class DashboardGenerator {
     return {
       overview: {
         overallScore: metrics.aggregatedScore,
-        status: metrics.aggregatedScore >= 85 ? 'excellent' : metrics.aggregatedScore >= 70 ? 'good' : 'needs-improvement',
+        status:
+          metrics.aggregatedScore >= 85
+            ? 'excellent'
+            : metrics.aggregatedScore >= 70
+              ? 'good'
+              : 'needs-improvement',
         trendsLast24h: 'improving',
-        activeAlerts: 2
+        activeAlerts: 2,
       },
       charts: [
         {
           type: 'line',
           title: 'Quality Score Over Time',
           data: this.generateTimeSeriesData('quality_score', 24),
-          config: { yAxis: { min: 0, max: 100 } }
+          config: { yAxis: { min: 0, max: 100 } },
         },
         {
           type: 'bar',
@@ -814,9 +848,9 @@ class DashboardGenerator {
             { name: 'NLP', value: 91.2 },
             { name: 'Performance', value: 84.6 },
             { name: 'UX', value: 86.8 },
-            { name: 'Reliability', value: 99.2 }
+            { name: 'Reliability', value: 99.2 },
           ],
-          config: { yAxis: { min: 0, max: 100 } }
+          config: { yAxis: { min: 0, max: 100 } },
         },
         {
           type: 'gauge',
@@ -826,10 +860,10 @@ class DashboardGenerator {
             thresholds: [
               { value: 70, color: 'red' },
               { value: 85, color: 'yellow' },
-              { value: 100, color: 'green' }
-            ]
-          }
-        }
+              { value: 100, color: 'green' },
+            ],
+          },
+        },
       ],
       widgets: [
         {
@@ -838,7 +872,7 @@ class DashboardGenerator {
           value: metrics.recommendation.accuracy,
           unit: '%',
           trend: 'up',
-          trendValue: 2.3
+          trendValue: 2.3,
         },
         {
           type: 'metric',
@@ -846,7 +880,7 @@ class DashboardGenerator {
           value: metrics.performance.responseTime.average,
           unit: 'ms',
           trend: 'stable',
-          trendValue: 0.1
+          trendValue: 0.1,
         },
         {
           type: 'metric',
@@ -854,7 +888,7 @@ class DashboardGenerator {
           value: metrics.userExperience.satisfactionScore,
           unit: '/5',
           trend: 'up',
-          trendValue: 0.2
+          trendValue: 0.2,
         },
         {
           type: 'metric',
@@ -862,8 +896,8 @@ class DashboardGenerator {
           value: metrics.errorHandling.errorRate,
           unit: '%',
           trend: 'down',
-          trendValue: -0.5
-        }
+          trendValue: -0.5,
+        },
       ],
       tables: [
         {
@@ -871,25 +905,28 @@ class DashboardGenerator {
           columns: ['Severity', 'Category', 'Title', 'Time'],
           data: [
             ['Warning', 'Performance', 'Response time increasing', '2 hours ago'],
-            ['Info', 'UX', 'Accessibility score improved', '5 hours ago']
-          ]
-        }
-      ]
+            ['Info', 'UX', 'Accessibility score improved', '5 hours ago'],
+          ],
+        },
+      ],
     }
   }
 
-  private generateTimeSeriesData(metric: string, hours: number): Array<{ timestamp: Date, value: number }> {
-    const data: Array<{ timestamp: Date, value: number }> = []
+  private generateTimeSeriesData(
+    metric: string,
+    hours: number
+  ): Array<{ timestamp: Date; value: number }> {
+    const data: Array<{ timestamp: Date; value: number }> = []
     const now = new Date()
 
     for (let i = hours; i >= 0; i--) {
-      const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000))
+      const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000)
       const baseValue = 85
       const variation = Math.sin(i / 4) * 5 + Math.random() * 3
 
       data.push({
         timestamp,
-        value: Math.max(0, Math.min(100, baseValue + variation))
+        value: Math.max(0, Math.min(100, baseValue + variation)),
       })
     }
 
@@ -1101,24 +1138,24 @@ interface DashboardTable {
 
 interface QualityThresholds {
   recommendation: {
-    accuracy: { warning: number, critical: number }
-    relevance: { warning: number, critical: number }
-    diversity: { warning: number, critical: number }
+    accuracy: { warning: number; critical: number }
+    relevance: { warning: number; critical: number }
+    diversity: { warning: number; critical: number }
   }
   performance: {
-    responseTime: { warning: number, critical: number }
-    throughput: { warning: number, critical: number }
-    memoryUsage: { warning: number, critical: number }
+    responseTime: { warning: number; critical: number }
+    throughput: { warning: number; critical: number }
+    memoryUsage: { warning: number; critical: number }
   }
   errorHandling: {
-    errorRate: { warning: number, critical: number }
-    recoveryRate: { warning: number, critical: number }
-    resolutionTime: { warning: number, critical: number }
+    errorRate: { warning: number; critical: number }
+    recoveryRate: { warning: number; critical: number }
+    resolutionTime: { warning: number; critical: number }
   }
   userExperience: {
-    satisfaction: { warning: number, critical: number }
-    taskCompletion: { warning: number, critical: number }
-    timeToValue: { warning: number, critical: number }
+    satisfaction: { warning: number; critical: number }
+    taskCompletion: { warning: number; critical: number }
+    timeToValue: { warning: number; critical: number }
   }
 }
 
@@ -1183,7 +1220,7 @@ describe('Quality Monitoring System', () => {
     expect(trends).toBeInstanceOf(Array)
     expect(trends.length).toBeGreaterThan(0)
 
-    trends.forEach(trend => {
+    trends.forEach((trend) => {
       expect(trend.metric).toBeDefined()
       expect(trend.direction).toMatch(/improving|stable|degrading/)
       expect(trend.significance).toMatch(/positive|neutral|negative/)
@@ -1196,7 +1233,7 @@ describe('Quality Monitoring System', () => {
 
     expect(alerts).toBeInstanceOf(Array)
 
-    alerts.forEach(alert => {
+    alerts.forEach((alert) => {
       expect(alert.id).toBeDefined()
       expect(alert.severity).toMatch(/critical|warning|info/)
       expect(alert.category).toBeDefined()

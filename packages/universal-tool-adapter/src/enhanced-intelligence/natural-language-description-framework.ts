@@ -19,9 +19,8 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
-import type { NaturalLanguageConfig } from '../types/adapter-interfaces'
 import { DescriptionGenerator } from '../natural-language/description-generator'
+import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('NaturalLanguageDescriptionFramework')
@@ -415,11 +414,7 @@ export type UserRole =
   | 'designer'
   | 'qa_tester'
 
-export type SkillLevel =
-  | 'beginner'
-  | 'intermediate'
-  | 'advanced'
-  | 'expert'
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert'
 
 export type ContextType =
   | 'workflow'
@@ -491,44 +486,186 @@ export interface TroubleshootingGuide {
 }
 
 // Simplified supporting interfaces for brevity
-export interface IntegrationInfo { integratedWith: string[]; apiEndpoints: string[] }
-export interface ExtensibilityInfo { extensionPoints: string[]; customization: string[] }
-export interface WorkflowSpecificDescription { workflowType: string; description: string }
-export interface SituationalDescription { situation: string; adaptation: string }
-export interface BestPractice { title: string; description: string; rationale: string }
-export interface CommonPitfall { pitfall: string; prevention: string; recovery: string }
-export interface OptimizationTip { area: string; tip: string; impact: string }
-export interface RelatedWorkflow { name: string; relationship: string; integration: string }
-export interface QuickAction { action: string; description: string; trigger: string }
-export interface DynamicHelpElement { trigger: string; content: string; priority: number }
-export interface ProgressTracker { milestones: string[]; currentProgress: number }
-export interface VariationPoint { parameter: string; options: string[]; impact: string }
-export interface UserPreferences { preferredStyle: string; verbosity: string; examples: boolean }
-export interface ContentFilter { filterType: string; criteria: string; action: string }
-export interface PresentationSettings { format: string; layout: string; interactivity: boolean }
-export interface LearningProgressTracker { completedTasks: string[]; skillLevel: SkillLevel }
-export interface UsageAnalytics { usageCount: number; successRate: number; averageTime: number }
-export interface ToolRecommendationEngine { algorithm: string; weightings: Record<string, number> }
-export interface DynamicContentSettings { enabled: boolean; updateFrequency: string }
-export interface CompletenessScore { overall: number; sections: Record<string, number> }
-export interface UserFeedbackSummary { averageRating: number; commonSuggestions: string[] }
-export interface ExpertReviewSummary { reviewScore: number; recommendations: string[] }
-export interface QualityCheckResult { checkType: string; passed: boolean; details: string }
-export interface FreshnessIndicators { lastUpdated: Date; contentAge: number; needsUpdate: boolean }
-export interface VersionHistoryEntry { version: string; date: Date; changes: string[] }
-export interface ChangeLogEntry { date: Date; change: string; author: string; reason: string }
-export interface ApprovalStatus { status: string; approver: string; date: Date; comments: string }
-export interface PublicationInfo { publishedDate: Date; publisher: string; audience: string }
-export interface PerformanceMetric { average: number; p95: number; p99: number }
-export interface ResourceUsageProfile { cpu: number; memory: number; network: number }
-export interface ScalabilityLimits { maxConcurrentUsers: number; maxDataSize: number }
-export interface CommonIssue { issue: string; symptoms: string[]; commonCauses: string[] }
-export interface DiagnosticStep { step: string; command: string; expectedResult: string }
-export interface ResolutionProcedure { procedure: string; steps: string[]; verification: string }
-export interface EscalationPath { level: string; contact: string; criteria: string }
-export interface AdvancedOption { name: string; description: string; useCase: string }
-export interface CustomizationPoint { point: string; options: string[]; impact: string }
-export interface ExtensionMechanism { mechanism: string; description: string; examples: string[] }
+export interface IntegrationInfo {
+  integratedWith: string[]
+  apiEndpoints: string[]
+}
+export interface ExtensibilityInfo {
+  extensionPoints: string[]
+  customization: string[]
+}
+export interface WorkflowSpecificDescription {
+  workflowType: string
+  description: string
+}
+export interface SituationalDescription {
+  situation: string
+  adaptation: string
+}
+export interface BestPractice {
+  title: string
+  description: string
+  rationale: string
+}
+export interface CommonPitfall {
+  pitfall: string
+  prevention: string
+  recovery: string
+}
+export interface OptimizationTip {
+  area: string
+  tip: string
+  impact: string
+}
+export interface RelatedWorkflow {
+  name: string
+  relationship: string
+  integration: string
+}
+export interface QuickAction {
+  action: string
+  description: string
+  trigger: string
+}
+export interface DynamicHelpElement {
+  trigger: string
+  content: string
+  priority: number
+}
+export interface ProgressTracker {
+  milestones: string[]
+  currentProgress: number
+}
+export interface VariationPoint {
+  parameter: string
+  options: string[]
+  impact: string
+}
+export interface UserPreferences {
+  preferredStyle: string
+  verbosity: string
+  examples: boolean
+}
+export interface ContentFilter {
+  filterType: string
+  criteria: string
+  action: string
+}
+export interface PresentationSettings {
+  format: string
+  layout: string
+  interactivity: boolean
+}
+export interface LearningProgressTracker {
+  completedTasks: string[]
+  skillLevel: SkillLevel
+}
+export interface UsageAnalytics {
+  usageCount: number
+  successRate: number
+  averageTime: number
+}
+export interface ToolRecommendationEngine {
+  algorithm: string
+  weightings: Record<string, number>
+}
+export interface DynamicContentSettings {
+  enabled: boolean
+  updateFrequency: string
+}
+export interface CompletenessScore {
+  overall: number
+  sections: Record<string, number>
+}
+export interface UserFeedbackSummary {
+  averageRating: number
+  commonSuggestions: string[]
+}
+export interface ExpertReviewSummary {
+  reviewScore: number
+  recommendations: string[]
+}
+export interface QualityCheckResult {
+  checkType: string
+  passed: boolean
+  details: string
+}
+export interface FreshnessIndicators {
+  lastUpdated: Date
+  contentAge: number
+  needsUpdate: boolean
+}
+export interface VersionHistoryEntry {
+  version: string
+  date: Date
+  changes: string[]
+}
+export interface ChangeLogEntry {
+  date: Date
+  change: string
+  author: string
+  reason: string
+}
+export interface ApprovalStatus {
+  status: string
+  approver: string
+  date: Date
+  comments: string
+}
+export interface PublicationInfo {
+  publishedDate: Date
+  publisher: string
+  audience: string
+}
+export interface PerformanceMetric {
+  average: number
+  p95: number
+  p99: number
+}
+export interface ResourceUsageProfile {
+  cpu: number
+  memory: number
+  network: number
+}
+export interface ScalabilityLimits {
+  maxConcurrentUsers: number
+  maxDataSize: number
+}
+export interface CommonIssue {
+  issue: string
+  symptoms: string[]
+  commonCauses: string[]
+}
+export interface DiagnosticStep {
+  step: string
+  command: string
+  expectedResult: string
+}
+export interface ResolutionProcedure {
+  procedure: string
+  steps: string[]
+  verification: string
+}
+export interface EscalationPath {
+  level: string
+  contact: string
+  criteria: string
+}
+export interface AdvancedOption {
+  name: string
+  description: string
+  useCase: string
+}
+export interface CustomizationPoint {
+  point: string
+  options: string[]
+  impact: string
+}
+export interface ExtensionMechanism {
+  mechanism: string
+  description: string
+  examples: string[]
+}
 
 // =============================================================================
 // Natural Language Description Framework Engine
@@ -612,7 +749,7 @@ export class NaturalLanguageDescriptionFramework {
         interactiveElements,
         adaptiveFeatures,
         qualityMetadata,
-        versionInfo
+        versionInfo,
       }
 
       // Store in registry for future access
@@ -620,7 +757,6 @@ export class NaturalLanguageDescriptionFramework {
 
       logger.info(`Enhanced description generated for tool: ${toolConfig.id}`)
       return enhancedSchema
-
     } catch (error) {
       logger.error(`Failed to generate enhanced description for ${toolConfig.id}:`, error)
       throw error
@@ -668,7 +804,7 @@ export class NaturalLanguageDescriptionFramework {
           schema,
           relevanceScore,
           matchingElements: await this.identifyMatchingElements(query, schema),
-          contextualReasons: await this.generateContextualReasons(query, schema, searchContext)
+          contextualReasons: await this.generateContextualReasons(query, schema, searchContext),
         })
       }
     }
@@ -708,10 +844,7 @@ export class NaturalLanguageDescriptionFramework {
     const updatedSchema = await this.applyUpdates(existingSchema, updates)
 
     // Update version info
-    updatedSchema.versionInfo = this.updateVersionInfo(
-      existingSchema.versionInfo,
-      updateMetadata
-    )
+    updatedSchema.versionInfo = this.updateVersionInfo(existingSchema.versionInfo, updateMetadata)
 
     // Re-validate quality
     updatedSchema.qualityMetadata = await this.assessQuality(
@@ -744,7 +877,7 @@ export class NaturalLanguageDescriptionFramework {
       brief,
       detailed,
       expert,
-      contextual
+      contextual,
     }
   }
 
@@ -760,7 +893,7 @@ export class NaturalLanguageDescriptionFramework {
       primaryUseCase: keyInfo.primaryUseCase,
       keyCapability: keyInfo.keyCapability,
       complexityLevel: this.assessComplexity(toolConfig),
-      quickTags: keyInfo.quickTags
+      quickTags: keyInfo.quickTags,
     }
   }
 
@@ -778,7 +911,7 @@ export class NaturalLanguageDescriptionFramework {
       workingPrinciple: analysisResult.workingPrinciple,
       benefits: analysisResult.benefits,
       limitations: analysisResult.limitations,
-      integrationInfo: await this.analyzeIntegrationCapabilities(toolConfig)
+      integrationInfo: await this.analyzeIntegrationCapabilities(toolConfig),
     }
   }
 
@@ -793,7 +926,7 @@ export class NaturalLanguageDescriptionFramework {
       performanceProfile: await this.analyzePerformanceCharacteristics(toolConfig),
       securityProfile: await this.analyzeSecurityAspects(toolConfig),
       troubleshooting: await this.generateTroubleshootingGuide(toolConfig),
-      extensibilityInfo: await this.analyzeExtensibilityOptions(toolConfig)
+      extensibilityInfo: await this.analyzeExtensibilityOptions(toolConfig),
     }
   }
 
@@ -807,7 +940,7 @@ export class NaturalLanguageDescriptionFramework {
       skillAdaptations: await this.generateSkillAdaptations(toolConfig, descriptions),
       domainAdaptations: await this.generateDomainAdaptations(toolConfig, descriptions),
       workflowAdaptations: await this.generateWorkflowAdaptations(toolConfig, descriptions),
-      situationalAdaptations: await this.generateSituationalAdaptations(toolConfig, descriptions)
+      situationalAdaptations: await this.generateSituationalAdaptations(toolConfig, descriptions),
     }
   }
 
@@ -821,7 +954,7 @@ export class NaturalLanguageDescriptionFramework {
       bestPractices: await this.generateBestPractices(toolConfig),
       commonPitfalls: await this.identifyCommonPitfalls(toolConfig),
       optimizationTips: await this.generateOptimizationTips(toolConfig),
-      relatedWorkflows: await this.identifyRelatedWorkflows(toolConfig)
+      relatedWorkflows: await this.identifyRelatedWorkflows(toolConfig),
     }
   }
 
@@ -834,7 +967,7 @@ export class NaturalLanguageDescriptionFramework {
       interactiveExamples: await this.createInteractiveExamples(toolConfig),
       quickActions: await this.generateQuickActions(toolConfig),
       dynamicHelp: await this.createDynamicHelp(toolConfig),
-      progressTracking: this.initializeProgressTracking(toolConfig)
+      progressTracking: this.initializeProgressTracking(toolConfig),
     }
   }
 
@@ -898,7 +1031,7 @@ export class NaturalLanguageDescriptionFramework {
       userFeedback: { averageRating: 0, commonSuggestions: [] },
       expertReview: { reviewScore: 0, recommendations: [] },
       automatedQualityChecks: automatedChecks,
-      freshnessIndicators
+      freshnessIndicators,
     }
   }
 
@@ -934,43 +1067,200 @@ export class NaturalLanguageDescriptionFramework {
   }
 
   // Additional helper methods would be implemented here...
-  private async generateUseCases(toolConfig: ToolConfig, context: DescriptionContext): Promise<UseCaseDescription[]> { return [] }
-  private async analyzeIntegrationCapabilities(toolConfig: ToolConfig): Promise<IntegrationInfo> { return { integratedWith: [], apiEndpoints: [] } }
-  private async analyzeTechnicalArchitecture(toolConfig: ToolConfig): Promise<TechnicalArchitecture> { return { architecture: '', dependencies: [], integrationPoints: [], scalabilityFactors: [], performanceConsiderations: [] } }
-  private async extractAdvancedConfiguration(toolConfig: ToolConfig): Promise<AdvancedConfiguration> { return { configurableParameters: [], advancedOptions: [], customizationPoints: [], extensionMechanisms: [] } }
-  private async analyzePerformanceCharacteristics(toolConfig: ToolConfig): Promise<PerformanceProfile> { return { responseTime: { average: 0, p95: 0, p99: 0 }, throughput: { average: 0, p95: 0, p99: 0 }, resourceUsage: { cpu: 0, memory: 0, network: 0 }, scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 } } }
-  private async analyzeSecurityAspects(toolConfig: ToolConfig): Promise<SecurityProfile> { return { authenticationRequirements: [], authorizationModel: '', dataProtection: [], auditingCapabilities: [], complianceFrameworks: [] } }
-  private async generateTroubleshootingGuide(toolConfig: ToolConfig): Promise<TroubleshootingGuide> { return { commonIssues: [], diagnosticSteps: [], resolutionProcedures: [], escalationPaths: [] } }
-  private async analyzeExtensibilityOptions(toolConfig: ToolConfig): Promise<ExtensibilityInfo> { return { extensionPoints: [], customization: [] } }
-  private async generateRoleAdaptations(toolConfig: ToolConfig, descriptions: DescriptionLevels): Promise<Record<UserRole, RoleSpecificDescription>> { return {} as any }
-  private async generateSkillAdaptations(toolConfig: ToolConfig, descriptions: DescriptionLevels): Promise<Record<SkillLevel, SkillSpecificDescription>> { return {} as any }
-  private async generateDomainAdaptations(toolConfig: ToolConfig, descriptions: DescriptionLevels): Promise<Record<string, DomainSpecificDescription>> { return {} }
-  private async generateWorkflowAdaptations(toolConfig: ToolConfig, descriptions: DescriptionLevels): Promise<Record<string, WorkflowSpecificDescription>> { return {} }
-  private async generateSituationalAdaptations(toolConfig: ToolConfig, descriptions: DescriptionLevels): Promise<Record<string, SituationalDescription>> { return {} }
-  private async generateStepByStepGuides(toolConfig: ToolConfig): Promise<StepByStepGuide[]> { return [] }
-  private async generateDecisionTrees(toolConfig: ToolConfig): Promise<DecisionTree[]> { return [] }
-  private async generateBestPractices(toolConfig: ToolConfig): Promise<BestPractice[]> { return [] }
-  private async identifyCommonPitfalls(toolConfig: ToolConfig): Promise<CommonPitfall[]> { return [] }
-  private async generateOptimizationTips(toolConfig: ToolConfig): Promise<OptimizationTip[]> { return [] }
-  private async identifyRelatedWorkflows(toolConfig: ToolConfig): Promise<RelatedWorkflow[]> { return [] }
-  private async generateConversationalPatterns(toolConfig: ToolConfig): Promise<ConversationalPattern[]> { return [] }
-  private async createInteractiveExamples(toolConfig: ToolConfig): Promise<InteractiveExample[]> { return [] }
-  private async generateQuickActions(toolConfig: ToolConfig): Promise<QuickAction[]> { return [] }
-  private async createDynamicHelp(toolConfig: ToolConfig): Promise<DynamicHelpElement[]> { return [] }
-  private initializeProgressTracking(toolConfig: ToolConfig): ProgressTracker { return { milestones: [], currentProgress: 0 } }
-  private initializeAdaptiveFeatures(toolConfig: ToolConfig, context: DescriptionContext): AdaptiveFeatures { return {} as any }
-  private createVersionInfo(toolConfig: ToolConfig): VersionInfo { return {} as any }
-  private async createContextualVariations(toolConfig: ToolConfig, context: DescriptionContext): Promise<Record<string, ContextSpecificDescription>> { return {} }
-  private async calculateRelevance(query: string, schema: EnhancedDescriptionSchema, context: SearchContext): Promise<number> { return 0.5 }
-  private async identifyMatchingElements(query: string, schema: EnhancedDescriptionSchema): Promise<string[]> { return [] }
-  private async generateContextualReasons(query: string, schema: EnhancedDescriptionSchema, context: SearchContext): Promise<string[]> { return [] }
-  private async applyUpdates(schema: EnhancedDescriptionSchema, updates: DescriptionUpdates): Promise<EnhancedDescriptionSchema> { return schema }
-  private updateVersionInfo(versionInfo: VersionInfo, metadata: UpdateMetadata): VersionInfo { return versionInfo }
-  private combineAdaptations(schema: EnhancedDescriptionSchema, adaptations: DescriptionAdaptation[], preferences: AdaptationPreferences): AdaptedDescription { return {} as any }
-  private async assessAccuracy(descriptions: DescriptionLevels): Promise<AccuracyMetrics> { return { technicalAccuracy: 8, linguisticQuality: 8, contextualRelevance: 8, userComprehension: 8, lastValidated: new Date(), validationMethod: ['automated'] } }
-  private async assessCompleteness(descriptions: DescriptionLevels): Promise<CompletenessScore> { return { overall: 85, sections: {} } }
-  private async runAutomatedQualityChecks(descriptions: DescriptionLevels): Promise<QualityCheckResult[]> { return [] }
-  private assessFreshness(descriptions: DescriptionLevels): FreshnessIndicators { return { lastUpdated: new Date(), contentAge: 0, needsUpdate: false } }
+  private async generateUseCases(
+    toolConfig: ToolConfig,
+    context: DescriptionContext
+  ): Promise<UseCaseDescription[]> {
+    return []
+  }
+  private async analyzeIntegrationCapabilities(toolConfig: ToolConfig): Promise<IntegrationInfo> {
+    return { integratedWith: [], apiEndpoints: [] }
+  }
+  private async analyzeTechnicalArchitecture(
+    toolConfig: ToolConfig
+  ): Promise<TechnicalArchitecture> {
+    return {
+      architecture: '',
+      dependencies: [],
+      integrationPoints: [],
+      scalabilityFactors: [],
+      performanceConsiderations: [],
+    }
+  }
+  private async extractAdvancedConfiguration(
+    toolConfig: ToolConfig
+  ): Promise<AdvancedConfiguration> {
+    return {
+      configurableParameters: [],
+      advancedOptions: [],
+      customizationPoints: [],
+      extensionMechanisms: [],
+    }
+  }
+  private async analyzePerformanceCharacteristics(
+    toolConfig: ToolConfig
+  ): Promise<PerformanceProfile> {
+    return {
+      responseTime: { average: 0, p95: 0, p99: 0 },
+      throughput: { average: 0, p95: 0, p99: 0 },
+      resourceUsage: { cpu: 0, memory: 0, network: 0 },
+      scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 },
+    }
+  }
+  private async analyzeSecurityAspects(toolConfig: ToolConfig): Promise<SecurityProfile> {
+    return {
+      authenticationRequirements: [],
+      authorizationModel: '',
+      dataProtection: [],
+      auditingCapabilities: [],
+      complianceFrameworks: [],
+    }
+  }
+  private async generateTroubleshootingGuide(
+    toolConfig: ToolConfig
+  ): Promise<TroubleshootingGuide> {
+    return { commonIssues: [], diagnosticSteps: [], resolutionProcedures: [], escalationPaths: [] }
+  }
+  private async analyzeExtensibilityOptions(toolConfig: ToolConfig): Promise<ExtensibilityInfo> {
+    return { extensionPoints: [], customization: [] }
+  }
+  private async generateRoleAdaptations(
+    toolConfig: ToolConfig,
+    descriptions: DescriptionLevels
+  ): Promise<Record<UserRole, RoleSpecificDescription>> {
+    return {} as any
+  }
+  private async generateSkillAdaptations(
+    toolConfig: ToolConfig,
+    descriptions: DescriptionLevels
+  ): Promise<Record<SkillLevel, SkillSpecificDescription>> {
+    return {} as any
+  }
+  private async generateDomainAdaptations(
+    toolConfig: ToolConfig,
+    descriptions: DescriptionLevels
+  ): Promise<Record<string, DomainSpecificDescription>> {
+    return {}
+  }
+  private async generateWorkflowAdaptations(
+    toolConfig: ToolConfig,
+    descriptions: DescriptionLevels
+  ): Promise<Record<string, WorkflowSpecificDescription>> {
+    return {}
+  }
+  private async generateSituationalAdaptations(
+    toolConfig: ToolConfig,
+    descriptions: DescriptionLevels
+  ): Promise<Record<string, SituationalDescription>> {
+    return {}
+  }
+  private async generateStepByStepGuides(toolConfig: ToolConfig): Promise<StepByStepGuide[]> {
+    return []
+  }
+  private async generateDecisionTrees(toolConfig: ToolConfig): Promise<DecisionTree[]> {
+    return []
+  }
+  private async generateBestPractices(toolConfig: ToolConfig): Promise<BestPractice[]> {
+    return []
+  }
+  private async identifyCommonPitfalls(toolConfig: ToolConfig): Promise<CommonPitfall[]> {
+    return []
+  }
+  private async generateOptimizationTips(toolConfig: ToolConfig): Promise<OptimizationTip[]> {
+    return []
+  }
+  private async identifyRelatedWorkflows(toolConfig: ToolConfig): Promise<RelatedWorkflow[]> {
+    return []
+  }
+  private async generateConversationalPatterns(
+    toolConfig: ToolConfig
+  ): Promise<ConversationalPattern[]> {
+    return []
+  }
+  private async createInteractiveExamples(toolConfig: ToolConfig): Promise<InteractiveExample[]> {
+    return []
+  }
+  private async generateQuickActions(toolConfig: ToolConfig): Promise<QuickAction[]> {
+    return []
+  }
+  private async createDynamicHelp(toolConfig: ToolConfig): Promise<DynamicHelpElement[]> {
+    return []
+  }
+  private initializeProgressTracking(toolConfig: ToolConfig): ProgressTracker {
+    return { milestones: [], currentProgress: 0 }
+  }
+  private initializeAdaptiveFeatures(
+    toolConfig: ToolConfig,
+    context: DescriptionContext
+  ): AdaptiveFeatures {
+    return {} as any
+  }
+  private createVersionInfo(toolConfig: ToolConfig): VersionInfo {
+    return {} as any
+  }
+  private async createContextualVariations(
+    toolConfig: ToolConfig,
+    context: DescriptionContext
+  ): Promise<Record<string, ContextSpecificDescription>> {
+    return {}
+  }
+  private async calculateRelevance(
+    query: string,
+    schema: EnhancedDescriptionSchema,
+    context: SearchContext
+  ): Promise<number> {
+    return 0.5
+  }
+  private async identifyMatchingElements(
+    query: string,
+    schema: EnhancedDescriptionSchema
+  ): Promise<string[]> {
+    return []
+  }
+  private async generateContextualReasons(
+    query: string,
+    schema: EnhancedDescriptionSchema,
+    context: SearchContext
+  ): Promise<string[]> {
+    return []
+  }
+  private async applyUpdates(
+    schema: EnhancedDescriptionSchema,
+    updates: DescriptionUpdates
+  ): Promise<EnhancedDescriptionSchema> {
+    return schema
+  }
+  private updateVersionInfo(versionInfo: VersionInfo, metadata: UpdateMetadata): VersionInfo {
+    return versionInfo
+  }
+  private combineAdaptations(
+    schema: EnhancedDescriptionSchema,
+    adaptations: DescriptionAdaptation[],
+    preferences: AdaptationPreferences
+  ): AdaptedDescription {
+    return {} as any
+  }
+  private async assessAccuracy(descriptions: DescriptionLevels): Promise<AccuracyMetrics> {
+    return {
+      technicalAccuracy: 8,
+      linguisticQuality: 8,
+      contextualRelevance: 8,
+      userComprehension: 8,
+      lastValidated: new Date(),
+      validationMethod: ['automated'],
+    }
+  }
+  private async assessCompleteness(descriptions: DescriptionLevels): Promise<CompletenessScore> {
+    return { overall: 85, sections: {} }
+  }
+  private async runAutomatedQualityChecks(
+    descriptions: DescriptionLevels
+  ): Promise<QualityCheckResult[]> {
+    return []
+  }
+  private assessFreshness(descriptions: DescriptionLevels): FreshnessIndicators {
+    return { lastUpdated: new Date(), contentAge: 0, needsUpdate: false }
+  }
 }
 
 // =============================================================================
@@ -978,8 +1268,6 @@ export class NaturalLanguageDescriptionFramework {
 // =============================================================================
 
 class QualityValidator {
-  constructor(private settings?: QualitySettings) {}
-
   async validateSchema(
     schema: EnhancedDescriptionSchema,
     criteria: ValidationCriteria
@@ -989,7 +1277,7 @@ class QualityValidator {
       sectionScores: {},
       issues: [],
       recommendations: [],
-      passed: true
+      passed: true,
     }
   }
 }
@@ -1002,7 +1290,7 @@ class NLPProcessor {
       oneSentenceSummary: `${toolConfig.name || toolConfig.id} helps you accomplish tasks efficiently`,
       primaryUseCase: 'General productivity',
       keyCapability: 'Task automation',
-      quickTags: ['productivity', 'automation', 'tool']
+      quickTags: ['productivity', 'automation', 'tool'],
     }
   }
 
@@ -1012,7 +1300,7 @@ class NLPProcessor {
       functionality: 'Core functionality description',
       workingPrinciple: 'How the tool operates',
       benefits: ['Efficiency', 'Automation', 'Integration'],
-      limitations: ['Requires setup', 'Limited to specific use cases']
+      limitations: ['Requires setup', 'Limited to specific use cases'],
     }
   }
 }
@@ -1096,15 +1384,49 @@ export interface QualityValidationResult {
 }
 
 // Placeholder interfaces for supporting types
-export interface FrameworkConfiguration { qualitySettings?: QualitySettings; nlpSettings?: NLPSettings }
-export interface QualitySettings { minAccuracy?: number; requireReview?: boolean }
-export interface NLPSettings { model?: string; accuracy?: number }
-export interface DescriptionTemplate { id: string; template: string }
-export interface DescriptionAdaptation { type: string; changes: Record<string, any> }
-export interface KeyInformationResult { oneSentenceSummary: string; primaryUseCase: string; keyCapability: string; quickTags: string[] }
-export interface ComprehensiveAnalysisResult { overview: string; functionality: string; workingPrinciple: string; benefits: string[]; limitations: string[] }
-export interface UserQualityFeedback { rating: number; comment: string; section: string }
-export interface QualityIssue { type: string; description: string; severity: 'low' | 'medium' | 'high' }
+export interface FrameworkConfiguration {
+  qualitySettings?: QualitySettings
+  nlpSettings?: NLPSettings
+}
+export interface QualitySettings {
+  minAccuracy?: number
+  requireReview?: boolean
+}
+export interface NLPSettings {
+  model?: string
+  accuracy?: number
+}
+export interface DescriptionTemplate {
+  id: string
+  template: string
+}
+export interface DescriptionAdaptation {
+  type: string
+  changes: Record<string, any>
+}
+export interface KeyInformationResult {
+  oneSentenceSummary: string
+  primaryUseCase: string
+  keyCapability: string
+  quickTags: string[]
+}
+export interface ComprehensiveAnalysisResult {
+  overview: string
+  functionality: string
+  workingPrinciple: string
+  benefits: string[]
+  limitations: string[]
+}
+export interface UserQualityFeedback {
+  rating: number
+  comment: string
+  section: string
+}
+export interface QualityIssue {
+  type: string
+  description: string
+  severity: 'low' | 'medium' | 'high'
+}
 
 // =============================================================================
 // Factory Functions

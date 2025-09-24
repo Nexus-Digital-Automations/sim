@@ -18,26 +18,34 @@
  */
 
 import type { ToolConfig } from '@/tools/types'
-import type {
-  AdapterConfiguration,
-  AdapterExecutionContext,
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool,
-  AdapterExecutionResult,
-} from '../types/adapter-interfaces'
-import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
-import type { ParlantExecutionContext } from '../types/parlant-interfaces'
-
-import { createLogger } from '../utils/logger'
-import { BaseAdapter } from '../core/base-adapter'
+import type { BaseAdapter } from '../core/base-adapter'
+import {
+  ComprehensiveToolErrorManager,
+  type ToolErrorExplanation,
+} from '../error-handling/comprehensive-error-manager'
+import type { UsageContext } from '../natural-language/usage-guidelines'
 import { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
-
+import type {
+  AdapterExecutionContext,
+  AdapterExecutionResult,
+  AdapterRegistryEntry,
+  DiscoveredTool,
+  ToolDiscoveryQuery,
+} from '../types/adapter-interfaces'
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
+import { createLogger } from '../utils/logger'
+import {
+  type ContextualRecommendation,
+  ContextualRecommendationEngine,
+  type ContextualRecommendationRequest,
+} from './contextual-recommendation-engine'
+import {
+  type EnhancedDescriptionSchema,
+  NaturalLanguageDescriptionFramework,
+} from './natural-language-description-framework'
 // Intelligence Components
-import { EnhancedToolIntelligenceEngine, type EnhancedToolDescription, type UserSkillLevel } from './tool-intelligence-engine'
-import { ContextualRecommendationEngine, type ContextualRecommendation, type ContextualRecommendationRequest } from './contextual-recommendation-engine'
-import { NaturalLanguageDescriptionFramework, type EnhancedDescriptionSchema } from './natural-language-description-framework'
-import { ComprehensiveToolErrorManager, type ToolErrorExplanation } from '../error-handling/comprehensive-error-manager'
+import { EnhancedToolIntelligenceEngine } from './tool-intelligence-engine'
+import IntelligencePerformanceMonitor from './performance-monitoring'
 
 const logger = createLogger('IntelligenceIntegrationLayer')
 
@@ -143,6 +151,7 @@ export class IntelligenceIntegrationLayer {
   // Performance optimization
   private readonly intelligenceCache = new Map<string, any>()
   private readonly performanceTracker = new Map<string, number[]>()
+  private readonly performanceMonitor: IntelligencePerformanceMonitor
 
   // Integration state
   private isInitialized = false
@@ -210,6 +219,14 @@ export class IntelligenceIntegrationLayer {
     })
     this.descriptionFramework = new NaturalLanguageDescriptionFramework()
     this.errorManager = new ComprehensiveToolErrorManager()
+
+    // Initialize performance monitoring
+    this.performanceMonitor = new IntelligencePerformanceMonitor({
+      enableAutoOptimization: this.config.enablePerformanceOptimization,
+      alertingEnabled: true,
+      metricsRetentionHours: 24,
+      optimizationInterval: 300000, // 5 minutes
+    })
 
     logger.info('Intelligence Integration Layer initialized', {
       naturalLanguage: this.config.enableNaturalLanguageDescriptions,
@@ -411,10 +428,9 @@ export class IntelligenceIntegrationLayer {
 
       // Use the tool config from the adapter
       const toolConfig = this.extractToolConfig(entry)
-      const description = await this.descriptionFramework.generateEnhancedDescription(
-        toolConfig,
-        { userProfile: userContext?.userProfile }
-      )
+      const description = await this.descriptionFramework.generateEnhancedDescription(toolConfig, {
+        userProfile: userContext?.userProfile,
+      })
 
       // Cache the result
       if (this.config.performance?.enableIntelligenceCaching) {
@@ -427,6 +443,13 @@ export class IntelligenceIntegrationLayer {
       this.metrics.descriptionsGenerated++
       this.updateMetrics('description', Date.now() - startTime)
       this.updateCacheHitRate(false)
+
+      // Record performance metrics
+      this.performanceMonitor.recordOperation('description', Date.now() - startTime, true, {
+        toolId,
+        complexityLevel,
+        cacheHit: false,
+      })
 
       return description
     } catch (error) {
@@ -460,12 +483,17 @@ export class IntelligenceIntegrationLayer {
         maxRecommendations: this.config.recommendations?.maxRecommendations || 5,
       }
 
-      const recommendations = await this.recommendationEngine.getRecommendations(
-        recommendationRequest
-      )
+      const recommendations =
+        await this.recommendationEngine.getRecommendations(recommendationRequest)
 
       this.metrics.recommendationsProvided++
       this.updateMetrics('recommendations', Date.now() - startTime)
+
+      // Record performance metrics
+      this.performanceMonitor.recordOperation('recommendation', Date.now() - startTime, true, {
+        requestType: request.userMessage ? 'user_message' : 'context_only',
+        recommendationCount: recommendations.length,
+      })
 
       return recommendations
     } catch (error) {
@@ -477,10 +505,7 @@ export class IntelligenceIntegrationLayer {
   /**
    * Record user feedback for intelligence improvement
    */
-  async recordIntelligenceFeedback(
-    toolId: string,
-    feedback: IntelligenceFeedback
-  ): Promise<void> {
+  async recordIntelligenceFeedback(toolId: string, feedback: IntelligenceFeedback): Promise<void> {
     try {
       // Store feedback for learning
       const entry = await this.baseRegistry.get(toolId)
@@ -503,7 +528,10 @@ export class IntelligenceIntegrationLayer {
       }
 
       // Feed back to error handling for learning
-      if (feedback.feedbackType === 'error_handling' && this.config.errorHandling?.enableUserFeedbackLearning) {
+      if (
+        feedback.feedbackType === 'error_handling' &&
+        this.config.errorHandling?.enableUserFeedbackLearning
+      ) {
         await this.errorManager.trainWithFeedback(
           `feedback-${toolId}-${Date.now()}`,
           feedback.userId,
@@ -531,10 +559,12 @@ export class IntelligenceIntegrationLayer {
     uptime: number
     cacheEfficiency: number
     integrationHealth: 'healthy' | 'degraded' | 'unhealthy'
+    performanceReport?: any
   } {
     const uptime = Date.now() - this.integrationStartTime
     const cacheEfficiency = this.calculateCacheEfficiency()
     const integrationHealth = this.assessIntegrationHealth()
+    const performanceReport = this.performanceMonitor.getDetailedPerformanceReport()
 
     return {
       ...this.metrics,
@@ -542,7 +572,29 @@ export class IntelligenceIntegrationLayer {
       cacheEfficiency,
       integrationHealth,
       intelligenceCacheSize: this.intelligenceCache.size,
+      performanceReport,
     }
+  }
+
+  /**
+   * Get performance dashboard data
+   */
+  getPerformanceDashboard() {
+    return this.performanceMonitor.getPerformanceDashboard()
+  }
+
+  /**
+   * Get optimization recommendations
+   */
+  async getOptimizationRecommendations() {
+    return this.performanceMonitor.generateOptimizationRecommendations()
+  }
+
+  /**
+   * Apply optimization recommendation
+   */
+  async applyOptimization(recommendationId: string) {
+    return this.performanceMonitor.implementOptimizationRecommendation(recommendationId)
   }
 
   /**
@@ -555,6 +607,9 @@ export class IntelligenceIntegrationLayer {
       // Clear caches
       this.intelligenceCache.clear()
       this.performanceTracker.clear()
+
+      // Shutdown performance monitor
+      // Note: Performance monitor cleanup would be implemented here
 
       // Shutdown engines that support it
       // Note: Individual engines would need shutdown methods in full implementation
@@ -689,9 +744,8 @@ export class IntelligenceIntegrationLayer {
         maxRecommendations: this.config.recommendations?.maxRecommendations || 5,
       }
 
-      const recommendations = await this.recommendationEngine.getRecommendations(
-        recommendationRequest
-      )
+      const recommendations =
+        await this.recommendationEngine.getRecommendations(recommendationRequest)
 
       // Merge recommendations with discovery results
       const enhancedResults = baseResults.map((tool) => {
@@ -747,10 +801,7 @@ export class IntelligenceIntegrationLayer {
       )
 
       if (!validationResult.valid) {
-        const issues = [
-          ...validationResult.blockingIssues,
-          ...validationResult.warnings,
-        ].join('; ')
+        const issues = [...validationResult.blockingIssues, ...validationResult.warnings].join('; ')
 
         throw new Error(`Validation failed: ${issues}`)
       }
@@ -886,6 +937,27 @@ export class IntelligenceIntegrationLayer {
         this.metrics.averageErrorHandlingTime = average
         break
     }
+
+    // Update resource usage in performance monitor
+    this.updateResourceUsageMetrics()
+  }
+
+  private updateResourceUsageMetrics(): void {
+    // Update resource usage metrics for the performance monitor
+    let memoryMB = 0
+    let cpuPercent = 0
+
+    if (typeof process !== 'undefined' && process.memoryUsage) {
+      const memUsage = process.memoryUsage()
+      memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024)
+    }
+
+    this.performanceMonitor.recordResourceUsage(
+      memoryMB,
+      cpuPercent, // CPU usage would need additional implementation
+      this.intelligenceCache.size,
+      this.metrics.intelligenceCacheHitRate
+    )
   }
 
   private updateUserSatisfactionMetrics(feedback: IntelligenceFeedback): void {
@@ -934,19 +1006,19 @@ export class IntelligenceIntegrationLayer {
 
   private assessIntegrationHealth(): 'healthy' | 'degraded' | 'unhealthy' {
     // Simple health assessment based on metrics
-    const avgResponseTime = (
-      this.metrics.averageDescriptionGenerationTime +
-      this.metrics.averageRecommendationTime +
-      this.metrics.averageErrorHandlingTime
-    ) / 3
+    const avgResponseTime =
+      (this.metrics.averageDescriptionGenerationTime +
+        this.metrics.averageRecommendationTime +
+        this.metrics.averageErrorHandlingTime) /
+      3
 
     if (avgResponseTime < 100 && this.metrics.userSatisfactionScore > 4) {
       return 'healthy'
-    } else if (avgResponseTime < 500 && this.metrics.userSatisfactionScore > 3) {
-      return 'degraded'
-    } else {
-      return 'unhealthy'
     }
+    if (avgResponseTime < 500 && this.metrics.userSatisfactionScore > 3) {
+      return 'degraded'
+    }
+    return 'unhealthy'
   }
 
   private trackExecutionPerformance(data: any): void {
@@ -986,12 +1058,10 @@ export function createIntelligenceEnhancedAdapter(
 /**
  * Create a fully configured Universal Tool Adapter with Intelligence
  */
-export async function createFullyIntelligentAdapter(
-  config?: {
-    registry?: any
-    intelligence?: IntelligenceConfiguration
-  }
-): Promise<IntelligenceIntegrationLayer> {
+export async function createFullyIntelligentAdapter(config?: {
+  registry?: any
+  intelligence?: IntelligenceConfiguration
+}): Promise<IntelligenceIntegrationLayer> {
   const registryConfig = config?.registry || {}
   const intelligenceConfig = config?.intelligence || {}
 
@@ -999,10 +1069,7 @@ export async function createFullyIntelligentAdapter(
   const baseRegistry = new EnhancedAdapterRegistry(registryConfig)
 
   // Create intelligence layer
-  const intelligenceLayer = new IntelligenceIntegrationLayer(
-    baseRegistry,
-    intelligenceConfig
-  )
+  const intelligenceLayer = new IntelligenceIntegrationLayer(baseRegistry, intelligenceConfig)
 
   // Initialize intelligence
   await intelligenceLayer.initialize()
@@ -1013,9 +1080,7 @@ export async function createFullyIntelligentAdapter(
 /**
  * Utility to check if intelligence features are available
  */
-export function checkIntelligenceCapabilities(
-  layer: IntelligenceIntegrationLayer
-): {
+export function checkIntelligenceCapabilities(layer: IntelligenceIntegrationLayer): {
   naturalLanguageDescriptions: boolean
   contextualRecommendations: boolean
   intelligentErrorHandling: boolean

@@ -100,7 +100,7 @@ export class NLPProcessor {
       analysisDepth: 'intermediate',
       domainSpecialization: [],
       customVocabulary: {},
-      ...settings
+      ...settings,
     }
 
     this.vocabularyEnhancer = new VocabularyEnhancer(this.settings)
@@ -172,16 +172,15 @@ export class NLPProcessor {
         keyCapability,
         quickTags,
         complexityScore,
-        confidenceMetrics
+        confidenceMetrics,
       }
 
       logger.info(`Key information extracted for ${toolConfig.id}`, {
         summary: oneSentenceSummary,
-        confidence: confidenceMetrics.overallConfidence
+        confidence: confidenceMetrics.overallConfidence,
       })
 
       return result
-
     } catch (error) {
       logger.error(`Failed to extract key information for ${toolConfig.id}:`, error)
 
@@ -226,11 +225,7 @@ export class NLPProcessor {
       )
 
       // Benefits analysis
-      const benefits = await this.analyzeBenefits(
-        toolConfig,
-        semanticAnalysis,
-        functionalAnalysis
-      )
+      const benefits = await this.analyzeBenefits(toolConfig, semanticAnalysis, functionalAnalysis)
 
       // Limitations identification
       const limitations = await this.analyzeLimitations(
@@ -268,17 +263,16 @@ export class NLPProcessor {
         limitations,
         technicalDetails,
         usagePatterns,
-        performanceCharacteristics
+        performanceCharacteristics,
       }
 
       logger.info(`Comprehensive analysis completed for ${toolConfig.id}`, {
         benefitsCount: benefits.length,
         limitationsCount: limitations.length,
-        usagePatternsCount: usagePatterns.length
+        usagePatternsCount: usagePatterns.length,
       })
 
       return result
-
     } catch (error) {
       logger.error(`Failed comprehensive analysis for ${toolConfig.id}:`, error)
 
@@ -319,8 +313,8 @@ export class NLPProcessor {
         outputCount,
         hasDescription,
         hasMetadata,
-        completeness
-      })
+        completeness,
+      }),
     }
   }
 
@@ -331,7 +325,7 @@ export class NLPProcessor {
     // Content quality metrics
     const contentLength = description.length
     const wordCount = description.split(/\s+/).length
-    const sentenceCount = description.split(/[.!?]+/).filter(s => s.trim()).length
+    const sentenceCount = description.split(/[.!?]+/).filter((s) => s.trim()).length
 
     // Semantic content analysis
     const semanticDensity = await this.calculateSemanticDensity(description)
@@ -355,8 +349,8 @@ export class NLPProcessor {
         semanticDensity,
         clarityScore,
         readabilityScore,
-        wordCount
-      })
+        wordCount,
+      }),
     }
   }
 
@@ -372,7 +366,7 @@ export class NLPProcessor {
       dataFlow,
       interactionPattern,
       businessValue,
-      functionalComplexity: this.calculateFunctionalComplexity(toolConfig)
+      functionalComplexity: this.calculateFunctionalComplexity(toolConfig),
     }
   }
 
@@ -393,9 +387,11 @@ export class NLPProcessor {
     // Generate contextual summary based on analysis
     if (platform && action && capability) {
       return `${toolName} ${action}s ${capability} through ${platform} integration.`
-    } else if (action && capability) {
+    }
+    if (action && capability) {
       return `${toolName} enables ${action}ing ${capability} for enhanced productivity.`
-    } else if (capability) {
+    }
+    if (capability) {
       return `${toolName} provides ${capability} functionality for various use cases.`
     }
 
@@ -413,16 +409,16 @@ export class NLPProcessor {
 
     // Pattern-based use case identification
     const useCasePatterns = {
-      'communication': ['send', 'message', 'email', 'notify', 'communicate', 'contact'],
-      'data_management': ['store', 'save', 'retrieve', 'query', 'database', 'data'],
-      'search_research': ['search', 'find', 'lookup', 'discover', 'research', 'explore'],
-      'content_creation': ['create', 'generate', 'write', 'compose', 'produce', 'build'],
-      'analysis': ['analyze', 'process', 'evaluate', 'assess', 'examine', 'review'],
-      'automation': ['automate', 'execute', 'run', 'trigger', 'schedule', 'workflow']
+      communication: ['send', 'message', 'email', 'notify', 'communicate', 'contact'],
+      data_management: ['store', 'save', 'retrieve', 'query', 'database', 'data'],
+      search_research: ['search', 'find', 'lookup', 'discover', 'research', 'explore'],
+      content_creation: ['create', 'generate', 'write', 'compose', 'produce', 'build'],
+      analysis: ['analyze', 'process', 'evaluate', 'assess', 'examine', 'review'],
+      automation: ['automate', 'execute', 'run', 'trigger', 'schedule', 'workflow'],
     }
 
     for (const [useCase, patterns] of Object.entries(useCasePatterns)) {
-      if (patterns.some(pattern => toolId.includes(pattern) || description.includes(pattern))) {
+      if (patterns.some((pattern) => toolId.includes(pattern) || description.includes(pattern))) {
         return this.generateUseCaseDescription(useCase, toolConfig)
       }
     }
@@ -440,7 +436,7 @@ export class NLPProcessor {
 
     // From action words
     if (content.actionWords.length > 0) {
-      capabilities.push(content.actionWords[0] + 'ing')
+      capabilities.push(`${content.actionWords[0]}ing`)
     }
 
     // From technical terms
@@ -470,10 +466,10 @@ export class NLPProcessor {
     tags.add(category)
 
     // Technical tags from content
-    content.technicalTerms.forEach(term => tags.add(term.toLowerCase()))
+    content.technicalTerms.forEach((term) => tags.add(term.toLowerCase()))
 
     // Action-based tags
-    content.actionWords.forEach(action => tags.add(action))
+    content.actionWords.forEach((action) => tags.add(action))
 
     // Platform tags
     const platform = this.extractPlatform(
@@ -483,8 +479,12 @@ export class NLPProcessor {
     if (platform) tags.add(platform.toLowerCase())
 
     // Complexity tag
-    const complexity = content.overallContentQuality > 0.8 ? 'advanced' :
-                      content.overallContentQuality > 0.5 ? 'intermediate' : 'basic'
+    const complexity =
+      content.overallContentQuality > 0.8
+        ? 'advanced'
+        : content.overallContentQuality > 0.5
+          ? 'intermediate'
+          : 'basic'
     tags.add(complexity)
 
     return Array.from(tags).slice(0, 8) // Limit to 8 most relevant tags
@@ -524,12 +524,11 @@ export class NLPProcessor {
     semantic: SemanticAnalysis
   ): Promise<ConfidenceMetrics> {
     // Analysis quality based on available information
-    const analysisQuality = (
+    const analysisQuality =
       (structural.hasDescription ? 0.3 : 0) +
       (structural.parameterCount > 0 ? 0.2 : 0) +
       (content.wordCount > 10 ? 0.3 : 0) +
       (content.technicalTerms.length > 0 ? 0.2 : 0)
-    )
 
     // Completeness based on structural analysis
     const completeness = structural.completeness
@@ -544,7 +543,7 @@ export class NLPProcessor {
       overallConfidence,
       analysisQuality,
       completeness,
-      accuracyEstimate
+      accuracyEstimate,
     }
   }
 
@@ -565,12 +564,14 @@ export class NLPProcessor {
         overallConfidence: 0.3,
         analysisQuality: 0.2,
         completeness: 0.3,
-        accuracyEstimate: 0.4
-      }
+        accuracyEstimate: 0.4,
+      },
     }
   }
 
-  private generateFallbackComprehensiveAnalysis(toolConfig: ToolConfig): ComprehensiveAnalysisResult {
+  private generateFallbackComprehensiveAnalysis(
+    toolConfig: ToolConfig
+  ): ComprehensiveAnalysisResult {
     const toolName = toolConfig.name || toolConfig.id
 
     return {
@@ -584,22 +585,24 @@ export class NLPProcessor {
         dependencies: ['External service connections'],
         integrationPoints: ['REST API', 'Configuration system'],
         securityConsiderations: ['Authentication required'],
-        scalabilityFactors: ['Service limitations apply']
+        scalabilityFactors: ['Service limitations apply'],
       },
-      usagePatterns: [{
-        pattern: 'Basic operation',
-        frequency: 'common',
-        complexity: 'simple',
-        description: 'Standard usage pattern',
-        examples: ['Basic configuration', 'Simple execution']
-      }],
+      usagePatterns: [
+        {
+          pattern: 'Basic operation',
+          frequency: 'common',
+          complexity: 'simple',
+          description: 'Standard usage pattern',
+          examples: ['Basic configuration', 'Simple execution'],
+        },
+      ],
       performanceCharacteristics: {
         expectedLatency: 'Moderate response time',
         throughputCapacity: 'Standard capacity',
         resourceRequirements: ['Network connectivity'],
         scalabilityLimits: ['Service dependent'],
-        optimizationOpportunities: ['Configuration tuning']
-      }
+        optimizationOpportunities: ['Configuration tuning'],
+      },
     }
   }
 
@@ -608,18 +611,18 @@ export class NLPProcessor {
   // =============================================================================
 
   private extractPlatform(name: string, description: string): string | null {
-    const text = (name + ' ' + description).toLowerCase()
+    const text = `${name} ${description}`.toLowerCase()
     const platforms = {
-      'gmail': 'Gmail',
-      'slack': 'Slack',
-      'discord': 'Discord',
-      'notion': 'Notion',
-      'airtable': 'Airtable',
-      'github': 'GitHub',
-      'mongodb': 'MongoDB',
-      'openai': 'OpenAI',
-      'google': 'Google',
-      'microsoft': 'Microsoft'
+      gmail: 'Gmail',
+      slack: 'Slack',
+      discord: 'Discord',
+      notion: 'Notion',
+      airtable: 'Airtable',
+      github: 'GitHub',
+      mongodb: 'MongoDB',
+      openai: 'OpenAI',
+      google: 'Google',
+      microsoft: 'Microsoft',
     }
 
     for (const [key, value] of Object.entries(platforms)) {
@@ -642,18 +645,21 @@ export class NLPProcessor {
     return 'process'
   }
 
-  private async inferMainCapability(toolConfig: ToolConfig, content: ContentAnalysis): Promise<string> {
+  private async inferMainCapability(
+    toolConfig: ToolConfig,
+    content: ContentAnalysis
+  ): Promise<string> {
     if (content.technicalTerms.length > 0) {
       return content.technicalTerms[0]
     }
 
     const category = this.inferToolCategory(toolConfig)
     const categoryCapabilities = {
-      'communication': 'messages',
-      'data_storage': 'data',
-      'search_research': 'information',
-      'ai_ml': 'AI analysis',
-      'productivity': 'tasks'
+      communication: 'messages',
+      data_storage: 'data',
+      search_research: 'information',
+      ai_ml: 'AI analysis',
+      productivity: 'tasks',
     }
 
     return categoryCapabilities[category] || 'information'
@@ -665,16 +671,16 @@ export class NLPProcessor {
     const description = (toolConfig.description || '').toLowerCase()
     const text = `${toolId} ${name} ${description}`
 
-    if (['email', 'slack', 'message', 'send', 'notify'].some(term => text.includes(term))) {
+    if (['email', 'slack', 'message', 'send', 'notify'].some((term) => text.includes(term))) {
       return 'communication'
     }
-    if (['database', 'store', 'save', 'mongo', 'sql'].some(term => text.includes(term))) {
+    if (['database', 'store', 'save', 'mongo', 'sql'].some((term) => text.includes(term))) {
       return 'data_storage'
     }
-    if (['search', 'find', 'google', 'query'].some(term => text.includes(term))) {
+    if (['search', 'find', 'google', 'query'].some((term) => text.includes(term))) {
       return 'search_research'
     }
-    if (['ai', 'openai', 'generate', 'ml', 'model'].some(term => text.includes(term))) {
+    if (['ai', 'openai', 'generate', 'ml', 'model'].some((term) => text.includes(term))) {
       return 'ai_ml'
     }
 
@@ -692,7 +698,7 @@ export class NLPProcessor {
     return {
       hasConsistentNaming: true,
       followsConventions: true,
-      clarityScore: 0.8
+      clarityScore: 0.8,
     }
   }
 
@@ -708,10 +714,13 @@ export class NLPProcessor {
 
   private calculateStructuralScore(factors: any): number {
     // Implementation for structural score calculation
-    return Math.min((factors.parameterCount * 0.1 +
-                     factors.outputCount * 0.1 +
-                     (factors.hasDescription ? 0.3 : 0) +
-                     factors.completeness), 1.0)
+    return Math.min(
+      factors.parameterCount * 0.1 +
+        factors.outputCount * 0.1 +
+        (factors.hasDescription ? 0.3 : 0) +
+        factors.completeness,
+      1.0
+    )
   }
 
   // Additional method implementations would continue here...
@@ -722,8 +731,6 @@ export class NLPProcessor {
 // =============================================================================
 
 class VocabularyEnhancer {
-  constructor(private settings: NLPSettings) {}
-
   async enhanceVocabulary(text: string): Promise<string> {
     // Implementation for vocabulary enhancement
     return text
@@ -731,15 +738,13 @@ class VocabularyEnhancer {
 }
 
 class SemanticAnalyzer {
-  constructor(private settings: NLPSettings) {}
-
   async analyzeToolSemantics(toolConfig: ToolConfig): Promise<SemanticAnalysis> {
     // Implementation for semantic analysis
     return {
       semanticClusters: [],
       conceptMap: {},
       relationshipStrength: 0.7,
-      domainRelevance: 0.8
+      domainRelevance: 0.8,
     }
   }
 }

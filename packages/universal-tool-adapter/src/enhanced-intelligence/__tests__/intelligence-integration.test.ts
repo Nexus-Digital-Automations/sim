@@ -8,15 +8,15 @@
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import {
-  IntelligenceIntegrationLayer,
-  createIntelligenceEnhancedAdapter,
-  createFullyIntelligentAdapter,
-  checkIntelligenceCapabilities,
-} from '../intelligence-integration-layer'
-import { EnhancedAdapterRegistry } from '../../registry/enhanced-adapter-registry'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UniversalToolAdapterSystem } from '../../index'
+import { EnhancedAdapterRegistry } from '../../registry/enhanced-adapter-registry'
+import {
+  checkIntelligenceCapabilities,
+  createFullyIntelligentAdapter,
+  createIntelligenceEnhancedAdapter,
+  IntelligenceIntegrationLayer,
+} from '../intelligence-integration-layer'
 
 // Mock dependencies
 vi.mock('../../utils/logger', () => ({
@@ -225,13 +225,9 @@ describe('IntelligenceIntegrationLayer', () => {
     })
 
     it('should handle invalid input gracefully', async () => {
-      await expect(
-        intelligenceLayer.getToolDescription('', undefined)
-      ).resolves.toBeNull()
+      await expect(intelligenceLayer.getToolDescription('', undefined)).resolves.toBeNull()
 
-      await expect(
-        intelligenceLayer.getContextualRecommendations({} as any)
-      ).resolves.toEqual([])
+      await expect(intelligenceLayer.getContextualRecommendations({} as any)).resolves.toEqual([])
     })
 
     it('should handle component failures gracefully', async () => {
@@ -395,9 +391,9 @@ describe('Backward Compatibility', () => {
     await system.initialize()
 
     // Mock adapter execution (should fail gracefully for non-existent adapter)
-    await expect(
-      system.executeAdapter('non-existent-adapter', {}, {})
-    ).rejects.toThrow('Adapter not found')
+    await expect(system.executeAdapter('non-existent-adapter', {}, {})).rejects.toThrow(
+      'Adapter not found'
+    )
 
     await system.shutdown()
   })

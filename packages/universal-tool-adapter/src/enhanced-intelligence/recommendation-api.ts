@@ -18,15 +18,12 @@
  * @version 2.0.0
  */
 
-import type {
-  ContextualRecommendationRequest,
-  ContextualRecommendation,
-  AdvancedUsageContext
-} from './contextual-recommendation-engine'
-import type { MLRecommendation } from './ml-recommendation-engine'
-import type { ContextAnalysisResult } from './context-analysis-system'
 import { createLogger } from '../utils/logger'
-import { LRUCache } from 'lru-cache'
+import type {
+  AdvancedUsageContext,
+  ContextualRecommendation,
+  ContextualRecommendationRequest,
+} from './contextual-recommendation-engine'
 
 const logger = createLogger('RecommendationAPI')
 
@@ -56,7 +53,7 @@ export interface RecommendationAPIConfig {
 
 export interface CacheConfig {
   // Multi-level cache settings
-  l1Cache: CacheLayerConfig  // In-memory cache
+  l1Cache: CacheLayerConfig // In-memory cache
   l2Cache?: CacheLayerConfig // Distributed cache (Redis)
   l3Cache?: CacheLayerConfig // Persistent cache (Database)
 
@@ -395,14 +392,14 @@ export class RecommendationAPI {
         l1Cache: {
           maxSize: 10000,
           ttl: 300000, // 5 minutes
-          updateThreshold: 0.8
+          updateThreshold: 0.8,
         },
         strategy: 'adaptive',
         compressionEnabled: true,
         encryptionEnabled: false,
         invalidationStrategy: 'hybrid',
         maxAge: 3600000, // 1 hour
-        staleWhileRevalidate: true
+        staleWhileRevalidate: true,
       },
       performance: {
         requestDeduplication: true,
@@ -416,7 +413,7 @@ export class RecommendationAPI {
         requestTimeout: 30000, // 30 seconds
         keepAliveTimeout: 60000, // 1 minute
         maxMemoryUsage: 1024 * 1024 * 1024, // 1GB
-        maxCPUUsage: 80
+        maxCPUUsage: 80,
       },
       security: {
         rateLimiting: {
@@ -424,7 +421,7 @@ export class RecommendationAPI {
           windowSize: 60000, // 1 minute
           maxRequests: 1000,
           burstAllowance: 100,
-          rateLimitHeaders: true
+          rateLimitHeaders: true,
         },
         requireAuthentication: true,
         allowedOrigins: ['*'],
@@ -433,7 +430,7 @@ export class RecommendationAPI {
         sanitizeInputs: true,
         maxRequestSize: 1024 * 1024, // 1MB
         hideInternalErrors: true,
-        addSecurityHeaders: true
+        addSecurityHeaders: true,
       },
       monitoring: {
         metricsEnabled: true,
@@ -448,24 +445,24 @@ export class RecommendationAPI {
         alertThresholds: {
           responseTime: 1000, // 1 second
           errorRate: 0.05, // 5%
-          memoryUsage: 0.8 // 80%
-        }
+          memoryUsage: 0.8, // 80%
+        },
       },
       abTesting: {
         enabled: false,
         defaultVariant: 'control',
         trafficSplitting: { control: 1.0 },
         stickyUsers: true,
-        excludeFromTesting: []
+        excludeFromTesting: [],
       },
       circuitBreaker: {
         enabled: true,
         failureThreshold: 5,
         recoveryTimeout: 30000, // 30 seconds
         monitoringWindow: 60000, // 1 minute
-        fallbackEnabled: true
+        fallbackEnabled: true,
       },
-      ...config
+      ...config,
     }
 
     this.initializeComponents()
@@ -524,7 +521,6 @@ export class RecommendationAPI {
       this.circuitBreaker.recordSuccess()
 
       return response
-
     } catch (error) {
       // Record failure in circuit breaker
       this.circuitBreaker.recordFailure()
@@ -532,7 +528,7 @@ export class RecommendationAPI {
       logger.error('Error processing recommendation request', {
         error,
         requestId: apiRequest.requestId,
-        userId: apiRequest.userId
+        userId: apiRequest.userId,
       })
 
       // Return fallback response
@@ -553,7 +549,7 @@ export class RecommendationAPI {
       yield {
         type: 'initial',
         data: initialResponse,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
 
       // Context updates stream
@@ -565,26 +561,25 @@ export class RecommendationAPI {
             ...apiRequest,
             request: {
               ...apiRequest.request,
-              currentContext: contextUpdate.context
-            }
+              currentContext: contextUpdate.context,
+            },
           })
 
           yield {
             type: 'update',
             data: updatedResponse,
             timestamp: new Date(),
-            contextChange: contextUpdate
+            contextChange: contextUpdate,
           }
         }
       }
-
     } catch (error) {
       logger.error('Error in recommendation streaming', { error, requestId: apiRequest.requestId })
 
       yield {
         type: 'error',
         error: error.message,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
   }
@@ -597,7 +592,7 @@ export class RecommendationAPI {
   ): Promise<RecommendationAPIResponse[]> {
     if (!this.config.performance.requestBatching) {
       // Process individually if batching disabled
-      return Promise.all(requests.map(req => this.getRecommendations(req)))
+      return Promise.all(requests.map((req) => this.getRecommendations(req)))
     }
 
     return this.batchProcessor.processBatch(requests)
@@ -606,9 +601,7 @@ export class RecommendationAPI {
   /**
    * Invalidate cache for specific user or context
    */
-  async invalidateCache(
-    criteria: CacheInvalidationCriteria
-  ): Promise<CacheInvalidationResult> {
+  async invalidateCache(criteria: CacheInvalidationCriteria): Promise<CacheInvalidationResult> {
     return this.cache.invalidate(criteria)
   }
 
@@ -623,7 +616,7 @@ export class RecommendationAPI {
       cacheStats: this.cache.getStatistics(),
       circuitBreakerState: this.circuitBreaker.getState(),
       uptime: Date.now() - this.initializeTime,
-      version: '2.0.0'
+      version: '2.0.0',
     }
   }
 
@@ -665,7 +658,7 @@ export class RecommendationAPI {
     await this.cache.set(cacheKey, response, {
       ttl: this.calculateCacheTTL(apiRequest),
       tags: this.generateCacheTags(apiRequest),
-      dependencies: this.generateCacheDependencies(apiRequest)
+      dependencies: this.generateCacheDependencies(apiRequest),
     })
 
     return response
@@ -753,7 +746,7 @@ export class RecommendationAPI {
         cacheLevel: cached ? 'l1' : 'miss',
         cacheAge: 0,
         cacheKey: this.generateCacheKey(request),
-        stale: false
+        stale: false,
       },
       performanceMetrics: {
         totalTime: processingTime,
@@ -762,20 +755,22 @@ export class RecommendationAPI {
         networkTime: 0,
         serializationTime: 0,
         memoryUsed: 0,
-        cpuUsed: 0
+        cpuUsed: 0,
       },
-      abTestInfo: abVariant ? {
-        variant: abVariant.variantId,
-        testId: abVariant.testId || 'default',
-        included: true
-      } : undefined,
+      abTestInfo: abVariant
+        ? {
+            variant: abVariant.variantId,
+            testId: abVariant.testId || 'default',
+            included: true,
+          }
+        : undefined,
       status: {
         success: true,
         code: 200,
         message: 'Success',
         warnings: [],
-        errors: []
-      }
+        errors: [],
+      },
     }
   }
 
@@ -803,7 +798,7 @@ export class RecommendationAPI {
         cacheLevel: 'miss',
         cacheAge: 0,
         cacheKey: '',
-        stale: false
+        stale: false,
       },
       performanceMetrics: {
         totalTime: processingTime,
@@ -812,19 +807,23 @@ export class RecommendationAPI {
         networkTime: 0,
         serializationTime: 0,
         memoryUsed: 0,
-        cpuUsed: 0
+        cpuUsed: 0,
       },
       status: {
         success: false,
         code: 500,
         message: 'Internal server error',
         warnings: [],
-        errors: [{
-          code: 'INTERNAL_ERROR',
-          message: this.config.security.hideInternalErrors ? 'Internal error occurred' : error.message,
-          severity: 'high'
-        }]
-      }
+        errors: [
+          {
+            code: 'INTERNAL_ERROR',
+            message: this.config.security.hideInternalErrors
+              ? 'Internal error occurred'
+              : error.message,
+            severity: 'high',
+          },
+        ],
+      },
     }
   }
 
@@ -832,13 +831,15 @@ export class RecommendationAPI {
     return this.createErrorResponse(request, new Error('Service temporarily unavailable'), 0)
   }
 
-  private async *createContextStream(request: RecommendationAPIRequest): AsyncGenerator<ContextUpdate> {
+  private async *createContextStream(
+    request: RecommendationAPIRequest
+  ): AsyncGenerator<ContextUpdate> {
     // Implementation would create real-time context stream
     // This is a stub
     yield {
       context: request.request.currentContext,
       changeType: 'update',
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -862,7 +863,7 @@ export class RecommendationAPI {
       diskIO: 0,
       recommendationQuality: 0,
       userSatisfaction: 0,
-      conversionRate: 0
+      conversionRate: 0,
     }
   }
 
@@ -874,8 +875,6 @@ export class RecommendationAPI {
 // =============================================================================
 
 class MultiLevelCache {
-  constructor(private config: CacheConfig) {}
-
   async get(key: string): Promise<any> {
     return null
   }
@@ -898,30 +897,24 @@ class MultiLevelCache {
       averageResponseTime: 50,
       cacheSize: 1000,
       memoryUsage: 1024 * 1024,
-      evictionCount: 10
+      evictionCount: 10,
     }
   }
 }
 
 class PerformanceMonitor {
-  constructor(private config: MonitoringConfig) {}
-
   getAnalytics(timeRange?: { start: Date; end: Date }): APIAnalytics {
     return {} as APIAnalytics
   }
 }
 
 class RateLimiter {
-  constructor(private config: RateLimitConfig) {}
-
   async checkLimit(userId: string, ipAddress: string): Promise<void> {
     // Implementation would check and enforce rate limits
   }
 }
 
 class CircuitBreaker {
-  constructor(private config: CircuitBreakerConfig) {}
-
   canExecute(): boolean {
     return true
   }
@@ -935,24 +928,18 @@ class CircuitBreaker {
 }
 
 class ABTestingManager {
-  constructor(private config: ABTestingConfig) {}
-
   async getVariant(userId: string): Promise<ABTestVariant | undefined> {
     return undefined
   }
 }
 
 class BatchProcessor {
-  constructor(private config: PerformanceConfig) {}
-
   async processBatch(requests: RecommendationAPIRequest[]): Promise<RecommendationAPIResponse[]> {
     return []
   }
 }
 
-class AlertManager {
-  constructor(private config: MonitoringConfig) {}
-}
+class AlertManager {}
 
 // =============================================================================
 // Additional Supporting Types
@@ -1030,19 +1017,19 @@ export function createProductionRecommendationAPI(): RecommendationAPI {
       l1Cache: {
         maxSize: 50000,
         ttl: 300000, // 5 minutes
-        updateThreshold: 0.9
+        updateThreshold: 0.9,
       },
       l2Cache: {
         maxSize: 500000,
         ttl: 3600000, // 1 hour
-        updateThreshold: 0.8
+        updateThreshold: 0.8,
       },
       strategy: 'adaptive',
       compressionEnabled: true,
       encryptionEnabled: true,
       invalidationStrategy: 'hybrid',
       maxAge: 7200000, // 2 hours
-      staleWhileRevalidate: true
+      staleWhileRevalidate: true,
     },
     performance: {
       requestDeduplication: true,
@@ -1056,7 +1043,7 @@ export function createProductionRecommendationAPI(): RecommendationAPI {
       requestTimeout: 10000, // 10 seconds
       keepAliveTimeout: 120000, // 2 minutes
       maxMemoryUsage: 4 * 1024 * 1024 * 1024, // 4GB
-      maxCPUUsage: 70
+      maxCPUUsage: 70,
     },
     security: {
       rateLimiting: {
@@ -1064,7 +1051,7 @@ export function createProductionRecommendationAPI(): RecommendationAPI {
         windowSize: 60000,
         maxRequests: 10000,
         burstAllowance: 500,
-        rateLimitHeaders: true
+        rateLimitHeaders: true,
       },
       requireAuthentication: true,
       allowedOrigins: [], // Specific origins in production
@@ -1073,7 +1060,7 @@ export function createProductionRecommendationAPI(): RecommendationAPI {
       sanitizeInputs: true,
       maxRequestSize: 10 * 1024 * 1024, // 10MB
       hideInternalErrors: true,
-      addSecurityHeaders: true
+      addSecurityHeaders: true,
     },
     monitoring: {
       metricsEnabled: true,
@@ -1088,9 +1075,9 @@ export function createProductionRecommendationAPI(): RecommendationAPI {
       alertThresholds: {
         responseTime: 500, // 500ms
         errorRate: 0.01, // 1%
-        memoryUsage: 0.85 // 85%
-      }
-    }
+        memoryUsage: 0.85, // 85%
+      },
+    },
   }
 
   return new RecommendationAPI(productionConfig)

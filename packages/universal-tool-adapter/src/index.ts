@@ -18,6 +18,17 @@ export {
 export { BaseAdapter } from './core/base-adapter'
 // Core framework components
 export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
+export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
+// Enhanced Intelligence Components
+export {
+  checkIntelligenceCapabilities,
+  createFullyIntelligentAdapter,
+  createIntelligenceEnhancedAdapter,
+  IntelligenceIntegrationLayer,
+} from './enhanced-intelligence/intelligence-integration-layer'
+export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
+export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
+export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Error types
 export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'
 export { ResultFormatter } from './formatting/result-formatter'
@@ -32,17 +43,6 @@ export { PluginSystem } from './plugins/plugin-system'
 export { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
 // Testing framework
 export { AdapterTestFramework } from './testing/test-framework'
-// Enhanced Intelligence Components
-export {
-  IntelligenceIntegrationLayer,
-  createIntelligenceEnhancedAdapter,
-  createFullyIntelligentAdapter,
-  checkIntelligenceCapabilities
-} from './enhanced-intelligence/intelligence-integration-layer'
-export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
-export { ContextualRecommendationEngine } from './enhanced-intelligence/contextual-recommendation-engine'
-export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
-export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Types and interfaces
 export type * from './types/adapter-interfaces'
 export type * from './types/parlant-interfaces'
@@ -118,7 +118,7 @@ export class UniversalToolAdapterSystem {
 
     // System is ready
     console.log('Universal Tool Adapter System initialized successfully', {
-      intelligenceEnabled: !!this.intelligence
+      intelligenceEnabled: !!this.intelligence,
     })
   }
 
@@ -160,7 +160,12 @@ export class UniversalToolAdapterSystem {
   /**
    * Execute adapter with full monitoring and optimization
    */
-  async executeAdapter(adapterId: string, context: any, args: any, userContext?: any): Promise<any> {
+  async executeAdapter(
+    adapterId: string,
+    context: any,
+    args: any,
+    userContext?: any
+  ): Promise<any> {
     // Use intelligence-enhanced execution if available
     if (this.intelligence) {
       return this.intelligence.executeWithIntelligence(adapterId, context, args, userContext)
@@ -200,7 +205,11 @@ export class UniversalToolAdapterSystem {
   /**
    * Get intelligent tool description
    */
-  async getToolDescription(toolId: string, userContext?: any, complexityLevel?: 'brief' | 'detailed' | 'expert'): Promise<any> {
+  async getToolDescription(
+    toolId: string,
+    userContext?: any,
+    complexityLevel?: 'brief' | 'detailed' | 'expert'
+  ): Promise<any> {
     if (this.intelligence) {
       return this.intelligence.getToolDescription(toolId, userContext, complexityLevel)
     }
@@ -312,8 +321,10 @@ export async function quickSetup(
     enableIntelligence: options.enableIntelligence ?? true,
     intelligence: {
       enableNaturalLanguageDescriptions: options.intelligenceFeatures?.naturalLanguage ?? true,
-      enableContextualRecommendations: options.intelligenceFeatures?.contextualRecommendations ?? true,
-      enableIntelligentErrorHandling: options.intelligenceFeatures?.intelligentErrorHandling ?? true,
+      enableContextualRecommendations:
+        options.intelligenceFeatures?.contextualRecommendations ?? true,
+      enableIntelligentErrorHandling:
+        options.intelligenceFeatures?.intelligentErrorHandling ?? true,
       enablePerformanceOptimization: true,
     },
   })

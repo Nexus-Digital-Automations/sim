@@ -18,11 +18,8 @@
  * @version 2.0.0
  */
 
-import type {
-  ContextualRecommendationRequest,
-  ContextualRecommendation
-} from './contextual-recommendation-engine'
 import { createLogger } from '../utils/logger'
+import type { ContextualRecommendationRequest } from './contextual-recommendation-engine'
 
 const logger = createLogger('ABTestingFramework')
 
@@ -363,13 +360,7 @@ export type AggregationType =
   | 'rate'
   | 'ratio'
 
-export type DistributionType =
-  | 'normal'
-  | 'binomial'
-  | 'poisson'
-  | 'exponential'
-  | 'beta'
-  | 'gamma'
+export type DistributionType = 'normal' | 'binomial' | 'poisson' | 'exponential' | 'beta' | 'gamma'
 
 // =============================================================================
 // Advanced Testing Features
@@ -500,7 +491,7 @@ export class ABTestingFramework {
         createdAt: new Date(),
         updatedAt: new Date(),
         version: '1.0.0',
-        tags: testDefinition.tags || []
+        tags: testDefinition.tags || [],
       }
 
       // Store test
@@ -509,7 +500,6 @@ export class ABTestingFramework {
       logger.info('A/B test created', { testId, name: test.name, variants: test.variants.length })
 
       return test
-
     } catch (error) {
       logger.error('Error creating A/B test', { error, testDefinition })
       throw error
@@ -549,7 +539,6 @@ export class ABTestingFramework {
       this.testMonitor.startMonitoring(test)
 
       logger.info('A/B test started', { testId, name: test.name })
-
     } catch (error) {
       logger.error('Error starting A/B test', { error, testId })
       throw error
@@ -576,7 +565,7 @@ export class ABTestingFramework {
       }
 
       // Check targeting criteria
-      if (!await this.meetsTargetingCriteria(userId, test, context)) {
+      if (!(await this.meetsTargetingCriteria(userId, test, context))) {
         return null
       }
 
@@ -595,7 +584,6 @@ export class ABTestingFramework {
       assignment.contextHistory.push(context)
 
       return assignment
-
     } catch (error) {
       logger.error('Error getting variant assignment', { error, userId, testId })
       return null
@@ -631,9 +619,8 @@ export class ABTestingFramework {
       logger.debug('Test event recorded', {
         testId: event.testId,
         userId: event.userId,
-        eventType: event.eventType
+        eventType: event.eventType,
       })
-
     } catch (error) {
       logger.error('Error recording test event', { error, event })
     }
@@ -697,9 +684,9 @@ export class ABTestingFramework {
         statisticalSignificance: this.assessStatisticalSignificance(statisticalTests),
         practicalSignificance: this.assessPracticalSignificance(treatmentEffects, test),
         confidenceLevel: test.significanceLevel,
-        pValue: Math.min(...statisticalTests.map(t => t.pValue)),
+        pValue: Math.min(...statisticalTests.map((t) => t.pValue)),
         businessImpact,
-        recommendations: this.generateRecommendations(treatmentEffects, businessImpact)
+        recommendations: this.generateRecommendations(treatmentEffects, businessImpact),
       }
 
       // Update test with results
@@ -707,7 +694,6 @@ export class ABTestingFramework {
       test.updatedAt = new Date()
 
       return results
-
     } catch (error) {
       logger.error('Error getting test results', { error, testId })
       return null
@@ -738,7 +724,7 @@ export class ABTestingFramework {
         reason,
         timestamp: new Date(),
         decisionMaker: 'system',
-        confidence: 1.0
+        confidence: 1.0,
       })
 
       // Remove from active tests
@@ -748,7 +734,6 @@ export class ABTestingFramework {
       this.testMonitor.stopMonitoring(testId)
 
       logger.info('A/B test stopped', { testId, reason })
-
     } catch (error) {
       logger.error('Error stopping A/B test', { error, testId })
       throw error
@@ -777,7 +762,7 @@ export class ABTestingFramework {
       testUsers: true,
       internalUsers: true,
       excludeDuringIncidents: true,
-      maintenanceWindows: []
+      maintenanceWindows: [],
     }
   }
 
@@ -785,7 +770,7 @@ export class ABTestingFramework {
     return {
       testingMethod: 'frequentist',
       multipleComparisonCorrection: 'benjamini_hochberg',
-      credibleInterval: 0.95
+      credibleInterval: 0.95,
     }
   }
 
@@ -798,12 +783,19 @@ export class ABTestingFramework {
     return false
   }
 
-  private async meetsTargetingCriteria(userId: string, test: ABTest, context: any): Promise<boolean> {
+  private async meetsTargetingCriteria(
+    userId: string,
+    test: ABTest,
+    context: any
+  ): Promise<boolean> {
     // Check if user meets targeting criteria
     return true
   }
 
-  private async getExistingAssignment(userId: string, testId: string): Promise<VariantAssignment | null> {
+  private async getExistingAssignment(
+    userId: string,
+    testId: string
+  ): Promise<VariantAssignment | null> {
     // Get existing variant assignment for user
     return null
   }
@@ -820,7 +812,7 @@ export class ABTestingFramework {
       variantId: this.selectVariant(userId, test),
       assignmentTime: new Date(),
       lastSeen: new Date(),
-      contextHistory: [context]
+      contextHistory: [context],
     }
   }
 
@@ -844,7 +836,7 @@ export class ABTestingFramework {
     let hash = 0
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash) / 2147483647 // Normalize to 0-1
@@ -869,7 +861,11 @@ export class ABTestingFramework {
     return []
   }
 
-  private assessBusinessImpact(effects: any, primaryMetric: any, secondaryMetrics: any): BusinessImpact {
+  private assessBusinessImpact(
+    effects: any,
+    primaryMetric: any,
+    secondaryMetrics: any
+  ): BusinessImpact {
     // Assess business impact of test results
     return {} as BusinessImpact
   }
@@ -881,12 +877,12 @@ export class ABTestingFramework {
 
   private assessStatisticalSignificance(tests: StatisticalTest[]): boolean {
     // Determine if results are statistically significant
-    return tests.some(test => test.pValue < 0.05)
+    return tests.some((test) => test.pValue < 0.05)
   }
 
   private assessPracticalSignificance(effects: TreatmentEffect[], test: ABTest): boolean {
     // Determine if results are practically significant
-    return effects.some(effect => Math.abs(effect.effect) > test.minimumDetectableEffect)
+    return effects.some((effect) => Math.abs(effect.effect) > test.minimumDetectableEffect)
   }
 
   private generateRecommendations(effects: TreatmentEffect[], impact: BusinessImpact): string[] {
@@ -900,8 +896,6 @@ export class ABTestingFramework {
 // =============================================================================
 
 class StatisticalEngine {
-  constructor(config?: any) {}
-
   async performTests(variants: any, metrics: any, config: any): Promise<StatisticalTest[]> {
     // Perform statistical tests
     return []
@@ -920,7 +914,7 @@ class PowerAnalysisEngine {
       estimated_duration: 14 * 24 * 60 * 60 * 1000, // 14 days
       baseline_conversion_rate: 0.1,
       daily_traffic: 1000,
-      assumptions: ['Normal distribution', 'Independent observations']
+      assumptions: ['Normal distribution', 'Independent observations'],
     }
   }
 }
@@ -930,8 +924,6 @@ class SegmentationEngine {
 }
 
 class TestMonitor {
-  constructor(config?: any) {}
-
   startMonitoring(test: ABTest): void {
     // Start monitoring test
   }
@@ -942,16 +934,12 @@ class TestMonitor {
 }
 
 class SafetyChecker {
-  constructor(config?: any) {}
-
   async checkEvent(event: TestEvent, test: ABTest): Promise<void> {
     // Check for safety violations
   }
 }
 
 class TestMetricsCollector {
-  constructor(test: ABTest) {}
-
   async recordEvent(event: TestEvent): Promise<void> {
     // Record test event
   }
@@ -960,7 +948,7 @@ class TestMetricsCollector {
     // Get current metrics
     return {
       totalUsers: 1000,
-      totalConversions: 100
+      totalConversions: 100,
     }
   }
 }
@@ -1116,16 +1104,16 @@ export function createProductionABTestingFramework(): ABTestingFramework {
     statistical: {
       default_power: 0.8,
       default_significance: 0.05,
-      multiple_comparison_correction: true
+      multiple_comparison_correction: true,
     },
     monitoring: {
       check_frequency: 3600000, // 1 hour
-      alert_channels: ['slack', 'email']
+      alert_channels: ['slack', 'email'],
     },
     safety: {
       auto_stop_enabled: true,
-      max_negative_impact: 0.05
-    }
+      max_negative_impact: 0.05,
+    },
   }
 
   return new ABTestingFramework(config)

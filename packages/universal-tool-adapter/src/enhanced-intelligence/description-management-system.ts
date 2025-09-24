@@ -19,18 +19,9 @@
  * @version 2.0.0
  */
 
-import type {
-  EnhancedDescriptionSchema,
-  ToolCategory,
-  UserRole,
-  SkillLevel
-} from './natural-language-description-framework'
-import type {
-  EnhancedDescriptionTemplate,
-  ValidationResult
-} from './description-templates'
-import type { NLPEnhancementConfig, DescriptionEnhancementResult } from './nlp-enhancement-system'
 import { createLogger } from '../utils/logger'
+import type { EnhancedDescriptionTemplate, ValidationResult } from './description-templates'
+import type { EnhancedDescriptionSchema, UserRole } from './natural-language-description-framework'
 
 const logger = createLogger('DescriptionManagementSystem')
 
@@ -496,7 +487,11 @@ export class DescriptionManagementSystem {
 
     try {
       // Generate initial description structure
-      const initialDescription = await this.generateInitialDescription(toolId, template, createOptions)
+      const initialDescription = await this.generateInitialDescription(
+        toolId,
+        template,
+        createOptions
+      )
 
       // Create version control entry
       const version = await this.versionControlService.createInitialVersion(
@@ -518,7 +513,7 @@ export class DescriptionManagementSystem {
           timeSpent: 0,
           actionsPerformed: [],
           undoHistory: [],
-          redoHistory: []
+          redoHistory: [],
         },
         currentVersion: version.versionId,
         workingCopy: { ...initialDescription },
@@ -529,7 +524,7 @@ export class DescriptionManagementSystem {
         completionStatus: {
           overallCompletion: 10,
           sectionCompletion: {},
-          milestones: []
+          milestones: [],
         },
         lastSaved: new Date(),
         autoSaveEnabled: true,
@@ -539,8 +534,8 @@ export class DescriptionManagementSystem {
           status: 'draft',
           reviewers: [],
           approvals: 0,
-          rejections: 0
-        }
+          rejections: 0,
+        },
       }
 
       // Store session
@@ -554,7 +549,6 @@ export class DescriptionManagementSystem {
 
       logger.info(`Description creation started for tool: ${toolId}`)
       return session
-
     } catch (error) {
       logger.error(`Failed to create description for tool ${toolId}:`, error)
       throw error
@@ -598,7 +592,6 @@ export class DescriptionManagementSystem {
       }
 
       return session
-
     } catch (error) {
       logger.error(`Failed to open description for editing ${descriptionId}:`, error)
       throw error
@@ -626,9 +619,7 @@ export class DescriptionManagementSystem {
       // Run quality checks if enabled
       let qualityResult: QualityCheckResult[] = []
       if (this.config.qualityAssurance.automatedValidation) {
-        qualityResult = await this.qualityAssuranceService.runQualityChecks(
-          session.workingCopy
-        )
+        qualityResult = await this.qualityAssuranceService.runQualityChecks(session.workingCopy)
       }
 
       // Create change set
@@ -667,18 +658,17 @@ export class DescriptionManagementSystem {
         changeSet,
         validationResult,
         qualityResults: qualityResult,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
 
       logger.info(`Description saved successfully: ${session.descriptionId}`)
       return saveResult
-
     } catch (error) {
       logger.error(`Failed to save description ${session.descriptionId}:`, error)
       return {
         success: false,
         error: error.message,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
   }
@@ -714,7 +704,7 @@ export class DescriptionManagementSystem {
         workflowId: workflow.workflowId,
         reviewers: workflow.requiredReviewers,
         approvals: 0,
-        rejections: 0
+        rejections: 0,
       }
 
       await this.storageService.updateAuthoringSession(session)
@@ -724,7 +714,6 @@ export class DescriptionManagementSystem {
 
       logger.info(`Review workflow started for description: ${session.descriptionId}`)
       return workflow
-
     } catch (error) {
       logger.error(`Failed to submit description for review:`, error)
       throw error
@@ -763,17 +752,16 @@ export class DescriptionManagementSystem {
         publicationId: publication.publicationId,
         publishedChannels: publication.channels,
         publicationDate: publication.publishDate,
-        distributionResults: publication.distributionResults
+        distributionResults: publication.distributionResults,
       }
 
       logger.info(`Description published successfully: ${descriptionId}`)
       return result
-
     } catch (error) {
       logger.error(`Failed to publish description ${descriptionId}:`, error)
       return {
         success: false,
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -877,7 +865,7 @@ export class DescriptionManagementSystem {
           primaryUseCase: 'Primary use case',
           keyCapability: 'Key capability',
           complexityLevel: 'moderate',
-          quickTags: ['tool', 'productivity']
+          quickTags: ['tool', 'productivity'],
         },
         detailed: {
           overview: `Detailed overview for ${toolId}`,
@@ -886,7 +874,7 @@ export class DescriptionManagementSystem {
           workingPrinciple: 'How it works',
           benefits: ['Benefit 1', 'Benefit 2'],
           limitations: ['Limitation 1'],
-          integrationInfo: { integratedWith: [], apiEndpoints: [] }
+          integrationInfo: { integratedWith: [], apiEndpoints: [] },
         },
         expert: {
           technicalArchitecture: {
@@ -894,46 +882,46 @@ export class DescriptionManagementSystem {
             dependencies: [],
             integrationPoints: [],
             scalabilityFactors: [],
-            performanceConsiderations: []
+            performanceConsiderations: [],
           },
           advancedConfiguration: {
             configurableParameters: [],
             advancedOptions: [],
             customizationPoints: [],
-            extensionMechanisms: []
+            extensionMechanisms: [],
           },
           performanceProfile: {
             responseTime: { average: 0, p95: 0, p99: 0 },
             throughput: { average: 0, p95: 0, p99: 0 },
             resourceUsage: { cpu: 0, memory: 0, network: 0 },
-            scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 }
+            scalabilityLimits: { maxConcurrentUsers: 0, maxDataSize: 0 },
           },
           securityProfile: {
             authenticationRequirements: [],
             authorizationModel: '',
             dataProtection: [],
             auditingCapabilities: [],
-            complianceFrameworks: []
+            complianceFrameworks: [],
           },
           troubleshooting: {
             commonIssues: [],
             diagnosticSteps: [],
             resolutionProcedures: [],
-            escalationPaths: []
+            escalationPaths: [],
           },
           extensibilityInfo: {
             extensionPoints: [],
-            customization: []
-          }
+            customization: [],
+          },
         },
-        contextual: {}
+        contextual: {},
       },
       contextualDescriptions: {
         roleAdaptations: {} as any,
         skillAdaptations: {} as any,
         domainAdaptations: {},
         workflowAdaptations: {},
-        situationalAdaptations: {}
+        situationalAdaptations: {},
       },
       usageGuidance: {
         stepByStepGuides: [],
@@ -941,14 +929,14 @@ export class DescriptionManagementSystem {
         bestPractices: [],
         commonPitfalls: [],
         optimizationTips: [],
-        relatedWorkflows: []
+        relatedWorkflows: [],
       },
       interactiveElements: {
         conversationalPatterns: [],
         interactiveExamples: [],
         quickActions: [],
         dynamicHelp: [],
-        progressTracking: { milestones: [], currentProgress: 0 }
+        progressTracking: { milestones: [], currentProgress: 0 },
       },
       adaptiveFeatures: {} as any,
       qualityMetadata: {
@@ -958,7 +946,7 @@ export class DescriptionManagementSystem {
           contextualRelevance: 0,
           userComprehension: 0,
           lastValidated: new Date(),
-          validationMethod: []
+          validationMethod: [],
         },
         completenessScore: { overall: 0, sections: {} },
         userFeedback: { averageRating: 0, commonSuggestions: [] },
@@ -967,16 +955,16 @@ export class DescriptionManagementSystem {
         freshnessIndicators: {
           lastUpdated: new Date(),
           contentAge: 0,
-          needsUpdate: false
-        }
+          needsUpdate: false,
+        },
       },
       versionInfo: {
         version: '1.0.0',
         previousVersions: [],
         changeLog: [],
         approvalStatus: { status: 'draft', approver: '', date: new Date(), comments: '' },
-        publicationInfo: { publishedDate: new Date(), publisher: '', audience: '' }
-      }
+        publicationInfo: { publishedDate: new Date(), publisher: '', audience: '' },
+      },
     }
   }
 
@@ -1011,7 +999,7 @@ export class DescriptionManagementSystem {
         timeSpent: 0,
         actionsPerformed: [],
         undoHistory: [],
-        redoHistory: []
+        redoHistory: [],
       },
       currentVersion: description.versionInfo.version,
       workingCopy: { ...description },
@@ -1022,7 +1010,7 @@ export class DescriptionManagementSystem {
       completionStatus: {
         overallCompletion: 50,
         sectionCompletion: {},
-        milestones: []
+        milestones: [],
       },
       lastSaved: new Date(),
       autoSaveEnabled: true,
@@ -1032,8 +1020,8 @@ export class DescriptionManagementSystem {
         status: 'draft',
         reviewers: [],
         approvals: 0,
-        rejections: 0
-      }
+        rejections: 0,
+      },
     }
   }
 
@@ -1047,11 +1035,27 @@ export class DescriptionManagementSystem {
   }
 
   // Placeholder implementations for complex methods
-  private async validateDescriptionChanges(session: AuthoringSession): Promise<ValidationResult> { return { isValid: true, issues: [], qualityScore: 0.85 } }
-  private async calculateChangeSet(original: EnhancedDescriptionSchema, working: EnhancedDescriptionSchema): Promise<ChangeSet> { return { changes: [], insertions: 0, deletions: 0, modifications: 0, overallImpact: 'low' } }
+  private async validateDescriptionChanges(session: AuthoringSession): Promise<ValidationResult> {
+    return { isValid: true, issues: [], qualityScore: 0.85 }
+  }
+  private async calculateChangeSet(
+    original: EnhancedDescriptionSchema,
+    working: EnhancedDescriptionSchema
+  ): Promise<ChangeSet> {
+    return { changes: [], insertions: 0, deletions: 0, modifications: 0, overallImpact: 'low' }
+  }
   private async validateSubmissionReadiness(session: AuthoringSession): Promise<void> {}
-  private async createReviewWorkflow(descriptionId: string, versionId: string, options: ReviewSubmissionOptions): Promise<ReviewWorkflow> { return {} as any }
-  private async validatePublicationReadiness(descriptionId: string, versionId: string): Promise<void> {}
+  private async createReviewWorkflow(
+    descriptionId: string,
+    versionId: string,
+    options: ReviewSubmissionOptions
+  ): Promise<ReviewWorkflow> {
+    return {} as any
+  }
+  private async validatePublicationReadiness(
+    descriptionId: string,
+    versionId: string
+  ): Promise<void> {}
 }
 
 // =============================================================================
@@ -1059,55 +1063,93 @@ export class DescriptionManagementSystem {
 // =============================================================================
 
 class StorageService {
-  constructor(private config: StorageConfig) {}
-
   async storeAuthoringSession(session: AuthoringSession): Promise<void> {}
-  async loadAuthoringSession(descriptionId: string, userId: string): Promise<AuthoringSession | null> { return null }
-  async loadAuthoringSessionById(sessionId: string): Promise<AuthoringSession | null> { return null }
+  async loadAuthoringSession(
+    descriptionId: string,
+    userId: string
+  ): Promise<AuthoringSession | null> {
+    return null
+  }
+  async loadAuthoringSessionById(sessionId: string): Promise<AuthoringSession | null> {
+    return null
+  }
   async updateAuthoringSession(session: AuthoringSession): Promise<void> {}
-  async loadDescription(descriptionId: string): Promise<EnhancedDescriptionSchema | null> { return null }
+  async loadDescription(descriptionId: string): Promise<EnhancedDescriptionSchema | null> {
+    return null
+  }
 }
 
 class VersionControlService {
-  constructor(private config: VersionControlConfig) {}
-
-  async createInitialVersion(description: EnhancedDescriptionSchema, authorId: string, message: string): Promise<DescriptionVersion> { return {} as any }
-  async saveVersion(descriptionId: string, content: EnhancedDescriptionSchema, changeSet: ChangeSet, authorId: string, message: string): Promise<DescriptionVersion> { return {} as any }
+  async createInitialVersion(
+    description: EnhancedDescriptionSchema,
+    authorId: string,
+    message: string
+  ): Promise<DescriptionVersion> {
+    return {} as any
+  }
+  async saveVersion(
+    descriptionId: string,
+    content: EnhancedDescriptionSchema,
+    changeSet: ChangeSet,
+    authorId: string,
+    message: string
+  ): Promise<DescriptionVersion> {
+    return {} as any
+  }
   async markVersionPublished(versionId: string, publicationId: string): Promise<void> {}
 }
 
 class CollaborationService {
-  constructor(private config: CollaborationConfig) {}
-
   async joinEditingSession(sessionId: string, userId: string): Promise<void> {}
   async notifyCollaborators(sessionId: string, eventType: string, data: any): Promise<void> {}
   async notifyReviewers(workflow: ReviewWorkflow): Promise<void> {}
-  async addCollaborator(session: AuthoringSession, collaboratorId: string, permissions: CollaborationPermission[]): Promise<CollaborationResult> { return {} as any }
+  async addCollaborator(
+    session: AuthoringSession,
+    collaboratorId: string,
+    permissions: CollaborationPermission[]
+  ): Promise<CollaborationResult> {
+    return {} as any
+  }
   async removeCollaborator(session: AuthoringSession, collaboratorId: string): Promise<void> {}
-  async lockSection(sessionId: string, sectionPath: string, userId: string, lockType: 'exclusive' | 'shared'): Promise<LockResult> { return {} as any }
+  async lockSection(
+    sessionId: string,
+    sectionPath: string,
+    userId: string,
+    lockType: 'exclusive' | 'shared'
+  ): Promise<LockResult> {
+    return {} as any
+  }
   async unlockSection(sessionId: string, sectionPath: string, userId: string): Promise<void> {}
 }
 
 class QualityAssuranceService {
-  constructor(private config: QualityAssuranceConfig) {}
-
   async initializeQualityTracking(descriptionId: string, versionId: string): Promise<void> {}
-  async runQualityChecks(description: EnhancedDescriptionSchema): Promise<QualityCheckResult[]> { return [] }
+  async runQualityChecks(description: EnhancedDescriptionSchema): Promise<QualityCheckResult[]> {
+    return []
+  }
 }
 
 class PublishingService {
-  constructor(private config: PublishingConfig) {}
-
-  async publishVersion(descriptionId: string, versionId: string, options: PublishOptions): Promise<Publication> { return {} as any }
+  async publishVersion(
+    descriptionId: string,
+    versionId: string,
+    options: PublishOptions
+  ): Promise<Publication> {
+    return {} as any
+  }
 }
 
 class AnalyticsService {
-  constructor(private config: AnalyticsConfig) {}
-
   async trackPublication(publication: Publication): Promise<void> {}
-  async getDescriptionAnalytics(descriptionId: string): Promise<DescriptionAnalytics> { return {} as any }
-  async getAuthoringInsights(authorId: string): Promise<AuthoringInsights> { return {} as any }
-  async getQualityTrends(descriptionId: string): Promise<QualityTrend[]> { return [] }
+  async getDescriptionAnalytics(descriptionId: string): Promise<DescriptionAnalytics> {
+    return {} as any
+  }
+  async getAuthoringInsights(authorId: string): Promise<AuthoringInsights> {
+    return {} as any
+  }
+  async getQualityTrends(descriptionId: string): Promise<QualityTrend[]> {
+    return []
+  }
 }
 
 // =============================================================================
@@ -1167,62 +1209,270 @@ export interface PublishResult {
 }
 
 // Additional simplified types for brevity
-export interface BackupStrategy { type: string; frequency: string; retention: number }
-export interface RetentionPolicy { period: number; archiveAfter: number }
-export interface EncryptionSettings { enabled: boolean; algorithm: string; keyManagement: string }
-export interface ReviewWorkflowConfig { steps: string[]; parallel: boolean; timeouts: number }
-export interface NotificationConfig { channels: string[]; frequency: string }
-export interface AccessControlConfig { model: string; permissions: string[] }
-export interface QualityGate { name: string; threshold: number; checks: string[] }
-export interface DistributionChannel { channel: string; configuration: Record<string, any> }
-export interface ApprovalWorkflowConfig { steps: string[]; approvers: string[] }
-export interface AnalyticsConfig { enabled: boolean; metrics: string[] }
-export interface SecurityConfig { authentication: string; authorization: string; audit: boolean }
-export interface IntegrationConfig { type: string; endpoint: string; credentials: Record<string, string> }
-export interface CompletionStatus { overallCompletion: number; sectionCompletion: Record<string, number>; milestones: string[] }
-export interface PresenceInfo { online: boolean; lastSeen: Date; currentSection: string }
-export interface Contribution { type: string; timestamp: Date; details: string }
-export interface CollaborationPermission { permission: string; scope: string }
-export interface ActionDetails { changes: string[]; metadata: Record<string, any> }
-export interface UndoAction { actionId: string; timestamp: Date }
-export interface RedoAction { actionId: string; timestamp: Date }
-export interface VersionStatus { status: string; timestamp: Date }
-export interface VersionLifecycle { created: Date; lastModified: Date; published?: Date }
-export interface PublishingInfo { channels: string[]; date: Date; status: string }
-export interface DeprecationInfo { feature: string; deprecatedIn: string; removedIn: string }
-export interface ReviewInfo { reviewer: string; status: string; timestamp: Date }
-export interface ApprovalInfo { approver: string; approved: boolean; timestamp: Date }
-export interface ReviewProgress { completed: number; total: number; percentage: number }
-export interface ApprovalStatus { approved: number; rejected: number; pending: number }
-export interface EscalationTrigger { condition: string; action: string; recipient: string }
-export interface ReviewRequirement { requirement: string; mandatory: boolean }
-export interface PassingCriteria { criteria: string; threshold: number }
-export interface TimeoutSettings { timeout: number; action: string }
-export interface ReviewSuggestion { suggestion: string; priority: string }
-export interface CommentResponse { response: string; author: string; timestamp: Date }
-export interface ManualReview { reviewer: string; score: number; comments: string }
-export interface ExpertEvaluation { expert: string; evaluation: string; recommendations: string[] }
-export interface ImprovementOpportunity { area: string; opportunity: string; impact: string }
-export interface QualityTrend { period: string; score: number; trend: string }
-export interface BenchmarkComparison { benchmark: string; score: number; comparison: string }
-export interface QualityIssue { issue: string; severity: string; section: string }
-export interface QualitySuggestion { suggestion: string; impact: string }
-export interface PublishingStrategy { strategy: string; configuration: Record<string, any> }
-export interface TargetAudience { audience: string; preferences: Record<string, any> }
-export interface Rollback { rollbackId: string; reason: string; timestamp: Date }
-export interface DistributionMetrics { reach: number; engagement: number; conversion: number }
-export interface AudienceReach { total: number; byChannel: Record<string, number> }
-export interface EngagementMetrics { views: number; interactions: number; feedback: number }
-export interface DistributionScope { global: boolean; regions: string[]; restrictions: string[] }
-export interface DistributionResult { channel: string; success: boolean; reach: number }
-export interface EngagementStats { views: number; likes: number; shares: number }
-export interface PublicationFeedback { rating: number; comment: string; source: string }
-export interface CollaborationResult { success: boolean; collaboratorId: string; permissions: string[] }
-export interface LockResult { success: boolean; lockId: string; expiresAt: Date }
-export interface DescriptionAnalytics { usage: number; ratings: number; feedback: string[] }
-export interface AuthoringInsights { productivity: number; quality: number; collaboration: number }
-export interface QualityCheckResult { checkId: string; passed: boolean; score: number; issues: string[] }
-export interface ReviewStatus { status: string; workflowId?: string; reviewers: string[]; approvals: number; rejections: number }
+export interface BackupStrategy {
+  type: string
+  frequency: string
+  retention: number
+}
+export interface RetentionPolicy {
+  period: number
+  archiveAfter: number
+}
+export interface EncryptionSettings {
+  enabled: boolean
+  algorithm: string
+  keyManagement: string
+}
+export interface ReviewWorkflowConfig {
+  steps: string[]
+  parallel: boolean
+  timeouts: number
+}
+export interface NotificationConfig {
+  channels: string[]
+  frequency: string
+}
+export interface AccessControlConfig {
+  model: string
+  permissions: string[]
+}
+export interface QualityGate {
+  name: string
+  threshold: number
+  checks: string[]
+}
+export interface DistributionChannel {
+  channel: string
+  configuration: Record<string, any>
+}
+export interface ApprovalWorkflowConfig {
+  steps: string[]
+  approvers: string[]
+}
+export interface AnalyticsConfig {
+  enabled: boolean
+  metrics: string[]
+}
+export interface SecurityConfig {
+  authentication: string
+  authorization: string
+  audit: boolean
+}
+export interface IntegrationConfig {
+  type: string
+  endpoint: string
+  credentials: Record<string, string>
+}
+export interface CompletionStatus {
+  overallCompletion: number
+  sectionCompletion: Record<string, number>
+  milestones: string[]
+}
+export interface PresenceInfo {
+  online: boolean
+  lastSeen: Date
+  currentSection: string
+}
+export interface Contribution {
+  type: string
+  timestamp: Date
+  details: string
+}
+export interface CollaborationPermission {
+  permission: string
+  scope: string
+}
+export interface ActionDetails {
+  changes: string[]
+  metadata: Record<string, any>
+}
+export interface UndoAction {
+  actionId: string
+  timestamp: Date
+}
+export interface RedoAction {
+  actionId: string
+  timestamp: Date
+}
+export interface VersionStatus {
+  status: string
+  timestamp: Date
+}
+export interface VersionLifecycle {
+  created: Date
+  lastModified: Date
+  published?: Date
+}
+export interface PublishingInfo {
+  channels: string[]
+  date: Date
+  status: string
+}
+export interface DeprecationInfo {
+  feature: string
+  deprecatedIn: string
+  removedIn: string
+}
+export interface ReviewInfo {
+  reviewer: string
+  status: string
+  timestamp: Date
+}
+export interface ApprovalInfo {
+  approver: string
+  approved: boolean
+  timestamp: Date
+}
+export interface ReviewProgress {
+  completed: number
+  total: number
+  percentage: number
+}
+export interface ApprovalStatus {
+  approved: number
+  rejected: number
+  pending: number
+}
+export interface EscalationTrigger {
+  condition: string
+  action: string
+  recipient: string
+}
+export interface ReviewRequirement {
+  requirement: string
+  mandatory: boolean
+}
+export interface PassingCriteria {
+  criteria: string
+  threshold: number
+}
+export interface TimeoutSettings {
+  timeout: number
+  action: string
+}
+export interface ReviewSuggestion {
+  suggestion: string
+  priority: string
+}
+export interface CommentResponse {
+  response: string
+  author: string
+  timestamp: Date
+}
+export interface ManualReview {
+  reviewer: string
+  score: number
+  comments: string
+}
+export interface ExpertEvaluation {
+  expert: string
+  evaluation: string
+  recommendations: string[]
+}
+export interface ImprovementOpportunity {
+  area: string
+  opportunity: string
+  impact: string
+}
+export interface QualityTrend {
+  period: string
+  score: number
+  trend: string
+}
+export interface BenchmarkComparison {
+  benchmark: string
+  score: number
+  comparison: string
+}
+export interface QualityIssue {
+  issue: string
+  severity: string
+  section: string
+}
+export interface QualitySuggestion {
+  suggestion: string
+  impact: string
+}
+export interface PublishingStrategy {
+  strategy: string
+  configuration: Record<string, any>
+}
+export interface TargetAudience {
+  audience: string
+  preferences: Record<string, any>
+}
+export interface Rollback {
+  rollbackId: string
+  reason: string
+  timestamp: Date
+}
+export interface DistributionMetrics {
+  reach: number
+  engagement: number
+  conversion: number
+}
+export interface AudienceReach {
+  total: number
+  byChannel: Record<string, number>
+}
+export interface EngagementMetrics {
+  views: number
+  interactions: number
+  feedback: number
+}
+export interface DistributionScope {
+  global: boolean
+  regions: string[]
+  restrictions: string[]
+}
+export interface DistributionResult {
+  channel: string
+  success: boolean
+  reach: number
+}
+export interface EngagementStats {
+  views: number
+  likes: number
+  shares: number
+}
+export interface PublicationFeedback {
+  rating: number
+  comment: string
+  source: string
+}
+export interface CollaborationResult {
+  success: boolean
+  collaboratorId: string
+  permissions: string[]
+}
+export interface LockResult {
+  success: boolean
+  lockId: string
+  expiresAt: Date
+}
+export interface DescriptionAnalytics {
+  usage: number
+  ratings: number
+  feedback: string[]
+}
+export interface AuthoringInsights {
+  productivity: number
+  quality: number
+  collaboration: number
+}
+export interface QualityCheckResult {
+  checkId: string
+  passed: boolean
+  score: number
+  issues: string[]
+}
+export interface ReviewStatus {
+  status: string
+  workflowId?: string
+  reviewers: string[]
+  approvals: number
+  rejections: number
+}
 
 // =============================================================================
 // Factory Functions
@@ -1246,7 +1496,7 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
       storageType: 'file',
       backupStrategy: { type: 'incremental', frequency: 'daily', retention: 30 },
       retentionPolicy: { period: 365, archiveAfter: 90 },
-      encryptionSettings: { enabled: false, algorithm: 'AES-256', keyManagement: 'local' }
+      encryptionSettings: { enabled: false, algorithm: 'AES-256', keyManagement: 'local' },
     },
     versionControl: {
       enabled: true,
@@ -1254,7 +1504,7 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
       branchingModel: 'github-flow',
       autoVersioning: true,
       versioningScheme: 'semantic',
-      changeTrackingLevel: 'section'
+      changeTrackingLevel: 'section',
     },
     collaboration: {
       enabled: true,
@@ -1262,7 +1512,7 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
       lockingStrategy: 'optimistic',
       reviewWorkflow: { steps: ['peer-review', 'expert-review'], parallel: false, timeouts: 7 },
       notificationSettings: { channels: ['email'], frequency: 'immediate' },
-      accessControl: { model: 'rbac', permissions: ['read', 'write', 'review', 'publish'] }
+      accessControl: { model: 'rbac', permissions: ['read', 'write', 'review', 'publish'] },
     },
     qualityAssurance: {
       enabled: true,
@@ -1271,26 +1521,26 @@ export function createDefaultManagementConfig(): DescriptionManagementConfig {
       expertReviewThreshold: 0.8,
       qualityGates: [
         { name: 'basic-validation', threshold: 0.7, checks: ['grammar', 'completeness'] },
-        { name: 'quality-review', threshold: 0.8, checks: ['accuracy', 'relevance'] }
+        { name: 'quality-review', threshold: 0.8, checks: ['accuracy', 'relevance'] },
       ],
-      continuousImprovement: true
+      continuousImprovement: true,
     },
     publishing: {
       enabled: true,
       publishingStrategy: 'manual',
       distributionChannels: [{ channel: 'internal', configuration: {} }],
       approvalWorkflow: { steps: ['manager-approval'], approvers: ['admin'] },
-      rollbackCapability: true
+      rollbackCapability: true,
     },
     analytics: {
       enabled: true,
-      metrics: ['usage', 'quality', 'engagement', 'feedback']
+      metrics: ['usage', 'quality', 'engagement', 'feedback'],
     },
     security: {
       authentication: 'oauth2',
       authorization: 'rbac',
-      audit: true
+      audit: true,
     },
-    integrations: []
+    integrations: [],
   }
 }

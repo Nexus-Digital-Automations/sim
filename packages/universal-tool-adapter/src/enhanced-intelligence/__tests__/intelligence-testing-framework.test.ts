@@ -12,17 +12,15 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
+import type { ConversationMessage, UsageContext } from '../../natural-language/usage-guidelines'
 import {
-  EnhancedToolIntelligenceEngine,
-  EnhancedToolDescription,
-  EnhancedToolRecommendation,
-  ContextualRecommendationRequest,
-  IntelligentErrorExplanation,
-  UserSkillLevel,
-  createEnhancedToolIntelligenceEngine
+  type ContextualRecommendationRequest,
+  createEnhancedToolIntelligenceEngine,
+  type EnhancedToolDescription,
+  type EnhancedToolIntelligenceEngine,
+  type UserSkillLevel,
 } from '../tool-intelligence-engine'
-import type { UsageContext, ConversationMessage } from '../../natural-language/usage-guidelines'
 
 // =============================================================================
 // Test Data and Fixtures
@@ -36,19 +34,19 @@ const mockUsageContext: UsageContext = {
     preferences: {
       verbosity: 'detailed',
       examples: true,
-      stepByStep: true
-    }
+      stepByStep: true,
+    },
   },
   sessionContext: {
     currentTask: 'workflow_development',
     timeAvailable: 'moderate',
-    urgency: 'medium'
+    urgency: 'medium',
   },
   workflowContext: {
     currentWorkflow: 'data_processing',
     workflowComplexity: 'moderate',
-    lastActions: ['get_user_workflow']
-  }
+    lastActions: ['get_user_workflow'],
+  },
 }
 
 const mockConversationHistory: ConversationMessage[] = [
@@ -56,14 +54,14 @@ const mockConversationHistory: ConversationMessage[] = [
     role: 'user',
     content: 'I want to create a new workflow',
     timestamp: new Date(),
-    context: mockUsageContext
+    context: mockUsageContext,
   },
   {
     role: 'assistant',
     content: 'I can help you create a new workflow. Let me get some information first.',
     timestamp: new Date(),
-    context: mockUsageContext
-  }
+    context: mockUsageContext,
+  },
 ]
 
 const mockError = {
@@ -71,7 +69,7 @@ const mockError = {
   message: 'Workflow validation failed',
   details: 'YAML syntax error on line 15',
   code: 'YAML_PARSE_ERROR',
-  severity: 'medium'
+  severity: 'medium',
 }
 
 // =============================================================================
@@ -115,17 +113,17 @@ export class IntelligenceTestingFramework {
         recommendationTests,
         errorHandlingTests,
         contextualHelpTests,
-        performanceTests
+        performanceTests,
       ]),
       testSuites: {
         naturalLanguage: naturalLanguageTests,
         recommendation: recommendationTests,
         errorHandling: errorHandlingTests,
         contextualHelp: contextualHelpTests,
-        performance: performanceTests
+        performance: performanceTests,
       },
       summary: this.generateTestSummary(),
-      recommendations: this.generateImprovementRecommendations()
+      recommendations: this.generateImprovementRecommendations(),
     }
 
     console.log('✅ Intelligence Testing Complete')
@@ -165,11 +163,11 @@ export class IntelligenceTestingFramework {
       suiteName: 'Natural Language Accuracy',
       duration: this.calculateSuiteDuration(tests),
       totalTests: tests.length,
-      passed: tests.filter(t => t.status === 'passed').length,
-      failed: tests.filter(t => t.status === 'failed').length,
+      passed: tests.filter((t) => t.status === 'passed').length,
+      failed: tests.filter((t) => t.status === 'failed').length,
       score: this.calculateSuiteScore(tests),
       tests,
-      metrics: this.calculateNaturalLanguageMetrics(tests)
+      metrics: this.calculateNaturalLanguageMetrics(tests),
     }
   }
 
@@ -209,11 +207,11 @@ export class IntelligenceTestingFramework {
       suiteName: 'Recommendation Quality',
       duration: this.calculateSuiteDuration(tests),
       totalTests: tests.length,
-      passed: tests.filter(t => t.status === 'passed').length,
-      failed: tests.filter(t => t.status === 'failed').length,
+      passed: tests.filter((t) => t.status === 'passed').length,
+      failed: tests.filter((t) => t.status === 'failed').length,
       score: this.calculateSuiteScore(tests),
       tests,
-      metrics: this.calculateRecommendationMetrics(tests)
+      metrics: this.calculateRecommendationMetrics(tests),
     }
   }
 
@@ -249,11 +247,11 @@ export class IntelligenceTestingFramework {
       suiteName: 'Error Handling',
       duration: this.calculateSuiteDuration(tests),
       totalTests: tests.length,
-      passed: tests.filter(t => t.status === 'passed').length,
-      failed: tests.filter(t => t.status === 'failed').length,
+      passed: tests.filter((t) => t.status === 'passed').length,
+      failed: tests.filter((t) => t.status === 'failed').length,
       score: this.calculateSuiteScore(tests),
       tests,
-      metrics: this.calculateErrorHandlingMetrics(tests)
+      metrics: this.calculateErrorHandlingMetrics(tests),
     }
   }
 
@@ -289,11 +287,11 @@ export class IntelligenceTestingFramework {
       suiteName: 'Contextual Help',
       duration: this.calculateSuiteDuration(tests),
       totalTests: tests.length,
-      passed: tests.filter(t => t.status === 'passed').length,
-      failed: tests.filter(t => t.status === 'failed').length,
+      passed: tests.filter((t) => t.status === 'passed').length,
+      failed: tests.filter((t) => t.status === 'failed').length,
       score: this.calculateSuiteScore(tests),
       tests,
-      metrics: this.calculateContextualHelpMetrics(tests)
+      metrics: this.calculateContextualHelpMetrics(tests),
     }
   }
 
@@ -325,11 +323,11 @@ export class IntelligenceTestingFramework {
       suiteName: 'Performance',
       duration: this.calculateSuiteDuration(tests),
       totalTests: tests.length,
-      passed: tests.filter(t => t.status === 'passed').length,
-      failed: tests.filter(t => t.status === 'failed').length,
+      passed: tests.filter((t) => t.status === 'passed').length,
+      failed: tests.filter((t) => t.status === 'failed').length,
       score: this.calculateSuiteScore(tests),
       tests,
-      metrics: this.calculatePerformanceMetrics(tests)
+      metrics: this.calculatePerformanceMetrics(tests),
     }
   }
 
@@ -344,7 +342,11 @@ export class IntelligenceTestingFramework {
       const description = await this.engine.getEnhancedToolDescription(toolId, mockUsageContext)
 
       if (!description) {
-        return this.createFailedTest('Description Quality', `No description found for ${toolId}`, Date.now() - startTime)
+        return this.createFailedTest(
+          'Description Quality',
+          `No description found for ${toolId}`,
+          Date.now() - startTime
+        )
       }
 
       // Test quality metrics
@@ -352,7 +354,7 @@ export class IntelligenceTestingFramework {
       const hasQualityContent = this.validateDescriptionQuality(description)
       const hasAppropriateLength = this.validateDescriptionLength(description)
 
-      const score = (hasRequiredFields + hasQualityContent + hasAppropriateLength) / 3 * 100
+      const score = ((hasRequiredFields + hasQualityContent + hasAppropriateLength) / 3) * 100
 
       return {
         testName: `Description Quality - ${toolId}`,
@@ -363,16 +365,20 @@ export class IntelligenceTestingFramework {
           hasRequiredFields,
           hasQualityContent,
           hasAppropriateLength,
-          description: description.briefDescription
+          description: description.briefDescription,
         },
         metrics: {
           brevity: description.briefDescription.length <= 100 ? 100 : 50,
           clarity: this.assessTextClarity(description.briefDescription),
-          completeness: hasRequiredFields ? 100 : 0
-        }
+          completeness: hasRequiredFields ? 100 : 0,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Description Quality', `Error testing ${toolId}: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Description Quality',
+        `Error testing ${toolId}: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -383,7 +389,11 @@ export class IntelligenceTestingFramework {
       const description = await this.engine.getEnhancedToolDescription(toolId, mockUsageContext)
 
       if (!description) {
-        return this.createFailedTest('Conversational Triggers', `No description found for ${toolId}`, Date.now() - startTime)
+        return this.createFailedTest(
+          'Conversational Triggers',
+          `No description found for ${toolId}`,
+          Date.now() - startTime
+        )
       }
 
       const triggers = description.conversationalTriggers
@@ -391,7 +401,8 @@ export class IntelligenceTestingFramework {
       const hasVariedTriggers = this.hasVariedTriggers(triggers)
       const hasNaturalLanguage = this.hasNaturalLanguageTriggers(triggers)
 
-      const score = (hasMinimumTriggers ? 40 : 0) + (hasVariedTriggers ? 30 : 0) + (hasNaturalLanguage ? 30 : 0)
+      const score =
+        (hasMinimumTriggers ? 40 : 0) + (hasVariedTriggers ? 30 : 0) + (hasNaturalLanguage ? 30 : 0)
 
       return {
         testName: `Conversational Triggers - ${toolId}`,
@@ -403,16 +414,20 @@ export class IntelligenceTestingFramework {
           triggers,
           hasMinimumTriggers,
           hasVariedTriggers,
-          hasNaturalLanguage
+          hasNaturalLanguage,
         },
         metrics: {
-          coverage: Math.min(triggers.length / 5 * 100, 100),
+          coverage: Math.min((triggers.length / 5) * 100, 100),
           naturalness: hasNaturalLanguage ? 100 : 0,
-          variety: hasVariedTriggers ? 100 : 0
-        }
+          variety: hasVariedTriggers ? 100 : 0,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Conversational Triggers', `Error testing ${toolId}: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Conversational Triggers',
+        `Error testing ${toolId}: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -424,24 +439,32 @@ export class IntelligenceTestingFramework {
       const results: any[] = []
 
       for (const level of skillLevels) {
-        const context = { ...mockUsageContext, userProfile: { ...mockUsageContext.userProfile, skillLevel: level } }
+        const context = {
+          ...mockUsageContext,
+          userProfile: { ...mockUsageContext.userProfile, skillLevel: level },
+        }
         const description = await this.engine.getEnhancedToolDescription(toolId, context)
 
         if (description) {
           const guidance = description.skillLevelGuidance[level]
           const hasGuidance = !!guidance
-          const hasAppropriateContent = guidance ? this.isContentAppropriateForLevel(guidance, level) : false
+          const hasAppropriateContent = guidance
+            ? this.isContentAppropriateForLevel(guidance, level)
+            : false
 
           results.push({
             level,
             hasGuidance,
             hasAppropriateContent,
-            scenarioCount: description.usageScenarios.length
+            scenarioCount: description.usageScenarios.length,
           })
         }
       }
 
-      const score = results.reduce((sum, result) => sum + (result.hasGuidance && result.hasAppropriateContent ? 25 : 0), 0)
+      const score = results.reduce(
+        (sum, result) => sum + (result.hasGuidance && result.hasAppropriateContent ? 25 : 0),
+        0
+      )
 
       return {
         testName: `User Level Appropriateness - ${toolId}`,
@@ -450,12 +473,17 @@ export class IntelligenceTestingFramework {
         duration: Date.now() - startTime,
         details: { results },
         metrics: {
-          coverage: results.filter(r => r.hasGuidance).length / skillLevels.length * 100,
-          appropriateness: results.filter(r => r.hasAppropriateContent).length / skillLevels.length * 100
-        }
+          coverage: (results.filter((r) => r.hasGuidance).length / skillLevels.length) * 100,
+          appropriateness:
+            (results.filter((r) => r.hasAppropriateContent).length / skillLevels.length) * 100,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('User Level Appropriateness', `Error testing ${toolId}: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'User Level Appropriateness',
+        `Error testing ${toolId}: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -466,15 +494,22 @@ export class IntelligenceTestingFramework {
       const description = await this.engine.getEnhancedToolDescription(toolId, mockUsageContext)
 
       if (!description) {
-        return this.createFailedTest('Scenario Accuracy', `No description found for ${toolId}`, Date.now() - startTime)
+        return this.createFailedTest(
+          'Scenario Accuracy',
+          `No description found for ${toolId}`,
+          Date.now() - startTime
+        )
       }
 
       const scenarios = description.usageScenarios
       const hasMinimumScenarios = scenarios.length >= 2
-      const hasCompleteScenarios = scenarios.every(s => this.isScenarioComplete(s))
-      const hasRealisticScenarios = scenarios.every(s => this.isScenarioRealistic(s))
+      const hasCompleteScenarios = scenarios.every((s) => this.isScenarioComplete(s))
+      const hasRealisticScenarios = scenarios.every((s) => this.isScenarioRealistic(s))
 
-      const score = (hasMinimumScenarios ? 40 : 0) + (hasCompleteScenarios ? 30 : 0) + (hasRealisticScenarios ? 30 : 0)
+      const score =
+        (hasMinimumScenarios ? 40 : 0) +
+        (hasCompleteScenarios ? 30 : 0) +
+        (hasRealisticScenarios ? 30 : 0)
 
       return {
         testName: `Scenario Accuracy - ${toolId}`,
@@ -486,16 +521,20 @@ export class IntelligenceTestingFramework {
           hasMinimumScenarios,
           hasCompleteScenarios,
           hasRealisticScenarios,
-          scenarios: scenarios.map(s => ({ scenario: s.scenario, difficulty: s.difficulty }))
+          scenarios: scenarios.map((s) => ({ scenario: s.scenario, difficulty: s.difficulty })),
         },
         metrics: {
           completeness: hasCompleteScenarios ? 100 : 0,
           realism: hasRealisticScenarios ? 100 : 0,
-          coverage: Math.min(scenarios.length / 3 * 100, 100)
-        }
+          coverage: Math.min((scenarios.length / 3) * 100, 100),
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Scenario Accuracy', `Error testing ${toolId}: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Scenario Accuracy',
+        `Error testing ${toolId}: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -507,7 +546,7 @@ export class IntelligenceTestingFramework {
         { message: 'I want to create a new workflow', expectedTools: ['build_workflow'] },
         { message: 'Show me my current workflow', expectedTools: ['get_user_workflow'] },
         { message: 'I need to modify my workflow', expectedTools: ['edit_workflow'] },
-        { message: 'Run my automation', expectedTools: ['run_workflow'] }
+        { message: 'Run my automation', expectedTools: ['run_workflow'] },
       ]
 
       let correctRecommendations = 0
@@ -518,7 +557,7 @@ export class IntelligenceTestingFramework {
           userMessage: testCase.message,
           currentContext: mockUsageContext,
           conversationHistory: mockConversationHistory,
-          userSkillLevel: 'intermediate'
+          userSkillLevel: 'intermediate',
         }
 
         const recommendations = await this.engine.getEnhancedRecommendations(request)
@@ -532,11 +571,11 @@ export class IntelligenceTestingFramework {
           expected: testCase.expectedTools,
           recommended: topRecommendation?.toolId,
           isCorrect,
-          confidence: topRecommendation?.confidence || 0
+          confidence: topRecommendation?.confidence || 0,
         })
       }
 
-      const accuracy = correctRecommendations / testCases.length * 100
+      const accuracy = (correctRecommendations / testCases.length) * 100
 
       return {
         testName: 'Recommendation Accuracy',
@@ -547,11 +586,15 @@ export class IntelligenceTestingFramework {
         metrics: {
           accuracy,
           precision: this.calculatePrecision(results),
-          recall: this.calculateRecall(results)
-        }
+          recall: this.calculateRecall(results),
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Recommendation Accuracy', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Recommendation Accuracy',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -563,17 +606,22 @@ export class IntelligenceTestingFramework {
         userMessage: 'I want to automate a business process',
         currentContext: mockUsageContext,
         conversationHistory: mockConversationHistory,
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       }
 
       const recommendations = await this.engine.getEnhancedRecommendations(request)
 
       // Check relevance factors
-      const hasContextualExplanation = recommendations.every(r => r.contextualExplanation?.length > 0)
-      const hasWhyRecommended = recommendations.every(r => r.whyRecommended?.length > 0)
-      const hasAppropriateConfidence = recommendations.every(r => r.confidence >= 0.3)
+      const hasContextualExplanation = recommendations.every(
+        (r) => r.contextualExplanation?.length > 0
+      )
+      const hasWhyRecommended = recommendations.every((r) => r.whyRecommended?.length > 0)
+      const hasAppropriateConfidence = recommendations.every((r) => r.confidence >= 0.3)
 
-      const score = (hasContextualExplanation ? 40 : 0) + (hasWhyRecommended ? 40 : 0) + (hasAppropriateConfidence ? 20 : 0)
+      const score =
+        (hasContextualExplanation ? 40 : 0) +
+        (hasWhyRecommended ? 40 : 0) +
+        (hasAppropriateConfidence ? 20 : 0)
 
       return {
         testName: 'Recommendation Relevance',
@@ -585,16 +633,21 @@ export class IntelligenceTestingFramework {
           hasContextualExplanation,
           hasWhyRecommended,
           hasAppropriateConfidence,
-          averageConfidence: recommendations.reduce((sum, r) => sum + r.confidence, 0) / recommendations.length
+          averageConfidence:
+            recommendations.reduce((sum, r) => sum + r.confidence, 0) / recommendations.length,
         },
         metrics: {
           explanationQuality: hasContextualExplanation ? 100 : 0,
           reasoningQuality: hasWhyRecommended ? 100 : 0,
-          confidenceCalibration: hasAppropriateConfidence ? 100 : 0
-        }
+          confidenceCalibration: hasAppropriateConfidence ? 100 : 0,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Recommendation Relevance', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Recommendation Relevance',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -606,16 +659,20 @@ export class IntelligenceTestingFramework {
         userMessage: 'Help me with workflow management',
         currentContext: mockUsageContext,
         conversationHistory: mockConversationHistory,
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       }
 
       const recommendations = await this.engine.getEnhancedRecommendations(request)
 
-      const uniqueTools = new Set(recommendations.map(r => r.toolId)).size
-      const uniqueCategories = new Set(recommendations.map(r => r.tool.category || 'general')).size
+      const uniqueTools = new Set(recommendations.map((r) => r.toolId)).size
+      const uniqueCategories = new Set(recommendations.map((r) => r.tool.category || 'general'))
+        .size
 
       const diversityScore = Math.min((uniqueTools / recommendations.length) * 100, 100)
-      const categoryDiversityScore = Math.min((uniqueCategories / Math.min(recommendations.length, 3)) * 100, 100)
+      const categoryDiversityScore = Math.min(
+        (uniqueCategories / Math.min(recommendations.length, 3)) * 100,
+        100
+      )
 
       const score = (diversityScore + categoryDiversityScore) / 2
 
@@ -629,16 +686,20 @@ export class IntelligenceTestingFramework {
           uniqueTools,
           uniqueCategories,
           diversityScore,
-          categoryDiversityScore
+          categoryDiversityScore,
         },
         metrics: {
           toolDiversity: diversityScore,
           categoryDiversity: categoryDiversityScore,
-          overallDiversity: score
-        }
+          overallDiversity: score,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Recommendation Diversity', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Recommendation Diversity',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -649,7 +710,7 @@ export class IntelligenceTestingFramework {
       const contexts = [
         { skillLevel: 'beginner' as UserSkillLevel, timeAvailable: 'quick' },
         { skillLevel: 'advanced' as UserSkillLevel, timeAvailable: 'extended' },
-        { skillLevel: 'intermediate' as UserSkillLevel, urgency: 'high' }
+        { skillLevel: 'intermediate' as UserSkillLevel, urgency: 'high' },
       ]
 
       const results: any[] = []
@@ -659,30 +720,33 @@ export class IntelligenceTestingFramework {
           userMessage: 'I need help with workflow automation',
           currentContext: {
             ...mockUsageContext,
-            userProfile: { ...mockUsageContext.userProfile, skillLevel: contextConfig.skillLevel }
+            userProfile: { ...mockUsageContext.userProfile, skillLevel: contextConfig.skillLevel },
           },
           conversationHistory: mockConversationHistory,
           userSkillLevel: contextConfig.skillLevel,
           availableTime: contextConfig.timeAvailable as any,
-          urgency: contextConfig.urgency as any
+          urgency: contextConfig.urgency as any,
         }
 
         const recommendations = await this.engine.getEnhancedRecommendations(request)
         const topRecommendation = recommendations[0]
 
-        const isAppropriate = this.isRecommendationAppropriateForContext(topRecommendation, contextConfig)
+        const isAppropriate = this.isRecommendationAppropriateForContext(
+          topRecommendation,
+          contextConfig
+        )
 
         results.push({
           context: contextConfig,
           recommendation: topRecommendation?.toolId,
           isAppropriate,
           difficultyForUser: topRecommendation?.difficultyForUser,
-          estimatedTime: topRecommendation?.estimatedTime
+          estimatedTime: topRecommendation?.estimatedTime,
         })
       }
 
-      const appropriateCount = results.filter(r => r.isAppropriate).length
-      const score = appropriateCount / results.length * 100
+      const appropriateCount = results.filter((r) => r.isAppropriate).length
+      const score = (appropriateCount / results.length) * 100
 
       return {
         testName: 'Contextual Appropriateness',
@@ -693,11 +757,15 @@ export class IntelligenceTestingFramework {
         metrics: {
           contextAdaptation: score,
           skillLevelMatching: this.calculateSkillLevelMatchingScore(results),
-          timeAwareness: this.calculateTimeAwarenessScore(results)
-        }
+          timeAwareness: this.calculateTimeAwarenessScore(results),
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Contextual Appropriateness', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Contextual Appropriateness',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -713,28 +781,31 @@ export class IntelligenceTestingFramework {
           userMessage: 'I want to create a complex workflow with multiple integrations',
           currentContext: {
             ...mockUsageContext,
-            userProfile: { ...mockUsageContext.userProfile, skillLevel: level }
+            userProfile: { ...mockUsageContext.userProfile, skillLevel: level },
           },
           conversationHistory: mockConversationHistory,
-          userSkillLevel: level
+          userSkillLevel: level,
         }
 
         const recommendations = await this.engine.getEnhancedRecommendations(request)
         const topRecommendation = recommendations[0]
 
-        const difficultyMatch = this.assessDifficultyMatch(topRecommendation?.difficultyForUser, level)
+        const difficultyMatch = this.assessDifficultyMatch(
+          topRecommendation?.difficultyForUser,
+          level
+        )
 
         results.push({
           skillLevel: level,
           recommendedTool: topRecommendation?.toolId,
           difficultyForUser: topRecommendation?.difficultyForUser,
           difficultyMatch,
-          estimatedTime: topRecommendation?.estimatedTime
+          estimatedTime: topRecommendation?.estimatedTime,
         })
       }
 
-      const goodMatches = results.filter(r => r.difficultyMatch >= 0.7).length
-      const score = goodMatches / results.length * 100
+      const goodMatches = results.filter((r) => r.difficultyMatch >= 0.7).length
+      const score = (goodMatches / results.length) * 100
 
       return {
         testName: 'Skill Level Matching',
@@ -745,11 +816,15 @@ export class IntelligenceTestingFramework {
         metrics: {
           matchingAccuracy: score,
           adaptability: this.calculateSkillAdaptabilityScore(results),
-          personalization: this.calculatePersonalizationScore(results)
-        }
+          personalization: this.calculatePersonalizationScore(results),
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Skill Level Matching', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Skill Level Matching',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -761,7 +836,7 @@ export class IntelligenceTestingFramework {
         userMessage: 'I need to work with workflows',
         currentContext: mockUsageContext,
         conversationHistory: mockConversationHistory,
-        userSkillLevel: 'intermediate'
+        userSkillLevel: 'intermediate',
       }
 
       const recommendations = await this.engine.getEnhancedRecommendations(request)
@@ -771,7 +846,10 @@ export class IntelligenceTestingFramework {
       const hasDecreasingConfidence = this.hasDecreasingConfidence(recommendations)
       const hasRelevantTopResults = this.hasRelevantTopResults(recommendations, request.userMessage)
 
-      const score = (isProperlyRanked ? 40 : 0) + (hasDecreasingConfidence ? 30 : 0) + (hasRelevantTopResults ? 30 : 0)
+      const score =
+        (isProperlyRanked ? 40 : 0) +
+        (hasDecreasingConfidence ? 30 : 0) +
+        (hasRelevantTopResults ? 30 : 0)
 
       return {
         testName: 'Ranking Quality',
@@ -783,16 +861,20 @@ export class IntelligenceTestingFramework {
           isProperlyRanked,
           hasDecreasingConfidence,
           hasRelevantTopResults,
-          confidences: recommendations.map(r => r.confidence)
+          confidences: recommendations.map((r) => r.confidence),
         },
         metrics: {
           rankingAccuracy: isProperlyRanked ? 100 : 0,
           confidenceOrdering: hasDecreasingConfidence ? 100 : 0,
-          topResultRelevance: hasRelevantTopResults ? 100 : 0
-        }
+          topResultRelevance: hasRelevantTopResults ? 100 : 0,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Ranking Quality', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Ranking Quality',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -813,13 +895,14 @@ export class IntelligenceTestingFramework {
       const hasPreventionTips = explanation.preventionTips.length > 0
       const hasRecoveryOptions = explanation.recoveryOptions.length > 0
 
-      const score = [
-        hasContextualMessage,
-        hasUserLevelExplanations,
-        hasResolutionSteps,
-        hasPreventionTips,
-        hasRecoveryOptions
-      ].filter(Boolean).length * 20
+      const score =
+        [
+          hasContextualMessage,
+          hasUserLevelExplanations,
+          hasResolutionSteps,
+          hasPreventionTips,
+          hasRecoveryOptions,
+        ].filter(Boolean).length * 20
 
       return {
         testName: 'Error Explanation Quality',
@@ -833,16 +916,20 @@ export class IntelligenceTestingFramework {
           hasPreventionTips,
           hasRecoveryOptions,
           resolutionStepCount: explanation.stepByStepResolution.length,
-          recoveryOptionCount: explanation.recoveryOptions.length
+          recoveryOptionCount: explanation.recoveryOptions.length,
         },
         metrics: {
           completeness: score,
           clarity: this.assessErrorMessageClarity(explanation.contextualMessage),
-          actionability: hasResolutionSteps ? 100 : 0
-        }
+          actionability: hasResolutionSteps ? 100 : 0,
+        },
       }
     } catch (error) {
-      return this.createFailedTest('Error Explanation Quality', `Error testing: ${error}`, Date.now() - startTime)
+      return this.createFailedTest(
+        'Error Explanation Quality',
+        `Error testing: ${error}`,
+        Date.now() - startTime
+      )
     }
   }
 
@@ -860,7 +947,7 @@ export class IntelligenceTestingFramework {
       failedTests: 0,
       totalDuration: 0,
       averageScore: 0,
-      categories: {}
+      categories: {},
     }
   }
 
@@ -871,7 +958,7 @@ export class IntelligenceTestingFramework {
       score: 0,
       duration,
       details: { error },
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -934,33 +1021,34 @@ export class IntelligenceTestingFramework {
 
   private hasVariedTriggers(triggers: string[]): boolean {
     // Check for variety in trigger types
-    const hasShort = triggers.some(t => t.split(' ').length <= 2)
-    const hasLong = triggers.some(t => t.split(' ').length >= 3)
-    const hasVerbs = triggers.some(t => /^(get|create|build|run|show|edit)/.test(t.toLowerCase()))
+    const hasShort = triggers.some((t) => t.split(' ').length <= 2)
+    const hasLong = triggers.some((t) => t.split(' ').length >= 3)
+    const hasVerbs = triggers.some((t) => /^(get|create|build|run|show|edit)/.test(t.toLowerCase()))
 
     return hasShort && hasLong && hasVerbs
   }
 
   private hasNaturalLanguageTriggers(triggers: string[]): boolean {
-    return triggers.some(t =>
-      t.toLowerCase().includes('i want') ||
-      t.toLowerCase().includes('help me') ||
-      t.toLowerCase().includes('show me') ||
-      t.length > 15
+    return triggers.some(
+      (t) =>
+        t.toLowerCase().includes('i want') ||
+        t.toLowerCase().includes('help me') ||
+        t.toLowerCase().includes('show me') ||
+        t.length > 15
     )
   }
 
   private isContentAppropriateForLevel(guidance: any, level: UserSkillLevel): boolean {
     if (!guidance) return false
 
-    const text = guidance.description + ' ' + guidance.recommendedApproach
+    const text = `${guidance.description} ${guidance.recommendedApproach}`
     const complexity = this.assessTextComplexity(text)
 
     const levelComplexityMap = {
       beginner: { min: 0, max: 40 },
       intermediate: { min: 30, max: 70 },
       advanced: { min: 60, max: 90 },
-      expert: { min: 80, max: 100 }
+      expert: { min: 80, max: 100 },
     }
 
     const range = levelComplexityMap[level]
@@ -970,14 +1058,12 @@ export class IntelligenceTestingFramework {
   private assessTextComplexity(text: string): number {
     const words = text.split(' ')
     const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length
-    const technicalTerms = words.filter(word =>
-      word.includes('API') ||
-      word.includes('JSON') ||
-      word.includes('YAML') ||
-      word.length > 12
+    const technicalTerms = words.filter(
+      (word) =>
+        word.includes('API') || word.includes('JSON') || word.includes('YAML') || word.length > 12
     ).length
 
-    return Math.min(100, (avgWordLength * 10) + (technicalTerms / words.length * 50))
+    return Math.min(100, avgWordLength * 10 + (technicalTerms / words.length) * 50)
   }
 
   private isScenarioComplete(scenario: any): boolean {
@@ -994,16 +1080,17 @@ export class IntelligenceTestingFramework {
 
   private isScenarioRealistic(scenario: any): boolean {
     return (
-      scenario.description.length >= 20 &&
-      scenario.exampleInput.length >= 10 &&
-      scenario.expectedOutcome.length >= 15 &&
-      ['beginner', 'intermediate', 'advanced'].includes(scenario.difficulty) &&
-      scenario.estimatedTime.includes('minute') || scenario.estimatedTime.includes('second')
+      (scenario.description.length >= 20 &&
+        scenario.exampleInput.length >= 10 &&
+        scenario.expectedOutcome.length >= 15 &&
+        ['beginner', 'intermediate', 'advanced'].includes(scenario.difficulty) &&
+        scenario.estimatedTime.includes('minute')) ||
+      scenario.estimatedTime.includes('second')
     )
   }
 
   private calculatePrecision(results: any[]): number {
-    const truePositives = results.filter(r => r.isCorrect).length
+    const truePositives = results.filter((r) => r.isCorrect).length
     const totalRecommended = results.length
     return totalRecommended > 0 ? (truePositives / totalRecommended) * 100 : 0
   }
@@ -1049,17 +1136,17 @@ export class IntelligenceTestingFramework {
     if (timeStr.includes('second')) return 1
     if (timeStr.includes('minute')) {
       const match = timeStr.match(/(\d+)/)
-      return match ? parseInt(match[1]) : 5
+      return match ? Number.parseInt(match[1]) : 5
     }
     if (timeStr.includes('hour')) {
       const match = timeStr.match(/(\d+)/)
-      return match ? parseInt(match[1]) * 60 : 60
+      return match ? Number.parseInt(match[1]) * 60 : 60
     }
     return 5
   }
 
   private calculateSkillLevelMatchingScore(results: any[]): number {
-    const goodMatches = results.filter(r => r.difficultyMatch >= 0.7).length
+    const goodMatches = results.filter((r) => r.difficultyMatch >= 0.7).length
     return results.length > 0 ? (goodMatches / results.length) * 100 : 0
   }
 
@@ -1073,7 +1160,7 @@ export class IntelligenceTestingFramework {
     const actualDifficulty = this.difficultyToNumeric(difficultyForUser)
 
     const difference = Math.abs(idealDifficulty - actualDifficulty)
-    return Math.max(0, 1 - (difference / 2))
+    return Math.max(0, 1 - difference / 2)
   }
 
   private getIdealDifficultyForSkill(skillLevel: UserSkillLevel): number {
@@ -1088,20 +1175,20 @@ export class IntelligenceTestingFramework {
 
   private calculateSkillAdaptabilityScore(results: any[]): number {
     // Calculate how well the system adapts recommendations to different skill levels
-    const uniqueDifficulties = new Set(results.map(r => r.difficultyForUser)).size
+    const uniqueDifficulties = new Set(results.map((r) => r.difficultyForUser)).size
     return Math.min(100, (uniqueDifficulties / 3) * 100)
   }
 
   private calculatePersonalizationScore(results: any[]): number {
     // Calculate how well the system personalizes based on skill level
-    return results.every(r => r.difficultyMatch >= 0.5) ? 100 : 50
+    return results.every((r) => r.difficultyMatch >= 0.5) ? 100 : 50
   }
 
   private isProperlyRanked(recommendations: any[]): boolean {
     if (recommendations.length <= 1) return true
 
     for (let i = 1; i < recommendations.length; i++) {
-      if (recommendations[i-1].confidence < recommendations[i].confidence) {
+      if (recommendations[i - 1].confidence < recommendations[i].confidence) {
         return false
       }
     }
@@ -1131,7 +1218,7 @@ export class IntelligenceTestingFramework {
       score: 85,
       duration: 100,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1142,7 +1229,7 @@ export class IntelligenceTestingFramework {
       score: 90,
       duration: 150,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1153,7 +1240,7 @@ export class IntelligenceTestingFramework {
       score: 88,
       duration: 120,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1164,7 +1251,7 @@ export class IntelligenceTestingFramework {
       score: 82,
       duration: 110,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1175,7 +1262,7 @@ export class IntelligenceTestingFramework {
       score: 87,
       duration: 95,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1186,7 +1273,7 @@ export class IntelligenceTestingFramework {
       score: 91,
       duration: 130,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1197,7 +1284,7 @@ export class IntelligenceTestingFramework {
       score: 89,
       duration: 105,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1208,7 +1295,7 @@ export class IntelligenceTestingFramework {
       score: 86,
       duration: 115,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1219,7 +1306,7 @@ export class IntelligenceTestingFramework {
       score: 84,
       duration: 125,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1230,7 +1317,7 @@ export class IntelligenceTestingFramework {
       score: 92,
       duration: 50,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1241,7 +1328,7 @@ export class IntelligenceTestingFramework {
       score: 88,
       duration: 200,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1252,7 +1339,7 @@ export class IntelligenceTestingFramework {
       score: 85,
       duration: 500,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1263,7 +1350,7 @@ export class IntelligenceTestingFramework {
       score: 90,
       duration: 150,
       details: {},
-      metrics: {}
+      metrics: {},
     }
   }
 
@@ -1271,23 +1358,27 @@ export class IntelligenceTestingFramework {
     return {
       averageBrevity: tests.reduce((sum, t) => sum + (t.metrics?.brevity || 0), 0) / tests.length,
       averageClarity: tests.reduce((sum, t) => sum + (t.metrics?.clarity || 0), 0) / tests.length,
-      averageCompleteness: tests.reduce((sum, t) => sum + (t.metrics?.completeness || 0), 0) / tests.length
+      averageCompleteness:
+        tests.reduce((sum, t) => sum + (t.metrics?.completeness || 0), 0) / tests.length,
     }
   }
 
   private calculateRecommendationMetrics(tests: TestCase[]): any {
     return {
       averageAccuracy: tests.reduce((sum, t) => sum + (t.metrics?.accuracy || 0), 0) / tests.length,
-      averagePrecision: tests.reduce((sum, t) => sum + (t.metrics?.precision || 0), 0) / tests.length,
-      averageRecall: tests.reduce((sum, t) => sum + (t.metrics?.recall || 0), 0) / tests.length
+      averagePrecision:
+        tests.reduce((sum, t) => sum + (t.metrics?.precision || 0), 0) / tests.length,
+      averageRecall: tests.reduce((sum, t) => sum + (t.metrics?.recall || 0), 0) / tests.length,
     }
   }
 
   private calculateErrorHandlingMetrics(tests: TestCase[]): any {
     return {
-      averageCompleteness: tests.reduce((sum, t) => sum + (t.metrics?.completeness || 0), 0) / tests.length,
+      averageCompleteness:
+        tests.reduce((sum, t) => sum + (t.metrics?.completeness || 0), 0) / tests.length,
       averageClarity: tests.reduce((sum, t) => sum + (t.metrics?.clarity || 0), 0) / tests.length,
-      averageActionability: tests.reduce((sum, t) => sum + (t.metrics?.actionability || 0), 0) / tests.length
+      averageActionability:
+        tests.reduce((sum, t) => sum + (t.metrics?.actionability || 0), 0) / tests.length,
     }
   }
 
@@ -1295,7 +1386,7 @@ export class IntelligenceTestingFramework {
     return {
       averageRelevance: 85,
       averageUsability: 88,
-      averageEffectiveness: 87
+      averageEffectiveness: 87,
     }
   }
 
@@ -1303,7 +1394,7 @@ export class IntelligenceTestingFramework {
     return {
       averageResponseTime: 150,
       memoryEfficiency: 90,
-      scalability: 85
+      scalability: 85,
     }
   }
 
@@ -1317,7 +1408,7 @@ export class IntelligenceTestingFramework {
       'Improve skill level matching accuracy for personalized recommendations',
       'Expand error recovery options with more alternative approaches',
       'Add more contextual help scenarios for edge cases',
-      'Optimize performance for concurrent recommendation requests'
+      'Optimize performance for concurrent recommendation requests',
     ]
   }
 }

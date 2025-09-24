@@ -10,16 +10,16 @@
  * @version 2.0.0
  */
 
+import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
 import type {
-  EnhancedDescriptionSchema,
-  UserRole,
-  SkillLevel,
+  AdaptationPreferences,
+  AdaptedDescription,
   ContextType,
   DescriptionAdaptation,
-  AdaptationPreferences,
-  AdaptedDescription
+  EnhancedDescriptionSchema,
+  SkillLevel,
+  UserRole,
 } from './natural-language-description-framework'
-import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
 
 // Extended UserProfile with additional fields for enhanced adaptation
 interface ExtendedUserProfile extends UserProfile {
@@ -41,6 +41,7 @@ interface ExtendedUsageContext extends UsageContext {
   taskType?: string
   domain?: string
 }
+
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ContextualAdapters')
@@ -104,11 +105,7 @@ export abstract class BaseContextualAdapter {
   protected adapterName: string
   protected supportedContextTypes: ContextType[]
 
-  constructor(
-    adapterId: string,
-    adapterName: string,
-    supportedContextTypes: ContextType[]
-  ) {
+  constructor(adapterId: string, adapterName: string, supportedContextTypes: ContextType[]) {
     this.adapterId = adapterId
     this.adapterName = adapterName
     this.supportedContextTypes = supportedContextTypes
@@ -121,9 +118,7 @@ export abstract class BaseContextualAdapter {
    */
   canHandle(context: ExtendedUsageContext): boolean {
     // Check if any supported context type matches the usage context
-    return this.supportedContextTypes.some(type =>
-      this.isContextTypeRelevant(type, context)
-    )
+    return this.supportedContextTypes.some((type) => this.isContextTypeRelevant(type, context))
   }
 
   /**
@@ -144,7 +139,10 @@ export abstract class BaseContextualAdapter {
   /**
    * Check if a context type is relevant to the usage context
    */
-  protected isContextTypeRelevant(contextType: ContextType, context: ExtendedUsageContext): boolean {
+  protected isContextTypeRelevant(
+    contextType: ContextType,
+    context: ExtendedUsageContext
+  ): boolean {
     switch (contextType) {
       case 'workflow':
         return Boolean(context.workflowId || context.taskType)
@@ -227,14 +225,14 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
         perspective: strategy.perspective,
         emphasis: strategy.emphasis,
         language: strategy.languageAdjustments,
-        examples: await this.generateRoleSpecificExamples(schema, strategy, context)
+        examples: await this.generateRoleSpecificExamples(schema, strategy, context),
       },
       metadata: {
         role: userRole,
         strategy: strategy.name,
-        adaptedSections: ['descriptions', 'usageGuidance', 'examples']
+        adaptedSections: ['descriptions', 'usageGuidance', 'examples'],
       },
-      summary: adaptationSummary
+      summary: adaptationSummary,
     }
   }
 
@@ -246,10 +244,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'simplify',
         businessTerms: 'emphasize',
-        tone: 'professional'
+        tone: 'professional',
       },
       contentFocus: ['business-value', 'use-cases', 'benefits'],
-      exampleTypes: ['business-scenarios', 'roi-examples']
+      exampleTypes: ['business-scenarios', 'roi-examples'],
     })
 
     this.roleStrategies.set('developer', {
@@ -259,10 +257,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'preserve',
         businessTerms: 'maintain',
-        tone: 'technical'
+        tone: 'technical',
       },
       contentFocus: ['technical-details', 'api-usage', 'code-examples'],
-      exampleTypes: ['code-samples', 'integration-patterns']
+      exampleTypes: ['code-samples', 'integration-patterns'],
     })
 
     this.roleStrategies.set('admin', {
@@ -272,10 +270,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'preserve',
         businessTerms: 'maintain',
-        tone: 'authoritative'
+        tone: 'authoritative',
       },
       contentFocus: ['security-features', 'admin-controls', 'scalability'],
-      exampleTypes: ['security-scenarios', 'configuration-examples']
+      exampleTypes: ['security-scenarios', 'configuration-examples'],
     })
 
     this.roleStrategies.set('analyst', {
@@ -285,10 +283,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'explain',
         businessTerms: 'emphasize',
-        tone: 'analytical'
+        tone: 'analytical',
       },
       contentFocus: ['data-capabilities', 'reporting-features', 'analysis-tools'],
-      exampleTypes: ['analysis-scenarios', 'report-examples']
+      exampleTypes: ['analysis-scenarios', 'report-examples'],
     })
 
     this.roleStrategies.set('manager', {
@@ -298,10 +296,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'simplify',
         businessTerms: 'emphasize',
-        tone: 'executive'
+        tone: 'executive',
       },
       contentFocus: ['team-benefits', 'oversight-tools', 'productivity-metrics'],
-      exampleTypes: ['management-scenarios', 'team-examples']
+      exampleTypes: ['management-scenarios', 'team-examples'],
     })
 
     // Add more role strategies as needed...
@@ -316,10 +314,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'explain',
         businessTerms: 'contextualize',
-        tone: 'academic'
+        tone: 'academic',
       },
       contentFocus: ['research-capabilities', 'data-sources', 'collaboration-tools'],
-      exampleTypes: ['research-scenarios', 'methodology-examples']
+      exampleTypes: ['research-scenarios', 'methodology-examples'],
     })
 
     this.roleStrategies.set('designer', {
@@ -329,10 +327,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'explain',
         businessTerms: 'maintain',
-        tone: 'creative'
+        tone: 'creative',
       },
       contentFocus: ['design-integration', 'workflow-enhancement', 'creative-features'],
-      exampleTypes: ['design-scenarios', 'workflow-examples']
+      exampleTypes: ['design-scenarios', 'workflow-examples'],
     })
 
     this.roleStrategies.set('qa_tester', {
@@ -342,10 +340,10 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       languageAdjustments: {
         technicalTerms: 'preserve',
         businessTerms: 'maintain',
-        tone: 'methodical'
+        tone: 'methodical',
       },
       contentFocus: ['testing-capabilities', 'validation-features', 'quality-metrics'],
-      exampleTypes: ['testing-scenarios', 'validation-examples']
+      exampleTypes: ['testing-scenarios', 'validation-examples'],
     })
   }
 
@@ -384,10 +382,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     return adaptedSchema
   }
 
-  private async adaptBriefDescription(
-    brief: any,
-    strategy: RoleAdaptationStrategy
-  ): Promise<any> {
+  private async adaptBriefDescription(brief: any, strategy: RoleAdaptationStrategy): Promise<any> {
     // Adjust language and emphasis based on role
     const adapted = { ...brief }
 
@@ -426,7 +421,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     if (adapted.bestPractices) {
       adapted.bestPractices = [
         ...adapted.bestPractices,
-        ...this.generateRoleSpecificBestPractices(strategy, context)
+        ...this.generateRoleSpecificBestPractices(strategy, context),
       ]
     }
 
@@ -444,16 +439,20 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
   ): Promise<string[]> {
     const examples: string[] = []
 
-    strategy.exampleTypes.forEach(type => {
+    strategy.exampleTypes.forEach((type) => {
       switch (type) {
         case 'business-scenarios':
-          examples.push(`Business use: Improve ${strategy.contentFocus[0]} by implementing ${schema.toolName}`)
+          examples.push(
+            `Business use: Improve ${strategy.contentFocus[0]} by implementing ${schema.toolName}`
+          )
           break
         case 'code-samples':
           examples.push(`Technical implementation: Configure ${schema.toolName} API integration`)
           break
         case 'security-scenarios':
-          examples.push(`Security configuration: Set up ${schema.toolName} with enterprise security policies`)
+          examples.push(
+            `Security configuration: Set up ${schema.toolName} with enterprise security policies`
+          )
           break
         // Add more example types...
       }
@@ -468,7 +467,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
   ): string[] {
     const practices: string[] = []
 
-    strategy.emphasis.forEach(emphasis => {
+    strategy.emphasis.forEach((emphasis) => {
       switch (emphasis) {
         case 'roi':
           practices.push('Measure and track ROI metrics regularly')
@@ -508,8 +507,8 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
     const prioritized: string[] = []
     const remaining: string[] = []
 
-    benefits.forEach(benefit => {
-      const isHighPriority = emphasis.some(emp =>
+    benefits.forEach((benefit) => {
+      const isHighPriority = emphasis.some((emp) =>
         benefit.toLowerCase().includes(emp.toLowerCase())
       )
 
@@ -533,7 +532,7 @@ export class RoleBasedAdapter extends BaseContextualAdapter {
       confidence: 0.3,
       changes: {},
       metadata: { fallback: true },
-      summary: 'Default adaptation applied (no specific role strategy)'
+      summary: 'Default adaptation applied (no specific role strategy)',
     }
   }
 
@@ -578,14 +577,14 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
         complexity: strategy.complexityAdjustment,
         guidance: strategy.guidanceLevel,
         examples: adaptedContent.examples,
-        explanations: adaptedContent.explanations
+        explanations: adaptedContent.explanations,
       },
       metadata: {
         skillLevel,
         strategy: strategy.name,
-        adaptedComplexity: strategy.complexityAdjustment.targetLevel
+        adaptedComplexity: strategy.complexityAdjustment.targetLevel,
       },
-      summary: `Adapted for ${skillLevel} skill level with ${strategy.guidanceLevel} guidance`
+      summary: `Adapted for ${skillLevel} skill level with ${strategy.guidanceLevel} guidance`,
     }
   }
 
@@ -595,13 +594,13 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
       complexityAdjustment: {
         targetLevel: 'simplified',
         reductionFactor: 0.3,
-        simplifications: ['step-by-step', 'definitions', 'examples']
+        simplifications: ['step-by-step', 'definitions', 'examples'],
       },
       guidanceLevel: 'comprehensive',
       explanationDepth: 'detailed',
       exampleCount: 'many',
       prerequisites: ['basic-concepts', 'foundational-knowledge'],
-      confidenceBuilders: ['quick-wins', 'progressive-complexity']
+      confidenceBuilders: ['quick-wins', 'progressive-complexity'],
     })
 
     this.skillStrategies.set('intermediate', {
@@ -609,13 +608,13 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
       complexityAdjustment: {
         targetLevel: 'moderate',
         reductionFactor: 0.7,
-        simplifications: ['key-concepts', 'practical-examples']
+        simplifications: ['key-concepts', 'practical-examples'],
       },
       guidanceLevel: 'moderate',
       explanationDepth: 'focused',
       exampleCount: 'some',
       prerequisites: ['working-knowledge', 'related-tools'],
-      confidenceBuilders: ['skill-building', 'advanced-techniques']
+      confidenceBuilders: ['skill-building', 'advanced-techniques'],
     })
 
     this.skillStrategies.set('advanced', {
@@ -623,13 +622,13 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
       complexityAdjustment: {
         targetLevel: 'full',
         reductionFactor: 0.9,
-        simplifications: ['edge-cases', 'optimization']
+        simplifications: ['edge-cases', 'optimization'],
       },
       guidanceLevel: 'minimal',
       explanationDepth: 'concise',
       exampleCount: 'few',
       prerequisites: ['expert-knowledge', 'system-understanding'],
-      confidenceBuilders: ['innovation', 'leadership']
+      confidenceBuilders: ['innovation', 'leadership'],
     })
 
     this.skillStrategies.set('expert', {
@@ -637,13 +636,13 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
       complexityAdjustment: {
         targetLevel: 'comprehensive',
         reductionFactor: 1.0,
-        simplifications: ['none']
+        simplifications: ['none'],
       },
       guidanceLevel: 'reference',
       explanationDepth: 'technical',
       exampleCount: 'selective',
       prerequisites: ['mastery', 'architecture-knowledge'],
-      confidenceBuilders: ['thought-leadership', 'innovation']
+      confidenceBuilders: ['thought-leadership', 'innovation'],
     })
   }
 
@@ -712,10 +711,14 @@ export class SkillLevelAdapter extends BaseContextualAdapter {
         )
         break
       case 'concise':
-        explanations.push('Core functionality centers on input transformation and output generation')
+        explanations.push(
+          'Core functionality centers on input transformation and output generation'
+        )
         break
       case 'technical':
-        explanations.push('Architecture leverages established patterns with extensible design principles')
+        explanations.push(
+          'Architecture leverages established patterns with extensible design principles'
+        )
         break
     }
 
@@ -767,14 +770,14 @@ export class DomainSpecificAdapter extends BaseContextualAdapter {
         terminology: strategy.terminology,
         useCases: adaptedContent.useCases,
         compliance: strategy.complianceConsiderations,
-        bestPractices: adaptedContent.bestPractices
+        bestPractices: adaptedContent.bestPractices,
       },
       metadata: {
         domain,
         strategy: strategy.name,
-        relevanceScore: strategy.relevanceScore
+        relevanceScore: strategy.relevanceScore,
       },
-      summary: `Adapted for ${domain} domain with industry-specific terminology and use cases`
+      summary: `Adapted for ${domain} domain with industry-specific terminology and use cases`,
     }
   }
 
@@ -783,75 +786,75 @@ export class DomainSpecificAdapter extends BaseContextualAdapter {
       name: 'Healthcare Strategy',
       relevanceScore: 0.95,
       terminology: {
-        'user': 'patient',
-        'data': 'patient data',
-        'record': 'medical record',
-        'access': 'secure access',
-        'system': 'healthcare system'
+        user: 'patient',
+        data: 'patient data',
+        record: 'medical record',
+        access: 'secure access',
+        system: 'healthcare system',
       },
       specificUseCases: [
         'patient data management',
         'medical record keeping',
         'healthcare workflow automation',
-        'clinical decision support'
+        'clinical decision support',
       ],
       complianceConsiderations: ['HIPAA', 'HITECH', 'FDA regulations'],
       bestPracticesForDomain: [
         'Ensure patient data privacy and security',
         'Follow medical documentation standards',
-        'Implement audit trails for compliance'
+        'Implement audit trails for compliance',
       ],
-      industryContext: 'healthcare and medical services'
+      industryContext: 'healthcare and medical services',
     })
 
     this.domainStrategies.set('finance', {
       name: 'Financial Services Strategy',
       relevanceScore: 0.9,
       terminology: {
-        'transaction': 'financial transaction',
-        'data': 'financial data',
-        'record': 'financial record',
-        'user': 'client',
-        'system': 'financial system'
+        transaction: 'financial transaction',
+        data: 'financial data',
+        record: 'financial record',
+        user: 'client',
+        system: 'financial system',
       },
       specificUseCases: [
         'financial data analysis',
         'transaction processing',
         'risk management',
-        'regulatory reporting'
+        'regulatory reporting',
       ],
       complianceConsiderations: ['SOX', 'PCI DSS', 'Basel III', 'GDPR'],
       bestPracticesForDomain: [
         'Maintain data integrity and accuracy',
         'Implement strong financial controls',
-        'Ensure regulatory compliance'
+        'Ensure regulatory compliance',
       ],
-      industryContext: 'financial services and banking'
+      industryContext: 'financial services and banking',
     })
 
     this.domainStrategies.set('education', {
       name: 'Education Strategy',
       relevanceScore: 0.85,
       terminology: {
-        'user': 'student',
-        'content': 'educational content',
-        'system': 'learning management system',
-        'data': 'student data',
-        'record': 'academic record'
+        user: 'student',
+        content: 'educational content',
+        system: 'learning management system',
+        data: 'student data',
+        record: 'academic record',
       },
       specificUseCases: [
         'student information management',
         'educational content delivery',
         'assessment and grading',
-        'learning analytics'
+        'learning analytics',
       ],
       complianceConsiderations: ['FERPA', 'COPPA', 'state education regulations'],
       bestPracticesForDomain: [
         'Protect student privacy and data',
         'Support diverse learning styles',
-        'Ensure accessibility compliance'
+        'Ensure accessibility compliance',
       ],
-      industryContext: 'education and academic institutions'
+      industryContext: 'education and academic institutions',
     })
 
     // Add more domain strategies...
@@ -863,50 +866,50 @@ export class DomainSpecificAdapter extends BaseContextualAdapter {
       name: 'Retail Strategy',
       relevanceScore: 0.8,
       terminology: {
-        'user': 'customer',
-        'system': 'retail system',
-        'data': 'customer data',
-        'transaction': 'purchase',
-        'record': 'sales record'
+        user: 'customer',
+        system: 'retail system',
+        data: 'customer data',
+        transaction: 'purchase',
+        record: 'sales record',
       },
       specificUseCases: [
         'customer relationship management',
         'inventory management',
         'sales analytics',
-        'e-commerce integration'
+        'e-commerce integration',
       ],
       complianceConsiderations: ['PCI DSS', 'consumer protection laws', 'data privacy'],
       bestPracticesForDomain: [
         'Enhance customer experience',
         'Optimize inventory turnover',
-        'Protect payment information'
+        'Protect payment information',
       ],
-      industryContext: 'retail and e-commerce'
+      industryContext: 'retail and e-commerce',
     })
 
     this.domainStrategies.set('manufacturing', {
       name: 'Manufacturing Strategy',
       relevanceScore: 0.85,
       terminology: {
-        'process': 'manufacturing process',
-        'system': 'production system',
-        'data': 'production data',
-        'user': 'operator',
-        'record': 'production record'
+        process: 'manufacturing process',
+        system: 'production system',
+        data: 'production data',
+        user: 'operator',
+        record: 'production record',
       },
       specificUseCases: [
         'production planning',
         'quality control',
         'supply chain management',
-        'equipment monitoring'
+        'equipment monitoring',
       ],
       complianceConsiderations: ['ISO 9001', 'safety regulations', 'environmental standards'],
       bestPracticesForDomain: [
         'Ensure production quality',
         'Maintain safety standards',
-        'Optimize operational efficiency'
+        'Optimize operational efficiency',
       ],
-      industryContext: 'manufacturing and production'
+      industryContext: 'manufacturing and production',
     })
   }
 
@@ -928,7 +931,7 @@ export class DomainSpecificAdapter extends BaseContextualAdapter {
     const toolName = schema.toolName
     const useCases: string[] = []
 
-    strategy.specificUseCases.forEach(useCase => {
+    strategy.specificUseCases.forEach((useCase) => {
       useCases.push(`${toolName} for ${useCase} in ${strategy.industryContext}`)
     })
 
@@ -966,18 +969,18 @@ export class DomainSpecificAdapter extends BaseContextualAdapter {
         terminology: {},
         useCases: [`Apply ${schema.toolName} to ${domain} workflows`],
         compliance: [],
-        bestPractices: [`Follow ${domain} industry standards`]
+        bestPractices: [`Follow ${domain} industry standards`],
       },
       metadata: {
         domain,
-        fallback: true
+        fallback: true,
       },
-      summary: `Generic adaptation for ${domain} domain`
+      summary: `Generic adaptation for ${domain} domain`,
     }
   }
 
   getPriority(context: ExtendedUsageContext): number {
-    return (context.industry || context.domain) ? 0.7 : 0.1
+    return context.industry || context.domain ? 0.7 : 0.1
   }
 }
 
@@ -996,8 +999,8 @@ export class ContextualAdapterRegistry {
    * Register a contextual adapter
    */
   registerAdapter(adapter: BaseContextualAdapter): void {
-    this.adapters.set(adapter['adapterId'], adapter)
-    logger.info(`Registered contextual adapter: ${adapter['adapterName']}`)
+    this.adapters.set(adapter.adapterId, adapter)
+    logger.info(`Registered contextual adapter: ${adapter.adapterName}`)
   }
 
   /**
@@ -1035,7 +1038,7 @@ export class ContextualAdapterRegistry {
         const adaptation = await adapter.adapt(schema, context)
         adaptations.push(adaptation)
       } catch (error) {
-        logger.warn(`Adapter ${adapter['adapterId']} failed:`, error)
+        logger.warn(`Adapter ${adapter.adapterId} failed:`, error)
       }
     }
 
@@ -1057,13 +1060,13 @@ export class ContextualAdapterRegistry {
     preferences: AdaptationPreferences
   ): AdaptedDescription {
     // Start with original schema
-    let adaptedSchema = JSON.parse(JSON.stringify(originalSchema))
+    const adaptedSchema = JSON.parse(JSON.stringify(originalSchema))
     const adaptationsSummary: string[] = []
     const personalizedElements: string[] = []
     const recommendedNext: string[] = []
 
     // Apply adaptations in priority order
-    adaptations.forEach(adaptation => {
+    adaptations.forEach((adaptation) => {
       // Merge changes into adapted schema
       if (adaptation.changes) {
         this.mergeAdaptationChanges(adaptedSchema, adaptation.changes)
@@ -1081,13 +1084,13 @@ export class ContextualAdapterRegistry {
       adaptedSchema,
       adaptationsSummary,
       personalizedElements,
-      recommendedNext
+      recommendedNext,
     }
   }
 
   private mergeAdaptationChanges(schema: any, changes: any): void {
     // Simple deep merge implementation
-    Object.keys(changes).forEach(key => {
+    Object.keys(changes).forEach((key) => {
       if (typeof changes[key] === 'object' && changes[key] !== null) {
         if (!schema[key]) schema[key] = {}
         this.mergeAdaptationChanges(schema[key], changes[key])
@@ -1109,7 +1112,15 @@ interface RoleAdaptationStrategy {
   languageAdjustments: {
     technicalTerms: 'preserve' | 'simplify' | 'explain'
     businessTerms: 'emphasize' | 'maintain' | 'contextualize'
-    tone: 'professional' | 'technical' | 'authoritative' | 'analytical' | 'executive' | 'academic' | 'creative' | 'methodical'
+    tone:
+      | 'professional'
+      | 'technical'
+      | 'authoritative'
+      | 'analytical'
+      | 'executive'
+      | 'academic'
+      | 'creative'
+      | 'methodical'
   }
   contentFocus: string[]
   exampleTypes: string[]

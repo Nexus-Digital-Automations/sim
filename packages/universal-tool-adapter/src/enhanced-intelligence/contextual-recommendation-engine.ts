@@ -16,12 +16,11 @@
  * @version 2.0.0
  */
 
-import type { ToolConfig } from '@/tools/types'
-import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
-import type { ToolRecommendationWithDetails } from '../natural-language/recommendation-engine'
-import type { EnhancedToolDescription, UserSkillLevel } from './tool-intelligence-engine'
-import { createLogger } from '../utils/logger'
 import { LRUCache } from 'lru-cache'
+import type { ToolRecommendationWithDetails } from '../natural-language/recommendation-engine'
+import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
+import { createLogger } from '../utils/logger'
+import type { UserSkillLevel } from './tool-intelligence-engine'
 
 const logger = createLogger('ContextualRecommendationEngine')
 
@@ -89,11 +88,11 @@ export interface SessionContext {
 }
 
 export interface AlgorithmWeights {
-  collaborative: number      // 0.3 default
-  contentBased: number      // 0.25 default
-  contextual: number        // 0.25 default
-  temporal: number          // 0.1 default
-  behavioral: number        // 0.1 default
+  collaborative: number // 0.3 default
+  contentBased: number // 0.25 default
+  contextual: number // 0.25 default
+  temporal: number // 0.1 default
+  behavioral: number // 0.1 default
 }
 
 export interface UserPreferences {
@@ -371,7 +370,7 @@ export class ContextualRecommendationEngine {
     contentBased: 0.25,
     contextual: 0.25,
     temporal: 0.1,
-    behavioral: 0.1
+    behavioral: 0.1,
   }
 
   constructor(config?: {
@@ -382,7 +381,7 @@ export class ContextualRecommendationEngine {
     // Initialize cache
     this.cache = new LRUCache({
       max: config?.cache?.maxCacheSize || 1000,
-      ttl: config?.cache?.recommendationTTL || 1000 * 60 * 15 // 15 minutes
+      ttl: config?.cache?.recommendationTTL || 1000 * 60 * 15, // 15 minutes
     })
 
     // Initialize algorithm engines
@@ -458,17 +457,16 @@ export class ContextualRecommendationEngine {
         userId: request.currentContext.userId,
         recommendationCount: recommendations.length,
         cacheHit: false,
-        abVariant: abVariant?.variantId
+        abVariant: abVariant?.variantId,
       })
 
       logger.info('Generated contextual recommendations', {
         count: recommendations.length,
         responseTime: Date.now() - startTime,
-        userId: request.currentContext.userId
+        userId: request.currentContext.userId,
       })
 
       return recommendations
-
     } catch (error) {
       logger.error('Error generating recommendations', { error, request })
       this.performanceMonitor.recordError(error, 'recommendation_generation')
@@ -496,7 +494,7 @@ export class ContextualRecommendationEngine {
       algorithmBreakdown: this.explainAlgorithmScores(recommendation.algorithmScores),
       contextualFactors: recommendation.contextualExplanation.situationalFactors,
       userSpecificFactors: recommendation.contextualExplanation.userSpecificFactors,
-      improvementSuggestions: this.generateImprovementSuggestions(recommendation)
+      improvementSuggestions: this.generateImprovementSuggestions(recommendation),
     }
   }
 
@@ -522,7 +520,6 @@ export class ContextualRecommendationEngine {
       await this.mlPredictor.trainOnFeedback(feedback)
 
       logger.info('Recorded recommendation feedback', { userId, feedbackType: feedback.type })
-
     } catch (error) {
       logger.error('Error recording feedback', { error, userId })
     }
@@ -557,17 +554,16 @@ export class ContextualRecommendationEngine {
         contextual: this.contextAnalyzer.scoreContextualFit(toolId, contextInsights),
         temporal: this.scoreTemporalRelevance(toolId, request.currentContext.timeContext),
         behavioral: behaviorInsights.toolAffinities[toolId] || 0,
-        combined: 0
+        combined: 0,
       }
 
       // Calculate weighted combined score
-      algorithmScores.combined = (
+      algorithmScores.combined =
         algorithmScores.collaborative * weights.collaborative +
         algorithmScores.contentBased * weights.contentBased +
         algorithmScores.contextual * weights.contextual +
         algorithmScores.temporal * weights.temporal +
         algorithmScores.behavioral * weights.behavioral
-      )
 
       scores.set(toolId, algorithmScores)
     }
@@ -608,7 +604,7 @@ export class ContextualRecommendationEngine {
         interactionGuidance: this.generateInteractionGuidance(toolId, request),
         abTestVariant: abVariant,
         optimizationMetrics: this.calculateOptimizationMetrics(toolId, scores),
-        feedbackOpportunities: this.generateFeedbackOpportunities(toolId)
+        feedbackOpportunities: this.generateFeedbackOpportunities(toolId),
       }
 
       recommendations.push(contextualRecommendation)
@@ -623,7 +619,7 @@ export class ContextualRecommendationEngine {
       userId: request.currentContext.userId,
       context: request.currentContext.currentIntent,
       workflow: request.workflowState?.currentWorkflowId,
-      timeSlot: Math.floor(Date.now() / (1000 * 60 * 5)) // 5-minute time slots
+      timeSlot: Math.floor(Date.now() / (1000 * 60 * 5)), // 5-minute time slots
     }
 
     return btoa(JSON.stringify(keyData))
@@ -663,7 +659,10 @@ export class ContextualRecommendationEngine {
     return ['get_user_workflow', 'build_workflow', 'run_workflow', 'edit_workflow']
   }
 
-  private async getBaseRecommendation(toolId: string, request: ContextualRecommendationRequest): Promise<ToolRecommendationWithDetails> {
+  private async getBaseRecommendation(
+    toolId: string,
+    request: ContextualRecommendationRequest
+  ): Promise<ToolRecommendationWithDetails> {
     // This would create a base recommendation from the existing system
     return {
       toolId,
@@ -671,11 +670,13 @@ export class ContextualRecommendationEngine {
       reason: 'Context-based recommendation',
       suggestedParameters: {},
       urgency: request.currentContext.timeContext?.urgency || 'medium',
-      alternatives: []
+      alternatives: [],
     } as any // Cast for now - would be properly typed in complete implementation
   }
 
-  private async getFallbackRecommendations(request: ContextualRecommendationRequest): Promise<ContextualRecommendation[]> {
+  private async getFallbackRecommendations(
+    request: ContextualRecommendationRequest
+  ): Promise<ContextualRecommendation[]> {
     // Return safe fallback recommendations
     return []
   }
@@ -685,7 +686,10 @@ export class ContextualRecommendationEngine {
     return topReason?.reason || 'Best match for your current context'
   }
 
-  private generateDetailedExplanation(recommendation: ContextualRecommendation, contextInsights: any): string {
+  private generateDetailedExplanation(
+    recommendation: ContextualRecommendation,
+    contextInsights: any
+  ): string {
     return `This tool was recommended because it ${recommendation.contextualExplanation.primaryContext.toLowerCase()} and aligns with your ${recommendation.adaptiveComplexity.userLevel} skill level.`
   }
 
@@ -695,7 +699,7 @@ export class ContextualRecommendationEngine {
       contentBased: `Tool features align with your request (${(scores.contentBased * 100).toFixed(1)}% relevance)`,
       contextual: `Fits your current workflow context (${(scores.contextual * 100).toFixed(1)}% fit)`,
       temporal: `Appropriate for current time and urgency (${(scores.temporal * 100).toFixed(1)}% timing)`,
-      behavioral: `Matches your usage patterns (${(scores.behavioral * 100).toFixed(1)}% behavioral fit)`
+      behavioral: `Matches your usage patterns (${(scores.behavioral * 100).toFixed(1)}% behavioral fit)`,
     }
   }
 
@@ -703,12 +707,15 @@ export class ContextualRecommendationEngine {
     return [
       'Try using this tool in combination with related tools for better results',
       'Consider your timing - this tool works best during focused work periods',
-      'Review the documentation for advanced features that might be helpful'
+      'Review the documentation for advanced features that might be helpful',
     ]
   }
 
   // Additional helper methods implemented
-  private generateRecommendationReasons(scores: AlgorithmScores, contextInsights: any): RecommendationReason[] {
+  private generateRecommendationReasons(
+    scores: AlgorithmScores,
+    contextInsights: any
+  ): RecommendationReason[] {
     const reasons: RecommendationReason[] = []
 
     // Add collaborative reasoning
@@ -717,7 +724,7 @@ export class ContextualRecommendationEngine {
         type: 'collaborative',
         reason: 'Similar users with your preferences frequently use this tool',
         confidence: scores.collaborative,
-        evidence: ['user_similarity_analysis', 'usage_patterns']
+        evidence: ['user_similarity_analysis', 'usage_patterns'],
       })
     }
 
@@ -727,7 +734,7 @@ export class ContextualRecommendationEngine {
         type: 'intent_match',
         reason: 'This tool matches your current workflow and skill level',
         confidence: scores.contentBased,
-        evidence: ['skill_level_match', 'category_alignment']
+        evidence: ['skill_level_match', 'category_alignment'],
       })
     }
 
@@ -737,7 +744,7 @@ export class ContextualRecommendationEngine {
         type: 'context_fit',
         reason: 'Perfect fit for your current situation and environment',
         confidence: scores.contextual,
-        evidence: ['workflow_stage_match', 'environmental_factors']
+        evidence: ['workflow_stage_match', 'environmental_factors'],
       })
     }
 
@@ -747,31 +754,37 @@ export class ContextualRecommendationEngine {
         type: 'temporal',
         reason: 'Optimal timing and urgency alignment',
         confidence: scores.temporal,
-        evidence: ['time_based_patterns', 'urgency_match']
+        evidence: ['time_based_patterns', 'urgency_match'],
       })
     }
 
     return reasons
   }
 
-  private generateContextualExplanation(toolId: string, contextInsights: any): ContextualExplanation {
+  private generateContextualExplanation(
+    toolId: string,
+    contextInsights: any
+  ): ContextualExplanation {
     return {
       primaryContext: contextInsights.summary || 'Current workflow context',
       supportingContexts: [
         contextInsights.workflowStage,
         contextInsights.primaryIntent,
-        contextInsights.urgencyLevel
+        contextInsights.urgencyLevel,
       ].filter(Boolean),
       situationalFactors: contextInsights.environmentalFactors || [],
       userSpecificFactors: [
         `Expertise level: ${contextInsights.userExpertiseLevel}`,
         `Conversation depth: ${contextInsights.conversationDepth} messages`,
-        `Context stability: ${((contextInsights.contextStability || 0) * 100).toFixed(0)}%`
-      ]
+        `Context stability: ${((contextInsights.contextStability || 0) * 100).toFixed(0)}%`,
+      ],
     }
   }
 
-  private calculateConfidenceDetails(scores: AlgorithmScores, contextInsights: any): ConfidenceDetails {
+  private calculateConfidenceDetails(
+    scores: AlgorithmScores,
+    contextInsights: any
+  ): ConfidenceDetails {
     const overallConfidence = scores.combined
 
     const factorConfidences: Record<string, number> = {
@@ -779,7 +792,7 @@ export class ContextualRecommendationEngine {
       'Content matching': scores.contentBased,
       'Context alignment': scores.contextual,
       'Timing suitability': scores.temporal,
-      'Behavioral fit': scores.behavioral
+      'Behavioral fit': scores.behavioral,
     }
 
     const uncertaintyFactors: string[] = []
@@ -799,11 +812,14 @@ export class ContextualRecommendationEngine {
       overallConfidence,
       factorConfidences,
       uncertaintyFactors,
-      strengthIndicators
+      strengthIndicators,
     }
   }
 
-  private generatePersonalizedInstructions(toolId: string, request: ContextualRecommendationRequest): PersonalizedInstruction[] {
+  private generatePersonalizedInstructions(
+    toolId: string,
+    request: ContextualRecommendationRequest
+  ): PersonalizedInstruction[] {
     const userLevel = request.currentContext.userSkillLevel
     const instructions: PersonalizedInstruction[] = []
 
@@ -813,13 +829,16 @@ export class ContextualRecommendationEngine {
       explanation: `This tool is recommended based on your ${userLevel} level and current workflow`,
       skillLevelAdaptation: this.adaptInstructionForSkillLevel(toolId, userLevel),
       tips: this.generateTipsForTool(toolId, userLevel),
-      commonPitfalls: this.getCommonPitfalls(toolId, userLevel)
+      commonPitfalls: this.getCommonPitfalls(toolId, userLevel),
     })
 
     return instructions
   }
 
-  private calculateAdaptiveComplexity(toolId: string, request: ContextualRecommendationRequest): AdaptiveComplexity {
+  private calculateAdaptiveComplexity(
+    toolId: string,
+    request: ContextualRecommendationRequest
+  ): AdaptiveComplexity {
     const userLevel = request.currentContext.userSkillLevel
     const toolComplexity = this.inferToolComplexity(toolId)
 
@@ -828,27 +847,33 @@ export class ContextualRecommendationEngine {
       toolComplexity,
       adaptedApproach: this.getAdaptedApproach(toolId, userLevel, toolComplexity),
       simplificationSuggestions: this.getSimplificationSuggestions(toolId, userLevel),
-      growthOpportunities: this.getGrowthOpportunities(toolId, userLevel)
+      growthOpportunities: this.getGrowthOpportunities(toolId, userLevel),
     }
   }
 
-  private generateInteractionGuidance(toolId: string, request: ContextualRecommendationRequest): InteractionGuidance {
+  private generateInteractionGuidance(
+    toolId: string,
+    request: ContextualRecommendationRequest
+  ): InteractionGuidance {
     const userPrefs = request.currentContext.userPreferences
 
     return {
       communicationStyle: userPrefs?.communicationStyle || 'conversational',
       expectedInteractions: this.getExpectedInteractions(toolId),
       clarificationQuestions: this.getClarificationQuestions(toolId, request),
-      confirmationSteps: this.getConfirmationSteps(toolId)
+      confirmationSteps: this.getConfirmationSteps(toolId),
     }
   }
 
-  private calculateOptimizationMetrics(toolId: string, scores: AlgorithmScores): OptimizationMetrics {
+  private calculateOptimizationMetrics(
+    toolId: string,
+    scores: AlgorithmScores
+  ): OptimizationMetrics {
     return {
       algorithmVariant: 'hybrid_v2',
       expectedPerformance: scores.combined,
       learningOpportunity: 1 - scores.behavioral, // More learning needed if behavioral score is low
-      improvementPotential: Math.max(0, 1 - scores.combined)
+      improvementPotential: Math.max(0, 1 - scores.combined),
     }
   }
 
@@ -858,40 +883,40 @@ export class ContextualRecommendationEngine {
         type: 'rating',
         question: `How helpful was the ${toolId} tool for your current task?`,
         importance: 0.8,
-        timing: 'after_use'
+        timing: 'after_use',
       },
       {
         type: 'usage',
         question: 'Did this tool help you achieve your goal?',
         importance: 0.9,
-        timing: 'follow_up'
+        timing: 'follow_up',
       },
       {
         type: 'outcome',
         question: 'Would you use this tool again in similar situations?',
         importance: 0.7,
-        timing: 'immediate'
-      }
+        timing: 'immediate',
+      },
     ]
   }
 
   private getToolTimePreferences(toolId: string): Record<string, boolean> {
     // Simple heuristics for time-based tool preferences
     const preferences: Record<string, boolean> = {
-      'morning': true,
-      'afternoon': true,
-      'evening': false,
-      'night': false
+      morning: true,
+      afternoon: true,
+      evening: false,
+      night: false,
     }
 
     // Adjust based on tool type
     if (toolId.includes('report') || toolId.includes('analysis')) {
-      preferences['morning'] = true
-      preferences['afternoon'] = true
+      preferences.morning = true
+      preferences.afternoon = true
     }
 
     if (toolId.includes('deploy') || toolId.includes('build')) {
-      preferences['evening'] = true // Less disruptive during off-hours
+      preferences.evening = true // Less disruptive during off-hours
     }
 
     return preferences
@@ -899,17 +924,25 @@ export class ContextualRecommendationEngine {
 
   private isToolQuickExecution(toolId: string): boolean {
     const quickPatterns = ['get', 'list', 'show', 'display', 'quick', 'fast', 'simple']
-    return quickPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+    return quickPatterns.some((pattern) => toolId.toLowerCase().includes(pattern))
   }
 
   private isBusinessTool(toolId: string): boolean {
-    const businessPatterns = ['workflow', 'project', 'task', 'document', 'report', 'meeting', 'team']
-    return businessPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+    const businessPatterns = [
+      'workflow',
+      'project',
+      'task',
+      'document',
+      'report',
+      'meeting',
+      'team',
+    ]
+    return businessPatterns.some((pattern) => toolId.toLowerCase().includes(pattern))
   }
 
   private isPersonalTool(toolId: string): boolean {
     const personalPatterns = ['personal', 'private', 'individual', 'my', 'self']
-    return personalPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+    return personalPatterns.some((pattern) => toolId.toLowerCase().includes(pattern))
   }
 
   // Helper methods for personalized instructions
@@ -932,11 +965,11 @@ export class ContextualRecommendationEngine {
     const tips = [
       `Review the ${toolId} documentation if you encounter issues`,
       'Start with default settings and customize as needed',
-      'Keep track of successful configurations for future use'
+      'Keep track of successful configurations for future use',
     ]
 
     if (userLevel === 'beginner') {
-      tips.unshift('Take your time and don\'t hesitate to ask for help')
+      tips.unshift("Take your time and don't hesitate to ask for help")
     }
 
     if (userLevel === 'advanced' || userLevel === 'expert') {
@@ -969,7 +1002,11 @@ export class ContextualRecommendationEngine {
     return 0.5 // Default medium complexity
   }
 
-  private getAdaptedApproach(toolId: string, userLevel: UserSkillLevel, toolComplexity: number): string {
+  private getAdaptedApproach(
+    toolId: string,
+    userLevel: UserSkillLevel,
+    toolComplexity: number
+  ): string {
     if (userLevel === 'beginner' && toolComplexity > 0.7) {
       return 'Guided step-by-step approach with safety checks'
     }
@@ -984,7 +1021,7 @@ export class ContextualRecommendationEngine {
       return [
         'Use default parameters initially',
         'Break complex operations into smaller steps',
-        'Review each step before proceeding'
+        'Review each step before proceeding',
       ]
     }
     return []
@@ -995,14 +1032,14 @@ export class ContextualRecommendationEngine {
       return [
         'Learn about advanced parameters',
         'Explore automation options',
-        'Study successful usage patterns'
+        'Study successful usage patterns',
       ]
     }
     if (userLevel === 'intermediate') {
       return [
         'Experiment with advanced configurations',
         'Learn integration patterns',
-        'Optimize for performance'
+        'Optimize for performance',
       ]
     }
     return ['Share expertise with other users', 'Contribute to tool improvements']
@@ -1013,11 +1050,14 @@ export class ContextualRecommendationEngine {
       'Initial parameter confirmation',
       'Progress updates during execution',
       'Results presentation',
-      'Follow-up suggestions'
+      'Follow-up suggestions',
     ]
   }
 
-  private getClarificationQuestions(toolId: string, request: ContextualRecommendationRequest): string[] {
+  private getClarificationQuestions(
+    toolId: string,
+    request: ContextualRecommendationRequest
+  ): string[] {
     const questions = []
 
     if (request.userMessage.includes('?')) {
@@ -1199,7 +1239,8 @@ class CollaborativeFilteringEngine {
       if (otherUserId === userId) continue
 
       const similarity = this.calculateCosineSimilarity(userPrefs, otherPrefs)
-      if (similarity > 0.1) { // Only store significant similarities
+      if (similarity > 0.1) {
+        // Only store significant similarities
         similarities.set(otherUserId, similarity)
       }
     }
@@ -1207,7 +1248,10 @@ class CollaborativeFilteringEngine {
     this.userSimilarities.set(userId, similarities)
   }
 
-  private calculateCosineSimilarity(prefs1: Map<string, number>, prefs2: Map<string, number>): number {
+  private calculateCosineSimilarity(
+    prefs1: Map<string, number>,
+    prefs2: Map<string, number>
+  ): number {
     const commonItems = new Set<string>()
     for (const item of prefs1.keys()) {
       if (prefs2.has(item)) {
@@ -1249,27 +1293,42 @@ class ContentBasedFilteringEngine {
     let totalWeight = 0
 
     // Category matching
-    const categoryScore = this.calculateCategoryMatch(toolFeatures.categories, userProfile.preferredCategories)
+    const categoryScore = this.calculateCategoryMatch(
+      toolFeatures.categories,
+      userProfile.preferredCategories
+    )
     totalScore += categoryScore * 0.3
     totalWeight += 0.3
 
     // Complexity matching
-    const complexityScore = this.calculateComplexityMatch(toolFeatures.complexity, userProfile.skillLevel)
+    const complexityScore = this.calculateComplexityMatch(
+      toolFeatures.complexity,
+      userProfile.skillLevel
+    )
     totalScore += complexityScore * 0.2
     totalWeight += 0.2
 
     // Context matching
-    const contextScore = this.calculateContextMatch(toolFeatures.contexts, contextInsights.primaryContext)
+    const contextScore = this.calculateContextMatch(
+      toolFeatures.contexts,
+      contextInsights.primaryContext
+    )
     totalScore += contextScore * 0.25
     totalWeight += 0.25
 
     // Usage pattern matching
-    const usageScore = this.calculateUsagePatternMatch(toolFeatures.usagePatterns, userProfile.usagePreferences)
+    const usageScore = this.calculateUsagePatternMatch(
+      toolFeatures.usagePatterns,
+      userProfile.usagePreferences
+    )
     totalScore += usageScore * 0.15
     totalWeight += 0.15
 
     // Intent matching
-    const intentScore = this.calculateIntentMatch(toolFeatures.supportedIntents, contextInsights.primaryIntent)
+    const intentScore = this.calculateIntentMatch(
+      toolFeatures.supportedIntents,
+      contextInsights.primaryIntent
+    )
     totalScore += intentScore * 0.1
     totalWeight += 0.1
 
@@ -1290,11 +1349,18 @@ class ContentBasedFilteringEngine {
     // Update category preferences
     for (const category of toolFeatures.categories) {
       const current = userProfile.preferredCategories.get(category) || 0
-      userProfile.preferredCategories.set(category, Math.max(0, Math.min(1, current + weight * 0.1)))
+      userProfile.preferredCategories.set(
+        category,
+        Math.max(0, Math.min(1, current + weight * 0.1))
+      )
     }
 
     // Update complexity preference
-    userProfile.skillLevel = this.updateSkillLevel(userProfile.skillLevel, toolFeatures.complexity, weight)
+    userProfile.skillLevel = this.updateSkillLevel(
+      userProfile.skillLevel,
+      toolFeatures.complexity,
+      weight
+    )
 
     // Update context preferences
     for (const context of toolFeatures.contexts) {
@@ -1313,7 +1379,7 @@ class ContentBasedFilteringEngine {
         usagePatterns: ['interactive'],
         supportedIntents: ['action'],
         textFeatures: this.extractTextFeatures(toolId),
-        functionalFeatures: this.extractFunctionalFeatures(toolId)
+        functionalFeatures: this.extractFunctionalFeatures(toolId),
       })
     }
     return this.toolFeatures.get(toolId)!
@@ -1325,7 +1391,7 @@ class ContentBasedFilteringEngine {
       skillLevel: 'intermediate',
       contextPreferences: new Map(),
       usagePreferences: ['guided', 'interactive'],
-      intentPreferences: new Map()
+      intentPreferences: new Map(),
     }
   }
 
@@ -1335,24 +1401,27 @@ class ContentBasedFilteringEngine {
         ['workflow', 0.7],
         ['data', 0.6],
         ['analysis', 0.5],
-        ['communication', 0.5]
+        ['communication', 0.5],
       ]),
       skillLevel: 'intermediate',
       contextPreferences: new Map([
         ['workflow_execution', 0.8],
         ['problem_solving', 0.6],
-        ['exploration', 0.5]
+        ['exploration', 0.5],
       ]),
       usagePreferences: ['guided', 'interactive'],
       intentPreferences: new Map([
         ['action', 0.8],
         ['analysis', 0.6],
-        ['creation', 0.5]
-      ])
+        ['creation', 0.5],
+      ]),
     }
   }
 
-  private calculateCategoryMatch(toolCategories: string[], userPreferences: Map<string, number>): number {
+  private calculateCategoryMatch(
+    toolCategories: string[],
+    userPreferences: Map<string, number>
+  ): number {
     if (toolCategories.length === 0) return 0.5
 
     let totalScore = 0
@@ -1382,7 +1451,7 @@ class ContentBasedFilteringEngine {
 
     // Too far apart
     const distance = Math.abs(toolIndex - userIndex)
-    return Math.max(0.1, 1.0 - (distance * 0.3))
+    return Math.max(0.1, 1.0 - distance * 0.3)
   }
 
   private calculateContextMatch(toolContexts: string[], primaryContext: string): number {
@@ -1394,10 +1463,13 @@ class ContentBasedFilteringEngine {
   }
 
   private calculateUsagePatternMatch(toolPatterns: string[], userPreferences: string[]): number {
-    const matches = toolPatterns.filter(pattern => userPreferences.includes(pattern))
+    const matches = toolPatterns.filter((pattern) => userPreferences.includes(pattern))
     if (matches.length === 0) return 0.3
 
-    return Math.min(1.0, matches.length / Math.max(toolPatterns.length, userPreferences.length) + 0.3)
+    return Math.min(
+      1.0,
+      matches.length / Math.max(toolPatterns.length, userPreferences.length) + 0.3
+    )
   }
 
   private calculateIntentMatch(toolIntents: string[], primaryIntent: string): number {
@@ -1410,28 +1482,28 @@ class ContentBasedFilteringEngine {
 
   private getContextSimilarity(primaryContext: string, toolContexts: string[]): number {
     const contextRelations: Record<string, string[]> = {
-      'workflow_execution': ['planning', 'optimization'],
-      'problem_solving': ['analysis', 'troubleshooting'],
-      'exploration': ['learning', 'discovery'],
-      'collaboration': ['communication', 'planning']
+      workflow_execution: ['planning', 'optimization'],
+      problem_solving: ['analysis', 'troubleshooting'],
+      exploration: ['learning', 'discovery'],
+      collaboration: ['communication', 'planning'],
     }
 
     const relatedContexts = contextRelations[primaryContext] || []
-    const matches = toolContexts.filter(context => relatedContexts.includes(context))
+    const matches = toolContexts.filter((context) => relatedContexts.includes(context))
 
     return matches.length > 0 ? 0.6 : 0.2
   }
 
   private getIntentCompatibility(primaryIntent: string, toolIntents: string[]): number {
     const intentCompatibility: Record<string, string[]> = {
-      'action': ['creation', 'decision'],
-      'analysis': ['information', 'decision'],
-      'creation': ['action', 'decision'],
-      'information': ['analysis', 'exploration']
+      action: ['creation', 'decision'],
+      analysis: ['information', 'decision'],
+      creation: ['action', 'decision'],
+      information: ['analysis', 'exploration'],
     }
 
     const compatibleIntents = intentCompatibility[primaryIntent] || []
-    const matches = toolIntents.filter(intent => compatibleIntents.includes(intent))
+    const matches = toolIntents.filter((intent) => compatibleIntents.includes(intent))
 
     return matches.length > 0 ? 0.7 : 0.2
   }
@@ -1440,7 +1512,8 @@ class ContentBasedFilteringEngine {
     // Simplified skill level adaptation based on tool usage
     if (weight > 0.7 && toolComplexity === 'advanced') {
       return 'advanced'
-    } else if (weight > 0.5 && toolComplexity === 'intermediate' && currentLevel === 'beginner') {
+    }
+    if (weight > 0.5 && toolComplexity === 'intermediate' && currentLevel === 'beginner') {
       return 'intermediate'
     }
     return currentLevel
@@ -1448,16 +1521,16 @@ class ContentBasedFilteringEngine {
 
   private inferCategoriesFromToolId(toolId: string): string[] {
     const categoryMappings: Record<string, string[]> = {
-      'workflow': ['workflow', 'automation'],
-      'data': ['data', 'analysis'],
-      'user': ['user_management', 'authentication'],
-      'build': ['development', 'deployment'],
-      'run': ['execution', 'runtime'],
-      'edit': ['editing', 'modification'],
-      'get': ['retrieval', 'query'],
-      'create': ['creation', 'generation'],
-      'delete': ['management', 'cleanup'],
-      'update': ['modification', 'maintenance']
+      workflow: ['workflow', 'automation'],
+      data: ['data', 'analysis'],
+      user: ['user_management', 'authentication'],
+      build: ['development', 'deployment'],
+      run: ['execution', 'runtime'],
+      edit: ['editing', 'modification'],
+      get: ['retrieval', 'query'],
+      create: ['creation', 'generation'],
+      delete: ['management', 'cleanup'],
+      update: ['modification', 'maintenance'],
     }
 
     for (const [keyword, categories] of Object.entries(categoryMappings)) {
@@ -1477,7 +1550,8 @@ class ContentBasedFilteringEngine {
 
   private inferContextsFromToolId(toolId: string): string[] {
     if (toolId.includes('workflow')) return ['workflow_execution', 'planning']
-    if (toolId.includes('analyze') || toolId.includes('debug')) return ['problem_solving', 'analysis']
+    if (toolId.includes('analyze') || toolId.includes('debug'))
+      return ['problem_solving', 'analysis']
     if (toolId.includes('explore') || toolId.includes('search')) return ['exploration']
     if (toolId.includes('collaborate') || toolId.includes('share')) return ['collaboration']
     return ['workflow_execution']
@@ -1517,7 +1591,7 @@ class ContentBasedFilteringEngine {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32bit integer
     }
     return Math.abs(hash)
@@ -1573,9 +1647,8 @@ class ContextAnalysisEngine {
       return {
         ...insights,
         analysisTime: Date.now() - startTime,
-        confidence: this.calculateOverallConfidence(insights)
+        confidence: this.calculateOverallConfidence(insights),
       }
-
     } catch (error) {
       logger.error('Error in context analysis', { error, userId: request.currentContext.userId })
       return this.getFallbackInsights()
@@ -1597,7 +1670,10 @@ class ContextAnalysisEngine {
     weightSum += 0.25
 
     // Environmental compatibility (20% weight)
-    const environmentalScore = this.scoreEnvironmentalFit(toolId, contextInsights.environmentalFactors)
+    const environmentalScore = this.scoreEnvironmentalFit(
+      toolId,
+      contextInsights.environmentalFactors
+    )
     totalScore += environmentalScore * 0.2
     weightSum += 0.2
 
@@ -1616,7 +1692,7 @@ class ContextAnalysisEngine {
 
   private analyzeMessage(message: string): MessageAnalysis {
     const words = message.toLowerCase().split(/\s+/)
-    const sentences = message.split(/[.!?]+/).filter(s => s.trim())
+    const sentences = message.split(/[.!?]+/).filter((s) => s.trim())
 
     // Extract intent signals
     const intentSignals = this.extractIntentSignals(words)
@@ -1638,7 +1714,7 @@ class ContextAnalysisEngine {
       urgencyLevel,
       complexityLevel,
       questionCount: (message.match(/\?/g) || []).length,
-      imperativeCount: this.countImperatives(sentences)
+      imperativeCount: this.countImperatives(sentences),
     }
   }
 
@@ -1649,7 +1725,7 @@ class ContextAnalysisEngine {
         contextSwitches: 0,
         topicConsistency: 1.0,
         userExpertiseLevel: 'unknown',
-        conversationDepth: 0
+        conversationDepth: 0,
       }
     }
 
@@ -1670,7 +1746,7 @@ class ContextAnalysisEngine {
       contextSwitches,
       topicConsistency,
       userExpertiseLevel,
-      conversationDepth: history.length
+      conversationDepth: history.length,
     }
   }
 
@@ -1681,7 +1757,7 @@ class ContextAnalysisEngine {
         completion: 0,
         blockers: [],
         nextActions: [],
-        complexity: 'low'
+        complexity: 'low',
       }
     }
 
@@ -1690,7 +1766,7 @@ class ContextAnalysisEngine {
       completion: this.calculateCompletion(workflowState),
       blockers: workflowState.pendingActions || [],
       nextActions: this.predictNextActions(workflowState),
-      complexity: this.assessWorkflowComplexity(workflowState)
+      complexity: this.assessWorkflowComplexity(workflowState),
     }
   }
 
@@ -1700,7 +1776,7 @@ class ContextAnalysisEngine {
       urgency: context.timeContext?.urgency || 'medium',
       collaborationLevel: this.assessCollaborationLevel(context),
       deviceContext: context.deviceContext?.deviceType || 'unknown',
-      workingHours: context.timeContext?.workingHours || true
+      workingHours: context.timeContext?.workingHours || true,
     }
   }
 
@@ -1714,7 +1790,8 @@ class ContextAnalysisEngine {
     const primaryIntent = this.determinePrimaryIntent(message, conversation)
 
     // Determine workflow stage
-    const workflowStage = workflow.stage !== 'unknown' ? workflow.stage : this.inferStageFromIntent(primaryIntent)
+    const workflowStage =
+      workflow.stage !== 'unknown' ? workflow.stage : this.inferStageFromIntent(primaryIntent)
 
     // Calculate context stability
     const contextStability = this.calculateContextStability(conversation, workflow)
@@ -1731,23 +1808,23 @@ class ContextAnalysisEngine {
       contextStability,
       urgencyLevel: environmental.urgency,
       userExpertiseLevel: conversation.userExpertiseLevel,
-      conversationDepth: conversation.conversationDepth
+      conversationDepth: conversation.conversationDepth,
     }
   }
 
   private extractIntentSignals(words: string[]): string[] {
     const intentKeywords: Record<string, string[]> = {
-      'action': ['do', 'run', 'execute', 'start', 'begin', 'create', 'make'],
-      'analysis': ['analyze', 'check', 'review', 'examine', 'study', 'investigate'],
-      'information': ['what', 'how', 'when', 'where', 'why', 'show', 'tell', 'explain'],
-      'decision': ['should', 'would', 'could', 'might', 'choose', 'decide', 'select'],
-      'creation': ['create', 'build', 'generate', 'design', 'develop', 'construct'],
-      'communication': ['share', 'send', 'notify', 'inform', 'communicate', 'discuss']
+      action: ['do', 'run', 'execute', 'start', 'begin', 'create', 'make'],
+      analysis: ['analyze', 'check', 'review', 'examine', 'study', 'investigate'],
+      information: ['what', 'how', 'when', 'where', 'why', 'show', 'tell', 'explain'],
+      decision: ['should', 'would', 'could', 'might', 'choose', 'decide', 'select'],
+      creation: ['create', 'build', 'generate', 'design', 'develop', 'construct'],
+      communication: ['share', 'send', 'notify', 'inform', 'communicate', 'discuss'],
     }
 
     const signals: string[] = []
     for (const [intent, keywords] of Object.entries(intentKeywords)) {
-      if (keywords.some(keyword => words.includes(keyword))) {
+      if (keywords.some((keyword) => words.includes(keyword))) {
         signals.push(intent)
       }
     }
@@ -1757,25 +1834,35 @@ class ContextAnalysisEngine {
 
   private extractActionKeywords(words: string[]): string[] {
     const actionWords = [
-      'get', 'create', 'update', 'delete', 'run', 'build', 'deploy',
-      'analyze', 'process', 'generate', 'optimize', 'configure'
+      'get',
+      'create',
+      'update',
+      'delete',
+      'run',
+      'build',
+      'deploy',
+      'analyze',
+      'process',
+      'generate',
+      'optimize',
+      'configure',
     ]
 
-    return words.filter(word => actionWords.includes(word))
+    return words.filter((word) => actionWords.includes(word))
   }
 
   private analyzeUrgency(words: string[]): string {
     const urgentWords = ['urgent', 'immediately', 'asap', 'quickly', 'now', 'critical', 'emergency']
     const highWords = ['soon', 'fast', 'quickly', 'priority', 'important']
 
-    if (urgentWords.some(word => words.includes(word))) return 'critical'
-    if (highWords.some(word => words.includes(word))) return 'high'
+    if (urgentWords.some((word) => words.includes(word))) return 'critical'
+    if (highWords.some((word) => words.includes(word))) return 'high'
     return 'medium'
   }
 
   private analyzeComplexity(words: string[], sentences: string[]): string {
     // Simple heuristic based on vocabulary and sentence structure
-    const complexWords = words.filter(word => word.length > 8).length
+    const complexWords = words.filter((word) => word.length > 8).length
     const avgSentenceLength = words.length / sentences.length
     const complexityScore = (complexWords / words.length) * 100 + avgSentenceLength * 2
 
@@ -1786,36 +1873,36 @@ class ContextAnalysisEngine {
 
   private countImperatives(sentences: string[]): number {
     const imperativePatterns = [/^(do|make|create|get|run|build|start)/i, /please\s+\w+/i]
-    return sentences.filter(sentence =>
-      imperativePatterns.some(pattern => pattern.test(sentence.trim()))
+    return sentences.filter((sentence) =>
+      imperativePatterns.some((pattern) => pattern.test(sentence.trim()))
     ).length
   }
 
   // Helper methods for contextual scoring
   private scoreWorkflowFit(toolId: string, workflowStage: string): number {
     const stageToolMapping: Record<string, string[]> = {
-      'planning': ['create', 'design', 'plan', 'workflow'],
-      'execution': ['run', 'execute', 'process', 'build'],
-      'validation': ['test', 'check', 'validate', 'verify'],
-      'completion': ['finalize', 'complete', 'deploy', 'publish']
+      planning: ['create', 'design', 'plan', 'workflow'],
+      execution: ['run', 'execute', 'process', 'build'],
+      validation: ['test', 'check', 'validate', 'verify'],
+      completion: ['finalize', 'complete', 'deploy', 'publish'],
     }
 
     const relevantTools = stageToolMapping[workflowStage] || []
-    const matches = relevantTools.filter(tool => toolId.toLowerCase().includes(tool))
+    const matches = relevantTools.filter((tool) => toolId.toLowerCase().includes(tool))
 
     return matches.length > 0 ? 0.9 : 0.4
   }
 
   private scoreIntentFit(toolId: string, primaryIntent: string): number {
     const intentToolMapping: Record<string, string[]> = {
-      'action': ['run', 'execute', 'create', 'build', 'deploy'],
-      'analysis': ['analyze', 'check', 'review', 'inspect', 'debug'],
-      'information': ['get', 'list', 'show', 'display', 'fetch'],
-      'creation': ['create', 'generate', 'build', 'make', 'design']
+      action: ['run', 'execute', 'create', 'build', 'deploy'],
+      analysis: ['analyze', 'check', 'review', 'inspect', 'debug'],
+      information: ['get', 'list', 'show', 'display', 'fetch'],
+      creation: ['create', 'generate', 'build', 'make', 'design'],
     }
 
     const relevantTools = intentToolMapping[primaryIntent] || []
-    const matches = relevantTools.filter(tool => toolId.toLowerCase().includes(tool))
+    const matches = relevantTools.filter((tool) => toolId.toLowerCase().includes(tool))
 
     return matches.length > 0 ? 0.8 : 0.3
   }
@@ -1840,12 +1927,12 @@ class ContextAnalysisEngine {
 
   private isQuickTool(toolId: string): boolean {
     const quickToolPatterns = ['get', 'list', 'show', 'quick', 'simple']
-    return quickToolPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+    return quickToolPatterns.some((pattern) => toolId.toLowerCase().includes(pattern))
   }
 
   private isBusinessTool(toolId: string): boolean {
     const businessPatterns = ['workflow', 'project', 'task', 'document', 'report']
-    return businessPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+    return businessPatterns.some((pattern) => toolId.toLowerCase().includes(pattern))
   }
 
   // Additional helper methods (simplified implementations)
@@ -1862,7 +1949,7 @@ class ContextAnalysisEngine {
 
   private measureTopicConsistency(history: ConversationMessage[]): number {
     // Simplified topic consistency measurement
-    return Math.max(0.3, 1.0 - (history.length * 0.05))
+    return Math.max(0.3, 1.0 - history.length * 0.05)
   }
 
   private inferExpertiseLevel(history: ConversationMessage[]): string {
@@ -1899,7 +1986,10 @@ class ContextAnalysisEngine {
     return context.collaborationContext?.teamMembers.length || 0 > 1 ? 0.8 : 0.2
   }
 
-  private determinePrimaryIntent(message: MessageAnalysis, conversation: ConversationAnalysis): string {
+  private determinePrimaryIntent(
+    message: MessageAnalysis,
+    conversation: ConversationAnalysis
+  ): string {
     if (message.intentSignals.length === 0) return 'action' // Default
 
     // Return the first detected intent signal
@@ -1908,18 +1998,21 @@ class ContextAnalysisEngine {
 
   private inferStageFromIntent(primaryIntent: string): string {
     const intentStageMapping: Record<string, string> = {
-      'action': 'execution',
-      'analysis': 'validation',
-      'information': 'planning',
-      'creation': 'execution',
-      'decision': 'planning'
+      action: 'execution',
+      analysis: 'validation',
+      information: 'planning',
+      creation: 'execution',
+      decision: 'planning',
     }
 
     return intentStageMapping[primaryIntent] || 'execution'
   }
 
-  private calculateContextStability(conversation: ConversationAnalysis, workflow: WorkflowAnalysis): number {
-    const conversationStability = Math.max(0, 1.0 - (conversation.contextSwitches * 0.1))
+  private calculateContextStability(
+    conversation: ConversationAnalysis,
+    workflow: WorkflowAnalysis
+  ): number {
+    const conversationStability = Math.max(0, 1.0 - conversation.contextSwitches * 0.1)
     const workflowStability = workflow.completion // Higher completion = more stable
 
     return (conversationStability + workflowStability) / 2
@@ -1947,11 +2040,18 @@ class ContextAnalysisEngine {
     return factors
   }
 
-  private generateContextSummary(primaryIntent: string, workflowStage: string, environmental: EnvironmentalAnalysis): string {
+  private generateContextSummary(
+    primaryIntent: string,
+    workflowStage: string,
+    environmental: EnvironmentalAnalysis
+  ): string {
     return `User intends to ${primaryIntent} during ${workflowStage} stage in ${environmental.urgency} urgency context`
   }
 
-  private calculateIntentConfidence(message: MessageAnalysis, conversation: ConversationAnalysis): number {
+  private calculateIntentConfidence(
+    message: MessageAnalysis,
+    conversation: ConversationAnalysis
+  ): number {
     let confidence = 0.5 // Base confidence
 
     // Higher confidence for clear action keywords
@@ -1983,7 +2083,7 @@ class ContextAnalysisEngine {
       contextStability: 0.5,
       urgencyLevel: 'medium',
       userExpertiseLevel: 'intermediate',
-      conversationDepth: 0
+      conversationDepth: 0,
     }
   }
 }
@@ -2043,7 +2143,7 @@ class UserBehaviorAnalyzer {
       toolAffinities: {},
       usagePatterns: [],
       skillProgression: {},
-      preferenceProfile: {}
+      preferenceProfile: {},
     }
   }
 
@@ -2064,8 +2164,6 @@ class MachineLearningPredictor {
 }
 
 class ABTestingEngine {
-  constructor(private config?: ABTestConfiguration) {}
-
   async getVariant(userId: string): Promise<ABTestVariant | null> {
     // Get A/B test variant for user
     return null
@@ -2077,8 +2175,6 @@ class ABTestingEngine {
 }
 
 class PerformanceMonitor {
-  constructor(private enabled?: boolean) {}
-
   recordRecommendationRequest(metrics: any): void {
     // Record performance metrics
   }
@@ -2167,32 +2263,46 @@ export function createEnhancedRecommendationEngine(config: {
       contextTTL: 1000 * 60 * 5, // 5 minutes for context
       behaviorTTL: 1000 * 60 * 60, // 1 hour for behavior
       maxCacheSize: 2000,
-      compressionEnabled: true
+      compressionEnabled: true,
     },
-    abTesting: config.realTimeOptimization ? {
-      enabled: true,
-      testId: 'recommendation_optimization_v1',
-      variants: [
-        {
-          variantId: 'control',
-          name: 'Control',
-          description: 'Default algorithm weights',
-          algorithmWeights: { collaborative: 0.3, contentBased: 0.25, contextual: 0.25, temporal: 0.1, behavioral: 0.1 },
-          parameters: {}
-        },
-        {
-          variantId: 'behavioral_focus',
-          name: 'Behavioral Focus',
-          description: 'Enhanced behavioral weighting',
-          algorithmWeights: { collaborative: 0.25, contentBased: 0.2, contextual: 0.2, temporal: 0.1, behavioral: 0.25 },
-          parameters: {}
+    abTesting: config.realTimeOptimization
+      ? {
+          enabled: true,
+          testId: 'recommendation_optimization_v1',
+          variants: [
+            {
+              variantId: 'control',
+              name: 'Control',
+              description: 'Default algorithm weights',
+              algorithmWeights: {
+                collaborative: 0.3,
+                contentBased: 0.25,
+                contextual: 0.25,
+                temporal: 0.1,
+                behavioral: 0.1,
+              },
+              parameters: {},
+            },
+            {
+              variantId: 'behavioral_focus',
+              name: 'Behavioral Focus',
+              description: 'Enhanced behavioral weighting',
+              algorithmWeights: {
+                collaborative: 0.25,
+                contentBased: 0.2,
+                contextual: 0.2,
+                temporal: 0.1,
+                behavioral: 0.25,
+              },
+              parameters: {},
+            },
+          ],
+          trafficAllocation: { control: 0.7, behavioral_focus: 0.3 },
+          metrics: ['user_satisfaction', 'click_through_rate', 'conversion_rate'],
+          duration: 30 * 24 * 60 * 60 * 1000, // 30 days
         }
-      ],
-      trafficAllocation: { control: 0.7, behavioral_focus: 0.3 },
-      metrics: ['user_satisfaction', 'click_through_rate', 'conversion_rate'],
-      duration: 30 * 24 * 60 * 60 * 1000 // 30 days
-    } : undefined,
-    performanceTracking: true
+      : undefined,
+    performanceTracking: true,
   }
 
   return new ContextualRecommendationEngine(engineConfig)

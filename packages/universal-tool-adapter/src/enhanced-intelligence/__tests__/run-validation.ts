@@ -11,9 +11,9 @@
  * @version 1.0.0
  */
 
+import { AutomatedTestingSuite } from './automated-testing-suite.test'
 import { IntegrationValidationSuite } from './integration-validation.test'
 import { IntelligenceTestingFramework } from './intelligence-testing-framework.test'
-import { AutomatedTestingSuite } from './automated-testing-suite.test'
 import { UserExperienceTestingFramework } from './user-experience-testing.test'
 
 // =============================================================================
@@ -34,7 +34,7 @@ class EnhancedToolValidationRunner {
    */
   async runCompleteValidation(): Promise<void> {
     console.log('🚀 Starting Enhanced Tool Intelligence Validation Suite')
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
 
     const startTime = Date.now()
 
@@ -49,7 +49,7 @@ class EnhancedToolValidationRunner {
 
       // Display summary
       console.log('✅ Validation completed successfully!')
-      console.log('=' .repeat(80))
+      console.log('='.repeat(80))
       this.displaySummary(validationReport)
 
       // Generate recommendations
@@ -64,7 +64,6 @@ class EnhancedToolValidationRunner {
 
       const endTime = Date.now()
       console.log(`\n⏱️  Total validation time: ${(endTime - startTime) / 1000}s`)
-
     } catch (error) {
       console.error('❌ Validation failed:', error)
       process.exit(1)
@@ -81,43 +80,56 @@ class EnhancedToolValidationRunner {
 
     try {
       switch (category) {
-        case 'acceptance-criteria':
+        case 'acceptance-criteria': {
           const acResults = await this.validationSuite.validateAcceptanceCriteria()
-          console.log(`Acceptance Criteria: ${acResults.overallScore.toFixed(2)}% - ${acResults.complianceLevel}`)
+          console.log(
+            `Acceptance Criteria: ${acResults.overallScore.toFixed(2)}% - ${acResults.complianceLevel}`
+          )
           break
+        }
 
-        case 'performance':
+        case 'performance': {
           const perfResults = await this.validationSuite.validatePerformanceRequirements()
           console.log(`Performance Validation: ${perfResults.overallScore.toFixed(2)}%`)
           break
+        }
 
-        case 'security':
+        case 'security': {
           const secResults = await this.validationSuite.validateSecurityRequirements()
-          console.log(`Security Validation: ${secResults.overallScore.toFixed(2)}% - ${secResults.securityLevel} Security Level`)
+          console.log(
+            `Security Validation: ${secResults.overallScore.toFixed(2)}% - ${secResults.securityLevel} Security Level`
+          )
           break
+        }
 
-        case 'integration':
+        case 'integration': {
           const intResults = await this.validationSuite.runSystemIntegrationTests()
-          console.log(`System Integration: ${intResults.overallScore.toFixed(2)}% - ${intResults.systemHealth} Health`)
+          console.log(
+            `System Integration: ${intResults.overallScore.toFixed(2)}% - ${intResults.systemHealth} Health`
+          )
           break
+        }
 
-        case 'intelligence':
+        case 'intelligence': {
           const framework = new IntelligenceTestingFramework()
           const intlResults = await framework.runComprehensiveTests()
           console.log(`Intelligence Tests: ${intlResults.overallScore.toFixed(2)}%`)
           break
+        }
 
-        case 'automation':
+        case 'automation': {
           const autoSuite = new AutomatedTestingSuite()
           const autoResults = await autoSuite.runAutomatedTestSuite()
           console.log(`Automated Tests: ${autoResults.overallHealthScore.toFixed(2)}%`)
           break
+        }
 
-        case 'ux':
+        case 'ux': {
           const uxFramework = new UserExperienceTestingFramework()
           const uxResults = await uxFramework.runUserExperienceTests()
           console.log(`User Experience: ${uxResults.overallUXScore.toFixed(2)}%`)
           break
+        }
 
         default:
           throw new Error(`Unknown validation category: ${category}`)
@@ -125,7 +137,6 @@ class EnhancedToolValidationRunner {
 
       const endTime = Date.now()
       console.log(`⏱️  ${category} validation completed in ${(endTime - startTime) / 1000}s`)
-
     } catch (error) {
       console.error(`❌ ${category} validation failed:`, error)
       process.exit(1)
@@ -141,13 +152,25 @@ class EnhancedToolValidationRunner {
     console.log(`📈 Readiness Score: ${report.productionReadiness.readinessScore}%`)
 
     console.log('\n📋 Test Results Summary:')
-    console.log(`- Intelligence Framework: ${report.testResults.intelligence.overallScore.toFixed(1)}%`)
-    console.log(`- Automated Test Suite: ${report.testResults.automated.overallHealthScore.toFixed(1)}%`)
-    console.log(`- User Experience: ${report.testResults.userExperience.overallUXScore.toFixed(1)}%`)
-    console.log(`- Acceptance Criteria: ${report.testResults.acceptanceCriteria.overallScore.toFixed(1)}% (${report.testResults.acceptanceCriteria.complianceLevel})`)
-    console.log(`- System Integration: ${report.testResults.systemIntegration.overallScore.toFixed(1)}% (${report.testResults.systemIntegration.systemHealth})`)
+    console.log(
+      `- Intelligence Framework: ${report.testResults.intelligence.overallScore.toFixed(1)}%`
+    )
+    console.log(
+      `- Automated Test Suite: ${report.testResults.automated.overallHealthScore.toFixed(1)}%`
+    )
+    console.log(
+      `- User Experience: ${report.testResults.userExperience.overallUXScore.toFixed(1)}%`
+    )
+    console.log(
+      `- Acceptance Criteria: ${report.testResults.acceptanceCriteria.overallScore.toFixed(1)}% (${report.testResults.acceptanceCriteria.complianceLevel})`
+    )
+    console.log(
+      `- System Integration: ${report.testResults.systemIntegration.overallScore.toFixed(1)}% (${report.testResults.systemIntegration.systemHealth})`
+    )
     console.log(`- Performance: ${report.testResults.performance.overallScore.toFixed(1)}%`)
-    console.log(`- Security: ${report.testResults.security.overallScore.toFixed(1)}% (${report.testResults.security.securityLevel} Level)`)
+    console.log(
+      `- Security: ${report.testResults.security.overallScore.toFixed(1)}% (${report.testResults.security.securityLevel} Level)`
+    )
 
     if (report.productionReadiness.risks.length > 0) {
       console.log('\n⚠️  Identified Risks:')
@@ -191,7 +214,6 @@ class ValidationReportGenerator {
       await this.generateCSVMetrics(validationReport, reportDir)
 
       console.log(`📁 Reports generated in: ${reportDir}`)
-
     } catch (error) {
       console.error('Failed to generate reports:', error)
     }
@@ -387,8 +409,11 @@ Security,${report.testResults.security.overallScore.toFixed(1)},${report.testRes
   }
 
   private getTimestamp(): string {
-    return new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '_' +
-           new Date().toISOString().split('T')[1].substring(0, 8).replace(/:/g, '-')
+    return (
+      new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] +
+      '_' +
+      new Date().toISOString().split('T')[1].substring(0, 8).replace(/:/g, '-')
+    )
   }
 }
 
@@ -414,7 +439,17 @@ async function main(): Promise<void> {
 
   if (command === 'all') {
     await runner.runCompleteValidation()
-  } else if (['acceptance-criteria', 'performance', 'security', 'integration', 'intelligence', 'automation', 'ux'].includes(command)) {
+  } else if (
+    [
+      'acceptance-criteria',
+      'performance',
+      'security',
+      'integration',
+      'intelligence',
+      'automation',
+      'ux',
+    ].includes(command)
+  ) {
     await runner.runSpecificValidation(command as ValidationCategory)
   } else {
     console.log(`

@@ -16,19 +16,14 @@
  * @version 2.0.0
  */
 
-import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
-import type {
-  ContextualRecommendationRequest,
-  AdvancedUsageContext,
-  WorkflowState,
-  UserBehaviorHistory,
-  SessionContext,
-  TemporalContext,
-  CollaborationContext,
-  BusinessContext,
-  DeviceContext
-} from './contextual-recommendation-engine'
+import type { ConversationMessage } from '../natural-language/usage-guidelines'
 import { createLogger } from '../utils/logger'
+import type {
+  AdvancedUsageContext,
+  ContextualRecommendationRequest,
+  SessionContext,
+  WorkflowState,
+} from './contextual-recommendation-engine'
 
 const logger = createLogger('ContextAnalysisSystem')
 
@@ -444,14 +439,21 @@ export class ContextAnalysisEngine {
     try {
       logger.debug('Starting context analysis', {
         userId: request.currentContext.userId,
-        messageLength: request.userMessage.length
+        messageLength: request.userMessage.length,
       })
 
       // Parallel analysis of different context dimensions
       const [workflowAnalysis, intentAnalysis, environmentalAnalysis] = await Promise.all([
         this.workflowAnalyzer.analyzeWorkflow(request.workflowState, request.currentContext),
-        this.intentRecognizer.recognizeIntent(request.userMessage, request.conversationHistory, request.currentContext),
-        this.environmentalProcessor.analyzeEnvironment(request.currentContext, request.currentSession)
+        this.intentRecognizer.recognizeIntent(
+          request.userMessage,
+          request.conversationHistory,
+          request.currentContext
+        ),
+        this.environmentalProcessor.analyzeEnvironment(
+          request.currentContext,
+          request.currentSession
+        ),
       ])
 
       // Synthesize analysis results
@@ -469,11 +471,10 @@ export class ContextAnalysisEngine {
         userId: request.currentContext.userId,
         analysisTime: Date.now() - startTime,
         confidence: contextAnalysis.confidenceScore,
-        primaryContext: contextAnalysis.primaryContext
+        primaryContext: contextAnalysis.primaryContext,
       })
 
       return contextAnalysis
-
     } catch (error) {
       logger.error('Error in context analysis', { error, userId: request.currentContext.userId })
       return this.createFallbackAnalysis(request)
@@ -493,7 +494,7 @@ export class ContextAnalysisEngine {
       contextShifts: this.detectContextShifts(previousContext, newContext),
       adaptationRequired: this.assessAdaptationNeeds(previousContext, newContext),
       continuityFactors: this.identifyContinuityFactors(previousContext, newContext),
-      recommendationImpact: this.assessRecommendationImpact(previousContext, newContext)
+      recommendationImpact: this.assessRecommendationImpact(previousContext, newContext),
     }
   }
 
@@ -512,7 +513,7 @@ export class ContextAnalysisEngine {
         type: 'workflow_alignment',
         description: `This tool aligns well with your current workflow stage: ${analysisResult.workflowAnalysis.currentStage.stageName}`,
         confidence: analysisResult.workflowAnalysis.contextualRelevance,
-        actionable: true
+        actionable: true,
       })
     }
 
@@ -522,18 +523,20 @@ export class ContextAnalysisEngine {
         type: 'intent_match',
         description: `Perfect match for your intent to ${analysisResult.intentAnalysis.primaryIntent.name}`,
         confidence: analysisResult.intentAnalysis.primaryIntent.confidence,
-        actionable: true
+        actionable: true,
       })
     }
 
     // Environmental insights
-    const envFactors = analysisResult.environmentalAnalysis.temporalFactors.filter(f => f.impact > 0.5)
+    const envFactors = analysisResult.environmentalAnalysis.temporalFactors.filter(
+      (f) => f.impact > 0.5
+    )
     if (envFactors.length > 0) {
       insights.push({
         type: 'environmental_fit',
         description: `Good timing - optimal environmental conditions for this tool`,
-        confidence: Math.max(...envFactors.map(f => f.impact)),
-        actionable: true
+        confidence: Math.max(...envFactors.map((f) => f.impact)),
+        actionable: true,
       })
     }
 
@@ -555,7 +558,10 @@ export class ContextAnalysisEngine {
     score += intentScore * 0.3
 
     // Environmental alignment (20% weight)
-    const environmentScore = this.calculateEnvironmentalFit(toolId, analysisResult.environmentalAnalysis)
+    const environmentScore = this.calculateEnvironmentalFit(
+      toolId,
+      analysisResult.environmentalAnalysis
+    )
     score += environmentScore * 0.2
 
     // Historical patterns (10% weight)
@@ -576,22 +582,46 @@ export class ContextAnalysisEngine {
     request: ContextualRecommendationRequest
   ): Promise<ContextAnalysisResult> {
     // Determine primary context type
-    const primaryContext = this.determinePrimaryContext(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const primaryContext = this.determinePrimaryContext(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     // Calculate overall confidence
-    const contextConfidence = this.calculateOverallConfidence(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const contextConfidence = this.calculateOverallConfidence(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     // Identify key context factors
-    const contextFactors = this.identifyContextFactors(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const contextFactors = this.identifyContextFactors(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     // Generate suggested actions
-    const suggestedActions = await this.generateSuggestedActions(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const suggestedActions = await this.generateSuggestedActions(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     // Identify opportunities
-    const contextualOpportunities = this.identifyOpportunities(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const contextualOpportunities = this.identifyOpportunities(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     // Assess risks
-    const riskAssessments = this.assessRisks(workflowAnalysis, intentAnalysis, environmentalAnalysis)
+    const riskAssessments = this.assessRisks(
+      workflowAnalysis,
+      intentAnalysis,
+      environmentalAnalysis
+    )
 
     return {
       workflowAnalysis,
@@ -605,7 +635,7 @@ export class ContextAnalysisEngine {
       riskAssessments,
       analysisTimestamp: new Date(),
       analysisVersion: '2.0.0',
-      confidenceScore: contextConfidence
+      confidenceScore: contextConfidence,
     }
   }
 
@@ -650,7 +680,7 @@ export class ContextAnalysisEngine {
     const envConfidence = env.contextStability || 0.5
 
     // Weighted average with workflow having highest weight
-    return (workflowConfidence * 0.5 + intentConfidence * 0.3 + envConfidence * 0.2)
+    return workflowConfidence * 0.5 + intentConfidence * 0.3 + envConfidence * 0.2
   }
 
   private identifyContextFactors(
@@ -668,7 +698,10 @@ export class ContextAnalysisEngine {
         impact: 0.8,
         confidence: 0.9,
         description: `Workflow has ${workflow.blockingIssues.length} blocking issues`,
-        recommendations: ['Address blocking issues before proceeding', 'Consider alternative workflows']
+        recommendations: [
+          'Address blocking issues before proceeding',
+          'Consider alternative workflows',
+        ],
       })
     }
 
@@ -680,7 +713,7 @@ export class ContextAnalysisEngine {
         impact: 0.6,
         confidence: intent.intentConfidence,
         description: 'User intent appears to be changing or unclear',
-        recommendations: ['Ask clarifying questions', 'Provide intent confirmation options']
+        recommendations: ['Ask clarifying questions', 'Provide intent confirmation options'],
       })
     }
 
@@ -692,7 +725,7 @@ export class ContextAnalysisEngine {
         impact: 0.7,
         confidence: 0.8,
         description: 'Current context aligns well with urgency requirements',
-        recommendations: ['Prioritize quick execution tools', 'Focus on efficiency']
+        recommendations: ['Prioritize quick execution tools', 'Focus on efficiency'],
       })
     }
 
@@ -716,7 +749,7 @@ export class ContextAnalysisEngine {
         requiredTools: [workflow.nextExpectedActions[0]],
         preconditions: [],
         expectedOutcome: 'Workflow progression',
-        confidence: 0.8
+        confidence: 0.8,
       })
     }
 
@@ -730,7 +763,7 @@ export class ContextAnalysisEngine {
         requiredTools: [],
         preconditions: requiredAction.dependencies,
         expectedOutcome: 'Intent fulfillment',
-        confidence: 0.7
+        confidence: 0.7,
       })
     }
 
@@ -750,10 +783,14 @@ export class ContextAnalysisEngine {
         type: opt.type === 'automation' ? 'automation' : 'efficiency',
         description: opt.description,
         potentialBenefit: opt.estimatedBenefit,
-        implementationSteps: ['Analyze current process', 'Implement optimization', 'Validate results'],
+        implementationSteps: [
+          'Analyze current process',
+          'Implement optimization',
+          'Validate results',
+        ],
         requiredResources: [],
         timeframe: opt.implementationEffort === 'low' ? 'immediate' : 'short-term',
-        riskLevel: 'low'
+        riskLevel: 'low',
       })
     }
 
@@ -763,10 +800,14 @@ export class ContextAnalysisEngine {
         type: 'learning',
         description: 'Opportunity to learn more about user preferences and working style',
         potentialBenefit: 'Improved future recommendations and user experience',
-        implementationSteps: ['Gather user feedback', 'Track usage patterns', 'Adapt recommendations'],
+        implementationSteps: [
+          'Gather user feedback',
+          'Track usage patterns',
+          'Adapt recommendations',
+        ],
         requiredResources: ['User interaction time'],
         timeframe: 'ongoing',
-        riskLevel: 'low'
+        riskLevel: 'low',
       })
     }
 
@@ -786,9 +827,9 @@ export class ContextAnalysisEngine {
         riskType: `workflow_bottleneck_${bottleneck.type}`,
         probability: bottleneck.severity / 100,
         impact: bottleneck.estimatedDelay / 3600, // Convert to hours
-        mitigation: bottleneck.resolutionOptions.map(opt => opt.option),
+        mitigation: bottleneck.resolutionOptions.map((opt) => opt.option),
         contingency: ['Switch to alternative workflow', 'Seek additional resources'],
-        monitoring: ['Track bottleneck resolution progress', 'Monitor workflow performance']
+        monitoring: ['Track bottleneck resolution progress', 'Monitor workflow performance'],
       })
     }
 
@@ -800,7 +841,7 @@ export class ContextAnalysisEngine {
         impact: 0.5,
         mitigation: ['Provide intent clarification options', 'Offer guided workflows'],
         contingency: ['Fall back to basic functionality', 'Request explicit user guidance'],
-        monitoring: ['Track intent changes', 'Monitor user satisfaction']
+        monitoring: ['Track intent changes', 'Monitor user satisfaction'],
       })
     }
 
@@ -820,7 +861,7 @@ export class ContextAnalysisEngine {
       riskAssessments: [],
       analysisTimestamp: new Date(),
       analysisVersion: '2.0.0',
-      confidenceScore: 0.3
+      confidenceScore: 0.3,
     }
   }
 
@@ -867,7 +908,7 @@ export class ContextAnalysisEngine {
         estimatedTimeRemaining: 0,
         criticalDecisionPoints: [],
         requiredInputs: [],
-        expectedOutputs: []
+        expectedOutputs: [],
       },
       completionPercentage: 0,
       nextExpectedActions: [],
@@ -882,7 +923,7 @@ export class ContextAnalysisEngine {
       optimizationOpportunities: [],
       contextualRelevance: 0.3,
       userExpertiseAlignment: 0.5,
-      toolAvailabilityScore: 0.5
+      toolAvailabilityScore: 0.5,
     }
   }
 
@@ -894,7 +935,7 @@ export class ContextAnalysisEngine {
         confidence: 0.3,
         parameters: {},
         context: [userMessage],
-        alternatives: []
+        alternatives: [],
       },
       intentConfidence: 0.3,
       intentEvidence: [],
@@ -907,7 +948,7 @@ export class ContextAnalysisEngine {
         style: 'conversational',
         verbosity: 'moderate',
         formality: 'casual',
-        technicality: 'basic'
+        technicality: 'basic',
       },
       expertiseLevel: {
         domain: 'general',
@@ -915,18 +956,18 @@ export class ContextAnalysisEngine {
         confidence: 0.3,
         evidenceFactors: [],
         knowledgeGaps: [],
-        strengthAreas: []
+        strengthAreas: [],
       },
       urgencyLevel: {
         level: 'medium',
         timeframe: 'immediate',
         drivingFactors: [],
         constraints: [],
-        flexibilityScore: 0.5
+        flexibilityScore: 0.5,
       },
       requiredActions: [],
       optionalActions: [],
-      contraindications: []
+      contraindications: [],
     }
   }
 
@@ -946,7 +987,7 @@ export class ContextAnalysisEngine {
       integrationReadiness: 0.5,
       contextStability: 0.3,
       changeIndicators: [],
-      adaptabilityScore: 0.5
+      adaptabilityScore: 0.5,
     }
   }
 
@@ -959,11 +1000,17 @@ export class ContextAnalysisEngine {
     return {}
   }
 
-  private identifyContinuityFactors(prev: ContextAnalysisResult, current: ContextAnalysisResult): any[] {
+  private identifyContinuityFactors(
+    prev: ContextAnalysisResult,
+    current: ContextAnalysisResult
+  ): any[] {
     return []
   }
 
-  private assessRecommendationImpact(prev: ContextAnalysisResult, current: ContextAnalysisResult): any {
+  private assessRecommendationImpact(
+    prev: ContextAnalysisResult,
+    current: ContextAnalysisResult
+  ): any {
     return {}
   }
 }

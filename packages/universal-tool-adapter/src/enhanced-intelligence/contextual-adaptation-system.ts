@@ -16,19 +16,13 @@
  * @version 2.0.0
  */
 
-import type {
-  EnhancedDescriptionSchema,
-  UserRole,
-  SkillLevel,
-  ContextType
-} from './natural-language-description-framework'
-import type {
-  EnhancedDescriptionTemplate,
-  RoleSpecificTemplate,
-  SkillSpecificTemplate
-} from './description-templates'
-import type { UsageContext, UserProfile } from '../natural-language/usage-guidelines'
+import type { UserProfile } from '../natural-language/usage-guidelines'
 import { createLogger } from '../utils/logger'
+import type {
+  ContextType,
+  EnhancedDescriptionSchema,
+  SkillLevel,
+} from './natural-language-description-framework'
 
 const logger = createLogger('ContextualAdaptationSystem')
 
@@ -207,7 +201,13 @@ export interface AdaptationRule {
 }
 
 export interface AdaptationAction {
-  actionType: 'modify_content' | 'adjust_complexity' | 'add_examples' | 'change_tone' | 'restructure' | 'add_guidance'
+  actionType:
+    | 'modify_content'
+    | 'adjust_complexity'
+    | 'add_examples'
+    | 'change_tone'
+    | 'restructure'
+    | 'add_guidance'
   targetSection: string
   modification: ContentModification
   parameters: Record<string, any>
@@ -282,7 +282,7 @@ export class ContextualAdaptationEngine {
           appliedAdaptations.push({
             strategyId: strategy.strategyId,
             modifications: strategyResult.modifications,
-            effectiveness: strategyResult.effectiveness
+            effectiveness: strategyResult.effectiveness,
           })
         }
       }
@@ -313,14 +313,15 @@ export class ContextualAdaptationEngine {
           adaptationTimestamp: new Date(),
           adaptationVersion: '2.0.0',
           engineVersion: '2.0.0',
-          strategiesUsed: applicableStrategies.map(s => s.strategyId),
-          adaptationConfidence: this.calculateOverallConfidence(appliedAdaptations)
-        }
+          strategiesUsed: applicableStrategies.map((s) => s.strategyId),
+          adaptationConfidence: this.calculateOverallConfidence(appliedAdaptations),
+        },
       }
 
-      logger.info(`Description adapted for tool: ${originalDescription.toolId} with ${appliedAdaptations.length} modifications`)
+      logger.info(
+        `Description adapted for tool: ${originalDescription.toolId} with ${appliedAdaptations.length} modifications`
+      )
       return result
-
     } catch (error) {
       logger.error(`Failed to adapt description for ${originalDescription.toolId}:`, error)
       throw error
@@ -333,7 +334,7 @@ export class ContextualAdaptationEngine {
   async personalizeDescription(
     description: EnhancedDescriptionSchema,
     userProfile: ExtendedUserProfile,
-    personalizationLevel: number = 0.7
+    personalizationLevel = 0.7
   ): Promise<PersonalizedDescription> {
     // Create adaptation context focused on personalization
     const adaptationContext: AdaptationContext = {
@@ -343,7 +344,7 @@ export class ContextualAdaptationEngine {
       environment: this.createDefaultEnvironment(),
       interactionHistory: this.getUserInteractionHistory(userProfile.id || ''),
       learningProfile: this.getUserLearningProfile(userProfile.id || ''),
-      adaptationPreferences: this.getUserAdaptationPreferences(userProfile.id || '')
+      adaptationPreferences: this.getUserAdaptationPreferences(userProfile.id || ''),
     }
 
     // Override personalization intensity
@@ -354,8 +355,11 @@ export class ContextualAdaptationEngine {
     return {
       personalizedDescription: adaptationResult.adaptedDescription,
       personalizationFactors: this.extractPersonalizationFactors(adaptationResult),
-      recommendations: await this.generatePersonalizationRecommendations(userProfile, adaptationResult),
-      learningOpportunities: await this.identifyLearningOpportunities(userProfile, description)
+      recommendations: await this.generatePersonalizationRecommendations(
+        userProfile,
+        adaptationResult
+      ),
+      learningOpportunities: await this.identifyLearningOpportunities(userProfile, description),
     }
   }
 
@@ -365,7 +369,7 @@ export class ContextualAdaptationEngine {
   async situationalAdaptation(
     description: EnhancedDescriptionSchema,
     situation: SituationContext,
-    quickAdaptation: boolean = false
+    quickAdaptation = false
   ): Promise<SituationalAdaptation> {
     const strategies = quickAdaptation
       ? await this.getQuickSituationalStrategies(situation)
@@ -392,7 +396,7 @@ export class ContextualAdaptationEngine {
       situation,
       modifications: situationalModifications,
       adaptationReasoning: this.generateSituationalReasoning(situation, situationalModifications),
-      nextStepSuggestions: await this.generateNextStepSuggestions(adaptedDescription, situation)
+      nextStepSuggestions: await this.generateNextStepSuggestions(adaptedDescription, situation),
     }
   }
 
@@ -413,10 +417,11 @@ export class ContextualAdaptationEngine {
         contextAnalysis
       )
 
-      if (applicabilityScore > 0.3) { // Minimum threshold
+      if (applicabilityScore > 0.3) {
+        // Minimum threshold
         applicableStrategies.push({
           ...strategy,
-          score: applicabilityScore
+          score: applicabilityScore,
         })
       }
     }
@@ -458,7 +463,6 @@ export class ContextualAdaptationEngine {
       }
 
       effectiveness /= strategy.adaptationRules.length
-
     } catch (error) {
       logger.error(`Strategy application failed for ${strategy.strategyId}:`, error)
       success = false
@@ -468,7 +472,7 @@ export class ContextualAdaptationEngine {
       success,
       adaptedDescription: currentDescription,
       modifications,
-      effectiveness: success ? effectiveness : 0
+      effectiveness: success ? effectiveness : 0,
     }
   }
 
@@ -511,7 +515,7 @@ export class ContextualAdaptationEngine {
     return {
       success,
       result: modifiedDescription,
-      modification: action.modification
+      modification: action.modification,
     }
   }
 
@@ -547,12 +551,12 @@ export class ContextualAdaptationEngine {
           break
         case 'append':
           if (typeof current[finalKey] === 'string') {
-            current[finalKey] += ' ' + modification.content
+            current[finalKey] += ` ${modification.content}`
           }
           break
         case 'prepend':
           if (typeof current[finalKey] === 'string') {
-            current[finalKey] = modification.content + ' ' + current[finalKey]
+            current[finalKey] = `${modification.content} ${current[finalKey]}`
           }
           break
         default:
@@ -596,10 +600,7 @@ export class ContextualAdaptationEngine {
     contextAnalysis: ContextAnalysisResult
   ): Promise<boolean> {
     try {
-      const relevantExamples = await this.generateContextualExamples(
-        description,
-        contextAnalysis
-      )
+      const relevantExamples = await this.generateContextualExamples(description, contextAnalysis)
 
       // Add examples to appropriate sections
       if (description.usageGuidance.stepByStepGuides.length > 0) {
@@ -719,8 +720,10 @@ export class ContextualAdaptationEngine {
   private calculateOverallConfidence(adaptations: AppliedAdaptation[]): number {
     if (adaptations.length === 0) return 0
 
-    const totalEffectiveness = adaptations.reduce((sum, adaptation) =>
-      sum + adaptation.effectiveness, 0)
+    const totalEffectiveness = adaptations.reduce(
+      (sum, adaptation) => sum + adaptation.effectiveness,
+      0
+    )
 
     return totalEffectiveness / adaptations.length
   }
@@ -737,30 +740,92 @@ export class ContextualAdaptationEngine {
   }
 
   // Placeholder implementations for complex methods
-  private createDefaultSituation(): SituationContext { return {} as any }
-  private createDefaultWorkflow(): WorkflowContext { return {} as any }
-  private createDefaultEnvironment(): EnvironmentContext { return {} as any }
-  private getUserInteractionHistory(userId: string): InteractionHistory { return {} as any }
-  private getUserLearningProfile(userId: string): UserLearningProfile { return {} as any }
-  private getUserAdaptationPreferences(userId: string): DetailedAdaptationPreferences { return {} as any }
-  private extractPersonalizationFactors(result: AdaptedDescriptionResult): PersonalizationFactor[] { return [] }
-  private async generatePersonalizationRecommendations(profile: ExtendedUserProfile, result: AdaptedDescriptionResult): Promise<PersonalizationRecommendation[]> { return [] }
-  private async identifyLearningOpportunities(profile: ExtendedUserProfile, description: EnhancedDescriptionSchema): Promise<LearningOpportunity[]> { return [] }
-  private async getQuickSituationalStrategies(situation: SituationContext): Promise<SituationalStrategy[]> { return [] }
-  private async getComprehensiveSituationalStrategies(situation: SituationContext): Promise<SituationalStrategy[]> { return [] }
-  private async applySituationalStrategy(description: EnhancedDescriptionSchema, strategy: SituationalStrategy, situation: SituationContext): Promise<SituationalModification> { return {} as any }
-  private generateSituationalReasoning(situation: SituationContext, modifications: SituationalModification[]): string[] { return [] }
-  private async generateNextStepSuggestions(description: EnhancedDescriptionSchema, situation: SituationContext): Promise<NextStepSuggestion[]> { return [] }
+  private createDefaultSituation(): SituationContext {
+    return {} as any
+  }
+  private createDefaultWorkflow(): WorkflowContext {
+    return {} as any
+  }
+  private createDefaultEnvironment(): EnvironmentContext {
+    return {} as any
+  }
+  private getUserInteractionHistory(userId: string): InteractionHistory {
+    return {} as any
+  }
+  private getUserLearningProfile(userId: string): UserLearningProfile {
+    return {} as any
+  }
+  private getUserAdaptationPreferences(userId: string): DetailedAdaptationPreferences {
+    return {} as any
+  }
+  private extractPersonalizationFactors(result: AdaptedDescriptionResult): PersonalizationFactor[] {
+    return []
+  }
+  private async generatePersonalizationRecommendations(
+    profile: ExtendedUserProfile,
+    result: AdaptedDescriptionResult
+  ): Promise<PersonalizationRecommendation[]> {
+    return []
+  }
+  private async identifyLearningOpportunities(
+    profile: ExtendedUserProfile,
+    description: EnhancedDescriptionSchema
+  ): Promise<LearningOpportunity[]> {
+    return []
+  }
+  private async getQuickSituationalStrategies(
+    situation: SituationContext
+  ): Promise<SituationalStrategy[]> {
+    return []
+  }
+  private async getComprehensiveSituationalStrategies(
+    situation: SituationContext
+  ): Promise<SituationalStrategy[]> {
+    return []
+  }
+  private async applySituationalStrategy(
+    description: EnhancedDescriptionSchema,
+    strategy: SituationalStrategy,
+    situation: SituationContext
+  ): Promise<SituationalModification> {
+    return {} as any
+  }
+  private generateSituationalReasoning(
+    situation: SituationContext,
+    modifications: SituationalModification[]
+  ): string[] {
+    return []
+  }
+  private async generateNextStepSuggestions(
+    description: EnhancedDescriptionSchema,
+    situation: SituationContext
+  ): Promise<NextStepSuggestion[]> {
+    return []
+  }
   private simplifyDescriptionContent(description: EnhancedDescriptionSchema): void {}
   private enhanceDescriptionTechnicalDepth(description: EnhancedDescriptionSchema): void {}
-  private async generateContextualExamples(description: EnhancedDescriptionSchema, contextAnalysis: ContextAnalysisResult): Promise<string[]> { return [] }
+  private async generateContextualExamples(
+    description: EnhancedDescriptionSchema,
+    contextAnalysis: ContextAnalysisResult
+  ): Promise<string[]> {
+    return []
+  }
   private applyEncouragingTone(description: EnhancedDescriptionSchema): void {}
   private applyProfessionalTone(description: EnhancedDescriptionSchema): void {}
   private applyCasualTone(description: EnhancedDescriptionSchema): void {}
   private applyTechnicalTone(description: EnhancedDescriptionSchema): void {}
-  private async addPrerequisiteGuidance(description: EnhancedDescriptionSchema, contextAnalysis: ContextAnalysisResult): Promise<void> {}
-  private async addTroubleshootingGuidance(description: EnhancedDescriptionSchema, contextAnalysis: ContextAnalysisResult): Promise<void> {}
-  private async addNextStepsGuidance(description: EnhancedDescriptionSchema, contextAnalysis: ContextAnalysisResult): Promise<void> {}
+  private async addPrerequisiteGuidance(
+    description: EnhancedDescriptionSchema,
+    contextAnalysis: ContextAnalysisResult
+  ): Promise<void> {}
+  private async addTroubleshootingGuidance(
+    description: EnhancedDescriptionSchema,
+    contextAnalysis: ContextAnalysisResult
+  ): Promise<void> {}
+  private async addNextStepsGuidance(
+    description: EnhancedDescriptionSchema,
+    contextAnalysis: ContextAnalysisResult
+  ): Promise<void> {}
 }
 
 // =============================================================================
@@ -768,22 +833,18 @@ export class ContextualAdaptationEngine {
 // =============================================================================
 
 class ContextAnalyzer {
-  constructor(private config?: AnalysisConfig) {}
-
   async analyzeContext(context: AdaptationContext): Promise<ContextAnalysisResult> {
     return {
       contextSummary: 'Comprehensive context analysis',
       keyFactors: [],
       recommendedComplexity: 'moderate',
       suggestedAdaptations: [],
-      confidenceLevel: 0.85
+      confidenceLevel: 0.85,
     }
   }
 }
 
 class AdaptationLearner {
-  constructor(private config?: LearningConfig) {}
-
   async recordAdaptationResults(
     toolId: string,
     context: AdaptationContext,
@@ -795,8 +856,6 @@ class AdaptationLearner {
 }
 
 class AdaptationQualityMonitor {
-  constructor(private config?: QualityConfig) {}
-
   async validateAdaptedDescription(
     original: EnhancedDescriptionSchema,
     adapted: EnhancedDescriptionSchema,
@@ -806,7 +865,7 @@ class AdaptationQualityMonitor {
       qualityScore: 0.85,
       issues: [],
       improvements: [],
-      confidence: 0.9
+      confidence: 0.9,
     }
   }
 }
@@ -841,24 +900,90 @@ export interface SituationalAdaptation {
 }
 
 // Simplified supporting types for brevity
-export interface AppliedAdaptation { strategyId: string; modifications: ContentModification[]; effectiveness: number }
-export interface StrategyApplicationResult { success: boolean; adaptedDescription: EnhancedDescriptionSchema; modifications: ContentModification[]; effectiveness: number }
-export interface ActionApplicationResult { success: boolean; result: EnhancedDescriptionSchema; modification: ContentModification }
-export interface ContextAnalysisResult { contextSummary: string; keyFactors: string[]; recommendedComplexity: 'simple' | 'moderate' | 'complex'; suggestedAdaptations: string[]; confidenceLevel: number }
-export interface QualityResult { qualityScore: number; issues: string[]; improvements: string[]; confidence: number }
-export interface AdaptationMetadata { adaptationTimestamp: Date; adaptationVersion: string; engineVersion: string; strategiesUsed: string[]; adaptationConfidence: number }
-export interface PersonalizationFactor { factor: string; impact: number; reasoning: string }
-export interface PersonalizationRecommendation { type: string; suggestion: string; benefit: string }
-export interface LearningOpportunity { area: string; opportunity: string; difficulty: SkillLevel }
-export interface SituationalStrategy { strategyId: string; description: string; priority: number }
-export interface SituationalModification { modification: string; applied: boolean; result: EnhancedDescriptionSchema }
-export interface NextStepSuggestion { suggestion: string; priority: number; reasoning: string }
+export interface AppliedAdaptation {
+  strategyId: string
+  modifications: ContentModification[]
+  effectiveness: number
+}
+export interface StrategyApplicationResult {
+  success: boolean
+  adaptedDescription: EnhancedDescriptionSchema
+  modifications: ContentModification[]
+  effectiveness: number
+}
+export interface ActionApplicationResult {
+  success: boolean
+  result: EnhancedDescriptionSchema
+  modification: ContentModification
+}
+export interface ContextAnalysisResult {
+  contextSummary: string
+  keyFactors: string[]
+  recommendedComplexity: 'simple' | 'moderate' | 'complex'
+  suggestedAdaptations: string[]
+  confidenceLevel: number
+}
+export interface QualityResult {
+  qualityScore: number
+  issues: string[]
+  improvements: string[]
+  confidence: number
+}
+export interface AdaptationMetadata {
+  adaptationTimestamp: Date
+  adaptationVersion: string
+  engineVersion: string
+  strategiesUsed: string[]
+  adaptationConfidence: number
+}
+export interface PersonalizationFactor {
+  factor: string
+  impact: number
+  reasoning: string
+}
+export interface PersonalizationRecommendation {
+  type: string
+  suggestion: string
+  benefit: string
+}
+export interface LearningOpportunity {
+  area: string
+  opportunity: string
+  difficulty: SkillLevel
+}
+export interface SituationalStrategy {
+  strategyId: string
+  description: string
+  priority: number
+}
+export interface SituationalModification {
+  modification: string
+  applied: boolean
+  result: EnhancedDescriptionSchema
+}
+export interface NextStepSuggestion {
+  suggestion: string
+  priority: number
+  reasoning: string
+}
 
 // Configuration types
-export interface AdaptationEngineConfig { analysisConfig?: AnalysisConfig; learningConfig?: LearningConfig; qualityConfig?: QualityConfig }
-export interface AnalysisConfig { depth: string; algorithms: string[] }
-export interface LearningConfig { enabled: boolean; updateFrequency: string }
-export interface QualityConfig { thresholds: Record<string, number> }
+export interface AdaptationEngineConfig {
+  analysisConfig?: AnalysisConfig
+  learningConfig?: LearningConfig
+  qualityConfig?: QualityConfig
+}
+export interface AnalysisConfig {
+  depth: string
+  algorithms: string[]
+}
+export interface LearningConfig {
+  enabled: boolean
+  updateFrequency: string
+}
+export interface QualityConfig {
+  thresholds: Record<string, number>
+}
 
 // Additional supporting types (simplified for brevity)
 export type CognitiveStyle = 'analytical' | 'intuitive' | 'systematic' | 'creative'

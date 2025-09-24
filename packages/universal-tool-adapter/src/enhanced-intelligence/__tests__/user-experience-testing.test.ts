@@ -9,14 +9,12 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
-  EnhancedToolIntelligenceEngine,
-  ContextualRecommendationRequest,
-  UserSkillLevel,
-  createEnhancedToolIntelligenceEngine
+  createEnhancedToolIntelligenceEngine,
+  type EnhancedToolIntelligenceEngine,
+  type UserSkillLevel,
 } from '../tool-intelligence-engine'
-import type { UsageContext, ConversationMessage } from '../../natural-language/usage-guidelines'
 
 // =============================================================================
 // User Experience Testing Framework
@@ -73,18 +71,18 @@ export class UserExperienceTestingFramework {
         satisfactionResults,
         conversationFlowResults,
         onboardingResults,
-        accessibilityResults
+        accessibilityResults,
       ]),
       testResults: {
         discoverability: discoverabilityResults,
         satisfaction: satisfactionResults,
         conversationFlow: conversationFlowResults,
         onboarding: onboardingResults,
-        accessibility: accessibilityResults
+        accessibility: accessibilityResults,
       },
       abTestResults,
       userInsights: this.generateUserInsights(),
-      uxRecommendations: this.generateUXRecommendations()
+      uxRecommendations: this.generateUXRecommendations(),
     }
 
     console.log('✅ User Experience Testing Complete')
@@ -129,9 +127,9 @@ export class UserExperienceTestingFramework {
         averageDiscoveryTime: this.calculateAverageDiscoveryTime(tests),
         successRate: this.calculateDiscoverySuccessRate(tests),
         userConfidence: this.calculateUserConfidence(tests),
-        navigationEfficiency: this.calculateNavigationEfficiency(tests)
+        navigationEfficiency: this.calculateNavigationEfficiency(tests),
       },
-      insights: this.analyzeDiscoverabilityInsights(tests)
+      insights: this.analyzeDiscoverabilityInsights(tests),
     }
   }
 
@@ -167,10 +165,10 @@ export class UserExperienceTestingFramework {
         averageRating: this.calculateAverageSatisfactionRating(tests),
         npsScore: this.calculateNPSScore(tests),
         taskCompletionRate: this.calculateTaskCompletionRate(tests),
-        timeToValue: this.calculateTimeToValue(tests)
+        timeToValue: this.calculateTimeToValue(tests),
       },
       segmentAnalysis: this.analyzeSatisfactionBySegment(tests),
-      improvementAreas: this.identifyImprovementAreas(tests)
+      improvementAreas: this.identifyImprovementAreas(tests),
     }
   }
 
@@ -210,9 +208,9 @@ export class UserExperienceTestingFramework {
         averageTurnsToSuccess: this.calculateAverageTurnsToSuccess(tests),
         contextRetentionRate: this.calculateContextRetentionRate(tests),
         conversationRecoveryRate: this.calculateConversationRecoveryRate(tests),
-        userEngagement: this.calculateUserEngagement(tests)
+        userEngagement: this.calculateUserEngagement(tests),
       },
-      conversationPatterns: this.analyzeConversationPatterns(tests)
+      conversationPatterns: this.analyzeConversationPatterns(tests),
     }
   }
 
@@ -248,8 +246,8 @@ export class UserExperienceTestingFramework {
         completionRate: this.calculateOnboardingCompletionRate(tests),
         timeToFirstSuccess: this.calculateTimeToFirstSuccess(tests),
         dropOffPoints: this.identifyDropOffPoints(tests),
-        userRetention: this.calculateUserRetention(tests)
-      }
+        userRetention: this.calculateUserRetention(tests),
+      },
     }
   }
 
@@ -285,8 +283,8 @@ export class UserExperienceTestingFramework {
         wcagCompliance: this.calculateWCAGCompliance(tests),
         keyboardAccessibility: this.calculateKeyboardAccessibility(tests),
         screenReaderSupport: this.calculateScreenReaderSupport(tests),
-        inclusivityScore: this.calculateInclusivityScore(tests)
-      }
+        inclusivityScore: this.calculateInclusivityScore(tests),
+      },
     }
   }
 
@@ -318,13 +316,15 @@ export class UserExperienceTestingFramework {
       timestamp: new Date(),
       activeExperiments: experiments.length,
       experiments,
-      significantResults: experiments.filter(e => e.isSignificant),
-      winningVariations: experiments.filter(e => e.winningVariation).map(e => ({
-        experimentName: e.experimentName,
-        winningVariation: e.winningVariation,
-        improvementPercent: e.improvementPercent
-      })),
-      insights: this.analyzeABTestInsights(experiments)
+      significantResults: experiments.filter((e) => e.isSignificant),
+      winningVariations: experiments
+        .filter((e) => e.winningVariation)
+        .map((e) => ({
+          experimentName: e.experimentName,
+          winningVariation: e.winningVariation,
+          improvementPercent: e.improvementPercent,
+        })),
+      insights: this.analyzeABTestInsights(experiments),
     }
   }
 
@@ -344,7 +344,9 @@ export class UserExperienceTestingFramework {
     return tests
   }
 
-  private async runSkillLevelSatisfactionTest(skillLevel: UserSkillLevel): Promise<SatisfactionTest> {
+  private async runSkillLevelSatisfactionTest(
+    skillLevel: UserSkillLevel
+  ): Promise<SatisfactionTest> {
     const startTime = performance.now()
 
     // Simulate user interactions at this skill level
@@ -365,12 +367,12 @@ export class UserExperienceTestingFramework {
       score: satisfactionScore,
       duration: performance.now() - startTime,
       userFeedback: feedback,
-      completedScenarios: results.filter(r => r.completed).length,
+      completedScenarios: results.filter((r) => r.completed).length,
       totalScenarios: scenarios.length,
       averageTimeToCompletion: this.calculateAverageCompletionTime(results),
       frustractionPoints: this.identifyFrustractionPoints(results),
       delightMoments: this.identifyDelightMoments(results),
-      status: satisfactionScore >= 70 ? 'passed' : 'failed'
+      status: satisfactionScore >= 70 ? 'passed' : 'failed',
     }
   }
 
@@ -380,7 +382,7 @@ export class UserExperienceTestingFramework {
       'workflow_debugging',
       'tool_discovery',
       'automation_setup',
-      'troubleshooting'
+      'troubleshooting',
     ]
 
     const tests: SatisfactionTest[] = []
@@ -413,12 +415,12 @@ export class UserExperienceTestingFramework {
       score: satisfactionScore,
       duration: performance.now() - startTime,
       userFeedback: this.satisfactionAnalyzer.generateUseCaseFeedback(results, useCase),
-      completedScenarios: results.filter(r => r.completed).length,
+      completedScenarios: results.filter((r) => r.completed).length,
       totalScenarios: scenarios.length,
       averageTimeToCompletion: this.calculateAverageCompletionTime(results),
       frustractionPoints: this.identifyFrustractionPoints(results),
       delightMoments: this.identifyDelightMoments(results),
-      status: satisfactionScore >= 70 ? 'passed' : 'failed'
+      status: satisfactionScore >= 70 ? 'passed' : 'failed',
     }
   }
 
@@ -430,7 +432,7 @@ export class UserExperienceTestingFramework {
       'quick_start_help',
       'troubleshooting_help',
       'feature_discovery_help',
-      'best_practices_help'
+      'best_practices_help',
     ]
 
     const results: UserInteractionResult[] = []
@@ -448,12 +450,12 @@ export class UserExperienceTestingFramework {
       score: satisfactionScore,
       duration: performance.now() - startTime,
       userFeedback: this.satisfactionAnalyzer.generateHelpFeedback(results),
-      completedScenarios: results.filter(r => r.completed).length,
+      completedScenarios: results.filter((r) => r.completed).length,
       totalScenarios: helpScenarios.length,
       averageTimeToCompletion: this.calculateAverageCompletionTime(results),
       frustractionPoints: this.identifyFrustractionPoints(results),
       delightMoments: this.identifyDelightMoments(results),
-      status: satisfactionScore >= 75 ? 'passed' : 'failed'
+      status: satisfactionScore >= 75 ? 'passed' : 'failed',
     }
   }
 
@@ -465,7 +467,7 @@ export class UserExperienceTestingFramework {
       'syntax_error_recovery',
       'invalid_tool_handling',
       'context_error_guidance',
-      'timeout_error_resolution'
+      'timeout_error_resolution',
     ]
 
     const results: UserInteractionResult[] = []
@@ -483,12 +485,12 @@ export class UserExperienceTestingFramework {
       score: satisfactionScore,
       duration: performance.now() - startTime,
       userFeedback: this.satisfactionAnalyzer.generateErrorHandlingFeedback(results),
-      completedScenarios: results.filter(r => r.completed).length,
+      completedScenarios: results.filter((r) => r.completed).length,
       totalScenarios: errorScenarios.length,
       averageTimeToCompletion: this.calculateAverageCompletionTime(results),
       frustractionPoints: this.identifyFrustractionPoints(results),
       delightMoments: this.identifyDelightMoments(results),
-      status: satisfactionScore >= 70 ? 'passed' : 'failed'
+      status: satisfactionScore >= 70 ? 'passed' : 'failed',
     }
   }
 
@@ -503,7 +505,7 @@ export class UserExperienceTestingFramework {
       userSatisfaction: 4.2,
       flowEfficiency: 85,
       status: 'passed',
-      details: { continuityMaintained: true, contextSwitches: 2 }
+      details: { continuityMaintained: true, contextSwitches: 2 },
     }
   }
 
@@ -517,7 +519,7 @@ export class UserExperienceTestingFramework {
       userSatisfaction: 4.4,
       flowEfficiency: 90,
       status: 'passed',
-      details: { retentionRate: 95, lostContextInstances: 0 }
+      details: { retentionRate: 95, lostContextInstances: 0 },
     }
   }
 
@@ -531,7 +533,7 @@ export class UserExperienceTestingFramework {
       userSatisfaction: 4.1,
       flowEfficiency: 88,
       status: 'passed',
-      details: { suggestionsOffered: 8, suggestionsUsed: 6 }
+      details: { suggestionsOffered: 8, suggestionsUsed: 6 },
     }
   }
 
@@ -545,7 +547,7 @@ export class UserExperienceTestingFramework {
       userSatisfaction: 3.9,
       flowEfficiency: 82,
       status: 'passed',
-      details: { recoveryAttempts: 3, successfulRecoveries: 2 }
+      details: { recoveryAttempts: 3, successfulRecoveries: 2 },
     }
   }
 
@@ -559,7 +561,7 @@ export class UserExperienceTestingFramework {
       userSatisfaction: 4.3,
       flowEfficiency: 87,
       status: 'passed',
-      details: { averageTurns: 8, complexityHandled: true }
+      details: { averageTurns: 8, complexityHandled: true },
     }
   }
 
@@ -574,7 +576,7 @@ export class UserExperienceTestingFramework {
       dropOffRate: 18,
       userFeedback: 4.0,
       status: 'passed',
-      details: { guidanceEffectiveness: 85, confusionPoints: 2 }
+      details: { guidanceEffectiveness: 85, confusionPoints: 2 },
     }
   }
 
@@ -588,7 +590,7 @@ export class UserExperienceTestingFramework {
       dropOffRate: 5,
       userFeedback: 3.8,
       status: 'passed',
-      details: { detectionAccuracy: 78, personalizationEffectiveness: 82 }
+      details: { detectionAccuracy: 78, personalizationEffectiveness: 82 },
     }
   }
 
@@ -602,7 +604,7 @@ export class UserExperienceTestingFramework {
       dropOffRate: 11,
       userFeedback: 4.2,
       status: 'passed',
-      details: { workflowsCompleted: 85, guidanceClarity: 88 }
+      details: { workflowsCompleted: 85, guidanceClarity: 88 },
     }
   }
 
@@ -616,7 +618,7 @@ export class UserExperienceTestingFramework {
       dropOffRate: 24,
       userFeedback: 3.9,
       status: 'passed',
-      details: { featuresLearned: 12, overwhelmRate: 15 }
+      details: { featuresLearned: 12, overwhelmRate: 15 },
     }
   }
 
@@ -631,7 +633,7 @@ export class UserExperienceTestingFramework {
       criticalIssues: 0,
       userExperience: 'good',
       status: 'passed',
-      details: { screenReadersTestedCount: 3, compatibilityRate: 95 }
+      details: { screenReadersTestedCount: 3, compatibilityRate: 95 },
     }
   }
 
@@ -645,7 +647,7 @@ export class UserExperienceTestingFramework {
       criticalIssues: 0,
       userExperience: 'good',
       status: 'passed',
-      details: { navigationPaths: 25, successRate: 92 }
+      details: { navigationPaths: 25, successRate: 92 },
     }
   }
 
@@ -659,7 +661,7 @@ export class UserExperienceTestingFramework {
       criticalIssues: 1,
       userExperience: 'acceptable',
       status: 'passed',
-      details: { contrastIssues: 4, colorBlindnessSupport: 90 }
+      details: { contrastIssues: 4, colorBlindnessSupport: 90 },
     }
   }
 
@@ -673,7 +675,7 @@ export class UserExperienceTestingFramework {
       criticalIssues: 2,
       userExperience: 'acceptable',
       status: 'passed',
-      details: { languagesCovered: 2, culturalSensitivity: 82 }
+      details: { languagesCovered: 2, culturalSensitivity: 82 },
     }
   }
 
@@ -682,7 +684,7 @@ export class UserExperienceTestingFramework {
   // =============================================================================
 
   private calculateOverallUXScore(testResults: any[]): number {
-    const scores = testResults.map(result => result.overallScore)
+    const scores = testResults.map((result) => result.overallScore)
     return scores.reduce((sum, score) => sum + score, 0) / scores.length
   }
 
@@ -692,12 +694,12 @@ export class UserExperienceTestingFramework {
   }
 
   private calculateAverageDiscoveryTime(tests: DiscoverabilityTest[]): number {
-    const times = tests.map(t => t.discoveryTime || 0).filter(t => t > 0)
+    const times = tests.map((t) => t.discoveryTime || 0).filter((t) => t > 0)
     return times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
   }
 
   private calculateDiscoverySuccessRate(tests: DiscoverabilityTest[]): number {
-    const successfulTests = tests.filter(t => t.status === 'passed').length
+    const successfulTests = tests.filter((t) => t.status === 'passed').length
     return (successfulTests / tests.length) * 100
   }
 
@@ -713,12 +715,12 @@ export class UserExperienceTestingFramework {
     return [
       'Natural language triggers show high recognition rates',
       'Contextual suggestions improve tool discovery by 35%',
-      'Progressive disclosure reduces cognitive load effectively'
+      'Progressive disclosure reduces cognitive load effectively',
     ]
   }
 
   private calculateAverageSatisfactionRating(tests: SatisfactionTest[]): number {
-    const ratings = tests.map(t => t.userFeedback?.averageRating || 0).filter(r => r > 0)
+    const ratings = tests.map((t) => t.userFeedback?.averageRating || 0).filter((r) => r > 0)
     return ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
   }
 
@@ -734,7 +736,7 @@ export class UserExperienceTestingFramework {
   }
 
   private calculateTimeToValue(tests: SatisfactionTest[]): number {
-    const times = tests.map(t => t.averageTimeToCompletion).filter(t => t > 0)
+    const times = tests.map((t) => t.averageTimeToCompletion).filter((t) => t > 0)
     return times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
   }
 
@@ -744,27 +746,33 @@ export class UserExperienceTestingFramework {
         beginner: { score: 82, insights: ['Need more guidance', 'Appreciate step-by-step help'] },
         intermediate: { score: 88, insights: ['Want efficiency', 'Value contextual suggestions'] },
         advanced: { score: 85, insights: ['Seek customization', 'Prefer minimal interference'] },
-        expert: { score: 90, insights: ['Want full control', 'Appreciate advanced features'] }
+        expert: { score: 90, insights: ['Want full control', 'Appreciate advanced features'] },
       },
       byUseCase: {
-        workflow_creation: { score: 87, insights: ['Visual guidance helpful', 'Templates appreciated'] },
-        troubleshooting: { score: 83, insights: ['Clear error messages crucial', 'Recovery options valued'] }
-      }
+        workflow_creation: {
+          score: 87,
+          insights: ['Visual guidance helpful', 'Templates appreciated'],
+        },
+        troubleshooting: {
+          score: 83,
+          insights: ['Clear error messages crucial', 'Recovery options valued'],
+        },
+      },
     }
   }
 
   private identifyImprovementAreas(tests: SatisfactionTest[]): string[] {
-    const lowScoringTests = tests.filter(t => t.score < 80)
-    return lowScoringTests.map(t => `Improve ${t.testName.toLowerCase()} experience`)
+    const lowScoringTests = tests.filter((t) => t.score < 80)
+    return lowScoringTests.map((t) => `Improve ${t.testName.toLowerCase()} experience`)
   }
 
   private calculateAverageTurnsToSuccess(tests: ConversationFlowTest[]): number {
-    const turns = tests.map(t => t.conversationLength).filter(t => t > 0)
+    const turns = tests.map((t) => t.conversationLength).filter((t) => t > 0)
     return turns.length > 0 ? turns.reduce((a, b) => a + b, 0) / turns.length : 0
   }
 
   private calculateContextRetentionRate(tests: ConversationFlowTest[]): number {
-    const retainedContext = tests.filter(t => t.contextRetained).length
+    const retainedContext = tests.filter((t) => t.contextRetained).length
     return (retainedContext / tests.length) * 100
   }
 
@@ -783,14 +791,14 @@ export class UserExperienceTestingFramework {
         pattern: 'Quick Resolution',
         frequency: 65,
         description: 'Users prefer quick, direct responses',
-        impact: 'high'
+        impact: 'high',
       },
       {
         pattern: 'Iterative Refinement',
         frequency: 35,
         description: 'Users iterate through multiple attempts',
-        impact: 'medium'
-      }
+        impact: 'medium',
+      },
     ]
   }
 
@@ -807,7 +815,7 @@ export class UserExperienceTestingFramework {
   private identifyDropOffPoints(tests: OnboardingTest[]): DropOffPoint[] {
     return [
       { stage: 'Initial Setup', dropOffRate: 15, reason: 'Complexity overwhelm' },
-      { stage: 'First Workflow', dropOffRate: 12, reason: 'Unclear instructions' }
+      { stage: 'First Workflow', dropOffRate: 12, reason: 'Unclear instructions' },
     ]
   }
 
@@ -816,32 +824,32 @@ export class UserExperienceTestingFramework {
   }
 
   private calculateWCAGCompliance(tests: AccessibilityTest[]): string {
-    const complianceLevels = tests.map(t => t.complianceLevel)
-    if (complianceLevels.every(level => level === 'AAA')) return 'AAA'
-    if (complianceLevels.every(level => ['AA', 'AAA'].includes(level))) return 'AA'
+    const complianceLevels = tests.map((t) => t.complianceLevel)
+    if (complianceLevels.every((level) => level === 'AAA')) return 'AAA'
+    if (complianceLevels.every((level) => ['AA', 'AAA'].includes(level))) return 'AA'
     return 'A'
   }
 
   private calculateKeyboardAccessibility(tests: AccessibilityTest[]): number {
-    const keyboardTest = tests.find(t => t.testName.includes('Keyboard'))
+    const keyboardTest = tests.find((t) => t.testName.includes('Keyboard'))
     return keyboardTest?.score || 0
   }
 
   private calculateScreenReaderSupport(tests: AccessibilityTest[]): number {
-    const screenReaderTest = tests.find(t => t.testName.includes('Screen Reader'))
+    const screenReaderTest = tests.find((t) => t.testName.includes('Screen Reader'))
     return screenReaderTest?.score || 0
   }
 
   private calculateInclusivityScore(tests: AccessibilityTest[]): number {
-    const langTest = tests.find(t => t.testName.includes('Language'))
+    const langTest = tests.find((t) => t.testName.includes('Language'))
     return langTest?.score || 0
   }
 
   private analyzeABTestInsights(experiments: ABTestExperiment[]): string[] {
-    return experiments.map(exp =>
-      exp.isSignificant ?
-        `${exp.experimentName}: ${exp.winningVariation} shows ${exp.improvementPercent}% improvement` :
-        `${exp.experimentName}: No significant difference detected`
+    return experiments.map((exp) =>
+      exp.isSignificant
+        ? `${exp.experimentName}: ${exp.winningVariation} shows ${exp.improvementPercent}% improvement`
+        : `${exp.experimentName}: No significant difference detected`
     )
   }
 
@@ -851,20 +859,20 @@ export class UserExperienceTestingFramework {
         category: 'Tool Discovery',
         insight: 'Users prefer natural language queries over category browsing',
         impact: 'high',
-        recommendations: ['Enhance NLP capabilities', 'Improve search functionality']
+        recommendations: ['Enhance NLP capabilities', 'Improve search functionality'],
       },
       {
         category: 'User Guidance',
         insight: 'Step-by-step guidance increases completion rates by 40%',
         impact: 'high',
-        recommendations: ['Expand guided workflows', 'Add progress indicators']
+        recommendations: ['Expand guided workflows', 'Add progress indicators'],
       },
       {
         category: 'Error Handling',
         insight: 'Users appreciate contextual error explanations',
         impact: 'medium',
-        recommendations: ['Improve error message clarity', 'Add recovery suggestions']
-      }
+        recommendations: ['Improve error message clarity', 'Add recovery suggestions'],
+      },
     ]
   }
 
@@ -875,42 +883,42 @@ export class UserExperienceTestingFramework {
         category: 'Discoverability',
         recommendation: 'Implement smarter tool suggestions based on user context',
         expectedImpact: 'Increase tool discovery success rate by 25%',
-        effort: 'medium'
+        effort: 'medium',
       },
       {
         priority: 'high',
         category: 'Onboarding',
         recommendation: 'Create adaptive onboarding flows based on detected skill level',
         expectedImpact: 'Reduce drop-off rate by 30%',
-        effort: 'high'
+        effort: 'high',
       },
       {
         priority: 'medium',
         category: 'Accessibility',
         recommendation: 'Improve keyboard navigation and screen reader support',
         expectedImpact: 'Achieve WCAG 2.1 AA compliance',
-        effort: 'medium'
-      }
+        effort: 'medium',
+      },
     ]
   }
 
   private calculateAverageCompletionTime(results: UserInteractionResult[]): number {
-    const completedResults = results.filter(r => r.completed)
+    const completedResults = results.filter((r) => r.completed)
     if (completedResults.length === 0) return 0
     return completedResults.reduce((sum, r) => sum + r.duration, 0) / completedResults.length
   }
 
   private identifyFrustractionPoints(results: UserInteractionResult[]): string[] {
     return results
-      .filter(r => r.frustractionLevel && r.frustractionLevel > 3)
-      .map(r => r.frustractionReason || 'Unknown frustration')
+      .filter((r) => r.frustractionLevel && r.frustractionLevel > 3)
+      .map((r) => r.frustractionReason || 'Unknown frustration')
       .slice(0, 5)
   }
 
   private identifyDelightMoments(results: UserInteractionResult[]): string[] {
     return results
-      .filter(r => r.delightLevel && r.delightLevel > 4)
-      .map(r => r.delightReason || 'Positive experience')
+      .filter((r) => r.delightLevel && r.delightLevel > 4)
+      .map((r) => r.delightReason || 'Positive experience')
       .slice(0, 3)
   }
 }
@@ -928,12 +936,15 @@ class ABTestingManager {
       winningVariation: 'Card Layout',
       variants: {
         'List Format': { participants: 500, conversionRate: 12.4 },
-        'Card Layout': { participants: 500, conversionRate: 15.8 }
+        'Card Layout': { participants: 500, conversionRate: 15.8 },
       },
       improvementPercent: 27.4,
       confidenceLevel: 95,
       duration: 14,
-      insights: ['Card layout provides better visual hierarchy', 'Users scan cards more effectively']
+      insights: [
+        'Card layout provides better visual hierarchy',
+        'Users scan cards more effectively',
+      ],
     }
   }
 
@@ -945,12 +956,15 @@ class ABTestingManager {
       winningVariation: 'Concise with Examples',
       variants: {
         'Detailed Explanations': { participants: 400, conversionRate: 18.2 },
-        'Concise with Examples': { participants: 400, conversionRate: 22.1 }
+        'Concise with Examples': { participants: 400, conversionRate: 22.1 },
       },
       improvementPercent: 21.4,
       confidenceLevel: 92,
       duration: 10,
-      insights: ['Examples are more valuable than lengthy descriptions', 'Users prefer actionable guidance']
+      insights: [
+        'Examples are more valuable than lengthy descriptions',
+        'Users prefer actionable guidance',
+      ],
     }
   }
 
@@ -962,12 +976,15 @@ class ABTestingManager {
       winningVariation: undefined,
       variants: {
         'Technical Details': { participants: 300, conversionRate: 8.7 },
-        'User-Friendly Explanations': { participants: 300, conversionRate: 9.2 }
+        'User-Friendly Explanations': { participants: 300, conversionRate: 9.2 },
       },
       improvementPercent: 5.7,
       confidenceLevel: 68,
       duration: 7,
-      insights: ['Difference not yet statistically significant', 'Need more data to determine winner']
+      insights: [
+        'Difference not yet statistically significant',
+        'Need more data to determine winner',
+      ],
     }
   }
 
@@ -979,12 +996,15 @@ class ABTestingManager {
       winningVariation: 'Progressive Disclosure',
       variants: {
         'All-at-Once Setup': { participants: 600, conversionRate: 45.2 },
-        'Progressive Disclosure': { participants: 600, conversionRate: 58.9 }
+        'Progressive Disclosure': { participants: 600, conversionRate: 58.9 },
       },
       improvementPercent: 30.3,
       confidenceLevel: 99,
       duration: 21,
-      insights: ['Progressive disclosure reduces cognitive load', 'Users complete more steps when information is staged']
+      insights: [
+        'Progressive disclosure reduces cognitive load',
+        'Users complete more steps when information is staged',
+      ],
     }
   }
 }
@@ -996,32 +1016,43 @@ class UserSimulator {
     const baseScenarios = [
       { id: 'workflow_creation', description: 'Create a new workflow', complexity: 'medium' },
       { id: 'tool_discovery', description: 'Find the right tool for a task', complexity: 'easy' },
-      { id: 'error_resolution', description: 'Resolve an error', complexity: 'hard' }
+      { id: 'error_resolution', description: 'Resolve an error', complexity: 'hard' },
     ]
 
-    return baseScenarios.map(scenario => ({
+    return baseScenarios.map((scenario) => ({
       ...scenario,
       adaptedForSkillLevel: skillLevel,
-      expectedDifficulty: this.adjustDifficultyForSkill(scenario.complexity, skillLevel)
+      expectedDifficulty: this.adjustDifficultyForSkill(scenario.complexity, skillLevel),
     }))
   }
 
   generateScenariosForUseCase(useCase: string): UserScenario[] {
     const useCaseScenarios = {
       workflow_creation: [
-        { id: 'simple_workflow', description: 'Create a simple linear workflow', complexity: 'easy' },
-        { id: 'complex_workflow', description: 'Create a workflow with branches', complexity: 'hard' }
+        {
+          id: 'simple_workflow',
+          description: 'Create a simple linear workflow',
+          complexity: 'easy',
+        },
+        {
+          id: 'complex_workflow',
+          description: 'Create a workflow with branches',
+          complexity: 'hard',
+        },
       ],
       tool_discovery: [
         { id: 'browse_tools', description: 'Browse available tools', complexity: 'easy' },
-        { id: 'search_tools', description: 'Search for specific tool', complexity: 'medium' }
-      ]
+        { id: 'search_tools', description: 'Search for specific tool', complexity: 'medium' },
+      ],
     }
 
     return useCaseScenarios[useCase as keyof typeof useCaseScenarios] || []
   }
 
-  async simulateUserInteraction(scenario: UserScenario, skillLevel: UserSkillLevel): Promise<UserInteractionResult> {
+  async simulateUserInteraction(
+    scenario: UserScenario,
+    skillLevel: UserSkillLevel
+  ): Promise<UserInteractionResult> {
     const startTime = performance.now()
 
     // Simulate user behavior
@@ -1047,7 +1078,7 @@ class UserSimulator {
       frustractionLevel,
       delightLevel,
       frustractionReason: frustractionLevel > 3 ? 'Task too complex for skill level' : undefined,
-      delightReason: delightLevel > 4 ? 'Smooth and intuitive experience' : undefined
+      delightReason: delightLevel > 4 ? 'Smooth and intuitive experience' : undefined,
     }
   }
 
@@ -1060,7 +1091,7 @@ class UserSimulator {
       totalSteps: 3,
       frustractionLevel: 2,
       delightLevel: 4,
-      delightReason: 'Help was clear and actionable'
+      delightReason: 'Help was clear and actionable',
     }
   }
 
@@ -1072,7 +1103,7 @@ class UserSimulator {
       stepsCompleted: 4,
       totalSteps: 5,
       frustractionLevel: 3,
-      delightLevel: 3
+      delightLevel: 3,
     }
   }
 
@@ -1081,7 +1112,7 @@ class UserSimulator {
       beginner: { easy: 'medium', medium: 'hard', hard: 'very_hard' },
       intermediate: { easy: 'easy', medium: 'medium', hard: 'hard' },
       advanced: { easy: 'very_easy', medium: 'easy', hard: 'medium' },
-      expert: { easy: 'trivial', medium: 'very_easy', hard: 'easy' }
+      expert: { easy: 'trivial', medium: 'very_easy', hard: 'easy' },
     }
 
     return adjustments[skillLevel][complexity as keyof typeof adjustments.beginner] || complexity
@@ -1100,8 +1131,6 @@ class UserSimulator {
 }
 
 class DiscoverabilityTester {
-  constructor(private engine: EnhancedToolIntelligenceEngine) {}
-
   async testTriggerRecognition(): Promise<DiscoverabilityTest> {
     return {
       testName: 'Natural Language Trigger Recognition',
@@ -1111,7 +1140,7 @@ class DiscoverabilityTester {
       discoveryTime: 45,
       successRate: 92,
       userSatisfaction: 4.3,
-      details: { triggersRecognized: 18, totalTriggers: 20 }
+      details: { triggersRecognized: 18, totalTriggers: 20 },
     }
   }
 
@@ -1124,7 +1153,7 @@ class DiscoverabilityTester {
       discoveryTime: 62,
       successRate: 88,
       userSatisfaction: 4.1,
-      details: { relevantSuggestions: 15, totalSuggestions: 17 }
+      details: { relevantSuggestions: 15, totalSuggestions: 17 },
     }
   }
 
@@ -1137,7 +1166,7 @@ class DiscoverabilityTester {
       discoveryTime: 78,
       successRate: 85,
       userSatisfaction: 3.9,
-      details: { searchQueries: 25, successfulFinds: 21 }
+      details: { searchQueries: 25, successfulFinds: 21 },
     }
   }
 
@@ -1150,7 +1179,7 @@ class DiscoverabilityTester {
       discoveryTime: 52,
       successRate: 90,
       userSatisfaction: 4.2,
-      details: { categoriesUsed: 8, toolsFound: 35 }
+      details: { categoriesUsed: 8, toolsFound: 35 },
     }
   }
 
@@ -1163,7 +1192,7 @@ class DiscoverabilityTester {
       discoveryTime: 38,
       successRate: 94,
       userSatisfaction: 4.5,
-      details: { informationLevels: 3, cognitiveLoadReduced: true }
+      details: { informationLevels: 3, cognitiveLoadReduced: true },
     }
   }
 }
@@ -1172,23 +1201,26 @@ class SatisfactionAnalyzer {
   calculateSatisfactionScore(results: UserInteractionResult[]): number {
     if (results.length === 0) return 0
 
-    const completionRate = results.filter(r => r.completed).length / results.length
-    const avgDelightLevel = results.reduce((sum, r) => sum + (r.delightLevel || 3), 0) / results.length
-    const avgFrustractionLevel = results.reduce((sum, r) => sum + (r.frustractionLevel || 2), 0) / results.length
+    const completionRate = results.filter((r) => r.completed).length / results.length
+    const avgDelightLevel =
+      results.reduce((sum, r) => sum + (r.delightLevel || 3), 0) / results.length
+    const avgFrustractionLevel =
+      results.reduce((sum, r) => sum + (r.frustractionLevel || 2), 0) / results.length
 
     // Weighted score calculation
-    const score = (completionRate * 40) + ((avgDelightLevel / 5) * 35) + ((1 - avgFrustractionLevel / 5) * 25)
+    const score =
+      completionRate * 40 + (avgDelightLevel / 5) * 35 + (1 - avgFrustractionLevel / 5) * 25
     return Math.round(score * 100)
   }
 
   generateFeedback(results: UserInteractionResult[], skillLevel: UserSkillLevel): UserFeedback {
     return {
       averageRating: 4.1,
-      completionRate: results.filter(r => r.completed).length / results.length * 100,
+      completionRate: (results.filter((r) => r.completed).length / results.length) * 100,
       timeToCompletion: this.calculateAverageTime(results),
       commonIssues: this.identifyCommonIssues(results),
       positiveAspects: this.identifyPositiveAspects(results),
-      skillLevelNotes: this.generateSkillLevelNotes(skillLevel)
+      skillLevelNotes: this.generateSkillLevelNotes(skillLevel),
     }
   }
 
@@ -1199,7 +1231,7 @@ class SatisfactionAnalyzer {
       timeToCompletion: 180,
       commonIssues: [`${useCase} workflow could be more intuitive`],
       positiveAspects: [`${useCase} tools are comprehensive`],
-      skillLevelNotes: 'Mixed skill levels tested'
+      skillLevelNotes: 'Mixed skill levels tested',
     }
   }
 
@@ -1210,7 +1242,7 @@ class SatisfactionAnalyzer {
       timeToCompletion: 120,
       commonIssues: ['Some help topics need more examples'],
       positiveAspects: ['Clear explanations', 'Good coverage'],
-      skillLevelNotes: 'Help system works well for all levels'
+      skillLevelNotes: 'Help system works well for all levels',
     }
   }
 
@@ -1221,27 +1253,27 @@ class SatisfactionAnalyzer {
       timeToCompletion: 210,
       commonIssues: ['Some error messages are unclear', 'Recovery steps need improvement'],
       positiveAspects: ['Good error detection', 'Helpful suggestions'],
-      skillLevelNotes: 'Beginners need more guidance during errors'
+      skillLevelNotes: 'Beginners need more guidance during errors',
     }
   }
 
   private calculateAverageTime(results: UserInteractionResult[]): number {
-    const completedResults = results.filter(r => r.completed)
+    const completedResults = results.filter((r) => r.completed)
     if (completedResults.length === 0) return 0
     return completedResults.reduce((sum, r) => sum + r.duration, 0) / completedResults.length
   }
 
   private identifyCommonIssues(results: UserInteractionResult[]): string[] {
     return results
-      .filter(r => r.frustractionLevel && r.frustractionLevel > 3)
-      .map(r => r.frustractionReason || 'Unspecified issue')
+      .filter((r) => r.frustractionLevel && r.frustractionLevel > 3)
+      .map((r) => r.frustractionReason || 'Unspecified issue')
       .slice(0, 3)
   }
 
   private identifyPositiveAspects(results: UserInteractionResult[]): string[] {
     return results
-      .filter(r => r.delightLevel && r.delightLevel > 4)
-      .map(r => r.delightReason || 'Positive experience')
+      .filter((r) => r.delightLevel && r.delightLevel > 4)
+      .map((r) => r.delightReason || 'Positive experience')
       .slice(0, 3)
   }
 
@@ -1250,7 +1282,7 @@ class SatisfactionAnalyzer {
       beginner: 'Needs more guidance and examples',
       intermediate: 'Good balance of guidance and efficiency',
       advanced: 'Prefers efficiency over detailed explanations',
-      expert: 'Values customization and advanced features'
+      expert: 'Values customization and advanced features',
     }
 
     return notes[skillLevel]
@@ -1420,7 +1452,7 @@ interface ABTestExperiment {
   status: 'running' | 'completed' | 'paused'
   isSignificant: boolean
   winningVariation?: string
-  variants: Record<string, { participants: number, conversionRate: number }>
+  variants: Record<string, { participants: number; conversionRate: number }>
   improvementPercent: number
   confidenceLevel: number
   duration: number
@@ -1457,8 +1489,8 @@ interface UserFeedback {
 }
 
 interface SegmentAnalysis {
-  bySkillLevel: Record<string, { score: number, insights: string[] }>
-  byUseCase: Record<string, { score: number, insights: string[] }>
+  bySkillLevel: Record<string, { score: number; insights: string[] }>
+  byUseCase: Record<string, { score: number; insights: string[] }>
 }
 
 interface ConversationPattern {

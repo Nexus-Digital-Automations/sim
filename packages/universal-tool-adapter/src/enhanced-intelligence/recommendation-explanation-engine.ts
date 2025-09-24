@@ -17,14 +17,14 @@
  * @version 2.0.0
  */
 
+import { createLogger } from '../utils/logger'
+import type { ContextAnalysisResult } from './context-analysis-system'
 import type {
+  AlgorithmScores,
   ContextualRecommendation,
   ContextualRecommendationRequest,
-  AlgorithmScores
 } from './contextual-recommendation-engine'
 import type { UserSkillLevel } from './tool-intelligence-engine'
-import type { ContextAnalysisResult } from './context-analysis-system'
-import { createLogger } from '../utils/logger'
 
 const logger = createLogger('RecommendationExplanationEngine')
 
@@ -464,7 +464,7 @@ export class RecommendationExplanationEngine {
     try {
       logger.debug('Generating recommendation explanation', {
         recommendationId: recommendation.toolId,
-        userId: request.currentContext.userId
+        userId: request.currentContext.userId,
       })
 
       // Get user preferences for explanations
@@ -479,11 +479,7 @@ export class RecommendationExplanationEngine {
       )
 
       // Create primary explanation
-      const primaryExplanation = this.generatePrimaryExplanation(
-        recommendation,
-        context,
-        userPrefs
-      )
+      const primaryExplanation = this.generatePrimaryExplanation(recommendation, context, userPrefs)
 
       // Create detailed explanation
       const detailedExplanation = await this.generateDetailedExplanation(
@@ -493,17 +489,10 @@ export class RecommendationExplanationEngine {
       )
 
       // Analyze confidence
-      const confidenceAnalysis = this.analyzeConfidence(
-        recommendation,
-        request,
-        context
-      )
+      const confidenceAnalysis = this.analyzeConfidence(recommendation, request, context)
 
       // Identify uncertainty factors
-      const uncertaintyFactors = this.identifyUncertaintyFactors(
-        recommendation,
-        context
-      )
+      const uncertaintyFactors = this.identifyUncertaintyFactors(recommendation, context)
 
       // Create personalized explanation
       const personalizedExplanation = await this.createPersonalizedExplanation(
@@ -525,10 +514,7 @@ export class RecommendationExplanationEngine {
       )
 
       // Generate interactive components
-      const interactiveComponents = this.generateInteractiveComponents(
-        recommendation,
-        userPrefs
-      )
+      const interactiveComponents = this.generateInteractiveComponents(recommendation, userPrefs)
 
       // Create visual elements
       const visualElements = this.createVisualElements(
@@ -538,29 +524,16 @@ export class RecommendationExplanationEngine {
       )
 
       // Generate exploration options
-      const explorationOptions = this.generateExplorationOptions(
-        recommendation,
-        context
-      )
+      const explorationOptions = this.generateExplorationOptions(recommendation, context)
 
       // Create transparency information
-      const transparencyInfo = this.createTransparencyInfo(
-        recommendation,
-        context
-      )
+      const transparencyInfo = this.createTransparencyInfo(recommendation, context)
 
       // Generate verification options
-      const verificationOptions = this.generateVerificationOptions(
-        recommendation,
-        userPrefs
-      )
+      const verificationOptions = this.generateVerificationOptions(recommendation, userPrefs)
 
       // Create comparison data
-      const comparisonData = await this.createComparisonData(
-        recommendation,
-        request,
-        context
-      )
+      const comparisonData = await this.createComparisonData(recommendation, request, context)
 
       const explanation: RecommendationExplanation = {
         recommendationId: recommendation.toolId,
@@ -580,7 +553,7 @@ export class RecommendationExplanationEngine {
         explorationOptions,
         transparencyInfo,
         verificationOptions,
-        comparisonData
+        comparisonData,
       }
 
       // Store explanation in history
@@ -590,16 +563,15 @@ export class RecommendationExplanationEngine {
         explanationId: explanation.explanationId,
         userId: request.currentContext.userId,
         processingTime: Date.now() - startTime,
-        confidence: confidenceAnalysis.overallConfidence
+        confidence: confidenceAnalysis.overallConfidence,
       })
 
       return explanation
-
     } catch (error) {
       logger.error('Error generating recommendation explanation', {
         error,
         recommendationId: recommendation.toolId,
-        userId: request.currentContext.userId
+        userId: request.currentContext.userId,
       })
 
       return this.generateFallbackExplanation(recommendation, request)
@@ -626,9 +598,8 @@ export class RecommendationExplanationEngine {
       logger.info('Explanation updated with feedback', {
         explanationId,
         userId: feedback.userId,
-        helpfulness: feedback.helpfulness
+        helpfulness: feedback.helpfulness,
       })
-
     } catch (error) {
       logger.error('Error updating explanation with feedback', { error, explanationId })
     }
@@ -644,7 +615,7 @@ export class RecommendationExplanationEngine {
       userSatisfaction: this.calculateUserSatisfaction(userId),
       clarityScore: this.calculateClarityScore(userId),
       trustScore: this.calculateTrustScore(userId),
-      engagementRate: this.calculateEngagementRate(userId)
+      engagementRate: this.calculateEngagementRate(userId),
     }
   }
 
@@ -667,7 +638,7 @@ export class RecommendationExplanationEngine {
       keyPoints: this.extractKeyPoints(recommendation, 'summary'),
       supportingEvidence: this.gatherEvidence(recommendation, 'summary'),
       confidence: recommendation.confidenceDetails?.overallConfidence || 0.7,
-      complexity: 1
+      complexity: 1,
     })
 
     // Detailed level (if requested)
@@ -678,7 +649,7 @@ export class RecommendationExplanationEngine {
         keyPoints: this.extractKeyPoints(recommendation, 'detailed'),
         supportingEvidence: this.gatherEvidence(recommendation, 'detailed'),
         confidence: recommendation.confidenceDetails?.overallConfidence || 0.7,
-        complexity: 2
+        complexity: 2,
       })
     }
 
@@ -690,7 +661,7 @@ export class RecommendationExplanationEngine {
         keyPoints: this.extractKeyPoints(recommendation, 'technical'),
         supportingEvidence: this.gatherEvidence(recommendation, 'technical'),
         confidence: recommendation.confidenceDetails?.overallConfidence || 0.7,
-        complexity: 4
+        complexity: 4,
       })
     }
 
@@ -708,7 +679,7 @@ export class RecommendationExplanationEngine {
       actionableInsight: this.generateActionableInsight(recommendation, context),
       expectedOutcome: this.predictExpectedOutcome(recommendation),
       timeEstimate: this.estimateTimeToComplete(recommendation),
-      riskLevel: this.assessRiskLevel(recommendation)
+      riskLevel: this.assessRiskLevel(recommendation),
     }
   }
 
@@ -723,7 +694,7 @@ export class RecommendationExplanationEngine {
       userFactors: this.extractUserFactors(recommendation, request),
       environmentalFactors: this.extractEnvironmentalFactors(recommendation, context),
       historicalPatterns: this.extractHistoricalPatterns(recommendation),
-      counterfactuals: await this.generateCounterfactuals(recommendation, context)
+      counterfactuals: await this.generateCounterfactuals(recommendation, context),
     }
   }
 
@@ -746,7 +717,7 @@ export class RecommendationExplanationEngine {
       strengthFactors: this.identifyStrengthFactors(recommendation),
       weaknessFactors: this.identifyWeaknessFactors(recommendation),
       confidenceExplanation: this.explainConfidenceScore(overallConfidence),
-      confidenceVisualization: this.createConfidenceVisualization(overallConfidence)
+      confidenceVisualization: this.createConfidenceVisualization(overallConfidence),
     }
   }
 
@@ -764,7 +735,7 @@ export class RecommendationExplanationEngine {
         impact: 0.3,
         description: 'Limited contextual information available for accurate recommendation',
         mitigation: ['Provide more context about your current task', 'Update user preferences'],
-        confidence: 0.8
+        confidence: 0.8,
       })
     }
 
@@ -777,7 +748,7 @@ export class RecommendationExplanationEngine {
         impact: algorithmVariance,
         description: 'Different recommendation algorithms show varying confidence',
         mitigation: ['Consider multiple alternatives', 'Validate with domain experts'],
-        confidence: 0.9
+        confidence: 0.9,
       })
     }
 
@@ -809,7 +780,7 @@ export class RecommendationExplanationEngine {
       showUncertainty: false,
       interactiveElements: true,
       personalExamples: true,
-      technicalDetail: 'moderate'
+      technicalDetail: 'moderate',
     }
   }
 
@@ -840,9 +811,18 @@ export class RecommendationExplanationEngine {
       case 'summary':
         return ['Best contextual match', 'High confidence score', 'Proven effectiveness']
       case 'detailed':
-        return ['Algorithmic alignment', 'User behavior patterns', 'Context suitability', 'Historical success']
+        return [
+          'Algorithmic alignment',
+          'User behavior patterns',
+          'Context suitability',
+          'Historical success',
+        ]
       case 'technical':
-        return ['Multi-algorithm consensus', 'Feature vector similarity', 'Bayesian confidence intervals']
+        return [
+          'Multi-algorithm consensus',
+          'Feature vector similarity',
+          'Bayesian confidence intervals',
+        ]
       default:
         return []
     }
@@ -856,8 +836,8 @@ export class RecommendationExplanationEngine {
         description: `85% success rate in similar contexts`,
         source: 'Historical usage data',
         visualizable: true,
-        verifiable: true
-      }
+        verifiable: true,
+      },
     ]
   }
 
@@ -871,7 +851,10 @@ export class RecommendationExplanationEngine {
     return `We are ${confidence}% confident this is the right choice for you`
   }
 
-  private generateActionableInsight(recommendation: ContextualRecommendation, context: ContextAnalysisResult): string {
+  private generateActionableInsight(
+    recommendation: ContextualRecommendation,
+    context: ContextAnalysisResult
+  ): string {
     return `Use this tool now to ${context.primaryContext === 'workflow_execution' ? 'continue your current workflow' : 'address your immediate need'}`
   }
 
@@ -900,7 +883,7 @@ export class RecommendationExplanationEngine {
         contribution: scores.collaborative * 0.3,
         explanation: 'Based on preferences of similar users',
         keyFeatures: ['User similarity', 'Tool adoption patterns'],
-        confidence: 0.8
+        confidence: 0.8,
       },
       {
         algorithm: 'Content-Based Filtering',
@@ -909,8 +892,8 @@ export class RecommendationExplanationEngine {
         contribution: scores.contentBased * 0.25,
         explanation: 'Based on tool characteristics and features',
         keyFeatures: ['Tool functionality', 'Feature matching'],
-        confidence: 0.85
-      }
+        confidence: 0.85,
+      },
     ]
   }
 
@@ -919,7 +902,9 @@ export class RecommendationExplanationEngine {
     return [Math.max(0, confidence - margin), Math.min(1, confidence + margin)]
   }
 
-  private mapConfidenceToLevel(confidence: number): 'very_low' | 'low' | 'medium' | 'high' | 'very_high' {
+  private mapConfidenceToLevel(
+    confidence: number
+  ): 'very_low' | 'low' | 'medium' | 'high' | 'very_high' {
     if (confidence > 0.9) return 'very_high'
     if (confidence > 0.7) return 'high'
     if (confidence > 0.5) return 'medium'
@@ -940,74 +925,155 @@ export class RecommendationExplanationEngine {
       toolId: recommendation.toolId,
       explanationId: this.generateExplanationId(),
       timestamp: new Date(),
-      explanationLevels: [{
-        level: 'summary',
-        content: 'This tool is recommended based on your current context.',
-        keyPoints: ['Context match'],
-        supportingEvidence: [],
-        confidence: 0.5,
-        complexity: 1
-      }],
+      explanationLevels: [
+        {
+          level: 'summary',
+          content: 'This tool is recommended based on your current context.',
+          keyPoints: ['Context match'],
+          supportingEvidence: [],
+          confidence: 0.5,
+          complexity: 1,
+        },
+      ],
       primaryExplanation: {
         mainReason: 'General contextual fit',
         confidenceStatement: 'Moderate confidence',
         actionableInsight: 'Consider trying this tool',
         expectedOutcome: 'Should help with your task',
         timeEstimate: '5 minutes',
-        riskLevel: 'medium'
+        riskLevel: 'medium',
       },
       detailedExplanation: {} as DetailedExplanation,
       confidenceAnalysis: {} as ConfidenceAnalysis,
       uncertaintyFactors: [],
       personalizedExplanation: {} as PersonalizedExplanation,
-      communicationStyle: { style: 'conversational', formality: 'casual', detail_level: 'brief', tone: 'friendly' },
+      communicationStyle: {
+        style: 'conversational',
+        formality: 'casual',
+        detail_level: 'brief',
+        tone: 'friendly',
+      },
       expertiseAdaptation: {} as ExpertiseAdaptation,
       interactiveComponents: [],
       visualElements: [],
       explorationOptions: [],
       transparencyInfo: {} as TransparencyInfo,
       verificationOptions: [],
-      comparisonData: {} as ComparisonData
+      comparisonData: {} as ComparisonData,
     }
   }
 
   // Additional method stubs...
-  private extractContextualFactors(recommendation: any, context: any): ContextualFactor[] { return [] }
-  private extractUserFactors(recommendation: any, request: any): UserFactor[] { return [] }
-  private extractEnvironmentalFactors(recommendation: any, context: any): EnvironmentalFactor[] { return [] }
-  private extractHistoricalPatterns(recommendation: any): HistoricalPattern[] { return [] }
-  private async generateCounterfactuals(recommendation: any, context: any): Promise<Counterfactual[]> { return [] }
-  private assessDataQuality(context: any): number { return 0.8 }
-  private assessUserModelConfidence(userId: string): number { return 0.7 }
-  private identifyStrengthFactors(recommendation: any): ConfidenceFactor[] { return [] }
-  private identifyWeaknessFactors(recommendation: any): ConfidenceFactor[] { return [] }
-  private explainConfidenceScore(confidence: number): string { return `Confidence based on multiple factors` }
-  private createConfidenceVisualization(confidence: number): ConfidenceVisualization {
-    return { type: 'gauge', data: { values: [confidence], labels: ['Confidence'], colors: ['green'], metadata: {} }, annotations: [], interactive: false }
+  private extractContextualFactors(recommendation: any, context: any): ContextualFactor[] {
+    return []
   }
-  private calculateAlgorithmVariance(scores: AlgorithmScores): number { return 0.1 }
-  private async createPersonalizedExplanation(recommendation: any, request: any, prefs: any): Promise<PersonalizedExplanation> { return {} as any }
+  private extractUserFactors(recommendation: any, request: any): UserFactor[] {
+    return []
+  }
+  private extractEnvironmentalFactors(recommendation: any, context: any): EnvironmentalFactor[] {
+    return []
+  }
+  private extractHistoricalPatterns(recommendation: any): HistoricalPattern[] {
+    return []
+  }
+  private async generateCounterfactuals(
+    recommendation: any,
+    context: any
+  ): Promise<Counterfactual[]> {
+    return []
+  }
+  private assessDataQuality(context: any): number {
+    return 0.8
+  }
+  private assessUserModelConfidence(userId: string): number {
+    return 0.7
+  }
+  private identifyStrengthFactors(recommendation: any): ConfidenceFactor[] {
+    return []
+  }
+  private identifyWeaknessFactors(recommendation: any): ConfidenceFactor[] {
+    return []
+  }
+  private explainConfidenceScore(confidence: number): string {
+    return `Confidence based on multiple factors`
+  }
+  private createConfidenceVisualization(confidence: number): ConfidenceVisualization {
+    return {
+      type: 'gauge',
+      data: { values: [confidence], labels: ['Confidence'], colors: ['green'], metadata: {} },
+      annotations: [],
+      interactive: false,
+    }
+  }
+  private calculateAlgorithmVariance(scores: AlgorithmScores): number {
+    return 0.1
+  }
+  private async createPersonalizedExplanation(
+    recommendation: any,
+    request: any,
+    prefs: any
+  ): Promise<PersonalizedExplanation> {
+    return {} as any
+  }
   private determineCommunicationStyle(userId: string, prefs: any): CommunicationStyle {
-    return { style: 'conversational', formality: 'casual', detail_level: 'moderate', tone: 'friendly' }
+    return {
+      style: 'conversational',
+      formality: 'casual',
+      detail_level: 'moderate',
+      tone: 'friendly',
+    }
   }
   private createExpertiseAdaptation(skillLevel: UserSkillLevel, prefs: any): ExpertiseAdaptation {
-    return { userExpertise: skillLevel, domainExpertise: 'general', adaptationStrategy: { strategy: 'contextualize', techniques: [], effectiveness: 0.8 }, vocabularyLevel: 5, conceptualDepth: 3, technicalDetail: 2 }
+    return {
+      userExpertise: skillLevel,
+      domainExpertise: 'general',
+      adaptationStrategy: { strategy: 'contextualize', techniques: [], effectiveness: 0.8 },
+      vocabularyLevel: 5,
+      conceptualDepth: 3,
+      technicalDetail: 2,
+    }
   }
-  private generateInteractiveComponents(recommendation: any, prefs: any): InteractiveComponent[] { return [] }
-  private createVisualElements(recommendation: any, confidence: any, prefs: any): VisualElement[] { return [] }
-  private generateExplorationOptions(recommendation: any, context: any): ExplorationOption[] { return [] }
-  private createTransparencyInfo(recommendation: any, context: any): TransparencyInfo { return {} as any }
-  private generateVerificationOptions(recommendation: any, prefs: any): VerificationOption[] { return [] }
-  private async createComparisonData(recommendation: any, request: any, context: any): Promise<ComparisonData> { return {} as any }
-  private storeExplanationHistory(userId: string, explanation: RecommendationExplanation): void { }
-  private async updateUserPreferences(userId: string, feedback: any): Promise<void> { }
-  private async updateExplanationModels(feedback: any): Promise<void> { }
-  private recordExplanationFeedback(explanationId: string, feedback: any): void { }
-  private calculateAverageHelpfulness(userId?: string): number { return 4.2 }
-  private calculateUserSatisfaction(userId?: string): number { return 0.85 }
-  private calculateClarityScore(userId?: string): number { return 0.78 }
-  private calculateTrustScore(userId?: string): number { return 0.82 }
-  private calculateEngagementRate(userId?: string): number { return 0.65 }
+  private generateInteractiveComponents(recommendation: any, prefs: any): InteractiveComponent[] {
+    return []
+  }
+  private createVisualElements(recommendation: any, confidence: any, prefs: any): VisualElement[] {
+    return []
+  }
+  private generateExplorationOptions(recommendation: any, context: any): ExplorationOption[] {
+    return []
+  }
+  private createTransparencyInfo(recommendation: any, context: any): TransparencyInfo {
+    return {} as any
+  }
+  private generateVerificationOptions(recommendation: any, prefs: any): VerificationOption[] {
+    return []
+  }
+  private async createComparisonData(
+    recommendation: any,
+    request: any,
+    context: any
+  ): Promise<ComparisonData> {
+    return {} as any
+  }
+  private storeExplanationHistory(userId: string, explanation: RecommendationExplanation): void {}
+  private async updateUserPreferences(userId: string, feedback: any): Promise<void> {}
+  private async updateExplanationModels(feedback: any): Promise<void> {}
+  private recordExplanationFeedback(explanationId: string, feedback: any): void {}
+  private calculateAverageHelpfulness(userId?: string): number {
+    return 4.2
+  }
+  private calculateUserSatisfaction(userId?: string): number {
+    return 0.85
+  }
+  private calculateClarityScore(userId?: string): number {
+    return 0.78
+  }
+  private calculateTrustScore(userId?: string): number {
+    return 0.82
+  }
+  private calculateEngagementRate(userId?: string): number {
+    return 0.65
+  }
 }
 
 // =============================================================================
