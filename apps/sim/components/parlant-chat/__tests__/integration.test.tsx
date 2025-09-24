@@ -3,16 +3,14 @@
  * @jest-environment jsdom
  */
 
-import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom'
 
 // Mock the parlant-chat-react module
 vi.mock('parlant-chat-react', () => ({
   default: ({ agentName }: { agentName?: string }) => (
-    <div data-testid="parlant-chatbox">
-      Mock Parlant Chatbox - {agentName}
-    </div>
+    <div data-testid='parlant-chatbox'>Mock Parlant Chatbox - {agentName}</div>
   ),
 }))
 
@@ -82,7 +80,7 @@ describe('Parlant Chat Integration', () => {
     // Mock window.matchMedia
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: vi.fn().mockImplementation(query => ({
+      value: vi.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -118,7 +116,7 @@ describe('Performance Monitoring', () => {
     const monitor = ChatPerformanceMonitor.getInstance()
 
     monitor.startTimer('test-operation')
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const duration = monitor.endTimer('test-operation')
 
     expect(duration).toBeGreaterThan(0)

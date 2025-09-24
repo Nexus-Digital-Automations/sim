@@ -1,23 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/jest'
-import { sql } from 'drizzle-orm'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from '@jest/jest'
 import { db } from '@packages/db'
 import {
-  ChatMessageStorage,
-  ChatHistoryRetrieval,
-  ConversationManager,
   BrowserSessionManager,
   ChatDataExporter,
+  ChatHistoryRetrieval,
+  ChatMessageStorage,
+  ConversationManager,
 } from '@packages/db/chat-persistence-queries'
-import {
-  chatMessage,
-  chatConversation,
-  chatBrowserSession,
-  chatExportRequest,
-} from '@packages/db/chat-persistence-schema'
-import { parlantSession, parlantAgent } from '@packages/db/parlant-schema'
-import { workspace, user } from '@packages/db/schema'
-import SessionPersistenceService from '../services/chat-persistence/session-persistence'
+import { chatConversation, chatMessage } from '@packages/db/chat-persistence-schema'
+import { sql } from 'drizzle-orm'
 import DataRetentionService from '../services/chat-persistence/data-retention'
+import SessionPersistenceService from '../services/chat-persistence/session-persistence'
 
 /**
  * Chat Persistence Test Suite
@@ -59,11 +52,11 @@ describe('Chat Persistence System', () => {
 
   beforeEach(async () => {
     // Create test data
-    testWorkspaceId = 'test-workspace-' + Date.now()
-    testUserId = 'test-user-' + Date.now()
-    testAgentId = 'test-agent-' + Date.now()
-    testSessionId = 'test-session-' + Date.now()
-    testConversationId = 'test-conversation-' + Date.now()
+    testWorkspaceId = `test-workspace-${Date.now()}`
+    testUserId = `test-user-${Date.now()}`
+    testAgentId = `test-agent-${Date.now()}`
+    testSessionId = `test-session-${Date.now()}`
+    testConversationId = `test-conversation-${Date.now()}`
 
     // Create test workspace (mock)
     await db.execute(sql`
@@ -192,10 +185,7 @@ describe('Chat Persistence System', () => {
 
       await messageStorage.updateMessageStatus(message.id, 'delivered')
 
-      const [updatedMessage] = await db
-        .select()
-        .from(chatMessage)
-        .where(sql`id = ${message.id}`)
+      const [updatedMessage] = await db.select().from(chatMessage).where(sql`id = ${message.id}`)
 
       expect(updatedMessage.status).toBe('delivered')
       expect(updatedMessage.deliveredAt).toBeDefined()
@@ -230,9 +220,7 @@ describe('Chat Persistence System', () => {
       expect(result.hasMore).toBe(true)
 
       // Messages should be ordered by sequence number (descending)
-      expect(result.messages[0].sequenceNumber).toBeGreaterThan(
-        result.messages[1].sequenceNumber
-      )
+      expect(result.messages[0].sequenceNumber).toBeGreaterThan(result.messages[1].sequenceNumber)
     })
 
     it('should filter messages by type', async () => {
@@ -243,7 +231,7 @@ describe('Chat Persistence System', () => {
       })
 
       expect(result.messages).toHaveLength(10)
-      expect(result.messages.every(m => m.messageType === 'text')).toBe(true)
+      expect(result.messages.every((m) => m.messageType === 'text')).toBe(true)
     })
 
     it('should search messages by content', async () => {
@@ -568,10 +556,7 @@ describe('Chat Persistence System', () => {
         senderType: 'user',
       })
 
-      await db
-        .update(chatMessage)
-        .set({ deletedAt: new Date() })
-        .where(sql`id = ${message.id}`)
+      await db.update(chatMessage).set({ deletedAt: new Date() }).where(sql`id = ${message.id}`)
 
       const restoredCount = await dataRetention.restoreSoftDeleted({
         workspaceId: testWorkspaceId,
@@ -580,10 +565,7 @@ describe('Chat Persistence System', () => {
 
       expect(restoredCount).toBe(1)
 
-      const [restoredMessage] = await db
-        .select()
-        .from(chatMessage)
-        .where(sql`id = ${message.id}`)
+      const [restoredMessage] = await db.select().from(chatMessage).where(sql`id = ${message.id}`)
 
       expect(restoredMessage.deletedAt).toBeNull()
     })
@@ -772,23 +754,22 @@ describe('Performance Tests', () => {
     const totalMessages = 500
 
     // Ensure we have enough messages
-    const existingCount = (await historyRetrieval.getSessionHistory({
-      sessionId: testSessionId,
-      workspaceId: testWorkspaceId,
-      limit: 1,
-    })).totalCount
+    const existingCount = (
+      await historyRetrieval.getSessionHistory({
+        sessionId: testSessionId,
+        workspaceId: testWorkspaceId,
+        limit: 1,
+      })
+    ).totalCount
 
     if (existingCount < totalMessages) {
-      const additionalMessages = Array.from(
-        { length: totalMessages - existingCount },
-        (_, i) => ({
-          sessionId: testSessionId,
-          workspaceId: testWorkspaceId,
-          messageType: 'text' as const,
-          content: { text: `Additional message ${i + 1}` },
-          senderType: 'user' as const,
-        })
-      )
+      const additionalMessages = Array.from({ length: totalMessages - existingCount }, (_, i) => ({
+        sessionId: testSessionId,
+        workspaceId: testWorkspaceId,
+        messageType: 'text' as const,
+        content: { text: `Additional message ${i + 1}` },
+        senderType: 'user' as const,
+      }))
       await messageStorage.batchStoreMessages(additionalMessages)
     }
 

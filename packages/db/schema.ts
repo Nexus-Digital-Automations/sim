@@ -16,19 +16,11 @@ import {
   uuid,
   vector,
 } from 'drizzle-orm/pg-core'
-import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
-
 // Import chat persistence extensions
-import {
-  chatPersistenceTables,
-  chatPersistenceEnums
-} from './chat-persistence-schema'
-
+import { chatPersistenceEnums, chatPersistenceTables } from './chat-persistence-schema'
+import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
 // Import Parlant schema extensions
-import {
-  parlantTables,
-  parlantEnums
-} from './parlant-schema'
+import { parlantEnums, parlantTables } from './parlant-schema'
 
 // Custom tsvector type for full-text search
 export const tsvector = customType<{
@@ -1704,3 +1696,49 @@ export const mcpServers = pgTable(
     ),
   })
 )
+
+// Export all chat persistence and Parlant tables and enums
+export const {
+  chatMessage,
+  chatConversation,
+  chatBrowserSession,
+  chatSearchIndex,
+  chatExportRequest,
+} = chatPersistenceTables
+
+export const { messageStatusEnum, conversationTypeEnum, messageTypeEnum } = chatPersistenceEnums
+
+export const {
+  parlantAgent,
+  parlantSession,
+  parlantEvent,
+  parlantGuideline,
+  parlantJourney,
+  parlantJourneyState,
+  parlantJourneyTransition,
+  parlantVariable,
+  parlantTool,
+  parlantTerm,
+  parlantCannedResponse,
+  parlantAgentWorkflow,
+  parlantAgentApiKey,
+  parlantSessionWorkflow,
+  parlantAgentTool,
+  parlantJourneyGuideline,
+  parlantAgentKnowledgeBase,
+  parlantToolIntegration,
+  parlantWorkflowTemplate,
+  parlantTemplateParameter,
+  parlantConversionCache,
+  parlantConversionHistory,
+  parlantJourneyGenerationHistory,
+} = parlantTables
+
+export const {
+  agentStatusEnum,
+  sessionModeEnum,
+  sessionStatusEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
+  compositionModeEnum,
+} = parlantEnums

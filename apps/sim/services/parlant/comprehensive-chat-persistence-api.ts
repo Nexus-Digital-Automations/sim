@@ -11,31 +11,30 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import {
-  chatPersistenceService,
+  type AdvancedExportConfig,
+  type ArchivalPolicy,
+  type ArchivalResult,
+  chatExportArchivalService,
+  type ExportResult,
+} from './chat-export-archival-service'
+import {
   type ChatHistoryEntry,
   type ChatMessageType,
   type ChatSearchParams,
   type ChatSessionSummary,
-  type PaginatedChatResponse
+  chatPersistenceService,
+  type PaginatedChatResponse,
 } from './chat-persistence-service'
 import {
-  sessionContinuityManager,
-  type SessionRestoreOptions,
+  type ContinuityStrategy,
   type SessionStateSnapshot,
-  type ContinuityStrategy
+  sessionContinuityManager,
 } from './session-continuity-manager'
 import {
-  workspaceIsolationService,
   type IsolationContext,
-  type WorkspaceAccessLevel
+  type WorkspaceAccessLevel,
+  workspaceIsolationService,
 } from './workspace-isolation-service'
-import {
-  chatExportArchivalService,
-  type AdvancedExportConfig,
-  type ExportResult,
-  type ArchivalPolicy,
-  type ArchivalResult
-} from './chat-export-archival-service'
 
 const logger = createLogger('ComprehensiveChatPersistenceAPI')
 
@@ -46,7 +45,7 @@ export class ChatPersistenceError extends Error {
   constructor(
     message: string,
     public code: string,
-    public statusCode: number = 500,
+    public statusCode = 500,
     public details?: Record<string, any>
   ) {
     super(message)
@@ -157,8 +156,8 @@ export class ComprehensiveChatPersistenceAPI {
         'ChatPersistenceService',
         'SessionContinuityManager',
         'WorkspaceIsolationService',
-        'ChatExportArchivalService'
-      ]
+        'ChatExportArchivalService',
+      ],
     })
   }
 
@@ -168,16 +167,18 @@ export class ComprehensiveChatPersistenceAPI {
   async createChatSession(
     config: SessionCreationConfig,
     context: ApiRequestContext
-  ): Promise<ApiResponse<{
-    sessionId: string
-    continuityEnabled: boolean
-    accessLevel: WorkspaceAccessLevel
-    restorationInfo?: {
-      strategy: ContinuityStrategy
-      contextPreserved: boolean
-      snapshot?: SessionStateSnapshot
-    }
-  }>> {
+  ): Promise<
+    ApiResponse<{
+      sessionId: string
+      continuityEnabled: boolean
+      accessLevel: WorkspaceAccessLevel
+      restorationInfo?: {
+        strategy: ContinuityStrategy
+        contextPreserved: boolean
+        snapshot?: SessionStateSnapshot
+      }
+    }>
+  > {
     const startTime = performance.now()
     const requestId = context.requestId || `create-session-${Date.now()}`
 
@@ -212,11 +213,13 @@ export class ComprehensiveChatPersistenceAPI {
         throw new WorkspaceAccessError('Agent access denied')
       }
 
-      let restorationInfo: {
-        strategy: ContinuityStrategy
-        contextPreserved: boolean
-        snapshot?: SessionStateSnapshot
-      } | undefined
+      let restorationInfo:
+        | {
+            strategy: ContinuityStrategy
+            contextPreserved: boolean
+            snapshot?: SessionStateSnapshot
+          }
+        | undefined
 
       let sessionId: string
 
@@ -278,7 +281,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -377,7 +380,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -442,13 +445,16 @@ export class ComprehensiveChatPersistenceAPI {
       )
 
       // Enhance messages with permissions
-      const enhancedMessages = history.data.map(message => ({
-        ...message,
-        accessLevel: isolationContext.accessLevel,
-        canEdit: isolationContext.accessLevel !== 'viewer',
-        canDelete: ['owner', 'admin'].includes(isolationContext.accessLevel),
-        canExport: isolationContext.permissions.includes('read'),
-      } as EnhancedChatMessage))
+      const enhancedMessages = history.data.map(
+        (message) =>
+          ({
+            ...message,
+            accessLevel: isolationContext.accessLevel,
+            canEdit: isolationContext.accessLevel !== 'viewer',
+            canDelete: ['owner', 'admin'].includes(isolationContext.accessLevel),
+            canExport: isolationContext.permissions.includes('read'),
+          }) as EnhancedChatMessage
+      )
 
       const duration = performance.now() - startTime
 
@@ -471,7 +477,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -495,7 +501,8 @@ export class ComprehensiveChatPersistenceAPI {
         userId: context.userId,
         query: config.query,
         messageTypes: config.messageType,
-        dateRange: config.dateFrom && config.dateTo ? `${config.dateFrom} to ${config.dateTo}` : undefined,
+        dateRange:
+          config.dateFrom && config.dateTo ? `${config.dateFrom} to ${config.dateTo}` : undefined,
       })
 
       // Create isolation context
@@ -522,13 +529,16 @@ export class ComprehensiveChatPersistenceAPI {
       })
 
       // Enhance results with permissions
-      const enhancedResults = searchResults.data.map(message => ({
-        ...message,
-        accessLevel: isolationContext.accessLevel,
-        canEdit: isolationContext.accessLevel !== 'viewer',
-        canDelete: ['owner', 'admin'].includes(isolationContext.accessLevel),
-        canExport: isolationContext.permissions.includes('read'),
-      } as EnhancedChatMessage))
+      const enhancedResults = searchResults.data.map(
+        (message) =>
+          ({
+            ...message,
+            accessLevel: isolationContext.accessLevel,
+            canEdit: isolationContext.accessLevel !== 'viewer',
+            canDelete: ['owner', 'admin'].includes(isolationContext.accessLevel),
+            canExport: isolationContext.permissions.includes('read'),
+          }) as EnhancedChatMessage
+      )
 
       const duration = performance.now() - startTime
 
@@ -551,7 +561,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -596,13 +606,10 @@ export class ComprehensiveChatPersistenceAPI {
       )
 
       // Get summaries with user filtering for viewers
-      const summaries = await chatPersistenceService.getChatSessionSummaries(
-        context.workspaceId,
-        {
-          ...options,
-          userId: isolationContext.accessLevel === 'viewer' ? context.userId : undefined,
-        }
-      )
+      const summaries = await chatPersistenceService.getChatSessionSummaries(context.workspaceId, {
+        ...options,
+        userId: isolationContext.accessLevel === 'viewer' ? context.userId : undefined,
+      })
 
       const duration = performance.now() - startTime
 
@@ -621,7 +628,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -645,7 +652,8 @@ export class ComprehensiveChatPersistenceAPI {
         userId: context.userId,
         format: config.format,
         sessionIds: config.sessionIds?.length,
-        dateRange: config.dateFrom && config.dateTo ? `${config.dateFrom} to ${config.dateTo}` : undefined,
+        dateRange:
+          config.dateFrom && config.dateTo ? `${config.dateFrom} to ${config.dateTo}` : undefined,
       })
 
       // Create isolation context
@@ -694,7 +702,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -704,13 +712,13 @@ export class ComprehensiveChatPersistenceAPI {
   /**
    * Get workspace chat statistics
    */
-  async getChatStatistics(
-    context: ApiRequestContext
-  ): Promise<ApiResponse<{
-    statistics: any
-    accessLevel: WorkspaceAccessLevel
-    permissions: string[]
-  }>> {
+  async getChatStatistics(context: ApiRequestContext): Promise<
+    ApiResponse<{
+      statistics: any
+      accessLevel: WorkspaceAccessLevel
+      permissions: string[]
+    }>
+  > {
     const startTime = performance.now()
     const requestId = context.requestId || `stats-${Date.now()}`
 
@@ -756,7 +764,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -769,14 +777,16 @@ export class ComprehensiveChatPersistenceAPI {
   async getSessionContinuityStatus(
     sessionId: string,
     context: ApiRequestContext
-  ): Promise<ApiResponse<{
-    sessionId: string
-    isActive: boolean
-    lastHeartbeat?: Date
-    continuityEnabled: boolean
-    deviceInfo?: any
-    linkedSessions: string[]
-  }>> {
+  ): Promise<
+    ApiResponse<{
+      sessionId: string
+      isActive: boolean
+      lastHeartbeat?: Date
+      continuityEnabled: boolean
+      deviceInfo?: any
+      linkedSessions: string[]
+    }>
+  > {
     const startTime = performance.now()
     const requestId = context.requestId || `continuity-${Date.now()}`
 
@@ -830,7 +840,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -840,15 +850,17 @@ export class ComprehensiveChatPersistenceAPI {
   /**
    * Get user's accessible workspaces
    */
-  async getUserAccessibleWorkspaces(
-    context: ApiRequestContext
-  ): Promise<ApiResponse<Array<{
-    workspaceId: string
-    workspaceName: string
-    accessLevel: WorkspaceAccessLevel
-    permissions: string[]
-    isOwner: boolean
-  }>>> {
+  async getUserAccessibleWorkspaces(context: ApiRequestContext): Promise<
+    ApiResponse<
+      Array<{
+        workspaceId: string
+        workspaceName: string
+        accessLevel: WorkspaceAccessLevel
+        permissions: string[]
+        isOwner: boolean
+      }>
+    >
+  > {
     const startTime = performance.now()
     const requestId = context.requestId || `workspaces-${Date.now()}`
 
@@ -877,7 +889,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     } catch (error) {
       return this.handleError(error, requestId, startTime)
@@ -887,11 +899,7 @@ export class ComprehensiveChatPersistenceAPI {
   /**
    * Private error handling method
    */
-  private handleError<T>(
-    error: unknown,
-    requestId: string,
-    startTime: number
-  ): ApiResponse<T> {
+  private handleError<T>(error: unknown, requestId: string, startTime: number): ApiResponse<T> {
     const duration = performance.now() - startTime
 
     if (error instanceof ChatPersistenceError) {
@@ -916,7 +924,7 @@ export class ComprehensiveChatPersistenceAPI {
           processingTime: duration,
           timestamp: new Date().toISOString(),
           version: this.API_VERSION,
-        }
+        },
       }
     }
 
@@ -942,7 +950,7 @@ export class ComprehensiveChatPersistenceAPI {
         processingTime: duration,
         timestamp: new Date().toISOString(),
         version: this.API_VERSION,
-      }
+      },
     }
   }
 
@@ -951,12 +959,15 @@ export class ComprehensiveChatPersistenceAPI {
    */
   async healthCheck(): Promise<{
     status: 'healthy' | 'degraded' | 'unhealthy'
-    components: Record<string, {
-      status: 'healthy' | 'degraded' | 'unhealthy'
-      responseTime?: number
-      lastChecked: string
-      details?: Record<string, any>
-    }>
+    components: Record<
+      string,
+      {
+        status: 'healthy' | 'degraded' | 'unhealthy'
+        responseTime?: number
+        lastChecked: string
+        details?: Record<string, any>
+      }
+    >
     version: string
   }> {
     const startTime = performance.now()

@@ -11,9 +11,9 @@
 
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
-import { Client as SocketIOClient, io } from 'socket.io-client'
-import { createParlantSocketClient, type ParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
+import { io } from 'socket.io-client'
 import { createLogger } from '@/lib/logs/console/logger'
+import { createParlantSocketClient } from '@/app/chat/workspace/[workspaceId]/agent/[agentId]/components/socket-client'
 
 const logger = createLogger('ParlantChatIntegrationValidation')
 
@@ -36,7 +36,7 @@ interface ValidationSuite {
 
 class ParlantChatIntegrationValidator {
   private testServer: any
-  private serverPort: number = 0
+  private serverPort = 0
   private results: ValidationSuite[] = []
 
   /**
@@ -79,9 +79,8 @@ class ParlantChatIntegrationValidator {
       return {
         success: summary.passedSuites === summary.totalSuites,
         suites: this.results,
-        summary
+        summary,
       }
-
     } catch (error) {
       logger.error('❌ Validation failed with error:', error)
       await this.cleanupTestEnvironment()
@@ -89,7 +88,7 @@ class ParlantChatIntegrationValidator {
       return {
         success: false,
         suites: this.results,
-        summary: this.generateSummary(Date.now() - startTime)
+        summary: this.generateSummary(Date.now() - startTime),
       }
     }
   }
@@ -104,7 +103,7 @@ class ParlantChatIntegrationValidator {
     const httpServer = createServer()
     this.testServer = new SocketIOServer(httpServer, {
       cors: { origin: '*' },
-      transports: ['websocket']
+      transports: ['websocket'],
     })
 
     // Setup authentication middleware
@@ -163,7 +162,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -176,7 +175,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'test-user-1',
           workspaceId: 'test-workspace-1',
-          agentId: 'test-agent-1'
+          agentId: 'test-agent-1',
         })
 
         await client.connect()
@@ -198,7 +197,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'invalid-token',
           userId: 'test-user-1',
           workspaceId: 'test-workspace-1',
-          agentId: 'test-agent-1'
+          agentId: 'test-agent-1',
         })
 
         let connectionFailed = false
@@ -225,7 +224,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'test-user-1',
           workspaceId: 'test-workspace-1',
-          agentId: 'test-agent-1'
+          agentId: 'test-agent-1',
         })
 
         await client.connect()
@@ -237,20 +236,19 @@ class ParlantChatIntegrationValidator {
         return 'Successfully joined agent and workspace rooms'
       })
       suite.results.push(result3)
-
     } catch (error) {
       suite.results.push({
         feature: 'Connection Suite Error',
         passed: false,
         details: `Unexpected error in connection suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -266,7 +264,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -280,7 +278,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-userA',
           userId: 'user-a',
           workspaceId: 'workspace-a',
-          agentId: 'agent-a'
+          agentId: 'agent-a',
         })
 
         const clientB = createParlantSocketClient({
@@ -288,7 +286,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-userB',
           userId: 'user-b',
           workspaceId: 'workspace-b',
-          agentId: 'agent-b'
+          agentId: 'agent-b',
         })
 
         await clientA.connect()
@@ -306,20 +304,20 @@ class ParlantChatIntegrationValidator {
         // Send message in workspace A
         const nativeSocketA = io(`http://localhost:${this.serverPort}`, {
           auth: { token: 'test-token-userA', userId: 'user-a' },
-          transports: ['websocket']
+          transports: ['websocket'],
         })
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           nativeSocketA.on('connect', resolve)
         })
 
         nativeSocketA.emit('send-workspace-message', {
           workspaceId: 'workspace-a',
-          content: 'Message from workspace A'
+          content: 'Message from workspace A',
         })
 
         // Wait for potential message propagation
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         clientA.disconnect()
         clientB.disconnect()
@@ -340,7 +338,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-userA',
           userId: 'user-a',
           workspaceId: 'workspace-a',
-          agentId: 'agent-a'
+          agentId: 'agent-a',
         })
 
         const clientB = createParlantSocketClient({
@@ -348,7 +346,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-userB',
           userId: 'user-b',
           workspaceId: 'workspace-b',
-          agentId: 'agent-b'
+          agentId: 'agent-b',
         })
 
         await clientA.connect()
@@ -369,10 +367,10 @@ class ParlantChatIntegrationValidator {
         this.testServer.to('parlant:workspace:workspace-a').emit('agent-status-update', {
           agentId: 'agent-a',
           workspaceId: 'workspace-a',
-          status: 'PROCESSING'
+          status: 'PROCESSING',
         })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         clientA.disconnect()
         clientB.disconnect()
@@ -384,20 +382,19 @@ class ParlantChatIntegrationValidator {
         return 'Agent status properly isolated between workspaces'
       })
       suite.results.push(result2)
-
     } catch (error) {
       suite.results.push({
         feature: 'Isolation Suite Error',
         passed: false,
         details: `Unexpected error in isolation suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -413,7 +410,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -426,7 +423,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         const client2 = createParlantSocketClient({
@@ -434,7 +431,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user2',
           userId: 'user-2',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client1.connect()
@@ -456,21 +453,21 @@ class ParlantChatIntegrationValidator {
         const testMessage = 'Test real-time message'
         const nativeSocket1 = io(`http://localhost:${this.serverPort}`, {
           auth: { token: 'test-token-user1', userId: 'user-1' },
-          transports: ['websocket']
+          transports: ['websocket'],
         })
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           nativeSocket1.on('connect', resolve)
         })
 
         nativeSocket1.emit('send-workspace-message', {
           workspaceId: 'test-workspace',
           content: testMessage,
-          channelId: 'general'
+          channelId: 'general',
         })
 
         // Wait for message delivery
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         client1.disconnect()
         client2.disconnect()
@@ -491,7 +488,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client.connect()
@@ -509,10 +506,10 @@ class ParlantChatIntegrationValidator {
           sessionId: 'test-session',
           workspaceId: 'test-workspace',
           isTyping: true,
-          userId: 'other-user'
+          userId: 'other-user',
         })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         client.disconnect()
 
@@ -523,20 +520,19 @@ class ParlantChatIntegrationValidator {
         return 'Typing indicators working correctly'
       })
       suite.results.push(result2)
-
     } catch (error) {
       suite.results.push({
         feature: 'Real-time Suite Error',
         passed: false,
         details: `Unexpected error in real-time suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -552,7 +548,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -565,7 +561,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client.connect()
@@ -585,10 +581,10 @@ class ParlantChatIntegrationValidator {
         this.testServer.to('parlant:agent:test-agent').emit('agent-status-update', {
           agentId: 'test-agent',
           workspaceId: 'test-workspace',
-          status: 'PROCESSING'
+          status: 'PROCESSING',
         })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         client.disconnect()
 
@@ -607,7 +603,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client.connect()
@@ -633,17 +629,17 @@ class ParlantChatIntegrationValidator {
           sessionId: 'test-session',
           agentId: 'test-agent',
           workspaceId: 'test-workspace',
-          userId: 'user-1'
+          userId: 'user-1',
         })
 
         this.testServer.to('parlant:agent:test-agent').emit('session-ended', {
           sessionId: 'test-session',
           agentId: 'test-agent',
           workspaceId: 'test-workspace',
-          endReason: 'User ended conversation'
+          endReason: 'User ended conversation',
         })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         client.disconnect()
 
@@ -654,20 +650,19 @@ class ParlantChatIntegrationValidator {
         return 'Session lifecycle events working correctly'
       })
       suite.results.push(result2)
-
     } catch (error) {
       suite.results.push({
         feature: 'Agent Integration Suite Error',
         passed: false,
         details: `Unexpected error in agent integration suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -683,7 +678,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -699,7 +694,7 @@ class ParlantChatIntegrationValidator {
             authToken: 'invalid-token',
             userId: 'fake-user',
             workspaceId: 'test-workspace',
-            agentId: 'test-agent'
+            agentId: 'test-agent',
           })
 
           await unauthenticatedClient.connect()
@@ -723,7 +718,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'workspace-a',
-          agentId: 'agent-a'
+          agentId: 'agent-a',
         })
 
         await client.connect()
@@ -732,19 +727,19 @@ class ParlantChatIntegrationValidator {
         let accessDenied = false
         const nativeSocket = io(`http://localhost:${this.serverPort}`, {
           auth: { token: 'test-token-user1', userId: 'user-1' },
-          transports: ['websocket']
+          transports: ['websocket'],
         })
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           nativeSocket.on('connect', resolve)
         })
 
         nativeSocket.emit('parlant:join-agent-room', {
           agentId: 'agent-b',
-          workspaceId: 'workspace-b'
+          workspaceId: 'workspace-b',
         })
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           nativeSocket.on('parlant:join-agent-room-error', () => {
             accessDenied = true
             resolve(undefined)
@@ -761,20 +756,19 @@ class ParlantChatIntegrationValidator {
         return 'Cross-workspace access controls in place'
       })
       suite.results.push(result2)
-
     } catch (error) {
       suite.results.push({
         feature: 'Security Suite Error',
         passed: false,
         details: `Unexpected error in security suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -790,7 +784,7 @@ class ParlantChatIntegrationValidator {
       passed: false,
       totalTests: 0,
       passedTests: 0,
-      duration: 0
+      duration: 0,
     }
 
     const suiteStartTime = Date.now()
@@ -805,7 +799,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client.connect()
@@ -829,7 +823,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user1',
           userId: 'user-1',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         const client2 = createParlantSocketClient({
@@ -837,7 +831,7 @@ class ParlantChatIntegrationValidator {
           authToken: 'test-token-user2',
           userId: 'user-2',
           workspaceId: 'test-workspace',
-          agentId: 'test-agent'
+          agentId: 'test-agent',
         })
 
         await client1.connect()
@@ -858,20 +852,20 @@ class ParlantChatIntegrationValidator {
         // Send message
         const nativeSocket1 = io(`http://localhost:${this.serverPort}`, {
           auth: { token: 'test-token-user1', userId: 'user-1' },
-          transports: ['websocket']
+          transports: ['websocket'],
         })
 
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           nativeSocket1.on('connect', resolve)
         })
 
         nativeSocket1.emit('send-workspace-message', {
           workspaceId: 'test-workspace',
-          content: 'Performance test message'
+          content: 'Performance test message',
         })
 
         // Wait for message delivery
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         client1.disconnect()
         client2.disconnect()
@@ -888,20 +882,19 @@ class ParlantChatIntegrationValidator {
         return `Message delivered in ${latency}ms`
       })
       suite.results.push(result2)
-
     } catch (error) {
       suite.results.push({
         feature: 'Performance Suite Error',
         passed: false,
         details: `Unexpected error in performance suite: ${error.message}`,
         duration: 0,
-        error: error.message
+        error: error.message,
       })
     }
 
     suite.duration = Date.now() - suiteStartTime
     suite.totalTests = suite.results.length
-    suite.passedTests = suite.results.filter(r => r.passed).length
+    suite.passedTests = suite.results.filter((r) => r.passed).length
     suite.passed = suite.passedTests === suite.totalTests
 
     this.results.push(suite)
@@ -926,7 +919,7 @@ class ParlantChatIntegrationValidator {
         feature,
         passed: true,
         details,
-        duration
+        duration,
       }
     } catch (error) {
       const duration = Date.now() - startTime
@@ -939,7 +932,7 @@ class ParlantChatIntegrationValidator {
         passed: false,
         details: `Test failed: ${errorMessage}`,
         duration,
-        error: errorMessage
+        error: errorMessage,
       }
     }
   }
@@ -949,7 +942,7 @@ class ParlantChatIntegrationValidator {
    */
   private generateSummary(overallDuration: number) {
     const totalSuites = this.results.length
-    const passedSuites = this.results.filter(s => s.passed).length
+    const passedSuites = this.results.filter((s) => s.passed).length
     const totalTests = this.results.reduce((sum, s) => sum + s.totalTests, 0)
     const passedTests = this.results.reduce((sum, s) => sum + s.passedTests, 0)
 
@@ -958,7 +951,7 @@ class ParlantChatIntegrationValidator {
       passedSuites,
       totalTests,
       passedTests,
-      overallDuration
+      overallDuration,
     }
   }
 
@@ -987,39 +980,45 @@ export { ParlantChatIntegrationValidator }
 
 // CLI execution if run directly
 if (require.main === module) {
-  (async () => {
+  ;(async () => {
     const validator = new ParlantChatIntegrationValidator()
     const results = await validator.runValidation()
 
-    console.log('\n' + '='.repeat(80))
+    console.log(`\n${'='.repeat(80)}`)
     console.log('PARLANT CHAT INTEGRATION VALIDATION RESULTS')
     console.log('='.repeat(80))
 
-    results.suites.forEach(suite => {
+    results.suites.forEach((suite) => {
       const status = suite.passed ? '✅ PASSED' : '❌ FAILED'
-      console.log(`\n${status} ${suite.name} (${suite.passedTests}/${suite.totalTests} tests passed, ${suite.duration}ms)`)
+      console.log(
+        `\n${status} ${suite.name} (${suite.passedTests}/${suite.totalTests} tests passed, ${suite.duration}ms)`
+      )
 
-      suite.results.forEach(result => {
+      suite.results.forEach((result) => {
         const testStatus = result.passed ? '  ✅' : '  ❌'
         console.log(`${testStatus} ${result.feature}: ${result.details} (${result.duration}ms)`)
       })
     })
 
-    console.log('\n' + '-'.repeat(80))
+    console.log(`\n${'-'.repeat(80)}`)
     console.log('SUMMARY')
     console.log('-'.repeat(80))
     console.log(`Total Suites: ${results.summary.totalSuites}`)
     console.log(`Passed Suites: ${results.summary.passedSuites}`)
     console.log(`Total Tests: ${results.summary.totalTests}`)
     console.log(`Passed Tests: ${results.summary.passedTests}`)
-    console.log(`Success Rate: ${((results.summary.passedTests / results.summary.totalTests) * 100).toFixed(1)}%`)
+    console.log(
+      `Success Rate: ${((results.summary.passedTests / results.summary.totalTests) * 100).toFixed(1)}%`
+    )
     console.log(`Overall Duration: ${results.summary.overallDuration}ms`)
 
     const overallSuccess = results.summary.passedSuites === results.summary.totalSuites
-    console.log(`\nOVERALL RESULT: ${overallSuccess ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`)
+    console.log(
+      `\nOVERALL RESULT: ${overallSuccess ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`
+    )
 
     process.exit(overallSuccess ? 0 : 1)
-  })().catch(error => {
+  })().catch((error) => {
     console.error('Validation script error:', error)
     process.exit(1)
   })

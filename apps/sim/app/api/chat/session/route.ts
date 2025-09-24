@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { validateWorkspaceAccess } from '@/lib/auth/chat-middleware'
+import { env } from '@/lib/env'
+import { createLogger } from '@/lib/logs/console/logger'
 import { getUserCanAccessAgent } from '@/lib/parlant/agents'
 import { getUserCanAccessConversation } from '@/lib/parlant/conversations'
-import { createLogger } from '@/lib/logs/console/logger'
-import { env } from '@/lib/env'
 
 const logger = createLogger('ChatSessionAPI')
 
@@ -61,7 +61,10 @@ export async function POST(request: NextRequest) {
 
     // Validate conversation access if provided
     if (conversationId) {
-      const canAccessConversation = await getUserCanAccessConversation(session.user.id, conversationId)
+      const canAccessConversation = await getUserCanAccessConversation(
+        session.user.id,
+        conversationId
+      )
       if (!canAccessConversation) {
         return NextResponse.json(
           { error: 'Forbidden', message: 'Access denied to conversation' },
@@ -79,7 +82,7 @@ export async function POST(request: NextRequest) {
       userInfo: {
         name: session.user.name || 'Unknown User',
         email: session.user.email || '',
-      }
+      },
     })
 
     if (!sessionToken) {
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
       agentId,
       workspaceId,
       conversationId,
-      tokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      tokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     })
 
     return NextResponse.json({
@@ -106,10 +109,9 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         agentId,
         workspaceId,
-        conversationId
-      }
+        conversationId,
+      },
     })
-
   } catch (error) {
     logger.error('Failed to initialize chat session', { error })
     return NextResponse.json(
@@ -139,16 +141,15 @@ async function generateChatSessionToken(payload: {
     const tokenPayload = {
       ...payload,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
+      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
       iss: 'sim-chat-service',
-      aud: 'parlant-server'
+      aud: 'parlant-server',
     }
 
     // In production, this would use proper JWT signing with a secret
     const token = Buffer.from(JSON.stringify(tokenPayload)).toString('base64url')
 
     return token
-
   } catch (error) {
     logger.error('Failed to generate session token', { error, payload })
     return null

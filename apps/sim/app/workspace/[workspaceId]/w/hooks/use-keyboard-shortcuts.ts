@@ -88,6 +88,25 @@ export function useGlobalShortcuts() {
 
       if (isEditableElement) return
 
+      // Cmd/Ctrl + Shift + T - Navigate to Chat
+      if (
+        event.key.toLowerCase() === 't' &&
+        event.shiftKey &&
+        ((isMac && event.metaKey) || (!isMac && event.ctrlKey))
+      ) {
+        event.preventDefault()
+
+        const pathParts = window.location.pathname.split('/')
+        const workspaceIndex = pathParts.indexOf('workspace')
+
+        if (workspaceIndex !== -1 && pathParts[workspaceIndex + 1]) {
+          const workspaceId = pathParts[workspaceIndex + 1]
+          router.push(`/chat/workspace/${workspaceId}`)
+        } else {
+          router.push('/chat')
+        }
+      }
+
       // Cmd/Ctrl + Shift + L - Navigate to Logs
       if (
         event.key.toLowerCase() === 'l' &&

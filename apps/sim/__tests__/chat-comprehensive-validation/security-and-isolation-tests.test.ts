@@ -13,24 +13,18 @@
  * - Session security and JWT validation
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
 import { createServer } from 'http'
+import { db } from '@sim/db'
+import { hash } from 'bcrypt'
+import { sign, verify } from 'jsonwebtoken'
 import { Server } from 'socket.io'
 import Client from 'socket.io-client'
 import request from 'supertest'
-import { db } from '@sim/db'
-import { sign, verify } from 'jsonwebtoken'
-import { hash, compare } from 'bcrypt'
-import { getParlantClient } from '@/app/sim/services/parlant/client'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { AgentService } from '@/app/sim/services/parlant/agent-service'
+import { getParlantClient } from '@/app/sim/services/parlant/client'
 import { SessionService } from '@/app/sim/services/parlant/session-service'
-import type {
-  AuthContext,
-  SecurityTestResult,
-  WorkspaceIsolationTest,
-  SecurityVulnerability,
-  ComplianceCheck,
-} from '@/types'
+import type { AuthContext, SecurityTestResult } from '@/types'
 
 interface SecurityTestEnvironment {
   server: any
@@ -77,13 +71,13 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
     const server = createServer()
     const socketServer = new Server(server, {
-      cors: { origin: "*", methods: ["GET", "POST"] }
+      cors: { origin: '*', methods: ['GET', 'POST'] },
     })
 
     const parlantClient = getParlantClient({
       baseUrl: process.env.PARLANT_TEST_URL || 'http://localhost:8801',
       timeout: 15000,
-      retries: 1
+      retries: 1,
     })
 
     const agentService = new AgentService(parlantClient)
@@ -200,7 +194,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
     const agents = []
 
     for (const workspace of workspaces) {
-      const adminUser = users.find(u => u.role === 'admin' && u.workspaceId === workspace.id)
+      const adminUser = users.find((u) => u.role === 'admin' && u.workspaceId === workspace.id)
 
       const workspaceAgents = [
         {
@@ -263,16 +257,17 @@ describe('Security and Workspace Isolation Testing Suite', () => {
       timestamp: new Date().toISOString(),
       summary: {
         totalTests: results.length,
-        passed: results.filter(r => r.passed).length,
-        failed: results.filter(r => !r.passed).length,
-        criticalVulnerabilities: results.filter(r => !r.passed && r.severity === 'critical').length,
-        highRiskVulnerabilities: results.filter(r => !r.passed && r.severity === 'high').length,
+        passed: results.filter((r) => r.passed).length,
+        failed: results.filter((r) => !r.passed).length,
+        criticalVulnerabilities: results.filter((r) => !r.passed && r.severity === 'critical')
+          .length,
+        highRiskVulnerabilities: results.filter((r) => !r.passed && r.severity === 'high').length,
       },
-      vulnerabilities: results.filter(r => !r.passed),
+      vulnerabilities: results.filter((r) => !r.passed),
       complianceStatus: {
-        gdpr: results.filter(r => r.compliance?.includes('GDPR')).every(r => r.passed),
-        hipaa: results.filter(r => r.compliance?.includes('HIPAA')).every(r => r.passed),
-        sox: results.filter(r => r.compliance?.includes('SOX')).every(r => r.passed),
+        gdpr: results.filter((r) => r.compliance?.includes('GDPR')).every((r) => r.passed),
+        hipaa: results.filter((r) => r.compliance?.includes('HIPAA')).every((r) => r.passed),
+        sox: results.filter((r) => r.compliance?.includes('SOX')).every((r) => r.passed),
       },
       results: results,
     }
@@ -317,10 +312,14 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           const workspace1 = env.workspaces[0]
           const workspace2 = env.workspaces[1]
 
-          const workspace1Admin = env.users.find(u => u.workspaceId === workspace1.id && u.role === 'admin')
-          const workspace2Admin = env.users.find(u => u.workspaceId === workspace2.id && u.role === 'admin')
+          const workspace1Admin = env.users.find(
+            (u) => u.workspaceId === workspace1.id && u.role === 'admin'
+          )
+          const workspace2Admin = env.users.find(
+            (u) => u.workspaceId === workspace2.id && u.role === 'admin'
+          )
 
-          const workspace1Agent = env.agents.find(a => a.workspaceId === workspace1.id)
+          const workspace1Agent = env.agents.find((a) => a.workspaceId === workspace1.id)
 
           // Try to access workspace1 agent from workspace2 context
           const unauthorizedContext: AuthContext = {
@@ -354,7 +353,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               details: 'Cross-workspace access properly denied',
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -374,11 +373,15 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           const workspace1 = env.workspaces[0]
           const workspace2 = env.workspaces[1]
 
-          const workspace1Admin = env.users.find(u => u.workspaceId === workspace1.id && u.role === 'admin')
-          const workspace2Admin = env.users.find(u => u.workspaceId === workspace2.id && u.role === 'admin')
+          const workspace1Admin = env.users.find(
+            (u) => u.workspaceId === workspace1.id && u.role === 'admin'
+          )
+          const workspace2Admin = env.users.find(
+            (u) => u.workspaceId === workspace2.id && u.role === 'admin'
+          )
 
-          const workspace1Agent = env.agents.find(a => a.workspaceId === workspace1.id)
-          const workspace2Agent = env.agents.find(a => a.workspaceId === workspace2.id)
+          const workspace1Agent = env.agents.find((a) => a.workspaceId === workspace1.id)
+          const workspace2Agent = env.agents.find((a) => a.workspaceId === workspace2.id)
 
           // Create sessions in both workspaces
           const context1: AuthContext = {
@@ -395,17 +398,23 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             permissions: workspace2Admin.permissions,
           }
 
-          const session1 = await env.sessionService.createSession({
-            agent_id: workspace1Agent.id,
-            workspace_id: workspace1.id,
-            customer_id: 'customer-1',
-          }, context1)
+          const session1 = await env.sessionService.createSession(
+            {
+              agent_id: workspace1Agent.id,
+              workspace_id: workspace1.id,
+              customer_id: 'customer-1',
+            },
+            context1
+          )
 
-          const session2 = await env.sessionService.createSession({
-            agent_id: workspace2Agent.id,
-            workspace_id: workspace2.id,
-            customer_id: 'customer-2',
-          }, context2)
+          const session2 = await env.sessionService.createSession(
+            {
+              agent_id: workspace2Agent.id,
+              workspace_id: workspace2.id,
+              customer_id: 'customer-2',
+            },
+            context2
+          )
 
           // Send messages in both sessions
           await env.sessionService.sendMessage(
@@ -446,7 +455,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               details: 'Cross-workspace session access properly denied',
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -464,8 +473,10 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['SOX'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const viewer = env.users.find(u => u.workspaceId === workspace.id && u.role === 'viewer')
-          const agent = env.agents.find(a => a.workspaceId === workspace.id)
+          const viewer = env.users.find(
+            (u) => u.workspaceId === workspace.id && u.role === 'viewer'
+          )
+          const agent = env.agents.find((a) => a.workspaceId === workspace.id)
 
           const viewerContext: AuthContext = {
             user_id: viewer.id,
@@ -480,10 +491,13 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
           // But viewer should NOT be able to create agents
           try {
-            await env.agentService.createAgent({
-              name: 'Unauthorized Agent Creation',
-              workspace_id: workspace.id,
-            }, viewerContext)
+            await env.agentService.createAgent(
+              {
+                name: 'Unauthorized Agent Creation',
+                workspace_id: workspace.id,
+              },
+              viewerContext
+            )
 
             return {
               testName: 'Workspace Permission Enforcement',
@@ -505,7 +519,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               details: 'Permission escalation properly prevented',
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -525,21 +539,29 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR', 'HIPAA', 'SOX'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           // Create valid token
-          const validToken = sign({
-            userId: user.id,
-            workspaceId: workspace.id,
-            permissions: user.permissions,
-          }, process.env.JWT_SECRET || 'test-secret', { expiresIn: '1h' })
+          const validToken = sign(
+            {
+              userId: user.id,
+              workspaceId: workspace.id,
+              permissions: user.permissions,
+            },
+            process.env.JWT_SECRET || 'test-secret',
+            { expiresIn: '1h' }
+          )
 
           // Create malicious token with elevated permissions
-          const maliciousToken = sign({
-            userId: user.id,
-            workspaceId: workspace.id,
-            permissions: ['read', 'write', 'admin', 'delete', 'super_admin'], // Elevated permissions
-          }, 'wrong-secret', { expiresIn: '1h' })
+          const maliciousToken = sign(
+            {
+              userId: user.id,
+              workspaceId: workspace.id,
+              permissions: ['read', 'write', 'admin', 'delete', 'super_admin'], // Elevated permissions
+            },
+            'wrong-secret',
+            { expiresIn: '1h' }
+          )
 
           // Try to use malicious token
           try {
@@ -566,7 +588,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               details: 'Malicious token properly rejected',
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -584,14 +606,18 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['SOX'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           // Create expired token
-          const expiredToken = sign({
-            userId: user.id,
-            workspaceId: workspace.id,
-            permissions: user.permissions,
-          }, process.env.JWT_SECRET || 'test-secret', { expiresIn: '-1h' }) // Expired 1 hour ago
+          const expiredToken = sign(
+            {
+              userId: user.id,
+              workspaceId: workspace.id,
+              permissions: user.permissions,
+            },
+            process.env.JWT_SECRET || 'test-secret',
+            { expiresIn: '-1h' }
+          ) // Expired 1 hour ago
 
           try {
             const decoded = verify(expiredToken, process.env.JWT_SECRET || 'test-secret')
@@ -616,19 +642,18 @@ describe('Security and Workspace Isolation Testing Suite', () => {
                 passed: true,
                 details: 'Expired token properly rejected',
               }
-            } else {
-              return {
-                testName: 'Expired Token Handling',
-                description: 'Token validation failed unexpectedly',
-                vulnerability: 'Expired token acceptance',
-                severity: 'medium' as const,
-                compliance: ['SOX'],
-                passed: false,
-                error: `Unexpected error: ${error.message}`,
-              }
+            }
+            return {
+              testName: 'Expired Token Handling',
+              description: 'Token validation failed unexpectedly',
+              vulnerability: 'Expired token acceptance',
+              severity: 'medium' as const,
+              compliance: ['SOX'],
+              passed: false,
+              error: `Unexpected error: ${error.message}`,
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -669,12 +694,14 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               .send({ password: `wrong-password-${i}` })
           )
 
-          const responses = await Promise.all(bruteForceAttempts.map(req =>
-            req.catch(err => ({ status: 429, body: { error: 'Rate limited' } }))
-          ))
+          const responses = await Promise.all(
+            bruteForceAttempts.map((req) =>
+              req.catch((err) => ({ status: 429, body: { error: 'Rate limited' } }))
+            )
+          )
 
           // Should eventually return rate limiting responses
-          const rateLimited = responses.filter(r => r.status === 429)
+          const rateLimited = responses.filter((r) => r.status === 429)
 
           if (rateLimited.length === 0) {
             return {
@@ -697,7 +724,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: `${rateLimited.length} requests were rate limited`,
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -717,8 +744,8 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
-          const agent = env.agents.find(a => a.workspaceId === workspace.id)
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
+          const agent = env.agents.find((a) => a.workspaceId === workspace.id)
 
           const authContext: AuthContext = {
             user_id: user.id,
@@ -727,13 +754,17 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             permissions: user.permissions,
           }
 
-          const session = await env.sessionService.createSession({
-            agent_id: agent.id,
-            workspace_id: workspace.id,
-          }, authContext)
+          const session = await env.sessionService.createSession(
+            {
+              agent_id: agent.id,
+              workspace_id: workspace.id,
+            },
+            authContext
+          )
 
           // Attempt XSS injection
-          const maliciousMessage = '<script>alert("XSS");</script><img src="x" onerror="alert(\'XSS\')">'
+          const maliciousMessage =
+            '<script>alert("XSS");</script><img src="x" onerror="alert(\'XSS\')">'
 
           const messageResult = await env.sessionService.sendMessage(
             session.data.id,
@@ -743,9 +774,11 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           )
 
           // Check if message was sanitized
-          if (messageResult.data.content.includes('<script>') ||
-              messageResult.data.content.includes('onerror=') ||
-              messageResult.data.content.includes('alert(')) {
+          if (
+            messageResult.data.content.includes('<script>') ||
+            messageResult.data.content.includes('onerror=') ||
+            messageResult.data.content.includes('alert(')
+          ) {
             return {
               testName: 'XSS Prevention in Chat Messages',
               description: 'XSS content was not properly sanitized',
@@ -766,7 +799,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'Malicious content was properly sanitized',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -784,7 +817,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           const authContext: AuthContext = {
             user_id: user.id,
@@ -796,16 +829,21 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           const maliciousName = '<h1>Malicious Agent</h1><script>alert("injection")</script>'
           const maliciousDescription = '<iframe src="javascript:alert(\'XSS\')"></iframe>'
 
-          const agentResult = await env.agentService.createAgent({
-            name: maliciousName,
-            description: maliciousDescription,
-            workspace_id: workspace.id,
-          }, authContext)
+          const agentResult = await env.agentService.createAgent(
+            {
+              name: maliciousName,
+              description: maliciousDescription,
+              workspace_id: workspace.id,
+            },
+            authContext
+          )
 
           // Check if HTML was sanitized
-          if (agentResult.data.name.includes('<h1>') ||
-              agentResult.data.name.includes('<script>') ||
-              agentResult.data.description?.includes('<iframe>')) {
+          if (
+            agentResult.data.name.includes('<h1>') ||
+            agentResult.data.name.includes('<script>') ||
+            agentResult.data.description?.includes('<iframe>')
+          ) {
             return {
               testName: 'HTML Injection Prevention',
               description: 'HTML injection was not properly sanitized',
@@ -826,7 +864,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'Malicious HTML content was properly sanitized',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -846,7 +884,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR', 'HIPAA', 'SOX'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           const authContext: AuthContext = {
             user_id: user.id,
@@ -859,16 +897,15 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           const maliciousQuery = "'; DROP TABLE parlant_agents; --"
 
           try {
-            await env.agentService.searchAgents(
-              maliciousQuery,
-              workspace.id,
-              authContext
-            )
+            await env.agentService.searchAgents(maliciousQuery, workspace.id, authContext)
 
             // Check if agents table still exists by trying to list agents
-            const listResult = await env.agentService.listAgents({
-              workspace_id: workspace.id,
-            }, authContext)
+            const listResult = await env.agentService.listAgents(
+              {
+                workspace_id: workspace.id,
+              },
+              authContext
+            )
 
             if (!listResult.success) {
               return {
@@ -903,7 +940,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
               details: 'Malicious query was safely rejected',
             }
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -939,16 +976,16 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
           // Create clients for different workspaces
           const client1 = Client(`http://localhost:${env.port}`, {
-            auth: { workspaceId: workspace1.id }
+            auth: { workspaceId: workspace1.id },
           })
 
           const client2 = Client(`http://localhost:${env.port}`, {
-            auth: { workspaceId: workspace2.id }
+            auth: { workspaceId: workspace2.id },
           })
 
           await Promise.all([
             new Promise<void>((resolve) => client1.on('connect', resolve)),
-            new Promise<void>((resolve) => client2.on('connect', resolve))
+            new Promise<void>((resolve) => client2.on('connect', resolve)),
           ])
 
           let workspace2ReceivedMessage = false
@@ -960,7 +997,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           // Send message from workspace 1
           client1.emit('chat:send', {
             content: 'Sensitive workspace 1 message',
-            workspaceId: workspace1.id
+            workspaceId: workspace1.id,
           })
 
           // Wait for potential message leakage
@@ -990,7 +1027,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'No cross-workspace message leakage detected',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -1049,7 +1086,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'Unauthenticated connections properly rejected',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -1069,8 +1106,8 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
-          const agent = env.agents.find(a => a.workspaceId === workspace.id)
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
+          const agent = env.agents.find((a) => a.workspaceId === workspace.id)
 
           const authContext: AuthContext = {
             user_id: user.id,
@@ -1080,16 +1117,19 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           }
 
           // Create session with user data
-          const session = await env.sessionService.createSession({
-            agent_id: agent.id,
-            workspace_id: workspace.id,
-            customer_id: 'gdpr-test-customer',
-            metadata: {
-              customerName: 'John Doe',
-              email: 'john.doe@example.com',
-              phone: '+1234567890',
+          const session = await env.sessionService.createSession(
+            {
+              agent_id: agent.id,
+              workspace_id: workspace.id,
+              customer_id: 'gdpr-test-customer',
+              metadata: {
+                customerName: 'John Doe',
+                email: 'john.doe@example.com',
+                phone: '+1234567890',
+              },
             },
-          }, authContext)
+            authContext
+          )
 
           // Send message with personal data
           await env.sessionService.sendMessage(
@@ -1105,7 +1145,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             .send({
               userId: 'gdpr-test-customer',
               workspaceId: workspace.id,
-              dataTypes: ['messages', 'sessions', 'metadata']
+              dataTypes: ['messages', 'sessions', 'metadata'],
             })
 
           if (deletionResult.status !== 200) {
@@ -1148,7 +1188,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'User data properly deleted upon GDPR request',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -1166,15 +1206,13 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['GDPR'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           // Request data export
-          const exportResult = await request(env.server)
-            .get(`/api/gdpr/export-user-data`)
-            .query({
-              userId: user.id,
-              workspaceId: workspace.id
-            })
+          const exportResult = await request(env.server).get(`/api/gdpr/export-user-data`).query({
+            userId: user.id,
+            workspaceId: workspace.id,
+          })
 
           if (exportResult.status !== 200) {
             return {
@@ -1191,8 +1229,14 @@ describe('Security and Workspace Isolation Testing Suite', () => {
           const exportData = exportResult.body
 
           // Verify export contains required data
-          const requiredFields = ['userId', 'workspaceId', 'personalData', 'messageHistory', 'sessionData']
-          const missingFields = requiredFields.filter(field => !exportData.hasOwnProperty(field))
+          const requiredFields = [
+            'userId',
+            'workspaceId',
+            'personalData',
+            'messageHistory',
+            'sessionData',
+          ]
+          const missingFields = requiredFields.filter((field) => !Object.hasOwn(exportData, field))
 
           if (missingFields.length > 0) {
             return {
@@ -1215,7 +1259,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: 'Complete user data export functionality available',
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)
@@ -1235,7 +1279,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
         compliance: ['SOX'],
         testFunction: async (env) => {
           const workspace = env.workspaces[0]
-          const user = env.users.find(u => u.workspaceId === workspace.id && u.role === 'admin')
+          const user = env.users.find((u) => u.workspaceId === workspace.id && u.role === 'admin')
 
           const authContext: AuthContext = {
             user_id: user.id,
@@ -1246,16 +1290,21 @@ describe('Security and Workspace Isolation Testing Suite', () => {
 
           // Make rapid API calls to trigger rate limiting
           const rapidRequests = Array.from({ length: 50 }, () =>
-            env.agentService.listAgents({
-              workspace_id: workspace.id,
-            }, authContext).catch(error => error)
+            env.agentService
+              .listAgents(
+                {
+                  workspace_id: workspace.id,
+                },
+                authContext
+              )
+              .catch((error) => error)
           )
 
           const responses = await Promise.all(rapidRequests)
 
           // Some requests should be rate limited
-          const rateLimitedRequests = responses.filter(r =>
-            r instanceof Error && r.message.toLowerCase().includes('rate limit')
+          const rateLimitedRequests = responses.filter(
+            (r) => r instanceof Error && r.message.toLowerCase().includes('rate limit')
           )
 
           if (rateLimitedRequests.length === 0) {
@@ -1279,7 +1328,7 @@ describe('Security and Workspace Isolation Testing Suite', () => {
             passed: true,
             details: `${rateLimitedRequests.length} requests were rate limited`,
           }
-        }
+        },
       }
 
       const result = await executeSecurityScenario(scenario)

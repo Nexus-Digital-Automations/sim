@@ -420,12 +420,12 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 32,
-      "total_reinitializations": 91,
+      "total_reinitializations": 93,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
           "init": 25,
-          "reinit": 38
+          "reinit": 40
         },
         "13:00-17:59": {
           "init": 0,
@@ -446,7 +446,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T16:51:21.577Z"
+      "last_updated": "2025-09-24T16:52:46.573Z"
     },
     "approval_history": [
       {
@@ -714,11 +714,13 @@
       ]
     },
     "agent-lifecycle-mgmt": {
-      "lastHeartbeat": "2025-09-24T16:36:08.862Z",
+      "lastHeartbeat": "2025-09-24T16:52:46.568Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:36:08.862Z",
-      "sessionId": "c4cf56b9698afa21",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:52:46.568Z",
+      "sessionId": "9eb620b1c31129b1",
+      "previousSessions": [
+        "c4cf56b9698afa21"
+      ]
     },
     "chat-persistence-agent": {
       "lastHeartbeat": "2025-09-24T16:39:29.895Z",
@@ -846,11 +848,13 @@
       "previousSessions": []
     },
     "socketio-integration-agent": {
-      "lastHeartbeat": "2025-09-24T16:39:28.789Z",
+      "lastHeartbeat": "2025-09-24T16:52:40.633Z",
       "status": "active",
-      "reinitialized": "2025-09-24T16:39:28.789Z",
-      "sessionId": "0dcff7ce45fabb64",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T16:52:40.633Z",
+      "sessionId": "d2bd560933e61827",
+      "previousSessions": [
+        "0dcff7ce45fabb64"
+      ]
     },
     "NextJsChatRoutesAgent": {
       "lastHeartbeat": "2025-09-24T16:51:21.565Z",

@@ -1,4 +1,4 @@
-import { HelpCircle, LibraryBig, ScrollText, Settings, Shapes } from 'lucide-react'
+import { HelpCircle, LibraryBig, MessageCircle, ScrollText, Settings, Shapes } from 'lucide-react'
 import { NavigationItem } from '@/app/workspace/[workspaceId]/w/components/sidebar/components/navigation-item/navigation-item'
 import { getKeyboardShortcutText } from '@/app/workspace/[workspaceId]/w/hooks/use-keyboard-shortcuts'
 
@@ -30,6 +30,14 @@ export const FloatingNavigation = ({
       icon: HelpCircle,
       onClick: onShowHelp,
       tooltip: 'Help',
+    },
+    {
+      id: 'chat',
+      icon: MessageCircle,
+      href: `/chat/workspace/${workspaceId}`,
+      tooltip: 'Chat',
+      shortcut: getKeyboardShortcutText('T', true, true),
+      active: pathname.startsWith(`/chat/workspace/${workspaceId}`),
     },
     {
       id: 'logs',
