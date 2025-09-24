@@ -861,6 +861,191 @@ export const parlantToolIntegration = pgTable(
   })
 )
 
+/**
+ * Journey Conversion System Tables
+ * ================================
+ * Tables for workflow-to-journey conversion, template management, and caching
+ */
+
+// Workflow Templates for Journey Conversion
+export const parlantWorkflowTemplate = pgTable(
+  'parlant_workflow_template',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+
+    // Template identification
+    name: text('name').notNull(),
+    description: text('description'),
+    workflowId: text('workflow_id').notNull(),
+    version: text('version').notNull().default('1.0.0'),
+
+    // Template data
+    workflowData: jsonb('workflow_data').notNull().default('{}'),
+    tags: text('tags').array().default([]),
+
+    // Usage tracking
+    usageCount: integer('usage_count').notNull().default(0),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    createdBy: uuid('created_by').references(() => user.id),
+  },
+  (table) => ({
+    workspaceIdIdx: index('parlant_workflow_template_workspace_idx').on(table.workspaceId),
+    workflowIdIdx: index('parlant_workflow_template_workflow_idx').on(table.workflowId),
+    nameIdx: index('parlant_workflow_template_name_idx').on(table.name),
+    tagsIdx: index('parlant_workflow_template_tags_idx').on(table.tags),
+    usageCountIdx: index('parlant_workflow_template_usage_count_idx').on(table.usageCount),
+    uniqueWorkspaceWorkflowName: uniqueIndex('parlant_workflow_template_unique')
+      .on(table.workspaceId, table.workflowId, table.name),
+  })
+)
+
+// Template Parameters
+export const parlantTemplateParameter = pgTable(
+  'parlant_template_parameter',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    templateId: uuid('template_id')
+      .notNull()
+      .references(() => parlantWorkflowTemplate.id, { onDelete: 'cascade' }),
+
+    // Parameter definition
+    name: text('name').notNull(),
+    type: text('type').notNull(), // 'string' | 'number' | 'boolean' | 'array' | 'object' | 'json'
+    description: text('description').notNull(),
+    defaultValue: jsonb('default_value'),
+    required: boolean('required').notNull().default(false),
+    validation: jsonb('validation').default('{}'),
+    displayOrder: integer('display_order').notNull().default(0),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    templateIdIdx: index('parlant_template_parameter_template_idx').on(table.templateId),
+    orderIdx: index('parlant_template_parameter_order_idx').on(table.displayOrder),
+    uniqueTemplateName: uniqueIndex('parlant_template_parameter_unique')
+      .on(table.templateId, table.name),
+  })
+)
+
+// Conversion Cache for Performance
+export const parlantConversionCache = pgTable(
+  'parlant_conversion_cache',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    cacheKey: text('cache_key').notNull(),
+    workflowId: text('workflow_id').notNull(),
+    templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+
+    // Cache data
+    parametersHash: text('parameters_hash').notNull(),
+    conversionResult: jsonb('conversion_result').notNull(),
+    sizeBytes: integer('size_bytes').notNull().default(0),
+
+    // Cache management
+    hitCount: integer('hit_count').notNull().default(0),
+    lastAccessed: timestamp('last_accessed').notNull().defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    cacheKeyIdx: uniqueIndex('parlant_conversion_cache_key_unique').on(table.cacheKey),
+    workflowIdx: index('parlant_conversion_cache_workflow_idx').on(table.workflowId),
+    templateIdx: index('parlant_conversion_cache_template_idx').on(table.templateId),
+    workspaceIdx: index('parlant_conversion_cache_workspace_idx').on(table.workspaceId),
+    expiresAtIdx: index('parlant_conversion_cache_expires_at_idx').on(table.expiresAt),
+    lastAccessedIdx: index('parlant_conversion_cache_last_accessed_idx').on(table.lastAccessed),
+  })
+)
+
+// Conversion History and Analytics
+export const parlantConversionHistory = pgTable(
+  'parlant_conversion_history',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    conversionId: text('conversion_id').notNull(),
+    workflowId: text('workflow_id').notNull(),
+    templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').references(() => user.id),
+    agentId: uuid('agent_id').references(() => parlantAgent.id),
+
+    // Conversion data
+    parameters: jsonb('parameters').notNull().default('{}'),
+    status: text('status').notNull(), // 'queued' | 'processing' | 'completed' | 'failed'
+    result: jsonb('result'),
+    errorDetails: jsonb('error_details'),
+    metadata: jsonb('metadata').notNull().default('{}'),
+
+    // Performance metrics
+    durationMs: integer('duration_ms'),
+    blocksConverted: integer('blocks_converted').default(0),
+    edgesConverted: integer('edges_converted').default(0),
+    warningsCount: integer('warnings_count').default(0),
+    cacheHit: boolean('cache_hit').default(false),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+  },
+  (table) => ({
+    conversionIdIdx: uniqueIndex('parlant_conversion_history_conversion_id_unique').on(table.conversionId),
+    workflowIdx: index('parlant_conversion_history_workflow_idx').on(table.workflowId),
+    templateIdx: index('parlant_conversion_history_template_idx').on(table.templateId),
+    workspaceIdx: index('parlant_conversion_history_workspace_idx').on(table.workspaceId),
+    statusIdx: index('parlant_conversion_history_status_idx').on(table.status),
+    createdAtIdx: index('parlant_conversion_history_created_at_idx').on(table.createdAt),
+  })
+)
+
+// Journey Generation History
+export const parlantJourneyGenerationHistory = pgTable(
+  'parlant_journey_generation_history',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    journeyId: uuid('journey_id').notNull(),
+    conversionId: uuid('conversion_id')
+      .references(() => parlantConversionHistory.id, { onDelete: 'set null' }),
+    templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id),
+    workflowId: text('workflow_id').notNull(),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => parlantAgent.id, { onDelete: 'cascade' }),
+    workspaceId: text('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').references(() => user.id),
+
+    // Journey data
+    parametersUsed: jsonb('parameters_used').notNull().default('{}'),
+    journeyTitle: text('journey_title').notNull(),
+    journeyDescription: text('journey_description'),
+    stepsCreated: integer('steps_created').notNull().default(0),
+    optimizationLevel: text('optimization_level').notNull().default('standard'),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    journeyIdx: uniqueIndex('parlant_journey_generation_journey_unique').on(table.journeyId),
+    conversionIdx: index('parlant_journey_generation_conversion_idx').on(table.conversionId),
+    templateIdx: index('parlant_journey_generation_template_idx').on(table.templateId),
+    agentIdx: index('parlant_journey_generation_agent_idx').on(table.agentId),
+    workspaceIdx: index('parlant_journey_generation_workspace_idx').on(table.workspaceId),
+  })
+)
+
 // Export all Parlant tables for use in the main schema
 export const parlantTables = {
   // Core Parlant tables
@@ -886,6 +1071,13 @@ export const parlantTables = {
   parlantJourneyGuideline,
   parlantAgentKnowledgeBase,
   parlantToolIntegration,
+
+  // Journey conversion tables
+  parlantWorkflowTemplate,
+  parlantTemplateParameter,
+  parlantConversionCache,
+  parlantConversionHistory,
+  parlantJourneyGenerationHistory,
 }
 
 // Export enums for type checking

@@ -5,6 +5,7 @@ import { setupPresenceHandlers } from '@/socket-server/handlers/presence'
 import { setupSubblocksHandlers } from '@/socket-server/handlers/subblocks'
 import { setupVariablesHandlers } from '@/socket-server/handlers/variables'
 import { setupWorkflowHandlers } from '@/socket-server/handlers/workflow'
+import { setupConversationalWorkflowHandlers } from '@/socket-server/handlers/conversational-workflows'
 import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
 import type { RoomManager, UserPresence, WorkflowRoom } from '@/socket-server/rooms/manager'
 
@@ -23,6 +24,7 @@ export function setupAllHandlers(socket: AuthenticatedSocket, roomManager: RoomM
   setupPresenceHandlers(socket, roomManager)
   setupConnectionHandlers(socket, roomManager)
   setupParlantHandlers(socket, roomManager)
+  setupConversationalWorkflowHandlers(socket, roomManager)
 }
 
 export {
@@ -33,4 +35,5 @@ export {
   setupPresenceHandlers,
   setupConnectionHandlers,
   setupParlantHandlers,
+  setupConversationalWorkflowHandlers,
 }

@@ -393,7 +393,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 42,
+      "total_reinitializations": 50,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
@@ -410,7 +410,7 @@
         },
         "23:00-03:59": {
           "init": 7,
-          "reinit": 28
+          "reinit": 36
         },
         "04:00-08:59": {
           "init": 0,
@@ -419,7 +419,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T06:12:34.072Z"
+      "last_updated": "2025-09-24T06:19:07.246Z"
     },
     "approval_history": [
       {
@@ -637,11 +637,13 @@
       "previousSessions": []
     },
     "integration_testing_agent": {
-      "lastHeartbeat": "2025-09-24T05:47:39.688Z",
+      "lastHeartbeat": "2025-09-24T06:13:24.803Z",
       "status": "active",
-      "reinitialized": "2025-09-24T05:47:39.688Z",
-      "sessionId": "6627803908838b81",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T06:13:24.803Z",
+      "sessionId": "8b3f7297d278725b",
+      "previousSessions": [
+        "6627803908838b81"
+      ]
     },
     "RESULT_FORMATTING_AGENT": {
       "lastHeartbeat": "2025-09-24T05:47:41.700Z",
@@ -697,6 +699,55 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:12:34.067Z",
       "sessionId": "d64ab90b1f60311b",
+      "previousSessions": []
+    },
+    "DOCUMENTATION_AGENT": {
+      "lastHeartbeat": "2025-09-24T06:13:13.063Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:13:13.063Z",
+      "sessionId": "1b8471e02cd1c456",
+      "previousSessions": []
+    },
+    "AGENT_MAIN_001": {
+      "lastHeartbeat": "2025-09-24T06:15:40.932Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:15:40.932Z",
+      "sessionId": "eee31f7063b5a1cc",
+      "previousSessions": []
+    },
+    "CONVERSION_ENGINE_AGENT": {
+      "lastHeartbeat": "2025-09-24T06:18:59.675Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:18:59.675Z",
+      "sessionId": "4134dc1f437dbed5",
+      "previousSessions": []
+    },
+    "Documentation-Agent": {
+      "lastHeartbeat": "2025-09-24T06:19:01.039Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:19:01.039Z",
+      "sessionId": "60c75a403d903c88",
+      "previousSessions": []
+    },
+    "template-system-agent": {
+      "lastHeartbeat": "2025-09-24T06:19:03.330Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:19:03.330Z",
+      "sessionId": "a5f87d210c9f770a",
+      "previousSessions": []
+    },
+    "workflow-preservation-agent": {
+      "lastHeartbeat": "2025-09-24T06:19:05.634Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:19:05.634Z",
+      "sessionId": "8bcdde76ce954c1a",
+      "previousSessions": []
+    },
+    "PARLANT_JOURNEY_AGENT": {
+      "lastHeartbeat": "2025-09-24T06:19:07.244Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T06:19:07.244Z",
+      "sessionId": "1e880e644d84b9e2",
       "previousSessions": []
     }
   },
