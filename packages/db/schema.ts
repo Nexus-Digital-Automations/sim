@@ -18,6 +18,18 @@ import {
 } from 'drizzle-orm/pg-core'
 import { DEFAULT_FREE_CREDITS, TAG_SLOTS } from './consts'
 
+// Import chat persistence extensions
+import {
+  chatPersistenceTables,
+  chatPersistenceEnums
+} from './chat-persistence-schema'
+
+// Import Parlant schema extensions
+import {
+  parlantTables,
+  parlantEnums
+} from './parlant-schema'
+
 // Custom tsvector type for full-text search
 export const tsvector = customType<{
   data: string
