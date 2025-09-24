@@ -9,19 +9,8 @@
 import { EventEmitter } from 'events'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
 import type { BaseToolError } from './error-handler'
-import {
-  type ErrorCategory,
-  type ErrorSeverity,
-  type ErrorImpact,
-  type ErrorClassification,
-  RecoveryStrategy,
-} from './error-taxonomy'
-import type {
-  UserInteraction,
-  LearningFeedback,
-  IntelligentErrorExplanation,
-} from './error-intelligence'
-import type { RecoveryResult, RetryAttempt } from './error-recovery'
+import type { LearningFeedback } from './error-intelligence'
+import type { ErrorCategory, ErrorImpact, ErrorSeverity, RecoveryStrategy } from './error-taxonomy'
 import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorLearning')
@@ -319,9 +308,10 @@ export class ErrorLearningEngine extends EventEmitter {
     })
 
     // Find related learning data
-    const relatedData = this.learningData.filter(dp =>
-      dp.timestamp === feedback.timestamp || // Same time
-      dp.errorId === feedback.explanationId  // Direct relation
+    const relatedData = this.learningData.filter(
+      (dp) =>
+        dp.timestamp === feedback.timestamp || // Same time
+        dp.errorId === feedback.explanationId // Direct relation
     )
 
     // Update effectiveness scores
@@ -356,7 +346,7 @@ export class ErrorLearningEngine extends EventEmitter {
     // Check cache
     const cached = this.predictionCache.get(cacheKey)
     if (cached) {
-      return cached.filter(p => p.confidence >= confidenceThreshold)
+      return cached.filter((p) => p.confidence >= confidenceThreshold)
     }
 
     logger.debug('Predicting errors', {
@@ -399,14 +389,14 @@ export class ErrorLearningEngine extends EventEmitter {
     }
 
     // Sort by probability and confidence
-    predictions.sort((a, b) => (b.probability * b.confidence) - (a.probability * a.confidence))
+    predictions.sort((a, b) => b.probability * b.confidence - a.probability * a.confidence)
 
     // Cache results
     this.predictionCache.set(cacheKey, predictions)
 
     logger.info('Error predictions generated', {
       totalPredictions: predictions.length,
-      highConfidencePredictions: predictions.filter(p => p.confidence > 0.8).length,
+      highConfidencePredictions: predictions.filter((p) => p.confidence > 0.8).length,
       averageConfidence: predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length,
     })
 
@@ -425,11 +415,11 @@ export class ErrorLearningEngine extends EventEmitter {
 
     // Filter by category
     if (category) {
-      patterns = patterns.filter(p => p.errorCategories.includes(category))
+      patterns = patterns.filter((p) => p.errorCategories.includes(category))
     }
 
     // Filter by confidence
-    patterns = patterns.filter(p => p.confidence >= minConfidence)
+    patterns = patterns.filter((p) => p.confidence >= minConfidence)
 
     // Sort patterns
     patterns.sort((a, b) => {
@@ -457,11 +447,11 @@ export class ErrorLearningEngine extends EventEmitter {
 
     // Filter by type
     if (type) {
-      suggestions = suggestions.filter(s => s.type === type)
+      suggestions = suggestions.filter((s) => s.type === type)
     }
 
     // Filter by priority
-    suggestions = suggestions.filter(s => s.priority >= minPriority)
+    suggestions = suggestions.filter((s) => s.priority >= minPriority)
 
     // Sort by priority and projected improvement
     suggestions.sort((a, b) => {
@@ -495,11 +485,11 @@ export class ErrorLearningEngine extends EventEmitter {
     const oneWeek = 7 * oneDay
 
     const recentData = this.learningData.filter(
-      dp => now - new Date(dp.timestamp).getTime() < oneDay
+      (dp) => now - new Date(dp.timestamp).getTime() < oneDay
     )
 
     const weeklyData = this.learningData.filter(
-      dp => now - new Date(dp.timestamp).getTime() < oneWeek
+      (dp) => now - new Date(dp.timestamp).getTime() < oneWeek
     )
 
     return {
@@ -508,7 +498,8 @@ export class ErrorLearningEngine extends EventEmitter {
       weeklyDataPoints: weeklyData.length,
       learnedPatterns: this.learnedPatterns.size,
       activeModels: this.models.size,
-      averageEffectiveness: this.learningData.reduce((sum, dp) => sum + dp.effectiveness, 0) / this.learningData.length,
+      averageEffectiveness:
+        this.learningData.reduce((sum, dp) => sum + dp.effectiveness, 0) / this.learningData.length,
       improvementSuggestions: this.improvementSuggestions.length,
       categoryDistribution: this.calculateCategoryDistribution(),
       effectivenessDistribution: this.calculateEffectivenessDistribution(),
@@ -525,19 +516,17 @@ export class ErrorLearningEngine extends EventEmitter {
       models: Array.from(this.models.keys()),
     })
 
-    const retrainingPromises = Array.from(this.models.entries()).map(
-      async ([modelType, model]) => {
-        try {
-          await model.retrain(this.learningData)
-          logger.info('Model retrained', { modelType })
-        } catch (error) {
-          logger.error('Model retraining failed', {
-            modelType,
-            error: error instanceof Error ? error.message : error,
-          })
-        }
+    const retrainingPromises = Array.from(this.models.entries()).map(async ([modelType, model]) => {
+      try {
+        await model.retrain(this.learningData)
+        logger.info('Model retrained', { modelType })
+      } catch (error) {
+        logger.error('Model retraining failed', {
+          modelType,
+          error: error instanceof Error ? error.message : error,
+        })
       }
-    )
+    })
 
     await Promise.all(retrainingPromises)
 
@@ -568,26 +557,38 @@ export class ErrorLearningEngine extends EventEmitter {
 
   private startBackgroundLearning(): void {
     // Retrain models every 6 hours
-    setInterval(() => {
-      if (this.learningData.length > 100) {
-        this.retrainModels()
-      }
-    }, 6 * 60 * 60 * 1000)
+    setInterval(
+      () => {
+        if (this.learningData.length > 100) {
+          this.retrainModels()
+        }
+      },
+      6 * 60 * 60 * 1000
+    )
 
     // Update patterns every 2 hours
-    setInterval(() => {
-      this.identifyPatterns(this.learningData.slice(-500))
-    }, 2 * 60 * 60 * 1000)
+    setInterval(
+      () => {
+        this.identifyPatterns(this.learningData.slice(-500))
+      },
+      2 * 60 * 60 * 1000
+    )
 
     // Generate improvements daily
-    setInterval(() => {
-      this.generateImprovements()
-    }, 24 * 60 * 60 * 1000)
+    setInterval(
+      () => {
+        this.generateImprovements()
+      },
+      24 * 60 * 60 * 1000
+    )
 
     // Clear prediction cache every hour
-    setInterval(() => {
-      this.predictionCache.clear()
-    }, 60 * 60 * 1000)
+    setInterval(
+      () => {
+        this.predictionCache.clear()
+      },
+      60 * 60 * 1000
+    )
   }
 
   private extractContextFeatures(context: ParlantLogContext): Record<string, any> {
@@ -612,7 +613,10 @@ export class ErrorLearningEngine extends EventEmitter {
     }
   }
 
-  private extractUserFeatures(context: ParlantLogContext, feedback?: LearningFeedback): Record<string, any> {
+  private extractUserFeatures(
+    context: ParlantLogContext,
+    feedback?: LearningFeedback
+  ): Record<string, any> {
     return {
       hasUserId: !!context.userId,
       hasWorkspace: !!context.workspaceId,
@@ -630,9 +634,11 @@ export class ErrorLearningEngine extends EventEmitter {
       effectiveness += 0.5
 
       // Bonus for quick resolution
-      if (outcome.timeToResolution < 30000) { // Less than 30 seconds
+      if (outcome.timeToResolution < 30000) {
+        // Less than 30 seconds
         effectiveness += 0.2
-      } else if (outcome.timeToResolution < 300000) { // Less than 5 minutes
+      } else if (outcome.timeToResolution < 300000) {
+        // Less than 5 minutes
         effectiveness += 0.1
       }
 
@@ -658,7 +664,10 @@ export class ErrorLearningEngine extends EventEmitter {
     return Math.min(1, Math.max(0, effectiveness))
   }
 
-  private recalculateEffectiveness(dataPoint: LearningDataPoint, feedback: LearningFeedback): number {
+  private recalculateEffectiveness(
+    dataPoint: LearningDataPoint,
+    feedback: LearningFeedback
+  ): number {
     const feedbackScore = this.calculateOverallSatisfaction(feedback.feedback) / 5.0
     return (dataPoint.effectiveness + feedbackScore) / 2
   }
@@ -676,18 +685,16 @@ export class ErrorLearningEngine extends EventEmitter {
   }
 
   private async updateModels(dataPoint: LearningDataPoint): Promise<void> {
-    const updatePromises = Array.from(this.models.entries()).map(
-      async ([modelType, model]) => {
-        try {
-          await model.updateWithDataPoint(dataPoint)
-        } catch (error) {
-          logger.warn('Model update failed', {
-            modelType,
-            error: error instanceof Error ? error.message : error,
-          })
-        }
+    const updatePromises = Array.from(this.models.entries()).map(async ([modelType, model]) => {
+      try {
+        await model.updateWithDataPoint(dataPoint)
+      } catch (error) {
+        logger.warn('Model update failed', {
+          modelType,
+          error: error instanceof Error ? error.message : error,
+        })
       }
-    )
+    })
 
     await Promise.all(updatePromises)
   }
@@ -698,7 +705,7 @@ export class ErrorLearningEngine extends EventEmitter {
 
     for (const modelType of feedbackCapableModels) {
       const model = this.models.get(modelType)
-      if (model && model.updateWithFeedback) {
+      if (model?.updateWithFeedback) {
         try {
           await model.updateWithFeedback(feedback)
         } catch (error) {
@@ -736,7 +743,7 @@ export class ErrorLearningEngine extends EventEmitter {
 
   private async updatePatternsWithFeedback(feedback: LearningFeedback): Promise<void> {
     // Find patterns related to this feedback and update their effectiveness
-    this.learnedPatterns.forEach(pattern => {
+    this.learnedPatterns.forEach((pattern) => {
       // Simple relevance check - in real implementation would be more sophisticated
       if (pattern.lastSeen === feedback.timestamp || pattern.id === feedback.explanationId) {
         const feedbackScore = this.calculateOverallSatisfaction(feedback.feedback) / 5.0
@@ -757,7 +764,8 @@ export class ErrorLearningEngine extends EventEmitter {
         id: `improvement-effectiveness-${Date.now()}`,
         type: 'error_handling',
         title: 'Improve Overall Error Resolution Effectiveness',
-        description: 'Current effectiveness is below target. Consider enhancing resolution strategies.',
+        description:
+          'Current effectiveness is below target. Consider enhancing resolution strategies.',
         currentPerformance: stats.averageEffectiveness,
         projectedImprovement: 0.85,
         implementation: {
@@ -816,7 +824,8 @@ export class ErrorLearningEngine extends EventEmitter {
           id: `prevention-${errorCategory}-${factor.factor}`,
           description: `Monitor and address ${factor.factor} to prevent ${errorCategory} errors`,
           category: this.determinePreventionCategory(factor.factor),
-          urgency: factor.contribution > 0.8 ? 'high' : factor.contribution > 0.6 ? 'medium' : 'low',
+          urgency:
+            factor.contribution > 0.8 ? 'high' : factor.contribution > 0.6 ? 'medium' : 'low',
           estimatedEffectiveness: factor.contribution * 0.8,
           implementationCost: this.estimateImplementationCost(factor.factor),
           instructions: [
@@ -850,7 +859,7 @@ export class ErrorLearningEngine extends EventEmitter {
   private calculateCategoryDistribution(): Record<string, number> {
     const distribution: Record<string, number> = {}
 
-    this.learningData.forEach(dp => {
+    this.learningData.forEach((dp) => {
       distribution[dp.errorCategory] = (distribution[dp.errorCategory] || 0) + 1
     })
 
@@ -861,9 +870,9 @@ export class ErrorLearningEngine extends EventEmitter {
     const ranges = ['0.0-0.2', '0.2-0.4', '0.4-0.6', '0.6-0.8', '0.8-1.0']
     const distribution: Record<string, number> = {}
 
-    ranges.forEach(range => distribution[range] = 0)
+    ranges.forEach((range) => (distribution[range] = 0))
 
-    this.learningData.forEach(dp => {
+    this.learningData.forEach((dp) => {
       const effectiveness = dp.effectiveness
       if (effectiveness < 0.2) distribution['0.0-0.2']++
       else if (effectiveness < 0.4) distribution['0.2-0.4']++
@@ -878,7 +887,7 @@ export class ErrorLearningEngine extends EventEmitter {
   private calculateResolutionMethodDistribution(): Record<string, number> {
     const distribution: Record<string, number> = {}
 
-    this.learningData.forEach(dp => {
+    this.learningData.forEach((dp) => {
       const method = dp.resolutionOutcome.resolutionMethod
       distribution[method] = (distribution[method] || 0) + 1
     })
@@ -943,13 +952,18 @@ class ErrorPredictionModel implements LearningModel {
     const predictions: ErrorPrediction[] = []
 
     // Simulate predictions based on training data patterns
-    const categories = [ErrorCategory.TOOL_EXECUTION, ErrorCategory.EXTERNAL_SERVICE, ErrorCategory.SYSTEM_RESOURCE]
+    const categories = [
+      ErrorCategory.TOOL_EXECUTION,
+      ErrorCategory.EXTERNAL_SERVICE,
+      ErrorCategory.SYSTEM_RESOURCE,
+    ]
 
     for (const category of categories) {
-      const relevantData = this.trainingData.filter(dp => dp.errorCategory === category)
+      const relevantData = this.trainingData.filter((dp) => dp.errorCategory === category)
 
       if (relevantData.length > 0) {
-        const avgEffectiveness = relevantData.reduce((sum, dp) => sum + dp.effectiveness, 0) / relevantData.length
+        const avgEffectiveness =
+          relevantData.reduce((sum, dp) => sum + dp.effectiveness, 0) / relevantData.length
         const probability = Math.max(0.1, 1 - avgEffectiveness) // Higher probability for lower effectiveness categories
 
         predictions.push({
@@ -972,7 +986,7 @@ class ErrorPredictionModel implements LearningModel {
       }
     }
 
-    return predictions.filter(p => p.confidence > 0.7)
+    return predictions.filter((p) => p.confidence > 0.7)
   }
 
   async retrain(data: LearningDataPoint[]): Promise<void> {
@@ -1016,7 +1030,7 @@ class ResolutionEffectivenessModel implements LearningModel {
     confusionMatrix: [],
     lastUpdated: new Date().toISOString(),
     trainingDataSize: 0,
-    validationScore: 0.80,
+    validationScore: 0.8,
   }
 
   async updateWithDataPoint(dataPoint: LearningDataPoint): Promise<void> {
@@ -1095,7 +1109,7 @@ class PatternRecognitionModel implements LearningModel {
     // Group data by error category and subcategory
     const groups = new Map<string, LearningDataPoint[]>()
 
-    data.forEach(dp => {
+    data.forEach((dp) => {
       const key = `${dp.errorCategory}:${dp.errorSubcategory}`
       if (!groups.has(key)) {
         groups.set(key, [])
@@ -1105,15 +1119,17 @@ class PatternRecognitionModel implements LearningModel {
 
     // Identify patterns in each group
     groups.forEach((dataPoints, key) => {
-      if (dataPoints.length >= 3) { // Minimum frequency for pattern
-        const avgEffectiveness = dataPoints.reduce((sum, dp) => sum + dp.effectiveness, 0) / dataPoints.length
+      if (dataPoints.length >= 3) {
+        // Minimum frequency for pattern
+        const avgEffectiveness =
+          dataPoints.reduce((sum, dp) => sum + dp.effectiveness, 0) / dataPoints.length
 
         patterns.push({
           id: `pattern-${key}-${Date.now()}`,
           name: `Pattern: ${key}`,
           description: `Recurring pattern in ${key} errors`,
           frequency: dataPoints.length,
-          confidence: Math.min(0.95, 0.5 + (dataPoints.length * 0.05)),
+          confidence: Math.min(0.95, 0.5 + dataPoints.length * 0.05),
           conditions: [
             {
               feature: 'error_category',

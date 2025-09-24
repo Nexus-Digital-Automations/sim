@@ -16,14 +16,17 @@
  */
 
 import { EventEmitter } from 'events'
-import type { Server as SocketIOServer, Socket } from 'socket.io'
-import type { ConversationalContext } from './context-analyzer'
-import type { ToolRecommendationRequest, ToolRecommendationResponse, AgentToolRecommendation } from './agent-tool-api'
-import type { WorkflowRecommendationRequest, WorkflowRecommendationResponse } from './workflow-recommendation-engine'
-import { ConversationalContextAnalyzer } from './context-analyzer'
-import { AgentToolAPI } from './agent-tool-api'
-import { WorkflowRecommendationEngine } from './workflow-recommendation-engine'
+import type { Socket, Server as SocketIOServer } from 'socket.io'
 import { createLogger } from '../utils/logger'
+import type { AgentToolRecommendation, ToolRecommendationRequest } from './agent-tool-api'
+import { AgentToolAPI } from './agent-tool-api'
+import type { ConversationalContext } from './context-analyzer'
+import { ConversationalContextAnalyzer } from './context-analyzer'
+import type {
+  WorkflowRecommendationRequest,
+  WorkflowRecommendationResponse,
+} from './workflow-recommendation-engine'
+import { WorkflowRecommendationEngine } from './workflow-recommendation-engine'
 
 const logger = createLogger('RealtimeRecommendationService')
 
@@ -99,7 +102,11 @@ export interface SessionPerformanceMetrics {
 }
 
 export interface RealtimeRecommendationEvent {
-  eventType: 'recommendation_request' | 'recommendation_response' | 'user_feedback' | 'system_status'
+  eventType:
+    | 'recommendation_request'
+    | 'recommendation_response'
+    | 'user_feedback'
+    | 'system_status'
   sessionId: string
   timestamp: Date
   data: RecommendationEventData
@@ -180,7 +187,10 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   // Recommendations
   recommendations_available: (data: RealtimeRecommendationBundle) => void
-  recommendation_update: (data: { recommendationId: string; update: Partial<AgentToolRecommendation> }) => void
+  recommendation_update: (data: {
+    recommendationId: string
+    update: Partial<AgentToolRecommendation>
+  }) => void
 
   // System notifications
   recommendation_expired: (data: { recommendationId: string }) => void
@@ -245,7 +255,7 @@ export class RealtimeRecommendationService extends EventEmitter {
       fallbackRetries: 3,
       enablePerformanceMonitoring: true,
       performanceLogInterval: 60000, // 1 minute
-      ...config
+      ...config,
     }
 
     this.initializeSocketHandlers()
@@ -279,8 +289,9 @@ export class RealtimeRecommendationService extends EventEmitter {
     }
 
     // Check connection limits
-    const userConnections = Array.from(this.activeSessions.values())
-      .filter(session => session.userId === userId).length
+    const userConnections = Array.from(this.activeSessions.values()).filter(
+      (session) => session.userId === userId
+    ).length
 
     if (userConnections >= this.config.maxConnectionsPerUser) {
       socket.emit('error', { error: 'Too many connections', code: 'CONNECTION_LIMIT' })
@@ -301,7 +312,7 @@ export class RealtimeRecommendationService extends EventEmitter {
       recommendations: [],
       conversationContext: {} as ConversationalContext, // Will be initialized on first message
       preferences: this.getDefaultPreferences(),
-      performanceMetrics: this.createDefaultMetrics()
+      performanceMetrics: this.createDefaultMetrics(),
     }
 
     this.activeSessions.set(sessionId, session)
@@ -378,7 +389,10 @@ export class RealtimeRecommendationService extends EventEmitter {
   // Event Handler Implementations
   // =============================================================================
 
-  private async handleUserMessage(session: RealtimeSession, data: { message: string; messageId: string }): Promise<void> {
+  private async handleUserMessage(
+    session: RealtimeSession,
+    data: { message: string; messageId: string }
+  ): Promise<void> {
     try {
       session.lastActivity = new Date()
       session.messageCount++
@@ -393,35 +407,48 @@ export class RealtimeRecommendationService extends EventEmitter {
       )
 
       // Check if recommendations should be automatically provided
-      if (session.preferences.autoRecommend && this.shouldProvideRecommendations(session.conversationContext)) {
+      if (
+        session.preferences.autoRecommend &&
+        this.shouldProvideRecommendations(session.conversationContext)
+      ) {
         await this.generateAndSendRecommendations(session, {
           requestId: this.generateRequestId(),
           context: data.message,
           urgency: session.conversationContext.urgencyLevel,
           includeWorkflow: true,
-          maxRecommendations: session.preferences.maxRecommendations
+          maxRecommendations: session.preferences.maxRecommendations,
         })
       }
-
     } catch (error) {
       logger.error('Failed to handle user message', { error, sessionId: session.sessionId })
       session.socket.emit('error', { error: 'Message processing failed', code: 'MESSAGE_ERROR' })
     }
   }
 
-  private async handleRecommendationRequest(session: RealtimeSession, data: RecommendationRequestData): Promise<void> {
+  private async handleRecommendationRequest(
+    session: RealtimeSession,
+    data: RecommendationRequestData
+  ): Promise<void> {
     try {
       session.lastActivity = new Date()
 
       await this.generateAndSendRecommendations(session, data)
-
     } catch (error) {
-      logger.error('Failed to handle recommendation request', { error, sessionId: session.sessionId })
-      session.socket.emit('error', { error: 'Recommendation request failed', code: 'RECOMMENDATION_ERROR' })
+      logger.error('Failed to handle recommendation request', {
+        error,
+        sessionId: session.sessionId,
+      })
+      session.socket.emit('error', {
+        error: 'Recommendation request failed',
+        code: 'RECOMMENDATION_ERROR',
+      })
     }
   }
 
-  private async generateAndSendRecommendations(session: RealtimeSession, request: RecommendationRequestData): Promise<void> {
+  private async generateAndSendRecommendations(
+    session: RealtimeSession,
+    request: RecommendationRequestData
+  ): Promise<void> {
     const startTime = Date.now()
 
     try {
@@ -431,7 +458,11 @@ export class RealtimeRecommendationService extends EventEmitter {
 
       if (cachedRecommendation && !this.isCacheExpired(cachedRecommendation)) {
         // Send cached recommendation
-        const bundle = this.createRecommendationBundle([cachedRecommendation.recommendation], session, true)
+        const bundle = this.createRecommendationBundle(
+          [cachedRecommendation.recommendation],
+          session,
+          true
+        )
         session.socket.emit('recommendations_available', bundle)
 
         // Update cache access
@@ -453,14 +484,14 @@ export class RealtimeRecommendationService extends EventEmitter {
         urgencyLevel: request.urgency,
         includeAlternatives: true,
         explainReasonings: session.preferences.verboseExplanations,
-        provideLearningInsights: true
+        provideLearningInsights: true,
       }
 
       const toolResponse = await this.agentToolAPI.requestToolRecommendations(toolRequest)
 
       // Filter by confidence threshold
       const filteredRecommendations = toolResponse.recommendations.filter(
-        rec => rec.confidence >= session.preferences.confidenceThreshold
+        (rec) => rec.confidence >= session.preferences.confidenceThreshold
       )
 
       // Generate workflow recommendations if requested
@@ -468,7 +499,9 @@ export class RealtimeRecommendationService extends EventEmitter {
       if (request.includeWorkflow && session.conversationContext.currentWorkflowState) {
         const workflowRequest: WorkflowRecommendationRequest = {
           requestId: request.requestId,
-          currentStage: this.convertToWorkflowStage(session.conversationContext.currentWorkflowState),
+          currentStage: this.convertToWorkflowStage(
+            session.conversationContext.currentWorkflowState
+          ),
           userIntent: request.context,
           workflowType: 'data_processing', // Would be determined dynamically
           workflowState: this.convertToWorkflowState(session.conversationContext),
@@ -478,14 +511,20 @@ export class RealtimeRecommendationService extends EventEmitter {
           preferences: this.convertToWorkflowPreferences(session.preferences),
           includeSequences: true,
           optimizeForSpeed: false,
-          considerAlternatives: true
+          considerAlternatives: true,
         }
 
-        workflowResponse = await this.workflowEngine.generateWorkflowRecommendations(workflowRequest)
+        workflowResponse =
+          await this.workflowEngine.generateWorkflowRecommendations(workflowRequest)
       }
 
       // Create recommendation bundle
-      const bundle = this.createRecommendationBundle(filteredRecommendations, session, false, workflowResponse)
+      const bundle = this.createRecommendationBundle(
+        filteredRecommendations,
+        session,
+        false,
+        workflowResponse
+      )
 
       // Cache recommendations
       if (this.config.enableCaching) {
@@ -503,9 +542,8 @@ export class RealtimeRecommendationService extends EventEmitter {
         sessionId: session.sessionId,
         recommendationCount: filteredRecommendations.length,
         responseTimeMs: responseTime,
-        cached: false
+        cached: false,
       })
-
     } catch (error) {
       logger.error('Failed to generate recommendations', { error, sessionId: session.sessionId })
 
@@ -513,12 +551,18 @@ export class RealtimeRecommendationService extends EventEmitter {
       if (this.config.enableFallback) {
         await this.sendFallbackRecommendations(session, request)
       } else {
-        session.socket.emit('error', { error: 'Recommendation generation failed', code: 'GENERATION_ERROR' })
+        session.socket.emit('error', {
+          error: 'Recommendation generation failed',
+          code: 'GENERATION_ERROR',
+        })
       }
     }
   }
 
-  private async handleRecommendationSelection(session: RealtimeSession, data: { recommendationId: string; confidence: number }): Promise<void> {
+  private async handleRecommendationSelection(
+    session: RealtimeSession,
+    data: { recommendationId: string; confidence: number }
+  ): Promise<void> {
     try {
       session.lastActivity = new Date()
 
@@ -532,7 +576,7 @@ export class RealtimeRecommendationService extends EventEmitter {
         selectionTimestamp: new Date(),
         selectionMethod: 'direct' as const,
         userConfidenceLevel: data.confidence,
-        userExpectations: []
+        userExpectations: [],
       }
 
       await this.agentToolAPI.recordToolSelection(selectionEvent)
@@ -541,9 +585,11 @@ export class RealtimeRecommendationService extends EventEmitter {
       await this.updateUserPreferences(session, data.recommendationId)
 
       session.socket.emit('recommendation_received', { bundleId: data.recommendationId })
-
     } catch (error) {
-      logger.error('Failed to handle recommendation selection', { error, sessionId: session.sessionId })
+      logger.error('Failed to handle recommendation selection', {
+        error,
+        sessionId: session.sessionId,
+      })
     }
   }
 
@@ -564,15 +610,17 @@ export class RealtimeRecommendationService extends EventEmitter {
       contextualExplanation: this.generateContextualExplanation(recommendations, session),
       confidence: this.calculateBundleConfidence(recommendations),
       cacheable: !fromCache && recommendations.length > 0,
-      expiresAt: new Date(Date.now() + this.config.cacheTimeout)
+      expiresAt: new Date(Date.now() + this.config.cacheTimeout),
     }
   }
 
   private shouldProvideRecommendations(context: ConversationalContext): boolean {
     // Check if the conversation context suggests tool recommendations would be helpful
-    return context.extractedIntent.taskComplexity !== 'simple' &&
-           context.recommendationTiming.optimalMoment &&
-           context.contextualCues.length > 0
+    return (
+      context.extractedIntent.taskComplexity !== 'simple' &&
+      context.recommendationTiming.optimalMoment &&
+      context.contextualCues.length > 0
+    )
   }
 
   private generateCacheKey(session: RealtimeSession, request: RecommendationRequestData): string {
@@ -584,7 +632,10 @@ export class RealtimeRecommendationService extends EventEmitter {
     return Date.now() - cached.timestamp.getTime() > this.config.cacheTimeout
   }
 
-  private async sendFallbackRecommendations(session: RealtimeSession, request: RecommendationRequestData): Promise<void> {
+  private async sendFallbackRecommendations(
+    session: RealtimeSession,
+    request: RecommendationRequestData
+  ): Promise<void> {
     // Provide basic fallback recommendations
     const fallbackBundle: RealtimeRecommendationBundle = {
       bundleId: this.generateBundleId(),
@@ -592,7 +643,7 @@ export class RealtimeRecommendationService extends EventEmitter {
       contextualExplanation: 'Service temporarily unavailable. Basic recommendations provided.',
       confidence: 0.3,
       cacheable: false,
-      expiresAt: new Date(Date.now() + 60000) // 1 minute expiry
+      expiresAt: new Date(Date.now() + 60000), // 1 minute expiry
     }
 
     session.socket.emit('recommendations_available', fallbackBundle)
@@ -636,12 +687,27 @@ export class RealtimeRecommendationService extends EventEmitter {
   }
 
   // Additional helper methods would be implemented here...
-  private generateSessionId(): string { return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
-  private generateConversationId(): string { return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
-  private generateRequestId(): string { return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
-  private generateBundleId(): string { return `bundle_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
-  private generateEventId(): string { return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
-  private hashString(str: string): string { return str.split('').reduce((hash, char) => ((hash << 5) - hash) + char.charCodeAt(0), 0).toString(36) }
+  private generateSessionId(): string {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+  private generateConversationId(): string {
+    return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+  private generateBundleId(): string {
+    return `bundle_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+  private generateEventId(): string {
+    return `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+  private hashString(str: string): string {
+    return str
+      .split('')
+      .reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0)
+      .toString(36)
+  }
 
   private getDefaultPreferences(): RealtimePreferences {
     return {
@@ -650,7 +716,7 @@ export class RealtimeRecommendationService extends EventEmitter {
       maxRecommendations: 3,
       preferredCategories: [],
       confidenceThreshold: 0.6,
-      verboseExplanations: false
+      verboseExplanations: false,
     }
   }
 
@@ -660,7 +726,7 @@ export class RealtimeRecommendationService extends EventEmitter {
       cacheHitRate: 0,
       recommendationAccuracy: 0,
       userSatisfaction: 0,
-      errorRate: 0
+      errorRate: 0,
     }
   }
 
@@ -672,7 +738,7 @@ export class RealtimeRecommendationService extends EventEmitter {
         skillLevel: 'intermediate' as const,
         preferredInteractionStyle: 'conversational' as const,
         learningStyle: 'example_based' as const,
-        toolFamiliarity: {}
+        toolFamiliarity: {},
       },
       recentActions: [],
       preferences: {
@@ -680,28 +746,63 @@ export class RealtimeRecommendationService extends EventEmitter {
         excludedTools: [],
         preferredComplexityLevel: 'moderate',
         feedbackFrequency: 'moderate' as const,
-        learningModeEnabled: true
-      }
+        learningModeEnabled: true,
+      },
     }
   }
 
   // Stub implementations for complex methods
-  private handleAgentResponse(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handleRecommendationDismissal(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handleUserFeedback(session: RealtimeSession, data: UserFeedback): Promise<void> { return Promise.resolve() }
-  private handleRecommendationRating(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handlePreferenceUpdate(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handleJoinConversation(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handleLeaveConversation(session: RealtimeSession, data: any): Promise<void> { return Promise.resolve() }
-  private handleHeartbeat(session: RealtimeSession): void { session.lastActivity = new Date() }
-  private convertToWorkflowStage(state: any): any { return {} }
-  private convertToWorkflowState(context: ConversationalContext): any { return {} }
-  private convertToWorkflowPreferences(prefs: RealtimePreferences): any { return {} }
+  private handleAgentResponse(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleRecommendationDismissal(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleUserFeedback(session: RealtimeSession, data: UserFeedback): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleRecommendationRating(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handlePreferenceUpdate(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleJoinConversation(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleLeaveConversation(session: RealtimeSession, data: any): Promise<void> {
+    return Promise.resolve()
+  }
+  private handleHeartbeat(session: RealtimeSession): void {
+    session.lastActivity = new Date()
+  }
+  private convertToWorkflowStage(state: any): any {
+    return {}
+  }
+  private convertToWorkflowState(context: ConversationalContext): any {
+    return {}
+  }
+  private convertToWorkflowPreferences(prefs: RealtimePreferences): any {
+    return {}
+  }
   private cacheRecommendations(key: string, recommendations: AgentToolRecommendation[]): void {}
-  private updatePerformanceMetrics(session: RealtimeSession, responseTime: number, fromCache: boolean): void {}
-  private generateContextualExplanation(recommendations: AgentToolRecommendation[], session: RealtimeSession): string { return 'Context-based recommendations' }
-  private calculateBundleConfidence(recommendations: AgentToolRecommendation[]): number { return 0.8 }
-  private updateUserPreferences(session: RealtimeSession, toolId: string): Promise<void> { return Promise.resolve() }
+  private updatePerformanceMetrics(
+    session: RealtimeSession,
+    responseTime: number,
+    fromCache: boolean
+  ): void {}
+  private generateContextualExplanation(
+    recommendations: AgentToolRecommendation[],
+    session: RealtimeSession
+  ): string {
+    return 'Context-based recommendations'
+  }
+  private calculateBundleConfidence(recommendations: AgentToolRecommendation[]): number {
+    return 0.8
+  }
+  private updateUserPreferences(session: RealtimeSession, toolId: string): Promise<void> {
+    return Promise.resolve()
+  }
   private cleanupExpiredCache(): void {}
   private emitPerformanceMetrics(): void {}
   private cleanupInactiveSessions(): void {}
@@ -715,7 +816,9 @@ class PerformanceTracker {
   trackRecommendationRequest(): void {}
   trackCacheHit(): void {}
   trackUserFeedback(): void {}
-  getMetrics(): any { return {} }
+  getMetrics(): any {
+    return {}
+  }
 }
 
 // =============================================================================

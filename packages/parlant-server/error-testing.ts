@@ -8,18 +8,8 @@
 
 import { EventEmitter } from 'events'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import type { BaseToolError } from './error-handler'
-import {
-  type ErrorCategory,
-  type ErrorSeverity,
-  type ErrorImpact,
-  type ErrorClassification,
-  RecoveryStrategy,
-} from './error-taxonomy'
-import type { IntelligentErrorExplanation, UserInteraction } from './error-intelligence'
-import type { RecoveryResult, RecoveryPlan } from './error-recovery'
-import type { LearningDataPoint, LearnedPattern } from './error-learning'
-import type { KnowledgeBaseArticle } from './error-knowledge-base'
+import type { IntelligentErrorExplanation } from './error-intelligence'
+import type { LearnedPattern } from './error-learning'
 import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorTesting')
@@ -569,7 +559,6 @@ export class ErrorTestingSystem extends EventEmitter {
 
       // Calculate final status
       result.status = this.calculateTestStatus(result)
-
     } catch (error) {
       result.status = TestStatus.ERROR
       result.errors.push({
@@ -582,7 +571,6 @@ export class ErrorTestingSystem extends EventEmitter {
         testId,
         error: error instanceof Error ? error.message : error,
       })
-
     } finally {
       // Cleanup phase
       await this.executeCleanup(testCase, context, result)
@@ -644,7 +632,7 @@ export class ErrorTestingSystem extends EventEmitter {
         const testBatches = this.createTestBatches(suite.testCases, parallelLimit)
 
         for (const batch of testBatches) {
-          const batchPromises = batch.map(testCase => this.executeTest(testCase.id))
+          const batchPromises = batch.map((testCase) => this.executeTest(testCase.id))
           const batchResults = await Promise.all(batchPromises)
 
           batchResults.forEach((result, index) => {
@@ -653,8 +641,8 @@ export class ErrorTestingSystem extends EventEmitter {
 
           // Check if we should continue on failure
           if (!suite.configuration.continueOnFailure) {
-            const hasFailures = batchResults.some(r =>
-              r.status === TestStatus.FAILED || r.status === TestStatus.ERROR
+            const hasFailures = batchResults.some(
+              (r) => r.status === TestStatus.FAILED || r.status === TestStatus.ERROR
             )
             if (hasFailures) {
               logger.warn('Stopping suite execution due to failures')
@@ -669,8 +657,10 @@ export class ErrorTestingSystem extends EventEmitter {
           results.set(testCase.id, result)
 
           // Check if we should continue on failure
-          if (!suite.configuration.continueOnFailure &&
-              (result.status === TestStatus.FAILED || result.status === TestStatus.ERROR)) {
+          if (
+            !suite.configuration.continueOnFailure &&
+            (result.status === TestStatus.FAILED || result.status === TestStatus.ERROR)
+          ) {
             logger.warn('Stopping suite execution due to failure')
             break
           }
@@ -687,8 +677,8 @@ export class ErrorTestingSystem extends EventEmitter {
         duration,
         totalTests: suite.testCases.length,
         executedTests: results.size,
-        passed: Array.from(results.values()).filter(r => r.status === TestStatus.PASSED).length,
-        failed: Array.from(results.values()).filter(r => r.status === TestStatus.FAILED).length,
+        passed: Array.from(results.values()).filter((r) => r.status === TestStatus.PASSED).length,
+        failed: Array.from(results.values()).filter((r) => r.status === TestStatus.FAILED).length,
       })
 
       this.emit('test_suite_completed', {
@@ -696,7 +686,6 @@ export class ErrorTestingSystem extends EventEmitter {
         results: results.size,
         duration,
       })
-
     } catch (error) {
       logger.error('Test suite execution failed', {
         suiteId,
@@ -812,10 +801,7 @@ export class ErrorTestingSystem extends EventEmitter {
   /**
    * Get test results
    */
-  getTestResults(
-    testId?: string,
-    limit = 100
-  ): TestResult[] | Map<string, TestResult[]> {
+  getTestResults(testId?: string, limit = 100): TestResult[] | Map<string, TestResult[]> {
     if (testId) {
       return this.testResults.get(testId)?.slice(-limit) || []
     }
@@ -831,7 +817,7 @@ export class ErrorTestingSystem extends EventEmitter {
     return {
       totalTests: this.testCases.size,
       totalExecutions: allResults.length,
-      passRate: allResults.filter(r => r.status === TestStatus.PASSED).length / allResults.length,
+      passRate: allResults.filter((r) => r.status === TestStatus.PASSED).length / allResults.length,
       averageDuration: allResults.reduce((sum, r) => sum + r.duration, 0) / allResults.length,
       categoryDistribution: this.calculateCategoryDistribution(allResults),
       failurePatterns: this.analyzeFailurePatterns(allResults),
@@ -857,7 +843,7 @@ export class ErrorTestingSystem extends EventEmitter {
       this.createKnowledgeBaseTest(),
     ]
 
-    defaultTests.forEach(test => this.registerTestCase(test))
+    defaultTests.forEach((test) => this.registerTestCase(test))
   }
 
   private createErrorClassificationTest(): TestCase {
@@ -1252,7 +1238,6 @@ export class ErrorTestingSystem extends EventEmitter {
           stepResult.status = TestStatus.FAILED
         }
       }
-
     } catch (error) {
       stepResult.status = TestStatus.ERROR
       stepResult.errors.push(error instanceof Error ? error.message : String(error))
@@ -1334,7 +1319,10 @@ export class ErrorTestingSystem extends EventEmitter {
     }
   }
 
-  private async executeAssertion(assertion: Assertion, result: TestResult): Promise<AssertionResult> {
+  private async executeAssertion(
+    assertion: Assertion,
+    result: TestResult
+  ): Promise<AssertionResult> {
     try {
       const passed = assertion.condition(result)
       return {
@@ -1357,7 +1345,10 @@ export class ErrorTestingSystem extends EventEmitter {
     }
   }
 
-  private async validateMetric(metric: MetricValidation, result: TestResult): Promise<MetricResult> {
+  private async validateMetric(
+    metric: MetricValidation,
+    result: TestResult
+  ): Promise<MetricResult> {
     const value = this.getMetricValue(metric.metric, result)
     let status: 'pass' | 'fail' | 'warning' = 'pass'
 
@@ -1386,7 +1377,7 @@ export class ErrorTestingSystem extends EventEmitter {
       case 'classification_time':
         return result.duration
       case 'recovery_time':
-        return result.steps.find(s => s.name.includes('recovery'))?.duration || 0
+        return result.steps.find((s) => s.name.includes('recovery'))?.duration || 0
       default:
         return 0
     }
@@ -1410,7 +1401,10 @@ export class ErrorTestingSystem extends EventEmitter {
     }
   }
 
-  private async performCleanupAction(action: CleanupAction, context: TestExecutionContext): Promise<void> {
+  private async performCleanupAction(
+    action: CleanupAction,
+    context: TestExecutionContext
+  ): Promise<void> {
     // Implement cleanup logic
     logger.debug('Performing cleanup action', { action: action.action })
   }
@@ -1418,9 +1412,9 @@ export class ErrorTestingSystem extends EventEmitter {
   private calculateTestStatus(result: TestResult): TestStatus {
     if (result.errors.length > 0) return TestStatus.ERROR
 
-    const hasFailedAssertions = result.assertions.some(a => a.status === TestStatus.FAILED)
-    const hasFailedSteps = result.steps.some(s => s.status === TestStatus.FAILED)
-    const hasFailedMetrics = result.metrics.some(m => m.status === 'fail')
+    const hasFailedAssertions = result.assertions.some((a) => a.status === TestStatus.FAILED)
+    const hasFailedSteps = result.steps.some((s) => s.status === TestStatus.FAILED)
+    const hasFailedMetrics = result.metrics.some((m) => m.status === 'fail')
 
     if (hasFailedAssertions || hasFailedSteps || hasFailedMetrics) {
       return TestStatus.FAILED
@@ -1444,9 +1438,9 @@ export class ErrorTestingSystem extends EventEmitter {
       results: Array.from(results.values()),
       summary: {
         total: results.size,
-        passed: Array.from(results.values()).filter(r => r.status === TestStatus.PASSED).length,
-        failed: Array.from(results.values()).filter(r => r.status === TestStatus.FAILED).length,
-        errors: Array.from(results.values()).filter(r => r.status === TestStatus.ERROR).length,
+        passed: Array.from(results.values()).filter((r) => r.status === TestStatus.PASSED).length,
+        failed: Array.from(results.values()).filter((r) => r.status === TestStatus.FAILED).length,
+        errors: Array.from(results.values()).filter((r) => r.status === TestStatus.ERROR).length,
       },
     }
   }
@@ -1504,9 +1498,11 @@ export class ErrorTestingSystem extends EventEmitter {
     return 0.85 // Simplified
   }
 
-  private async testExplanationCompleteness(explanation: IntelligentErrorExplanation): Promise<number> {
+  private async testExplanationCompleteness(
+    explanation: IntelligentErrorExplanation
+  ): Promise<number> {
     // Test explanation completeness
-    return 0.90 // Simplified
+    return 0.9 // Simplified
   }
 
   private async testExplanationAccuracy(
@@ -1517,7 +1513,9 @@ export class ErrorTestingSystem extends EventEmitter {
     return 0.88 // Simplified
   }
 
-  private async testExplanationUsability(explanation: IntelligentErrorExplanation): Promise<number> {
+  private async testExplanationUsability(
+    explanation: IntelligentErrorExplanation
+  ): Promise<number> {
     // Test explanation usability
     return 0.82 // Simplified
   }
@@ -1525,7 +1523,7 @@ export class ErrorTestingSystem extends EventEmitter {
   private generateExplanationRecommendations(criteria: any[]): string[] {
     const recommendations: string[] = []
 
-    criteria.forEach(criterion => {
+    criteria.forEach((criterion) => {
       if (!criterion.passed) {
         switch (criterion.criterion) {
           case 'clarity':
@@ -1564,7 +1562,7 @@ export class ErrorTestingSystem extends EventEmitter {
 
   private calculateCategoryDistribution(results: TestResult[]): Record<string, number> {
     const distribution: Record<string, number> = {}
-    results.forEach(result => {
+    results.forEach((result) => {
       distribution[result.category] = (distribution[result.category] || 0) + 1
     })
     return distribution
@@ -1582,10 +1580,13 @@ export class ErrorTestingSystem extends EventEmitter {
 
   private startScheduledTests(): void {
     // Start scheduled test execution
-    setInterval(() => {
-      // Run scheduled tests
-      logger.debug('Running scheduled tests')
-    }, 60 * 60 * 1000) // Every hour
+    setInterval(
+      () => {
+        // Run scheduled tests
+        logger.debug('Running scheduled tests')
+      },
+      60 * 60 * 1000
+    ) // Every hour
   }
 }
 
@@ -1656,10 +1657,14 @@ class ValidationEngine {
 
   validateMetric(value: number, threshold: number, operator: string): boolean {
     switch (operator) {
-      case 'less_than': return value < threshold
-      case 'greater_than': return value > threshold
-      case 'equals': return value === threshold
-      default: return false
+      case 'less_than':
+        return value < threshold
+      case 'greater_than':
+        return value > threshold
+      case 'equals':
+        return value === threshold
+      default:
+        return false
     }
   }
 }
@@ -1676,7 +1681,8 @@ export const executeTest = (testId: string) => errorTestingSystem.executeTest(te
 
 export const executeTestSuite = (suiteId: string) => errorTestingSystem.executeTestSuite(suiteId)
 
-export const registerTestCase = (testCase: TestCase) => errorTestingSystem.registerTestCase(testCase)
+export const registerTestCase = (testCase: TestCase) =>
+  errorTestingSystem.registerTestCase(testCase)
 
 export const getTestResults = (testId?: string, limit?: number) =>
   errorTestingSystem.getTestResults(testId, limit)

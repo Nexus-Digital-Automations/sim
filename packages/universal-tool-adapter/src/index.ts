@@ -28,6 +28,29 @@ export {
 } from './enhanced-intelligence/intelligence-integration-layer'
 export { NaturalLanguageDescriptionFramework } from './enhanced-intelligence/natural-language-description-framework'
 export { EnhancedToolIntelligenceEngine } from './enhanced-intelligence/tool-intelligence-engine'
+// Natural Language Framework Integration
+export {
+  NaturalLanguageRegistryIntegration,
+  DEFAULT_REGISTRY_INTEGRATION_CONFIG,
+  type RegistryIntegrationConfig,
+  type EnhancedDiscoveredTool,
+  type EnhancedToolDiscoveryQuery,
+  type SemanticSearchResult,
+} from './enhanced-intelligence/registry-integration'
+export {
+  EnhancedRegistryWrapper,
+  createEnhancedRegistryWrapper,
+  DEFAULT_ENHANCED_WRAPPER_CONFIG,
+  type EnhancedRegistryWrapperConfig,
+} from './enhanced-intelligence/enhanced-registry-wrapper'
+export { NLPProcessor } from './enhanced-intelligence/nlp-processor'
+export {
+  RoleBasedAdapter,
+  SkillLevelAdapter,
+  DomainAdapter,
+  type ContextualAdapter,
+} from './enhanced-intelligence/contextual-adapters'
+export { IntelligentTemplateEngine } from './enhanced-intelligence/intelligent-template-engine'
 export { ComprehensiveToolErrorManager } from './error-handling/comprehensive-error-manager'
 // Error types
 export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'

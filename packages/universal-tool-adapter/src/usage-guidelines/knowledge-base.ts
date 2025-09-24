@@ -331,18 +331,18 @@ export interface KnowledgeMetadata {
   stability: 'draft' | 'stable' | 'mature' | 'legacy'
 
   // Context
-  domain: string[]  // Software development, data science, etc.
-  industry: string[]  // Healthcare, finance, etc.
+  domain: string[] // Software development, data science, etc.
+  industry: string[] // Healthcare, finance, etc.
   toolCompatibility: string[]
   versionCompatibility: string[]
 }
 
 export interface QualityMetrics {
-  completeness: number  // 0-1
-  accuracy: number     // 0-1
-  clarity: number      // 0-1
-  usefulness: number   // 0-1
-  upToDate: number     // 0-1
+  completeness: number // 0-1
+  accuracy: number // 0-1
+  clarity: number // 0-1
+  usefulness: number // 0-1
+  upToDate: number // 0-1
 }
 
 export interface UsageMetrics {
@@ -405,7 +405,7 @@ export interface ToolApplicability {
   versions?: string[]
   configurations?: string[]
   integrations?: string[]
-  applicabilityScore: number  // 0-1
+  applicabilityScore: number // 0-1
   notes?: string
 }
 
@@ -475,7 +475,7 @@ export class KnowledgeBase {
     this.logger.info('Added knowledge entry', {
       id: entry.id,
       type: entry.type,
-      title: entry.title
+      title: entry.title,
     })
   }
 
@@ -495,33 +495,33 @@ export class KnowledgeBase {
     // Filter by type
     if (query.types && query.types.length > 0) {
       const typeIds = new Set<string>()
-      query.types.forEach(type => {
+      query.types.forEach((type) => {
         const ids = this.indexByType.get(type)
         if (ids) {
-          ids.forEach(id => typeIds.add(id))
+          ids.forEach((id) => typeIds.add(id))
         }
       })
-      candidateIds = new Set([...candidateIds].filter(id => typeIds.has(id)))
+      candidateIds = new Set([...candidateIds].filter((id) => typeIds.has(id)))
     }
 
     // Filter by tool
     if (query.toolIds && query.toolIds.length > 0) {
       const toolIds = new Set<string>()
-      query.toolIds.forEach(toolId => {
+      query.toolIds.forEach((toolId) => {
         const ids = this.indexByTool.get(toolId)
         if (ids) {
-          ids.forEach(id => toolIds.add(id))
+          ids.forEach((id) => toolIds.add(id))
         }
       })
-      candidateIds = new Set([...candidateIds].filter(id => toolIds.has(id)))
+      candidateIds = new Set([...candidateIds].filter((id) => toolIds.has(id)))
     }
 
     // Filter by tags
     if (query.tags && query.tags.length > 0) {
-      query.tags.forEach(tag => {
+      query.tags.forEach((tag) => {
         const tagIds = this.indexByTag.get(tag)
         if (tagIds) {
-          candidateIds = new Set([...candidateIds].filter(id => tagIds.has(id)))
+          candidateIds = new Set([...candidateIds].filter((id) => tagIds.has(id)))
         }
       })
     }
@@ -529,31 +529,31 @@ export class KnowledgeBase {
     // Filter by domain
     if (query.domains && query.domains.length > 0) {
       const domainIds = new Set<string>()
-      query.domains.forEach(domain => {
+      query.domains.forEach((domain) => {
         const ids = this.indexByDomain.get(domain)
         if (ids) {
-          ids.forEach(id => domainIds.add(id))
+          ids.forEach((id) => domainIds.add(id))
         }
       })
-      candidateIds = new Set([...candidateIds].filter(id => domainIds.has(id)))
+      candidateIds = new Set([...candidateIds].filter((id) => domainIds.has(id)))
     }
 
     // Convert to entries and apply additional filters
     let results = [...candidateIds]
-      .map(id => this.entries.get(id)!)
-      .filter(entry => this.matchesTextQuery(entry, query.textQuery))
-      .filter(entry => this.matchesDifficulty(entry, query.difficulty))
-      .filter(entry => this.matchesMaturity(entry, query.maturity))
+      .map((id) => this.entries.get(id)!)
+      .filter((entry) => this.matchesTextQuery(entry, query.textQuery))
+      .filter((entry) => this.matchesDifficulty(entry, query.difficulty))
+      .filter((entry) => this.matchesMaturity(entry, query.maturity))
 
     // Apply context-based filtering
     if (query.context) {
-      results = results.filter(entry => this.isApplicableToContext(entry, query.context!))
+      results = results.filter((entry) => this.isApplicableToContext(entry, query.context!))
     }
 
     // Score and rank results
-    const scoredResults = results.map(entry => ({
+    const scoredResults = results.map((entry) => ({
       entry,
-      score: this.calculateRelevanceScore(entry, query)
+      score: this.calculateRelevanceScore(entry, query),
     }))
 
     // Sort by relevance and apply pagination
@@ -564,7 +564,7 @@ export class KnowledgeBase {
     return sortedResults.map(({ entry, score }) => ({
       entry,
       relevanceScore: score,
-      matchReasons: this.getMatchReasons(entry, query)
+      matchReasons: this.getMatchReasons(entry, query),
     }))
   }
 
@@ -576,8 +576,8 @@ export class KnowledgeBase {
       types: [pattern.type],
       tags: pattern.tags,
       difficulty: pattern.difficulty,
-      limit: 50
-    }).map(result => result.entry)
+      limit: 50,
+    }).map((result) => result.entry)
   }
 
   /**
@@ -588,26 +588,23 @@ export class KnowledgeBase {
       types: ['best-practice'],
       toolIds: [toolId],
       tags: category ? [category] : undefined,
-      maturity: ['proven', 'standard']
+      maturity: ['proven', 'standard'],
     }
 
-    return this.search(query).map(result => result.entry)
+    return this.search(query).map((result) => result.entry)
   }
 
   /**
    * Get troubleshooting guides for common issues
    */
-  getTroubleshootingGuides(
-    toolId?: string,
-    issueCategory?: string
-  ): KnowledgeEntry[] {
+  getTroubleshootingGuides(toolId?: string, issueCategory?: string): KnowledgeEntry[] {
     const query: KnowledgeSearchQuery = {
       types: ['troubleshooting-guide', 'error-resolution'],
       toolIds: toolId ? [toolId] : undefined,
-      tags: issueCategory ? [issueCategory] : undefined
+      tags: issueCategory ? [issueCategory] : undefined,
     }
 
-    return this.search(query).map(result => result.entry)
+    return this.search(query).map((result) => result.entry)
   }
 
   /**
@@ -622,10 +619,10 @@ export class KnowledgeBase {
     const query: KnowledgeSearchQuery = {
       types: ['optimization-tip', 'performance-tip'],
       toolIds: toolId ? [toolId] : undefined,
-      tags
+      tags,
     }
 
-    return this.search(query).map(result => result.entry)
+    return this.search(query).map((result) => result.entry)
   }
 
   /**
@@ -634,10 +631,10 @@ export class KnowledgeBase {
   getIntegrationPatterns(toolId?: string): KnowledgeEntry[] {
     const query: KnowledgeSearchQuery = {
       types: ['integration-pattern', 'workflow-pattern'],
-      toolIds: toolId ? [toolId] : undefined
+      toolIds: toolId ? [toolId] : undefined,
     }
 
-    return this.search(query).map(result => result.entry)
+    return this.search(query).map((result) => result.entry)
   }
 
   /**
@@ -652,7 +649,7 @@ export class KnowledgeBase {
 
     this.logger.debug('Updated usage metrics', {
       entryId,
-      metrics
+      metrics,
     })
   }
 
@@ -685,7 +682,7 @@ export class KnowledgeBase {
     this.logger.info('Added feedback to knowledge entry', {
       entryId,
       feedbackType: feedback.type,
-      rating: feedback.rating
+      rating: feedback.rating,
     })
   }
 
@@ -693,12 +690,19 @@ export class KnowledgeBase {
   private initializeIndexes(): void {
     // Initialize type index
     const knowledgeTypes: KnowledgeType[] = [
-      'best-practice', 'common-pattern', 'anti-pattern', 'troubleshooting-guide',
-      'optimization-tip', 'integration-pattern', 'security-guideline',
-      'performance-tip', 'workflow-pattern', 'error-resolution'
+      'best-practice',
+      'common-pattern',
+      'anti-pattern',
+      'troubleshooting-guide',
+      'optimization-tip',
+      'integration-pattern',
+      'security-guideline',
+      'performance-tip',
+      'workflow-pattern',
+      'error-resolution',
     ]
 
-    knowledgeTypes.forEach(type => {
+    knowledgeTypes.forEach((type) => {
       this.indexByType.set(type, new Set())
     })
   }
@@ -713,7 +717,7 @@ export class KnowledgeBase {
     typeSet.add(entry.id)
 
     // Update tool index
-    entry.applicability.tools.forEach(tool => {
+    entry.applicability.tools.forEach((tool) => {
       let toolSet = this.indexByTool.get(tool.toolId)
       if (!toolSet) {
         toolSet = new Set()
@@ -723,7 +727,7 @@ export class KnowledgeBase {
     })
 
     // Update tag index
-    entry.metadata.tags.forEach(tag => {
+    entry.metadata.tags.forEach((tag) => {
       let tagSet = this.indexByTag.get(tag)
       if (!tagSet) {
         tagSet = new Set()
@@ -733,7 +737,7 @@ export class KnowledgeBase {
     })
 
     // Update domain index
-    entry.metadata.domain.forEach(domain => {
+    entry.metadata.domain.forEach((domain) => {
       let domainSet = this.indexByDomain.get(domain)
       if (!domainSet) {
         domainSet = new Set()
@@ -784,7 +788,8 @@ export class KnowledgeBase {
     score += Math.min(entry.metadata.usage.implementationCount / 100, 1) * 0.1
 
     // Recency scoring
-    const daysSinceUpdate = (Date.now() - entry.metadata.lastUpdated.getTime()) / (1000 * 60 * 60 * 24)
+    const daysSinceUpdate =
+      (Date.now() - entry.metadata.lastUpdated.getTime()) / (1000 * 60 * 60 * 24)
     score += Math.max(0, 1 - daysSinceUpdate / 365) * 0.1
 
     return Math.min(score, 1)
@@ -797,13 +802,15 @@ export class KnowledgeBase {
       reasons.push(`Matches type: ${entry.type}`)
     }
 
-    if (query.tags?.some(tag => entry.metadata.tags.includes(tag))) {
+    if (query.tags?.some((tag) => entry.metadata.tags.includes(tag))) {
       reasons.push('Matches tags')
     }
 
-    if (query.toolIds?.some(toolId =>
-      entry.applicability.tools.some(tool => tool.toolId === toolId)
-    )) {
+    if (
+      query.toolIds?.some((toolId) =>
+        entry.applicability.tools.some((tool) => tool.toolId === toolId)
+      )
+    ) {
       reasons.push('Applicable to requested tools')
     }
 
@@ -883,7 +890,7 @@ export interface KnowledgePattern {
 
 export interface KnowledgeFeedback {
   userId: string
-  rating: number  // 1-5
+  rating: number // 1-5
   type: 'general' | 'suggestion' | 'question' | 'improvement' | 'correction'
   comment?: string
   timestamp: Date
@@ -916,14 +923,14 @@ export function createKnowledgeEntry(
         drawbacks: [],
         alternatives: [],
         prerequisites: [],
-        constraints: []
+        constraints: [],
       },
       examples: content.examples || {
         basic: [],
         intermediate: [],
         advanced: [],
         realWorld: [],
-        antiExamples: []
+        antiExamples: [],
       },
       implementation: content.implementation || {
         overview: '',
@@ -935,27 +942,27 @@ export function createKnowledgeEntry(
           steps: [],
           dataBackup: [],
           verification: [],
-          timeEstimate: ''
+          timeEstimate: '',
         },
         automation: {
           available: false,
           tools: [],
-          scripts: []
-        }
+          scripts: [],
+        },
       },
       validation: content.validation || {
         functional: [],
         performance: [],
         security: [],
-        usability: []
+        usability: [],
       },
       resources: content.resources || {
         documentation: [],
         tools: [],
         learning: [],
         community: [],
-        standards: []
-      }
+        standards: [],
+      },
     },
     metadata: {
       author: 'System Generated',
@@ -968,7 +975,7 @@ export function createKnowledgeEntry(
         accuracy: 0.8,
         clarity: 0.7,
         usefulness: 0.7,
-        upToDate: 1.0
+        upToDate: 1.0,
       },
       usage: {
         viewCount: 0,
@@ -977,14 +984,14 @@ export function createKnowledgeEntry(
         averageRating: 0,
         ratingCount: 0,
         bookmarkCount: 0,
-        shareCount: 0
+        shareCount: 0,
       },
       feedback: {
         positiveReviews: 0,
         negativeReviews: 0,
         suggestions: [],
         commonQuestions: [],
-        improvementRequests: []
+        improvementRequests: [],
       },
       tags: [],
       categories: [],
@@ -994,7 +1001,7 @@ export function createKnowledgeEntry(
       domain: [],
       industry: [],
       toolCompatibility: [],
-      versionCompatibility: []
+      versionCompatibility: [],
     },
     relationships: {
       parentTopics: [],
@@ -1008,13 +1015,13 @@ export function createKnowledgeEntry(
       followsBefore: [],
       complementaryWith: [],
       supersedes: [],
-      supersededBy: []
+      supersededBy: [],
     },
     applicability: {
       tools: [],
       contexts: [],
       userProfiles: [],
-      situations: []
-    }
+      situations: [],
+    },
   }
 }

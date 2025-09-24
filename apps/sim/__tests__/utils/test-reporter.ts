@@ -6,15 +6,13 @@
  * test infrastructure with detailed analytics, visualizations, and insights.
  */
 
-import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import type {
+  ConversionError,
+  ConversionWarning,
   TestScenario,
   ValidationResult,
-  ConversionContext,
-  ConversionMetadata,
-  ConversionError,
-  ConversionWarning
 } from '../../services/parlant/workflow-converter/types'
 
 // ========================================
@@ -129,7 +127,7 @@ export class ComprehensiveTestReporter {
       enableRealTimeReporting: false,
       reportFormats: ['html', 'json', 'markdown'],
       retentionDays: 30,
-      ...config
+      ...config,
     }
 
     this.ensureOutputDirectory()
@@ -155,14 +153,14 @@ export class ComprehensiveTestReporter {
       skipped: 0,
       errors: 0,
       results: [],
-      summary: this.createEmptySummary()
+      summary: this.createEmptySummary(),
     }
 
     this.emitRealTimeUpdate({
       type: 'suite_started',
       suiteId: id,
       timestamp: new Date(),
-      data: { name, description }
+      data: { name, description },
     })
 
     console.log(`🚀 Starting test suite: ${name}`)
@@ -177,7 +175,8 @@ export class ComprehensiveTestReporter {
     }
 
     this.currentSuite.endTime = new Date()
-    this.currentSuite.duration = this.currentSuite.endTime.getTime() - this.currentSuite.startTime.getTime()
+    this.currentSuite.duration =
+      this.currentSuite.endTime.getTime() - this.currentSuite.startTime.getTime()
     this.currentSuite.summary = this.generateSuiteSummary(this.currentSuite)
 
     // Save to historical data
@@ -194,11 +193,13 @@ export class ComprehensiveTestReporter {
       type: 'suite_completed',
       suiteId: completedSuite.id,
       timestamp: new Date(),
-      data: { summary: completedSuite.summary }
+      data: { summary: completedSuite.summary },
     })
 
     console.log(`✅ Test suite completed: ${completedSuite.name}`)
-    console.log(`   Total: ${completedSuite.totalTests}, Passed: ${completedSuite.passed}, Failed: ${completedSuite.failed}`)
+    console.log(
+      `   Total: ${completedSuite.totalTests}, Passed: ${completedSuite.passed}, Failed: ${completedSuite.failed}`
+    )
     console.log(`   Duration: ${this.formatDuration(completedSuite.duration!)}`)
 
     return completedSuite
@@ -244,19 +245,21 @@ export class ComprehensiveTestReporter {
         duration: result.duration,
         progress: {
           completed: this.currentSuite.totalTests,
-          total: this.currentSuite.totalTests // Will be updated as more tests are added
-        }
-      }
+          total: this.currentSuite.totalTests, // Will be updated as more tests are added
+        },
+      },
     })
 
-    console.log(`${this.getStatusEmoji(result.status)} ${result.scenarioName} (${this.formatDuration(result.duration)})`)
+    console.log(
+      `${this.getStatusEmoji(result.status)} ${result.scenarioName} (${this.formatDuration(result.duration)})`
+    )
 
     if (result.errors.length > 0) {
-      result.errors.forEach(error => console.error(`   ❌ ${error.message}`))
+      result.errors.forEach((error) => console.error(`   ❌ ${error.message}`))
     }
 
     if (result.warnings.length > 0) {
-      result.warnings.forEach(warning => console.warn(`   ⚠️  ${warning.message}`))
+      result.warnings.forEach((warning) => console.warn(`   ⚠️  ${warning.message}`))
     }
   }
 
@@ -292,8 +295,8 @@ export class ComprehensiveTestReporter {
         nodeCount: scenario.metadata.nodeCount,
         edgeCount: scenario.metadata.edgeCount,
         blockTypes: scenario.metadata.blockTypes,
-        validationScore: validationResult.score || 0
-      }
+        validationScore: validationResult.score || 0,
+      },
     }
   }
 
@@ -301,7 +304,7 @@ export class ComprehensiveTestReporter {
     validationResult: ValidationResult,
     errors: ConversionError[]
   ): 'passed' | 'failed' | 'skipped' | 'error' {
-    if (errors.some(e => e.severity === 'critical' || e.severity === 'error')) {
+    if (errors.some((e) => e.severity === 'critical' || e.severity === 'error')) {
       return 'error'
     }
     if (!validationResult.isValid) {
@@ -310,7 +313,11 @@ export class ComprehensiveTestReporter {
     return 'passed'
   }
 
-  private calculateTestMetrics(scenario: TestScenario, conversionResult: any, duration: number): TestMetrics {
+  private calculateTestMetrics(
+    scenario: TestScenario,
+    conversionResult: any,
+    duration: number
+  ): TestMetrics {
     const conversionAccuracy = this.calculateConversionAccuracy(scenario, conversionResult)
     const performanceScore = this.calculatePerformanceScore(duration, scenario.complexity)
     const memoryUsage = this.estimateMemoryUsage(scenario)
@@ -323,9 +330,9 @@ export class ComprehensiveTestReporter {
       processingTime: {
         conversion: duration * 0.7, // Estimate
         validation: duration * 0.2, // Estimate
-        total: duration
+        total: duration,
       },
-      qualityMetrics
+      qualityMetrics,
     }
   }
 
@@ -349,10 +356,10 @@ export class ComprehensiveTestReporter {
 
   private calculatePerformanceScore(duration: number, complexity: string): number {
     const targets: Record<string, number> = {
-      simple: 500,    // 500ms target
-      medium: 1000,   // 1s target
-      complex: 2000,  // 2s target
-      extreme: 5000   // 5s target
+      simple: 500, // 500ms target
+      medium: 1000, // 1s target
+      complex: 2000, // 2s target
+      extreme: 5000, // 5s target
     }
 
     const target = targets[complexity] || 1000
@@ -371,29 +378,36 @@ export class ComprehensiveTestReporter {
     return {
       peak: estimated * 1.5,
       average: estimated,
-      final: estimated * 0.8
+      final: estimated * 0.8,
     }
   }
 
-  private calculateQualityMetrics(scenario: TestScenario, conversionResult: any): TestMetrics['qualityMetrics'] {
+  private calculateQualityMetrics(
+    scenario: TestScenario,
+    conversionResult: any
+  ): TestMetrics['qualityMetrics'] {
     const stateCount = conversionResult?.states?.length || 0
     const transitionCount = conversionResult?.transitions?.length || 0
 
     // Complexity score based on branching factor, depth, and loops
-    const complexityScore = (
+    const complexityScore =
       scenario.metadata.branchingFactor * 10 +
       scenario.metadata.maxDepth * 5 +
       (scenario.metadata.containsLoops ? 20 : 0)
-    )
 
     // Completeness based on how well the conversion preserved the original structure
-    const completeness = Math.min(100, (stateCount + transitionCount) / (scenario.metadata.nodeCount + scenario.metadata.edgeCount) * 100)
+    const completeness = Math.min(
+      100,
+      ((stateCount + transitionCount) /
+        (scenario.metadata.nodeCount + scenario.metadata.edgeCount)) *
+        100
+    )
 
     return {
       stateCount,
       transitionCount,
       complexityScore,
-      completeness
+      completeness,
     }
   }
 
@@ -407,7 +421,7 @@ export class ComprehensiveTestReporter {
       conversionOutput: JSON.stringify(conversionResult, null, 2),
       errorTraces: [],
       performanceProfiles: [],
-      visualizations: []
+      visualizations: [],
     }
   }
 
@@ -419,7 +433,7 @@ export class ComprehensiveTestReporter {
    * Generate all requested report formats
    */
   private async generateAllReports(suite: TestSuite): Promise<void> {
-    const promises = this.config.reportFormats.map(format => {
+    const promises = this.config.reportFormats.map((format) => {
       switch (format) {
         case 'html':
           return this.generateHtmlReport(suite)
@@ -546,7 +560,9 @@ export class ComprehensiveTestReporter {
                         </tr>
                     </thead>
                     <tbody>
-                        ${suite.results.map(result => `
+                        ${suite.results
+                          .map(
+                            (result) => `
                             <tr class="result-row ${result.status}">
                                 <td>
                                     <div class="test-name">${result.scenarioName}</div>
@@ -565,7 +581,9 @@ export class ComprehensiveTestReporter {
                                     ${result.warnings.length > 0 ? `<span class="warning-count">${result.warnings.length} warnings</span>` : ''}
                                 </td>
                             </tr>
-                        `).join('')}
+                        `
+                          )
+                          .join('')}
                     </tbody>
                 </table>
             </div>
@@ -599,13 +617,13 @@ export class ComprehensiveTestReporter {
         generatedAt: new Date().toISOString(),
         reportVersion: '2.0.0',
         framework: 'workflow-journey-testing',
-        reportId: `report_${suite.id}_${Date.now()}`
+        reportId: `report_${suite.id}_${Date.now()}`,
       },
       suite,
       analytics: this.calculateAnalytics(suite),
       trends: this.calculateTrends(suite),
       recommendations: this.generateRecommendations(suite),
-      historicalComparison: this.generateHistoricalComparison(suite)
+      historicalComparison: this.generateHistoricalComparison(suite),
     }
 
     const filePath = join(this.config.outputDir, `${suite.id}_report.json`)
@@ -642,7 +660,9 @@ ${suite.description}
 
 ## 🔍 Detailed Results
 
-${suite.results.map(result => `
+${suite.results
+  .map(
+    (result) => `
 ### ${this.getStatusEmoji(result.status)} ${result.scenarioName}
 
 - **Status**: ${result.status.toUpperCase()}
@@ -653,16 +673,26 @@ ${suite.results.map(result => `
 - **Node Count**: ${result.metadata.nodeCount}
 - **Edge Count**: ${result.metadata.edgeCount}
 
-${result.errors.length > 0 ? `
+${
+  result.errors.length > 0
+    ? `
 **❌ Errors (${result.errors.length})**:
-${result.errors.map(error => `- ${error.message}`).join('\n')}
-` : ''}
+${result.errors.map((error) => `- ${error.message}`).join('\n')}
+`
+    : ''
+}
 
-${result.warnings.length > 0 ? `
+${
+  result.warnings.length > 0
+    ? `
 **⚠️ Warnings (${result.warnings.length})**:
-${result.warnings.map(warning => `- ${warning.message}`).join('\n')}
-` : ''}
-`).join('\n')}
+${result.warnings.map((warning) => `- ${warning.message}`).join('\n')}
+`
+    : ''
+}
+`
+  )
+  .join('\n')}
 
 ## 📈 Trends and Analysis
 
@@ -695,25 +725,37 @@ ${this.generateRecommendationsMarkdown(suite)}
         time="${(suite.duration! / 1000).toFixed(3)}"
         timestamp="${suite.startTime.toISOString()}"
     >
-        ${suite.results.map(result => `
+        ${suite.results
+          .map(
+            (result) => `
         <testcase
             name="${result.scenarioName}"
             classname="WorkflowJourneyTest"
             time="${(result.duration / 1000).toFixed(3)}"
         >
-            ${result.status === 'failed' ? `
+            ${
+              result.status === 'failed'
+                ? `
             <failure message="Test failed">
-                ${result.errors.map(error => error.message).join('\n')}
+                ${result.errors.map((error) => error.message).join('\n')}
             </failure>
-            ` : ''}
-            ${result.status === 'error' ? `
+            `
+                : ''
+            }
+            ${
+              result.status === 'error'
+                ? `
             <error message="Test error">
-                ${result.errors.map(error => error.message).join('\n')}
+                ${result.errors.map((error) => error.message).join('\n')}
             </error>
-            ` : ''}
+            `
+                : ''
+            }
             ${result.status === 'skipped' ? '<skipped />' : ''}
         </testcase>
-        `).join('')}
+        `
+          )
+          .join('')}
     </testsuite>
 </testsuites>`
 
@@ -731,7 +773,9 @@ ${this.generateRecommendationsMarkdown(suite)}
     const textReport = this.generateDetailedTextReport(suite)
     const filePath = join(this.config.outputDir, `${suite.id}_report.txt`)
     writeFileSync(filePath, textReport, 'utf8')
-    console.log(`📄 Text report generated: ${filePath} (PDF generation requires additional dependencies)`)
+    console.log(
+      `📄 Text report generated: ${filePath} (PDF generation requires additional dependencies)`
+    )
   }
 
   // ========================================
@@ -746,19 +790,19 @@ ${this.generateRecommendationsMarkdown(suite)}
         byComplexity: this.getDistributionByComplexity(results),
         byStatus: this.getDistributionByStatus(results),
         byDuration: this.getDistributionByDuration(results),
-        byBlockType: this.getDistributionByBlockType(results)
+        byBlockType: this.getDistributionByBlockType(results),
       },
       correlations: {
         complexityVsPerformance: this.calculateComplexityPerformanceCorrelation(results),
         sizeVsAccuracy: this.calculateSizeAccuracyCorrelation(results),
-        durationVsSuccess: this.calculateDurationSuccessCorrelation(results)
+        durationVsSuccess: this.calculateDurationSuccessCorrelation(results),
       },
       qualityMetrics: {
         averageAccuracy: this.calculateAverageAccuracy(results),
         averagePerformance: this.calculateAveragePerformance(results),
         consistencyScore: this.calculateConsistencyScore(results),
-        reliabilityScore: this.calculateReliabilityScore(results)
-      }
+        reliabilityScore: this.calculateReliabilityScore(results),
+      },
     }
   }
 
@@ -771,11 +815,12 @@ ${this.generateRecommendationsMarkdown(suite)}
     }
 
     return {
-      successRateTrend: this.calculateTrend(recent.map(s => s.summary.successRate)),
-      performanceTrend: this.calculateTrend(recent.map(s => s.summary.performanceAverage)),
-      durationTrend: this.calculateTrend(recent.map(s => s.summary.averageDuration)),
-      improvement: suite.summary.successRate > (recent[recent.length - 1]?.summary.successRate || 0),
-      regressions: this.identifyRegressions(suite, recent[recent.length - 1])
+      successRateTrend: this.calculateTrend(recent.map((s) => s.summary.successRate)),
+      performanceTrend: this.calculateTrend(recent.map((s) => s.summary.performanceAverage)),
+      durationTrend: this.calculateTrend(recent.map((s) => s.summary.averageDuration)),
+      improvement:
+        suite.summary.successRate > (recent[recent.length - 1]?.summary.successRate || 0),
+      regressions: this.identifyRegressions(suite, recent[recent.length - 1]),
     }
   }
 
@@ -789,7 +834,9 @@ ${this.generateRecommendationsMarkdown(suite)}
 
     // Reliability recommendations
     if (suite.summary.successRate < 90) {
-      recommendations.push('Success rate is below 90% - review failed tests and improve error handling')
+      recommendations.push(
+        'Success rate is below 90% - review failed tests and improve error handling'
+      )
     }
 
     // Coverage recommendations
@@ -799,7 +846,7 @@ ${this.generateRecommendationsMarkdown(suite)}
 
     // Error pattern recommendations
     const errorPatterns = this.analyzeErrorPatterns(suite)
-    errorPatterns.forEach(pattern => {
+    errorPatterns.forEach((pattern) => {
       recommendations.push(`Address recurring error pattern: ${pattern}`)
     })
 
@@ -830,7 +877,7 @@ ${this.generateRecommendationsMarkdown(suite)}
   private emitRealTimeUpdate(update: RealtimeUpdate): void {
     if (!this.config.enableRealTimeReporting) return
 
-    this.realTimeCallbacks.forEach(callback => {
+    this.realTimeCallbacks.forEach((callback) => {
       try {
         callback(update)
       } catch (error) {
@@ -856,8 +903,8 @@ ${this.generateRecommendationsMarkdown(suite)}
       trends: {
         improvement: false,
         regressions: [],
-        newIssues: []
-      }
+        newIssues: [],
+      },
     }
   }
 
@@ -867,11 +914,15 @@ ${this.generateRecommendationsMarkdown(suite)}
     const avgDuration = results.length > 0 ? totalDuration / results.length : 0
 
     const successRate = suite.totalTests > 0 ? (suite.passed / suite.totalTests) * 100 : 0
-    const avgPerformance = results.length > 0
-      ? results.reduce((sum, r) => sum + r.metrics.performanceScore, 0) / results.length
-      : 0
+    const avgPerformance =
+      results.length > 0
+        ? results.reduce((sum, r) => sum + r.metrics.performanceScore, 0) / results.length
+        : 0
 
-    const criticalIssues = results.reduce((sum, r) => sum + r.errors.filter(e => e.severity === 'critical').length, 0)
+    const criticalIssues = results.reduce(
+      (sum, r) => sum + r.errors.filter((e) => e.severity === 'critical').length,
+      0
+    )
     const warningsCount = results.reduce((sum, r) => sum + r.warnings.length, 0)
 
     return {
@@ -886,8 +937,8 @@ ${this.generateRecommendationsMarkdown(suite)}
       trends: {
         improvement: this.detectImprovement(suite),
         regressions: this.detectRegressions(suite),
-        newIssues: this.detectNewIssues(suite)
-      }
+        newIssues: this.detectNewIssues(suite),
+      },
     }
   }
 
@@ -922,8 +973,8 @@ ${this.generateRecommendationsMarkdown(suite)}
 
       // Keep only recent history based on retention policy
       const cutoffDate = new Date(Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000)
-      const filteredHistory = this.historicalData.filter(suite =>
-        new Date(suite.startTime) > cutoffDate
+      const filteredHistory = this.historicalData.filter(
+        (suite) => new Date(suite.startTime) > cutoffDate
       )
 
       writeFileSync(historyFile, JSON.stringify(filteredHistory, null, 2), 'utf8')
@@ -937,7 +988,7 @@ ${this.generateRecommendationsMarkdown(suite)}
       passed: '✅',
       failed: '❌',
       error: '🚫',
-      skipped: '⏭️'
+      skipped: '⏭️',
     }
     return emojis[status] || '❓'
   }
@@ -949,36 +1000,88 @@ ${this.generateRecommendationsMarkdown(suite)}
   }
 
   private calculatePercentage(value: number, total: number): string {
-    return total > 0 ? (value / total * 100).toFixed(1) : '0.0'
+    return total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
   }
 
   // Additional utility methods would be implemented here...
-  private getHtmlReportStyles(): string { return '' }
-  private generateHtmlReportScripts(suite: TestSuite): string { return '' }
-  private generateTrendsSection(suite: TestSuite): string { return '' }
-  private generateRecommendationsSection(suite: TestSuite): string { return '' }
-  private generateTrendsMarkdown(suite: TestSuite): string { return '' }
-  private generateRecommendationsMarkdown(suite: TestSuite): string { return '' }
-  private generateDetailedTextReport(suite: TestSuite): string { return '' }
-  private generateHistoricalComparison(suite: TestSuite): any { return {} }
-  private getDistributionByComplexity(results: TestExecutionResult[]): any { return {} }
-  private getDistributionByStatus(results: TestExecutionResult[]): any { return {} }
-  private getDistributionByDuration(results: TestExecutionResult[]): any { return {} }
-  private getDistributionByBlockType(results: TestExecutionResult[]): any { return {} }
-  private calculateComplexityPerformanceCorrelation(results: TestExecutionResult[]): number { return 0 }
-  private calculateSizeAccuracyCorrelation(results: TestExecutionResult[]): number { return 0 }
-  private calculateDurationSuccessCorrelation(results: TestExecutionResult[]): number { return 0 }
-  private calculateAverageAccuracy(results: TestExecutionResult[]): number { return 0 }
-  private calculateAveragePerformance(results: TestExecutionResult[]): number { return 0 }
-  private calculateConsistencyScore(results: TestExecutionResult[]): number { return 0 }
-  private calculateReliabilityScore(results: TestExecutionResult[]): number { return 0 }
-  private calculateTrend(values: number[]): string { return 'stable' }
-  private identifyRegressions(current: TestSuite, previous: TestSuite): string[] { return [] }
-  private analyzeErrorPatterns(suite: TestSuite): string[] { return [] }
-  private calculateCoverage(results: TestExecutionResult[]): number { return 0 }
-  private detectImprovement(suite: TestSuite): boolean { return false }
-  private detectRegressions(suite: TestSuite): string[] { return [] }
-  private detectNewIssues(suite: TestSuite): string[] { return [] }
+  private getHtmlReportStyles(): string {
+    return ''
+  }
+  private generateHtmlReportScripts(suite: TestSuite): string {
+    return ''
+  }
+  private generateTrendsSection(suite: TestSuite): string {
+    return ''
+  }
+  private generateRecommendationsSection(suite: TestSuite): string {
+    return ''
+  }
+  private generateTrendsMarkdown(suite: TestSuite): string {
+    return ''
+  }
+  private generateRecommendationsMarkdown(suite: TestSuite): string {
+    return ''
+  }
+  private generateDetailedTextReport(suite: TestSuite): string {
+    return ''
+  }
+  private generateHistoricalComparison(suite: TestSuite): any {
+    return {}
+  }
+  private getDistributionByComplexity(results: TestExecutionResult[]): any {
+    return {}
+  }
+  private getDistributionByStatus(results: TestExecutionResult[]): any {
+    return {}
+  }
+  private getDistributionByDuration(results: TestExecutionResult[]): any {
+    return {}
+  }
+  private getDistributionByBlockType(results: TestExecutionResult[]): any {
+    return {}
+  }
+  private calculateComplexityPerformanceCorrelation(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateSizeAccuracyCorrelation(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateDurationSuccessCorrelation(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateAverageAccuracy(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateAveragePerformance(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateConsistencyScore(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateReliabilityScore(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private calculateTrend(values: number[]): string {
+    return 'stable'
+  }
+  private identifyRegressions(current: TestSuite, previous: TestSuite): string[] {
+    return []
+  }
+  private analyzeErrorPatterns(suite: TestSuite): string[] {
+    return []
+  }
+  private calculateCoverage(results: TestExecutionResult[]): number {
+    return 0
+  }
+  private detectImprovement(suite: TestSuite): boolean {
+    return false
+  }
+  private detectRegressions(suite: TestSuite): string[] {
+    return []
+  }
+  private detectNewIssues(suite: TestSuite): string[] {
+    return []
+  }
 }
 
 // ========================================

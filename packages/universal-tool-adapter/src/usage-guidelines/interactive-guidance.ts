@@ -10,8 +10,7 @@
  */
 
 import { Logger } from '../utils/logger'
-import { EnhancedUsageContext } from './contextual-engine'
-import { KnowledgeEntry } from './knowledge-base'
+import type { EnhancedUsageContext } from './contextual-engine'
 
 // =============================================================================
 // Interactive Tutorial Types
@@ -23,7 +22,7 @@ export interface InteractiveTutorial {
   title: string
   description: string
   difficulty: 'beginner' | 'intermediate' | 'advanced'
-  estimatedDuration: number  // minutes
+  estimatedDuration: number // minutes
 
   // Tutorial structure
   structure: TutorialStructure
@@ -155,7 +154,7 @@ export interface VideoChapter {
 export interface DiagramContent {
   id: string
   type: 'flowchart' | 'sequence' | 'architecture' | 'network' | 'process'
-  data: any  // Diagram-specific data structure
+  data: any // Diagram-specific data structure
   interactive: boolean
   zoomable: boolean
   editable: boolean
@@ -404,9 +403,9 @@ export interface InteractionContent {
   attemptsAllowed?: number
 
   // Type-specific content
-  options?: InteractionOption[]  // For questions
-  taskDefinition?: TaskDefinition  // For tasks
-  simulationConfig?: any  // For simulations
+  options?: InteractionOption[] // For questions
+  taskDefinition?: TaskDefinition // For tasks
+  simulationConfig?: any // For simulations
 }
 
 export interface InteractionOption {
@@ -898,7 +897,7 @@ export interface UserPreferences {
 
 export interface UserAdaptations {
   contentDifficulty: 'simplified' | 'standard' | 'advanced'
-  pacingAdjustment: number  // Multiplier
+  pacingAdjustment: number // Multiplier
   interactionFrequency: 'low' | 'medium' | 'high'
   feedbackVerbosity: 'minimal' | 'standard' | 'detailed'
 }
@@ -1026,19 +1025,19 @@ export class InteractiveTutorialEngine {
         totalTimeSpent: 0,
         sectionTimeSpent: {},
         interactionAttempts: {},
-        assessmentAttempts: {}
+        assessmentAttempts: {},
       },
       userData: {
         profile: this.extractUserProfile(context),
         preferences: this.extractUserPreferences(context),
         adaptations: this.determineUserAdaptations(context),
         bookmarks: [],
-        notes: []
+        notes: [],
       },
       analytics: {
         events: [],
         metrics: [],
-        patterns: []
+        patterns: [],
       },
       state: {
         status: 'active',
@@ -1046,8 +1045,8 @@ export class InteractiveTutorialEngine {
         variables: {},
         flags: {},
         errors: [],
-        recoveryActions: []
-      }
+        recoveryActions: [],
+      },
     }
 
     this.sessions.set(sessionId, session)
@@ -1056,7 +1055,7 @@ export class InteractiveTutorialEngine {
     this.logger.info('Tutorial session created', {
       sessionId,
       tutorialId,
-      userId
+      userId,
     })
 
     // Track analytics
@@ -1083,10 +1082,13 @@ export class InteractiveTutorialEngine {
     if (!tutorial) return null
 
     const currentSectionIndex = tutorial.structure.sections.findIndex(
-      s => s.id === session.progress.currentSection
+      (s) => s.id === session.progress.currentSection
     )
 
-    if (currentSectionIndex === -1 || currentSectionIndex >= tutorial.structure.sections.length - 1) {
+    if (
+      currentSectionIndex === -1 ||
+      currentSectionIndex >= tutorial.structure.sections.length - 1
+    ) {
       return null
     }
 
@@ -1104,7 +1106,7 @@ export class InteractiveTutorialEngine {
     // Track analytics
     await this.trackEvent(session, 'section_advanced', {
       fromSection: tutorial.structure.sections[currentSectionIndex].title,
-      toSection: nextSection.title
+      toSection: nextSection.title,
     })
 
     return nextSection
@@ -1155,7 +1157,7 @@ export class InteractiveTutorialEngine {
       type: interaction.type,
       success: result.correct || result.passed,
       score: result.score,
-      attempts: session.progress.interactionAttempts[interactionId]
+      attempts: session.progress.interactionAttempts[interactionId],
     })
 
     return result
@@ -1201,14 +1203,17 @@ export class InteractiveTutorialEngine {
   /**
    * Add user bookmark
    */
-  async addBookmark(sessionId: string, bookmark: Omit<Bookmark, 'id' | 'timestamp'>): Promise<void> {
+  async addBookmark(
+    sessionId: string,
+    bookmark: Omit<Bookmark, 'id' | 'timestamp'>
+  ): Promise<void> {
     const session = this.getSession(sessionId)
     if (!session) return
 
     const newBookmark: Bookmark = {
       ...bookmark,
       id: `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     session.userData.bookmarks.push(newBookmark)
@@ -1227,7 +1232,7 @@ export class InteractiveTutorialEngine {
     const newNote: Note = {
       ...note,
       id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     session.userData.notes.push(newNote)
@@ -1272,14 +1277,12 @@ export class InteractiveTutorialEngine {
           relevanceScore,
           reason: this.generateRecommendationReason(candidateTutorial, userInterests, skillGaps),
           estimatedDuration: candidateTutorial.estimatedDuration,
-          difficulty: candidateTutorial.difficulty
+          difficulty: candidateTutorial.difficulty,
         })
       }
     }
 
-    return recommendations
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, 5)
+    return recommendations.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 5)
   }
 
   // Private helper methods
@@ -1296,16 +1299,16 @@ export class InteractiveTutorialEngine {
   private calculateMaxScore(tutorial: InteractiveTutorial): number {
     let maxScore = 0
 
-    tutorial.structure.sections.forEach(section => {
-      section.interactions.forEach(interaction => {
+    tutorial.structure.sections.forEach((section) => {
+      section.interactions.forEach((interaction) => {
         if (interaction.scoring) {
           maxScore += interaction.scoring.points
         }
       })
     })
 
-    tutorial.structure.assessments.forEach(assessment => {
-      assessment.content.questions.forEach(question => {
+    tutorial.structure.assessments.forEach((assessment) => {
+      assessment.content.questions.forEach((question) => {
         maxScore += question.points
       })
     })
@@ -1317,11 +1320,16 @@ export class InteractiveTutorialEngine {
     return {
       experienceLevel: context.expertise.overallLevel,
       learningStyle: context.expertise.learningStyle,
-      pace: context.expertise.preferredPace === 'quick' ? 'fast' :
-            context.expertise.preferredPace === 'detailed' ? 'slow' : 'medium',
+      pace:
+        context.expertise.preferredPace === 'quick'
+          ? 'fast'
+          : context.expertise.preferredPace === 'detailed'
+            ? 'slow'
+            : 'medium',
       goals: context.session.sessionGoals || [],
-      background: context.expertise.toolSpecificExperience ?
-                  Object.keys(context.expertise.toolSpecificExperience) : []
+      background: context.expertise.toolSpecificExperience
+        ? Object.keys(context.expertise.toolSpecificExperience)
+        : [],
     }
   }
 
@@ -1332,18 +1340,26 @@ export class InteractiveTutorialEngine {
       theme: context.accessibility.highContrast ? 'high-contrast' : 'light',
       audioEnabled: !context.accessibility.reducedMotion,
       animationsEnabled: !context.accessibility.reducedMotion,
-      notificationsEnabled: true
+      notificationsEnabled: true,
     }
   }
 
   private determineUserAdaptations(context: EnhancedUsageContext): UserAdaptations {
     return {
-      contentDifficulty: context.expertise.overallLevel === 'novice' || context.expertise.overallLevel === 'beginner'
-        ? 'simplified' : context.expertise.overallLevel === 'expert' ? 'advanced' : 'standard',
-      pacingAdjustment: context.expertise.preferredPace === 'quick' ? 1.5 :
-                        context.expertise.preferredPace === 'detailed' ? 0.7 : 1.0,
+      contentDifficulty:
+        context.expertise.overallLevel === 'novice' || context.expertise.overallLevel === 'beginner'
+          ? 'simplified'
+          : context.expertise.overallLevel === 'expert'
+            ? 'advanced'
+            : 'standard',
+      pacingAdjustment:
+        context.expertise.preferredPace === 'quick'
+          ? 1.5
+          : context.expertise.preferredPace === 'detailed'
+            ? 0.7
+            : 1.0,
       interactionFrequency: context.expertise.overallLevel === 'novice' ? 'high' : 'medium',
-      feedbackVerbosity: context.expertise.overallLevel === 'expert' ? 'minimal' : 'standard'
+      feedbackVerbosity: context.expertise.overallLevel === 'expert' ? 'minimal' : 'standard',
     }
   }
 
@@ -1353,7 +1369,7 @@ export class InteractiveTutorialEngine {
       type: eventType,
       data,
       sessionId: session.id,
-      userId: session.userId
+      userId: session.userId,
     }
 
     session.analytics.events.push(event)
@@ -1361,13 +1377,16 @@ export class InteractiveTutorialEngine {
     this.logger.debug('Analytics event tracked', {
       sessionId: session.id,
       eventType,
-      data
+      data,
     })
   }
 
-  private findInteraction(tutorial: InteractiveTutorial, interactionId: string): Interaction | null {
+  private findInteraction(
+    tutorial: InteractiveTutorial,
+    interactionId: string
+  ): Interaction | null {
     for (const section of tutorial.structure.sections) {
-      const interaction = section.interactions.find(i => i.id === interactionId)
+      const interaction = section.interactions.find((i) => i.id === interactionId)
       if (interaction) return interaction
     }
     return null
@@ -1386,19 +1405,19 @@ export class InteractiveTutorialEngine {
       feedback: '',
       explanation: '',
       suggestions: [],
-      nextSteps: []
+      nextSteps: [],
     }
 
     // Type-specific evaluation
     switch (interaction.type) {
       case 'question':
         result.correct = this.evaluateQuestionResponse(interaction, response)
-        result.score = result.correct ? (interaction.scoring?.points || 1) : 0
+        result.score = result.correct ? interaction.scoring?.points || 1 : 0
         break
 
       case 'task':
         result.passed = await this.evaluateTaskResponse(interaction, response)
-        result.score = result.passed ? (interaction.scoring?.points || 1) : 0
+        result.score = result.passed ? interaction.scoring?.points || 1 : 0
         break
 
       // Add more interaction type evaluations
@@ -1426,12 +1445,17 @@ export class InteractiveTutorialEngine {
     session: TutorialSession
   ): string {
     const feedbackType = result.correct || result.passed ? 'positive' : 'negative'
-    const feedbackConfig = interaction.feedback[feedbackType as keyof InteractionFeedback] as FeedbackMessage
+    const feedbackConfig = interaction.feedback[
+      feedbackType as keyof InteractionFeedback
+    ] as FeedbackMessage
 
     return feedbackConfig.message
   }
 
-  private findSectionContent(tutorial: InteractiveTutorial, contentId: string): SectionContent | null {
+  private findSectionContent(
+    tutorial: InteractiveTutorial,
+    contentId: string
+  ): SectionContent | null {
     for (const section of tutorial.structure.sections) {
       if (section.id === contentId) {
         return section.content
@@ -1440,7 +1464,10 @@ export class InteractiveTutorialEngine {
     return null
   }
 
-  private async personalizeContent(content: SectionContent, session: TutorialSession): Promise<SectionContent> {
+  private async personalizeContent(
+    content: SectionContent,
+    session: TutorialSession
+  ): Promise<SectionContent> {
     // Apply personalization based on user profile and preferences
     const personalizedContent = { ...content }
 
@@ -1470,7 +1497,10 @@ export class InteractiveTutorialEngine {
     return null
   }
 
-  private matchesPersonalizationCondition(condition: PersonalizationCondition, profile: UserProfile): boolean {
+  private matchesPersonalizationCondition(
+    condition: PersonalizationCondition,
+    profile: UserProfile
+  ): boolean {
     // Simplified condition matching
     return false // Placeholder
   }
@@ -1573,31 +1603,31 @@ export function createBasicTutorial(
         description: section.description || '',
         type: section.type || 'hands-on',
         content: section.content || {
-          text: { markdown: '', interactive: false, highlightableTerms: [], glossaryTerms: [] }
+          text: { markdown: '', interactive: false, highlightableTerms: [], glossaryTerms: [] },
         },
         interactions: section.interactions || [],
         reinforcement: section.reinforcement || [],
         navigation: section.navigation || {
           allowSkip: true,
           allowBack: true,
-          requireCompletion: false
+          requireCompletion: false,
         },
         estimatedTime: section.estimatedTime || 5,
         pacing: section.pacing || 'self-paced',
         completionCriteria: section.completionCriteria || {
           type: 'automatic',
-          requirements: []
-        }
+          requirements: [],
+        },
       })),
       navigation: {
         structure: 'linear',
         userControl: 'guided',
         breadcrumbs: true,
         sectionMap: true,
-        progressIndicator: true
+        progressIndicator: true,
       },
       checkpoints: [],
-      assessments: []
+      assessments: [],
     },
     objectives: [],
     prerequisites: [],
@@ -1611,7 +1641,7 @@ export function createBasicTutorial(
         skipAhead: true,
         repeatSections: true,
         bookmarks: true,
-        notes: true
+        notes: true,
       },
       accessibility: {
         screenReader: true,
@@ -1620,9 +1650,9 @@ export function createBasicTutorial(
         fontSizeControl: true,
         audioAlternatives: false,
         closedCaptions: false,
-        languageOptions: ['en']
+        languageOptions: ['en'],
       },
-      multimodal: false
+      multimodal: false,
     },
     progressTracking: {
       granularity: 'section',
@@ -1630,11 +1660,21 @@ export function createBasicTutorial(
       analytics: {
         trackingEnabled: true,
         metricsCollected: [
-          { name: 'completion_time', description: 'Time to complete', type: 'duration', collection: 'automatic' },
-          { name: 'interaction_success', description: 'Interaction success rate', type: 'counter', collection: 'automatic' }
+          {
+            name: 'completion_time',
+            description: 'Time to complete',
+            type: 'duration',
+            collection: 'automatic',
+          },
+          {
+            name: 'interaction_success',
+            description: 'Interaction success rate',
+            type: 'counter',
+            collection: 'automatic',
+          },
         ],
         privacyCompliant: true,
-        anonymized: true
+        anonymized: true,
       },
       badges: [],
       certificates: {
@@ -1642,9 +1682,9 @@ export function createBasicTutorial(
         requirements: [],
         template: '',
         verification: {
-          method: 'digital-signature'
-        }
-      }
+          method: 'digital-signature',
+        },
+      },
     },
     personalization: {
       adaptiveContent: true,
@@ -1654,14 +1694,14 @@ export function createBasicTutorial(
         byExperience: true,
         byRole: false,
         byGoals: false,
-        byPreferences: true
+        byPreferences: true,
       },
       recommendations: {
         nextTutorials: true,
         relatedContent: true,
         practiceExercises: false,
-        realWorldApplications: true
-      }
+        realWorldApplications: true,
+      },
     },
     metadata: {
       author: 'System Generated',
@@ -1675,7 +1715,7 @@ export function createBasicTutorial(
       learningOutcomes: [],
       engagementMetrics: [],
       updateHistory: [],
-      knownIssues: []
-    }
+      knownIssues: [],
+    },
   }
 }

@@ -51,7 +51,7 @@ export interface GuidelineContent {
     primary: string
     scenarios: ScenarioDefinition[]
     conditions: ContextCondition[]
-    antipatterns: string[]  // When NOT to use
+    antipatterns: string[] // When NOT to use
   }
 
   // How to use guidance
@@ -131,17 +131,17 @@ export interface GuidelineMetadata {
 
   // Quality metrics
   quality: {
-    completeness: number    // 0-1 score
-    accuracy: number       // 0-1 score
-    clarity: number        // 0-1 score
-    usefulness: number     // 0-1 score
+    completeness: number // 0-1 score
+    accuracy: number // 0-1 score
+    clarity: number // 0-1 score
+    usefulness: number // 0-1 score
   }
 
   // Relationships
   relationships: {
-    dependsOn: string[]     // Other guideline IDs
-    supersedes: string[]    // Older guideline versions
-    relatedTo: string[]     // Related guidelines
+    dependsOn: string[] // Other guideline IDs
+    supersedes: string[] // Older guideline versions
+    relatedTo: string[] // Related guidelines
     conflictsWith: string[] // Potentially conflicting guidelines
   }
 
@@ -189,7 +189,7 @@ export interface ScenarioDefinition {
 
 export interface ContextCondition {
   description: string
-  condition: string  // Natural language or programmatic condition
+  condition: string // Natural language or programmatic condition
   examples: string[]
 }
 
@@ -253,7 +253,7 @@ export interface BestPractice {
   importance: 'low' | 'medium' | 'high' | 'critical'
   implementation: string[]
   benefits: string[]
-  evidence?: string  // Link to documentation or studies
+  evidence?: string // Link to documentation or studies
 }
 
 export interface CommonMistake {
@@ -318,7 +318,7 @@ export interface ConversationTurn {
 export interface ConversationVariation {
   title: string
   description: string
-  modifiedTurns: number[]  // Indices of turns that change
+  modifiedTurns: number[] // Indices of turns that change
   newConversation: ConversationTurn[]
 }
 
@@ -487,17 +487,18 @@ export class GuidelineTemplate {
       applicableContexts: validated.applicableContexts || [],
       content: this.getDefaultContent(validated.content),
       adaptations: this.getDefaultAdaptations(validated.adaptations),
-      metadata: this.getDefaultMetadata(validated.metadata)
+      metadata: this.getDefaultMetadata(validated.metadata),
     }
   }
 
   private getDefaultContent(providedContent?: Partial<GuidelineContent>): GuidelineContent {
     return {
       whenToUse: {
-        primary: providedContent?.whenToUse?.primary || 'When you need to use this tool effectively',
+        primary:
+          providedContent?.whenToUse?.primary || 'When you need to use this tool effectively',
         scenarios: providedContent?.whenToUse?.scenarios || [],
         conditions: providedContent?.whenToUse?.conditions || [],
-        antipatterns: providedContent?.whenToUse?.antipatterns || []
+        antipatterns: providedContent?.whenToUse?.antipatterns || [],
       },
       howToUse: {
         quickStart: providedContent?.howToUse?.quickStart || {
@@ -505,7 +506,7 @@ export class GuidelineTemplate {
           essentialSteps: [],
           minimumRequiredFields: [],
           estimatedTime: '5 minutes',
-          successCriteria: []
+          successCriteria: [],
         },
         stepByStep: providedContent?.howToUse?.stepByStep || {
           title: 'Step-by-step guide',
@@ -513,74 +514,76 @@ export class GuidelineTemplate {
           prerequisites: [],
           steps: [],
           verification: [],
-          troubleshooting: []
+          troubleshooting: [],
         },
         parameterGuidance: providedContent?.howToUse?.parameterGuidance || {},
         bestPractices: providedContent?.howToUse?.bestPractices || [],
-        commonMistakes: providedContent?.howToUse?.commonMistakes || []
+        commonMistakes: providedContent?.howToUse?.commonMistakes || [],
       },
       examples: {
         basic: providedContent?.examples?.basic || [],
         advanced: providedContent?.examples?.advanced || [],
         realWorld: providedContent?.examples?.realWorld || [],
-        conversational: providedContent?.examples?.conversational || []
+        conversational: providedContent?.examples?.conversational || [],
       },
       troubleshooting: {
         commonIssues: providedContent?.troubleshooting?.commonIssues || [],
         errorCodes: providedContent?.troubleshooting?.errorCodes || {},
         diagnostics: providedContent?.troubleshooting?.diagnostics || [],
-        recovery: providedContent?.troubleshooting?.recovery || []
+        recovery: providedContent?.troubleshooting?.recovery || [],
       },
       relatedResources: {
         alternativeTools: providedContent?.relatedResources?.alternativeTools || [],
         complementaryTools: providedContent?.relatedResources?.complementaryTools || [],
         prerequisites: providedContent?.relatedResources?.prerequisites || [],
-        followUpActions: providedContent?.relatedResources?.followUpActions || []
-      }
+        followUpActions: providedContent?.relatedResources?.followUpActions || [],
+      },
     }
   }
 
-  private getDefaultAdaptations(providedAdaptations?: Partial<GuidelineAdaptations>): GuidelineAdaptations {
+  private getDefaultAdaptations(
+    providedAdaptations?: Partial<GuidelineAdaptations>
+  ): GuidelineAdaptations {
     const defaultVariation: ContentVariation = {
       emphasisPoints: [],
       additionalContent: [],
       omittedContent: [],
       modifiedExamples: [],
-      customInstructions: []
+      customInstructions: [],
     }
 
     return {
       experienceLevel: {
         beginner: providedAdaptations?.experienceLevel?.beginner || {
           ...defaultVariation,
-          emphasisPoints: ['Step-by-step guidance', 'Basic concepts', 'Safety considerations']
+          emphasisPoints: ['Step-by-step guidance', 'Basic concepts', 'Safety considerations'],
         },
         intermediate: providedAdaptations?.experienceLevel?.intermediate || {
           ...defaultVariation,
-          emphasisPoints: ['Best practices', 'Efficiency tips', 'Common patterns']
+          emphasisPoints: ['Best practices', 'Efficiency tips', 'Common patterns'],
         },
         advanced: providedAdaptations?.experienceLevel?.advanced || {
           ...defaultVariation,
-          emphasisPoints: ['Advanced techniques', 'Optimization', 'Edge cases']
-        }
+          emphasisPoints: ['Advanced techniques', 'Optimization', 'Edge cases'],
+        },
       },
       userRole: providedAdaptations?.userRole || {},
       contextual: {
         urgent: providedAdaptations?.contextual?.urgent || {
           ...defaultVariation,
-          emphasisPoints: ['Quick solutions', 'Time-critical steps', 'Risk mitigation']
+          emphasisPoints: ['Quick solutions', 'Time-critical steps', 'Risk mitigation'],
         },
         collaborative: providedAdaptations?.contextual?.collaborative || {
           ...defaultVariation,
-          emphasisPoints: ['Team coordination', 'Permission considerations', 'Communication']
+          emphasisPoints: ['Team coordination', 'Permission considerations', 'Communication'],
         },
         automated: providedAdaptations?.contextual?.automated || {
           ...defaultVariation,
-          emphasisPoints: ['Automation setup', 'Error handling', 'Monitoring']
-        }
+          emphasisPoints: ['Automation setup', 'Error handling', 'Monitoring'],
+        },
       },
       domainSpecific: providedAdaptations?.domainSpecific || {},
-      localization: providedAdaptations?.localization || {}
+      localization: providedAdaptations?.localization || {},
     }
   }
 
@@ -595,23 +598,23 @@ export class GuidelineTemplate {
         helpfulVotes: 0,
         unhelpfulVotes: 0,
         feedbackCount: 0,
-        lastAccessed: new Date()
+        lastAccessed: new Date(),
       },
       quality: {
         completeness: 0.7,
         accuracy: 0.8,
         clarity: 0.7,
-        usefulness: 0.7
+        usefulness: 0.7,
       },
       relationships: {
         dependsOn: [],
         supersedes: [],
         relatedTo: [],
-        conflictsWith: []
+        conflictsWith: [],
       },
       lifecycle: {
-        status: 'draft'
-      }
+        status: 'draft',
+      },
     }
   }
 }
@@ -632,18 +635,26 @@ export const STANDARD_TEMPLATES = {
       description: z.string().optional(),
       category: z.enum(['basic-usage']).optional(),
       complexity: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-      content: z.object({
-        whenToUse: z.object({
-          primary: z.string(),
-          scenarios: z.array(z.any()).optional()
-        }).optional(),
-        howToUse: z.object({
-          quickStart: z.object({
-            summary: z.string(),
-            essentialSteps: z.array(z.string())
-          }).optional()
-        }).optional()
-      }).optional()
+      content: z
+        .object({
+          whenToUse: z
+            .object({
+              primary: z.string(),
+              scenarios: z.array(z.any()).optional(),
+            })
+            .optional(),
+          howToUse: z
+            .object({
+              quickStart: z
+                .object({
+                  summary: z.string(),
+                  essentialSteps: z.array(z.string()),
+                })
+                .optional(),
+            })
+            .optional(),
+        })
+        .optional(),
     })
   ),
 
@@ -657,11 +668,15 @@ export const STANDARD_TEMPLATES = {
       title: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['setup', 'configuration']).optional(),
-      content: z.object({
-        relatedResources: z.object({
-          prerequisites: z.array(z.any()).optional()
-        }).optional()
-      }).optional()
+      content: z
+        .object({
+          relatedResources: z
+            .object({
+              prerequisites: z.array(z.any()).optional(),
+            })
+            .optional(),
+        })
+        .optional(),
     })
   ),
 
@@ -675,7 +690,7 @@ export const STANDARD_TEMPLATES = {
       title: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['advanced-usage', 'optimization']).optional(),
-      complexity: z.enum(['intermediate', 'advanced']).default('advanced')
+      complexity: z.enum(['intermediate', 'advanced']).default('advanced'),
     })
   ),
 
@@ -689,12 +704,16 @@ export const STANDARD_TEMPLATES = {
       title: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['troubleshooting']).optional(),
-      content: z.object({
-        troubleshooting: z.object({
-          commonIssues: z.array(z.any()).optional(),
-          errorCodes: z.record(z.any()).optional()
-        }).optional()
-      }).optional()
+      content: z
+        .object({
+          troubleshooting: z
+            .object({
+              commonIssues: z.array(z.any()).optional(),
+              errorCodes: z.record(z.any()).optional(),
+            })
+            .optional(),
+        })
+        .optional(),
     })
   ),
 
@@ -708,13 +727,17 @@ export const STANDARD_TEMPLATES = {
       title: z.string().optional(),
       description: z.string().optional(),
       category: z.enum(['integration']).optional(),
-      content: z.object({
-        relatedResources: z.object({
-          complementaryTools: z.array(z.any()).optional()
-        }).optional()
-      }).optional()
+      content: z
+        .object({
+          relatedResources: z
+            .object({
+              complementaryTools: z.array(z.any()).optional(),
+            })
+            .optional(),
+        })
+        .optional(),
     })
-  )
+  ),
 }
 
 // =============================================================================
@@ -738,7 +761,7 @@ export class GuidelineTemplateRegistry {
     this.logger.info(`Registered guideline template: ${template.id}`, {
       templateId: template.id,
       name: template.name,
-      categories: template.applicableCategories
+      categories: template.applicableCategories,
     })
   }
 
@@ -760,13 +783,13 @@ export class GuidelineTemplateRegistry {
    * Find templates by category
    */
   getTemplatesByCategory(category: GuidelineCategory): GuidelineTemplate[] {
-    return Array.from(this.templates.values()).filter(template =>
+    return Array.from(this.templates.values()).filter((template) =>
       template.applicableCategories.includes(category)
     )
   }
 
   private registerStandardTemplates(): void {
-    Object.values(STANDARD_TEMPLATES).forEach(template => {
+    Object.values(STANDARD_TEMPLATES).forEach((template) => {
       this.registerTemplate(template)
     })
   }

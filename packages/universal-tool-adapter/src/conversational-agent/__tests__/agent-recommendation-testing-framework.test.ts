@@ -16,29 +16,17 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { createServer } from 'http'
+import { beforeEach, describe, expect, test } from '@jest/globals'
 import { Server as SocketIOServer } from 'socket.io'
-import { io as SocketIOClient, Socket as ClientSocket } from 'socket.io-client'
-import { ConversationalContextAnalyzer } from '../context-analyzer'
+import { io as SocketIOClient } from 'socket.io-client'
+import type { ToolRecommendationRequest, ToolRecommendationResponse } from '../agent-tool-api'
 import { AgentToolAPI } from '../agent-tool-api'
-import { WorkflowRecommendationEngine } from '../workflow-recommendation-engine'
+import type { ConversationalContext } from '../context-analyzer'
+import { ConversationalContextAnalyzer } from '../context-analyzer'
 import { RealtimeRecommendationService } from '../realtime-recommendation-service'
-import type {
-  ConversationalContext,
-  AnalyzedMessage,
-  UserIntent,
-  ConversationFlow
-} from '../context-analyzer'
-import type {
-  ToolRecommendationRequest,
-  ToolRecommendationResponse,
-  AgentToolRecommendation
-} from '../agent-tool-api'
-import type {
-  WorkflowRecommendationRequest,
-  WorkflowRecommendationResponse
-} from '../workflow-recommendation-engine'
+import type { WorkflowRecommendationRequest } from '../workflow-recommendation-engine'
+import { WorkflowRecommendationEngine } from '../workflow-recommendation-engine'
 
 // =============================================================================
 // Test Configuration and Setup
@@ -145,10 +133,10 @@ class AgentRecommendationTestingFramework {
         realtimeResponseMaxTime: 1000,
         minAccuracyScore: 0.8,
         minConfidenceScore: 0.7,
-        maxErrorRate: 0.05
+        maxErrorRate: 0.05,
       },
       testDatasets: this.createDefaultTestDatasets(),
-      ...config
+      ...config,
     }
   }
 
@@ -167,7 +155,7 @@ class AgentRecommendationTestingFramework {
       testResults: [],
       performanceResults: [],
       overallScore: 0,
-      recommendations: []
+      recommendations: [],
     }
 
     try {
@@ -201,7 +189,7 @@ class AgentRecommendationTestingFramework {
 
       // Calculate final metrics
       results.totalTests = results.testResults.length
-      results.passedTests = results.testResults.filter(r => r.passed).length
+      results.passedTests = results.testResults.filter((r) => r.passed).length
       results.failedTests = results.totalTests - results.passedTests
       results.endTime = new Date()
       results.overallScore = this.calculateOverallScore(results)
@@ -211,7 +199,6 @@ class AgentRecommendationTestingFramework {
       this.generateTestReport(results)
 
       return results
-
     } catch (error) {
       console.error('❌ Test suite execution failed:', error)
       throw error
@@ -262,9 +249,8 @@ class AgentRecommendationTestingFramework {
         score: validationResults.score,
         executionTime: analysisTime,
         details: validationResults.details,
-        error: validationResults.error
+        error: validationResults.error,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -274,48 +260,76 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
 
-  private validateContextAnalysis(context: ConversationalContext, scenario: TestScenario): ValidationResult {
+  private validateContextAnalysis(
+    context: ConversationalContext,
+    scenario: TestScenario
+  ): ValidationResult {
     const validations = []
     let score = 0
 
     // Validate intent recognition
-    const intentMatch = scenario.expectedIntents.some(intent =>
-      context.extractedIntent.primaryCategory.includes(intent) ||
-      context.extractedIntent.secondaryIntents.includes(intent)
+    const intentMatch = scenario.expectedIntents.some(
+      (intent) =>
+        context.extractedIntent.primaryCategory.includes(intent) ||
+        context.extractedIntent.secondaryIntents.includes(intent)
     )
-    validations.push({ metric: 'intent_recognition', passed: intentMatch, score: intentMatch ? 1 : 0 })
+    validations.push({
+      metric: 'intent_recognition',
+      passed: intentMatch,
+      score: intentMatch ? 1 : 0,
+    })
     score += intentMatch ? 0.3 : 0
 
     // Validate confidence level
-    const confidenceValid = context.extractedIntent.confidence >= this.configuration.performanceThresholds.minConfidenceScore
-    validations.push({ metric: 'confidence_level', passed: confidenceValid, score: context.extractedIntent.confidence })
+    const confidenceValid =
+      context.extractedIntent.confidence >=
+      this.configuration.performanceThresholds.minConfidenceScore
+    validations.push({
+      metric: 'confidence_level',
+      passed: confidenceValid,
+      score: context.extractedIntent.confidence,
+    })
     score += confidenceValid ? 0.2 : 0
 
     // Validate conversation flow analysis
-    const flowAnalysisValid = context.conversationFlow.currentPhase !== undefined && context.conversationFlow.flowDirection !== undefined
-    validations.push({ metric: 'flow_analysis', passed: flowAnalysisValid, score: flowAnalysisValid ? 1 : 0 })
+    const flowAnalysisValid =
+      context.conversationFlow.currentPhase !== undefined &&
+      context.conversationFlow.flowDirection !== undefined
+    validations.push({
+      metric: 'flow_analysis',
+      passed: flowAnalysisValid,
+      score: flowAnalysisValid ? 1 : 0,
+    })
     score += flowAnalysisValid ? 0.2 : 0
 
     // Validate contextual cues
     const cuesValid = context.contextualCues.length > 0
-    validations.push({ metric: 'contextual_cues', passed: cuesValid, score: context.contextualCues.length / 10 })
+    validations.push({
+      metric: 'contextual_cues',
+      passed: cuesValid,
+      score: context.contextualCues.length / 10,
+    })
     score += cuesValid ? 0.15 : 0
 
     // Validate recommendation timing
     const timingValid = context.recommendationTiming.timingScore > 0.5
-    validations.push({ metric: 'recommendation_timing', passed: timingValid, score: context.recommendationTiming.timingScore })
+    validations.push({
+      metric: 'recommendation_timing',
+      passed: timingValid,
+      score: context.recommendationTiming.timingScore,
+    })
     score += timingValid ? 0.15 : 0
 
     return {
       passed: score >= this.configuration.performanceThresholds.minAccuracyScore,
       score: Math.min(score, 1),
       details: { validations, context_summary: this.summarizeContext(context) },
-      error: undefined
+      error: undefined,
     }
   }
 
@@ -349,17 +363,17 @@ class AgentRecommendationTestingFramework {
         sessionId: this.generateSessionId(),
         timestamp: new Date(),
         userMessage: scenario.userMessage,
-        conversationHistory: scenario.conversationHistory.map(msg => ({
+        conversationHistory: scenario.conversationHistory.map((msg) => ({
           messageId: this.generateMessageId(),
           content: msg,
           sender: 'user' as const,
-          timestamp: new Date()
+          timestamp: new Date(),
         })),
         currentContext: this.convertToAgentContext(scenario.userContext),
         maxRecommendations: 5,
         includeAlternatives: true,
         explainReasonings: true,
-        provideLearningInsights: true
+        provideLearningInsights: true,
       }
 
       // Get recommendations
@@ -377,9 +391,8 @@ class AgentRecommendationTestingFramework {
         score: validationResults.score,
         executionTime: generationTime,
         details: validationResults.details,
-        error: validationResults.error
+        error: validationResults.error,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -389,43 +402,69 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
 
-  private validateRecommendationQuality(response: ToolRecommendationResponse, scenario: TestScenario): ValidationResult {
+  private validateRecommendationQuality(
+    response: ToolRecommendationResponse,
+    scenario: TestScenario
+  ): ValidationResult {
     const validations = []
     let score = 0
 
     // Validate response time
-    const timeValid = response.processingTimeMs <= this.configuration.performanceThresholds.recommendationGenerationMaxTime
+    const timeValid =
+      response.processingTimeMs <=
+      this.configuration.performanceThresholds.recommendationGenerationMaxTime
     validations.push({ metric: 'response_time', passed: timeValid, score: timeValid ? 1 : 0 })
     score += timeValid ? 0.2 : 0
 
     // Validate recommendation count
     const countValid = response.recommendations.length > 0 && response.recommendations.length <= 5
-    validations.push({ metric: 'recommendation_count', passed: countValid, score: countValid ? 1 : 0 })
+    validations.push({
+      metric: 'recommendation_count',
+      passed: countValid,
+      score: countValid ? 1 : 0,
+    })
     score += countValid ? 0.15 : 0
 
     // Validate confidence scores
-    const avgConfidence = response.recommendations.reduce((sum, rec) => sum + rec.confidence, 0) / response.recommendations.length
-    const confidenceValid = avgConfidence >= this.configuration.performanceThresholds.minConfidenceScore
-    validations.push({ metric: 'average_confidence', passed: confidenceValid, score: avgConfidence })
+    const avgConfidence =
+      response.recommendations.reduce((sum, rec) => sum + rec.confidence, 0) /
+      response.recommendations.length
+    const confidenceValid =
+      avgConfidence >= this.configuration.performanceThresholds.minConfidenceScore
+    validations.push({
+      metric: 'average_confidence',
+      passed: confidenceValid,
+      score: avgConfidence,
+    })
     score += confidenceValid ? 0.2 : 0
 
     // Validate tool category relevance
-    const categoryMatch = response.recommendations.some(rec =>
-      scenario.expectedToolCategories.some(cat => rec.tool.name.toLowerCase().includes(cat.toLowerCase()))
+    const categoryMatch = response.recommendations.some((rec) =>
+      scenario.expectedToolCategories.some((cat) =>
+        rec.tool.name.toLowerCase().includes(cat.toLowerCase())
+      )
     )
-    validations.push({ metric: 'category_relevance', passed: categoryMatch, score: categoryMatch ? 1 : 0 })
+    validations.push({
+      metric: 'category_relevance',
+      passed: categoryMatch,
+      score: categoryMatch ? 1 : 0,
+    })
     score += categoryMatch ? 0.25 : 0
 
     // Validate explanations quality
-    const explanationsValid = response.recommendations.every(rec =>
-      rec.contextualExplanation && rec.contextualExplanation.length > 10
+    const explanationsValid = response.recommendations.every(
+      (rec) => rec.contextualExplanation && rec.contextualExplanation.length > 10
     )
-    validations.push({ metric: 'explanation_quality', passed: explanationsValid, score: explanationsValid ? 1 : 0 })
+    validations.push({
+      metric: 'explanation_quality',
+      passed: explanationsValid,
+      score: explanationsValid ? 1 : 0,
+    })
     score += explanationsValid ? 0.2 : 0
 
     return {
@@ -436,10 +475,10 @@ class AgentRecommendationTestingFramework {
         response_summary: {
           recommendationCount: response.recommendations.length,
           averageConfidence: avgConfidence,
-          processingTime: response.processingTimeMs
-        }
+          processingTime: response.processingTimeMs,
+        },
       },
-      error: undefined
+      error: undefined,
     }
   }
 
@@ -453,8 +492,8 @@ class AgentRecommendationTestingFramework {
 
     // Test scenarios with workflow context
     const workflowScenarios = this.configuration.testDatasets
-      .flatMap(dataset => dataset.scenarios)
-      .filter(scenario => scenario.workflowContext)
+      .flatMap((dataset) => dataset.scenarios)
+      .filter((scenario) => scenario.workflowContext)
 
     for (const scenario of workflowScenarios) {
       const result = await this.testWorkflowIntegration(scenario)
@@ -485,12 +524,12 @@ class AgentRecommendationTestingFramework {
           outputs: [],
           dependencies: scenario.workflowContext.completedStages,
           estimatedDuration: 10,
-          complexity: 'moderate'
+          complexity: 'moderate',
         },
         userIntent: scenario.userMessage,
         workflowType: 'data_processing',
         workflowState: this.createMockWorkflowState(scenario.workflowContext),
-        availableTools: scenario.workflowContext.availableTools.map(toolId => ({
+        availableTools: scenario.workflowContext.availableTools.map((toolId) => ({
           toolId,
           category: 'general',
           capabilities: [],
@@ -498,7 +537,7 @@ class AgentRecommendationTestingFramework {
           dataTypeSupport: [],
           prerequisites: [],
           estimatedExecutionTime: 5,
-          qualityImpact: { qualityChange: 0.1, qualityMetrics: {}, riskFactors: [] }
+          qualityImpact: { qualityChange: 0.1, qualityMetrics: {}, riskFactors: [] },
         })),
         userId: scenario.userContext.userId,
         userSkillLevel: scenario.userContext.skillLevel,
@@ -507,11 +546,11 @@ class AgentRecommendationTestingFramework {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'moderate'
+          feedbackFrequency: 'moderate',
         },
         includeSequences: true,
         optimizeForSpeed: false,
-        considerAlternatives: true
+        considerAlternatives: true,
       }
 
       // Get workflow recommendations
@@ -529,9 +568,8 @@ class AgentRecommendationTestingFramework {
         score: validationResults.score,
         executionTime: processingTime,
         details: validationResults.details,
-        error: validationResults.error
+        error: validationResults.error,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -541,7 +579,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -565,12 +603,11 @@ class AgentRecommendationTestingFramework {
         this.testWebSocketConnection(),
         this.testRealtimeRecommendations(),
         this.testConcurrentUsers(),
-        this.testConnectionFailover()
+        this.testConnectionFailover(),
       ]
 
       const scenarioResults = await Promise.all(realtimeScenarios)
       results.push(...scenarioResults)
-
     } finally {
       await cleanup()
     }
@@ -578,7 +615,11 @@ class AgentRecommendationTestingFramework {
     return results
   }
 
-  private async setupTestServer(): Promise<{ server: any, io: SocketIOServer, cleanup: () => Promise<void> }> {
+  private async setupTestServer(): Promise<{
+    server: any
+    io: SocketIOServer
+    cleanup: () => Promise<void>
+  }> {
     const httpServer = createServer()
     const io = new SocketIOServer(httpServer)
 
@@ -599,7 +640,7 @@ class AgentRecommendationTestingFramework {
 
     try {
       const client = SocketIOClient('http://localhost:3001/recommendations', {
-        auth: { userId: 'test-user', workspaceId: 'test-workspace' }
+        auth: { userId: 'test-user', workspaceId: 'test-workspace' },
       })
 
       await new Promise<void>((resolve, reject) => {
@@ -618,9 +659,8 @@ class AgentRecommendationTestingFramework {
         score: 1,
         executionTime: Date.now() - startTime,
         details: { connectionEstablished: true },
-        error: undefined
+        error: undefined,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -630,7 +670,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -650,9 +690,8 @@ class AgentRecommendationTestingFramework {
         score: 0.8,
         executionTime: Date.now() - startTime,
         details: { recommendationsReceived: 3, averageLatency: 250 },
-        error: undefined
+        error: undefined,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -662,7 +701,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -674,13 +713,15 @@ class AgentRecommendationTestingFramework {
       // Test concurrent user handling
       const concurrentUsers = 10
       const results = await Promise.all(
-        Array(concurrentUsers).fill(0).map(async (_, i) => {
-          // Simulate concurrent user connections and interactions
-          return { userId: `user-${i}`, success: true }
-        })
+        Array(concurrentUsers)
+          .fill(0)
+          .map(async (_, i) => {
+            // Simulate concurrent user connections and interactions
+            return { userId: `user-${i}`, success: true }
+          })
       )
 
-      const successfulConnections = results.filter(r => r.success).length
+      const successfulConnections = results.filter((r) => r.success).length
 
       return {
         testId: this.generateTestId(),
@@ -692,11 +733,10 @@ class AgentRecommendationTestingFramework {
         details: {
           totalUsers: concurrentUsers,
           successfulConnections,
-          failureRate: (concurrentUsers - successfulConnections) / concurrentUsers
+          failureRate: (concurrentUsers - successfulConnections) / concurrentUsers,
         },
-        error: undefined
+        error: undefined,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -706,7 +746,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -724,9 +764,8 @@ class AgentRecommendationTestingFramework {
         score: 0.9,
         executionTime: Date.now() - startTime,
         details: { failoverTime: 150, recoveryTime: 300 },
-        error: undefined
+        error: undefined,
       }
-
     } catch (error) {
       return {
         testId: this.generateTestId(),
@@ -736,7 +775,7 @@ class AgentRecommendationTestingFramework {
         score: 0,
         executionTime: Date.now() - startTime,
         details: {},
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -753,7 +792,7 @@ class AgentRecommendationTestingFramework {
     const loadScenarios = [
       { name: 'low_load', concurrentRequests: 10, duration: 30000 },
       { name: 'medium_load', concurrentRequests: 50, duration: 60000 },
-      { name: 'high_load', concurrentRequests: 100, duration: 120000 }
+      { name: 'high_load', concurrentRequests: 100, duration: 120000 },
     ]
 
     for (const scenario of loadScenarios) {
@@ -764,7 +803,11 @@ class AgentRecommendationTestingFramework {
     return results
   }
 
-  private async runLoadScenario(scenario: { name: string, concurrentRequests: number, duration: number }): Promise<PerformanceMetrics> {
+  private async runLoadScenario(scenario: {
+    name: string
+    concurrentRequests: number
+    duration: number
+  }): Promise<PerformanceMetrics> {
     const startTime = Date.now()
     const requests: Promise<number>[] = []
 
@@ -777,7 +820,8 @@ class AgentRecommendationTestingFramework {
     const responseTimes = await Promise.all(requests)
 
     const totalTime = Date.now() - startTime
-    const averageResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+    const averageResponseTime =
+      responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
     const throughput = scenario.concurrentRequests / (totalTime / 1000)
 
     return {
@@ -790,7 +834,7 @@ class AgentRecommendationTestingFramework {
       throughput,
       errorRate: 0, // Would be calculated from actual errors
       memoryUsage: process.memoryUsage().heapUsed,
-      cpuUsage: 0 // Would be calculated from actual CPU monitoring
+      cpuUsage: 0, // Would be calculated from actual CPU monitoring
     }
   }
 
@@ -807,12 +851,11 @@ class AgentRecommendationTestingFramework {
         userMessage: 'I need help with data processing',
         conversationHistory: [],
         currentContext: this.createMockAgentContext(),
-        maxRecommendations: 3
+        maxRecommendations: 3,
       }
 
       await this.agentToolAPI.requestToolRecommendations(request)
       return Date.now() - startTime
-
     } catch (error) {
       return Date.now() - startTime
     }
@@ -834,7 +877,7 @@ class AgentRecommendationTestingFramework {
             userContext: this.createMockUserContext('user1', 'intermediate'),
             expectedIntents: ['task_execution', 'analysis_reporting'],
             expectedToolCategories: ['data', 'analysis', 'reporting'],
-            expectedConfidence: 0.8
+            expectedConfidence: 0.8,
           },
           {
             scenarioId: 'workflow_creation',
@@ -845,25 +888,28 @@ class AgentRecommendationTestingFramework {
               workflowId: 'workflow-1',
               currentStage: 'planning',
               completedStages: [],
-              availableTools: ['email_reader', 'text_processor', 'classifier']
+              availableTools: ['email_reader', 'text_processor', 'classifier'],
             },
             expectedIntents: ['workflow_creation', 'automation'],
             expectedToolCategories: ['email', 'automation', 'workflow'],
-            expectedConfidence: 0.75
-          }
+            expectedConfidence: 0.75,
+          },
         ],
-        expectedOutcomes: []
-      }
+        expectedOutcomes: [],
+      },
     ]
   }
 
-  private createMockUserContext(userId: string, skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert'): MockUserContext {
+  private createMockUserContext(
+    userId: string,
+    skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  ): MockUserContext {
     return {
       userId,
       workspaceId: 'test-workspace',
       skillLevel,
       preferences: {},
-      recentActions: []
+      recentActions: [],
     }
   }
 
@@ -875,7 +921,7 @@ class AgentRecommendationTestingFramework {
         skillLevel: 'intermediate',
         preferredInteractionStyle: 'conversational',
         learningStyle: 'example_based',
-        toolFamiliarity: {}
+        toolFamiliarity: {},
       },
       recentActions: [],
       preferences: {
@@ -883,8 +929,8 @@ class AgentRecommendationTestingFramework {
         excludedTools: [],
         preferredComplexityLevel: 'moderate',
         feedbackFrequency: 'moderate',
-        learningModeEnabled: true
-      }
+        learningModeEnabled: true,
+      },
     }
   }
 
@@ -901,7 +947,7 @@ class AgentRecommendationTestingFramework {
         consistency: 0.85,
         timeliness: 0.7,
         relevance: 0.8,
-        overall: 0.82
+        overall: 0.82,
       },
       executionHistory: [],
       encounteredIssues: [],
@@ -910,22 +956,22 @@ class AgentRecommendationTestingFramework {
         stageVelocities: {},
         resourceEfficiency: 0.8,
         qualityConsistency: 0.85,
-        errorRate: 0.05
+        errorRate: 0.05,
       },
       resourceAvailability: {
         computeCapacity: 0.8,
         memoryCapacity: 0.7,
         storageCapacity: 0.9,
         networkBandwidth: 0.85,
-        externalApiLimits: {}
+        externalApiLimits: {},
       },
       timeConstraints: {},
       qualityRequirements: {
         minimumQuality: 0.8,
         qualityMetrics: ['accuracy', 'completeness'],
         validationRequired: true,
-        auditTrail: true
-      }
+        auditTrail: true,
+      },
     }
   }
 
@@ -937,10 +983,10 @@ class AgentRecommendationTestingFramework {
         skillLevel: userContext.skillLevel,
         preferredInteractionStyle: 'conversational',
         learningStyle: 'example_based',
-        toolFamiliarity: {}
+        toolFamiliarity: {},
       },
       recentActions: userContext.recentActions,
-      preferences: userContext.preferences
+      preferences: userContext.preferences,
     }
   }
 
@@ -950,7 +996,7 @@ class AgentRecommendationTestingFramework {
       confidence: context.extractedIntent.confidence,
       phase: context.conversationFlow.currentPhase,
       cueCount: context.contextualCues.length,
-      urgency: context.urgencyLevel
+      urgency: context.urgencyLevel,
     }
   }
 
@@ -967,13 +1013,14 @@ class AgentRecommendationTestingFramework {
       recommendations.push('Overall system performance needs improvement')
     }
 
-    const failedTests = results.testResults.filter(r => !r.passed)
+    const failedTests = results.testResults.filter((r) => !r.passed)
     if (failedTests.length > 0) {
       recommendations.push(`${failedTests.length} tests failed - review error details`)
     }
 
-    const slowTests = results.testResults.filter(r =>
-      r.executionTime > this.configuration.performanceThresholds.recommendationGenerationMaxTime
+    const slowTests = results.testResults.filter(
+      (r) =>
+        r.executionTime > this.configuration.performanceThresholds.recommendationGenerationMaxTime
     )
     if (slowTests.length > 0) {
       recommendations.push('Performance optimization needed for slow-running tests')
@@ -984,7 +1031,7 @@ class AgentRecommendationTestingFramework {
 
   private generateTestReport(results: TestSuiteResults): void {
     console.log('\n📊 Agent Tool Recommendation System Test Results')
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
     console.log(`Suite ID: ${results.suiteId}`)
     console.log(`Total Tests: ${results.totalTests}`)
     console.log(`Passed: ${results.passedTests}`)
@@ -994,18 +1041,28 @@ class AgentRecommendationTestingFramework {
 
     if (results.recommendations.length > 0) {
       console.log('\n💡 Recommendations:')
-      results.recommendations.forEach(rec => console.log(`  • ${rec}`))
+      results.recommendations.forEach((rec) => console.log(`  • ${rec}`))
     }
 
     console.log('\n✅ Test suite completed successfully!')
   }
 
   // ID Generators
-  private generateTestId(): string { return `test_${Date.now()}_${Math.random().toString(36).substr(2, 6)}` }
-  private generateConversationId(): string { return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 6)}` }
-  private generateSessionId(): string { return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 6)}` }
-  private generateRequestId(): string { return `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}` }
-  private generateMessageId(): string { return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}` }
+  private generateTestId(): string {
+    return `test_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+  }
+  private generateConversationId(): string {
+    return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+  }
+  private generateSessionId(): string {
+    return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+  }
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+  }
+  private generateMessageId(): string {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
+  }
 }
 
 // =============================================================================
@@ -1067,7 +1124,7 @@ describe('Agent Tool Recommendation System', () => {
     testFramework = new AgentRecommendationTestingFramework({
       enablePerformanceTesting: true,
       enableLoadTesting: false, // Disable for faster CI runs
-      enableIntegrationTesting: true
+      enableIntegrationTesting: true,
     })
   })
 
@@ -1123,7 +1180,7 @@ describe('Agent Tool Recommendation System', () => {
             skillLevel: 'intermediate',
             preferredInteractionStyle: 'conversational',
             learningStyle: 'example_based',
-            toolFamiliarity: {}
+            toolFamiliarity: {},
           },
           recentActions: [],
           preferences: {
@@ -1131,10 +1188,10 @@ describe('Agent Tool Recommendation System', () => {
             excludedTools: [],
             preferredComplexityLevel: 'moderate',
             feedbackFrequency: 'moderate',
-            learningModeEnabled: true
-          }
+            learningModeEnabled: true,
+          },
         },
-        maxRecommendations: 5
+        maxRecommendations: 5,
       }
 
       const response = await api.requestToolRecommendations(request)
@@ -1160,7 +1217,7 @@ describe('Agent Tool Recommendation System', () => {
           outputs: [],
           dependencies: [],
           estimatedDuration: 10,
-          complexity: 'moderate'
+          complexity: 'moderate',
         },
         userIntent: 'I need to process customer data',
         workflowType: 'data_processing',
@@ -1176,7 +1233,7 @@ describe('Agent Tool Recommendation System', () => {
             consistency: 0.85,
             timeliness: 0.7,
             relevance: 0.8,
-            overall: 0.82
+            overall: 0.82,
           },
           executionHistory: [],
           encounteredIssues: [],
@@ -1185,22 +1242,22 @@ describe('Agent Tool Recommendation System', () => {
             stageVelocities: {},
             resourceEfficiency: 0.8,
             qualityConsistency: 0.85,
-            errorRate: 0.05
+            errorRate: 0.05,
           },
           resourceAvailability: {
             computeCapacity: 0.8,
             memoryCapacity: 0.7,
             storageCapacity: 0.9,
             networkBandwidth: 0.85,
-            externalApiLimits: {}
+            externalApiLimits: {},
           },
           timeConstraints: {},
           qualityRequirements: {
             minimumQuality: 0.8,
             qualityMetrics: ['accuracy', 'completeness'],
             validationRequired: true,
-            auditTrail: true
-          }
+            auditTrail: true,
+          },
         },
         availableTools: [],
         userId: 'test-user',
@@ -1210,11 +1267,11 @@ describe('Agent Tool Recommendation System', () => {
           avoidedTools: [],
           qualityVsSpeed: 'balanced',
           parallelizationPreference: true,
-          feedbackFrequency: 'moderate'
+          feedbackFrequency: 'moderate',
         },
         includeSequences: true,
         optimizeForSpeed: false,
-        considerAlternatives: true
+        considerAlternatives: true,
       }
 
       const response = await engine.generateWorkflowRecommendations(request)
@@ -1248,7 +1305,7 @@ describe('Agent Tool Recommendation System', () => {
               skillLevel: 'intermediate',
               preferredInteractionStyle: 'conversational',
               learningStyle: 'example_based',
-              toolFamiliarity: {}
+              toolFamiliarity: {},
             },
             recentActions: [],
             preferences: {
@@ -1256,9 +1313,9 @@ describe('Agent Tool Recommendation System', () => {
               excludedTools: [],
               preferredComplexityLevel: 'moderate',
               feedbackFrequency: 'moderate',
-              learningModeEnabled: true
-            }
-          }
+              learningModeEnabled: true,
+            },
+          },
         }
 
         requests.push(api.requestToolRecommendations(request))
@@ -1269,7 +1326,7 @@ describe('Agent Tool Recommendation System', () => {
       const totalTime = Date.now() - startTime
 
       expect(responses).toHaveLength(concurrentRequests)
-      expect(responses.every(r => r.recommendations !== undefined)).toBe(true)
+      expect(responses.every((r) => r.recommendations !== undefined)).toBe(true)
       expect(totalTime).toBeLessThan(10000) // Should complete within 10 seconds
     }, 15000)
   })

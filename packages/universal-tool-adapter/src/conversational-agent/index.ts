@@ -19,121 +19,111 @@
 // Core System Exports
 // =============================================================================
 
-// Context Analysis System
-export {
-  ConversationalContextAnalyzer,
-  createConversationalContextAnalyzer
-} from './context-analyzer'
-
+// Testing Framework
+export { AgentRecommendationTestingFramework } from './__tests__/agent-recommendation-testing-framework.test'
 export type {
-  ConversationalContext,
-  AnalyzedMessage,
-  UserIntent,
-  ConversationFlow,
-  ContextualCue,
-  ToolUsageContext,
-  WorkflowState,
-  RecommendationTiming,
-  ConversationMomentum,
-  Entity,
-  ToolMention,
-  IntentCategory,
-  ConversationPhase,
-  ConversationInsights
-} from './context-analyzer'
-
+  AgentContext,
+  AgentLearningData,
+  AgentMessage,
+  AgentToolRecommendation,
+  ConversationalPresentation,
+  QuickAction,
+  RecentAction,
+  RecommendationPattern,
+  ToolRecommendationRequest,
+  ToolRecommendationResponse,
+  ToolSelectionEvent,
+  ToolUsageFeedback,
+  UserLearningProfile,
+  UserPreferences,
+  UserProfile,
+  WorkflowContext,
+} from './agent-tool-api'
 // Agent-Tool Interaction API
 export {
   AgentToolAPI,
   createAgentToolAPI,
-  requestToolRecommendations,
+  processUsageFeedback,
   recordToolSelection,
-  processUsageFeedback
+  requestToolRecommendations,
 } from './agent-tool-api'
-
 export type {
-  ToolRecommendationRequest,
-  ToolRecommendationResponse,
-  AgentToolRecommendation,
-  ConversationalPresentation,
-  AgentMessage,
-  AgentContext,
-  UserProfile,
-  WorkflowContext,
-  RecentAction,
-  UserPreferences,
-  ToolSelectionEvent,
-  ToolUsageFeedback,
-  AgentLearningData,
-  RecommendationPattern,
-  UserLearningProfile,
-  QuickAction
-} from './agent-tool-api'
-
-// Workflow-Aware Recommendation Engine
+  AnalyzedMessage,
+  ContextualCue,
+  ConversationalContext,
+  ConversationFlow,
+  ConversationInsights,
+  ConversationMomentum,
+  ConversationPhase,
+  Entity,
+  IntentCategory,
+  RecommendationTiming,
+  ToolMention,
+  ToolUsageContext,
+  UserIntent,
+  WorkflowState,
+} from './context-analyzer'
+// Context Analysis System
 export {
-  WorkflowRecommendationEngine,
-  createWorkflowRecommendationEngine,
-  generateWorkflowRecommendations
-} from './workflow-recommendation-engine'
-
+  ConversationalContextAnalyzer,
+  createConversationalContextAnalyzer,
+} from './context-analyzer'
 export type {
+  CachedRecommendation,
+  ClientToServerEvents,
+  RealtimePreferences,
+  RealtimeRecommendationBundle,
+  RealtimeRecommendationConfig,
+  RealtimeRecommendationEvent,
+  RealtimeSession,
+  RecommendationEventData,
+  RecommendationRequestData,
+  ServerToClientEvents,
+  SessionPerformanceMetrics,
+  SystemStatus,
+  UserFeedback,
+} from './realtime-recommendation-service'
+// Real-time WebSocket Integration
+export {
+  createRealtimeRecommendationService,
+  RealtimeRecommendationService,
+} from './realtime-recommendation-service'
+export type {
+  OptimizationOpportunity,
+  PerformanceBenchmark,
+  QualityAssuranceStep,
+  StageOptimization,
+  ToolSequenceRecommendation,
+  UpcomingStageInfo,
+  WorkflowAnalysis,
+  WorkflowBottleneck,
+  WorkflowPreferences,
   WorkflowRecommendationRequest,
   WorkflowRecommendationResponse,
   WorkflowStage,
   WorkflowState,
   WorkflowTool,
   WorkflowToolRecommendation,
-  ToolSequenceRecommendation,
-  WorkflowAnalysis,
-  StageOptimization,
-  UpcomingStageInfo,
-  WorkflowBottleneck,
   WorkflowType,
-  WorkflowPreferences,
-  OptimizationOpportunity,
-  QualityAssuranceStep,
-  PerformanceBenchmark
 } from './workflow-recommendation-engine'
-
-// Real-time WebSocket Integration
+// Workflow-Aware Recommendation Engine
 export {
-  RealtimeRecommendationService,
-  createRealtimeRecommendationService
-} from './realtime-recommendation-service'
-
-export type {
-  RealtimeRecommendationConfig,
-  RealtimeSession,
-  CachedRecommendation,
-  RealtimePreferences,
-  SessionPerformanceMetrics,
-  RealtimeRecommendationEvent,
-  RecommendationEventData,
-  RealtimeRecommendationBundle,
-  UserFeedback,
-  SystemStatus,
-  ClientToServerEvents,
-  ServerToClientEvents,
-  RecommendationRequestData
-} from './realtime-recommendation-service'
-
-// Testing Framework
-export {
-  AgentRecommendationTestingFramework
-} from './__tests__/agent-recommendation-testing-framework.test'
+  createWorkflowRecommendationEngine,
+  generateWorkflowRecommendations,
+  WorkflowRecommendationEngine,
+} from './workflow-recommendation-engine'
 
 // =============================================================================
 // Integrated Recommendation System
 // =============================================================================
 
-import { ConversationalContextAnalyzer } from './context-analyzer'
-import { AgentToolAPI } from './agent-tool-api'
-import { WorkflowRecommendationEngine } from './workflow-recommendation-engine'
-import { RealtimeRecommendationService } from './realtime-recommendation-service'
 import type { Server as SocketIOServer } from 'socket.io'
-import type { RealtimeRecommendationConfig } from './realtime-recommendation-service'
 import { createLogger } from '../utils/logger'
+import { AgentToolAPI } from './agent-tool-api'
+import { ConversationalContextAnalyzer } from './context-analyzer'
+import type { RealtimeRecommendationConfig } from './realtime-recommendation-service'
+import { RealtimeRecommendationService } from './realtime-recommendation-service'
+import { WorkflowRecommendationEngine } from './workflow-recommendation-engine'
 
 const logger = createLogger('AgentRecommendationSystem')
 
@@ -174,7 +164,6 @@ export class AgentToolRecommendationSystem {
 
       this.initialized = true
       logger.info('Agent Tool Recommendation System fully initialized')
-
     } catch (error) {
       logger.error('Failed to initialize Agent Tool Recommendation System', { error })
       throw new Error(`System initialization failed: ${error.message}`)
@@ -198,9 +187,9 @@ export class AgentToolRecommendationSystem {
         contextAnalyzer: true,
         agentToolAPI: true,
         workflowEngine: true,
-        realtimeService: this.realtimeService !== null
+        realtimeService: this.realtimeService !== null,
       },
-      lastChecked: new Date()
+      lastChecked: new Date(),
     }
   }
 
@@ -215,9 +204,9 @@ export class AgentToolRecommendationSystem {
         contextAnalyzer: true,
         agentToolAPI: true,
         workflowEngine: true,
-        realtimeService: this.realtimeService !== null
+        realtimeService: this.realtimeService !== null,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -229,7 +218,7 @@ export class AgentToolRecommendationSystem {
       contextAnalyzer: this.contextAnalyzer,
       agentToolAPI: this.agentToolAPI,
       workflowEngine: this.workflowEngine,
-      realtimeService: this.realtimeService
+      realtimeService: this.realtimeService,
     }
   }
 
@@ -248,7 +237,6 @@ export class AgentToolRecommendationSystem {
 
       this.initialized = false
       logger.info('Agent Tool Recommendation System shutdown completed')
-
     } catch (error) {
       logger.error('Error during system shutdown', { error })
       throw new Error(`System shutdown failed: ${error.message}`)
@@ -322,7 +310,7 @@ export const DEFAULT_SYSTEM_CONFIG = {
     enableEntityExtraction: true,
     enableSentimentAnalysis: true,
     enableIntentRecognition: true,
-    confidenceThreshold: 0.6
+    confidenceThreshold: 0.6,
   },
 
   // Agent Tool API Configuration
@@ -330,7 +318,7 @@ export const DEFAULT_SYSTEM_CONFIG = {
     maxRecommendations: 5,
     includeExplanations: true,
     enableLearning: true,
-    feedbackEnabled: true
+    feedbackEnabled: true,
   },
 
   // Workflow Engine Configuration
@@ -338,7 +326,7 @@ export const DEFAULT_SYSTEM_CONFIG = {
     enableSequenceRecommendations: true,
     enableOptimization: true,
     enableBottleneckDetection: true,
-    qualityThreshold: 0.7
+    qualityThreshold: 0.7,
   },
 
   // Real-time Service Configuration
@@ -347,8 +335,8 @@ export const DEFAULT_SYSTEM_CONFIG = {
     enableCaching: true,
     cacheTimeout: 600000, // 10 minutes
     enableFallback: true,
-    enablePerformanceMonitoring: true
-  }
+    enablePerformanceMonitoring: true,
+  },
 }
 
 /**
@@ -371,28 +359,26 @@ export function validateSystemConfiguration(config: Partial<SystemConfiguration>
 /**
  * Merge configuration with defaults
  */
-export function mergeWithDefaults(
-  userConfig: Partial<SystemConfiguration>
-): SystemConfiguration {
+export function mergeWithDefaults(userConfig: Partial<SystemConfiguration>): SystemConfiguration {
   return {
     ...DEFAULT_SYSTEM_CONFIG,
     ...userConfig,
     contextAnalysis: {
       ...DEFAULT_SYSTEM_CONFIG.contextAnalysis,
-      ...userConfig.contextAnalysis
+      ...userConfig.contextAnalysis,
     },
     agentAPI: {
       ...DEFAULT_SYSTEM_CONFIG.agentAPI,
-      ...userConfig.agentAPI
+      ...userConfig.agentAPI,
     },
     workflowEngine: {
       ...DEFAULT_SYSTEM_CONFIG.workflowEngine,
-      ...userConfig.workflowEngine
+      ...userConfig.workflowEngine,
     },
     realtime: {
       ...DEFAULT_SYSTEM_CONFIG.realtime,
-      ...userConfig.realtime
-    }
+      ...userConfig.realtime,
+    },
   }
 }
 
@@ -413,7 +399,7 @@ export function getVersionInfo(): VersionInfo {
     buildDate: BUILD_DATE,
     systemName: SYSTEM_NAME,
     nodeVersion: process.version,
-    platform: process.platform
+    platform: process.platform,
   }
 }
 
@@ -470,8 +456,8 @@ export function getDebugInfo(): DebugInfo {
       nodeEnv: process.env.NODE_ENV || 'development',
       nodeVersion: process.version,
       platform: process.platform,
-      arch: process.arch
-    }
+      arch: process.arch,
+    },
   }
 }
 
@@ -504,7 +490,7 @@ export const MODULE_INFO = {
     'Agent-tool interaction API and integration layer',
     'Workflow-aware recommendation engine with sequencing intelligence',
     'Real-time WebSocket integration for conversational tool suggestions',
-    'Comprehensive testing framework for recommendation accuracy'
+    'Comprehensive testing framework for recommendation accuracy',
   ],
 
   components: [
@@ -512,20 +498,20 @@ export const MODULE_INFO = {
     'AgentToolAPI',
     'WorkflowRecommendationEngine',
     'RealtimeRecommendationService',
-    'AgentRecommendationTestingFramework'
+    'AgentRecommendationTestingFramework',
   ],
 
   integration: {
     parlant: 'Native integration with Parlant conversation system',
     socketio: 'Real-time WebSocket support via Socket.IO',
     sim: 'Deep integration with Sim workflow platform',
-    testing: 'Jest-based comprehensive testing framework'
-  }
+    testing: 'Jest-based comprehensive testing framework',
+  },
 }
 
 // Final system validation
 logger.info('Agent Tool Recommendation System module loaded successfully', {
   version: VERSION,
   components: MODULE_INFO.components.length,
-  features: MODULE_INFO.features.length
+  features: MODULE_INFO.features.length,
 })

@@ -8,21 +8,13 @@
 
 import { EventEmitter } from 'events'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import type { BaseToolError } from './error-handler'
 import {
   type ErrorExplanation,
-  type UserSkillLevel,
-  type ExplanationFormat,
   errorExplanationService,
+  type UserSkillLevel,
 } from './error-explanations'
-import {
-  type ErrorCategory,
-  type ErrorSeverity,
-  type ErrorImpact,
-  type ErrorClassification,
-  errorClassifier,
-} from './error-taxonomy'
-import type { ParlantLogContext } from './logging'
+import type { BaseToolError } from './error-handler'
+import type { ErrorCategory } from './error-taxonomy'
 
 const logger = createLogger('ErrorIntelligence')
 
@@ -528,10 +520,13 @@ export class ErrorIntelligenceService extends EventEmitter {
 
   private startBackgroundLearning(): void {
     // Periodically analyze interactions and improve models
-    setInterval(() => {
-      this.analyzeAllInteractions()
-      this.updateModelEffectiveness()
-    }, 60 * 60 * 1000) // Every hour
+    setInterval(
+      () => {
+        this.analyzeAllInteractions()
+        this.updateModelEffectiveness()
+      },
+      60 * 60 * 1000
+    ) // Every hour
   }
 
   private extractUserContext(context: ExplanationContext): Record<string, any> {
@@ -731,7 +726,8 @@ export class ErrorIntelligenceService extends EventEmitter {
     // Add diagnosis node
     flow.push({
       id: 'diagnosis',
-      message: 'Let me understand what happened. Can you tell me what you were trying to do when this error occurred?',
+      message:
+        'Let me understand what happened. Can you tell me what you were trying to do when this error occurred?',
       expectedResponses: ['working with data', 'trying to connect', 'processing request'],
       nextNodes: {
         'working with data': 'data_issues',
@@ -805,15 +801,15 @@ export class ErrorIntelligenceService extends EventEmitter {
     // Simplified translation logic - in real implementation, would use translation service
     const translations: Partial<Record<SupportedLanguage, Record<string, string>>> = {
       [SupportedLanguage.SPANISH]: {
-        'timeout': 'tiempo de espera agotado',
+        timeout: 'tiempo de espera agotado',
         'connection failed': 'conexión falló',
-        'authentication': 'autenticación',
+        authentication: 'autenticación',
         'permission denied': 'permiso denegado',
       },
       [SupportedLanguage.FRENCH]: {
-        'timeout': 'délai d\'attente dépassé',
+        timeout: "délai d'attente dépassé",
         'connection failed': 'échec de la connexion',
-        'authentication': 'authentification',
+        authentication: 'authentification',
         'permission denied': 'permission refusée',
       },
     }
@@ -823,10 +819,7 @@ export class ErrorIntelligenceService extends EventEmitter {
 
     if (langTranslations) {
       Object.entries(langTranslations).forEach(([english, translated]) => {
-        translatedMessage = translatedMessage.replace(
-          new RegExp(english, 'gi'),
-          translated
-        )
+        translatedMessage = translatedMessage.replace(new RegExp(english, 'gi'), translated)
       })
     }
 
@@ -923,7 +916,7 @@ export class ErrorIntelligenceService extends EventEmitter {
       case CommunicationStyle.CASUAL:
         return "Hi there! Don't worry, we'll get this sorted out."
       case CommunicationStyle.EMPATHETIC:
-        return "I understand this must be frustrating. Let me help you through this."
+        return 'I understand this must be frustrating. Let me help you through this.'
       default:
         return "Hello! Let's resolve this issue together."
     }
@@ -931,15 +924,12 @@ export class ErrorIntelligenceService extends EventEmitter {
 
   private generateHistoryReference(userHistory: UserInteraction[]): string {
     if (userHistory.length === 0) {
-      return "I notice this is your first interaction with our error resolution system."
+      return 'I notice this is your first interaction with our error resolution system.'
     }
     return `Based on your previous ${userHistory.length} interactions, I'll tailor this explanation.`
   }
 
-  private generateCustomizedExamples(
-    error: BaseToolError,
-    context: ExplanationContext
-  ): string[] {
+  private generateCustomizedExamples(error: BaseToolError, context: ExplanationContext): string[] {
     return [`Example relevant to ${context.deviceType} users`]
   }
 
@@ -1088,10 +1078,8 @@ export const errorIntelligenceService = new ErrorIntelligenceService()
 /**
  * Convenience functions
  */
-export const generateIntelligentExplanation = (
-  error: BaseToolError,
-  context: ExplanationContext
-) => errorIntelligenceService.generateIntelligentExplanation(error, context)
+export const generateIntelligentExplanation = (error: BaseToolError, context: ExplanationContext) =>
+  errorIntelligenceService.generateIntelligentExplanation(error, context)
 
 export const translateErrorMessage = (
   error: BaseToolError,

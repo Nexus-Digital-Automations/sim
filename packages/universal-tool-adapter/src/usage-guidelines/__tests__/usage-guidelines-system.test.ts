@@ -9,47 +9,39 @@
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
-
+import { beforeEach, describe, expect, it } from '@jest/globals'
+import {
+  type ContextualGuidanceRequest,
+  type ContextualGuidelinesEngine,
+  createContextualGuidelinesEngine,
+  type EnhancedUsageContext,
+} from '../contextual-engine'
 // Import all system components
 import {
-  GuidelineDefinition,
-  GuidelineTemplate,
-  GuidelineTemplateRegistry,
-  STANDARD_TEMPLATES,
+  createGuidelineFromTemplate,
   createGuidelineTemplateRegistry,
-  createGuidelineFromTemplate
+  type GuidelineDefinition,
+  type GuidelineTemplateRegistry,
+  STANDARD_TEMPLATES,
 } from '../guidelines-framework'
-
 import {
-  ContextualGuidelinesEngine,
-  EnhancedUsageContext,
-  ContextualGuidanceRequest,
-  createContextualGuidelinesEngine
-} from '../contextual-engine'
-
-import {
-  KnowledgeBase,
-  KnowledgeEntry,
-  KnowledgeSearchQuery,
-  createKnowledgeBase,
-  createKnowledgeEntry
-} from '../knowledge-base'
-
-import {
-  InteractiveTutorialEngine,
-  InteractiveTutorial,
-  TutorialSession,
+  createBasicTutorial,
   createInteractiveTutorialEngine,
-  createBasicTutorial
+  type InteractiveTutorial,
+  type InteractiveTutorialEngine,
 } from '../interactive-guidance'
-
 import {
-  GuidelinesManagementPlatform,
-  AuthoringWorkspace,
-  CreateWorkspaceConfig,
-  CreateProjectConfig,
-  createGuidelinesManagementPlatform
+  createKnowledgeBase,
+  createKnowledgeEntry,
+  type KnowledgeBase,
+  type KnowledgeEntry,
+} from '../knowledge-base'
+import {
+  type AuthoringWorkspace,
+  type CreateProjectConfig,
+  type CreateWorkspaceConfig,
+  createGuidelinesManagementPlatform,
+  type GuidelinesManagementPlatform,
 } from '../management-platform'
 
 // =============================================================================
@@ -70,7 +62,7 @@ const createMockUsageContext = (): EnhancedUsageContext => ({
     recentErrors: [],
     successfulTools: ['tool1', 'tool2'],
     currentFocus: 'testing',
-    sessionGoals: ['learn_testing']
+    sessionGoals: ['learn_testing'],
   },
   expertise: {
     overallLevel: 'intermediate',
@@ -82,12 +74,12 @@ const createMockUsageContext = (): EnhancedUsageContext => ({
         commonPatterns: ['basic_usage'],
         knownLimitations: [],
         masteredFeatures: ['basic_features'],
-        strugglingWith: ['advanced_features']
-      }
+        strugglingWith: ['advanced_features'],
+      },
     },
     learningStyle: 'visual',
     preferredPace: 'moderate',
-    confidenceLevel: 0.7
+    confidenceLevel: 0.7,
   },
   situation: {
     urgency: 'medium',
@@ -95,7 +87,7 @@ const createMockUsageContext = (): EnhancedUsageContext => ({
     riskLevel: 'low',
     timeConstraint: 30,
     stakeholderCount: 2,
-    businessCriticality: 'medium'
+    businessCriticality: 'medium',
   },
   workflow: {
     currentPhase: 'execution',
@@ -103,14 +95,14 @@ const createMockUsageContext = (): EnhancedUsageContext => ({
     approvalRequired: false,
     hasSupervision: false,
     followsTemplate: false,
-    iterationCount: 1
+    iterationCount: 1,
   },
   environment: {
     platform: 'web',
     connectivity: 'stable',
     resources: 'normal',
     monitoring: true,
-    debugMode: false
+    debugMode: false,
   },
   accessibility: {
     screenReader: false,
@@ -118,8 +110,8 @@ const createMockUsageContext = (): EnhancedUsageContext => ({
     highContrast: false,
     reducedMotion: false,
     textSizePreference: 'medium',
-    languagePreference: 'en'
-  }
+    languagePreference: 'en',
+  },
 })
 
 const createMockGuideline = (toolId: string = mockToolId): Partial<GuidelineDefinition> => ({
@@ -134,7 +126,7 @@ const createMockGuideline = (toolId: string = mockToolId): Partial<GuidelineDefi
       primary: 'Use this tool when you need to test functionality',
       scenarios: [],
       conditions: [],
-      antipatterns: []
+      antipatterns: [],
     },
     howToUse: {
       quickStart: {
@@ -142,7 +134,7 @@ const createMockGuideline = (toolId: string = mockToolId): Partial<GuidelineDefi
         essentialSteps: ['Step 1', 'Step 2'],
         minimumRequiredFields: ['field1'],
         estimatedTime: '5 minutes',
-        successCriteria: ['Tests pass']
+        successCriteria: ['Tests pass'],
       },
       stepByStep: {
         title: 'Detailed Guide',
@@ -150,31 +142,31 @@ const createMockGuideline = (toolId: string = mockToolId): Partial<GuidelineDefi
         prerequisites: [],
         steps: [],
         verification: [],
-        troubleshooting: []
+        troubleshooting: [],
       },
       parameterGuidance: {},
       bestPractices: [],
-      commonMistakes: []
+      commonMistakes: [],
     },
     examples: {
       basic: [],
       advanced: [],
       realWorld: [],
-      conversational: []
+      conversational: [],
     },
     troubleshooting: {
       commonIssues: [],
       errorCodes: {},
       diagnostics: [],
-      recovery: []
+      recovery: [],
     },
     relatedResources: {
       alternativeTools: [],
       complementaryTools: [],
       prerequisites: [],
-      followUpActions: []
-    }
-  }
+      followUpActions: [],
+    },
+  },
 })
 
 // =============================================================================
@@ -193,7 +185,7 @@ describe('Guidelines Framework', () => {
       const templates = templateRegistry.getAllTemplates()
       expect(templates.length).toBeGreaterThan(0)
 
-      const templateIds = templates.map(t => t.id)
+      const templateIds = templates.map((t) => t.id)
       expect(templateIds).toContain('basic_usage')
       expect(templateIds).toContain('troubleshooting')
     })
@@ -246,7 +238,7 @@ describe('Guidelines Framework', () => {
       expect(() => {
         template.createGuideline(mockToolId, {
           title: 'Test',
-          category: 'basic-usage' as const
+          category: 'basic-usage' as const,
         })
       }).not.toThrow()
     })
@@ -279,8 +271,8 @@ describe('Contextual Guidelines Engine', () => {
           interactive: false,
           stepByStep: true,
           showProgress: false,
-          confirmationRequired: false
-        }
+          confirmationRequired: false,
+        },
       }
 
       const response = await engine.getContextualGuidelines(request)
@@ -308,8 +300,8 @@ describe('Contextual Guidelines Engine', () => {
           interactive: true,
           stepByStep: true,
           showProgress: true,
-          confirmationRequired: true
-        }
+          confirmationRequired: true,
+        },
       }
 
       const beginnerResponse = await engine.getContextualGuidelines(beginnerRequest)
@@ -329,8 +321,8 @@ describe('Contextual Guidelines Engine', () => {
           interactive: false,
           stepByStep: false,
           showProgress: false,
-          confirmationRequired: false
-        }
+          confirmationRequired: false,
+        },
       }
 
       const expertResponse = await engine.getContextualGuidelines(expertRequest)
@@ -356,8 +348,8 @@ describe('Contextual Guidelines Engine', () => {
           interactive: false,
           stepByStep: false,
           showProgress: false,
-          confirmationRequired: false
-        }
+          confirmationRequired: false,
+        },
       }
 
       const response = await engine.getContextualGuidelines(request)
@@ -380,13 +372,13 @@ describe('Contextual Guidelines Engine', () => {
           interactive: false,
           stepByStep: false,
           showProgress: false,
-          confirmationRequired: false
+          confirmationRequired: false,
         },
         constraints: {
           maxLength: 1000,
           maxSteps: 5,
-          focusAreas: ['basic-usage']
-        }
+          focusAreas: ['basic-usage'],
+        },
       }
 
       const response = await engine.getContextualGuidelines(request)
@@ -408,14 +400,14 @@ describe('Contextual Guidelines Engine', () => {
           interactive: false,
           stepByStep: true,
           showProgress: false,
-          confirmationRequired: false
+          confirmationRequired: false,
         },
         constraints: {
           maxLength: 100,
           maxSteps: 3,
           mustInclude: ['quick-start'],
-          mustExclude: ['advanced-features']
-        }
+          mustExclude: ['advanced-features'],
+        },
       }
 
       const response = await engine.getContextualGuidelines(request)
@@ -439,22 +431,18 @@ describe('Knowledge Base', () => {
 
   describe('Knowledge Entry Management', () => {
     it('should add and retrieve knowledge entries', () => {
-      const entry = createKnowledgeEntry(
-        'best-practice',
-        'Test Best Practice',
-        {
-          summary: 'This is a test best practice',
-          detailed: {
-            description: 'Detailed description',
-            rationale: 'Why this is important',
-            benefits: [],
-            drawbacks: [],
-            alternatives: [],
-            prerequisites: [],
-            constraints: []
-          }
-        }
-      )
+      const entry = createKnowledgeEntry('best-practice', 'Test Best Practice', {
+        summary: 'This is a test best practice',
+        detailed: {
+          description: 'Detailed description',
+          rationale: 'Why this is important',
+          benefits: [],
+          drawbacks: [],
+          alternatives: [],
+          prerequisites: [],
+          constraints: [],
+        },
+      })
 
       const completeEntry = {
         ...entry,
@@ -465,7 +453,7 @@ describe('Knowledge Base', () => {
         content: entry.content!,
         metadata: entry.metadata!,
         relationships: entry.relationships!,
-        applicability: entry.applicability!
+        applicability: entry.applicability!,
       } as KnowledgeEntry
 
       knowledgeBase.addEntry(completeEntry)
@@ -476,9 +464,16 @@ describe('Knowledge Base', () => {
 
     it('should search knowledge entries by various criteria', () => {
       // Add test entries
-      const entry1 = createTestKnowledgeEntry('best-practice', 'Performance Best Practice', ['performance'])
-      const entry2 = createTestKnowledgeEntry('troubleshooting-guide', 'Common Issues Guide', ['troubleshooting'])
-      const entry3 = createTestKnowledgeEntry('optimization-tip', 'Speed Optimization', ['performance', 'optimization'])
+      const entry1 = createTestKnowledgeEntry('best-practice', 'Performance Best Practice', [
+        'performance',
+      ])
+      const entry2 = createTestKnowledgeEntry('troubleshooting-guide', 'Common Issues Guide', [
+        'troubleshooting',
+      ])
+      const entry3 = createTestKnowledgeEntry('optimization-tip', 'Speed Optimization', [
+        'performance',
+        'optimization',
+      ])
 
       knowledgeBase.addEntry(entry1)
       knowledgeBase.addEntry(entry2)
@@ -486,14 +481,14 @@ describe('Knowledge Base', () => {
 
       // Search by type
       const bestPractices = knowledgeBase.search({
-        types: ['best-practice']
+        types: ['best-practice'],
       })
       expect(bestPractices.length).toBe(1)
       expect(bestPractices[0].entry.type).toBe('best-practice')
 
       // Search by tags
       const performanceEntries = knowledgeBase.search({
-        tags: ['performance']
+        tags: ['performance'],
       })
       expect(performanceEntries.length).toBe(2)
     })
@@ -505,7 +500,7 @@ describe('Knowledge Base', () => {
       const patterns = knowledgeBase.getByPattern({
         type: 'common-pattern',
         tags: ['patterns'],
-        difficulty: 'beginner'
+        difficulty: 'beginner',
       })
 
       expect(patterns.length).toBe(1)
@@ -516,16 +511,30 @@ describe('Knowledge Base', () => {
   describe('Specialized Retrieval Methods', () => {
     beforeEach(() => {
       // Add test data
-      const bestPractice = createTestKnowledgeEntry('best-practice', 'Tool Best Practice', ['tool-usage'])
-      bestPractice.applicability.tools = [{ toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.9 }]
+      const bestPractice = createTestKnowledgeEntry('best-practice', 'Tool Best Practice', [
+        'tool-usage',
+      ])
+      bestPractice.applicability.tools = [
+        { toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.9 },
+      ]
       knowledgeBase.addEntry(bestPractice)
 
-      const troubleshooting = createTestKnowledgeEntry('troubleshooting-guide', 'Tool Troubleshooting', ['errors'])
-      troubleshooting.applicability.tools = [{ toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.8 }]
+      const troubleshooting = createTestKnowledgeEntry(
+        'troubleshooting-guide',
+        'Tool Troubleshooting',
+        ['errors']
+      )
+      troubleshooting.applicability.tools = [
+        { toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.8 },
+      ]
       knowledgeBase.addEntry(troubleshooting)
 
-      const optimization = createTestKnowledgeEntry('optimization-tip', 'Performance Tip', ['performance'])
-      optimization.applicability.tools = [{ toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.7 }]
+      const optimization = createTestKnowledgeEntry('optimization-tip', 'Performance Tip', [
+        'performance',
+      ])
+      optimization.applicability.tools = [
+        { toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.7 },
+      ]
       knowledgeBase.addEntry(optimization)
     })
 
@@ -556,7 +565,7 @@ describe('Knowledge Base', () => {
 
       knowledgeBase.updateUsageMetrics(entry.id, {
         viewCount: initialViews + 1,
-        implementationCount: 1
+        implementationCount: 1,
       })
 
       const updated = knowledgeBase.getEntry(entry.id)!
@@ -573,7 +582,7 @@ describe('Knowledge Base', () => {
         rating: 5,
         type: 'general',
         comment: 'Very helpful!',
-        timestamp: new Date()
+        timestamp: new Date(),
       })
 
       const updated = knowledgeBase.getEntry(entry.id)!
@@ -584,7 +593,7 @@ describe('Knowledge Base', () => {
   // Helper function for creating test knowledge entries
   function createTestKnowledgeEntry(type: any, title: string, tags: string[]): KnowledgeEntry {
     const partial = createKnowledgeEntry(type, title, {
-      summary: `Summary for ${title}`
+      summary: `Summary for ${title}`,
     })
 
     return {
@@ -596,10 +605,10 @@ describe('Knowledge Base', () => {
       content: partial.content!,
       metadata: {
         ...partial.metadata!,
-        tags
+        tags,
       },
       relationships: partial.relationships!,
-      applicability: partial.applicability!
+      applicability: partial.applicability!,
     } as KnowledgeEntry
   }
 })
@@ -729,7 +738,7 @@ describe('Interactive Tutorial Engine', () => {
 
       await engine.updateProgress(session.id, {
         totalScore: 10,
-        totalTimeSpent: 300
+        totalTimeSpent: 300,
       })
 
       const updatedSession = engine.getSession(session.id)!
@@ -746,14 +755,14 @@ describe('Interactive Tutorial Engine', () => {
       await engine.addBookmark(session.id, {
         sectionId: 'section_1',
         title: 'Important Section',
-        tags: ['important']
+        tags: ['important'],
       })
 
       await engine.addNote(session.id, {
         sectionId: 'section_1',
         content: 'This is my note',
         tags: ['personal'],
-        shared: false
+        shared: false,
       })
 
       const updatedSession = engine.getSession(session.id)!
@@ -763,43 +772,38 @@ describe('Interactive Tutorial Engine', () => {
   })
 
   function createMockTutorial(): Partial<InteractiveTutorial> {
-    return createBasicTutorial(
-      mockToolId,
-      'Test Tutorial',
-      'A tutorial for testing',
-      [
-        {
-          id: 'section_1',
-          title: 'Introduction',
-          type: 'introduction',
-          content: {
-            text: {
-              markdown: '# Introduction\nWelcome to the tutorial',
-              interactive: false,
-              highlightableTerms: [],
-              glossaryTerms: []
-            }
+    return createBasicTutorial(mockToolId, 'Test Tutorial', 'A tutorial for testing', [
+      {
+        id: 'section_1',
+        title: 'Introduction',
+        type: 'introduction',
+        content: {
+          text: {
+            markdown: '# Introduction\nWelcome to the tutorial',
+            interactive: false,
+            highlightableTerms: [],
+            glossaryTerms: [],
           },
-          interactions: [],
-          reinforcement: []
         },
-        {
-          id: 'section_2',
-          title: 'Practice',
-          type: 'hands-on',
-          content: {
-            text: {
-              markdown: '# Practice\nTry it yourself',
-              interactive: true,
-              highlightableTerms: [],
-              glossaryTerms: []
-            }
+        interactions: [],
+        reinforcement: [],
+      },
+      {
+        id: 'section_2',
+        title: 'Practice',
+        type: 'hands-on',
+        content: {
+          text: {
+            markdown: '# Practice\nTry it yourself',
+            interactive: true,
+            highlightableTerms: [],
+            glossaryTerms: [],
           },
-          interactions: [],
-          reinforcement: []
-        }
-      ]
-    )
+        },
+        interactions: [],
+        reinforcement: [],
+      },
+    ])
   }
 })
 
@@ -819,7 +823,7 @@ describe('Guidelines Management Platform', () => {
       const config: CreateWorkspaceConfig = {
         name: 'Test Workspace',
         description: 'A workspace for testing',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       }
 
       const workspace = await platform.createWorkspace(config)
@@ -835,7 +839,7 @@ describe('Guidelines Management Platform', () => {
     it('should retrieve workspaces', async () => {
       const config: CreateWorkspaceConfig = {
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       }
 
       const workspace = await platform.createWorkspace(config)
@@ -847,11 +851,11 @@ describe('Guidelines Management Platform', () => {
     it('should update workspace settings', async () => {
       const workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
 
       await platform.updateWorkspaceSettings(workspace.id, mockUserId, {
-        visibility: 'public'
+        visibility: 'public',
       })
 
       const updated = platform.getWorkspace(workspace.id)!
@@ -861,18 +865,18 @@ describe('Guidelines Management Platform', () => {
     it('should add collaborators', async () => {
       const workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
 
       const collaboratorId = 'collaborator_123'
       await platform.addCollaborator(workspace.id, mockUserId, {
         userId: collaboratorId,
-        role: 'editor'
+        role: 'editor',
       })
 
       const updated = platform.getWorkspace(workspace.id)!
       expect(updated.collaborators).toHaveLength(2)
-      expect(updated.collaborators.some(c => c.userId === collaboratorId)).toBe(true)
+      expect(updated.collaborators.some((c) => c.userId === collaboratorId)).toBe(true)
     })
   })
 
@@ -882,7 +886,7 @@ describe('Guidelines Management Platform', () => {
     beforeEach(async () => {
       workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
     })
 
@@ -892,7 +896,7 @@ describe('Guidelines Management Platform', () => {
         description: 'A project for testing',
         type: 'guidelines',
         tags: ['test'],
-        targetTools: [mockToolId]
+        targetTools: [mockToolId],
       }
 
       const project = await platform.createProject(workspace.id, mockUserId, config)
@@ -907,7 +911,7 @@ describe('Guidelines Management Platform', () => {
     it('should create guideline documents', async () => {
       const project = await platform.createProject(workspace.id, mockUserId, {
         name: 'Test Project',
-        type: 'guidelines'
+        type: 'guidelines',
       })
 
       const document = await platform.createGuidelineDocument(
@@ -918,7 +922,7 @@ describe('Guidelines Management Platform', () => {
           toolId: mockToolId,
           title: 'Test Guideline',
           description: 'A test guideline document',
-          category: 'basic-usage'
+          category: 'basic-usage',
         }
       )
 
@@ -932,7 +936,7 @@ describe('Guidelines Management Platform', () => {
     it('should update guideline documents', async () => {
       const project = await platform.createProject(workspace.id, mockUserId, {
         name: 'Test Project',
-        type: 'guidelines'
+        type: 'guidelines',
       })
 
       const document = await platform.createGuidelineDocument(
@@ -941,24 +945,18 @@ describe('Guidelines Management Platform', () => {
         mockUserId,
         {
           toolId: mockToolId,
-          title: 'Original Title'
+          title: 'Original Title',
         }
       )
 
-      await platform.updateGuidelineDocument(
-        workspace.id,
-        project.id,
-        document.id,
-        mockUserId,
-        {
-          title: 'Updated Title',
-          description: 'Updated description'
-        }
-      )
+      await platform.updateGuidelineDocument(workspace.id, project.id, document.id, mockUserId, {
+        title: 'Updated Title',
+        description: 'Updated description',
+      })
 
       const updatedWorkspace = platform.getWorkspace(workspace.id)!
-      const updatedProject = updatedWorkspace.projects.find(p => p.id === project.id)!
-      const updatedDocument = updatedProject.guidelines.find(d => d.id === document.id)!
+      const updatedProject = updatedWorkspace.projects.find((p) => p.id === project.id)!
+      const updatedDocument = updatedProject.guidelines.find((d) => d.id === document.id)!
 
       expect(updatedDocument.guideline.title).toBe('Updated Title')
       expect(updatedDocument.guideline.description).toBe('Updated description')
@@ -974,30 +972,25 @@ describe('Guidelines Management Platform', () => {
     beforeEach(async () => {
       workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
 
       // Add a reviewer
       await platform.addCollaborator(workspace.id, mockUserId, {
         userId: 'reviewer_123',
-        role: 'reviewer'
+        role: 'reviewer',
       })
 
       const project = await platform.createProject(workspace.id, mockUserId, {
         name: 'Test Project',
-        type: 'guidelines'
+        type: 'guidelines',
       })
       projectId = project.id
 
-      const document = await platform.createGuidelineDocument(
-        workspace.id,
-        projectId,
-        mockUserId,
-        {
-          toolId: mockToolId,
-          title: 'Test Document'
-        }
-      )
+      const document = await platform.createGuidelineDocument(workspace.id, projectId, mockUserId, {
+        toolId: mockToolId,
+        title: 'Test Document',
+      })
       documentId = document.id
     })
 
@@ -1005,8 +998,8 @@ describe('Guidelines Management Platform', () => {
       await platform.submitForReview(workspace.id, projectId, documentId, mockUserId)
 
       const updatedWorkspace = platform.getWorkspace(workspace.id)!
-      const project = updatedWorkspace.projects.find(p => p.id === projectId)!
-      const document = project.guidelines.find(d => d.id === documentId)!
+      const project = updatedWorkspace.projects.find((p) => p.id === projectId)!
+      const document = project.guidelines.find((d) => d.id === documentId)!
 
       expect(document.status).toBe('in-review')
       expect(document.assignments.length).toBeGreaterThan(0)
@@ -1016,8 +1009,8 @@ describe('Guidelines Management Platform', () => {
       await platform.submitForReview(workspace.id, projectId, documentId, mockUserId)
 
       const updatedWorkspace = platform.getWorkspace(workspace.id)!
-      const project = updatedWorkspace.projects.find(p => p.id === projectId)!
-      const document = project.guidelines.find(d => d.id === documentId)!
+      const project = updatedWorkspace.projects.find((p) => p.id === projectId)!
+      const document = project.guidelines.find((d) => d.id === documentId)!
       const review = document.reviewHistory[0]
 
       const comment = await platform.addReviewComment(
@@ -1028,7 +1021,7 @@ describe('Guidelines Management Platform', () => {
         review.reviewerId,
         {
           content: 'This needs improvement',
-          type: 'suggestion'
+          type: 'suggestion',
         }
       )
 
@@ -1041,8 +1034,8 @@ describe('Guidelines Management Platform', () => {
       await platform.submitForReview(workspace.id, projectId, documentId, mockUserId)
 
       const workspace_after_submit = platform.getWorkspace(workspace.id)!
-      const project = workspace_after_submit.projects.find(p => p.id === projectId)!
-      const document = project.guidelines.find(d => d.id === documentId)!
+      const project = workspace_after_submit.projects.find((p) => p.id === projectId)!
+      const document = project.guidelines.find((d) => d.id === documentId)!
       const review = document.reviewHistory[0]
 
       // Start the review
@@ -1056,14 +1049,14 @@ describe('Guidelines Management Platform', () => {
         review.reviewerId,
         {
           outcome: 'approved',
-          reasoning: 'Looks good to me'
+          reasoning: 'Looks good to me',
         }
       )
 
       const workspace_after_review = platform.getWorkspace(workspace.id)!
-      const updated_project = workspace_after_review.projects.find(p => p.id === projectId)!
-      const updated_document = updated_project.guidelines.find(d => d.id === documentId)!
-      const updated_review = updated_document.reviewHistory.find(r => r.id === review.id)!
+      const updated_project = workspace_after_review.projects.find((p) => p.id === projectId)!
+      const updated_document = updated_project.guidelines.find((d) => d.id === documentId)!
+      const updated_review = updated_document.reviewHistory.find((r) => r.id === review.id)!
 
       expect(updated_review.status).toBe('completed')
       expect(updated_review.decision.outcome).toBe('approved')
@@ -1077,14 +1070,14 @@ describe('Guidelines Management Platform', () => {
     beforeEach(async () => {
       workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
     })
 
     it('should generate quality reports', async () => {
       const project = await platform.createProject(workspace.id, mockUserId, {
         name: 'Test Project',
-        type: 'guidelines'
+        type: 'guidelines',
       })
 
       const document = await platform.createGuidelineDocument(
@@ -1093,7 +1086,7 @@ describe('Guidelines Management Platform', () => {
         mockUserId,
         {
           toolId: mockToolId,
-          title: 'Test Document'
+          title: 'Test Document',
         }
       )
 
@@ -1135,32 +1128,25 @@ describe('Integration Tests', () => {
     // 1. Create workspace and project
     const workspace = await platform.createWorkspace({
       name: 'Integration Test Workspace',
-      ownerId: mockUserId
+      ownerId: mockUserId,
     })
 
     const project = await platform.createProject(workspace.id, mockUserId, {
       name: 'Integration Test Project',
-      type: 'guidelines'
+      type: 'guidelines',
     })
 
     // 2. Create guideline document
-    const document = await platform.createGuidelineDocument(
-      workspace.id,
-      project.id,
-      mockUserId,
-      {
-        toolId: mockToolId,
-        title: 'Integration Test Guideline',
-        templateId: 'basic_usage'
-      }
-    )
+    const document = await platform.createGuidelineDocument(workspace.id, project.id, mockUserId, {
+      toolId: mockToolId,
+      title: 'Integration Test Guideline',
+      templateId: 'basic_usage',
+    })
 
     // 3. Add knowledge entry
-    const knowledgeEntry = createKnowledgeEntry(
-      'best-practice',
-      'Integration Test Best Practice',
-      { summary: 'A test best practice for integration' }
-    )
+    const knowledgeEntry = createKnowledgeEntry('best-practice', 'Integration Test Best Practice', {
+      summary: 'A test best practice for integration',
+    })
 
     const completeEntry = {
       ...knowledgeEntry,
@@ -1173,8 +1159,8 @@ describe('Integration Tests', () => {
       relationships: knowledgeEntry.relationships!,
       applicability: {
         ...knowledgeEntry.applicability!,
-        tools: [{ toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.9 }]
-      }
+        tools: [{ toolId: mockToolId, toolName: 'Test Tool', applicabilityScore: 0.9 }],
+      },
     } as KnowledgeEntry
 
     knowledgeBase.addEntry(completeEntry)
@@ -1192,8 +1178,8 @@ describe('Integration Tests', () => {
         interactive: false,
         stepByStep: true,
         showProgress: false,
-        confirmationRequired: false
-      }
+        confirmationRequired: false,
+      },
     }
 
     const guidanceResponse = await contextualEngine.getContextualGuidelines(guidanceRequest)
@@ -1219,7 +1205,7 @@ describe('Integration Tests', () => {
     expect(template).toBeDefined()
 
     const guideline = template!.createGuideline(mockToolId, {
-      title: 'Cross-Component Test'
+      title: 'Cross-Component Test',
     })
 
     expect(guideline.toolId).toBe(mockToolId)
@@ -1242,7 +1228,7 @@ describe('Performance Tests', () => {
     const guidelines = Array.from({ length: 1000 }, (_, i) =>
       template.createGuideline(`tool_${i}`, {
         title: `Guideline ${i}`,
-        description: `Test guideline number ${i}`
+        description: `Test guideline number ${i}`,
       })
     )
 
@@ -1260,11 +1246,9 @@ describe('Performance Tests', () => {
 
     // Add 1000 knowledge entries
     for (let i = 0; i < 1000; i++) {
-      const entry = createKnowledgeEntry(
-        'best-practice',
-        `Knowledge Entry ${i}`,
-        { summary: `Summary for entry ${i}` }
-      )
+      const entry = createKnowledgeEntry('best-practice', `Knowledge Entry ${i}`, {
+        summary: `Summary for entry ${i}`,
+      })
 
       const completeEntry = {
         ...entry,
@@ -1275,10 +1259,10 @@ describe('Performance Tests', () => {
         content: entry.content!,
         metadata: {
           ...entry.metadata!,
-          tags: [`tag_${i % 10}`] // Create 10 different tags
+          tags: [`tag_${i % 10}`], // Create 10 different tags
         },
         relationships: entry.relationships!,
-        applicability: entry.applicability!
+        applicability: entry.applicability!,
       } as KnowledgeEntry
 
       knowledgeBase.addEntry(completeEntry)
@@ -1320,16 +1304,14 @@ describe('Error Handling', () => {
     it('should handle permission violations', async () => {
       const workspace = await platform.createWorkspace({
         name: 'Test Workspace',
-        ownerId: mockUserId
+        ownerId: mockUserId,
       })
 
       const unauthorizedUserId = 'unauthorized_user'
 
-      await expect(platform.updateWorkspaceSettings(
-        workspace.id,
-        unauthorizedUserId,
-        { visibility: 'public' }
-      )).rejects.toThrow('Insufficient permissions')
+      await expect(
+        platform.updateWorkspaceSettings(workspace.id, unauthorizedUserId, { visibility: 'public' })
+      ).rejects.toThrow('Insufficient permissions')
     })
 
     it('should handle invalid template references', () => {
@@ -1366,8 +1348,8 @@ describe('Error Handling', () => {
           interactive: false,
           stepByStep: false,
           showProgress: false,
-          confirmationRequired: false
-        }
+          confirmationRequired: false,
+        },
       }
 
       const response = await engine.getContextualGuidelines(request)

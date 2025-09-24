@@ -8,9 +8,9 @@
  * @version 1.0.0
  */
 
+import type { UsageContext } from '../natural-language/usage-guidelines'
 import { Logger } from '../utils/logger'
-import { GuidelineDefinition, UsageContextMatcher, ContentVariation } from './guidelines-framework'
-import { UsageContext, UsageGuideline } from '../natural-language/usage-guidelines'
+import type { ContentVariation, GuidelineDefinition } from './guidelines-framework'
 
 // =============================================================================
 // Enhanced Context Types
@@ -205,7 +205,7 @@ export class ContextAnalysisEngine {
       optimizationSuggestions: this.suggestOptimizations(context),
 
       // Context patterns
-      patterns: this.identifyPatterns(context)
+      patterns: this.identifyPatterns(context),
     }
 
     // Store context history for pattern analysis
@@ -215,7 +215,7 @@ export class ContextAnalysisEngine {
       userId: context.userId,
       overallComplexity: analysis.situationalFactors.complexity,
       riskLevel: analysis.riskAssessment.level,
-      learningOpportunityCount: analysis.learningOpportunities.length
+      learningOpportunityCount: analysis.learningOpportunities.length,
     })
 
     return analysis
@@ -229,7 +229,7 @@ export class ContextAnalysisEngine {
       strengthAreas: this.identifyStrengthAreas(context),
       improvementAreas: this.identifyImprovementAreas(context),
       motivationalFactors: this.identifyMotivationalFactors(context),
-      cognitiveLoad: this.assessCognitiveLoad(context)
+      cognitiveLoad: this.assessCognitiveLoad(context),
     }
   }
 
@@ -240,7 +240,7 @@ export class ContextAnalysisEngine {
       timeConstraints: this.analyzeTimeConstraints(context),
       collaborationContext: this.analyzeCollaborationContext(context),
       environmentalFactors: this.analyzeEnvironmentalFactors(context),
-      businessContext: this.analyzeBusinessContext(context)
+      businessContext: this.analyzeBusinessContext(context),
     }
   }
 
@@ -251,23 +251,27 @@ export class ContextAnalysisEngine {
       blockers: this.identifyPotentialBlockers(context),
       nextLogicalSteps: this.predictNextSteps(context),
       qualityGates: this.identifyQualityGates(context),
-      rollbackOptions: this.identifyRollbackOptions(context)
+      rollbackOptions: this.identifyRollbackOptions(context),
     }
   }
 
-  private async identifyLearningOpportunities(context: EnhancedUsageContext): Promise<LearningOpportunity[]> {
+  private async identifyLearningOpportunities(
+    context: EnhancedUsageContext
+  ): Promise<LearningOpportunity[]> {
     const opportunities: LearningOpportunity[] = []
 
     // Identify skill gaps
     const skillGaps = this.identifySkillGaps(context)
-    opportunities.push(...skillGaps.map(gap => ({
-      type: 'skill-development',
-      title: `Improve ${gap} skills`,
-      description: `Enhance your proficiency with ${gap}`,
-      priority: this.assessLearningPriority(gap, context),
-      estimatedTime: this.estimateLearningTime(gap),
-      resources: this.suggestLearningResources(gap)
-    })))
+    opportunities.push(
+      ...skillGaps.map((gap) => ({
+        type: 'skill-development',
+        title: `Improve ${gap} skills`,
+        description: `Enhance your proficiency with ${gap}`,
+        priority: this.assessLearningPriority(gap, context),
+        estimatedTime: this.estimateLearningTime(gap),
+        resources: this.suggestLearningResources(gap),
+      }))
+    )
 
     // Identify automation opportunities
     const automationOpportunities = this.identifyAutomationOpportunities(context)
@@ -286,7 +290,7 @@ export class ContextAnalysisEngine {
       this.assessTimeConstraintRisk(context),
       this.assessComplexityRisk(context),
       this.assessEnvironmentalRisk(context),
-      this.assessBusinessImpactRisk(context)
+      this.assessBusinessImpactRisk(context),
     ]
 
     const overallRisk = this.calculateOverallRisk(riskFactors)
@@ -296,7 +300,7 @@ export class ContextAnalysisEngine {
       factors: riskFactors,
       mitigationStrategies: this.suggestMitigationStrategies(riskFactors, context),
       monitoringPoints: this.identifyMonitoringPoints(context),
-      escalationTriggers: this.defineEscalationTriggers(context)
+      escalationTriggers: this.defineEscalationTriggers(context),
     }
   }
 
@@ -311,7 +315,7 @@ export class ContextAnalysisEngine {
         description: 'Consider using batch operations or caching',
         impact: 'medium',
         effort: 'low',
-        implementation: ['Enable caching', 'Use batch parameters', 'Optimize query patterns']
+        implementation: ['Enable caching', 'Use batch parameters', 'Optimize query patterns'],
       })
     }
 
@@ -323,7 +327,7 @@ export class ContextAnalysisEngine {
         description: 'Reduce number of steps required',
         impact: 'high',
         effort: 'medium',
-        implementation: ['Create templates', 'Set up defaults', 'Use automation']
+        implementation: ['Create templates', 'Set up defaults', 'Use automation'],
       })
     }
 
@@ -335,7 +339,7 @@ export class ContextAnalysisEngine {
         description: 'Focus on high-impact learning areas',
         impact: 'high',
         effort: 'medium',
-        implementation: ['Practice sessions', 'Guided tutorials', 'Peer learning']
+        implementation: ['Practice sessions', 'Guided tutorials', 'Peer learning'],
       })
     }
 
@@ -358,23 +362,29 @@ export class ContextAnalysisEngine {
   }
 
   // Helper methods for detailed analysis
-  private assessOverallExpertise(context: EnhancedUsageContext): 'novice' | 'beginner' | 'intermediate' | 'advanced' | 'expert' {
+  private assessOverallExpertise(
+    context: EnhancedUsageContext
+  ): 'novice' | 'beginner' | 'intermediate' | 'advanced' | 'expert' {
     const factors = [
       context.expertise.overallLevel,
       this.calculateToolExperienceLevel(context),
-      this.assessSessionPerformance(context)
+      this.assessSessionPerformance(context),
     ]
 
     // Logic to combine factors and determine overall expertise
     return context.expertise.overallLevel
   }
 
-  private calculateToolExperienceLevel(context: EnhancedUsageContext): 'novice' | 'beginner' | 'intermediate' | 'advanced' | 'expert' {
+  private calculateToolExperienceLevel(
+    context: EnhancedUsageContext
+  ): 'novice' | 'beginner' | 'intermediate' | 'advanced' | 'expert' {
     const experiences = Object.values(context.expertise.toolSpecificExperience)
     if (experiences.length === 0) return 'novice'
 
-    const averageUsage = experiences.reduce((sum, exp) => sum + exp.usageCount, 0) / experiences.length
-    const averageSuccess = experiences.reduce((sum, exp) => sum + exp.successRate, 0) / experiences.length
+    const averageUsage =
+      experiences.reduce((sum, exp) => sum + exp.usageCount, 0) / experiences.length
+    const averageSuccess =
+      experiences.reduce((sum, exp) => sum + exp.successRate, 0) / experiences.length
 
     if (averageUsage > 100 && averageSuccess > 0.9) return 'expert'
     if (averageUsage > 50 && averageSuccess > 0.8) return 'advanced'
@@ -396,7 +406,9 @@ export class ContextAnalysisEngine {
   }
 
   // Placeholder implementations for helper methods
-  private determineInteractionStyle(context: EnhancedUsageContext): 'concise' | 'detailed' | 'interactive' | 'visual' {
+  private determineInteractionStyle(
+    context: EnhancedUsageContext
+  ): 'concise' | 'detailed' | 'interactive' | 'visual' {
     return 'detailed' // Simplified implementation
   }
 
@@ -456,7 +468,10 @@ export class ContextAnalysisEngine {
     return [] // Placeholder
   }
 
-  private assessLearningPriority(gap: string, context: EnhancedUsageContext): 'low' | 'medium' | 'high' {
+  private assessLearningPriority(
+    gap: string,
+    context: EnhancedUsageContext
+  ): 'low' | 'medium' | 'high' {
     return 'medium' // Placeholder
   }
 
@@ -500,7 +515,10 @@ export class ContextAnalysisEngine {
     return 'medium' // Simplified calculation
   }
 
-  private suggestMitigationStrategies(factors: RiskFactor[], context: EnhancedUsageContext): string[] {
+  private suggestMitigationStrategies(
+    factors: RiskFactor[],
+    context: EnhancedUsageContext
+  ): string[] {
     return [] // Placeholder
   }
 
@@ -540,7 +558,9 @@ export class ContextAnalysisEngine {
     return [] // Placeholder
   }
 
-  private assessSessionPerformance(context: EnhancedUsageContext): 'poor' | 'fair' | 'good' | 'excellent' {
+  private assessSessionPerformance(
+    context: EnhancedUsageContext
+  ): 'poor' | 'fair' | 'good' | 'excellent' {
     return 'good' // Placeholder
   }
 }
@@ -564,7 +584,9 @@ export class ContextualGuidelinesEngine {
   /**
    * Get contextual guidelines adapted to user situation and expertise
    */
-  async getContextualGuidelines(request: ContextualGuidanceRequest): Promise<ContextualGuidanceResponse> {
+  async getContextualGuidelines(
+    request: ContextualGuidanceRequest
+  ): Promise<ContextualGuidanceResponse> {
     const startTime = Date.now()
 
     // Analyze context
@@ -601,10 +623,10 @@ export class ContextualGuidelinesEngine {
         adaptationApplied: true,
         processingTime,
         cacheHit: false,
-        confidence: this.calculateConfidence(contextAnalysis, adaptedGuidelines)
+        confidence: this.calculateConfidence(contextAnalysis, adaptedGuidelines),
       },
       suggestions,
-      delivery: this.determineDeliveryOptions(request.preferences, request.context)
+      delivery: this.determineDeliveryOptions(request.preferences, request.context),
     }
   }
 
@@ -674,7 +696,7 @@ export class ContextualGuidelinesEngine {
 
     // Apply preference-based customizations
     if (preferences.format === 'minimal') {
-      customizations.contentReduction = 0.5  // Reduce content by 50%
+      customizations.contentReduction = 0.5 // Reduce content by 50%
       adaptationReasons.push('Minimized content per user preference')
     }
 
@@ -689,22 +711,22 @@ export class ContextualGuidelinesEngine {
         relevanceScore,
         adaptationReason: adaptationReasons,
         appliedVariations,
-        customizations
+        customizations,
       },
       delivery: {
         estimatedReadTime: this.estimateReadTime(guideline, preferences),
         cognitiveLoad: this.assessCognitiveLoad(guideline, analysis),
         interactivity: this.determineInteractivity(preferences),
         visualComplexity: this.assessVisualComplexity(guideline),
-        prerequisites: this.identifyPrerequisites(guideline, analysis)
+        prerequisites: this.identifyPrerequisites(guideline, analysis),
       },
       personalization: {
         userSpecificExamples: this.hasUserSpecificExamples(guideline, analysis),
         contextualizedSteps: this.hasContextualizedSteps(guideline, analysis),
         adaptedLanguage: this.hasAdaptedLanguage(guideline, analysis),
         culturalConsiderations: this.getCulturalConsiderations(guideline, analysis),
-        industrySpecific: this.isIndustrySpecific(guideline, analysis)
-      }
+        industrySpecific: this.isIndustrySpecific(guideline, analysis),
+      },
     }
 
     return adaptedGuideline
@@ -735,8 +757,8 @@ export class ContextualGuidelinesEngine {
     return {
       nextSteps: this.suggestNextSteps(analysis, guidelines),
       relatedGuidelines: this.suggestRelatedGuidelines(toolId, guidelines),
-      improvementOpportunities: analysis.optimizationSuggestions.map(opt => opt.title),
-      learningResources: this.suggestLearningResources(analysis, guidelines)
+      improvementOpportunities: analysis.optimizationSuggestions.map((opt) => opt.title),
+      learningResources: this.suggestLearningResources(analysis, guidelines),
     }
   }
 
@@ -748,8 +770,8 @@ export class ContextualGuidelinesEngine {
         'simplify-language',
         'add-prerequisites',
         'include-safety-warnings',
-        'provide-detailed-steps'
-      ]
+        'provide-detailed-steps',
+      ],
     })
 
     this.adaptationStrategies.set('urgent-situation', {
@@ -758,24 +780,34 @@ export class ContextualGuidelinesEngine {
         'prioritize-quick-solutions',
         'highlight-time-critical-steps',
         'reduce-optional-content',
-        'add-risk-warnings'
-      ]
+        'add-risk-warnings',
+      ],
     })
   }
 
   // Helper methods (simplified implementations)
-  private mergeVariations(base?: ContentVariation, additional?: ContentVariation): ContentVariation {
-    if (!base) return additional || { emphasisPoints: [], additionalContent: [], omittedContent: [] }
+  private mergeVariations(
+    base?: ContentVariation,
+    additional?: ContentVariation
+  ): ContentVariation {
+    if (!base)
+      return additional || { emphasisPoints: [], additionalContent: [], omittedContent: [] }
     if (!additional) return base
 
     return {
       title: additional.title || base.title,
       description: additional.description || base.description,
       emphasisPoints: [...base.emphasisPoints, ...additional.emphasisPoints],
-      additionalContent: [...(base.additionalContent || []), ...(additional.additionalContent || [])],
+      additionalContent: [
+        ...(base.additionalContent || []),
+        ...(additional.additionalContent || []),
+      ],
       omittedContent: [...(base.omittedContent || []), ...(additional.omittedContent || [])],
       modifiedExamples: [...(base.modifiedExamples || []), ...(additional.modifiedExamples || [])],
-      customInstructions: [...(base.customInstructions || []), ...(additional.customInstructions || [])]
+      customInstructions: [
+        ...(base.customInstructions || []),
+        ...(additional.customInstructions || []),
+      ],
     }
   }
 
@@ -791,31 +823,50 @@ export class ContextualGuidelinesEngine {
     return 0.9 // Placeholder implementation
   }
 
-  private estimateReadTime(guideline: GuidelineDefinition, preferences: GuidelineDeliveryPreferences): number {
+  private estimateReadTime(
+    guideline: GuidelineDefinition,
+    preferences: GuidelineDeliveryPreferences
+  ): number {
     return 5 // Placeholder: 5 minutes
   }
 
-  private assessCognitiveLoad(guideline: GuidelineDefinition, analysis: ContextAnalysis): 'low' | 'medium' | 'high' {
+  private assessCognitiveLoad(
+    guideline: GuidelineDefinition,
+    analysis: ContextAnalysis
+  ): 'low' | 'medium' | 'high' {
     return 'medium' // Placeholder
   }
 
-  private determineInteractivity(preferences: GuidelineDeliveryPreferences): 'none' | 'minimal' | 'moderate' | 'high' {
+  private determineInteractivity(
+    preferences: GuidelineDeliveryPreferences
+  ): 'none' | 'minimal' | 'moderate' | 'high' {
     return preferences.interactive ? 'high' : 'minimal'
   }
 
-  private assessVisualComplexity(guideline: GuidelineDefinition): 'simple' | 'moderate' | 'complex' {
+  private assessVisualComplexity(
+    guideline: GuidelineDefinition
+  ): 'simple' | 'moderate' | 'complex' {
     return 'moderate' // Placeholder
   }
 
-  private identifyPrerequisites(guideline: GuidelineDefinition, analysis: ContextAnalysis): string[] {
+  private identifyPrerequisites(
+    guideline: GuidelineDefinition,
+    analysis: ContextAnalysis
+  ): string[] {
     return [] // Placeholder
   }
 
-  private hasUserSpecificExamples(guideline: GuidelineDefinition, analysis: ContextAnalysis): boolean {
+  private hasUserSpecificExamples(
+    guideline: GuidelineDefinition,
+    analysis: ContextAnalysis
+  ): boolean {
     return false // Placeholder
   }
 
-  private hasContextualizedSteps(guideline: GuidelineDefinition, analysis: ContextAnalysis): boolean {
+  private hasContextualizedSteps(
+    guideline: GuidelineDefinition,
+    analysis: ContextAnalysis
+  ): boolean {
     return false // Placeholder
   }
 
@@ -823,7 +874,10 @@ export class ContextualGuidelinesEngine {
     return false // Placeholder
   }
 
-  private getCulturalConsiderations(guideline: GuidelineDefinition, analysis: ContextAnalysis): string[] {
+  private getCulturalConsiderations(
+    guideline: GuidelineDefinition,
+    analysis: ContextAnalysis
+  ): string[] {
     return [] // Placeholder
   }
 
@@ -843,7 +897,10 @@ export class ContextualGuidelinesEngine {
     return [] // Placeholder
   }
 
-  private suggestLearningResources(analysis: ContextAnalysis, guidelines: AdaptiveGuideline[]): string[] {
+  private suggestLearningResources(
+    analysis: ContextAnalysis,
+    guidelines: AdaptiveGuideline[]
+  ): string[] {
     return [] // Placeholder
   }
 
@@ -859,7 +916,7 @@ export class ContextualGuidelinesEngine {
       format: preferences.interactive ? 'interactive' : 'text',
       presentation: preferences.stepByStep ? 'sequential' : 'overview-first',
       pacing: context.situation.urgency === 'high' ? 'guided' : 'self-paced',
-      checkpoints: preferences.confirmationRequired
+      checkpoints: preferences.confirmationRequired,
     }
   }
 }

@@ -8,22 +8,22 @@
 
 'use client'
 
-import { useCallback, useEffect, useState, useRef } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import {
   contextualHelpSystem,
-  interactiveGuidance,
   helpContentManager,
+  interactiveGuidance,
   multiModalDelivery,
   userFeedbackSystem,
 } from '@/services/contextual-help'
 import type {
+  FeedbackData,
+  GuidanceTutorial,
   HelpContent,
   HelpContext,
   HelpDeliveryConfig,
   HelpDeliveryMode,
-  FeedbackData,
-  GuidanceTutorial,
 } from '@/services/contextual-help/types'
 
 // Hook for basic contextual help functionality
@@ -81,136 +81,148 @@ export function useContextualHelp() {
   }, [pathname])
 
   // Show contextual help
-  const showHelp = useCallback(async (
-    contentId?: string,
-    options?: {
-      mode?: HelpDeliveryMode
-      trigger?: 'manual' | 'automatic' | 'error'
-      position?: { x: number; y: number }
-    }
-  ) => {
-    if (!helpContext) {
-      setError('Help context not initialized')
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      let content: HelpContent | null = null
-
-      if (contentId) {
-        // Get specific content
-        content = helpContentManager.getContent(contentId)
-      } else {
-        // Get contextual help based on current state
-        content = await contextualHelpSystem.getContextualHelp(helpContext)
+  const showHelp = useCallback(
+    async (
+      contentId?: string,
+      options?: {
+        mode?: HelpDeliveryMode
+        trigger?: 'manual' | 'automatic' | 'error'
+        position?: { x: number; y: number }
       }
-
-      if (!content) {
-        setError('No help content available for current context')
+    ) => {
+      if (!helpContext) {
+        setError('Help context not initialized')
         return
       }
 
-      // Determine optimal delivery configuration
-      const { mode, confidence } = await multiModalDelivery.getOptimalDeliveryMode(
-        content,
-        helpContext
-      )
+      setIsLoading(true)
+      setError(null)
 
-      const config: HelpDeliveryConfig = {
-        mode: options?.mode || mode,
-        position: options?.position ? {
-          offset: options.position,
-        } : undefined,
-        behavior: {
-          autoClose: content.priority === 'critical' ? undefined : 30000,
-          dismissible: true,
-          persistent: content.priority === 'critical',
-        },
-        accessibility: {
-          announceToScreenReader: helpContext.userState.accessibility.screenReader,
-          trapFocus: mode === 'modal',
-          returnFocus: true,
-        },
-      }
+      try {
+        let content: HelpContent | null = null
 
-      // Deliver help
-      const deliveryResult = await multiModalDelivery.deliverHelp(content, helpContext, config)
+        if (contentId) {
+          // Get specific content
+          content = helpContentManager.getContent(contentId)
+        } else {
+          // Get contextual help based on current state
+          content = await contextualHelpSystem.getContextualHelp(helpContext)
+        }
 
-      if (deliveryResult.success) {
-        setActiveHelp({
+        if (!content) {
+          setError('No help content available for current context')
+          return
+        }
+
+        // Determine optimal delivery configuration
+        const { mode, confidence } = await multiModalDelivery.getOptimalDeliveryMode(
           content,
-          config,
-          deliveryId: deliveryResult.deliveryId,
-        })
-      } else {
-        setError('Failed to deliver help content')
+          helpContext
+        )
+
+        const config: HelpDeliveryConfig = {
+          mode: options?.mode || mode,
+          position: options?.position
+            ? {
+                offset: options.position,
+              }
+            : undefined,
+          behavior: {
+            autoClose: content.priority === 'critical' ? undefined : 30000,
+            dismissible: true,
+            persistent: content.priority === 'critical',
+          },
+          accessibility: {
+            announceToScreenReader: helpContext.userState.accessibility.screenReader,
+            trapFocus: mode === 'modal',
+            returnFocus: true,
+          },
+        }
+
+        // Deliver help
+        const deliveryResult = await multiModalDelivery.deliverHelp(content, helpContext, config)
+
+        if (deliveryResult.success) {
+          setActiveHelp({
+            content,
+            config,
+            deliveryId: deliveryResult.deliveryId,
+          })
+        } else {
+          setError('Failed to deliver help content')
+        }
+      } catch (error) {
+        console.error('Error showing help:', error)
+        setError(error instanceof Error ? error.message : 'Failed to show help')
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Error showing help:', error)
-      setError(error instanceof Error ? error.message : 'Failed to show help')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [helpContext])
+    },
+    [helpContext]
+  )
 
   // Hide active help
-  const hideHelp = useCallback(async (reason: 'user' | 'timeout' | 'completed' = 'user') => {
-    if (activeHelp?.deliveryId) {
-      await multiModalDelivery.dismissDelivery(activeHelp.deliveryId, reason)
-    }
-    setActiveHelp(null)
-  }, [activeHelp])
+  const hideHelp = useCallback(
+    async (reason: 'user' | 'timeout' | 'completed' = 'user') => {
+      if (activeHelp?.deliveryId) {
+        await multiModalDelivery.dismissDelivery(activeHelp.deliveryId, reason)
+      }
+      setActiveHelp(null)
+    },
+    [activeHelp]
+  )
 
   // Track interaction
-  const trackInteraction = useCallback(async (
-    type: 'view' | 'click' | 'scroll' | 'voice' | 'keyboard',
-    data?: Record<string, any>
-  ) => {
-    if (activeHelp?.deliveryId) {
-      await multiModalDelivery.trackInteraction(activeHelp.deliveryId, type, data)
-    }
-  }, [activeHelp])
+  const trackInteraction = useCallback(
+    async (
+      type: 'view' | 'click' | 'scroll' | 'voice' | 'keyboard',
+      data?: Record<string, any>
+    ) => {
+      if (activeHelp?.deliveryId) {
+        await multiModalDelivery.trackInteraction(activeHelp.deliveryId, type, data)
+      }
+    },
+    [activeHelp]
+  )
 
   // Submit feedback
-  const submitFeedback = useCallback(async (
-    feedback: Omit<FeedbackData, 'id' | 'metadata' | 'status'>
-  ) => {
-    if (!helpContext) return
+  const submitFeedback = useCallback(
+    async (feedback: Omit<FeedbackData, 'id' | 'metadata' | 'status'>) => {
+      if (!helpContext) return
 
-    const completeFeedback = {
-      ...feedback,
-      metadata: {
-        ...feedback.metadata,
-        context: helpContext,
-        timestamp: new Date(),
-        helpDeliveryMode: activeHelp?.config.mode,
-      },
-    }
+      const completeFeedback = {
+        ...feedback,
+        metadata: {
+          ...feedback.metadata,
+          context: helpContext,
+          timestamp: new Date(),
+          helpDeliveryMode: activeHelp?.config.mode,
+        },
+      }
 
-    await userFeedbackSystem.collectFeedback(completeFeedback)
-  }, [helpContext, activeHelp])
+      await userFeedbackSystem.collectFeedback(completeFeedback)
+    },
+    [helpContext, activeHelp]
+  )
 
   // Search help content
-  const searchHelp = useCallback(async (
-    query: string,
-    filters?: Record<string, any>
-  ) => {
-    if (!helpContext) return []
+  const searchHelp = useCallback(
+    async (query: string, filters?: Record<string, any>) => {
+      if (!helpContext) return []
 
-    return await helpContentManager.searchContent({
-      query,
-      filters,
-      context: helpContext,
-      options: {
-        fuzzy: true,
-        semantic: true,
-        maxResults: 10,
-      },
-    })
-  }, [helpContext])
+      return await helpContentManager.searchContent({
+        query,
+        filters,
+        context: helpContext,
+        options: {
+          fuzzy: true,
+          semantic: true,
+          maxResults: 10,
+        },
+      })
+    },
+    [helpContext]
+  )
 
   return {
     helpContext,
@@ -242,96 +254,103 @@ export function useTutorial() {
   const { helpContext } = useContextualHelp()
 
   // Start tutorial
-  const startTutorial = useCallback(async (
-    tutorialId: string,
-    options?: {
-      startFromStep?: string
-      skipCompletedSteps?: boolean
-    }
-  ) => {
-    if (!helpContext) {
-      setError('Help context not available')
-      return
-    }
+  const startTutorial = useCallback(
+    async (
+      tutorialId: string,
+      options?: {
+        startFromStep?: string
+        skipCompletedSteps?: boolean
+      }
+    ) => {
+      if (!helpContext) {
+        setError('Help context not available')
+        return
+      }
 
-    setIsLoading(true)
-    setError(null)
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await interactiveGuidance.startTutorial(
-        tutorialId,
-        helpContext,
-        options
-      )
+      try {
+        const result = await interactiveGuidance.startTutorial(tutorialId, helpContext, options)
 
-      setActiveTutorial({
-        sessionId: result.sessionId,
-        tutorial: result.currentStep as any, // TODO: Fix type
-        currentStep: result.currentStep,
-        progress: result.progress,
-      })
-    } catch (error) {
-      console.error('Error starting tutorial:', error)
-      setError(error instanceof Error ? error.message : 'Failed to start tutorial')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [helpContext])
+        setActiveTutorial({
+          sessionId: result.sessionId,
+          tutorial: result.currentStep as any, // TODO: Fix type
+          currentStep: result.currentStep,
+          progress: result.progress,
+        })
+      } catch (error) {
+        console.error('Error starting tutorial:', error)
+        setError(error instanceof Error ? error.message : 'Failed to start tutorial')
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [helpContext]
+  )
 
   // Process tutorial interaction
-  const processInteraction = useCallback(async (
-    interactionType: string,
-    data: any
-  ) => {
-    if (!activeTutorial) return
+  const processInteraction = useCallback(
+    async (interactionType: string, data: any) => {
+      if (!activeTutorial) return
 
-    try {
-      const result = await interactiveGuidance.processInteraction(
-        activeTutorial.sessionId,
-        interactionType,
-        data
-      )
+      try {
+        const result = await interactiveGuidance.processInteraction(
+          activeTutorial.sessionId,
+          interactionType,
+          data
+        )
 
-      if (result.result === 'success' && result.nextStep) {
-        setActiveTutorial(prev => prev ? {
-          ...prev,
-          currentStep: result.nextStep,
-          progress: result.updatedProgress || prev.progress,
-        } : null)
+        if (result.result === 'success' && result.nextStep) {
+          setActiveTutorial((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentStep: result.nextStep,
+                  progress: result.updatedProgress || prev.progress,
+                }
+              : null
+          )
+        }
+
+        return result
+      } catch (error) {
+        console.error('Error processing tutorial interaction:', error)
+        setError(error instanceof Error ? error.message : 'Failed to process interaction')
+        return { result: 'failure' as const, message: 'Interaction failed' }
       }
-
-      return result
-    } catch (error) {
-      console.error('Error processing tutorial interaction:', error)
-      setError(error instanceof Error ? error.message : 'Failed to process interaction')
-      return { result: 'failure' as const, message: 'Interaction failed' }
-    }
-  }, [activeTutorial])
+    },
+    [activeTutorial]
+  )
 
   // Skip current step
-  const skipStep = useCallback(async (reason?: string) => {
-    if (!activeTutorial) return
+  const skipStep = useCallback(
+    async (reason?: string) => {
+      if (!activeTutorial) return
 
-    try {
-      const result = await interactiveGuidance.skipCurrentStep(
-        activeTutorial.sessionId,
-        reason
-      )
+      try {
+        const result = await interactiveGuidance.skipCurrentStep(activeTutorial.sessionId, reason)
 
-      if (result.result === 'success' && result.nextStep) {
-        setActiveTutorial(prev => prev ? {
-          ...prev,
-          currentStep: result.nextStep,
-          progress: result.updatedProgress || prev.progress,
-        } : null)
+        if (result.result === 'success' && result.nextStep) {
+          setActiveTutorial((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentStep: result.nextStep,
+                  progress: result.updatedProgress || prev.progress,
+                }
+              : null
+          )
+        }
+
+        return result
+      } catch (error) {
+        console.error('Error skipping tutorial step:', error)
+        setError(error instanceof Error ? error.message : 'Failed to skip step')
       }
-
-      return result
-    } catch (error) {
-      console.error('Error skipping tutorial step:', error)
-      setError(error instanceof Error ? error.message : 'Failed to skip step')
-    }
-  }, [activeTutorial])
+    },
+    [activeTutorial]
+  )
 
   // Pause tutorial
   const pauseTutorial = useCallback(async () => {
@@ -349,28 +368,31 @@ export function useTutorial() {
   }, [activeTutorial])
 
   // Resume tutorial
-  const resumeTutorial = useCallback(async (resumeToken: string) => {
-    if (!helpContext) return
+  const resumeTutorial = useCallback(
+    async (resumeToken: string) => {
+      if (!helpContext) return
 
-    setIsLoading(true)
-    setError(null)
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await interactiveGuidance.resumeTutorial(resumeToken, helpContext)
+      try {
+        const result = await interactiveGuidance.resumeTutorial(resumeToken, helpContext)
 
-      setActiveTutorial({
-        sessionId: result.sessionId,
-        tutorial: result.currentStep as any, // TODO: Fix type
-        currentStep: result.currentStep,
-        progress: result.progress,
-      })
-    } catch (error) {
-      console.error('Error resuming tutorial:', error)
-      setError(error instanceof Error ? error.message : 'Failed to resume tutorial')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [helpContext])
+        setActiveTutorial({
+          sessionId: result.sessionId,
+          tutorial: result.currentStep as any, // TODO: Fix type
+          currentStep: result.currentStep,
+          progress: result.progress,
+        })
+      } catch (error) {
+        console.error('Error resuming tutorial:', error)
+        setError(error instanceof Error ? error.message : 'Failed to resume tutorial')
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [helpContext]
+  )
 
   // End tutorial
   const endTutorial = useCallback(() => {
@@ -379,17 +401,18 @@ export function useTutorial() {
   }, [])
 
   // Get available tutorials
-  const getAvailableTutorials = useCallback(async (
-    filters?: {
+  const getAvailableTutorials = useCallback(
+    async (filters?: {
       category?: string
       difficulty?: 'beginner' | 'intermediate' | 'advanced'
       estimatedDuration?: number
-    }
-  ) => {
-    if (!helpContext) return []
+    }) => {
+      if (!helpContext) return []
 
-    return await interactiveGuidance.getAvailableTutorials(helpContext, filters)
-  }, [helpContext])
+      return await interactiveGuidance.getAvailableTutorials(helpContext, filters)
+    },
+    [helpContext]
+  )
 
   return {
     activeTutorial,
@@ -437,12 +460,12 @@ export function useHelpAnalytics() {
   }, [])
 
   // Get improvement suggestions
-  const getImprovementSuggestions = useCallback(async (
-    contentId?: string,
-    priority?: 'low' | 'medium' | 'high' | 'critical'
-  ) => {
-    return await userFeedbackSystem.getImprovementSuggestions(contentId, priority)
-  }, [])
+  const getImprovementSuggestions = useCallback(
+    async (contentId?: string, priority?: 'low' | 'medium' | 'high' | 'critical') => {
+      return await userFeedbackSystem.getImprovementSuggestions(contentId, priority)
+    },
+    []
+  )
 
   return {
     analytics,
@@ -458,49 +481,47 @@ export function useHelpContentManagement() {
   const [error, setError] = useState<string | null>(null)
 
   // Create help content
-  const createContent = useCallback(async (
-    content: Omit<HelpContent, 'id' | 'version' | 'lastUpdated' | 'analytics'>,
-    authorId: string
-  ) => {
-    setIsLoading(true)
-    setError(null)
+  const createContent = useCallback(
+    async (
+      content: Omit<HelpContent, 'id' | 'version' | 'lastUpdated' | 'analytics'>,
+      authorId: string
+    ) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const newContent = await helpContentManager.createContent(content, authorId)
-      return newContent
-    } catch (error) {
-      console.error('Error creating help content:', error)
-      setError(error instanceof Error ? error.message : 'Failed to create content')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const newContent = await helpContentManager.createContent(content, authorId)
+        return newContent
+      } catch (error) {
+        console.error('Error creating help content:', error)
+        setError(error instanceof Error ? error.message : 'Failed to create content')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
 
   // Update help content
-  const updateContent = useCallback(async (
-    contentId: string,
-    updates: Partial<HelpContent>,
-    authorId: string
-  ) => {
-    setIsLoading(true)
-    setError(null)
+  const updateContent = useCallback(
+    async (contentId: string, updates: Partial<HelpContent>, authorId: string) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const updatedContent = await helpContentManager.updateContent(
-        contentId,
-        updates,
-        authorId
-      )
-      return updatedContent
-    } catch (error) {
-      console.error('Error updating help content:', error)
-      setError(error instanceof Error ? error.message : 'Failed to update content')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const updatedContent = await helpContentManager.updateContent(contentId, updates, authorId)
+        return updatedContent
+      } catch (error) {
+        console.error('Error updating help content:', error)
+        setError(error instanceof Error ? error.message : 'Failed to update content')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
 
   // Get content analytics
   const getContentAnalytics = useCallback((contentId?: string) => {
@@ -552,12 +573,12 @@ export function useAutoHelp() {
 
     // Listen for user activity
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart']
-    events.forEach(event => {
+    events.forEach((event) => {
       document.addEventListener(event, handleUserActivity, { passive: true })
     })
 
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, handleUserActivity)
       })
       if (inactivityTimer.current) {

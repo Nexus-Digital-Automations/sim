@@ -7,22 +7,23 @@
 
 'use client'
 
-import React, { useEffect, useState, useCallback, useRef, forwardRef } from 'react'
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, HelpCircle, Volume2, VolumeX, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
-import { X, HelpCircle, ChevronRight, ChevronLeft, Volume2, VolumeX } from 'lucide-react'
-import { Button } from './button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
-import { Badge } from './badge'
-import { Separator } from './separator'
-import { Progress } from './progress'
 import { cn } from '@/lib/utils'
 import type {
-  HelpContent,
-  HelpDeliveryConfig,
+  FeedbackData,
   GuidanceStep,
   GuidanceTutorial,
-  FeedbackData,
+  HelpContent,
+  HelpDeliveryConfig,
 } from '@/services/contextual-help/types'
+import { Badge } from './badge'
+import { Button } from './button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
+import { Progress } from './progress'
+import { Separator } from './separator'
 
 // Main Help Container Component
 interface ContextualHelpProps {
@@ -59,11 +60,14 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
     }
   }, [onDismiss])
 
-  const handleInteraction = useCallback((type: string, data?: any) => {
-    if (onInteraction) {
-      onInteraction(type, data)
-    }
-  }, [onInteraction])
+  const handleInteraction = useCallback(
+    (type: string, data?: any) => {
+      if (onInteraction) {
+        onInteraction(type, data)
+      }
+    },
+    [onInteraction]
+  )
 
   if (!isVisible) return null
 
@@ -185,47 +189,46 @@ const HelpTooltip: React.FC<ContextualHelpProps> = ({
 
   if (!isOpen) return null
 
-  const tooltipContent = typeof content.content === 'string'
-    ? content.content
-    : Array.isArray(content.content)
-    ? content.content.map(block => block.content).join(' ')
-    : ''
+  const tooltipContent =
+    typeof content.content === 'string'
+      ? content.content
+      : Array.isArray(content.content)
+        ? content.content.map((block) => block.content).join(' ')
+        : ''
 
   return createPortal(
     <div
       ref={tooltipRef}
       className={cn(
-        'fixed z-50 max-w-xs p-3 text-sm bg-popover text-popover-foreground rounded-md border shadow-md',
-        'animate-in fade-in-0 zoom-in-95',
+        'fixed z-50 max-w-xs rounded-md border bg-popover p-3 text-popover-foreground text-sm shadow-md',
+        'fade-in-0 zoom-in-95 animate-in',
         className
       )}
       style={{
         top: config.position?.offset?.y || 0,
         left: config.position?.offset?.x || 0,
       }}
-      role="tooltip"
-      aria-live="polite"
+      role='tooltip'
+      aria-live='polite'
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          {content.title && (
-            <h4 className="font-medium mb-1">{content.title}</h4>
-          )}
-          <p className="text-muted-foreground">{tooltipContent}</p>
+      <div className='flex items-start justify-between gap-2'>
+        <div className='flex-1'>
+          {content.title && <h4 className='mb-1 font-medium'>{content.title}</h4>}
+          <p className='text-muted-foreground'>{tooltipContent}</p>
         </div>
         {config.behavior?.dismissible !== false && (
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={() => {
               onInteraction?.('dismiss')
               setIsOpen(false)
               onDismiss?.()
             }}
-            className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+            className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'
           >
-            <X className="h-3 w-3" />
-            <span className="sr-only">Close help tooltip</span>
+            <X className='h-3 w-3' />
+            <span className='sr-only'>Close help tooltip</span>
           </Button>
         )}
       </div>
@@ -283,45 +286,49 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
     onDismiss?.()
   }, [onInteraction, onDismiss])
 
-  const handleFeedbackSubmit = useCallback((rating: number) => {
-    if (onFeedback) {
-      onFeedback({
-        userId: 'current-user', // TODO: Get from context
-        sessionId: 'current-session', // TODO: Get from context
-        helpContentId: content.id,
-        type: 'rating',
-        rating,
-        metadata: {
-          context: {} as any, // TODO: Get from context
-          timestamp: new Date(),
-          helpDeliveryMode: config.mode,
-        },
-      })
-    }
-    setFeedbackRating(rating)
-    setShowFeedback(false)
-    onInteraction?.('feedback', { rating })
-  }, [content.id, config.mode, onFeedback, onInteraction])
+  const handleFeedbackSubmit = useCallback(
+    (rating: number) => {
+      if (onFeedback) {
+        onFeedback({
+          userId: 'current-user', // TODO: Get from context
+          sessionId: 'current-session', // TODO: Get from context
+          helpContentId: content.id,
+          type: 'rating',
+          rating,
+          metadata: {
+            context: {} as any, // TODO: Get from context
+            timestamp: new Date(),
+            helpDeliveryMode: config.mode,
+          },
+        })
+      }
+      setFeedbackRating(rating)
+      setShowFeedback(false)
+      onInteraction?.('feedback', { rating })
+    },
+    [content.id, config.mode, onFeedback, onInteraction]
+  )
 
   if (!isOpen) return null
 
-  const contentText = typeof content.content === 'string'
-    ? content.content
-    : Array.isArray(content.content)
-    ? content.content.map(block => block.content).join('\n\n')
-    : ''
+  const contentText =
+    typeof content.content === 'string'
+      ? content.content
+      : Array.isArray(content.content)
+        ? content.content.map((block) => block.content).join('\n\n')
+        : ''
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="help-modal-title"
-      aria-describedby="help-modal-description"
+      className='fixed inset-0 z-50 flex items-center justify-center'
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='help-modal-title'
+      aria-describedby='help-modal-description'
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className='absolute inset-0 bg-background/80 backdrop-blur-sm'
         onClick={config.behavior?.dismissible !== false ? handleClose : undefined}
       />
 
@@ -329,48 +336,43 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
       <Card
         ref={modalRef}
         className={cn(
-          'relative w-full max-w-lg m-4 max-h-[80vh] overflow-y-auto',
-          'animate-in fade-in-0 zoom-in-95',
+          'relative m-4 max-h-[80vh] w-full max-w-lg overflow-y-auto',
+          'fade-in-0 zoom-in-95 animate-in',
           className
         )}
       >
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-          <div className="flex-1">
-            <CardTitle id="help-modal-title" className="text-lg">
+        <CardHeader className='flex flex-row items-start justify-between space-y-0 pb-4'>
+          <div className='flex-1'>
+            <CardTitle id='help-modal-title' className='text-lg'>
               {content.title}
             </CardTitle>
             {content.description && (
-              <CardDescription id="help-modal-description" className="mt-1">
+              <CardDescription id='help-modal-description' className='mt-1'>
                 {content.description}
               </CardDescription>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {content.priority && (
               <Badge variant={content.priority === 'critical' ? 'destructive' : 'secondary'}>
                 {content.priority}
               </Badge>
             )}
             {config.behavior?.dismissible !== false && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClose}
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close help modal</span>
+              <Button variant='ghost' size='sm' onClick={handleClose} className='h-6 w-6 p-0'>
+                <X className='h-4 w-4' />
+                <span className='sr-only'>Close help modal</span>
               </Button>
             )}
           </div>
         </CardHeader>
 
         <CardContent>
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {/* Main content */}
-            <div className="prose prose-sm max-w-none">
+            <div className='prose prose-sm max-w-none'>
               {contentText.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="text-sm text-muted-foreground">
+                <p key={index} className='text-muted-foreground text-sm'>
                   {paragraph}
                 </p>
               ))}
@@ -378,9 +380,9 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
 
             {/* Tags */}
             {content.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className='flex flex-wrap gap-1'>
                 {content.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
+                  <Badge key={tag} variant='outline' className='text-xs'>
                     {tag}
                   </Badge>
                 ))}
@@ -390,11 +392,11 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
             <Separator />
 
             {/* Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
+            <div className='flex items-center justify-between'>
+              <div className='flex gap-2'>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={() => {
                     setShowFeedback(!showFeedback)
                     onInteraction?.('feedback_toggle')
@@ -409,7 +411,7 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
                   onInteraction?.('complete')
                   handleClose()
                 }}
-                size="sm"
+                size='sm'
               >
                 Got it
               </Button>
@@ -417,16 +419,16 @@ const HelpModal: React.FC<ContextualHelpProps> = ({
 
             {/* Feedback Section */}
             {showFeedback && (
-              <div className="space-y-3 pt-2 border-t">
-                <p className="text-sm font-medium">Rate this help content:</p>
-                <div className="flex gap-1">
+              <div className='space-y-3 border-t pt-2'>
+                <p className='font-medium text-sm'>Rate this help content:</p>
+                <div className='flex gap-1'>
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <Button
                       key={rating}
-                      variant={feedbackRating === rating ? "default" : "outline"}
-                      size="sm"
+                      variant={feedbackRating === rating ? 'default' : 'outline'}
+                      size='sm'
                       onClick={() => handleFeedbackSubmit(rating)}
-                      className="w-8 h-8 p-0"
+                      className='h-8 w-8 p-0'
                     >
                       {rating}
                     </Button>
@@ -470,48 +472,36 @@ const HelpSidebar: React.FC<ContextualHelpProps> = ({
   return (
     <div
       className={cn(
-        'fixed right-0 top-0 h-full z-40 bg-background border-l shadow-lg',
+        'fixed top-0 right-0 z-40 h-full border-l bg-background shadow-lg',
         'transition-all duration-300 ease-in-out',
         isCollapsed ? 'w-12' : 'w-80',
-        'animate-in slide-in-from-right',
+        'slide-in-from-right animate-in',
         className
       )}
-      role="complementary"
-      aria-label="Help sidebar"
+      role='complementary'
+      aria-label='Help sidebar'
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b">
+      <div className='flex items-center justify-between border-b p-3'>
         {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-sm">Help</span>
+          <div className='flex items-center gap-2'>
+            <HelpCircle className='h-4 w-4 text-blue-600' />
+            <span className='font-medium text-sm'>Help</span>
           </div>
         )}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleCollapse}
-            className="h-6 w-6 p-0"
-          >
+        <div className='flex items-center gap-1'>
+          <Button variant='ghost' size='sm' onClick={toggleCollapse} className='h-6 w-6 p-0'>
             {isCollapsed ? (
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className='h-3 w-3' />
             ) : (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className='h-3 w-3' />
             )}
-            <span className="sr-only">
-              {isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            </span>
+            <span className='sr-only'>{isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}</span>
           </Button>
           {!isCollapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-3 w-3" />
-              <span className="sr-only">Close sidebar</span>
+            <Button variant='ghost' size='sm' onClick={handleClose} className='h-6 w-6 p-0'>
+              <X className='h-3 w-3' />
+              <span className='sr-only'>Close sidebar</span>
             </Button>
           )}
         </div>
@@ -519,25 +509,23 @@ const HelpSidebar: React.FC<ContextualHelpProps> = ({
 
       {/* Content */}
       {!isCollapsed && (
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-4">
+        <div className='flex-1 overflow-y-auto p-4'>
+          <div className='space-y-4'>
             <div>
-              <h3 className="font-medium text-sm mb-2">{content.title}</h3>
+              <h3 className='mb-2 font-medium text-sm'>{content.title}</h3>
               {content.description && (
-                <p className="text-xs text-muted-foreground mb-3">
-                  {content.description}
-                </p>
+                <p className='mb-3 text-muted-foreground text-xs'>{content.description}</p>
               )}
             </div>
 
-            <div className="prose prose-sm max-w-none">
+            <div className='prose prose-sm max-w-none'>
               {typeof content.content === 'string' ? (
-                <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                <div className='whitespace-pre-wrap text-muted-foreground text-sm'>
                   {content.content}
                 </div>
               ) : Array.isArray(content.content) ? (
                 content.content.map((block, index) => (
-                  <div key={block.id || index} className="text-sm text-muted-foreground mb-3">
+                  <div key={block.id || index} className='mb-3 text-muted-foreground text-sm'>
                     {block.content}
                   </div>
                 ))
@@ -545,9 +533,9 @@ const HelpSidebar: React.FC<ContextualHelpProps> = ({
             </div>
 
             {content.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className='flex flex-wrap gap-1'>
                 {content.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
+                  <Badge key={tag} variant='outline' className='text-xs'>
                     {tag}
                   </Badge>
                 ))}
@@ -578,21 +566,21 @@ const HelpInline: React.FC<ContextualHelpProps> = ({
   return (
     <div
       className={cn(
-        'inline-block p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-md',
-        'animate-in fade-in-0 slide-in-from-left-2',
+        'inline-block rounded-r-md border-blue-400 border-l-4 bg-blue-50 p-3',
+        'fade-in-0 slide-in-from-left-2 animate-in',
         className
       )}
-      role="complementary"
+      role='complementary'
     >
-      <div className="flex items-start gap-3">
-        <HelpCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-sm text-blue-900">{content.title}</h4>
+      <div className='flex items-start gap-3'>
+        <HelpCircle className='mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600' />
+        <div className='min-w-0 flex-1'>
+          <div className='mb-1 flex items-center gap-2'>
+            <h4 className='font-medium text-blue-900 text-sm'>{content.title}</h4>
             {content.priority && (
               <Badge
                 variant={content.priority === 'critical' ? 'destructive' : 'secondary'}
-                className="text-xs"
+                className='text-xs'
               >
                 {content.priority}
               </Badge>
@@ -600,13 +588,13 @@ const HelpInline: React.FC<ContextualHelpProps> = ({
           </div>
 
           {content.description && (
-            <p className="text-sm text-blue-800 mb-2">{content.description}</p>
+            <p className='mb-2 text-blue-800 text-sm'>{content.description}</p>
           )}
 
           {isExpanded && (
-            <div className="text-sm text-blue-700 space-y-2">
+            <div className='space-y-2 text-blue-700 text-sm'>
               {typeof content.content === 'string' ? (
-                <div className="whitespace-pre-wrap">{content.content}</div>
+                <div className='whitespace-pre-wrap'>{content.content}</div>
               ) : Array.isArray(content.content) ? (
                 content.content.map((block, index) => (
                   <div key={block.id || index}>{block.content}</div>
@@ -614,9 +602,9 @@ const HelpInline: React.FC<ContextualHelpProps> = ({
               ) : null}
 
               {content.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 pt-2">
+                <div className='flex flex-wrap gap-1 pt-2'>
                   {content.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
+                    <Badge key={tag} variant='outline' className='text-xs'>
                       {tag}
                     </Badge>
                   ))}
@@ -625,26 +613,26 @@ const HelpInline: React.FC<ContextualHelpProps> = ({
             </div>
           )}
 
-          <div className="flex items-center gap-2 mt-2">
+          <div className='mt-2 flex items-center gap-2'>
             {typeof content.content === 'string' && content.content.length > 100 && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={toggleExpanded}
-                className="h-6 px-2 text-xs text-blue-700 hover:text-blue-900"
+                className='h-6 px-2 text-blue-700 text-xs hover:text-blue-900'
               >
                 {isExpanded ? 'Show less' : 'Show more'}
               </Button>
             )}
             {config.behavior?.dismissible !== false && (
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={() => {
                   onInteraction?.('dismiss')
                   onDismiss?.()
                 }}
-                className="h-6 px-2 text-xs text-blue-700 hover:text-blue-900"
+                className='h-6 px-2 text-blue-700 text-xs hover:text-blue-900'
               >
                 Dismiss
               </Button>
@@ -676,49 +664,44 @@ const HelpOverlay: React.FC<ContextualHelpProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+      className='fixed inset-0 z-50 flex items-center justify-center p-4'
+      role='dialog'
+      aria-modal='true'
     >
       {/* Dark overlay */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className='absolute inset-0 bg-black/60 backdrop-blur-sm'
         onClick={config.behavior?.dismissible !== false ? handleClose : undefined}
       />
 
       {/* Content */}
       <div
         className={cn(
-          'relative bg-background rounded-lg p-6 max-w-md w-full',
-          'animate-in fade-in-0 zoom-in-95',
+          'relative w-full max-w-md rounded-lg bg-background p-6',
+          'fade-in-0 zoom-in-95 animate-in',
           className
         )}
       >
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-blue-600" />
-            <h3 className="font-medium">{content.title}</h3>
+        <div className='mb-4 flex items-start justify-between'>
+          <div className='flex items-center gap-2'>
+            <HelpCircle className='h-5 w-5 text-blue-600' />
+            <h3 className='font-medium'>{content.title}</h3>
           </div>
           {config.behavior?.dismissible !== false && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close overlay</span>
+            <Button variant='ghost' size='sm' onClick={handleClose} className='h-6 w-6 p-0'>
+              <X className='h-4 w-4' />
+              <span className='sr-only'>Close overlay</span>
             </Button>
           )}
         </div>
 
         {content.description && (
-          <p className="text-sm text-muted-foreground mb-4">{content.description}</p>
+          <p className='mb-4 text-muted-foreground text-sm'>{content.description}</p>
         )}
 
-        <div className="text-sm space-y-2 mb-4">
+        <div className='mb-4 space-y-2 text-sm'>
           {typeof content.content === 'string' ? (
-            <div className="whitespace-pre-wrap">{content.content}</div>
+            <div className='whitespace-pre-wrap'>{content.content}</div>
           ) : Array.isArray(content.content) ? (
             content.content.map((block, index) => (
               <div key={block.id || index}>{block.content}</div>
@@ -726,13 +709,13 @@ const HelpOverlay: React.FC<ContextualHelpProps> = ({
           ) : null}
         </div>
 
-        <div className="flex justify-end">
+        <div className='flex justify-end'>
           <Button
             onClick={() => {
               onInteraction?.('complete')
               handleClose()
             }}
-            size="sm"
+            size='sm'
           >
             Got it
           </Button>
@@ -775,78 +758,60 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   }, [isVoiceEnabled])
 
   return (
-    <Card className={cn('w-full max-w-2xl mx-auto', className)}>
+    <Card className={cn('mx-auto w-full max-w-2xl', className)}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg">{tutorial.title}</CardTitle>
-            <Badge variant="outline">
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <CardTitle className='text-lg'>{tutorial.title}</CardTitle>
+            <Badge variant='outline'>
               Step {progress.currentStep} of {progress.totalSteps}
             </Badge>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleVoice}
-              className="h-8 w-8 p-0"
-            >
-              {isVoiceEnabled ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
-              <span className="sr-only">
-                {isVoiceEnabled ? 'Disable voice' : 'Enable voice'}
-              </span>
+          <div className='flex items-center gap-2'>
+            <Button variant='ghost' size='sm' onClick={toggleVoice} className='h-8 w-8 p-0'>
+              {isVoiceEnabled ? <Volume2 className='h-4 w-4' /> : <VolumeX className='h-4 w-4' />}
+              <span className='sr-only'>{isVoiceEnabled ? 'Disable voice' : 'Enable voice'}</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDismiss}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close tutorial</span>
+            <Button variant='ghost' size='sm' onClick={onDismiss} className='h-8 w-8 p-0'>
+              <X className='h-4 w-4' />
+              <span className='sr-only'>Close tutorial</span>
             </Button>
           </div>
         </div>
-        <Progress value={progress.completionPercentage} className="w-full" />
+        <Progress value={progress.completionPercentage} className='w-full' />
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <div>
-            <h3 className="font-medium mb-2">{currentStep.title}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {currentStep.description}
-            </p>
+            <h3 className='mb-2 font-medium'>{currentStep.title}</h3>
+            <p className='mb-4 text-muted-foreground text-sm'>{currentStep.description}</p>
           </div>
 
-          <div className="prose prose-sm max-w-none">
-            <div className="text-sm">{currentStep.content.text}</div>
+          <div className='prose prose-sm max-w-none'>
+            <div className='text-sm'>{currentStep.content.text}</div>
           </div>
 
           {currentStep.content.multimedia?.screenshot && (
-            <div className="border rounded-lg p-2">
+            <div className='rounded-lg border p-2'>
               <img
                 src={currentStep.content.multimedia.screenshot}
                 alt={`Screenshot for ${currentStep.title}`}
-                className="w-full h-auto rounded"
+                className='h-auto w-full rounded'
               />
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-4">
+          <div className='flex items-center justify-between pt-4'>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={onSkipStep}
               disabled={currentStep.type === 'validation'}
             >
               Skip
             </Button>
 
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <Button onClick={onStepComplete}>
                 {progress.currentStep === progress.totalSteps ? 'Complete' : 'Next'}
               </Button>
@@ -886,27 +851,26 @@ export const HelpTrigger: React.FC<HelpTriggerProps> = ({
       case 'combo':
         return (
           <>
-            <HelpCircle className="h-4 w-4 mr-1" />
+            <HelpCircle className='mr-1 h-4 w-4' />
             {children || 'Help'}
           </>
         )
-      case 'icon':
       default:
-        return <HelpCircle className="h-4 w-4" />
+        return <HelpCircle className='h-4 w-4' />
     }
   }
 
   return (
     <Button
-      variant="ghost"
+      variant='ghost'
       size={size}
       onClick={handleClick}
       className={cn(
         'text-muted-foreground hover:text-foreground',
-        variant === 'icon' && 'w-8 h-8 p-0',
+        variant === 'icon' && 'h-8 w-8 p-0',
         className
       )}
-      aria-label="Get help"
+      aria-label='Get help'
     >
       {getContent()}
     </Button>

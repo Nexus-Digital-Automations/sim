@@ -15,10 +15,8 @@
  * @version 1.0.0
  */
 
-import type { ConversationalContext } from './context-analyzer'
-import type { AgentToolRecommendation } from './agent-tool-api'
-import type { EnhancedToolRecommendation } from '../enhanced-intelligence/tool-intelligence-engine'
 import { createLogger } from '../utils/logger'
+import type { AgentToolRecommendation } from './agent-tool-api'
 
 const logger = createLogger('WorkflowRecommendationEngine')
 
@@ -472,7 +470,7 @@ export class WorkflowRecommendationEngine {
     logger.info('Generating workflow-aware recommendations', {
       requestId: request.requestId,
       workflowId: request.workflowId,
-      currentStage: request.currentStage.stageId
+      currentStage: request.currentStage.stageId,
     })
 
     try {
@@ -495,16 +493,10 @@ export class WorkflowRecommendationEngine {
       )
 
       // Generate stage optimizations
-      const stageOptimizations = await this.generateStageOptimizations(
-        request,
-        workflowAnalysis
-      )
+      const stageOptimizations = await this.generateStageOptimizations(request, workflowAnalysis)
 
       // Prepare upcoming stages
-      const upcomingStagePreparation = await this.prepareUpcomingStages(
-        request,
-        workflowAnalysis
-      )
+      const upcomingStagePreparation = await this.prepareUpcomingStages(request, workflowAnalysis)
 
       // Identify potential bottlenecks
       const potentialBottlenecks = await this.identifyPotentialBottlenecks(
@@ -529,22 +521,21 @@ export class WorkflowRecommendationEngine {
           sequenceRecommendations,
           workflowAnalysis
         ),
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       }
 
       logger.info('Workflow recommendations generated successfully', {
         requestId: request.requestId,
         immediateCount: immediateRecommendations.length,
         sequenceCount: sequenceRecommendations.length,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return response
-
     } catch (error) {
       logger.error('Failed to generate workflow recommendations', {
         error,
-        requestId: request.requestId
+        requestId: request.requestId,
       })
       throw new Error(`Workflow recommendation generation failed: ${error.message}`)
     }
@@ -592,7 +583,7 @@ export class WorkflowRecommendationEngine {
     const recommendations: WorkflowToolRecommendation[] = []
 
     // Filter tools by stage compatibility
-    const compatibleTools = request.availableTools.filter(tool =>
+    const compatibleTools = request.availableTools.filter((tool) =>
       tool.stageCompatibility.includes(request.currentStage.stageId)
     )
 
@@ -602,7 +593,8 @@ export class WorkflowRecommendationEngine {
       const stageAlignment = this.calculateStageAlignment(tool, request.currentStage)
       const dataCompatibility = this.calculateDataCompatibility(tool, request.workflowState)
 
-      if (workflowRelevance > 0.3) { // Threshold for inclusion
+      if (workflowRelevance > 0.3) {
+        // Threshold for inclusion
         const recommendation: WorkflowToolRecommendation = {
           ...this.createBaseRecommendation(tool, request),
           workflowRelevance,
@@ -616,7 +608,7 @@ export class WorkflowRecommendationEngine {
           resourceRequirements: this.calculateResourceRequirements(tool, request),
           prerequisiteTools: this.identifyPrerequisiteTools(tool, request),
           dependentTools: this.identifyDependentTools(tool, request),
-          parallelizable: this.assessParallelizability(tool, request)
+          parallelizable: this.assessParallelizability(tool, request),
         }
 
         recommendations.push(recommendation)
@@ -625,7 +617,7 @@ export class WorkflowRecommendationEngine {
 
     // Sort by relevance and confidence
     return recommendations
-      .sort((a, b) => (b.workflowRelevance + b.confidence) - (a.workflowRelevance + a.confidence))
+      .sort((a, b) => b.workflowRelevance + b.confidence - (a.workflowRelevance + a.confidence))
       .slice(0, 5) // Limit to top 5 immediate recommendations
   }
 
@@ -678,7 +670,7 @@ export class WorkflowRecommendationEngine {
         preparationTasks: await this.generatePreparationTasks(stageId, request),
         requiredResources: await this.calculateStageResourceRequirements(stageId, request),
         potentialChallenges: await this.identifyPotentialChallenges(stageId, request),
-        recommendedPreparation: await this.generatePreparationRecommendations(stageId, request)
+        recommendedPreparation: await this.generatePreparationRecommendations(stageId, request),
       }
 
       preparations.push(stageInfo)
@@ -707,9 +699,9 @@ export class WorkflowRecommendationEngine {
             description: 'Scale up compute resources',
             effectiveness: 0.9,
             implementationCost: 100,
-            timeToImplement: 5
-          }
-        ]
+            timeToImplement: 5,
+          },
+        ],
       })
     }
 
@@ -727,9 +719,9 @@ export class WorkflowRecommendationEngine {
             description: 'Implement data cleaning pipeline',
             effectiveness: 0.8,
             implementationCost: 50,
-            timeToImplement: 15
-          }
-        ]
+            timeToImplement: 15,
+          },
+        ],
       })
     }
 
@@ -741,13 +733,15 @@ export class WorkflowRecommendationEngine {
     sequenceRecs: ToolSequenceRecommendation[],
     analysis: WorkflowAnalysis
   ): number {
-    const immediateConfidence = immediateRecs.length > 0
-      ? immediateRecs.reduce((sum, rec) => sum + rec.confidence, 0) / immediateRecs.length
-      : 0.5
+    const immediateConfidence =
+      immediateRecs.length > 0
+        ? immediateRecs.reduce((sum, rec) => sum + rec.confidence, 0) / immediateRecs.length
+        : 0.5
 
-    const sequenceConfidence = sequenceRecs.length > 0
-      ? sequenceRecs.reduce((sum, rec) => sum + rec.successProbability, 0) / sequenceRecs.length
-      : 0.5
+    const sequenceConfidence =
+      sequenceRecs.length > 0
+        ? sequenceRecs.reduce((sum, rec) => sum + rec.successProbability, 0) / sequenceRecs.length
+        : 0.5
 
     const analysisConfidence = analysis.currentStageHealth * analysis.efficiencyScore
 
@@ -759,7 +753,11 @@ export class WorkflowRecommendationEngine {
   }
 
   // Helper methods (stubs for implementation)
-  private calculateWorkflowRelevance(tool: WorkflowTool, request: WorkflowRecommendationRequest, analysis: WorkflowAnalysis): number {
+  private calculateWorkflowRelevance(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest,
+    analysis: WorkflowAnalysis
+  ): number {
     return 0.8
   }
 
@@ -771,49 +769,77 @@ export class WorkflowRecommendationEngine {
     return 0.85
   }
 
-  private createBaseRecommendation(tool: WorkflowTool, request: WorkflowRecommendationRequest): any {
+  private createBaseRecommendation(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): any {
     return {
       tool: { id: tool.toolId, name: tool.toolId, description: '' },
       confidence: 0.8,
       priority: 1,
-      reasoning: 'Workflow compatibility analysis'
+      reasoning: 'Workflow compatibility analysis',
     }
   }
 
-  private determineWorkflowIntegration(tool: WorkflowTool, request: WorkflowRecommendationRequest): WorkflowIntegration {
+  private determineWorkflowIntegration(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): WorkflowIntegration {
     return {
       integrationMethod: 'direct',
       dataTransformation: false,
       errorHandling: 'retry',
-      rollbackCapability: true
+      rollbackCapability: true,
     }
   }
 
-  private generateDataFlowInstructions(tool: WorkflowTool, request: WorkflowRecommendationRequest): DataFlowInstruction[] {
+  private generateDataFlowInstructions(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): DataFlowInstruction[] {
     return []
   }
 
-  private generateQualityChecks(tool: WorkflowTool, request: WorkflowRecommendationRequest): QualityCheck[] {
+  private generateQualityChecks(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): QualityCheck[] {
     return []
   }
 
-  private calculateResourceRequirements(tool: WorkflowTool, request: WorkflowRecommendationRequest): ResourceRequirement[] {
+  private calculateResourceRequirements(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): ResourceRequirement[] {
     return []
   }
 
-  private identifyPrerequisiteTools(tool: WorkflowTool, request: WorkflowRecommendationRequest): string[] {
+  private identifyPrerequisiteTools(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): string[] {
     return []
   }
 
-  private identifyDependentTools(tool: WorkflowTool, request: WorkflowRecommendationRequest): string[] {
+  private identifyDependentTools(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): string[] {
     return []
   }
 
-  private assessParallelizability(tool: WorkflowTool, request: WorkflowRecommendationRequest): boolean {
+  private assessParallelizability(
+    tool: WorkflowTool,
+    request: WorkflowRecommendationRequest
+  ): boolean {
     return true
   }
 
-  private async analyzeStageOptimization(stage: WorkflowStage, state: WorkflowState, analysis: WorkflowAnalysis): Promise<StageOptimization> {
+  private async analyzeStageOptimization(
+    stage: WorkflowStage,
+    state: WorkflowState,
+    analysis: WorkflowAnalysis
+  ): Promise<StageOptimization> {
     return {
       stageId: stage.stageId,
       currentEfficiency: 0.7,
@@ -823,8 +849,8 @@ export class WorkflowRecommendationEngine {
         performanceGain: 0.15,
         qualityImpact: 0.05,
         resourceSavings: 0.1,
-        implementationTime: 30
-      }
+        implementationTime: 30,
+      },
     }
   }
 
@@ -832,19 +858,31 @@ export class WorkflowRecommendationEngine {
     return new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
   }
 
-  private async generatePreparationTasks(stageId: string, request: WorkflowRecommendationRequest): Promise<PreparationTask[]> {
+  private async generatePreparationTasks(
+    stageId: string,
+    request: WorkflowRecommendationRequest
+  ): Promise<PreparationTask[]> {
     return []
   }
 
-  private async calculateStageResourceRequirements(stageId: string, request: WorkflowRecommendationRequest): Promise<ResourceRequirement[]> {
+  private async calculateStageResourceRequirements(
+    stageId: string,
+    request: WorkflowRecommendationRequest
+  ): Promise<ResourceRequirement[]> {
     return []
   }
 
-  private async identifyPotentialChallenges(stageId: string, request: WorkflowRecommendationRequest): Promise<string[]> {
+  private async identifyPotentialChallenges(
+    stageId: string,
+    request: WorkflowRecommendationRequest
+  ): Promise<string[]> {
     return []
   }
 
-  private async generatePreparationRecommendations(stageId: string, request: WorkflowRecommendationRequest): Promise<string[]> {
+  private async generatePreparationRecommendations(
+    stageId: string,
+    request: WorkflowRecommendationRequest
+  ): Promise<string[]> {
     return []
   }
 }
@@ -854,7 +892,10 @@ export class WorkflowRecommendationEngine {
 // =============================================================================
 
 class WorkflowAnalyzer {
-  async analyzeWorkflowState(state: WorkflowState, currentStage: WorkflowStage): Promise<WorkflowAnalysis> {
+  async analyzeWorkflowState(
+    state: WorkflowState,
+    currentStage: WorkflowStage
+  ): Promise<WorkflowAnalysis> {
     return {
       currentStageHealth: 0.8,
       progressOptimality: 0.75,
@@ -867,35 +908,48 @@ class WorkflowAnalyzer {
       improvementOpportunities: [],
       resourceUtilization: 0.6,
       capacityConstraints: [],
-      scalabilityFactors: []
+      scalabilityFactors: [],
     }
   }
 }
 
 class SequenceOptimizer {
-  async optimizeSequence(tools: string[], stage: WorkflowStage, state: WorkflowState): Promise<ToolSequenceRecommendation[]> {
+  async optimizeSequence(
+    tools: string[],
+    stage: WorkflowStage,
+    state: WorkflowState
+  ): Promise<ToolSequenceRecommendation[]> {
     return []
   }
 
-  async generateSequenceRecommendations(request: WorkflowRecommendationRequest, analysis: WorkflowAnalysis): Promise<ToolSequenceRecommendation[]> {
+  async generateSequenceRecommendations(
+    request: WorkflowRecommendationRequest,
+    analysis: WorkflowAnalysis
+  ): Promise<ToolSequenceRecommendation[]> {
     return []
   }
 }
 
 class PerformancePredictor {
-  async predictPerformance(recommendations: WorkflowToolRecommendation[], state: WorkflowState): Promise<WorkflowPerformanceMetrics> {
+  async predictPerformance(
+    recommendations: WorkflowToolRecommendation[],
+    state: WorkflowState
+  ): Promise<WorkflowPerformanceMetrics> {
     return {
       overallVelocity: 1.0,
       stageVelocities: {},
       resourceEfficiency: 0.8,
       qualityConsistency: 0.85,
-      errorRate: 0.05
+      errorRate: 0.05,
     }
   }
 }
 
 class WorkflowQualityAssurance {
-  async validateRecommendations(recommendations: WorkflowToolRecommendation[], context: WorkflowState): Promise<ValidationResult[]> {
+  async validateRecommendations(
+    recommendations: WorkflowToolRecommendation[],
+    context: WorkflowState
+  ): Promise<ValidationResult[]> {
     return []
   }
 }

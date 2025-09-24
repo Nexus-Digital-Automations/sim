@@ -9,9 +9,9 @@
  */
 
 import { Logger } from '../utils/logger'
-import { GuidelineDefinition, GuidelineTemplate, GuidelineTemplateRegistry } from './guidelines-framework'
-import { KnowledgeBase, KnowledgeEntry } from './knowledge-base'
-import { InteractiveTutorial, InteractiveTutorialEngine } from './interactive-guidance'
+import { type GuidelineDefinition, GuidelineTemplateRegistry } from './guidelines-framework'
+import { type InteractiveTutorial, InteractiveTutorialEngine } from './interactive-guidance'
+import { KnowledgeBase, type KnowledgeEntry } from './knowledge-base'
 
 // =============================================================================
 // Management Platform Core Types
@@ -172,7 +172,7 @@ export interface EmailNotificationConfig {
 export interface InAppNotificationConfig {
   enabled: boolean
   events: string[]
-  retention: number  // days
+  retention: number // days
 }
 
 export interface WebhookNotificationConfig {
@@ -191,7 +191,7 @@ export interface RetryPolicy {
 export interface DigestConfig {
   enabled: boolean
   frequency: 'daily' | 'weekly' | 'monthly'
-  time: string  // HH:MM format
+  time: string // HH:MM format
   content: DigestContent
 }
 
@@ -221,7 +221,13 @@ export interface AuthoringProject {
   settings: ProjectSettings
 }
 
-export type ProjectStatus = 'planning' | 'active' | 'review' | 'completed' | 'archived' | 'suspended'
+export type ProjectStatus =
+  | 'planning'
+  | 'active'
+  | 'review'
+  | 'completed'
+  | 'archived'
+  | 'suspended'
 
 export interface GuidelineDocument {
   id: string
@@ -370,7 +376,7 @@ export interface ReviewDecision {
 }
 
 export interface ReviewMetrics {
-  timeSpent: number  // minutes
+  timeSpent: number // minutes
   changesRequested: number
   qualityScore?: number
   complexity?: number
@@ -383,8 +389,8 @@ export interface DocumentVersion {
   authorId: string
   changes: string[]
   tags: string[]
-  snapshot: any  // Full document snapshot
-  size: number  // bytes
+  snapshot: any // Full document snapshot
+  size: number // bytes
   checksum: string
 }
 
@@ -401,7 +407,13 @@ export interface Assignment {
 }
 
 export type AssignmentType = 'review' | 'edit' | 'approve' | 'test' | 'translate' | 'custom'
-export type AssignmentStatus = 'pending' | 'accepted' | 'in-progress' | 'completed' | 'declined' | 'overdue'
+export type AssignmentStatus =
+  | 'pending'
+  | 'accepted'
+  | 'in-progress'
+  | 'completed'
+  | 'declined'
+  | 'overdue'
 
 export interface ProjectMetadata {
   createdAt: Date
@@ -426,7 +438,7 @@ export interface ProjectSettings {
 }
 
 export interface ProjectPermission {
-  principalId: string  // userId or roleId
+  principalId: string // userId or roleId
   principalType: 'user' | 'role'
   permissions: string[]
   inherited: boolean
@@ -444,7 +456,7 @@ export interface WorkspaceTemplate {
   description: string
   type: 'guideline' | 'knowledge' | 'tutorial' | 'project'
   category: string
-  template: any  // Template-specific structure
+  template: any // Template-specific structure
   metadata: TemplateMetadata
 }
 
@@ -499,14 +511,14 @@ export interface BillingInfo {
 export interface UsageInfo {
   documents: number
   collaborators: number
-  storage: number  // bytes
+  storage: number // bytes
   apiCalls: number
 }
 
 export interface UsageLimits {
   documents: number
   collaborators: number
-  storage: number  // bytes
+  storage: number // bytes
   apiCalls: number
 }
 
@@ -552,14 +564,16 @@ export class GuidelinesManagementPlatform {
       name: config.name,
       description: config.description || '',
       ownerId: config.ownerId,
-      collaborators: [{
-        userId: config.ownerId,
-        role: 'owner',
-        permissions: this.getOwnerPermissions(),
-        addedAt: new Date(),
-        addedBy: config.ownerId,
-        status: 'active'
-      }],
+      collaborators: [
+        {
+          userId: config.ownerId,
+          role: 'owner',
+          permissions: this.getOwnerPermissions(),
+          addedAt: new Date(),
+          addedBy: config.ownerId,
+          status: 'active',
+        },
+      ],
       settings: config.settings || this.getDefaultWorkspaceSettings(),
       projects: [],
       templates: [],
@@ -572,9 +586,9 @@ export class GuidelinesManagementPlatform {
           totalDocuments: 0,
           totalCollaborators: 1,
           activityMetrics: [],
-          qualityMetrics: []
-        }
-      }
+          qualityMetrics: [],
+        },
+      },
     }
 
     this.workspaces.set(workspace.id, workspace)
@@ -582,13 +596,13 @@ export class GuidelinesManagementPlatform {
     await this.eventEmitter.emit('workspace.created', {
       workspaceId: workspace.id,
       ownerId: config.ownerId,
-      name: config.name
+      name: config.name,
     })
 
     this.logger.info('Workspace created', {
       workspaceId: workspace.id,
       name: workspace.name,
-      ownerId: config.ownerId
+      ownerId: config.ownerId,
     })
 
     return workspace
@@ -624,13 +638,13 @@ export class GuidelinesManagementPlatform {
     await this.eventEmitter.emit('workspace.updated', {
       workspaceId,
       userId,
-      updates: Object.keys(updates)
+      updates: Object.keys(updates),
     })
 
     this.logger.info('Workspace settings updated', {
       workspaceId,
       userId,
-      updates: Object.keys(updates)
+      updates: Object.keys(updates),
     })
   }
 
@@ -657,7 +671,7 @@ export class GuidelinesManagementPlatform {
       permissions: this.getRolePermissions(collaboratorConfig.role),
       addedAt: new Date(),
       addedBy: inviterId,
-      status: 'pending'
+      status: 'pending',
     }
 
     workspace.collaborators.push(collaborator)
@@ -668,13 +682,13 @@ export class GuidelinesManagementPlatform {
       workspaceId,
       collaboratorId: collaborator.userId,
       role: collaborator.role,
-      inviterId
+      inviterId,
     })
 
     this.logger.info('Collaborator added', {
       workspaceId,
       collaboratorId: collaborator.userId,
-      role: collaborator.role
+      role: collaborator.role,
     })
   }
 
@@ -716,15 +730,15 @@ export class GuidelinesManagementPlatform {
         tags: config.tags || [],
         categories: config.categories || [],
         targetTools: config.targetTools || [],
-        targetAudience: config.targetAudience || []
+        targetAudience: config.targetAudience || [],
       },
       settings: {
         workflow: config.workflow || workspace.settings.defaultReviewWorkflow,
         qualityGates: config.qualityGates || [],
         automationRules: config.automationRules || [],
         permissions: [],
-        integrations: []
-      }
+        integrations: [],
+      },
     }
 
     workspace.projects.push(project)
@@ -736,14 +750,14 @@ export class GuidelinesManagementPlatform {
       projectId: project.id,
       userId,
       name: project.name,
-      type: project.type
+      type: project.type,
     })
 
     this.logger.info('Project created', {
       workspaceId,
       projectId: project.id,
       name: project.name,
-      type: project.type
+      type: project.type,
     })
 
     return project
@@ -763,7 +777,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
@@ -795,7 +809,7 @@ export class GuidelinesManagementPlatform {
         applicableContexts: [],
         content: config.content || this.getDefaultGuidelineContent(),
         adaptations: config.adaptations || this.getDefaultAdaptations(),
-        metadata: this.getDefaultGuidelineMetadata(userId)
+        metadata: this.getDefaultGuidelineMetadata(userId),
       }
     }
 
@@ -813,23 +827,25 @@ export class GuidelinesManagementPlatform {
           enabled: true,
           intervalMs: 30000,
           maxVersions: 50,
-          conflictResolution: 'latest-wins'
-        }
+          conflictResolution: 'latest-wins',
+        },
       },
       reviewHistory: [],
-      versions: [{
-        id: `version_1_${Date.now()}`,
-        version: '1.0.0',
-        timestamp: new Date(),
-        authorId: userId,
-        changes: ['Initial creation'],
-        tags: ['initial'],
-        snapshot: guideline,
-        size: JSON.stringify(guideline).length,
-        checksum: this.calculateChecksum(guideline)
-      }],
+      versions: [
+        {
+          id: `version_1_${Date.now()}`,
+          version: '1.0.0',
+          timestamp: new Date(),
+          authorId: userId,
+          changes: ['Initial creation'],
+          tags: ['initial'],
+          snapshot: guideline,
+          size: JSON.stringify(guideline).length,
+          checksum: this.calculateChecksum(guideline),
+        },
+      ],
       status: 'draft',
-      assignments: []
+      assignments: [],
     }
 
     project.guidelines.push(document)
@@ -841,14 +857,14 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId: document.id,
       type: 'guideline',
-      userId
+      userId,
     })
 
     this.logger.info('Guideline document created', {
       workspaceId,
       projectId,
       documentId: document.id,
-      toolId: guideline.toolId
+      toolId: guideline.toolId,
     })
 
     return document
@@ -869,18 +885,20 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
 
-    const document = project.guidelines.find(d => d.id === documentId)
+    const document = project.guidelines.find((d) => d.id === documentId)
     if (!document) {
       throw new Error('Document not found')
     }
 
-    if (!this.hasPermission(workspace, userId, 'document:edit') &&
-        document.authoringSession.authorId !== userId) {
+    if (
+      !this.hasPermission(workspace, userId, 'document:edit') &&
+      document.authoringSession.authorId !== userId
+    ) {
       throw new Error('Insufficient permissions')
     }
 
@@ -898,7 +916,7 @@ export class GuidelinesManagementPlatform {
       path: 'guideline',
       oldValue: oldSnapshot,
       newValue: document.guideline,
-      description: 'Guideline content updated'
+      description: 'Guideline content updated',
     }
 
     document.authoringSession.changes.push(changeRecord)
@@ -915,7 +933,7 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       userId,
-      changes: Object.keys(updates)
+      changes: Object.keys(updates),
     })
 
     this.logger.debug('Guideline document updated', {
@@ -923,7 +941,7 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       userId,
-      changes: Object.keys(updates)
+      changes: Object.keys(updates),
     })
   }
 
@@ -945,7 +963,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
@@ -961,7 +979,7 @@ export class GuidelinesManagementPlatform {
 
     // Run quality gates
     const qualityResults = await this.runQualityGates(workspace, project, document, 'review')
-    if (qualityResults.some(r => r.blocking && !r.passed)) {
+    if (qualityResults.some((r) => r.blocking && !r.passed)) {
       throw new Error('Document failed quality gates')
     }
 
@@ -983,14 +1001,14 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       userId,
-      workflow: workflow.id
+      workflow: workflow.id,
     })
 
     this.logger.info('Document submitted for review', {
       workspaceId,
       projectId,
       documentId,
-      workflow: workflow.name
+      workflow: workflow.name,
     })
   }
 
@@ -1010,7 +1028,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
@@ -1020,7 +1038,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Document not found')
     }
 
-    const review = document.reviewHistory.find(r => r.id === reviewId)
+    const review = document.reviewHistory.find((r) => r.id === reviewId)
     if (!review) {
       throw new Error('Review not found')
     }
@@ -1037,7 +1055,7 @@ export class GuidelinesManagementPlatform {
       type: comment.type || 'general',
       location: comment.location,
       resolved: false,
-      replies: []
+      replies: [],
     }
 
     review.comments.push(reviewComment)
@@ -1049,7 +1067,7 @@ export class GuidelinesManagementPlatform {
       documentId,
       reviewId,
       commentId: reviewComment.id,
-      userId
+      userId,
     })
 
     this.logger.debug('Review comment added', {
@@ -1057,7 +1075,7 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       reviewId,
-      commentId: reviewComment.id
+      commentId: reviewComment.id,
     })
 
     return reviewComment
@@ -1079,7 +1097,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
@@ -1089,7 +1107,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Document not found')
     }
 
-    const review = document.reviewHistory.find(r => r.id === reviewId)
+    const review = document.reviewHistory.find((r) => r.id === reviewId)
     if (!review) {
       throw new Error('Review not found')
     }
@@ -1118,7 +1136,7 @@ export class GuidelinesManagementPlatform {
       documentId,
       reviewId,
       userId,
-      outcome: decision.outcome
+      outcome: decision.outcome,
     })
 
     this.logger.info('Review completed', {
@@ -1126,7 +1144,7 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       reviewId,
-      outcome: decision.outcome
+      outcome: decision.outcome,
     })
   }
 
@@ -1143,7 +1161,7 @@ export class GuidelinesManagementPlatform {
     document: GuidelineDocument | KnowledgeDocument | TutorialDocument,
     stage: 'authoring' | 'review' | 'publish'
   ): Promise<QualityGateResult[]> {
-    const applicableGates = workspace.settings.qualityGates.filter(gate => gate.stage === stage)
+    const applicableGates = workspace.settings.qualityGates.filter((gate) => gate.stage === stage)
     const results: QualityGateResult[] = []
 
     for (const gate of applicableGates) {
@@ -1173,7 +1191,7 @@ export class GuidelinesManagementPlatform {
       throw new Error('Workspace not found')
     }
 
-    const project = workspace.projects.find(p => p.id === projectId)
+    const project = workspace.projects.find((p) => p.id === projectId)
     if (!project) {
       throw new Error('Project not found')
     }
@@ -1195,7 +1213,7 @@ export class GuidelinesManagementPlatform {
       categoryScores: {},
       issues: [],
       recommendations: [],
-      trends: []
+      trends: [],
     }
 
     // Run all quality checks
@@ -1210,7 +1228,7 @@ export class GuidelinesManagementPlatform {
             description: checkResult.message,
             location: checkResult.location,
             autoFixable: check.autoFixable,
-            suggestion: checkResult.suggestion
+            suggestion: checkResult.suggestion,
           })
         }
 
@@ -1224,9 +1242,8 @@ export class GuidelinesManagementPlatform {
 
     // Calculate overall score
     const allScores = Object.values(report.categoryScores).flat()
-    report.overallScore = allScores.length > 0
-      ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length
-      : 0
+    report.overallScore =
+      allScores.length > 0 ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length : 0
 
     // Generate recommendations
     report.recommendations = await this.generateQualityRecommendations(document, report.issues)
@@ -1236,7 +1253,7 @@ export class GuidelinesManagementPlatform {
       projectId,
       documentId,
       overallScore: report.overallScore,
-      issueCount: report.issues.length
+      issueCount: report.issues.length,
     })
 
     return report
@@ -1248,22 +1265,25 @@ export class GuidelinesManagementPlatform {
     // Initialize default templates, workflows, etc.
   }
 
-  private hasPermission(workspace: AuthoringWorkspace, userId: string, permission: string): boolean {
-    const collaborator = workspace.collaborators.find(c => c.userId === userId)
+  private hasPermission(
+    workspace: AuthoringWorkspace,
+    userId: string,
+    permission: string
+  ): boolean {
+    const collaborator = workspace.collaborators.find((c) => c.userId === userId)
     if (!collaborator || collaborator.status !== 'active') {
       return false
     }
 
     // Check if user has the specific permission
-    return collaborator.permissions.some(p =>
-      p.action === permission.split(':')[0] &&
-      p.resource === permission.split(':')[1]
+    return collaborator.permissions.some(
+      (p) => p.action === permission.split(':')[0] && p.resource === permission.split(':')[1]
     )
   }
 
   private getOwnerPermissions(): Permission[] {
     return [
-      { action: '*', resource: '*' }  // Owner has all permissions
+      { action: '*', resource: '*' }, // Owner has all permissions
     ]
   }
 
@@ -1275,23 +1295,23 @@ export class GuidelinesManagementPlatform {
         { action: 'project', resource: '*' },
         { action: 'document', resource: '*' },
         { action: 'review', resource: '*' },
-        { action: 'collaborator', resource: '*' }
+        { action: 'collaborator', resource: '*' },
       ],
       editor: [
         { action: 'project', resource: 'read' },
         { action: 'document', resource: '*' },
-        { action: 'review', resource: 'comment' }
+        { action: 'review', resource: 'comment' },
       ],
       reviewer: [
         { action: 'project', resource: 'read' },
         { action: 'document', resource: 'read' },
-        { action: 'review', resource: '*' }
+        { action: 'review', resource: '*' },
       ],
       viewer: [
         { action: 'project', resource: 'read' },
         { action: 'document', resource: 'read' },
-        { action: 'review', resource: 'read' }
-      ]
+        { action: 'review', resource: 'read' },
+      ],
     }
 
     return permissions[role] || []
@@ -1303,16 +1323,18 @@ export class GuidelinesManagementPlatform {
       defaultReviewWorkflow: {
         id: 'default',
         name: 'Default Review Workflow',
-        stages: [{
-          id: 'review',
-          name: 'Review',
-          reviewerRoles: ['reviewer', 'admin'],
-          requiredReviews: 1,
-          timeoutHours: 72
-        }],
+        stages: [
+          {
+            id: 'review',
+            name: 'Review',
+            reviewerRoles: ['reviewer', 'admin'],
+            requiredReviews: 1,
+            timeoutHours: 72,
+          },
+        ],
         parallelReview: false,
         requiredApprovals: 1,
-        autoAdvance: false
+        autoAdvance: false,
       },
       qualityGates: [],
       automationRules: [],
@@ -1320,9 +1342,23 @@ export class GuidelinesManagementPlatform {
       notifications: {
         email: { enabled: false, events: [], template: '', frequency: 'immediate' },
         inApp: { enabled: true, events: ['*'], retention: 30 },
-        webhook: { enabled: false, events: [], retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000 } },
-        digest: { enabled: false, frequency: 'weekly', time: '09:00', content: { includeActivity: true, includeMetrics: false, includeRecommendations: false, customSections: [] } }
-      }
+        webhook: {
+          enabled: false,
+          events: [],
+          retryPolicy: { maxRetries: 3, backoffStrategy: 'exponential', baseDelay: 1000 },
+        },
+        digest: {
+          enabled: false,
+          frequency: 'weekly',
+          time: '09:00',
+          content: {
+            includeActivity: true,
+            includeMetrics: false,
+            includeRecommendations: false,
+            customSections: [],
+          },
+        },
+      },
     }
   }
 
@@ -1333,7 +1369,7 @@ export class GuidelinesManagementPlatform {
         primary: 'Default usage guidance',
         scenarios: [],
         conditions: [],
-        antipatterns: []
+        antipatterns: [],
       },
       howToUse: {
         quickStart: {
@@ -1341,7 +1377,7 @@ export class GuidelinesManagementPlatform {
           essentialSteps: [],
           minimumRequiredFields: [],
           estimatedTime: '5 minutes',
-          successCriteria: []
+          successCriteria: [],
         },
         stepByStep: {
           title: 'Step-by-step guide',
@@ -1349,30 +1385,30 @@ export class GuidelinesManagementPlatform {
           prerequisites: [],
           steps: [],
           verification: [],
-          troubleshooting: []
+          troubleshooting: [],
         },
         parameterGuidance: {},
         bestPractices: [],
-        commonMistakes: []
+        commonMistakes: [],
       },
       examples: {
         basic: [],
         advanced: [],
         realWorld: [],
-        conversational: []
+        conversational: [],
       },
       troubleshooting: {
         commonIssues: [],
         errorCodes: {},
         diagnostics: [],
-        recovery: []
+        recovery: [],
       },
       relatedResources: {
         alternativeTools: [],
         complementaryTools: [],
         prerequisites: [],
-        followUpActions: []
-      }
+        followUpActions: [],
+      },
     }
   }
 
@@ -1381,16 +1417,16 @@ export class GuidelinesManagementPlatform {
       experienceLevel: {
         beginner: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
         intermediate: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
-        advanced: { emphasisPoints: [], additionalContent: [], omittedContent: [] }
+        advanced: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
       },
       userRole: {},
       contextual: {
         urgent: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
         collaborative: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
-        automated: { emphasisPoints: [], additionalContent: [], omittedContent: [] }
+        automated: { emphasisPoints: [], additionalContent: [], omittedContent: [] },
       },
       domainSpecific: {},
-      localization: {}
+      localization: {},
     }
   }
 
@@ -1404,23 +1440,23 @@ export class GuidelinesManagementPlatform {
         helpfulVotes: 0,
         unhelpfulVotes: 0,
         feedbackCount: 0,
-        lastAccessed: new Date()
+        lastAccessed: new Date(),
       },
       quality: {
         completeness: 0.5,
         accuracy: 0.5,
         clarity: 0.5,
-        usefulness: 0.5
+        usefulness: 0.5,
       },
       relationships: {
         dependsOn: [],
         supersedes: [],
         relatedTo: [],
-        conflictsWith: []
+        conflictsWith: [],
       },
       lifecycle: {
-        status: 'draft' as const
-      }
+        status: 'draft' as const,
+      },
     }
   }
 
@@ -1433,10 +1469,12 @@ export class GuidelinesManagementPlatform {
     project: AuthoringProject,
     documentId: string
   ): GuidelineDocument | KnowledgeDocument | TutorialDocument | null {
-    return project.guidelines.find(d => d.id === documentId) ||
-           project.knowledgeEntries.find(d => d.id === documentId) ||
-           project.tutorials.find(d => d.id === documentId) ||
-           null
+    return (
+      project.guidelines.find((d) => d.id === documentId) ||
+      project.knowledgeEntries.find((d) => d.id === documentId) ||
+      project.tutorials.find((d) => d.id === documentId) ||
+      null
+    )
   }
 
   private async createDocumentVersion(
@@ -1444,9 +1482,12 @@ export class GuidelinesManagementPlatform {
     userId: string,
     changes: string[]
   ): Promise<void> {
-    const content = 'guideline' in document ? document.guideline :
-                   'entry' in document ? document.entry :
-                   document.tutorial
+    const content =
+      'guideline' in document
+        ? document.guideline
+        : 'entry' in document
+          ? document.entry
+          : document.tutorial
 
     const version: DocumentVersion = {
       id: `version_${document.versions.length + 1}_${Date.now()}`,
@@ -1457,14 +1498,17 @@ export class GuidelinesManagementPlatform {
       tags: [],
       snapshot: content,
       size: JSON.stringify(content).length,
-      checksum: this.calculateChecksum(content)
+      checksum: this.calculateChecksum(content),
     }
 
     document.versions.push(version)
 
     // Limit version history
     if (document.versions.length > document.authoringSession.autosave.maxVersions) {
-      document.versions.splice(0, document.versions.length - document.authoringSession.autosave.maxVersions)
+      document.versions.splice(
+        0,
+        document.versions.length - document.authoringSession.autosave.maxVersions
+      )
     }
   }
 
@@ -1476,16 +1520,16 @@ export class GuidelinesManagementPlatform {
     submitterId: string
   ): Promise<void> {
     // Find eligible reviewers
-    const eligibleReviewers = workspace.collaborators.filter(c =>
-      c.status === 'active' &&
-      stage.reviewerRoles.includes(c.role) &&
-      c.userId !== submitterId
+    const eligibleReviewers = workspace.collaborators.filter(
+      (c) =>
+        c.status === 'active' && stage.reviewerRoles.includes(c.role) && c.userId !== submitterId
     )
 
     // Select reviewers based on stage requirements
-    const selectedReviewers = stage.specificReviewers && stage.specificReviewers.length > 0
-      ? workspace.collaborators.filter(c => stage.specificReviewers!.includes(c.userId))
-      : eligibleReviewers.slice(0, stage.requiredReviews)
+    const selectedReviewers =
+      stage.specificReviewers && stage.specificReviewers.length > 0
+        ? workspace.collaborators.filter((c) => stage.specificReviewers!.includes(c.userId))
+        : eligibleReviewers.slice(0, stage.requiredReviews)
 
     // Create review records
     for (const reviewer of selectedReviewers) {
@@ -1498,12 +1542,12 @@ export class GuidelinesManagementPlatform {
         comments: [],
         decision: {
           outcome: 'approved',
-          reasoning: ''
+          reasoning: '',
         },
         metrics: {
           timeSpent: 0,
-          changesRequested: 0
-        }
+          changesRequested: 0,
+        },
       }
 
       document.reviewHistory.push(reviewRecord)
@@ -1516,7 +1560,7 @@ export class GuidelinesManagementPlatform {
         type: 'review',
         priority: 'medium',
         description: `Review document: ${this.getDocumentTitle(document)}`,
-        status: 'pending'
+        status: 'pending',
       }
 
       document.assignments.push(assignment)
@@ -1531,25 +1575,34 @@ export class GuidelinesManagementPlatform {
     decision: ReviewDecision
   ): Promise<void> {
     const workflow = project.settings.workflow
-    const currentStageIndex = workflow.stages.findIndex(s => s.id === review.stage)
+    const currentStageIndex = workflow.stages.findIndex((s) => s.id === review.stage)
 
     switch (decision.outcome) {
-      case 'approved':
+      case 'approved': {
         // Check if all required reviews for this stage are complete
-        const stageReviews = document.reviewHistory.filter(r => r.stage === review.stage)
-        const completedReviews = stageReviews.filter(r => r.status === 'completed' && r.decision.outcome === 'approved')
+        const stageReviews = document.reviewHistory.filter((r) => r.stage === review.stage)
+        const completedReviews = stageReviews.filter(
+          (r) => r.status === 'completed' && r.decision.outcome === 'approved'
+        )
         const requiredReviews = workflow.stages[currentStageIndex].requiredReviews
 
         if (completedReviews.length >= requiredReviews) {
           // Move to next stage or mark as approved
           if (currentStageIndex < workflow.stages.length - 1) {
             const nextStage = workflow.stages[currentStageIndex + 1]
-            await this.createReviewAssignments(workspace, project, document, nextStage, review.reviewerId)
+            await this.createReviewAssignments(
+              workspace,
+              project,
+              document,
+              nextStage,
+              review.reviewerId
+            )
           } else {
             document.status = 'approved'
           }
         }
         break
+      }
 
       case 'changes-requested':
         document.status = 'changes-requested'
@@ -1574,7 +1627,7 @@ export class GuidelinesManagementPlatform {
           description: checkResult.message,
           location: checkResult.location,
           autoFixable: check.autoFixable,
-          suggestion: checkResult.suggestion
+          suggestion: checkResult.suggestion,
         })
 
         if (check.severity === 'error' || check.severity === 'critical') {
@@ -1589,7 +1642,7 @@ export class GuidelinesManagementPlatform {
       passed,
       blocking: gate.blocking,
       issues,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -1601,19 +1654,26 @@ export class GuidelinesManagementPlatform {
       score: 1.0,
       message: 'Check passed',
       location: undefined,
-      suggestion: undefined
+      suggestion: undefined,
     }
   }
 
-  private async attemptAutoFix(gate: QualityGate, document: any, issues: QualityIssue[]): Promise<void> {
+  private async attemptAutoFix(
+    gate: QualityGate,
+    document: any,
+    issues: QualityIssue[]
+  ): Promise<void> {
     // Simplified auto-fix implementation
     this.logger.debug('Attempting auto-fix for quality issues', {
       gateId: gate.id,
-      issueCount: issues.length
+      issueCount: issues.length,
     })
   }
 
-  private async generateQualityRecommendations(document: any, issues: QualityIssue[]): Promise<QualityRecommendation[]> {
+  private async generateQualityRecommendations(
+    document: any,
+    issues: QualityIssue[]
+  ): Promise<QualityRecommendation[]> {
     const recommendations: QualityRecommendation[] = []
 
     // Generate recommendations based on issues
@@ -1626,9 +1686,9 @@ export class GuidelinesManagementPlatform {
           priority: this.calculateRecommendationPriority(typeIssues),
           title: `Improve ${type}`,
           description: `Address ${typeIssues.length} ${type} issues`,
-          actions: typeIssues.map(issue => issue.suggestion).filter(Boolean) as string[],
+          actions: typeIssues.map((issue) => issue.suggestion).filter(Boolean) as string[],
           impact: 'medium',
-          effort: 'low'
+          effort: 'low',
         })
       }
     }
@@ -1637,17 +1697,22 @@ export class GuidelinesManagementPlatform {
   }
 
   private groupIssuesByType(issues: QualityIssue[]): Record<string, QualityIssue[]> {
-    return issues.reduce((groups, issue) => {
-      if (!groups[issue.type]) {
-        groups[issue.type] = []
-      }
-      groups[issue.type].push(issue)
-      return groups
-    }, {} as Record<string, QualityIssue[]>)
+    return issues.reduce(
+      (groups, issue) => {
+        if (!groups[issue.type]) {
+          groups[issue.type] = []
+        }
+        groups[issue.type].push(issue)
+        return groups
+      },
+      {} as Record<string, QualityIssue[]>
+    )
   }
 
-  private calculateRecommendationPriority(issues: QualityIssue[]): 'low' | 'medium' | 'high' | 'critical' {
-    const severities = issues.map(issue => issue.severity)
+  private calculateRecommendationPriority(
+    issues: QualityIssue[]
+  ): 'low' | 'medium' | 'high' | 'critical' {
+    const severities = issues.map((issue) => issue.severity)
 
     if (severities.includes('critical')) return 'critical'
     if (severities.includes('error')) return 'high'
@@ -1655,7 +1720,9 @@ export class GuidelinesManagementPlatform {
     return 'low'
   }
 
-  private getDocumentTitle(document: GuidelineDocument | KnowledgeDocument | TutorialDocument): string {
+  private getDocumentTitle(
+    document: GuidelineDocument | KnowledgeDocument | TutorialDocument
+  ): string {
     if ('guideline' in document) return document.guideline.title
     if ('entry' in document) return document.entry.title
     return document.tutorial.title
@@ -1677,21 +1744,23 @@ class PlatformEventEmitter {
   async emit(eventType: string, data: any): Promise<void> {
     const handlers = this.eventHandlers.get(eventType) || []
 
-    await Promise.all(handlers.map(async handler => {
-      try {
-        await handler(data)
-      } catch (error) {
-        this.logger.error('Event handler error', {
-          eventType,
-          error: error.message
-        })
-      }
-    }))
+    await Promise.all(
+      handlers.map(async (handler) => {
+        try {
+          await handler(data)
+        } catch (error) {
+          this.logger.error('Event handler error', {
+            eventType,
+            error: error.message,
+          })
+        }
+      })
+    )
 
     this.logger.debug('Event emitted', {
       eventType,
       handlerCount: handlers.length,
-      data: Object.keys(data)
+      data: Object.keys(data),
     })
   }
 

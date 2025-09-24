@@ -15,10 +15,9 @@
  * @version 1.0.0
  */
 
-import type { ConversationalContext } from './context-analyzer'
 import type { EnhancedToolRecommendation } from '../enhanced-intelligence/tool-intelligence-engine'
-import type { ToolConfig } from '@/tools/types'
 import { createLogger } from '../utils/logger'
+import type { ConversationalContext } from './context-analyzer'
 import { ConversationalContextAnalyzer } from './context-analyzer'
 
 const logger = createLogger('AgentToolAPI')
@@ -285,7 +284,7 @@ export class AgentToolAPI {
     logger.info('Processing tool recommendation request', {
       requestId: request.requestId,
       agentId: request.agentId,
-      conversationId: request.conversationId
+      conversationId: request.conversationId,
     })
 
     try {
@@ -333,7 +332,7 @@ export class AgentToolAPI {
         recommendationReasoning,
         processingTimeMs: processingTime,
         confidenceScore: this.calculateOverallConfidence(learnedRecommendations),
-        systemLoad: await this.performanceMonitor.getCurrentLoad()
+        systemLoad: await this.performanceMonitor.getCurrentLoad(),
       }
 
       // Record request for learning
@@ -342,15 +341,14 @@ export class AgentToolAPI {
       logger.info('Tool recommendation request processed successfully', {
         requestId: request.requestId,
         recommendationCount: recommendations.length,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return response
-
     } catch (error) {
       logger.error('Failed to process tool recommendation request', {
         error,
-        requestId: request.requestId
+        requestId: request.requestId,
       })
       throw new Error(`Tool recommendation failed: ${error.message}`)
     }
@@ -363,7 +361,7 @@ export class AgentToolAPI {
     logger.info('Recording tool selection', {
       eventId: selectionEvent.eventId,
       toolId: selectionEvent.selectedToolId,
-      agentId: selectionEvent.agentId
+      agentId: selectionEvent.agentId,
     })
 
     try {
@@ -375,7 +373,6 @@ export class AgentToolAPI {
 
       // Trigger any necessary adjustments
       await this.adjustRecommendationStrategy(selectionEvent)
-
     } catch (error) {
       logger.error('Failed to record tool selection', { error, eventId: selectionEvent.eventId })
       throw new Error(`Tool selection recording failed: ${error.message}`)
@@ -389,7 +386,7 @@ export class AgentToolAPI {
     logger.info('Processing tool usage feedback', {
       feedbackId: feedback.feedbackId,
       toolId: feedback.toolId,
-      satisfaction: feedback.userSatisfaction
+      satisfaction: feedback.userSatisfaction,
     })
 
     try {
@@ -406,7 +403,6 @@ export class AgentToolAPI {
       if (feedback.userSatisfaction <= 2) {
         await this.generateImprovementSuggestions(feedback)
       }
-
     } catch (error) {
       logger.error('Failed to process usage feedback', { error, feedbackId: feedback.feedbackId })
       throw new Error(`Feedback processing failed: ${error.message}`)
@@ -439,7 +435,7 @@ export class AgentToolAPI {
     const baseRecommendations: EnhancedToolRecommendation[] = []
 
     // Transform to agent-specific recommendations
-    const agentRecommendations: AgentToolRecommendation[] = baseRecommendations.map(rec => ({
+    const agentRecommendations: AgentToolRecommendation[] = baseRecommendations.map((rec) => ({
       ...rec,
       agentIntegrationLevel: this.determineIntegrationLevel(rec, request.agentId),
       conversationalPresentation: this.createConversationalPresentation(rec, context),
@@ -448,7 +444,7 @@ export class AgentToolAPI {
       usageLearningEnabled: true,
       integrationInstructions: this.generateIntegrationInstructions(rec),
       errorHandlingGuidance: this.generateErrorHandlingGuidance(rec),
-      successIndicators: this.generateSuccessIndicators(rec)
+      successIndicators: this.generateSuccessIndicators(rec),
     }))
 
     return agentRecommendations
@@ -460,7 +456,7 @@ export class AgentToolAPI {
       userEngagement: context.conversationMomentum.engagementLevel,
       conversationHealth: 0.8, // Would be calculated from context
       predictedNextActions: context.conversationFlow.nextLikelyPhases,
-      recommendationOptimality: context.recommendationTiming.timingScore
+      recommendationOptimality: context.recommendationTiming.timingScore,
     }
   }
 
@@ -474,7 +470,9 @@ export class AgentToolAPI {
       contextualFactors: [`Conversation phase: ${context.conversationFlow.currentPhase}`],
       userFactors: [`Skill level: ${request.currentContext.userProfile.skillLevel}`],
       confidenceFactors: [`Context confidence: ${context.extractedIntent.confidence}`],
-      riskFactors: context.contextualCues.filter(cue => cue.cueType === 'workflow').map(cue => cue.indicator)
+      riskFactors: context.contextualCues
+        .filter((cue) => cue.cueType === 'workflow')
+        .map((cue) => cue.indicator),
     }
   }
 
@@ -488,11 +486,17 @@ export class AgentToolAPI {
   }
 
   // Helper methods (stubs for implementation)
-  private determineIntegrationLevel(rec: EnhancedToolRecommendation, agentId: string): 'seamless' | 'guided' | 'manual' {
+  private determineIntegrationLevel(
+    rec: EnhancedToolRecommendation,
+    agentId: string
+  ): 'seamless' | 'guided' | 'manual' {
     return 'guided'
   }
 
-  private createConversationalPresentation(rec: EnhancedToolRecommendation, context: ConversationalContext): ConversationalPresentation {
+  private createConversationalPresentation(
+    rec: EnhancedToolRecommendation,
+    context: ConversationalContext
+  ): ConversationalPresentation {
     return {
       naturalLanguageDescription: rec.tool.description || '',
       conversationalIntroduction: `I recommend using ${rec.tool.name} for this task`,
@@ -500,11 +504,14 @@ export class AgentToolAPI {
       quickActions: [],
       clarifyingQuestions: [],
       followUpSuggestions: rec.followUpSuggestions,
-      displayPriority: rec.priority
+      displayPriority: rec.priority,
     }
   }
 
-  private determineConfirmationRequirement(rec: EnhancedToolRecommendation, context: ConversationalContext): boolean {
+  private determineConfirmationRequirement(
+    rec: EnhancedToolRecommendation,
+    context: ConversationalContext
+  ): boolean {
     return rec.difficultyForUser === 'challenging'
   }
 
@@ -513,11 +520,19 @@ export class AgentToolAPI {
   }
 
   private generateErrorHandlingGuidance(rec: EnhancedToolRecommendation): string[] {
-    return ['Check for proper authentication', 'Verify input parameters', 'Handle timeout scenarios']
+    return [
+      'Check for proper authentication',
+      'Verify input parameters',
+      'Handle timeout scenarios',
+    ]
   }
 
   private generateSuccessIndicators(rec: EnhancedToolRecommendation): string[] {
-    return ['Tool executes without errors', 'Expected output is generated', 'User satisfaction is achieved']
+    return [
+      'Tool executes without errors',
+      'Expected output is generated',
+      'User satisfaction is achieved',
+    ]
   }
 
   private async updateUserPreferenceLearning(event: ToolSelectionEvent): Promise<void> {
@@ -550,7 +565,10 @@ class AgentLearningSystem {
     return recommendations
   }
 
-  async recordRecommendationRequest(request: ToolRecommendationRequest, response: ToolRecommendationResponse): Promise<void> {
+  async recordRecommendationRequest(
+    request: ToolRecommendationRequest,
+    response: ToolRecommendationResponse
+  ): Promise<void> {
     // Record request/response for learning
   }
 
@@ -572,7 +590,7 @@ class AgentLearningSystem {
       failurePatterns: [],
       userSpecificLearning: {},
       lastUpdateTimestamp: new Date(),
-      learningConfidence: 0.7
+      learningConfidence: 0.7,
     }
   }
 
@@ -583,7 +601,7 @@ class AgentLearningSystem {
       toolEffectiveness: {},
       communicationStyle: 'conversational',
       learningSpeed: 0.7,
-      adaptationSuggestions: []
+      adaptationSuggestions: [],
     }
   }
 }

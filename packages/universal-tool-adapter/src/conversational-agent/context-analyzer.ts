@@ -15,7 +15,6 @@
  * @version 1.0.0
  */
 
-import type { ConversationMessage, UsageContext } from '../natural-language/usage-guidelines'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ConversationalContextAnalyzer')
@@ -233,7 +232,7 @@ export class ConversationalContextAnalyzer {
     logger.info('Analyzing conversational message', {
       conversationId,
       userId,
-      messageLength: messageContent.length
+      messageLength: messageContent.length,
     })
 
     try {
@@ -281,11 +280,10 @@ export class ConversationalContextAnalyzer {
         conversationId,
         intent: context.extractedIntent.primaryCategory,
         confidence: context.extractedIntent.confidence,
-        timing: context.recommendationTiming.optimalMoment
+        timing: context.recommendationTiming.optimalMoment,
       })
 
       return context
-
     } catch (error) {
       logger.error('Failed to analyze conversational message', { error, conversationId })
       throw new Error(`Context analysis failed: ${error.message}`)
@@ -319,7 +317,7 @@ export class ConversationalContextAnalyzer {
       averageConfidence: this.calculateAverageConfidence(context),
       dominantIntents: this.getDominantIntents(context),
       toolUsagePatterns: this.getToolUsagePatterns(context),
-      conversationHealth: this.assessConversationHealth(context)
+      conversationHealth: this.assessConversationHealth(context),
     }
   }
 
@@ -355,7 +353,7 @@ export class ConversationalContextAnalyzer {
       availableTools,
       recommendationTiming: this.createDefaultTiming(),
       conversationMomentum: this.createDefaultMomentum(),
-      urgencyLevel: 'medium'
+      urgencyLevel: 'medium',
     }
 
     logger.debug('Initialized new conversation context', { conversationId, userId })
@@ -408,7 +406,7 @@ export class ConversationalContextAnalyzer {
       primaryIntent: intents.primary,
       secondaryIntents: intents.secondary || [],
       intentConfidence: intents.confidence,
-      questionType
+      questionType,
     }
   }
 
@@ -431,13 +429,11 @@ export class ConversationalContextAnalyzer {
       excludedToolTypes: intentAnalysis.excludedTypes,
       taskComplexity: intentAnalysis.complexity,
       estimatedSteps: intentAnalysis.estimatedSteps,
-      skillLevelRequired: intentAnalysis.skillLevel
+      skillLevelRequired: intentAnalysis.skillLevel,
     }
   }
 
-  private async analyzeConversationFlow(
-    context: ConversationalContext
-  ): Promise<ConversationFlow> {
+  private async analyzeConversationFlow(context: ConversationalContext): Promise<ConversationFlow> {
     const currentPhase = this.determineConversationPhase(context)
     const flowDirection = this.determineFlowDirection(context)
     const transitionTriggers = this.identifyTransitionTriggers(context)
@@ -452,7 +448,7 @@ export class ConversationalContextAnalyzer {
       nextLikelyPhases,
       toolSequencePattern,
       workflowStageIndicators: this.extractWorkflowStageIndicators(context),
-      completionSignals: this.detectCompletionSignals(context)
+      completionSignals: this.detectCompletionSignals(context),
     }
   }
 
@@ -479,7 +475,7 @@ export class ConversationalContextAnalyzer {
     // Environment cues
     cues.push(...this.extractEnvironmentCues(message, context))
 
-    return cues.filter(cue => cue.relevance > 0.3) // Filter out low-relevance cues
+    return cues.filter((cue) => cue.relevance > 0.3) // Filter out low-relevance cues
   }
 
   // =============================================================================
@@ -490,12 +486,18 @@ export class ConversationalContextAnalyzer {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
-  private async getAvailableToolsForUser(userId: string, workspaceId: string): Promise<AvailableToolContext[]> {
+  private async getAvailableToolsForUser(
+    userId: string,
+    workspaceId: string
+  ): Promise<AvailableToolContext[]> {
     // This would integrate with the Universal Tool Adapter registry
     return []
   }
 
-  private async getCurrentWorkflowState(userId: string, workspaceId: string): Promise<WorkflowState | undefined> {
+  private async getCurrentWorkflowState(
+    userId: string,
+    workspaceId: string
+  ): Promise<WorkflowState | undefined> {
     // This would integrate with the Workflow to Journey Mapping System
     return undefined
   }
@@ -513,7 +515,7 @@ export class ConversationalContextAnalyzer {
       excludedToolTypes: [],
       taskComplexity: 'moderate',
       estimatedSteps: 1,
-      skillLevelRequired: 'intermediate'
+      skillLevelRequired: 'intermediate',
     }
   }
 
@@ -526,7 +528,7 @@ export class ConversationalContextAnalyzer {
       nextLikelyPhases: ['solution_exploration'],
       toolSequencePattern: [],
       workflowStageIndicators: [],
-      completionSignals: []
+      completionSignals: [],
     }
   }
 
@@ -536,7 +538,7 @@ export class ConversationalContextAnalyzer {
       timingScore: 0.7,
       delayFactors: [],
       urgencyIndicators: [],
-      contextualReadiness: 0.7
+      contextualReadiness: 0.7,
     }
   }
 
@@ -546,38 +548,104 @@ export class ConversationalContextAnalyzer {
       direction: 'building',
       engagementLevel: 0.7,
       frustrationIndicators: [],
-      satisfactionIndicators: []
+      satisfactionIndicators: [],
     }
   }
 
   // Additional helper methods would be implemented here...
-  private analyzeSentiment(content: string): number { return 0.5 }
-  private extractToolMentions(content: string, tools: AvailableToolContext[]): ToolMention[] { return [] }
-  private extractActionVerbs(content: string): string[] { return [] }
-  private extractObjectNouns(content: string): string[] { return [] }
-  private extractContextualModifiers(content: string): string[] { return [] }
-  private assessLanguageComplexity(content: string): 'simple' | 'moderate' | 'complex' { return 'moderate' }
-  private determineQuestionType(content: string): any { return undefined }
-  private determineConversationPhase(context: ConversationalContext): ConversationPhase { return 'problem_definition' }
-  private determineFlowDirection(context: ConversationalContext): any { return 'exploration' }
-  private identifyTransitionTriggers(context: ConversationalContext): string[] { return [] }
-  private predictNextPhases(phase: ConversationPhase, context: ConversationalContext): ConversationPhase[] { return [] }
-  private analyzeToolSequencePattern(context: ConversationalContext): string[] { return [] }
-  private extractPreviousPhases(context: ConversationalContext): ConversationPhase[] { return [] }
-  private extractWorkflowStageIndicators(context: ConversationalContext): string[] { return [] }
-  private detectCompletionSignals(context: ConversationalContext): string[] { return [] }
-  private extractTemporalCues(message: AnalyzedMessage): ContextualCue[] { return [] }
-  private extractWorkflowCues(message: AnalyzedMessage, workflow: WorkflowState): ContextualCue[] { return [] }
-  private extractToolReferenceCues(message: AnalyzedMessage, context: ConversationalContext): ContextualCue[] { return [] }
-  private extractUserStateCues(message: AnalyzedMessage, context: ConversationalContext): ContextualCue[] { return [] }
-  private extractEnvironmentCues(message: AnalyzedMessage, context: ConversationalContext): ContextualCue[] { return [] }
-  private assessRecommendationTiming(context: ConversationalContext): RecommendationTiming { return this.createDefaultTiming() }
-  private assessConversationMomentum(context: ConversationalContext): ConversationMomentum { return this.createDefaultMomentum() }
-  private assessUrgencyLevel(context: ConversationalContext): 'low' | 'medium' | 'high' | 'urgent' { return 'medium' }
-  private calculateAverageConfidence(context: ConversationalContext): number { return 0.7 }
-  private getDominantIntents(context: ConversationalContext): string[] { return [] }
-  private getToolUsagePatterns(context: ConversationalContext): any[] { return [] }
-  private assessConversationHealth(context: ConversationalContext): number { return 0.8 }
+  private analyzeSentiment(content: string): number {
+    return 0.5
+  }
+  private extractToolMentions(content: string, tools: AvailableToolContext[]): ToolMention[] {
+    return []
+  }
+  private extractActionVerbs(content: string): string[] {
+    return []
+  }
+  private extractObjectNouns(content: string): string[] {
+    return []
+  }
+  private extractContextualModifiers(content: string): string[] {
+    return []
+  }
+  private assessLanguageComplexity(content: string): 'simple' | 'moderate' | 'complex' {
+    return 'moderate'
+  }
+  private determineQuestionType(content: string): any {
+    return undefined
+  }
+  private determineConversationPhase(context: ConversationalContext): ConversationPhase {
+    return 'problem_definition'
+  }
+  private determineFlowDirection(context: ConversationalContext): any {
+    return 'exploration'
+  }
+  private identifyTransitionTriggers(context: ConversationalContext): string[] {
+    return []
+  }
+  private predictNextPhases(
+    phase: ConversationPhase,
+    context: ConversationalContext
+  ): ConversationPhase[] {
+    return []
+  }
+  private analyzeToolSequencePattern(context: ConversationalContext): string[] {
+    return []
+  }
+  private extractPreviousPhases(context: ConversationalContext): ConversationPhase[] {
+    return []
+  }
+  private extractWorkflowStageIndicators(context: ConversationalContext): string[] {
+    return []
+  }
+  private detectCompletionSignals(context: ConversationalContext): string[] {
+    return []
+  }
+  private extractTemporalCues(message: AnalyzedMessage): ContextualCue[] {
+    return []
+  }
+  private extractWorkflowCues(message: AnalyzedMessage, workflow: WorkflowState): ContextualCue[] {
+    return []
+  }
+  private extractToolReferenceCues(
+    message: AnalyzedMessage,
+    context: ConversationalContext
+  ): ContextualCue[] {
+    return []
+  }
+  private extractUserStateCues(
+    message: AnalyzedMessage,
+    context: ConversationalContext
+  ): ContextualCue[] {
+    return []
+  }
+  private extractEnvironmentCues(
+    message: AnalyzedMessage,
+    context: ConversationalContext
+  ): ContextualCue[] {
+    return []
+  }
+  private assessRecommendationTiming(context: ConversationalContext): RecommendationTiming {
+    return this.createDefaultTiming()
+  }
+  private assessConversationMomentum(context: ConversationalContext): ConversationMomentum {
+    return this.createDefaultMomentum()
+  }
+  private assessUrgencyLevel(context: ConversationalContext): 'low' | 'medium' | 'high' | 'urgent' {
+    return 'medium'
+  }
+  private calculateAverageConfidence(context: ConversationalContext): number {
+    return 0.7
+  }
+  private getDominantIntents(context: ConversationalContext): string[] {
+    return []
+  }
+  private getToolUsagePatterns(context: ConversationalContext): any[] {
+    return []
+  }
+  private assessConversationHealth(context: ConversationalContext): number {
+    return 0.8
+  }
 }
 
 // =============================================================================
@@ -602,7 +670,7 @@ class IntentClassifier {
       excludedTypes: [],
       complexity: 'moderate',
       estimatedSteps: 1,
-      skillLevel: 'intermediate'
+      skillLevel: 'intermediate',
     }
   }
 }
