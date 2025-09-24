@@ -124,7 +124,7 @@
       "description": "Create adapter pattern to make all of Sim's 20+ existing tools compatible with Parlant's tool interface. Enable natural language tool interactions.",
       "phase": "Phase 2: Tool Bridge",
       "priority": "high",
-      "status": "approved",
+      "status": "implemented",
       "estimatedWeeks": 2,
       "dependencies": [
         "sim-parlant-bridge"
