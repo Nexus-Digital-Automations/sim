@@ -8,27 +8,27 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type {
-  ConversationContext,
-  UserBehaviorProfile,
-  WorkspacePattern,
-  RecommendationRequest,
-  RecommendationSet,
-  ToolRecommendation,
-  RecommendationAPI,
-  SuggestionFeedback,
-  UserPreferences,
-  RecommendationAnalytics,
-  AnalyticsPeriod,
-  RecommendationSystemHealth,
-  RealTimeSuggestion,
-} from './types'
+import { behaviorTracker } from './behavior-tracker'
 import { contextAnalyzer } from './context-analyzer'
 import { mlEngine } from './ml-engine'
-import { behaviorTracker } from './behavior-tracker'
-import { workspaceAnalyzer } from './workspace-analyzer'
-import { realtimeSuggester } from './realtime-suggester'
 import { personalizationEngine } from './personalization-engine'
+import { realtimeSuggester } from './realtime-suggester'
+import type {
+  AnalyticsPeriod,
+  ConversationContext,
+  RealTimeSuggestion,
+  RecommendationAnalytics,
+  RecommendationAPI,
+  RecommendationRequest,
+  RecommendationSet,
+  RecommendationSystemHealth,
+  SuggestionFeedback,
+  ToolRecommendation,
+  UserBehaviorProfile,
+  UserPreferences,
+  WorkspacePattern,
+} from './types'
+import { workspaceAnalyzer } from './workspace-analyzer'
 
 const logger = createLogger('RecommendationService')
 
@@ -137,7 +137,9 @@ export class ToolRecommendationService implements RecommendationAPI {
       // 7. Start real-time monitoring if not already active
       this.startRealTimeMonitoring(request.context, userProfile, workspacePattern)
 
-      logger.info(`Generated ${personalizedSet.recommendations.length} personalized recommendations`)
+      logger.info(
+        `Generated ${personalizedSet.recommendations.length} personalized recommendations`
+      )
 
       return personalizedSet
     } catch (error) {
@@ -212,7 +214,9 @@ export class ToolRecommendationService implements RecommendationAPI {
         await behaviorTracker.updateUserPreferences(userId, workspaceId, preferences)
       }
 
-      logger.debug(`Updated preferences for user ${userId} across ${workspaceIds.length} workspaces`)
+      logger.debug(
+        `Updated preferences for user ${userId} across ${workspaceIds.length} workspaces`
+      )
     } catch (error) {
       logger.error(`Error updating preferences for user ${userId}:`, error)
     }
@@ -221,7 +225,10 @@ export class ToolRecommendationService implements RecommendationAPI {
   /**
    * Get recommendation analytics
    */
-  async getAnalytics(workspaceId: string, period: AnalyticsPeriod): Promise<RecommendationAnalytics> {
+  async getAnalytics(
+    workspaceId: string,
+    period: AnalyticsPeriod
+  ): Promise<RecommendationAnalytics> {
     logger.info(`Generating analytics for workspace ${workspaceId}`)
 
     try {
@@ -369,14 +376,15 @@ export class ToolRecommendationService implements RecommendationAPI {
       },
     ]
 
-    const overallScore = components.reduce((sum, comp) => {
-      let score = 1.0
-      if (comp.status === 'warning') score = 0.7
-      if (comp.status === 'error') score = 0.3
-      if (comp.errorRate > 0.05) score *= 0.8
-      if (comp.latency > 500) score *= 0.9
-      return sum + score
-    }, 0) / components.length
+    const overallScore =
+      components.reduce((sum, comp) => {
+        let score = 1.0
+        if (comp.status === 'warning') score = 0.7
+        if (comp.status === 'error') score = 0.3
+        if (comp.errorRate > 0.05) score *= 0.8
+        if (comp.latency > 500) score *= 0.9
+        return sum + score
+      }, 0) / components.length
 
     const status = overallScore > 0.9 ? 'healthy' : overallScore > 0.7 ? 'degraded' : 'down'
 
@@ -449,7 +457,9 @@ export class ToolRecommendationService implements RecommendationAPI {
         `Confidence: ${topRecommendation.confidence * 100}%`,
       ],
       userPersonalization: userProfile
-        ? [`Adapted based on your ${Object.keys(userProfile.toolFamiliarity).length} tool experience`]
+        ? [
+            `Adapted based on your ${Object.keys(userProfile.toolFamiliarity).length} tool experience`,
+          ]
         : ['No user personalization applied'],
       workspaceContext: [`Team patterns considered`, `Integration opportunities identified`],
       improvementSuggestions: [
@@ -462,7 +472,7 @@ export class ToolRecommendationService implements RecommendationAPI {
   private async findSuggestionById(suggestionId: string): Promise<RealTimeSuggestion | null> {
     // Search across all active conversations
     for (const [conversationId, suggestions] of realtimeSuggester.suggestionQueue || new Map()) {
-      const suggestion = suggestions.find(s => s.id === suggestionId)
+      const suggestion = suggestions.find((s) => s.id === suggestionId)
       if (suggestion) {
         return suggestion
       }

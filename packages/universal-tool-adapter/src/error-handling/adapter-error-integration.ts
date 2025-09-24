@@ -10,19 +10,14 @@
  */
 
 import { createLogger } from '../../../apps/sim/lib/logs/console/logger'
-import {
-  comprehensiveToolErrorManager,
-  handleToolError,
-  validateBeforeExecution,
-  ToolErrorCategory
-} from './comprehensive-error-manager'
 import type {
   AdapterConfiguration,
   AdapterExecutionContext,
   AdapterExecutionResult,
   ErrorHandlingConfig,
-  ValidationResult
+  ValidationResult,
 } from '../types/adapter-interfaces'
+import { handleToolError, validateBeforeExecution } from './comprehensive-error-manager'
 
 const logger = createLogger('AdapterErrorIntegration')
 
@@ -48,10 +43,12 @@ export class ErrorAwareParameterMapper {
       if (!proactiveValidation.valid) {
         logger.warn('Parameter mapping blocked by validation', {
           executionId: context.executionId,
-          blockingIssues: proactiveValidation.blockingIssues
+          blockingIssues: proactiveValidation.blockingIssues,
         })
 
-        throw new Error(`Parameter validation failed: ${proactiveValidation.blockingIssues.join(', ')}`)
+        throw new Error(
+          `Parameter validation failed: ${proactiveValidation.blockingIssues.join(', ')}`
+        )
       }
 
       // Perform parameter mapping with error handling
@@ -64,19 +61,18 @@ export class ErrorAwareParameterMapper {
         executionId: context.executionId,
         mappingTimeMs: Date.now() - startTime,
         validationPassed: validationResult.valid,
-        warningCount: proactiveValidation.warnings.length
+        warningCount: proactiveValidation.warnings.length,
       })
 
       return {
         mappedParams,
         validationResult,
-        warnings: proactiveValidation.warnings
+        warnings: proactiveValidation.warnings,
       }
-
     } catch (error) {
       logger.error('Parameter mapping failed', {
         executionId: context.executionId,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? error.message : error,
       })
 
       // Handle mapping error through comprehensive error manager
@@ -119,11 +115,10 @@ export class ErrorAwareParameterMapper {
         }
 
         mappedParams[mapping.simParameter] = value
-
       } catch (mappingError) {
         logger.error('Parameter mapping error', {
           parameter: mapping.parlantParameter,
-          error: mappingError instanceof Error ? mappingError.message : mappingError
+          error: mappingError instanceof Error ? mappingError.message : mappingError,
         })
         throw mappingError
       }
@@ -142,12 +137,13 @@ export class ErrorAwareParameterMapper {
       switch (transformation.type) {
         case 'string_format':
           return String(value)
-        case 'number_format':
+        case 'number_format': {
           const num = Number(value)
-          if (isNaN(num)) {
+          if (Number.isNaN(num)) {
             throw new Error(`Cannot convert '${value}' to number`)
           }
           return num
+        }
         case 'json_parse':
           return JSON.parse(value)
         case 'custom':
@@ -161,7 +157,7 @@ export class ErrorAwareParameterMapper {
       logger.error('Transformation failed', {
         type: transformation.type,
         value: value,
-        error: transformError instanceof Error ? transformError.message : transformError
+        error: transformError instanceof Error ? transformError.message : transformError,
       })
       throw new Error(`Transformation '${transformation.type}' failed: ${transformError}`)
     }
@@ -192,7 +188,7 @@ export class ErrorAwareParameterMapper {
             errors.push({
               field: key,
               message: `Expected type ${expectedTypes.join(' or ')}, got ${actualType}`,
-              code: 'TYPE_MISMATCH'
+              code: 'TYPE_MISMATCH',
             })
           }
         }
@@ -202,22 +198,21 @@ export class ErrorAwareParameterMapper {
           errors.push({
             field: key,
             message: `Required field '${key}' is missing`,
-            code: 'REQUIRED_FIELD_MISSING'
+            code: 'REQUIRED_FIELD_MISSING',
           })
         }
-
       } catch (validationError) {
         errors.push({
           field: key,
           message: `Validation failed: ${validationError}`,
-          code: 'VALIDATION_ERROR'
+          code: 'VALIDATION_ERROR',
         })
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 }
@@ -243,7 +238,9 @@ export class ErrorAwareResultFormatter {
       const resultValidation = await this.validateResult(simResult, config, context)
 
       if (!resultValidation.valid) {
-        warnings.push(`Result validation issues: ${resultValidation.errors.map(e => e.message).join(', ')}`)
+        warnings.push(
+          `Result validation issues: ${resultValidation.errors.map((e) => e.message).join(', ')}`
+        )
       }
 
       // Format the result based on configuration
@@ -254,24 +251,23 @@ export class ErrorAwareResultFormatter {
         formattingTimeMs: Date.now() - startTime,
         originalResultType: typeof simResult,
         formattedResultType: typeof formattedResult,
-        hasWarnings: warnings.length > 0
+        hasWarnings: warnings.length > 0,
       }
 
       logger.info('Result formatting completed', {
         executionId: context.executionId,
-        ...metadata
+        ...metadata,
       })
 
       return {
         formattedResult,
         metadata,
-        warnings
+        warnings,
       }
-
     } catch (error) {
       logger.error('Result formatting failed', {
         executionId: context.executionId,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? error.message : error,
       })
 
       // Handle formatting error
@@ -282,13 +278,13 @@ export class ErrorAwareResultFormatter {
         formattedResult: {
           error: true,
           message: errorResult.explanation.userMessage,
-          originalResult: simResult
+          originalResult: simResult,
         },
         metadata: {
           formattingTimeMs: Date.now() - startTime,
-          error: true
+          error: true,
         },
-        warnings: [errorResult.explanation.userMessage]
+        warnings: [errorResult.explanation.userMessage],
       }
     }
   }
@@ -305,14 +301,14 @@ export class ErrorAwareResultFormatter {
       errors.push({
         field: 'result',
         message: 'Result is null or undefined',
-        code: 'NULL_RESULT'
+        code: 'NULL_RESULT',
       })
     }
 
     // Validate result structure if configured
     if (config.resultFormatting?.templates) {
       // Check if result matches any expected template
-      const matchesTemplate = config.resultFormatting.templates.some(template => {
+      const matchesTemplate = config.resultFormatting.templates.some((template) => {
         return this.resultMatchesTemplate(result, template)
       })
 
@@ -320,14 +316,14 @@ export class ErrorAwareResultFormatter {
         errors.push({
           field: 'result',
           message: 'Result does not match any expected template',
-          code: 'TEMPLATE_MISMATCH'
+          code: 'TEMPLATE_MISMATCH',
         })
       }
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -359,12 +355,16 @@ export class ErrorAwareResultFormatter {
 
     // Apply template formatting if configured
     if (config.resultFormatting.templates) {
-      const matchingTemplate = config.resultFormatting.templates.find(template =>
+      const matchingTemplate = config.resultFormatting.templates.find((template) =>
         this.resultMatchesTemplate(result, template)
       )
 
       if (matchingTemplate) {
-        formattedResult = await this.applyTemplateFormatting(formattedResult, matchingTemplate, context)
+        formattedResult = await this.applyTemplateFormatting(
+          formattedResult,
+          matchingTemplate,
+          context
+        )
       }
     }
 
@@ -382,8 +382,8 @@ export class ErrorAwareResultFormatter {
       conversational: {
         summary: this.generateResultSummary(result, context),
         suggestion: this.generateResultSuggestion(result, context),
-        nextActions: this.generateNextActions(result, context)
-      }
+        nextActions: this.generateNextActions(result, context),
+      },
     }
   }
 
@@ -397,38 +397,43 @@ export class ErrorAwareResultFormatter {
       ...result,
       formatted: {
         summary: this.interpolateTemplate(template.summary, result, context),
-        details: template.details ? this.interpolateTemplate(template.details, result, context) : undefined,
-        suggestion: template.suggestion ? this.interpolateTemplate(template.suggestion, result, context) : undefined,
-        actions: template.actions || []
-      }
+        details: template.details
+          ? this.interpolateTemplate(template.details, result, context)
+          : undefined,
+        suggestion: template.suggestion
+          ? this.interpolateTemplate(template.suggestion, result, context)
+          : undefined,
+        actions: template.actions || [],
+      },
     }
   }
 
   private generateResultSummary(result: any, context: AdapterExecutionContext): string {
     if (result.success) {
       return `Successfully completed ${context.toolId} operation`
-    } else {
-      return `${context.toolId} operation encountered an issue`
     }
+    return `${context.toolId} operation encountered an issue`
   }
 
   private generateResultSuggestion(result: any, context: AdapterExecutionContext): string {
     if (result.success) {
       return 'The operation completed successfully. You can now proceed with the next step.'
-    } else {
-      return 'Please review the error details and try again with corrected parameters.'
     }
+    return 'Please review the error details and try again with corrected parameters.'
   }
 
   private generateNextActions(result: any, context: AdapterExecutionContext): string[] {
     if (result.success) {
       return ['Review the results', 'Proceed to next step', 'Save or export data if needed']
-    } else {
-      return ['Check error details', 'Verify parameters', 'Try again', 'Contact support if needed']
     }
+    return ['Check error details', 'Verify parameters', 'Try again', 'Contact support if needed']
   }
 
-  private interpolateTemplate(template: string, result: any, context: AdapterExecutionContext): string {
+  private interpolateTemplate(
+    template: string,
+    result: any,
+    context: AdapterExecutionContext
+  ): string {
     let interpolated = template
 
     // Replace common placeholders
@@ -466,7 +471,7 @@ export class ErrorAwareExecutionWrapper {
     logger.info('Starting error-aware execution', {
       executionId,
       toolId: context.toolId,
-      userId: context.userId
+      userId: context.userId,
     })
 
     try {
@@ -476,7 +481,7 @@ export class ErrorAwareExecutionWrapper {
 
       logger.info('Execution completed successfully', {
         executionId,
-        durationMs: completedAt.getTime() - startTime.getTime()
+        durationMs: completedAt.getTime() - startTime.getTime(),
       })
 
       return {
@@ -491,17 +496,16 @@ export class ErrorAwareExecutionWrapper {
           parameterMappingTimeMs: 0, // Would be tracked in actual implementation
           validationTimeMs: 0,
           simToolExecutionTimeMs: completedAt.getTime() - startTime.getTime(),
-          resultFormattingTimeMs: 0
-        }
+          resultFormattingTimeMs: 0,
+        },
       }
-
     } catch (error) {
       const completedAt = new Date()
 
       logger.error('Execution failed', {
         executionId,
         error: error instanceof Error ? error.message : error,
-        durationMs: completedAt.getTime() - startTime.getTime()
+        durationMs: completedAt.getTime() - startTime.getTime(),
       })
 
       // Handle the error through comprehensive error manager
@@ -519,20 +523,20 @@ export class ErrorAwareExecutionWrapper {
           message: errorResult.explanation.userMessage,
           code: 'EXECUTION_FAILED',
           details: errorResult.explanation.technicalDetails,
-          recoverable: errorResult.recovery
+          recoverable: errorResult.recovery,
         },
-        suggestions: errorResult.suggestedActions.map(action => ({
+        suggestions: errorResult.suggestedActions.map((action) => ({
           type: 'recovery',
           message: action,
           action: action,
-          priority: 'high' as const
+          priority: 'high' as const,
         })),
         stats: {
           parameterMappingTimeMs: 0,
           validationTimeMs: 0,
           simToolExecutionTimeMs: completedAt.getTime() - startTime.getTime(),
-          resultFormattingTimeMs: 0
-        }
+          resultFormattingTimeMs: 0,
+        },
       }
     }
   }
@@ -543,51 +547,61 @@ export class ErrorAwareExecutionWrapper {
     context: AdapterExecutionContext,
     config: AdapterConfiguration
   ): Promise<AdapterExecutionResult> {
-    return this.executeWithErrorHandling(async () => {
-      // 1. Parameter mapping with error handling
-      const mappingResult = await this.parameterMapper.mapParameters(parlantParams, config, context)
+    return this.executeWithErrorHandling(
+      async () => {
+        // 1. Parameter mapping with error handling
+        const mappingResult = await this.parameterMapper.mapParameters(
+          parlantParams,
+          config,
+          context
+        )
 
-      if (!mappingResult.validationResult.valid) {
-        throw new Error(`Parameter validation failed: ${mappingResult.validationResult.errors.map(e => e.message).join(', ')}`)
-      }
+        if (!mappingResult.validationResult.valid) {
+          throw new Error(
+            `Parameter validation failed: ${mappingResult.validationResult.errors.map((e) => e.message).join(', ')}`
+          )
+        }
 
-      // 2. Execute the Sim tool
-      const simResult = await simTool.execute(
-        {
-          toolCallId: context.executionId,
-          toolName: context.toolId,
-          log: (level: string, message: string, extra?: any) => {
-            logger[level as keyof typeof logger]?.(message, { executionId: context.executionId, ...extra })
-          }
-        },
-        mappingResult.mappedParams
-      )
+        // 2. Execute the Sim tool
+        const simResult = await simTool.execute(
+          {
+            toolCallId: context.executionId,
+            toolName: context.toolId,
+            log: (level: string, message: string, extra?: any) => {
+              logger[level as keyof typeof logger]?.(message, {
+                executionId: context.executionId,
+                ...extra,
+              })
+            },
+          },
+          mappingResult.mappedParams
+        )
 
-      // 3. Format the result with error handling
-      const formattingResult = await this.resultFormatter.formatResult(simResult, config, context)
+        // 3. Format the result with error handling
+        const formattingResult = await this.resultFormatter.formatResult(simResult, config, context)
 
-      return {
-        ...simResult,
-        formatted: formattingResult.formattedResult,
-        metadata: formattingResult.metadata,
-        warnings: [...mappingResult.warnings, ...formattingResult.warnings]
-      }
-
-    }, context, config)
+        return {
+          ...simResult,
+          formatted: formattingResult.formattedResult,
+          metadata: formattingResult.metadata,
+          warnings: [...mappingResult.warnings, ...formattingResult.warnings],
+        }
+      },
+      context,
+      config
+    )
   }
 }
 
 /**
  * Integration decorator for adapter methods
  */
-export function withErrorHandling(
-  config?: Partial<ErrorHandlingConfig>
-) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function withErrorHandling(config?: Partial<ErrorHandlingConfig>) {
+  return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
     const method = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
-      const context = args.find((arg: any) => arg && arg.executionId) as AdapterExecutionContext
+      const context = args.find((arg: any) => arg?.executionId) as AdapterExecutionContext
 
       if (!context) {
         logger.warn('No execution context found for error handling', { method: propertyName })
@@ -600,7 +614,7 @@ export function withErrorHandling(
         logger.error('Method execution failed', {
           method: propertyName,
           executionId: context.executionId,
-          error: error instanceof Error ? error.message : error
+          error: error instanceof Error ? error.message : error,
         })
 
         const errorResult = await handleToolError(error as Error, context, config)

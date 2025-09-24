@@ -7,7 +7,7 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
+import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorTaxonomy')
 
@@ -47,43 +47,43 @@ export enum ErrorCategory {
   // External service errors
   EXTERNAL_SERVICE = 'external_service',
   EXTERNAL_TIMEOUT = 'external_timeout',
-  EXTERNAL_QUOTA = 'external_quota'
+  EXTERNAL_QUOTA = 'external_quota',
 }
 
 /**
  * Error severity levels with clear escalation paths
  */
 export enum ErrorSeverity {
-  TRACE = 'trace',       // Detailed debugging information
-  DEBUG = 'debug',       // Development debugging
-  INFO = 'info',         // Informational messages
-  WARNING = 'warning',   // Potential issues that don't block execution
-  ERROR = 'error',       // Errors that require attention but system continues
+  TRACE = 'trace', // Detailed debugging information
+  DEBUG = 'debug', // Development debugging
+  INFO = 'info', // Informational messages
+  WARNING = 'warning', // Potential issues that don't block execution
+  ERROR = 'error', // Errors that require attention but system continues
   CRITICAL = 'critical', // Errors that require immediate attention
-  FATAL = 'fatal'        // System-breaking errors that require shutdown
+  FATAL = 'fatal', // System-breaking errors that require shutdown
 }
 
 /**
  * Error impact assessment levels
  */
 export enum ErrorImpact {
-  NONE = 'none',           // No user impact
-  LOW = 'low',             // Single user, single operation
-  MEDIUM = 'medium',       // Single user, multiple operations or temporary degradation
-  HIGH = 'high',           // Multiple users affected or extended degradation
-  CRITICAL = 'critical'    // System-wide impact or data loss potential
+  NONE = 'none', // No user impact
+  LOW = 'low', // Single user, single operation
+  MEDIUM = 'medium', // Single user, multiple operations or temporary degradation
+  HIGH = 'high', // Multiple users affected or extended degradation
+  CRITICAL = 'critical', // System-wide impact or data loss potential
 }
 
 /**
  * Recovery strategy classifications
  */
 export enum RecoveryStrategy {
-  NONE = 'none',           // No recovery possible
-  MANUAL = 'manual',       // Requires manual intervention
-  RETRY = 'retry',         // Automatic retry with backoff
-  FALLBACK = 'fallback',   // Switch to alternative approach
+  NONE = 'none', // No recovery possible
+  MANUAL = 'manual', // Requires manual intervention
+  RETRY = 'retry', // Automatic retry with backoff
+  FALLBACK = 'fallback', // Switch to alternative approach
   CIRCUIT_BREAKER = 'circuit_breaker', // Temporarily disable failing component
-  GRACEFUL_DEGRADATION = 'graceful_degradation' // Continue with reduced functionality
+  GRACEFUL_DEGRADATION = 'graceful_degradation', // Continue with reduced functionality
 }
 
 /**
@@ -95,7 +95,7 @@ export const ErrorSubcategories = {
     'parameter_mapping',
     'response_transformation',
     'schema_validation',
-    'version_compatibility'
+    'version_compatibility',
   ],
 
   [ErrorCategory.TOOL_EXECUTION]: [
@@ -104,7 +104,7 @@ export const ErrorSubcategories = {
     'resource_exhausted',
     'invalid_state',
     'dependency_failure',
-    'data_corruption'
+    'data_corruption',
   ],
 
   [ErrorCategory.TOOL_CONFIGURATION]: [
@@ -112,7 +112,7 @@ export const ErrorSubcategories = {
     'invalid_config',
     'config_conflict',
     'environment_mismatch',
-    'secret_unavailable'
+    'secret_unavailable',
   ],
 
   [ErrorCategory.TOOL_AUTHENTICATION]: [
@@ -121,7 +121,7 @@ export const ErrorSubcategories = {
     'insufficient_permissions',
     'oauth_failure',
     'api_key_invalid',
-    'rate_limit_exceeded'
+    'rate_limit_exceeded',
   ],
 
   [ErrorCategory.TOOL_VALIDATION]: [
@@ -129,7 +129,7 @@ export const ErrorSubcategories = {
     'output_validation',
     'schema_mismatch',
     'constraint_violation',
-    'business_rule_violation'
+    'business_rule_violation',
   ],
 
   [ErrorCategory.SYSTEM_RESOURCE]: [
@@ -137,7 +137,7 @@ export const ErrorSubcategories = {
     'cpu_overload',
     'disk_full',
     'handle_exhausted',
-    'connection_pool_full'
+    'connection_pool_full',
   ],
 
   [ErrorCategory.SYSTEM_NETWORK]: [
@@ -146,7 +146,7 @@ export const ErrorSubcategories = {
     'dns_resolution',
     'ssl_handshake',
     'proxy_error',
-    'firewall_blocked'
+    'firewall_blocked',
   ],
 
   [ErrorCategory.SYSTEM_PERMISSION]: [
@@ -154,7 +154,7 @@ export const ErrorSubcategories = {
     'directory_access_denied',
     'execution_permission',
     'network_permission',
-    'security_policy_violation'
+    'security_policy_violation',
   ],
 
   [ErrorCategory.SYSTEM_DEPENDENCY]: [
@@ -162,7 +162,7 @@ export const ErrorSubcategories = {
     'version_conflict',
     'circular_dependency',
     'initialization_failure',
-    'service_unavailable'
+    'service_unavailable',
   ],
 
   [ErrorCategory.INTEGRATION_API]: [
@@ -170,7 +170,7 @@ export const ErrorSubcategories = {
     'method_not_allowed',
     'payload_too_large',
     'unsupported_media_type',
-    'api_version_mismatch'
+    'api_version_mismatch',
   ],
 
   [ErrorCategory.INTEGRATION_DATABASE]: [
@@ -178,7 +178,7 @@ export const ErrorSubcategories = {
     'query_timeout',
     'constraint_violation',
     'deadlock',
-    'data_integrity_violation'
+    'data_integrity_violation',
   ],
 
   [ErrorCategory.INTEGRATION_AUTH]: [
@@ -186,7 +186,7 @@ export const ErrorSubcategories = {
     'invalid_token',
     'permission_denied',
     'workspace_access_denied',
-    'user_not_found'
+    'user_not_found',
   ],
 
   [ErrorCategory.INTEGRATION_WEBSOCKET]: [
@@ -194,7 +194,7 @@ export const ErrorSubcategories = {
     'handshake_failed',
     'protocol_error',
     'message_too_large',
-    'rate_limit_exceeded'
+    'rate_limit_exceeded',
   ],
 
   [ErrorCategory.USER_INPUT]: [
@@ -202,7 +202,7 @@ export const ErrorSubcategories = {
     'missing_required_field',
     'value_out_of_range',
     'unsupported_operation',
-    'malformed_request'
+    'malformed_request',
   ],
 
   [ErrorCategory.USER_PERMISSION]: [
@@ -210,7 +210,7 @@ export const ErrorSubcategories = {
     'workspace_access_denied',
     'feature_not_enabled',
     'quota_exceeded',
-    'account_suspended'
+    'account_suspended',
   ],
 
   [ErrorCategory.USER_CONTEXT]: [
@@ -218,7 +218,7 @@ export const ErrorSubcategories = {
     'workspace_not_found',
     'context_mismatch',
     'state_conflict',
-    'concurrent_modification'
+    'concurrent_modification',
   ],
 
   [ErrorCategory.AGENT_REASONING]: [
@@ -226,7 +226,7 @@ export const ErrorSubcategories = {
     'parameter_inference_failed',
     'goal_unreachable',
     'logical_contradiction',
-    'infinite_loop_detected'
+    'infinite_loop_detected',
   ],
 
   [ErrorCategory.AGENT_COMMUNICATION]: [
@@ -234,7 +234,7 @@ export const ErrorSubcategories = {
     'response_generation_failed',
     'context_understanding_failed',
     'conversation_state_lost',
-    'language_model_error'
+    'language_model_error',
   ],
 
   [ErrorCategory.AGENT_WORKFLOW]: [
@@ -242,7 +242,7 @@ export const ErrorSubcategories = {
     'state_transition_invalid',
     'parallel_execution_conflict',
     'workflow_timeout',
-    'checkpoint_corruption'
+    'checkpoint_corruption',
   ],
 
   [ErrorCategory.EXTERNAL_SERVICE]: [
@@ -250,7 +250,7 @@ export const ErrorSubcategories = {
     'api_error',
     'authentication_failed',
     'response_invalid',
-    'service_deprecated'
+    'service_deprecated',
   ],
 
   [ErrorCategory.EXTERNAL_TIMEOUT]: [
@@ -258,7 +258,7 @@ export const ErrorSubcategories = {
     'response_timeout',
     'connection_timeout',
     'operation_timeout',
-    'batch_timeout'
+    'batch_timeout',
   ],
 
   [ErrorCategory.EXTERNAL_QUOTA]: [
@@ -266,8 +266,8 @@ export const ErrorSubcategories = {
     'daily_quota_exceeded',
     'concurrent_limit_reached',
     'resource_limit_exceeded',
-    'billing_limit_reached'
-  ]
+    'billing_limit_reached',
+  ],
 } as const
 
 /**
@@ -367,7 +367,7 @@ export const DEFAULT_ERROR_PATTERNS: ErrorPattern[] = [
     subcategories: ['dependency_failure', 'timeout'],
     frequency: { threshold: 3, timeWindowMs: 300000 }, // 3 errors in 5 minutes
     correlationRules: { timeWindowMs: 60000, maxDistance: 5, similarityThreshold: 0.7 },
-    autoActions: { notify: true, createIncident: true, escalate: false, applyCircuitBreaker: true }
+    autoActions: { notify: true, createIncident: true, escalate: false, applyCircuitBreaker: true },
   },
 
   {
@@ -377,7 +377,7 @@ export const DEFAULT_ERROR_PATTERNS: ErrorPattern[] = [
     category: ErrorCategory.TOOL_AUTHENTICATION,
     frequency: { threshold: 5, timeWindowMs: 60000 }, // 5 errors in 1 minute
     correlationRules: { timeWindowMs: 180000, maxDistance: 10, similarityThreshold: 0.5 },
-    autoActions: { notify: true, createIncident: true, escalate: true, applyCircuitBreaker: false }
+    autoActions: { notify: true, createIncident: true, escalate: true, applyCircuitBreaker: false },
   },
 
   {
@@ -387,7 +387,7 @@ export const DEFAULT_ERROR_PATTERNS: ErrorPattern[] = [
     category: ErrorCategory.SYSTEM_RESOURCE,
     frequency: { threshold: 10, timeWindowMs: 600000 }, // 10 errors in 10 minutes
     correlationRules: { timeWindowMs: 300000, maxDistance: 20, similarityThreshold: 0.6 },
-    autoActions: { notify: true, createIncident: true, escalate: true, applyCircuitBreaker: true }
+    autoActions: { notify: true, createIncident: true, escalate: true, applyCircuitBreaker: true },
   },
 
   {
@@ -397,8 +397,8 @@ export const DEFAULT_ERROR_PATTERNS: ErrorPattern[] = [
     category: ErrorCategory.EXTERNAL_SERVICE,
     frequency: { threshold: 7, timeWindowMs: 300000 }, // 7 errors in 5 minutes
     correlationRules: { timeWindowMs: 900000, maxDistance: 15, similarityThreshold: 0.8 },
-    autoActions: { notify: true, createIncident: true, escalate: false, applyCircuitBreaker: true }
-  }
+    autoActions: { notify: true, createIncident: true, escalate: false, applyCircuitBreaker: true },
+  },
 ]
 
 /**
@@ -413,7 +413,7 @@ export class ErrorClassifier {
     this.patterns = patterns
     logger.info('Error Classifier initialized', {
       patterns: patterns.length,
-      categories: Object.keys(ErrorCategory).length
+      categories: Object.keys(ErrorCategory).length,
     })
   }
 
@@ -426,7 +426,7 @@ export class ErrorClassifier {
     message: string,
     error?: Error,
     context: ParlantLogContext = {},
-    component: string = 'unknown'
+    component = 'unknown'
   ): ErrorClassification {
     const id = `err-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`
     const timestamp = new Date().toISOString()
@@ -439,11 +439,14 @@ export class ErrorClassifier {
 
     // Determine recovery strategy
     const { recoverable, recoveryStrategy, suggestedActions } = this.determineRecoveryApproach(
-      category, subcategory, error
+      category,
+      subcategory,
+      error
     )
 
     // Extract affected entities from context
-    const { affectedUsers, affectedWorkspaces, affectedTools } = this.extractAffectedEntities(context)
+    const { affectedUsers, affectedWorkspaces, affectedTools } =
+      this.extractAffectedEntities(context)
 
     // Generate tags for analytics
     const tags = this.generateTags(category, subcategory, component, context)
@@ -472,7 +475,7 @@ export class ErrorClassifier {
       affectedTools,
       resolved: false,
       tags,
-      customMetadata: {}
+      customMetadata: {},
     }
 
     // Store for pattern analysis
@@ -491,7 +494,7 @@ export class ErrorClassifier {
       severity,
       impact,
       recoverable,
-      component
+      component,
     })
 
     return classification
@@ -511,14 +514,14 @@ export class ErrorClassifier {
     }
 
     // High severity categories
-    const criticalCategories = [
-      ErrorCategory.SYSTEM_RESOURCE,
-      ErrorCategory.INTEGRATION_DATABASE
-    ]
+    const criticalCategories = [ErrorCategory.SYSTEM_RESOURCE, ErrorCategory.INTEGRATION_DATABASE]
 
     const criticalSubcategories = [
-      'memory_exhausted', 'disk_full', 'deadlock',
-      'data_integrity_violation', 'security_policy_violation'
+      'memory_exhausted',
+      'disk_full',
+      'deadlock',
+      'data_integrity_violation',
+      'security_policy_violation',
     ]
 
     if (criticalCategories.includes(category) || criticalSubcategories.includes(subcategory)) {
@@ -529,7 +532,7 @@ export class ErrorClassifier {
     const errorCategories = [
       ErrorCategory.TOOL_EXECUTION,
       ErrorCategory.INTEGRATION_API,
-      ErrorCategory.EXTERNAL_SERVICE
+      ErrorCategory.EXTERNAL_SERVICE,
     ]
 
     if (errorCategories.includes(category) || error instanceof Error) {
@@ -540,7 +543,7 @@ export class ErrorClassifier {
     const warningCategories = [
       ErrorCategory.TOOL_VALIDATION,
       ErrorCategory.USER_INPUT,
-      ErrorCategory.EXTERNAL_TIMEOUT
+      ErrorCategory.EXTERNAL_TIMEOUT,
     ]
 
     if (warningCategories.includes(category)) {
@@ -568,7 +571,7 @@ export class ErrorClassifier {
     const systemWideCategories = [
       ErrorCategory.SYSTEM_RESOURCE,
       ErrorCategory.SYSTEM_NETWORK,
-      ErrorCategory.INTEGRATION_DATABASE
+      ErrorCategory.INTEGRATION_DATABASE,
     ]
 
     if (systemWideCategories.includes(category)) {
@@ -576,8 +579,11 @@ export class ErrorClassifier {
     }
 
     // Multi-user impact indicators
-    if (subcategory.includes('service') || subcategory.includes('connection') ||
-        subcategory.includes('auth')) {
+    if (
+      subcategory.includes('service') ||
+      subcategory.includes('connection') ||
+      subcategory.includes('auth')
+    ) {
       return ErrorImpact.MEDIUM
     }
 
@@ -604,24 +610,27 @@ export class ErrorClassifier {
       return {
         recoverable: false,
         recoveryStrategy: RecoveryStrategy.NONE,
-        suggestedActions: ['Contact system administrator', 'Check system logs', 'Restart service']
+        suggestedActions: ['Contact system administrator', 'Check system logs', 'Restart service'],
       }
     }
 
     // Retry-eligible errors
     const retryableSubcategories = [
-      'timeout', 'connection_failed', 'rate_limit_exceeded', 'service_unavailable'
+      'timeout',
+      'connection_failed',
+      'rate_limit_exceeded',
+      'service_unavailable',
     ]
 
-    if (retryableSubcategories.some(sub => subcategory.includes(sub))) {
+    if (retryableSubcategories.some((sub) => subcategory.includes(sub))) {
       return {
         recoverable: true,
         recoveryStrategy: RecoveryStrategy.RETRY,
         suggestedActions: [
           'Retry operation with exponential backoff',
           'Check network connectivity',
-          'Verify service availability'
-        ]
+          'Verify service availability',
+        ],
       }
     }
 
@@ -633,8 +642,8 @@ export class ErrorClassifier {
         suggestedActions: [
           'Try alternative tool or service',
           'Use cached data if available',
-          'Simplify operation parameters'
-        ]
+          'Simplify operation parameters',
+        ],
       }
     }
 
@@ -646,8 +655,8 @@ export class ErrorClassifier {
         suggestedActions: [
           'Check configuration settings',
           'Validate input parameters',
-          'Review documentation'
-        ]
+          'Review documentation',
+        ],
       }
     }
 
@@ -658,8 +667,8 @@ export class ErrorClassifier {
       suggestedActions: [
         'Continue with reduced functionality',
         'Log error for investigation',
-        'Monitor for resolution'
-      ]
+        'Monitor for resolution',
+      ],
     }
   }
 
@@ -737,7 +746,7 @@ export class ErrorClassifier {
 
     // Check message patterns
     if (pattern.messagePatterns) {
-      const messageMatches = pattern.messagePatterns.some(regex => regex.test(error.message))
+      const messageMatches = pattern.messagePatterns.some((regex) => regex.test(error.message))
       if (!messageMatches) {
         return false
       }
@@ -755,9 +764,9 @@ export class ErrorClassifier {
     const cutoff = Date.now() - timeWindow
 
     // Count matching errors in time window
-    const matchingErrors = this.recentErrors.filter(error =>
-      new Date(error.timestamp).getTime() >= cutoff &&
-      this.doesErrorMatchPattern(error, pattern)
+    const matchingErrors = this.recentErrors.filter(
+      (error) =>
+        new Date(error.timestamp).getTime() >= cutoff && this.doesErrorMatchPattern(error, pattern)
     )
 
     if (matchingErrors.length >= threshold) {
@@ -766,7 +775,7 @@ export class ErrorClassifier {
         patternName: pattern.name,
         errorCount: matchingErrors.length,
         threshold,
-        timeWindowMs: timeWindow
+        timeWindowMs: timeWindow,
       })
 
       // Trigger pattern-based actions
@@ -781,28 +790,28 @@ export class ErrorClassifier {
     const timeWindow = 300000 // 5 minutes
     const cutoff = Date.now() - timeWindow
 
-    const recentErrors = this.recentErrors.filter(error =>
-      error.id !== newError.id &&
-      new Date(error.timestamp).getTime() >= cutoff
+    const recentErrors = this.recentErrors.filter(
+      (error) => error.id !== newError.id && new Date(error.timestamp).getTime() >= cutoff
     )
 
     // Find errors with same correlation ID
-    const correlatedErrors = recentErrors.filter(error =>
-      error.correlationId && error.correlationId === newError.correlationId
+    const correlatedErrors = recentErrors.filter(
+      (error) => error.correlationId && error.correlationId === newError.correlationId
     )
 
     // Find errors affecting same entities
-    const relatedErrors = recentErrors.filter(error =>
-      (error.affectedUsers.some(user => newError.affectedUsers.includes(user))) ||
-      (error.affectedWorkspaces.some(ws => newError.affectedWorkspaces.includes(ws))) ||
-      (error.affectedTools.some(tool => newError.affectedTools.includes(tool)))
+    const relatedErrors = recentErrors.filter(
+      (error) =>
+        error.affectedUsers.some((user) => newError.affectedUsers.includes(user)) ||
+        error.affectedWorkspaces.some((ws) => newError.affectedWorkspaces.includes(ws)) ||
+        error.affectedTools.some((tool) => newError.affectedTools.includes(tool))
     )
 
     if (correlatedErrors.length > 0 || relatedErrors.length > 0) {
       logger.debug('Related errors found', {
         errorId: newError.id,
         correlatedCount: correlatedErrors.length,
-        relatedCount: relatedErrors.length
+        relatedCount: relatedErrors.length,
       })
     }
   }
@@ -815,14 +824,14 @@ export class ErrorClassifier {
       logger.warn(`Pattern alert: ${pattern.name}`, {
         pattern: pattern.id,
         description: pattern.description,
-        errorCount: errors.length
+        errorCount: errors.length,
       })
     }
 
     if (pattern.autoActions.createIncident) {
       logger.error(`Incident created for pattern: ${pattern.name}`, {
         pattern: pattern.id,
-        errors: errors.map(e => e.id)
+        errors: errors.map((e) => e.id),
       })
     }
 
@@ -830,7 +839,7 @@ export class ErrorClassifier {
       logger.error(`Escalating pattern: ${pattern.name}`, {
         pattern: pattern.id,
         severity: 'high',
-        requiresAttention: true
+        requiresAttention: true,
       })
     }
   }
@@ -838,7 +847,7 @@ export class ErrorClassifier {
   /**
    * Get error statistics by category and time window
    */
-  getErrorStatistics(timeWindowMs: number = 3600000): {
+  getErrorStatistics(timeWindowMs = 3600000): {
     total: number
     byCategory: Record<string, number>
     bySeverity: Record<string, number>
@@ -846,15 +855,15 @@ export class ErrorClassifier {
     patterns: Array<{ pattern: string; count: number }>
   } {
     const cutoff = Date.now() - timeWindowMs
-    const relevantErrors = this.recentErrors.filter(error =>
-      new Date(error.timestamp).getTime() >= cutoff
+    const relevantErrors = this.recentErrors.filter(
+      (error) => new Date(error.timestamp).getTime() >= cutoff
     )
 
     const byCategory: Record<string, number> = {}
     const bySeverity: Record<string, number> = {}
     const byComponent: Record<string, number> = {}
 
-    relevantErrors.forEach(error => {
+    relevantErrors.forEach((error) => {
       byCategory[error.category] = (byCategory[error.category] || 0) + 1
       bySeverity[error.severity] = (bySeverity[error.severity] || 0) + 1
       byComponent[error.component] = (byComponent[error.component] || 0) + 1
@@ -862,8 +871,8 @@ export class ErrorClassifier {
 
     // Count pattern occurrences
     const patternCounts: Record<string, number> = {}
-    this.patterns.forEach(pattern => {
-      const matching = relevantErrors.filter(error => this.doesErrorMatchPattern(error, pattern))
+    this.patterns.forEach((pattern) => {
+      const matching = relevantErrors.filter((error) => this.doesErrorMatchPattern(error, pattern))
       if (matching.length > 0) {
         patternCounts[pattern.name] = matching.length
       }
@@ -878,7 +887,7 @@ export class ErrorClassifier {
       byCategory,
       bySeverity,
       byComponent,
-      patterns
+      patterns,
     }
   }
 

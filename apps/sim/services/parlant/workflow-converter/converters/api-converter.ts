@@ -6,15 +6,15 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { BaseNodeConverter } from './base-converter'
 import type {
-  ReactFlowNode,
   ConversionContext,
   NodeConversionResult,
-  ValidationResult,
   ParlantState,
-  ParlantStateType
+  ParlantStateType,
+  ReactFlowNode,
+  ValidationResult,
 } from '../types'
+import { BaseNodeConverter } from './base-converter'
 
 const logger = createLogger('ApiConverter')
 
@@ -47,19 +47,18 @@ export class ApiNodeConverter extends BaseNodeConverter {
         stateId: toolState.id,
         hasUrl: !!node.data?.url,
         method: node.data?.method || 'GET',
-        toolCount: this.extractTools(node).length
+        toolCount: this.extractTools(node).length,
       })
 
       return {
         states: [toolState],
         transitions: [],
-        variables: variables.length > 0 ? variables : undefined
+        variables: variables.length > 0 ? variables : undefined,
       }
-
     } catch (error) {
       logger.error('Failed to convert API node', {
         nodeId: node.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       context.errors.push(
@@ -72,7 +71,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
             'Check API configuration',
             'Verify URL is valid',
             'Review authentication settings',
-            'Check request parameters'
+            'Check request parameters',
           ]
         )
       )
@@ -80,7 +79,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
       return {
         states: [this.createFallbackToolState(node)],
         transitions: [],
-        variables: undefined
+        variables: undefined,
       }
     }
   }
@@ -103,7 +102,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
           [
             'Add URL to the API configuration',
             'Configure endpoint in node settings',
-            'Verify API connection details'
+            'Verify API connection details',
           ]
         )
       )
@@ -121,7 +120,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
           'medium',
           [
             'Use standard HTTP methods (GET, POST, PUT, DELETE)',
-            'Verify method is supported by target API'
+            'Verify method is supported by target API',
           ]
         )
       )
@@ -138,7 +137,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
           [
             'Add authentication credentials',
             'Configure API key or token',
-            'Review authentication requirements'
+            'Review authentication requirements',
           ]
         )
       )
@@ -189,7 +188,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
       description,
       content: `Executing ${toolName}`,
       tools,
-      conditions: this.extractConditions(node)
+      conditions: this.extractConditions(node),
     })
   }
 
@@ -201,7 +200,8 @@ export class ApiNodeConverter extends BaseNodeConverter {
 
     // Generate from node name
     if (node.data?.name) {
-      return node.data.name.toLowerCase()
+      return node.data.name
+        .toLowerCase()
         .replace(/[^a-z0-9]/g, '_')
         .replace(/_+/g, '_')
         .replace(/^_|_$/g, '')
@@ -211,7 +211,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
     if (node.data?.url) {
       try {
         const url = new URL(node.data.url)
-        const pathParts = url.pathname.split('/').filter(p => p)
+        const pathParts = url.pathname.split('/').filter((p) => p)
         if (pathParts.length > 0) {
           return `call_${pathParts[pathParts.length - 1]}`
         }
@@ -254,7 +254,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_url`,
         type: 'string' as const,
         description: `API endpoint for ${node.data?.name || 'API call'}`,
-        defaultValue: url
+        defaultValue: url,
       })
     }
 
@@ -264,7 +264,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
       name: `${node.id}_method`,
       type: 'string' as const,
       description: 'HTTP method for the API call',
-      defaultValue: method.toUpperCase()
+      defaultValue: method.toUpperCase(),
     })
 
     // Add headers as variable
@@ -273,7 +273,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_headers`,
         type: 'json' as const,
         description: 'HTTP headers for the API call',
-        defaultValue: node.data.headers
+        defaultValue: node.data.headers,
       })
     }
 
@@ -284,7 +284,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_body`,
         type: 'json' as const,
         description: 'Request body for the API call',
-        defaultValue: body
+        defaultValue: body,
       })
     }
 
@@ -295,7 +295,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_params`,
         type: 'json' as const,
         description: 'Query parameters for the API call',
-        defaultValue: params
+        defaultValue: params,
       })
     }
 
@@ -305,7 +305,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_timeout`,
         type: 'number' as const,
         description: 'Timeout for the API call in milliseconds',
-        defaultValue: node.data.timeout
+        defaultValue: node.data.timeout,
       })
     }
 
@@ -315,7 +315,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
         name: `${node.id}_auth`,
         type: 'json' as const,
         description: 'Authentication configuration',
-        defaultValue: node.data.auth
+        defaultValue: node.data.auth,
       })
     }
 
@@ -328,7 +328,7 @@ export class ApiNodeConverter extends BaseNodeConverter {
       description: 'Fallback tool state created due to conversion error',
       content: 'Executing API call with fallback configuration',
       tools: ['generic_api_call'],
-      conditions: ['API call required']
+      conditions: ['API call required'],
     })
   }
 }

@@ -9,20 +9,17 @@
  * @version 1.0.0
  */
 
-import { z } from 'zod'
+import type { z } from 'zod'
+import { ValidationError } from '../errors/adapter-errors'
 import type {
-  ParameterMapping,
-  MappingTransformation,
-  ParameterContext,
   ContextualValue,
   MappingRule,
-  ValidationConfig
+  MappingTransformation,
+  ParameterMapping,
+  ValidationConfig,
 } from '../types/adapter-interfaces'
-import type {
-  ParlantExecutionContext
-} from '../types/parlant-interfaces'
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
-import { ValidationError } from '../errors/adapter-errors'
 
 const logger = createLogger('ParameterMapper')
 
@@ -40,7 +37,6 @@ export type TransformationFunction<TInput = any, TOutput = any> = (
  * Built-in transformation functions for common conversions
  */
 export class ParameterTransformations {
-
   /**
    * Direct value mapping - no transformation
    */
@@ -54,7 +50,8 @@ export class ParameterTransformations {
     toUpperCase: (value: string) => value.toUpperCase(),
     trim: (value: string) => value.trim(),
     slugify: (value: string) =>
-      value.toLowerCase()
+      value
+        .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, ''),
 
@@ -66,7 +63,7 @@ export class ParameterTransformations {
         const contextValue = context.variables?.[key] || context[key]
         return contextValue ? String(contextValue) : match
       })
-    }
+    },
   }
 
   /**
@@ -81,20 +78,18 @@ export class ParameterTransformations {
     /**
      * Clamp number to range
      */
-    clamp: (value: number, min: number, max: number) =>
-      Math.min(Math.max(value, min), max)
+    clamp: (value: number, min: number, max: number) => Math.min(Math.max(value, min), max),
   }
 
   /**
    * Array transformations
    */
   static array = {
-    join: (array: any[], separator: string = ',') => array.join(separator),
+    join: (array: any[], separator = ',') => array.join(separator),
     first: (array: any[]) => array[0],
     last: (array: any[]) => array[array.length - 1],
     unique: (array: any[]) => [...new Set(array)],
-    filter: (array: any[], predicate: (item: any) => boolean) =>
-      array.filter(predicate)
+    filter: (array: any[], predicate: (item: any) => boolean) => array.filter(predicate),
   }
 
   /**
@@ -102,28 +97,27 @@ export class ParameterTransformations {
    */
   static object = {
     pick: (obj: Record<string, any>, keys: string[]) =>
-      Object.fromEntries(
-        Object.entries(obj).filter(([key]) => keys.includes(key))
-      ),
+      Object.fromEntries(Object.entries(obj).filter(([key]) => keys.includes(key))),
 
     omit: (obj: Record<string, any>, keys: string[]) =>
-      Object.fromEntries(
-        Object.entries(obj).filter(([key]) => !keys.includes(key))
-      ),
+      Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key))),
 
     flatten: (obj: Record<string, any>, prefix = ''): Record<string, any> => {
-      return Object.entries(obj).reduce((acc, [key, value]) => {
-        const newKey = prefix ? `${prefix}.${key}` : key
+      return Object.entries(obj).reduce(
+        (acc, [key, value]) => {
+          const newKey = prefix ? `${prefix}.${key}` : key
 
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-          Object.assign(acc, ParameterTransformations.object.flatten(value, newKey))
-        } else {
-          acc[newKey] = value
-        }
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            Object.assign(acc, ParameterTransformations.object.flatten(value, newKey))
+          } else {
+            acc[newKey] = value
+          }
 
-        return acc
-      }, {} as Record<string, any>)
-    }
+          return acc
+        },
+        {} as Record<string, any>
+      )
+    },
   }
 
   /**
@@ -133,26 +127,22 @@ export class ParameterTransformations {
     /**
      * Extract workspace ID from context
      */
-    workspaceId: (value: any, context: ParlantExecutionContext) =>
-      context.workspaceId,
+    workspaceId: (value: any, context: ParlantExecutionContext) => context.workspaceId,
 
     /**
      * Extract user ID from context
      */
-    userId: (value: any, context: ParlantExecutionContext) =>
-      context.userId,
+    userId: (value: any, context: ParlantExecutionContext) => context.userId,
 
     /**
      * Extract session ID from context
      */
-    sessionId: (value: any, context: ParlantExecutionContext) =>
-      context.sessionId,
+    sessionId: (value: any, context: ParlantExecutionContext) => context.sessionId,
 
     /**
      * Extract agent ID from context
      */
-    agentId: (value: any, context: ParlantExecutionContext) =>
-      context.agentId,
+    agentId: (value: any, context: ParlantExecutionContext) => context.agentId,
 
     /**
      * Get current timestamp
@@ -162,7 +152,7 @@ export class ParameterTransformations {
     /**
      * Generate UUID
      */
-    uuid: () => crypto.randomUUID()
+    uuid: () => crypto.randomUUID(),
   }
 
   /**
@@ -194,7 +184,7 @@ export class ParameterTransformations {
       } catch (error) {
         throw new ValidationError(`Schema validation failed: ${error.message}`)
       }
-    }
+    },
   }
 }
 
@@ -205,12 +195,11 @@ export class ParameterTransformations {
  * using configurable mapping rules and transformation functions.
  */
 export class ParameterMapper {
-
   private readonly mappings: Map<string, ParameterMapping>
   private readonly transformations: Map<string, TransformationFunction>
 
   constructor(mappings: ParameterMapping[] = []) {
-    this.mappings = new Map(mappings.map(m => [m.parlantParameter, m]))
+    this.mappings = new Map(mappings.map((m) => [m.parlantParameter, m]))
     this.transformations = new Map()
 
     // Register built-in transformations
@@ -260,10 +249,7 @@ export class ParameterMapper {
   /**
    * Register custom transformation function
    */
-  public registerTransformation(
-    name: string,
-    transformation: TransformationFunction
-  ): void {
+  public registerTransformation(name: string, transformation: TransformationFunction): void {
     this.transformations.set(name, transformation)
     logger.debug(`Registered custom transformation: ${name}`)
   }
@@ -279,14 +265,16 @@ export class ParameterMapper {
     context: ParlantExecutionContext,
     additionalMappings: ParameterMapping[] = []
   ): Promise<Record<string, any>> {
-
     const startTime = Date.now()
-    const allMappings = new Map([...this.mappings, ...additionalMappings.map(m => [m.parlantParameter, m])])
+    const allMappings = new Map([
+      ...this.mappings,
+      ...additionalMappings.map((m) => [m.parlantParameter, m]),
+    ])
 
     logger.debug(`Starting parameter mapping`, {
       parlantParameterCount: Object.keys(parlantArgs).length,
       mappingRuleCount: allMappings.size,
-      contextType: context.type
+      contextType: context.type,
     })
 
     const simArgs: Record<string, any> = {}
@@ -295,36 +283,30 @@ export class ParameterMapper {
     // Process each mapping rule
     for (const [parlantParam, mapping] of allMappings) {
       try {
-        const value = await this.applyParameterMapping(
-          parlantParam,
-          mapping,
-          parlantArgs,
-          context
-        )
+        const value = await this.applyParameterMapping(parlantParam, mapping, parlantArgs, context)
 
         if (value !== undefined) {
           // Handle nested parameter paths
           this.setNestedValue(simArgs, mapping.simParameter, value)
         }
-
       } catch (error) {
         const errorMsg = error.message || 'Unknown mapping error'
         logger.warn(`Parameter mapping failed`, {
           parlantParameter: parlantParam,
           simParameter: mapping.simParameter,
-          error: errorMsg
+          error: errorMsg,
         })
 
         errors.push({
           parameter: parlantParam,
-          error: errorMsg
+          error: errorMsg,
         })
       }
     }
 
     // Handle unmapped parameters (if configured to pass through)
     for (const [key, value] of Object.entries(parlantArgs)) {
-      if (!allMappings.has(key) && !simArgs.hasOwnProperty(key)) {
+      if (!allMappings.has(key) && !Object.hasOwn(simArgs, key)) {
         // Check if this should be passed through directly
         if (this.shouldPassThrough(key, value, context)) {
           simArgs[key] = value
@@ -336,10 +318,10 @@ export class ParameterMapper {
     if (errors.length > 0) {
       throw new ValidationError(
         'Parameter mapping failed',
-        errors.map(e => ({
+        errors.map((e) => ({
           field: e.parameter,
           message: e.error,
-          code: 'mapping_error'
+          code: 'mapping_error',
         }))
       )
     }
@@ -348,7 +330,7 @@ export class ParameterMapper {
     logger.debug(`Parameter mapping completed`, {
       duration,
       mappedParameterCount: Object.keys(simArgs).length,
-      errorCount: errors.length
+      errorCount: errors.length,
     })
 
     return simArgs
@@ -363,7 +345,6 @@ export class ParameterMapper {
     parlantArgs: Record<string, any>,
     context: ParlantExecutionContext
   ): Promise<any> {
-
     // Get the source value
     let value = this.getNestedValue(parlantArgs, parlantParam)
 
@@ -401,7 +382,6 @@ export class ParameterMapper {
     context: ParlantExecutionContext,
     mapping: ParameterMapping
   ): Promise<any> {
-
     const transformFn = this.transformations.get(transformation.type)
     if (!transformFn) {
       throw new Error(`Unknown transformation type: ${transformation.type}`)
@@ -414,7 +394,7 @@ export class ParameterMapper {
       logger.debug(`Applied transformation`, {
         type: transformation.type,
         hasValue: value !== undefined,
-        hasResult: result !== undefined
+        hasResult: result !== undefined,
       })
 
       return result
@@ -431,7 +411,6 @@ export class ParameterMapper {
     value: any,
     parameterName: string
   ): Promise<any> {
-
     // Required field validation
     if (validation.required && (value === null || value === undefined || value === '')) {
       throw new ValidationError(`Required parameter '${parameterName}' is missing`)
@@ -486,8 +465,7 @@ export class ParameterMapper {
     parlantArgs: Record<string, any>,
     context: ParlantExecutionContext
   ): boolean {
-
-    return conditions.every(condition => {
+    return conditions.every((condition) => {
       const contextValue = condition.contextField
         ? this.getNestedValue(context as any, condition.contextField)
         : this.getNestedValue(parlantArgs, condition.field)
@@ -504,8 +482,7 @@ export class ParameterMapper {
         case 'contains':
           return Array.isArray(contextValue) && contextValue.includes(condition.value)
         case 'matches':
-          return typeof contextValue === 'string' &&
-                 new RegExp(condition.value).test(contextValue)
+          return typeof contextValue === 'string' && new RegExp(condition.value).test(contextValue)
         default:
           logger.warn(`Unknown condition operator: ${condition.operator}`)
           return true
@@ -521,7 +498,6 @@ export class ParameterMapper {
     context: ParlantExecutionContext,
     originalValue?: any
   ): any {
-
     switch (contextualValue.source) {
       case 'context':
         return this.getNestedValue(context as any, contextualValue.path)
@@ -587,14 +563,10 @@ export class ParameterMapper {
   /**
    * Determine if unmapped parameter should be passed through
    */
-  private shouldPassThrough(
-    key: string,
-    value: any,
-    context: ParlantExecutionContext
-  ): boolean {
+  private shouldPassThrough(key: string, value: any, context: ParlantExecutionContext): boolean {
     // Skip system parameters
     const systemParams = ['__context', '__metadata', '__parlant']
-    if (systemParams.some(param => key.startsWith(param))) {
+    if (systemParams.some((param) => key.startsWith(param))) {
       return false
     }
 
@@ -617,7 +589,6 @@ export class ParameterMapper {
     value: any,
     context: ParlantExecutionContext
   ): Promise<{ success: boolean; result?: any; error?: string }> {
-
     const mapping = this.mappings.get(parlantParameter)
     if (!mapping) {
       return { success: false, error: `No mapping found for parameter: ${parlantParameter}` }

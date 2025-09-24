@@ -5,7 +5,7 @@
  * that enables natural language tool interactions and multi-modal output support.
  */
 
-import type { ToolResponse, ToolConfig } from '@/tools/types'
+import type { ToolConfig, ToolResponse } from '@/tools/types'
 
 /**
  * Supported result formats for conversational display
@@ -402,7 +402,10 @@ export interface ResultFormatter {
   format(result: ToolResponse, context: FormatContext): Promise<FormattedResult>
 
   /** Generate natural language summary */
-  generateSummary(result: ToolResponse, context: FormatContext): Promise<{
+  generateSummary(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<{
     headline: string
     description: string
     highlights: string[]
@@ -465,19 +468,25 @@ export interface ResultCacheEntry {
  */
 export interface ResultAnalytics {
   /** Tool usage statistics */
-  toolUsage: Record<string, {
-    count: number
-    avgProcessingTime: number
-    errorRate: number
-    popularFormats: Record<ResultFormat, number>
-  }>
+  toolUsage: Record<
+    string,
+    {
+      count: number
+      avgProcessingTime: number
+      errorRate: number
+      popularFormats: Record<ResultFormat, number>
+    }
+  >
 
   /** Format popularity */
-  formatUsage: Record<ResultFormat, {
-    count: number
-    avgQualityScore: number
-    userSatisfaction: number
-  }>
+  formatUsage: Record<
+    ResultFormat,
+    {
+      count: number
+      avgQualityScore: number
+      userSatisfaction: number
+    }
+  >
 
   /** Performance metrics */
   performance: {

@@ -5,9 +5,9 @@
  * management for the Parlant server integration with proactive monitoring.
  */
 
-import { createParlantLogger, ParlantLogContext } from './logging'
-import { monitoring } from './monitoring'
+import { createParlantLogger, type ParlantLogContext } from './logging'
 import { systemMetrics } from './metrics'
+import { monitoring } from './monitoring'
 
 const logger = createParlantLogger('AlertSystem')
 
@@ -149,17 +149,21 @@ export class AlertManager {
         category: 'database',
         severity: 'warning',
         enabled: true,
-        conditions: [{
-          metric: 'database.connectionCount',
-          operator: '>',
-          threshold: 50,
-          window: 5
-        }],
-        actions: [{
-          type: 'log',
-          config: { level: 'warn' }
-        }],
-        cooldown: 15
+        conditions: [
+          {
+            metric: 'database.connectionCount',
+            operator: '>',
+            threshold: 50,
+            window: 5,
+          },
+        ],
+        actions: [
+          {
+            type: 'log',
+            config: { level: 'warn' },
+          },
+        ],
+        cooldown: 15,
       },
       {
         id: 'response-time-critical',
@@ -168,17 +172,19 @@ export class AlertManager {
         category: 'performance',
         severity: 'critical',
         enabled: true,
-        conditions: [{
-          metric: 'agent.averageResponseTime',
-          operator: '>',
-          threshold: 30000,
-          window: 10
-        }],
+        conditions: [
+          {
+            metric: 'agent.averageResponseTime',
+            operator: '>',
+            threshold: 30000,
+            window: 10,
+          },
+        ],
         actions: [
           { type: 'log', config: { level: 'error' } },
-          { type: 'escalate', config: { level: 1 } }
+          { type: 'escalate', config: { level: 1 } },
         ],
-        cooldown: 5
+        cooldown: 5,
       },
       {
         id: 'error-rate-high',
@@ -187,17 +193,21 @@ export class AlertManager {
         category: 'system',
         severity: 'warning',
         enabled: true,
-        conditions: [{
-          metric: 'system.errorRate',
-          operator: '>',
-          threshold: 5,
-          window: 15
-        }],
-        actions: [{
-          type: 'log',
-          config: { level: 'warn' }
-        }],
-        cooldown: 30
+        conditions: [
+          {
+            metric: 'system.errorRate',
+            operator: '>',
+            threshold: 5,
+            window: 15,
+          },
+        ],
+        actions: [
+          {
+            type: 'log',
+            config: { level: 'warn' },
+          },
+        ],
+        cooldown: 30,
       },
       {
         id: 'memory-usage-critical',
@@ -206,21 +216,23 @@ export class AlertManager {
         category: 'system',
         severity: 'critical',
         enabled: true,
-        conditions: [{
-          metric: 'system.memory.percentage',
-          operator: '>',
-          threshold: 90,
-          window: 5
-        }],
+        conditions: [
+          {
+            metric: 'system.memory.percentage',
+            operator: '>',
+            threshold: 90,
+            window: 5,
+          },
+        ],
         actions: [
           { type: 'log', config: { level: 'error' } },
-          { type: 'escalate', config: { level: 2 } }
+          { type: 'escalate', config: { level: 2 } },
         ],
-        cooldown: 10
-      }
+        cooldown: 10,
+      },
     ]
 
-    defaultRules.forEach(rule => this.rules.set(rule.id, rule))
+    defaultRules.forEach((rule) => this.rules.set(rule.id, rule))
     logger.info('Default alert rules initialized', { ruleCount: defaultRules.length })
   }
 
@@ -229,38 +241,53 @@ export class AlertManager {
    */
   private initializeErrorClassifications(): void {
     const classifications: Array<[string, ErrorClassification]> = [
-      ['ConnectionError', {
-        type: 'recoverable',
-        severity: 'warning',
-        autoRetry: true,
-        maxRetries: 3,
-        escalateAfter: 15
-      }],
-      ['TimeoutError', {
-        type: 'timeout',
-        severity: 'warning',
-        autoRetry: true,
-        maxRetries: 2,
-        escalateAfter: 10
-      }],
-      ['ValidationError', {
-        type: 'validation',
-        severity: 'info',
-        autoRetry: false,
-        suppressSimilar: 60
-      }],
-      ['AuthenticationError', {
-        type: 'security',
-        severity: 'critical',
-        autoRetry: false,
-        escalateAfter: 0
-      }],
-      ['SystemError', {
-        type: 'non_recoverable',
-        severity: 'critical',
-        autoRetry: false,
-        escalateAfter: 5
-      }]
+      [
+        'ConnectionError',
+        {
+          type: 'recoverable',
+          severity: 'warning',
+          autoRetry: true,
+          maxRetries: 3,
+          escalateAfter: 15,
+        },
+      ],
+      [
+        'TimeoutError',
+        {
+          type: 'timeout',
+          severity: 'warning',
+          autoRetry: true,
+          maxRetries: 2,
+          escalateAfter: 10,
+        },
+      ],
+      [
+        'ValidationError',
+        {
+          type: 'validation',
+          severity: 'info',
+          autoRetry: false,
+          suppressSimilar: 60,
+        },
+      ],
+      [
+        'AuthenticationError',
+        {
+          type: 'security',
+          severity: 'critical',
+          autoRetry: false,
+          escalateAfter: 0,
+        },
+      ],
+      [
+        'SystemError',
+        {
+          type: 'non_recoverable',
+          severity: 'critical',
+          autoRetry: false,
+          escalateAfter: 5,
+        },
+      ],
     ]
 
     classifications.forEach(([errorType, classification]) =>
@@ -268,7 +295,7 @@ export class AlertManager {
     )
 
     logger.info('Error classifications initialized', {
-      classificationCount: classifications.length
+      classificationCount: classifications.length,
     })
   }
 
@@ -285,8 +312,9 @@ export class AlertManager {
     metadata: Record<string, any> = {}
   ): Promise<Alert> {
     const alertId = this.generateAlertId()
-    const correlationId = context.operation ?
-      `${category}-${context.operation}-${Date.now()}` : undefined
+    const correlationId = context.operation
+      ? `${category}-${context.operation}-${Date.now()}`
+      : undefined
 
     const alert: Alert = {
       id: alertId,
@@ -300,24 +328,31 @@ export class AlertManager {
       metadata,
       status: 'active',
       escalationLevel: 0,
-      correlationId
+      correlationId,
     }
 
     // Check for suppression rules
     if (this.isAlertSuppressed(alert)) {
       alert.status = 'suppressed'
-      alert.suppressedUntil = this.suppressions.get(this.getSuppressionKey(alert))?.until.toISOString()
+      alert.suppressedUntil = this.suppressions
+        .get(this.getSuppressionKey(alert))
+        ?.until.toISOString()
     }
 
     this.alerts.set(alertId, alert)
 
-    logger.logAgentOperation('alert_create', `Alert created: ${title}`, {
-      ...context,
-      alertId,
-      severity,
-      category,
-      status: alert.status
-    }, severity === 'critical' || severity === 'emergency' ? 'ERROR' : 'WARN')
+    logger.logAgentOperation(
+      'alert_create',
+      `Alert created: ${title}`,
+      {
+        ...context,
+        alertId,
+        severity,
+        category,
+        status: alert.status,
+      },
+      severity === 'critical' || severity === 'emergency' ? 'ERROR' : 'WARN'
+    )
 
     // Process the alert
     await this.processAlert(alert)
@@ -331,13 +366,13 @@ export class AlertManager {
   async handleError(
     error: Error,
     context: ParlantLogContext = {},
-    source: string = 'unknown'
+    source = 'unknown'
   ): Promise<Alert[]> {
     const errorType = error.constructor.name
     const classification = this.errorClassifications.get(errorType) || {
       type: 'non_recoverable' as const,
       severity: 'warning' as const,
-      autoRetry: false
+      autoRetry: false,
     }
 
     const alerts: Alert[] = []
@@ -352,13 +387,13 @@ export class AlertManager {
       {
         ...context,
         errorType: classification.type,
-        errorCode: errorType
+        errorCode: errorType,
       },
       {
         stack: error.stack,
         classification,
         autoRetry: classification.autoRetry,
-        maxRetries: classification.maxRetries
+        maxRetries: classification.maxRetries,
       }
     )
 
@@ -397,8 +432,9 @@ export class AlertManager {
     }
 
     // Find matching rules
-    const matchingRules = Array.from(this.rules.values())
-      .filter(rule => rule.enabled && rule.category === alert.category)
+    const matchingRules = Array.from(this.rules.values()).filter(
+      (rule) => rule.enabled && rule.category === alert.category
+    )
 
     for (const rule of matchingRules) {
       await this.executeRuleActions(rule, alert)
@@ -433,7 +469,7 @@ export class AlertManager {
           ruleId: rule.id,
           actionType: action.type,
           alertId: alert.id,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         })
       }
     }
@@ -475,19 +511,19 @@ export class AlertManager {
       const payload = {
         alert,
         timestamp: new Date().toISOString(),
-        source: 'parlant-server'
+        source: 'parlant-server',
       }
 
       // In a real implementation, this would make an HTTP request
       logger.info('Webhook alert sent', {
         alertId: alert.id,
         webhookUrl: config.url,
-        severity: alert.severity
+        severity: alert.severity,
       })
     } catch (error) {
       logger.error('Webhook action failed', {
         alertId: alert.id,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
   }
@@ -509,7 +545,7 @@ export class AlertManager {
       title: alert.title,
       severity: alert.severity,
       escalationLevel: level,
-      operation: 'alert_escalate'
+      operation: 'alert_escalate',
     })
 
     // Create incident for high-level escalations
@@ -532,15 +568,17 @@ export class AlertManager {
       status: 'open',
       createdAt: new Date().toISOString(),
       alerts: [alert.id],
-      timeline: [{
-        timestamp: new Date().toISOString(),
-        action: 'incident_created',
-        details: `Incident created from alert ${alert.id}`
-      }],
+      timeline: [
+        {
+          timestamp: new Date().toISOString(),
+          action: 'incident_created',
+          details: `Incident created from alert ${alert.id}`,
+        },
+      ],
       impact: {
         serviceUnavailable: alert.severity === 'emergency',
-        dataLoss: false
-      }
+        dataLoss: false,
+      },
     }
 
     this.incidents.set(incidentId, incident)
@@ -549,7 +587,7 @@ export class AlertManager {
       incidentId,
       alertId: alert.id,
       severity: alert.severity,
-      operation: 'incident_create'
+      operation: 'incident_create',
     })
 
     return incident
@@ -572,7 +610,7 @@ export class AlertManager {
       alertId,
       acknowledgedBy,
       title: alert.title,
-      operation: 'alert_acknowledge'
+      operation: 'alert_acknowledge',
     })
 
     return true
@@ -597,7 +635,7 @@ export class AlertManager {
       alertId,
       title: alert.title,
       resolution,
-      operation: 'alert_resolve'
+      operation: 'alert_resolve',
     })
 
     return true
@@ -637,7 +675,7 @@ export class AlertManager {
           {
             value: existingAlert.value,
             threshold: existingAlert.threshold,
-            timestamp: existingAlert.timestamp
+            timestamp: existingAlert.timestamp,
           }
         )
       }
@@ -647,7 +685,7 @@ export class AlertManager {
     } catch (error) {
       logger.error('Periodic alert check failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        operation: 'alert_periodic_check'
+        operation: 'alert_periodic_check',
       })
     }
   }
@@ -683,8 +721,7 @@ export class AlertManager {
   }
 
   private findIncidentByAlert(alertId: string): Incident | undefined {
-    return Array.from(this.incidents.values())
-      .find(incident => incident.alerts.includes(alertId))
+    return Array.from(this.incidents.values()).find((incident) => incident.alerts.includes(alertId))
   }
 
   private async evaluateMetricRules(systemMetricsData: any): Promise<void> {
@@ -693,7 +730,7 @@ export class AlertManager {
   }
 
   private cleanupOldAlerts(): void {
-    const cutoffTime = Date.now() - (7 * 24 * 60 * 60 * 1000) // 7 days ago
+    const cutoffTime = Date.now() - 7 * 24 * 60 * 60 * 1000 // 7 days ago
     const alertsToRemove: string[] = []
 
     this.alerts.forEach((alert, id) => {
@@ -703,7 +740,7 @@ export class AlertManager {
       }
     })
 
-    alertsToRemove.forEach(id => this.alerts.delete(id))
+    alertsToRemove.forEach((id) => this.alerts.delete(id))
 
     if (alertsToRemove.length > 0) {
       logger.debug('Cleaned up old alerts', { removedCount: alertsToRemove.length })
@@ -719,7 +756,7 @@ export class AlertManager {
    * Public API methods
    */
   getActiveAlerts(): Alert[] {
-    return Array.from(this.alerts.values()).filter(alert => alert.status === 'active')
+    return Array.from(this.alerts.values()).filter((alert) => alert.status === 'active')
   }
 
   getIncidents(): Incident[] {
@@ -727,7 +764,7 @@ export class AlertManager {
   }
 
   getAlertsByCategory(category: AlertCategory): Alert[] {
-    return Array.from(this.alerts.values()).filter(alert => alert.category === category)
+    return Array.from(this.alerts.values()).filter((alert) => alert.category === category)
   }
 
   getAlertMetrics(): {
@@ -740,23 +777,30 @@ export class AlertManager {
   } {
     const alerts = Array.from(this.alerts.values())
 
-    const bySeverity = alerts.reduce((acc, alert) => {
-      acc[alert.severity] = (acc[alert.severity] || 0) + 1
-      return acc
-    }, {} as Record<AlertSeverity, number>)
+    const bySeverity = alerts.reduce(
+      (acc, alert) => {
+        acc[alert.severity] = (acc[alert.severity] || 0) + 1
+        return acc
+      },
+      {} as Record<AlertSeverity, number>
+    )
 
-    const byCategory = alerts.reduce((acc, alert) => {
-      acc[alert.category] = (acc[alert.category] || 0) + 1
-      return acc
-    }, {} as Record<AlertCategory, number>)
+    const byCategory = alerts.reduce(
+      (acc, alert) => {
+        acc[alert.category] = (acc[alert.category] || 0) + 1
+        return acc
+      },
+      {} as Record<AlertCategory, number>
+    )
 
     return {
       total: alerts.length,
-      active: alerts.filter(a => a.status === 'active').length,
-      resolved: alerts.filter(a => a.status === 'resolved').length,
-      critical: alerts.filter(a => a.severity === 'critical' || a.severity === 'emergency').length,
+      active: alerts.filter((a) => a.status === 'active').length,
+      resolved: alerts.filter((a) => a.status === 'resolved').length,
+      critical: alerts.filter((a) => a.severity === 'critical' || a.severity === 'emergency')
+        .length,
       bySeverity,
-      byCategory
+      byCategory,
     }
   }
 }
@@ -794,6 +838,6 @@ export const alerts = {
   getDashboard: () => ({
     activeAlerts: alertManager.getActiveAlerts(),
     incidents: alertManager.getIncidents(),
-    metrics: alertManager.getAlertMetrics()
-  })
+    metrics: alertManager.getAlertMetrics(),
+  }),
 }

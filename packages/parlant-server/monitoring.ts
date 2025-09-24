@@ -5,9 +5,9 @@
  * operations, including performance metrics, usage statistics, and operational insights.
  */
 
+import { sql } from 'drizzle-orm'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
 import { db } from '../db'
-import { sql } from 'drizzle-orm'
 
 const logger = createLogger('ParlantMonitoring')
 
@@ -114,17 +114,17 @@ export const DEFAULT_ALERT_THRESHOLDS: AlertThresholds = {
     connectionCount: 50, // Alert when 50+ connections active
     queryTimeP95: 1000, // Alert when P95 query time > 1s
     queryTimeP99: 5000, // Alert when P99 query time > 5s
-    errorRate: 5 // Alert when error rate > 5%
+    errorRate: 5, // Alert when error rate > 5%
   },
   memory: {
     heapUsagePercent: 80, // Alert when heap usage > 80%
-    rssUsagePercent: 90 // Alert when RSS usage > 90%
+    rssUsagePercent: 90, // Alert when RSS usage > 90%
   },
   agent: {
     errorRate: 10, // Alert when agent error rate > 10%
     responseTime: 30000, // Alert when response time > 30s
-    sessionFailureRate: 15 // Alert when session failure rate > 15%
-  }
+    sessionFailureRate: 15, // Alert when session failure rate > 15%
+  },
 }
 
 /**
@@ -165,7 +165,7 @@ export class ParlantMonitoringService {
             count(*) filter (where state = 'idle') as idle_connections
           FROM pg_stat_activity
           WHERE datname = current_database()
-        `)
+        `),
       ])
 
       // Get slow query count
@@ -175,7 +175,7 @@ export class ParlantMonitoringService {
           FROM pg_stat_statements
           WHERE mean_exec_time > 1000
           AND calls > 10
-        `)
+        `),
       ])
 
       // Record this query time
@@ -193,30 +193,38 @@ export class ParlantMonitoringService {
       return {
         timestamp: new Date().toISOString(),
         database: {
-          connectionCount: connectionResult.status === 'fulfilled' ?
-            parseInt((connectionResult.value[0] as any)?.total_connections || '0') : 0,
+          connectionCount:
+            connectionResult.status === 'fulfilled'
+              ? Number.parseInt((connectionResult.value[0] as any)?.total_connections || '0')
+              : 0,
           queryTime: {
-            average: sortedTimes.length > 0 ?
-              sortedTimes.reduce((sum, time) => sum + time, 0) / sortedTimes.length : 0,
+            average:
+              sortedTimes.length > 0
+                ? sortedTimes.reduce((sum, time) => sum + time, 0) / sortedTimes.length
+                : 0,
             p95: sortedTimes[p95Index] || 0,
-            p99: sortedTimes[p99Index] || 0
+            p99: sortedTimes[p99Index] || 0,
           },
-          activeQueries: connectionResult.status === 'fulfilled' ?
-            parseInt((connectionResult.value[0] as any)?.active_connections || '0') : 0,
-          slowQueries: slowQueryResult.status === 'fulfilled' ?
-            parseInt((slowQueryResult.value[0] as any)?.slow_queries || '0') : 0
+          activeQueries:
+            connectionResult.status === 'fulfilled'
+              ? Number.parseInt((connectionResult.value[0] as any)?.active_connections || '0')
+              : 0,
+          slowQueries:
+            slowQueryResult.status === 'fulfilled'
+              ? Number.parseInt((slowQueryResult.value[0] as any)?.slow_queries || '0')
+              : 0,
         },
         memory: {
           heapUsed: memoryUsage.heapUsed,
           heapTotal: memoryUsage.heapTotal,
           external: memoryUsage.external,
-          rss: memoryUsage.rss
+          rss: memoryUsage.rss,
         },
         cpu: {
           user: cpuUsage.user,
-          system: cpuUsage.system
+          system: cpuUsage.system,
         },
-        uptime: process.uptime()
+        uptime: process.uptime(),
       }
     } catch (error) {
       logger.error('Failed to collect system metrics', { error })
@@ -228,7 +236,7 @@ export class ParlantMonitoringService {
    * Get agent performance metrics for a specific time window
    */
   async getAgentPerformanceMetrics(
-    timeWindowMinutes: number = 60,
+    timeWindowMinutes = 60,
     agentId?: string
   ): Promise<AgentPerformanceMetrics[]> {
     try {
@@ -252,19 +260,19 @@ export class ParlantMonitoringService {
             averageResponseTime: 0,
             successRate: 100,
             errorCount: 0,
-            lastActiveAt: new Date().toISOString()
+            lastActiveAt: new Date().toISOString(),
           },
           timeWindow: {
             start: windowStart.toISOString(),
             end: windowEnd.toISOString(),
-            duration: `${timeWindowMinutes} minutes`
-          }
+            duration: `${timeWindowMinutes} minutes`,
+          },
         })
       }
 
       logger.debug('Agent performance metrics collected', {
         agentCount: placeholderMetrics.length,
-        timeWindow: { start: windowStart, end: windowEnd }
+        timeWindow: { start: windowStart, end: windowEnd },
       })
 
       return placeholderMetrics
@@ -277,7 +285,7 @@ export class ParlantMonitoringService {
   /**
    * Get usage statistics for a time period
    */
-  async getUsageMetrics(periodHours: number = 24): Promise<UsageMetrics> {
+  async getUsageMetrics(periodHours = 24): Promise<UsageMetrics> {
     try {
       const periodStart = new Date(Date.now() - periodHours * 60 * 60 * 1000)
       const periodEnd = new Date()
@@ -288,31 +296,31 @@ export class ParlantMonitoringService {
       return {
         period: {
           start: periodStart.toISOString(),
-          end: periodEnd.toISOString()
+          end: periodEnd.toISOString(),
         },
         agents: {
           total: 0,
           active: 0,
-          created: 0
+          created: 0,
         },
         sessions: {
           total: 0,
           active: 0,
           completed: 0,
-          failed: 0
+          failed: 0,
         },
         messages: {
           total: 0,
           user: 0,
           agent: 0,
-          system: 0
+          system: 0,
         },
         tools: {
           totalCalls: 0,
           uniqueTools: 0,
           successRate: 100,
-          mostUsed: []
-        }
+          mostUsed: [],
+        },
       }
     } catch (error) {
       logger.error('Failed to collect usage metrics', { error })
@@ -346,7 +354,7 @@ export class ParlantMonitoringService {
           message: 'High database connection count',
           value: metrics.database.connectionCount,
           threshold: this.alertThresholds.database.connectionCount,
-          timestamp: metrics.timestamp
+          timestamp: metrics.timestamp,
         })
       }
 
@@ -357,7 +365,7 @@ export class ParlantMonitoringService {
           message: 'High P95 query response time',
           value: metrics.database.queryTime.p95,
           threshold: this.alertThresholds.database.queryTimeP95,
-          timestamp: metrics.timestamp
+          timestamp: metrics.timestamp,
         })
       }
 
@@ -368,7 +376,7 @@ export class ParlantMonitoringService {
           message: 'Critical P99 query response time',
           value: metrics.database.queryTime.p99,
           threshold: this.alertThresholds.database.queryTimeP99,
-          timestamp: metrics.timestamp
+          timestamp: metrics.timestamp,
         })
       }
 
@@ -376,18 +384,18 @@ export class ParlantMonitoringService {
       const heapUsagePercent = (metrics.memory.heapUsed / metrics.memory.heapTotal) * 100
       if (heapUsagePercent > this.alertThresholds.memory.heapUsagePercent) {
         alerts.push({
-          severity: heapUsagePercent > 90 ? 'critical' as const : 'warning' as const,
+          severity: heapUsagePercent > 90 ? ('critical' as const) : ('warning' as const),
           category: 'memory',
           message: 'High heap memory usage',
           value: heapUsagePercent,
           threshold: this.alertThresholds.memory.heapUsagePercent,
-          timestamp: metrics.timestamp
+          timestamp: metrics.timestamp,
         })
       }
 
       // Determine overall system health
       let systemHealth: 'healthy' | 'degraded' | 'critical' = 'healthy'
-      if (alerts.some(alert => alert.severity === 'critical')) {
+      if (alerts.some((alert) => alert.severity === 'critical')) {
         systemHealth = 'critical'
       } else if (alerts.length > 0) {
         systemHealth = 'degraded'
@@ -402,7 +410,7 @@ export class ParlantMonitoringService {
       logger.error('Failed to check alert conditions', { error })
       return {
         alerts: [],
-        systemHealth: 'healthy'
+        systemHealth: 'healthy',
       }
     }
   }
@@ -424,18 +432,18 @@ export class ParlantMonitoringService {
       const [systemMetrics, usageMetrics, alertCheck] = await Promise.all([
         this.getSystemMetrics(),
         this.getUsageMetrics(24), // Last 24 hours
-        this.checkAlertConditions()
+        this.checkAlertConditions(),
       ])
 
       return {
         summary: {
           status: alertCheck.systemHealth,
           uptime: systemMetrics.uptime,
-          lastUpdated: systemMetrics.timestamp
+          lastUpdated: systemMetrics.timestamp,
         },
         metrics: systemMetrics,
         usage: usageMetrics,
-        alerts: alertCheck.alerts
+        alerts: alertCheck.alerts,
       }
     } catch (error) {
       logger.error('Failed to generate dashboard data', { error })
@@ -459,5 +467,5 @@ export const monitoring = {
   usage: (periodHours?: number) => parlantMonitoring.getUsageMetrics(periodHours),
   alerts: () => parlantMonitoring.checkAlertConditions(),
   dashboard: () => parlantMonitoring.generateDashboardData(),
-  recordQuery: (duration: number) => parlantMonitoring.recordQueryTime(duration)
+  recordQuery: (duration: number) => parlantMonitoring.recordQueryTime(duration),
 }

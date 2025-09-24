@@ -8,9 +8,9 @@
  * Approach: Compatibility wrapper + version control + rollback mechanisms
  */
 
-import type { Edge, Node } from 'reactflow'
-import type { WorkflowState, BlockState, Position } from '@/stores/workflows/workflow/types'
+import type { Edge } from 'reactflow'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { BlockState, Position, WorkflowState } from '@/stores/workflows/workflow/types'
 
 const logger = createLogger('WorkflowPreservation')
 
@@ -31,7 +31,7 @@ export const COMPATIBILITY_BASELINE: CompatibilityVersion = {
   patch: 0,
   reactFlowVersion: '11.11.4',
   simVersion: '0.1.0',
-  timestamp: new Date()
+  timestamp: new Date(),
 }
 
 // Workflow preservation state tracker
@@ -133,7 +133,7 @@ export class WorkflowPreservationSystem {
 
     logger.info('Functionality registry initialized', {
       totalFunctions: this.functionalityRegistry.size,
-      functions: Array.from(this.functionalityRegistry)
+      functions: Array.from(this.functionalityRegistry),
     })
   }
 
@@ -147,7 +147,7 @@ export class WorkflowPreservationSystem {
       migrationHistory: [],
       rollbackAvailable: true,
       lastValidation: new Date(),
-      compatibilityStatus: 'preserved'
+      compatibilityStatus: 'preserved',
     }
 
     this.preservationStates.set(workflowId, preservationState)
@@ -156,7 +156,7 @@ export class WorkflowPreservationSystem {
       workflowId,
       blocksCount: Object.keys(originalWorkflow.blocks).length,
       edgesCount: originalWorkflow.edges.length,
-      preservedFunctions: preservationState.preservedFunctionality.size
+      preservedFunctions: preservationState.preservedFunctionality.size,
     })
 
     return preservationState
@@ -165,20 +165,25 @@ export class WorkflowPreservationSystem {
   /**
    * Validate that all core functionality remains intact
    */
-  async validatePreservation(workflowId: string, currentWorkflow: WorkflowState): Promise<ValidationResult> {
+  async validatePreservation(
+    workflowId: string,
+    currentWorkflow: WorkflowState
+  ): Promise<ValidationResult> {
     const preservationState = this.preservationStates.get(workflowId)
     if (!preservationState) {
       return {
         success: false,
         error: 'No preservation state found for workflow',
-        details: { workflowId }
+        details: { workflowId },
       }
     }
 
     const validationResults: FunctionValidationResult[] = []
 
     // Validate core data structures
-    validationResults.push(await this.validateDataStructures(preservationState.originalWorkflow, currentWorkflow))
+    validationResults.push(
+      await this.validateDataStructures(preservationState.originalWorkflow, currentWorkflow)
+    )
 
     // Validate ReactFlow compatibility
     validationResults.push(await this.validateReactFlowCompatibility(currentWorkflow))
@@ -189,7 +194,7 @@ export class WorkflowPreservationSystem {
     // Validate UI/UX preservation
     validationResults.push(await this.validateUIPreservation(currentWorkflow))
 
-    const failedValidations = validationResults.filter(result => !result.success)
+    const failedValidations = validationResults.filter((result) => !result.success)
     const overallSuccess = failedValidations.length === 0
 
     // Update preservation state
@@ -204,8 +209,8 @@ export class WorkflowPreservationSystem {
         passedChecks: validationResults.length - failedValidations.length,
         failedChecks: failedValidations.length,
         validationResults,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     }
 
     if (!overallSuccess) {
@@ -223,21 +228,24 @@ export class WorkflowPreservationSystem {
   /**
    * Validate core data structures remain compatible
    */
-  private async validateDataStructures(original: WorkflowState, current: WorkflowState): Promise<FunctionValidationResult> {
+  private async validateDataStructures(
+    original: WorkflowState,
+    current: WorkflowState
+  ): Promise<FunctionValidationResult> {
     const checks: { name: string; passed: boolean; details?: any }[] = []
 
     // Validate blocks structure
     checks.push({
       name: 'blocks-structure',
       passed: typeof current.blocks === 'object' && current.blocks !== null,
-      details: { currentType: typeof current.blocks }
+      details: { currentType: typeof current.blocks },
     })
 
     // Validate edges structure
     checks.push({
       name: 'edges-structure',
       passed: Array.isArray(current.edges),
-      details: { currentType: typeof current.edges, isArray: Array.isArray(current.edges) }
+      details: { currentType: typeof current.edges, isArray: Array.isArray(current.edges) },
     })
 
     // Validate essential block properties
@@ -245,7 +253,7 @@ export class WorkflowPreservationSystem {
     checks.push({
       name: 'block-properties',
       passed: blockValidation.success,
-      details: blockValidation.details
+      details: blockValidation.details,
     })
 
     // Validate edge properties
@@ -253,10 +261,10 @@ export class WorkflowPreservationSystem {
     checks.push({
       name: 'edge-properties',
       passed: edgeValidation.success,
-      details: edgeValidation.details
+      details: edgeValidation.details,
     })
 
-    const failedChecks = checks.filter(check => !check.passed)
+    const failedChecks = checks.filter((check) => !check.passed)
 
     return {
       functionality: 'data-structures',
@@ -265,15 +273,17 @@ export class WorkflowPreservationSystem {
         totalChecks: checks.length,
         passedChecks: checks.length - failedChecks.length,
         checks,
-        failures: failedChecks
-      }
+        failures: failedChecks,
+      },
     }
   }
 
   /**
    * Validate ReactFlow specific compatibility
    */
-  private async validateReactFlowCompatibility(workflow: WorkflowState): Promise<FunctionValidationResult> {
+  private async validateReactFlowCompatibility(
+    workflow: WorkflowState
+  ): Promise<FunctionValidationResult> {
     const checks: { name: string; passed: boolean; details?: any }[] = []
 
     // Check ReactFlow node format compatibility
@@ -281,7 +291,7 @@ export class WorkflowPreservationSystem {
       checks.push({
         name: `block-${index}-reactflow-compat`,
         passed: this.isReactFlowNodeCompatible(block),
-        details: { blockId: block.id, blockType: block.type }
+        details: { blockId: block.id, blockType: block.type },
       })
     })
 
@@ -290,11 +300,11 @@ export class WorkflowPreservationSystem {
       checks.push({
         name: `edge-${index}-reactflow-compat`,
         passed: this.isReactFlowEdgeCompatible(edge),
-        details: { edgeId: edge.id, source: edge.source, target: edge.target }
+        details: { edgeId: edge.id, source: edge.source, target: edge.target },
       })
     })
 
-    const failedChecks = checks.filter(check => !check.passed)
+    const failedChecks = checks.filter((check) => !check.passed)
 
     return {
       functionality: 'reactflow-compatibility',
@@ -303,22 +313,25 @@ export class WorkflowPreservationSystem {
         totalChecks: checks.length,
         passedChecks: checks.length - failedChecks.length,
         checks,
-        failures: failedChecks
-      }
+        failures: failedChecks,
+      },
     }
   }
 
   /**
    * Validate operational functionality preservation
    */
-  private async validateOperationalFunctionality(workflowId: string, workflow: WorkflowState): Promise<FunctionValidationResult> {
+  private async validateOperationalFunctionality(
+    workflowId: string,
+    workflow: WorkflowState
+  ): Promise<FunctionValidationResult> {
     const checks: { name: string; passed: boolean; details?: any }[] = []
 
     // Validate workflow can be executed
     checks.push({
       name: 'workflow-executable',
       passed: this.isWorkflowExecutable(workflow),
-      details: { blockCount: Object.keys(workflow.blocks).length }
+      details: { blockCount: Object.keys(workflow.blocks).length },
     })
 
     // Validate all blocks have valid configurations
@@ -329,10 +342,10 @@ export class WorkflowPreservationSystem {
     checks.push({
       name: 'edge-connectivity',
       passed: this.validateEdgeConnectivity(workflow),
-      details: { edgeCount: workflow.edges.length }
+      details: { edgeCount: workflow.edges.length },
     })
 
-    const failedChecks = checks.filter(check => !check.passed)
+    const failedChecks = checks.filter((check) => !check.passed)
 
     return {
       functionality: 'operational',
@@ -341,8 +354,8 @@ export class WorkflowPreservationSystem {
         totalChecks: checks.length,
         passedChecks: checks.length - failedChecks.length,
         checks,
-        failures: failedChecks
-      }
+        failures: failedChecks,
+      },
     }
   }
 
@@ -357,21 +370,23 @@ export class WorkflowPreservationSystem {
       checks.push({
         name: `block-${block.id}-position`,
         passed: this.isValidPosition(block.position),
-        details: { position: block.position }
+        details: { position: block.position },
       })
     })
 
     // Validate container structures
-    const containerBlocks = Object.values(workflow.blocks).filter(b => b.type === 'loop' || b.type === 'parallel')
+    const containerBlocks = Object.values(workflow.blocks).filter(
+      (b) => b.type === 'loop' || b.type === 'parallel'
+    )
     containerBlocks.forEach((container) => {
       checks.push({
         name: `container-${container.id}-structure`,
         passed: this.isValidContainerStructure(container),
-        details: { containerId: container.id, type: container.type, data: container.data }
+        details: { containerId: container.id, type: container.type, data: container.data },
       })
     })
 
-    const failedChecks = checks.filter(check => !check.passed)
+    const failedChecks = checks.filter((check) => !check.passed)
 
     return {
       functionality: 'ui-preservation',
@@ -380,8 +395,8 @@ export class WorkflowPreservationSystem {
         totalChecks: checks.length,
         passedChecks: checks.length - failedChecks.length,
         checks,
-        failures: failedChecks
-      }
+        failures: failedChecks,
+      },
     }
   }
 
@@ -403,7 +418,7 @@ export class WorkflowPreservationSystem {
       toVersion: COMPATIBILITY_BASELINE, // Same version for rollback point
       changes: [description],
       rollbackData: this.deepClone(preservationState.originalWorkflow),
-      success: true
+      success: true,
     }
 
     preservationState.migrationHistory.push(migrationRecord)
@@ -412,7 +427,7 @@ export class WorkflowPreservationSystem {
       workflowId,
       rollbackId,
       description,
-      timestamp: migrationRecord.timestamp
+      timestamp: migrationRecord.timestamp,
     })
 
     return rollbackId
@@ -427,16 +442,18 @@ export class WorkflowPreservationSystem {
       return {
         success: false,
         error: 'No preservation state found',
-        details: { workflowId }
+        details: { workflowId },
       }
     }
 
-    const migrationRecord = preservationState.migrationHistory.find(record => record.id === rollbackId)
+    const migrationRecord = preservationState.migrationHistory.find(
+      (record) => record.id === rollbackId
+    )
     if (!migrationRecord) {
       return {
         success: false,
         error: 'Rollback point not found',
-        details: { workflowId, rollbackId }
+        details: { workflowId, rollbackId },
       }
     }
 
@@ -453,7 +470,7 @@ export class WorkflowPreservationSystem {
         workflowId,
         rollbackId,
         restoredBlocks: Object.keys(restoredWorkflow.blocks).length,
-        restoredEdges: restoredWorkflow.edges.length
+        restoredEdges: restoredWorkflow.edges.length,
       })
 
       return {
@@ -462,20 +479,24 @@ export class WorkflowPreservationSystem {
           workflowId,
           rollbackId,
           restoredWorkflow,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       }
     } catch (error) {
       logger.error('Rollback execution failed', {
         workflowId,
         rollbackId,
-        error
+        error,
       })
 
       return {
         success: false,
         error: 'Rollback execution failed',
-        details: { workflowId, rollbackId, error: error instanceof Error ? error.message : String(error) }
+        details: {
+          workflowId,
+          rollbackId,
+          error: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
@@ -486,29 +507,36 @@ export class WorkflowPreservationSystem {
     return JSON.parse(JSON.stringify(obj))
   }
 
-  private validateBlockStructures(originalBlocks: Record<string, BlockState>, currentBlocks: Record<string, BlockState>) {
+  private validateBlockStructures(
+    originalBlocks: Record<string, BlockState>,
+    currentBlocks: Record<string, BlockState>
+  ) {
     const issues: string[] = []
 
     // Check that essential block properties are preserved
-    Object.values(currentBlocks).forEach(block => {
+    Object.values(currentBlocks).forEach((block) => {
       if (!block.id) issues.push(`Block missing id: ${JSON.stringify(block)}`)
       if (!block.type) issues.push(`Block ${block.id} missing type`)
       if (!block.name) issues.push(`Block ${block.id} missing name`)
-      if (!block.position || typeof block.position.x !== 'number' || typeof block.position.y !== 'number') {
+      if (
+        !block.position ||
+        typeof block.position.x !== 'number' ||
+        typeof block.position.y !== 'number'
+      ) {
         issues.push(`Block ${block.id} has invalid position`)
       }
     })
 
     return {
       success: issues.length === 0,
-      details: { issues, blockCount: Object.keys(currentBlocks).length }
+      details: { issues, blockCount: Object.keys(currentBlocks).length },
     }
   }
 
   private validateEdgeStructures(originalEdges: Edge[], currentEdges: Edge[]) {
     const issues: string[] = []
 
-    currentEdges.forEach(edge => {
+    currentEdges.forEach((edge) => {
       if (!edge.id) issues.push(`Edge missing id: ${JSON.stringify(edge)}`)
       if (!edge.source) issues.push(`Edge ${edge.id} missing source`)
       if (!edge.target) issues.push(`Edge ${edge.id} missing target`)
@@ -516,7 +544,7 @@ export class WorkflowPreservationSystem {
 
     return {
       success: issues.length === 0,
-      details: { issues, edgeCount: currentEdges.length }
+      details: { issues, edgeCount: currentEdges.length },
     }
   }
 
@@ -540,26 +568,26 @@ export class WorkflowPreservationSystem {
   }
 
   private validateBlockConfigurations(blocks: Record<string, BlockState>) {
-    return Object.values(blocks).map(block => ({
+    return Object.values(blocks).map((block) => ({
       name: `block-${block.id}-config`,
       passed: block.enabled !== undefined,
-      details: { blockId: block.id, enabled: block.enabled }
+      details: { blockId: block.id, enabled: block.enabled },
     }))
   }
 
   private validateEdgeConnectivity(workflow: WorkflowState): boolean {
     const blockIds = new Set(Object.keys(workflow.blocks))
-    return workflow.edges.every(edge =>
-      blockIds.has(edge.source) && blockIds.has(edge.target)
-    )
+    return workflow.edges.every((edge) => blockIds.has(edge.source) && blockIds.has(edge.target))
   }
 
   private isValidPosition(position: Position): boolean {
-    return position &&
+    return (
+      position &&
       typeof position.x === 'number' &&
       typeof position.y === 'number' &&
-      !isNaN(position.x) &&
-      !isNaN(position.y)
+      !Number.isNaN(position.x) &&
+      !Number.isNaN(position.y)
+    )
   }
 
   private isValidContainerStructure(container: BlockState): boolean {

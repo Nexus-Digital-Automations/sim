@@ -5,22 +5,12 @@
  * and configuration validation across workspaces and users.
  */
 
-import { eq, and, desc, sql } from 'drizzle-orm'
-import { db } from '@/packages/db'
-import {
-  toolConfigurations,
-  toolRegistry,
-  workspace,
-  user,
-} from '@/packages/db/schema'
-import { createLogger } from '@/lib/logs/console/logger'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
-
-import type {
-  IToolConfigurationService,
-  ToolConfiguration,
-  ToolDefinition,
-} from './types'
+import { createLogger } from '@/lib/logs/console/logger'
+import { db } from '@/packages/db'
+import { toolConfigurations, toolRegistry } from '@/packages/db/schema'
+import type { IToolConfigurationService, ToolConfiguration } from './types'
 
 const logger = createLogger('ToolConfigurationService')
 
@@ -28,7 +18,6 @@ const logger = createLogger('ToolConfigurationService')
  * Service for managing tool configurations, credentials, and environment variables
  */
 export class ToolConfigurationService implements IToolConfigurationService {
-
   /**
    * Create a new tool configuration
    */
@@ -141,7 +130,10 @@ export class ToolConfigurationService implements IToolConfigurationService {
       if (updates.description !== undefined) updateData.description = updates.description
       if (updates.configuration !== undefined) {
         // Validate configuration if it's being updated
-        const validation = await this.validateConfiguration(existingConfig.toolId, updates.configuration)
+        const validation = await this.validateConfiguration(
+          existingConfig.toolId,
+          updates.configuration
+        )
         updateData.configuration = JSON.stringify(updates.configuration)
         updateData.isValid = validation.isValid
         updateData.validationErrors = JSON.stringify(validation.errors)
@@ -185,9 +177,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
     logger.info('Deleting tool configuration', { configId })
 
     try {
-      const result = await db
-        .delete(toolConfigurations)
-        .where(eq(toolConfigurations.id, configId))
+      const result = await db.delete(toolConfigurations).where(eq(toolConfigurations.id, configId))
 
       if (result.rowCount === 0) {
         throw new Error(`Configuration not found: ${configId}`)
@@ -209,32 +199,28 @@ export class ToolConfigurationService implements IToolConfigurationService {
     userId?: string
   ): Promise<ToolConfiguration[]> {
     try {
-      let query = db
-        .select()
-        .from(toolConfigurations)
-        .where(eq(toolConfigurations.toolId, toolId))
+      let query = db.select().from(toolConfigurations).where(eq(toolConfigurations.toolId, toolId))
 
       // Apply workspace/user filters
       if (workspaceId) {
-        query = query.where(and(
-          eq(toolConfigurations.toolId, toolId),
-          eq(toolConfigurations.workspaceId, workspaceId)
-        ))
+        query = query.where(
+          and(
+            eq(toolConfigurations.toolId, toolId),
+            eq(toolConfigurations.workspaceId, workspaceId)
+          )
+        )
       }
 
       if (userId) {
-        query = query.where(and(
-          eq(toolConfigurations.toolId, toolId),
-          eq(toolConfigurations.userId, userId)
-        ))
+        query = query.where(
+          and(eq(toolConfigurations.toolId, toolId), eq(toolConfigurations.userId, userId))
+        )
       }
 
       const configs = await query.orderBy(desc(toolConfigurations.createdAt))
 
       // Convert to service format
-      return await Promise.all(
-        configs.map(config => this.mapDatabaseToService(config))
-      )
+      return await Promise.all(configs.map((config) => this.mapDatabaseToService(config)))
     } catch (error) {
       logger.error('Failed to list tool configurations', { toolId, workspaceId, userId, error })
       throw error
@@ -281,12 +267,9 @@ export class ToolConfigurationService implements IToolConfigurationService {
 
       if (result.success) {
         return { isValid: true, errors: [] }
-      } else {
-        const errors = result.error.errors.map(err =>
-          `${err.path.join('.')}: ${err.message}`
-        )
-        return { isValid: false, errors }
       }
+      const errors = result.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`)
+      return { isValid: false, errors }
     } catch (error) {
       logger.error('Failed to validate tool configuration', { toolId, error })
       return {
@@ -309,12 +292,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
       const configs = await db
         .select()
         .from(toolConfigurations)
-        .where(
-          and(
-            eq(toolConfigurations.toolId, toolId),
-            eq(toolConfigurations.isActive, true)
-          )
-        )
+        .where(and(eq(toolConfigurations.toolId, toolId), eq(toolConfigurations.isActive, true)))
         .orderBy(desc(toolConfigurations.createdAt))
 
       // Filter and prioritize configurations
@@ -421,7 +399,9 @@ export class ToolConfigurationService implements IToolConfigurationService {
   /**
    * Decrypt credentials for use
    */
-  private async decryptCredentials(encryptedCredentials: Record<string, any>): Promise<Record<string, any>> {
+  private async decryptCredentials(
+    encryptedCredentials: Record<string, any>
+  ): Promise<Record<string, any>> {
     // This is a simplified implementation
     const decrypted: Record<string, any> = {}
 
@@ -453,7 +433,7 @@ export class ToolConfigurationService implements IToolConfigurationService {
     ]
 
     const lowerKey = key.toLowerCase()
-    return sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))
+    return sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))
   }
 
   /**

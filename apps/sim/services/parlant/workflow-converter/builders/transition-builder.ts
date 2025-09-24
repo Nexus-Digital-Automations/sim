@@ -7,11 +7,11 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ReactFlowEdge,
   ConversionContext,
-  ParlantTransition,
   ConversionError,
-  ConversionWarning
+  ConversionWarning,
+  ParlantTransition,
+  ReactFlowEdge,
 } from '../types'
 
 const logger = createLogger('TransitionBuilder')
@@ -38,17 +38,17 @@ export class TransitionBuilder {
       source: edge.source,
       target: edge.target,
       sourceHandle: edge.sourceHandle,
-      targetHandle: edge.targetHandle
+      targetHandle: edge.targetHandle,
     })
 
     try {
       // Validate edge
       const validation = this.validateEdge(edge, context)
       if (!validation.valid) {
-        validation.errors.forEach(error => context.errors.push(error))
-        validation.warnings.forEach(warning => context.warnings.push(warning))
+        validation.errors.forEach((error) => context.errors.push(error))
+        validation.warnings.forEach((warning) => context.warnings.push(warning))
 
-        if (validation.errors.some(e => e.severity === 'critical' || e.severity === 'error')) {
+        if (validation.errors.some((e) => e.severity === 'critical' || e.severity === 'error')) {
           return null
         }
       }
@@ -65,20 +65,15 @@ export class TransitionBuilder {
           suggestions: [
             'Ensure source and target nodes are converted to states',
             'Check node conversion process',
-            'Verify edge references valid nodes'
-          ]
+            'Verify edge references valid nodes',
+          ],
         }
         context.warnings.push(error)
         return null
       }
 
       // Create the transition
-      const transition = this.createTransition(
-        edge,
-        sourceStateId,
-        targetStateId,
-        context
-      )
+      const transition = this.createTransition(edge, sourceStateId, targetStateId, context)
 
       // Store transition for later retrieval
       this.transitions.set(transition.id, transition)
@@ -87,15 +82,14 @@ export class TransitionBuilder {
         edgeId: edge.id,
         transitionId: transition.id,
         from: sourceStateId,
-        to: targetStateId
+        to: targetStateId,
       })
 
       return transition
-
     } catch (error) {
       logger.error('Failed to build transition', {
         edgeId: edge.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       const conversionError: ConversionError = {
@@ -105,8 +99,8 @@ export class TransitionBuilder {
         suggestions: [
           'Check edge configuration',
           'Verify source and target nodes exist',
-          'Review transition logic'
-        ]
+          'Review transition logic',
+        ],
       }
       context.warnings.push(conversionError)
 
@@ -119,7 +113,7 @@ export class TransitionBuilder {
    */
   async buildAllTransitions(context: ConversionContext): Promise<ParlantTransition[]> {
     logger.info('Building all workflow transitions', {
-      totalEdges: context.workflow.edges.length
+      totalEdges: context.workflow.edges.length,
     })
 
     const transitions: ParlantTransition[] = []
@@ -134,7 +128,7 @@ export class TransitionBuilder {
     logger.info('All transitions built', {
       totalEdges: context.workflow.edges.length,
       builtTransitions: transitions.length,
-      skippedEdges: context.workflow.edges.length - transitions.length
+      skippedEdges: context.workflow.edges.length - transitions.length,
     })
 
     return transitions
@@ -182,7 +176,7 @@ export class TransitionBuilder {
         code: 'MISSING_SOURCE_NODE',
         message: `Edge ${edge.id} references non-existent source node ${edge.source}`,
         severity: 'error',
-        suggestions: ['Check edge source reference', 'Verify node exists in workflow']
+        suggestions: ['Check edge source reference', 'Verify node exists in workflow'],
       })
     }
 
@@ -191,7 +185,7 @@ export class TransitionBuilder {
         code: 'MISSING_TARGET_NODE',
         message: `Edge ${edge.id} references non-existent target node ${edge.target}`,
         severity: 'error',
-        suggestions: ['Check edge target reference', 'Verify node exists in workflow']
+        suggestions: ['Check edge target reference', 'Verify node exists in workflow'],
       })
     }
 
@@ -204,8 +198,8 @@ export class TransitionBuilder {
         suggestions: [
           'Review workflow logic',
           'Consider if self-loop is intentional',
-          'May cause infinite loops in journey execution'
-        ]
+          'May cause infinite loops in journey execution',
+        ],
       })
     }
 
@@ -219,9 +213,9 @@ export class TransitionBuilder {
     }
 
     return {
-      valid: errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0,
+      valid: errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -237,10 +231,10 @@ export class TransitionBuilder {
       /^target$/,
       /^condition-/,
       /^loop-(start|end)-source$/,
-      /^parallel-(start|end)-source$/
+      /^parallel-(start|end)-source$/,
     ]
 
-    const isValid = validPatterns.some(pattern => pattern.test(handle))
+    const isValid = validPatterns.some((pattern) => pattern.test(handle))
 
     if (!isValid) {
       warnings.push({
@@ -251,8 +245,8 @@ export class TransitionBuilder {
         suggestions: [
           'Verify handle type is supported',
           'Check node configuration',
-          'Handle may be converted generically'
-        ]
+          'Handle may be converted generically',
+        ],
       })
     }
   }
@@ -300,7 +294,7 @@ export class TransitionBuilder {
       targetStateId,
       condition,
       description,
-      weight
+      weight,
     }
   }
 
@@ -359,13 +353,13 @@ export class TransitionBuilder {
   private humanizeCondition(condition: string): string {
     // Convert technical condition names to human-readable format
     const conditionMap: Record<string, string> = {
-      'true': 'When condition is true',
-      'false': 'When condition is false',
-      'success': 'On success',
-      'error': 'On error',
-      'timeout': 'On timeout',
-      'retry': 'On retry',
-      'default': 'Default path'
+      true: 'When condition is true',
+      false: 'When condition is false',
+      success: 'On success',
+      error: 'On error',
+      timeout: 'On timeout',
+      retry: 'On retry',
+      default: 'Default path',
     }
 
     // Try direct mapping first
@@ -383,28 +377,31 @@ export class TransitionBuilder {
       .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
       .replace(/_/g, ' ') // snake_case
       .toLowerCase()
-      .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+      .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
 
     return humanized
   }
 
-  private calculateTransitionWeight(edge: ReactFlowEdge, context: ConversionContext): number | undefined {
+  private calculateTransitionWeight(
+    edge: ReactFlowEdge,
+    context: ConversionContext
+  ): number | undefined {
     // Weight based on handle priority
     if (edge.sourceHandle?.startsWith('condition-')) {
       const conditionNum = edge.sourceHandle.replace('condition-', '')
-      const num = parseInt(conditionNum)
-      if (!isNaN(num)) {
+      const num = Number.parseInt(conditionNum)
+      if (!Number.isNaN(num)) {
         return num
       }
     }
 
     // Default weights for special handles
     const handleWeights: Record<string, number> = {
-      'source': 0,
+      source: 0,
       'loop-start-source': 1,
       'loop-end-source': 2,
       'parallel-start-source': 1,
-      'parallel-end-source': 2
+      'parallel-end-source': 2,
     }
 
     if (edge.sourceHandle && handleWeights[edge.sourceHandle] !== undefined) {
@@ -415,7 +412,10 @@ export class TransitionBuilder {
     return undefined
   }
 
-  private generateTransitionDescription(edge: ReactFlowEdge, context: ConversionContext): string | undefined {
+  private generateTransitionDescription(
+    edge: ReactFlowEdge,
+    context: ConversionContext
+  ): string | undefined {
     const sourceNode = context.nodeMap.get(edge.source)
     const targetNode = context.nodeMap.get(edge.target)
 

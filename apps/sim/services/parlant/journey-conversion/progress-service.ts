@@ -6,15 +6,12 @@
  * Supports WebSocket notifications and progress persistence.
  */
 
+import { and, eq } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
+import { generateId } from '@/lib/utils'
 import { db } from '@/db'
 import { parlantConversionHistory } from '@/db/parlant-schema'
-import { eq, and } from 'drizzle-orm'
-import { generateId } from '@/lib/utils'
-import {
-  type ConversionProgress,
-  type ConversionError,
-} from './types'
+import type { ConversionError, ConversionProgress } from './types'
 
 const logger = createLogger('ProgressService')
 
@@ -67,7 +64,6 @@ export class ProgressService {
       })
 
       logger.debug('Progress tracking initialized', { conversionId })
-
     } catch (error) {
       logger.error('Failed to initialize progress', { error: error.message, conversionId })
       throw error
@@ -136,7 +132,6 @@ export class ProgressService {
         status: updatedProgress.status,
         progress: updatedProgress.progress_percentage,
       })
-
     } catch (error) {
       logger.error('Failed to update progress', { error: error.message, conversionId })
     }
@@ -168,7 +163,9 @@ export class ProgressService {
           blocks_processed: metadata?.blocks_processed || 0,
           total_blocks: metadata?.total_blocks || 0,
           estimated_completion_ms: metadata?.estimated_completion_ms || null,
-          error: historyRecord.errorDetails ? this.parseErrorDetails(historyRecord.errorDetails) : undefined,
+          error: historyRecord.errorDetails
+            ? this.parseErrorDetails(historyRecord.errorDetails)
+            : undefined,
         }
 
         // Cache for future requests
@@ -186,7 +183,6 @@ export class ProgressService {
         blocks_processed: 0,
         total_blocks: 0,
       }
-
     } catch (error) {
       logger.error('Failed to get progress', { error: error.message, conversionId })
 
@@ -233,7 +229,6 @@ export class ProgressService {
         .where(eq(parlantConversionHistory.conversionId, conversionId))
 
       logger.info('Conversion marked as completed', { conversionId })
-
     } catch (error) {
       logger.error('Failed to mark conversion as completed', { error: error.message, conversionId })
     }
@@ -242,10 +237,7 @@ export class ProgressService {
   /**
    * Mark conversion as failed
    */
-  async markFailed(
-    conversionId: string,
-    error: ConversionError
-  ): Promise<void> {
+  async markFailed(conversionId: string, error: ConversionError): Promise<void> {
     try {
       await this.updateProgress(conversionId, {
         status: 'failed',
@@ -254,7 +246,6 @@ export class ProgressService {
       })
 
       logger.info('Conversion marked as failed', { conversionId, errorType: error.type })
-
     } catch (updateError) {
       logger.error('Failed to mark conversion as failed', {
         error: updateError.message,
@@ -285,7 +276,6 @@ export class ProgressService {
       if (cleanedCount > 0) {
         logger.debug('Progress cache cleaned up', { cleanedCount })
       }
-
     } catch (error) {
       logger.error('Progress cleanup failed', { error: error.message })
     }
@@ -304,11 +294,10 @@ export class ProgressService {
       })
 
       const activeProgress = await Promise.all(
-        activeRecords.map(record => this.getProgress(record.conversionId))
+        activeRecords.map((record) => this.getProgress(record.conversionId))
       )
 
       return activeProgress
-
     } catch (error) {
       logger.error('Failed to get active conversions', { error: error.message, workspaceId })
       return []
@@ -335,9 +324,12 @@ export class ProgressService {
 }
 
 // Start cleanup interval
-const progressCleanupInterval = setInterval(async () => {
-  await progressService.cleanup()
-}, 10 * 60 * 1000) // Run every 10 minutes
+const progressCleanupInterval = setInterval(
+  async () => {
+    await progressService.cleanup()
+  },
+  10 * 60 * 1000
+) // Run every 10 minutes
 
 // Cleanup on process exit
 process.on('SIGTERM', () => {

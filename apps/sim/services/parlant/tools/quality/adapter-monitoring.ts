@@ -6,7 +6,7 @@
  * Provides real-time insights, health monitoring, and automated recovery mechanisms
  */
 
-import { AdapterExecutionResult, ToolExecutionContext } from '../adapter-framework'
+import type { AdapterExecutionResult, ToolExecutionContext } from '../adapter-framework'
 
 // ================================
 // Logging and Monitoring Types
@@ -207,20 +207,22 @@ export class AdapterMonitoringSystem {
   private healthChecks = new Map<string, AdapterHealthCheck>()
   private alertStates = new Map<string, any>()
 
-  private maxLogEntries: number = 10000
-  private metricsRetentionDays: number = 30
-  private healthCheckIntervalMs: number = 60000 // 1 minute
-  private alertEvaluationIntervalMs: number = 30000 // 30 seconds
+  private maxLogEntries = 10000
+  private metricsRetentionDays = 30
+  private healthCheckIntervalMs = 60000 // 1 minute
+  private alertEvaluationIntervalMs = 30000 // 30 seconds
 
   private healthCheckTimer?: NodeJS.Timer
   private alertEvaluationTimer?: NodeJS.Timer
 
-  constructor(config: {
-    maxLogEntries?: number
-    metricsRetentionDays?: number
-    healthCheckInterval?: number
-    alertEvaluationInterval?: number
-  } = {}) {
+  constructor(
+    config: {
+      maxLogEntries?: number
+      metricsRetentionDays?: number
+      healthCheckInterval?: number
+      alertEvaluationInterval?: number
+    } = {}
+  ) {
     this.maxLogEntries = config.maxLogEntries || 10000
     this.metricsRetentionDays = config.metricsRetentionDays || 30
     this.healthCheckIntervalMs = (config.healthCheckInterval || 60) * 1000
@@ -254,16 +256,20 @@ export class AdapterMonitoringSystem {
       message,
       data,
       context,
-      error: error ? {
-        message: error.message,
-        stack: error.stack,
-        code: error.name
-      } : undefined,
-      metadata: context ? {
-        userId: context.userId,
-        workspaceId: context.workspaceId,
-        correlationId: context.sessionId
-      } : undefined
+      error: error
+        ? {
+            message: error.message,
+            stack: error.stack,
+            code: error.name,
+          }
+        : undefined,
+      metadata: context
+        ? {
+            userId: context.userId,
+            workspaceId: context.workspaceId,
+            correlationId: context.sessionId,
+          }
+        : undefined,
     }
 
     this.logs.push(logEntry)
@@ -296,47 +302,57 @@ export class AdapterMonitoringSystem {
       ? `Adapter execution completed successfully`
       : `Adapter execution failed: ${result.error}`
 
-    this.log(level, adapterId, operation, message, {
-      success: result.success,
-      duration: result.timing.duration,
-      usage: result.usage,
-      errorDetails: result.errorDetails
-    }, context, result.error ? new Error(result.error) : undefined)
+    this.log(
+      level,
+      adapterId,
+      operation,
+      message,
+      {
+        success: result.success,
+        duration: result.timing.duration,
+        usage: result.usage,
+        errorDetails: result.errorDetails,
+      },
+      context,
+      result.error ? new Error(result.error) : undefined
+    )
   }
 
   /**
    * Search logs with filters
    */
-  searchLogs(filters: {
-    adapterId?: string
-    level?: LogLevel
-    operation?: string
-    startTime?: string
-    endTime?: string
-    limit?: number
-  } = {}): AdapterLogEntry[] {
+  searchLogs(
+    filters: {
+      adapterId?: string
+      level?: LogLevel
+      operation?: string
+      startTime?: string
+      endTime?: string
+      limit?: number
+    } = {}
+  ): AdapterLogEntry[] {
     let filteredLogs = [...this.logs]
 
     if (filters.adapterId) {
-      filteredLogs = filteredLogs.filter(log => log.adapterId === filters.adapterId)
+      filteredLogs = filteredLogs.filter((log) => log.adapterId === filters.adapterId)
     }
 
     if (filters.level) {
-      filteredLogs = filteredLogs.filter(log => log.level === filters.level)
+      filteredLogs = filteredLogs.filter((log) => log.level === filters.level)
     }
 
     if (filters.operation) {
-      filteredLogs = filteredLogs.filter(log =>
+      filteredLogs = filteredLogs.filter((log) =>
         log.operation.toLowerCase().includes(filters.operation!.toLowerCase())
       )
     }
 
     if (filters.startTime) {
-      filteredLogs = filteredLogs.filter(log => log.timestamp >= filters.startTime!)
+      filteredLogs = filteredLogs.filter((log) => log.timestamp >= filters.startTime!)
     }
 
     if (filters.endTime) {
-      filteredLogs = filteredLogs.filter(log => log.timestamp <= filters.endTime!)
+      filteredLogs = filteredLogs.filter((log) => log.timestamp <= filters.endTime!)
     }
 
     // Sort by timestamp (newest first)
@@ -398,18 +414,24 @@ export class AdapterMonitoringSystem {
         errorRate: errorRateCheck.value || 0,
         throughput: recentMetrics?.usage.requestsPerMinute || 0,
         memory: memoryCheck.value || 0,
-        cpu: 0 // Would be implemented with actual system metrics
+        cpu: 0, // Would be implemented with actual system metrics
       },
       checks,
-      recommendations
+      recommendations,
     }
 
     this.healthChecks.set(adapterId, healthCheck)
-    this.log('info', adapterId, 'health_check', `Health check completed: ${status} (${score}/100)`, {
-      score,
-      status,
-      checksCount: checks.length
-    })
+    this.log(
+      'info',
+      adapterId,
+      'health_check',
+      `Health check completed: ${status} (${score}/100)`,
+      {
+        score,
+        status,
+        checksCount: checks.length,
+      }
+    )
 
     return healthCheck
   }
@@ -435,11 +457,7 @@ export class AdapterMonitoringSystem {
   /**
    * Get metrics for an adapter within a time window
    */
-  getMetrics(
-    adapterId: string,
-    startTime?: string,
-    endTime?: string
-  ): AdapterMetrics | undefined {
+  getMetrics(adapterId: string, startTime?: string, endTime?: string): AdapterMetrics | undefined {
     // For simplicity, return the most recent metrics
     return this.metrics.get(adapterId)
   }
@@ -447,7 +465,10 @@ export class AdapterMonitoringSystem {
   /**
    * Get aggregated metrics across all adapters
    */
-  getAggregatedMetrics(startTime?: string, endTime?: string): {
+  getAggregatedMetrics(
+    startTime?: string,
+    endTime?: string
+  ): {
     totalRequests: number
     averageSuccessRate: number
     averageLatency: number
@@ -457,12 +478,14 @@ export class AdapterMonitoringSystem {
     const allMetrics = Array.from(this.metrics.values())
 
     const totalRequests = allMetrics.reduce((sum, m) => sum + m.requests.total, 0)
-    const averageSuccessRate = allMetrics.length > 0
-      ? allMetrics.reduce((sum, m) => sum + m.requests.successRate, 0) / allMetrics.length
-      : 0
-    const averageLatency = allMetrics.length > 0
-      ? allMetrics.reduce((sum, m) => sum + m.performance.averageLatency, 0) / allMetrics.length
-      : 0
+    const averageSuccessRate =
+      allMetrics.length > 0
+        ? allMetrics.reduce((sum, m) => sum + m.requests.successRate, 0) / allMetrics.length
+        : 0
+    const averageLatency =
+      allMetrics.length > 0
+        ? allMetrics.reduce((sum, m) => sum + m.performance.averageLatency, 0) / allMetrics.length
+        : 0
     const totalErrors = allMetrics.reduce((sum, m) => sum + m.requests.failed, 0)
 
     return {
@@ -470,7 +493,7 @@ export class AdapterMonitoringSystem {
       averageSuccessRate,
       averageLatency,
       totalErrors,
-      activeAdapters: allMetrics.length
+      activeAdapters: allMetrics.length,
     }
   }
 
@@ -483,10 +506,16 @@ export class AdapterMonitoringSystem {
    */
   registerAlert(alertConfig: AlertConfig): void {
     this.alerts.set(alertConfig.name, alertConfig)
-    this.log('info', alertConfig.adapterId, 'alert_registered', `Alert '${alertConfig.name}' registered`, {
-      condition: alertConfig.condition,
-      severity: alertConfig.severity
-    })
+    this.log(
+      'info',
+      alertConfig.adapterId,
+      'alert_registered',
+      `Alert '${alertConfig.name}' registered`,
+      {
+        condition: alertConfig.condition,
+        severity: alertConfig.severity,
+      }
+    )
   }
 
   /**
@@ -515,17 +544,28 @@ export class AdapterMonitoringSystem {
    * Trigger alert actions
    */
   private async triggerAlert(alertConfig: AlertConfig): Promise<void> {
-    this.log('warn', alertConfig.adapterId, 'alert_triggered', `Alert '${alertConfig.name}' triggered`, {
-      condition: alertConfig.condition,
-      severity: alertConfig.severity
-    })
+    this.log(
+      'warn',
+      alertConfig.adapterId,
+      'alert_triggered',
+      `Alert '${alertConfig.name}' triggered`,
+      {
+        condition: alertConfig.condition,
+        severity: alertConfig.severity,
+      }
+    )
 
     for (const action of alertConfig.actions) {
       try {
         await this.executeAlertAction(action, alertConfig, 'triggered')
       } catch (error) {
-        this.log('error', alertConfig.adapterId, 'alert_action_failed',
-          `Alert action '${action.type}' failed`, { error: error.message })
+        this.log(
+          'error',
+          alertConfig.adapterId,
+          'alert_action_failed',
+          `Alert action '${action.type}' failed`,
+          { error: error.message }
+        )
       }
     }
   }
@@ -534,14 +574,24 @@ export class AdapterMonitoringSystem {
    * Resolve alert
    */
   private async resolveAlert(alertConfig: AlertConfig): Promise<void> {
-    this.log('info', alertConfig.adapterId, 'alert_resolved', `Alert '${alertConfig.name}' resolved`)
+    this.log(
+      'info',
+      alertConfig.adapterId,
+      'alert_resolved',
+      `Alert '${alertConfig.name}' resolved`
+    )
 
     for (const action of alertConfig.actions) {
       try {
         await this.executeAlertAction(action, alertConfig, 'resolved')
       } catch (error) {
-        this.log('error', alertConfig.adapterId, 'alert_action_failed',
-          `Alert resolution action '${action.type}' failed`, { error: error.message })
+        this.log(
+          'error',
+          alertConfig.adapterId,
+          'alert_action_failed',
+          `Alert resolution action '${action.type}' failed`,
+          { error: error.message }
+        )
       }
     }
   }
@@ -555,18 +605,23 @@ export class AdapterMonitoringSystem {
    */
   async attemptAutoRecovery(adapterId: string, error: Error): Promise<boolean> {
     this.log('warn', adapterId, 'auto_recovery_attempt', `Attempting auto-recovery for adapter`, {
-      error: error.message
+      error: error.message,
     })
 
     // Circuit breaker pattern
     const recentErrors = this.getRecentErrors(adapterId, 300) // Last 5 minutes
     if (recentErrors.length > 10) {
-      this.log('error', adapterId, 'circuit_breaker', 'Circuit breaker activated - too many recent errors')
+      this.log(
+        'error',
+        adapterId,
+        'circuit_breaker',
+        'Circuit breaker activated - too many recent errors'
+      )
       return false
     }
 
     // Exponential backoff
-    const backoffMs = Math.min(1000 * Math.pow(2, recentErrors.length), 30000)
+    const backoffMs = Math.min(1000 * 2 ** recentErrors.length, 30000)
     await this.sleep(backoffMs)
 
     // Recovery strategies based on error type
@@ -619,14 +674,16 @@ export class AdapterMonitoringSystem {
   }
 
   private checkAvailability(adapterId: string, metrics?: AdapterMetrics): HealthCheckDetail {
-    const availability = metrics ? (metrics.requests.successful / metrics.requests.total) * 100 : 100
+    const availability = metrics
+      ? (metrics.requests.successful / metrics.requests.total) * 100
+      : 100
     return {
       name: 'availability',
       status: availability > 95 ? 'pass' : availability > 90 ? 'warn' : 'fail',
       message: `Availability: ${availability.toFixed(1)}%`,
       value: availability,
       threshold: 95,
-      duration: 0
+      duration: 0,
     }
   }
 
@@ -638,7 +695,7 @@ export class AdapterMonitoringSystem {
       message: `Average latency: ${latency.toFixed(0)}ms`,
       value: latency,
       threshold: 1000,
-      duration: 0
+      duration: 0,
     }
   }
 
@@ -650,7 +707,7 @@ export class AdapterMonitoringSystem {
       message: `Error rate: ${(errorRate * 100).toFixed(1)}%`,
       value: errorRate,
       threshold: 0.05,
-      duration: 0
+      duration: 0,
     }
   }
 
@@ -662,7 +719,7 @@ export class AdapterMonitoringSystem {
       message: `Memory usage: ${memory.toFixed(1)}%`,
       value: memory,
       threshold: 80,
-      duration: 0
+      duration: 0,
     }
   }
 
@@ -679,10 +736,13 @@ export class AdapterMonitoringSystem {
     return 'unknown'
   }
 
-  private generateHealthRecommendations(checks: HealthCheckDetail[], metrics?: AdapterMetrics): string[] {
+  private generateHealthRecommendations(
+    checks: HealthCheckDetail[],
+    metrics?: AdapterMetrics
+  ): string[] {
     const recommendations: string[] = []
 
-    checks.forEach(check => {
+    checks.forEach((check) => {
       if (check.status === 'fail' || check.status === 'warn') {
         switch (check.name) {
           case 'availability':
@@ -724,20 +784,35 @@ export class AdapterMonitoringSystem {
     }
 
     switch (alertConfig.condition.operator) {
-      case 'gt': return value > alertConfig.condition.threshold
-      case 'lt': return value < alertConfig.condition.threshold
-      case 'gte': return value >= alertConfig.condition.threshold
-      case 'lte': return value <= alertConfig.condition.threshold
-      case 'eq': return value === alertConfig.condition.threshold
-      default: return false
+      case 'gt':
+        return value > alertConfig.condition.threshold
+      case 'lt':
+        return value < alertConfig.condition.threshold
+      case 'gte':
+        return value >= alertConfig.condition.threshold
+      case 'lte':
+        return value <= alertConfig.condition.threshold
+      case 'eq':
+        return value === alertConfig.condition.threshold
+      default:
+        return false
     }
   }
 
-  private async executeAlertAction(action: AlertAction, alertConfig: AlertConfig, state: 'triggered' | 'resolved'): Promise<void> {
+  private async executeAlertAction(
+    action: AlertAction,
+    alertConfig: AlertConfig,
+    state: 'triggered' | 'resolved'
+  ): Promise<void> {
     switch (action.type) {
       case 'log':
-        this.log('warn', alertConfig.adapterId, 'alert_action',
-          `Alert ${alertConfig.name} ${state}`, { alertConfig, action })
+        this.log(
+          'warn',
+          alertConfig.adapterId,
+          'alert_action',
+          `Alert ${alertConfig.name} ${state}`,
+          { alertConfig, action }
+        )
         break
       case 'auto_recover':
         if (state === 'triggered') {
@@ -750,10 +825,8 @@ export class AdapterMonitoringSystem {
 
   private getRecentErrors(adapterId: string, seconds: number): AdapterLogEntry[] {
     const cutoff = new Date(Date.now() - seconds * 1000).toISOString()
-    return this.logs.filter(log =>
-      log.adapterId === adapterId &&
-      log.level === 'error' &&
-      log.timestamp >= cutoff
+    return this.logs.filter(
+      (log) => log.adapterId === adapterId && log.level === 'error' && log.timestamp >= cutoff
     )
   }
 
@@ -779,7 +852,7 @@ export class AdapterMonitoringSystem {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
@@ -799,5 +872,5 @@ export const globalAdapterMonitoring = new AdapterMonitoringSystem({
   maxLogEntries: 50000,
   metricsRetentionDays: 7,
   healthCheckInterval: 60,
-  alertEvaluationInterval: 30
+  alertEvaluationInterval: 30,
 })

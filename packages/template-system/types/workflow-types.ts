@@ -6,7 +6,7 @@
  * workflow analysis, block mapping, and conversion utilities.
  */
 
-import { ConditionalExpression } from './template-types'
+import type { ConditionalExpression } from './template-types'
 
 // ============================================================================
 // Workflow Analysis Types
@@ -46,10 +46,10 @@ export interface WorkflowStructureAnalysis {
 export interface WorkflowComplexity {
   overall: 'simple' | 'moderate' | 'complex' | 'very_complex'
   scores: {
-    structural: number    // Based on blocks, edges, nesting
-    logical: number      // Based on conditions, loops
-    dataFlow: number     // Based on variables, transformations
-    integration: number  // Based on external dependencies
+    structural: number // Based on blocks, edges, nesting
+    logical: number // Based on conditions, loops
+    dataFlow: number // Based on variables, transformations
+    integration: number // Based on external dependencies
   }
   factors: ComplexityFactor[]
 }
@@ -305,32 +305,32 @@ export interface ConversionLimitation {
 // ============================================================================
 
 export type WorkflowBlockType =
-  | 'starter'        // Entry point
-  | 'agent'          // AI agent interaction
-  | 'api'            // API call
-  | 'function'       // Code execution
-  | 'decision'       // Conditional logic
-  | 'loop'           // Iteration
-  | 'delay'          // Wait/pause
-  | 'trigger'        // Event trigger
-  | 'webhook'        // Webhook handler
-  | 'transform'      // Data transformation
-  | 'storage'        // Data storage
-  | 'notification'   // Send notification
-  | 'approval'       // Human approval
-  | 'integration'    // External integration
-  | 'subworkflow'    // Nested workflow
+  | 'starter' // Entry point
+  | 'agent' // AI agent interaction
+  | 'api' // API call
+  | 'function' // Code execution
+  | 'decision' // Conditional logic
+  | 'loop' // Iteration
+  | 'delay' // Wait/pause
+  | 'trigger' // Event trigger
+  | 'webhook' // Webhook handler
+  | 'transform' // Data transformation
+  | 'storage' // Data storage
+  | 'notification' // Send notification
+  | 'approval' // Human approval
+  | 'integration' // External integration
+  | 'subworkflow' // Nested workflow
 
 export type JourneyStateType =
-  | 'chat'           // Conversational state
-  | 'tool'           // Tool execution
-  | 'decision'       // User choice
-  | 'input'          // Data collection
-  | 'confirmation'   // User confirmation
-  | 'processing'     // Background work
-  | 'wait'           // External wait
-  | 'final'          // End state
-  | 'error'          // Error handling
+  | 'chat' // Conversational state
+  | 'tool' // Tool execution
+  | 'decision' // User choice
+  | 'input' // Data collection
+  | 'confirmation' // User confirmation
+  | 'processing' // Background work
+  | 'wait' // External wait
+  | 'final' // End state
+  | 'error' // Error handling
 
 // ============================================================================
 // Block Specific Types
@@ -472,8 +472,8 @@ export interface NotificationConfig {
 
 export interface ExecutionLimits {
   timeout: number // milliseconds
-  memory: number  // MB
-  cpu: number     // CPU units
+  memory: number // MB
+  cpu: number // CPU units
   network: boolean
   filesystem: boolean
 }

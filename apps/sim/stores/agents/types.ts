@@ -140,12 +140,22 @@ export interface AgentManagementStore {
   selectAgent: (agent: ParlantAgent | null) => void
 
   // Guidelines management
-  addGuideline: (agentId: string, guideline: Omit<Guideline, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Guideline>
-  updateGuideline: (agentId: string, guidelineId: string, updates: Partial<Guideline>) => Promise<Guideline>
+  addGuideline: (
+    agentId: string,
+    guideline: Omit<Guideline, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<Guideline>
+  updateGuideline: (
+    agentId: string,
+    guidelineId: string,
+    updates: Partial<Guideline>
+  ) => Promise<Guideline>
   deleteGuideline: (agentId: string, guidelineId: string) => Promise<void>
 
   // Journey management
-  addJourney: (agentId: string, journey: Omit<Journey, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Journey>
+  addJourney: (
+    agentId: string,
+    journey: Omit<Journey, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<Journey>
   updateJourney: (agentId: string, journeyId: string, updates: Partial<Journey>) => Promise<Journey>
   deleteJourney: (agentId: string, journeyId: string) => Promise<void>
 

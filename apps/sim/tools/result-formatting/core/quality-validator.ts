@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { FormattedResult, FormatContext } from '../types'
+import type { FormattedResult } from '../types'
 
 const logger = createLogger('QualityValidator')
 
@@ -80,7 +80,6 @@ export class QualityValidator {
       }
 
       return metrics.overall
-
     } catch (error) {
       logger.error('Quality validation failed:', error)
       return 0.5 // Return moderate quality on validation error
@@ -178,34 +177,47 @@ export class QualityValidator {
     let checks = 0
 
     // Check required fields
-    if (result.format) { score++; }
-    if (result.content) { score++; }
-    if (result.summary?.headline) { score++; }
-    if (result.summary?.description) { score++; }
-    if (result.metadata?.formattedAt) { score++; }
+    if (result.format) {
+      score++
+    }
+    if (result.content) {
+      score++
+    }
+    if (result.summary?.headline) {
+      score++
+    }
+    if (result.summary?.description) {
+      score++
+    }
+    if (result.metadata?.formattedAt) {
+      score++
+    }
     checks = 5
 
     // Check content completeness based on format
     switch (result.content.type) {
-      case 'table':
+      case 'table': {
         const tableContent = result.content as any
         if (tableContent.columns?.length > 0) score += 0.5
         if (tableContent.rows?.length > 0) score += 0.5
         checks += 1
         break
+      }
 
-      case 'chart':
+      case 'chart': {
         const chartContent = result.content as any
         if (chartContent.data?.length > 0) score += 0.5
         if (chartContent.config) score += 0.5
         checks += 1
         break
+      }
 
-      case 'json':
+      case 'json': {
         const jsonContent = result.content as any
         if (jsonContent.data !== null && jsonContent.data !== undefined) score++
         checks += 1
         break
+      }
 
       default:
         // Basic content check
@@ -287,20 +299,19 @@ export class QualityValidator {
 
     // Format-specific structure validation
     switch (result.content.type) {
-      case 'table':
+      case 'table': {
         const table = result.content as any
         if (table.columns?.length > 0 && table.rows?.length > 0) {
           score += 0.3
           // Check column consistency
-          if (table.rows.every((row: any) =>
-            table.columns.every((col: any) => col.key in row)
-          )) {
+          if (table.rows.every((row: any) => table.columns.every((col: any) => col.key in row))) {
             score += 0.2
           }
         }
         break
+      }
 
-      case 'chart':
+      case 'chart': {
         const chart = result.content as any
         if (chart.data?.length > 0 && chart.config) {
           score += 0.3
@@ -309,8 +320,9 @@ export class QualityValidator {
           }
         }
         break
+      }
 
-      case 'list':
+      case 'list': {
         const list = result.content as any
         if (list.items?.length > 0) {
           score += 0.3
@@ -319,13 +331,14 @@ export class QualityValidator {
           }
         }
         break
+      }
 
       default:
         score += 0.3 // Default structure bonus
     }
 
     // Metadata structure
-    if (result.metadata && result.metadata.formattedAt && result.metadata.version) {
+    if (result.metadata?.formattedAt && result.metadata.version) {
       score += 0.1
     }
 
@@ -393,8 +406,11 @@ export class QualityValidator {
       return false
     }
 
-    if (hasError && !summary.headline.toLowerCase().includes('error') &&
-        !summary.headline.toLowerCase().includes('failed')) {
+    if (
+      hasError &&
+      !summary.headline.toLowerCase().includes('error') &&
+      !summary.headline.toLowerCase().includes('failed')
+    ) {
       return false
     }
 
@@ -492,7 +508,7 @@ export class QualityValidator {
     }
 
     // Based on issues
-    const errorCount = issues.filter(i => i.type === 'error').length
+    const errorCount = issues.filter((i) => i.type === 'error').length
     if (errorCount > 0) {
       recommendations.push('Address critical quality errors before using this result')
     }
@@ -563,15 +579,17 @@ export class QualityValidator {
 
           // Format-specific validation
           switch (result.content.type) {
-            case 'table':
+            case 'table': {
               const table = result.content as any
               if (table.columns?.length > 0) score += 0.15
               if (table.rows?.length > 0) score += 0.15
               break
-            case 'text':
+            }
+            case 'text': {
               const text = result.content as any
               if (text.text && text.text.length > 10) score += 0.3
               break
+            }
             default:
               score += 0.3
           }

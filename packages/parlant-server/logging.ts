@@ -6,7 +6,7 @@
  * Parlant-specific context and structured data.
  */
 
-import { createLogger, Logger } from '../../apps/sim/lib/logs/console/logger'
+import { createLogger, type Logger } from '../../apps/sim/lib/logs/console/logger'
 import { monitoring } from './monitoring'
 
 /**
@@ -25,8 +25,15 @@ export interface ParlantLogContext {
   messageId?: string
 
   // Operation context
-  operation?: 'agent_create' | 'agent_update' | 'session_start' | 'session_end' |
-             'message_process' | 'tool_execute' | 'guideline_apply' | 'journey_step'
+  operation?:
+    | 'agent_create'
+    | 'agent_update'
+    | 'session_start'
+    | 'session_end'
+    | 'message_process'
+    | 'tool_execute'
+    | 'guideline_apply'
+    | 'journey_step'
 
   // Performance context
   duration?: number
@@ -41,7 +48,13 @@ export interface ParlantLogContext {
 
   // Error context
   errorCode?: string
-  errorType?: 'validation' | 'authentication' | 'authorization' | 'integration' | 'performance' | 'system'
+  errorType?:
+    | 'validation'
+    | 'authentication'
+    | 'authorization'
+    | 'integration'
+    | 'performance'
+    | 'system'
 
   // Additional metadata
   metadata?: Record<string, any>
@@ -139,12 +152,13 @@ export class ParlantLogger {
       context: {
         ...context,
         // Record performance timing if not already provided
-        ...(context.duration === undefined && context.responseTime !== undefined && {
-          duration: context.responseTime
-        })
+        ...(context.duration === undefined &&
+          context.responseTime !== undefined && {
+            duration: context.responseTime,
+          }),
       },
       correlationId: this.correlationId,
-      requestId
+      requestId,
     }
 
     // Store for aggregation and analysis
@@ -223,7 +237,7 @@ export class ParlantLogger {
   ): void {
     this.log(level, message, {
       ...context,
-      operation
+      operation,
     })
   }
 
@@ -235,31 +249,27 @@ export class ParlantLogger {
     sessionId: string,
     context: Omit<ParlantLogContext, 'sessionId'> = {}
   ): void {
-    const operation = event === 'start' ? 'session_start' :
-                     event === 'end' ? 'session_end' : 'message_process'
+    const operation =
+      event === 'start' ? 'session_start' : event === 'end' ? 'session_end' : 'message_process'
 
     this.log('INFO', `Session ${event}`, {
       ...context,
       sessionId,
-      operation
+      operation,
     })
   }
 
   /**
    * Log performance metrics with timing
    */
-  logPerformance(
-    operation: string,
-    startTime: number,
-    context: ParlantLogContext = {}
-  ): void {
+  logPerformance(operation: string, startTime: number, context: ParlantLogContext = {}): void {
     const duration = performance.now() - startTime
 
     this.log('INFO', `${operation} completed`, {
       ...context,
       operation: operation as any,
       duration,
-      responseTime: duration
+      responseTime: duration,
     })
 
     // Record for monitoring
@@ -276,14 +286,14 @@ export class ParlantLogger {
   ): void {
     this.log('INFO', `[Integration] ${message}`, {
       ...context,
-      operation: 'tool_execute' // Generic integration operation
+      operation: 'tool_execute', // Generic integration operation
     })
   }
 
   /**
    * Get recent logs for analysis
    */
-  getRecentLogs(count: number = 100): ParlantLogEntry[] {
+  getRecentLogs(count = 100): ParlantLogEntry[] {
     return this.logs.slice(-count)
   }
 
@@ -297,7 +307,7 @@ export class ParlantLogger {
     workspaceId?: string
     since?: Date
   }): ParlantLogEntry[] {
-    return this.logs.filter(log => {
+    return this.logs.filter((log) => {
       if (criteria.level && log.level !== criteria.level) return false
       if (criteria.operation && log.context.operation !== criteria.operation) return false
       if (criteria.agentId && log.context.agentId !== criteria.agentId) return false
@@ -310,31 +320,31 @@ export class ParlantLogger {
   /**
    * Generate log aggregation for analytics
    */
-  generateLogAggregation(windowMinutes: number = 60): LogAggregation {
+  generateLogAggregation(windowMinutes = 60): LogAggregation {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000)
     const windowEnd = new Date()
     const relevantLogs = this.filterLogs({ since: windowStart })
 
     const counts = {
       total: relevantLogs.length,
-      debug: relevantLogs.filter(l => l.level === 'DEBUG').length,
-      info: relevantLogs.filter(l => l.level === 'INFO').length,
-      warn: relevantLogs.filter(l => l.level === 'WARN').length,
-      error: relevantLogs.filter(l => l.level === 'ERROR').length
+      debug: relevantLogs.filter((l) => l.level === 'DEBUG').length,
+      info: relevantLogs.filter((l) => l.level === 'INFO').length,
+      warn: relevantLogs.filter((l) => l.level === 'WARN').length,
+      error: relevantLogs.filter((l) => l.level === 'ERROR').length,
     }
 
     const operations: LogAggregation['operations'] = {}
     const agents: LogAggregation['agents'] = {}
     const workspaces: LogAggregation['workspaces'] = {}
 
-    relevantLogs.forEach(log => {
+    relevantLogs.forEach((log) => {
       // Aggregate by operation
       if (log.context.operation) {
         if (!operations[log.context.operation]) {
           operations[log.context.operation] = {
             count: 0,
             errorCount: 0,
-            successCount: 0
+            successCount: 0,
           }
         }
         operations[log.context.operation].count++
@@ -359,7 +369,7 @@ export class ParlantLogger {
         if (!agents[log.context.agentId]) {
           agents[log.context.agentId] = {
             count: 0,
-            errors: 0
+            errors: 0,
           }
         }
         agents[log.context.agentId].count++
@@ -382,7 +392,7 @@ export class ParlantLogger {
           workspaces[log.context.workspaceId] = {
             count: 0,
             agents: 0,
-            sessions: 0
+            sessions: 0,
           }
         }
         workspaces[log.context.workspaceId].count++
@@ -393,12 +403,12 @@ export class ParlantLogger {
       timeWindow: {
         start: windowStart.toISOString(),
         end: windowEnd.toISOString(),
-        duration: `${windowMinutes} minutes`
+        duration: `${windowMinutes} minutes`,
       },
       counts,
       operations,
       agents,
-      workspaces
+      workspaces,
     }
   }
 
@@ -429,8 +439,17 @@ export class ParlantLogger {
     }
 
     if (format === 'csv') {
-      const headers = ['timestamp', 'level', 'message', 'operation', 'agentId', 'workspaceId', 'duration', 'errorType']
-      const rows = logs.map(log => [
+      const headers = [
+        'timestamp',
+        'level',
+        'message',
+        'operation',
+        'agentId',
+        'workspaceId',
+        'duration',
+        'errorType',
+      ]
+      const rows = logs.map((log) => [
         log.timestamp,
         log.level,
         log.message,
@@ -438,10 +457,10 @@ export class ParlantLogger {
         log.context.agentId || '',
         log.context.workspaceId || '',
         log.context.duration || '',
-        log.context.errorType || ''
+        log.context.errorType || '',
       ])
 
-      return [headers, ...rows].map(row => row.join(',')).join('\n')
+      return [headers, ...rows].map((row) => row.join(',')).join('\n')
     }
 
     return JSON.stringify(logs, null, 2)
@@ -466,7 +485,7 @@ export const parlantLoggers = {
   auth: createParlantLogger('Auth'),
   tools: createParlantLogger('Tools'),
   guidelines: createParlantLogger('Guidelines'),
-  journeys: createParlantLogger('Journeys')
+  journeys: createParlantLogger('Journeys'),
 }
 
 /**
@@ -498,5 +517,5 @@ export const logUtils = {
   /**
    * Create request ID
    */
-  generateRequestId: () => `req-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
+  generateRequestId: () => `req-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
 }

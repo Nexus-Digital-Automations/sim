@@ -1,11 +1,11 @@
 import { setupConnectionHandlers } from '@/socket-server/handlers/connection'
+import { setupConversationalWorkflowHandlers } from '@/socket-server/handlers/conversational-workflows'
 import { setupOperationsHandlers } from '@/socket-server/handlers/operations'
 import { setupParlantHandlers } from '@/socket-server/handlers/parlant'
 import { setupPresenceHandlers } from '@/socket-server/handlers/presence'
 import { setupSubblocksHandlers } from '@/socket-server/handlers/subblocks'
 import { setupVariablesHandlers } from '@/socket-server/handlers/variables'
 import { setupWorkflowHandlers } from '@/socket-server/handlers/workflow'
-import { setupConversationalWorkflowHandlers } from '@/socket-server/handlers/conversational-workflows'
 import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
 import type { RoomManager, UserPresence, WorkflowRoom } from '@/socket-server/rooms/manager'
 

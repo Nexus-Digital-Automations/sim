@@ -8,16 +8,15 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { createLogger } from '@/lib/logs/console/logger'
-
-import {
-  ToolRegistryService,
-  ToolDiscoveryService,
-  ToolConfigurationService,
-  ToolAnalyticsService,
-  ToolRecommendationService,
-  ToolHealthService,
-} from '../index'
 import { ToolRegistryAuthService } from '../auth-integration'
+import {
+  ToolAnalyticsService,
+  ToolConfigurationService,
+  ToolDiscoveryService,
+  ToolHealthService,
+  ToolRecommendationService,
+  ToolRegistryService,
+} from '../index'
 
 const logger = createLogger('ToolRegistryAPI')
 
@@ -104,16 +103,12 @@ export function createToolRegistryRoutes() {
       const query = SearchQuerySchema.parse({
         ...c.req.query(),
         tags: c.req.query('tags')?.split(',').filter(Boolean),
-        limit: parseInt(c.req.query('limit') || '20'),
-        offset: parseInt(c.req.query('offset') || '0'),
+        limit: Number.parseInt(c.req.query('limit') || '20'),
+        offset: Number.parseInt(c.req.query('offset') || '0'),
       })
 
       // Apply authentication filters
-      const authFilteredQuery = authService.applyAuthFilters(
-        query,
-        user.id,
-        workspace?.id
-      )
+      const authFilteredQuery = authService.applyAuthFilters(query, user.id, workspace?.id)
 
       // Perform search
       const results = await discoveryService.searchTools(authFilteredQuery)
@@ -146,11 +141,7 @@ export function createToolRegistryRoutes() {
       const toolId = c.req.param('toolId')
 
       // Check access
-      const hasAccess = await authService.hasToolAccess(
-        toolId,
-        user.id,
-        workspace?.id
-      )
+      const hasAccess = await authService.hasToolAccess(toolId, user.id, workspace?.id)
 
       if (!hasAccess) {
         return c.json({ error: 'Access denied' }, 403)
@@ -175,7 +166,7 @@ export function createToolRegistryRoutes() {
     try {
       const user = c.get('user')
       const workspace = c.get('workspace')
-      const limit = parseInt(c.req.query('limit') || '10')
+      const limit = Number.parseInt(c.req.query('limit') || '10')
 
       const popularTools = await discoveryService.getPopularTools(workspace?.id, limit)
 
@@ -239,11 +230,7 @@ export function createToolRegistryRoutes() {
       const tools = await discoveryService.getToolsByCategory(categoryId)
 
       // Filter by access
-      const accessibleTools = await authService.filterToolsByAccess(
-        tools,
-        user.id,
-        workspace?.id
-      )
+      const accessibleTools = await authService.filterToolsByAccess(tools, user.id, workspace?.id)
 
       return c.json({ tools: accessibleTools })
     } catch (error) {
@@ -329,10 +316,7 @@ export function createToolRegistryRoutes() {
         return c.json({ error: 'Permission denied' }, 403)
       }
 
-      const updatedConfig = await configurationService.updateConfiguration(
-        configId,
-        updateData
-      )
+      const updatedConfig = await configurationService.updateConfiguration(configId, updateData)
 
       return c.json(updatedConfig)
     } catch (error) {
@@ -375,11 +359,7 @@ export function createToolRegistryRoutes() {
       const toolId = c.req.param('toolId')
 
       // Check access
-      const hasAccess = await authService.hasToolAccess(
-        toolId,
-        user.id,
-        workspace?.id
-      )
+      const hasAccess = await authService.hasToolAccess(toolId, user.id, workspace?.id)
 
       if (!hasAccess) {
         return c.json({ error: 'Access denied' }, 403)
@@ -406,11 +386,7 @@ export function createToolRegistryRoutes() {
       }
 
       // Check workspace access
-      const hasAccess = await authService.hasWorkspaceAccess(
-        user.id,
-        workspace.id,
-        'read'
-      )
+      const hasAccess = await authService.hasWorkspaceAccess(user.id, workspace.id, 'read')
 
       if (!hasAccess) {
         return c.json({ error: 'Access denied' }, 403)
@@ -449,11 +425,7 @@ export function createToolRegistryRoutes() {
       const toolId = c.req.param('toolId')
 
       // Check access
-      const hasAccess = await authService.hasToolAccess(
-        toolId,
-        user.id,
-        workspace?.id
-      )
+      const hasAccess = await authService.hasToolAccess(toolId, user.id, workspace?.id)
 
       if (!hasAccess) {
         return c.json({ error: 'Access denied' }, 403)

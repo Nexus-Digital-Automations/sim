@@ -8,12 +8,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import {
+  CONVERSATIONAL_WORKFLOW_CONSTANTS,
+  ConversationalWorkflowDev,
   ConversationalWorkflowService,
-  WorkflowJourneyMapper,
   NaturalLanguageProcessor,
   RealtimeStateManager,
-  ConversationalWorkflowDev,
-  CONVERSATIONAL_WORKFLOW_CONSTANTS,
+  WorkflowJourneyMapper,
 } from './index'
 import type { CreateConversationalWorkflowRequest } from './types'
 
@@ -87,8 +87,8 @@ export class ConversationalWorkflowTestSuite {
     }
 
     const summary = {
-      passed: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
+      passed: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
       total: results.length,
     }
 
@@ -134,7 +134,7 @@ export class ConversationalWorkflowTestSuite {
     // Test entity extraction
     const result3 = await this.nlpProcessor.processInput('set value to 42', mockState)
 
-    const numberEntity = result3.extractedEntities.find(e => e.entityType === 'number')
+    const numberEntity = result3.extractedEntities.find((e) => e.entityType === 'number')
     if (!numberEntity || numberEntity.canonicalValue !== 42) {
       throw new Error('Failed to extract number entity')
     }
@@ -188,7 +188,7 @@ export class ConversationalWorkflowTestSuite {
     })
 
     // Give time for subscription to trigger
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     if (!updateReceived) {
       throw new Error('Subscription did not receive update')
@@ -245,7 +245,9 @@ export class ConversationalWorkflowTestSuite {
     } catch (error: any) {
       if (error.message.includes('Workflow test-workflow-123 not found')) {
         // Expected in test environment - log success
-        logger.info('Workflow creation test completed successfully (expected workflow not found in test)')
+        logger.info(
+          'Workflow creation test completed successfully (expected workflow not found in test)'
+        )
         return
       }
       throw error
@@ -320,7 +322,9 @@ export class ConversationalWorkflowTestSuite {
    * Test constants and utility functions
    */
   private async testConstantsAndUtils(): Promise<void> {
-    const { ConversationalWorkflowUtils, CONVERSATIONAL_WORKFLOW_CONSTANTS } = await import('./index')
+    const { ConversationalWorkflowUtils, CONVERSATIONAL_WORKFLOW_CONSTANTS } = await import(
+      './index'
+    )
     const mockState = ConversationalWorkflowDev.createMockWorkflowState({
       completedNodes: ['node1', 'node2'],
       totalNodes: 10,
@@ -357,7 +361,9 @@ export class ConversationalWorkflowTestSuite {
     }
 
     // Test command hint extraction
-    const hints = ConversationalWorkflowUtils.extractCommandHints('start the workflow and show progress')
+    const hints = ConversationalWorkflowUtils.extractCommandHints(
+      'start the workflow and show progress'
+    )
     if (!hints.includes('start-workflow') || !hints.includes('get-status')) {
       throw new Error('Failed to extract command hints')
     }
@@ -369,9 +375,11 @@ export class ConversationalWorkflowTestSuite {
     }
 
     // Test constants structure
-    if (!CONVERSATIONAL_WORKFLOW_CONSTANTS.VERSION ||
-        !CONVERSATIONAL_WORKFLOW_CONSTANTS.SOCKET_EVENTS ||
-        !CONVERSATIONAL_WORKFLOW_CONSTANTS.DEFAULT_EXECUTION_CONFIG) {
+    if (
+      !CONVERSATIONAL_WORKFLOW_CONSTANTS.VERSION ||
+      !CONVERSATIONAL_WORKFLOW_CONSTANTS.SOCKET_EVENTS ||
+      !CONVERSATIONAL_WORKFLOW_CONSTANTS.DEFAULT_EXECUTION_CONFIG
+    ) {
       throw new Error('Constants structure is incomplete')
     }
 
@@ -404,8 +412,8 @@ if (require.main === module) {
       if (!results.success) {
         console.log('\nFailures:')
         results.results
-          .filter(r => !r.success)
-          .forEach(r => console.log(`  - ${r.test}: ${r.error}`))
+          .filter((r) => !r.success)
+          .forEach((r) => console.log(`  - ${r.test}: ${r.error}`))
 
         process.exit(1)
       } else {

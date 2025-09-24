@@ -6,9 +6,8 @@
  * into Parlant journey state machines with dynamic parameter support.
  */
 
-import type { Edge } from 'reactflow'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 import type { Journey, JourneyStep } from '@/services/parlant/types'
+import type { WorkflowState } from '@/stores/workflows/workflow/types'
 
 // Core conversion types
 export interface WorkflowTemplate {
@@ -260,7 +259,10 @@ export interface TemplateService {
     }
   }>
   deleteTemplate(templateId: string, workspaceId: string): Promise<void>
-  validateParameters(templateId: string, parameters: Record<string, any>): Promise<{
+  validateParameters(
+    templateId: string,
+    parameters: Record<string, any>
+  ): Promise<{
     valid: boolean
     errors: Array<{
       parameter: string
@@ -271,7 +273,9 @@ export interface TemplateService {
 
 export interface ConversionService {
   convertWorkflowToJourney(context: ConversionContext): Promise<JourneyConversionResult>
-  convertTemplateToJourney(request: JourneyCreateFromTemplateRequest): Promise<JourneyConversionResult>
+  convertTemplateToJourney(
+    request: JourneyCreateFromTemplateRequest
+  ): Promise<JourneyConversionResult>
   getConversionProgress(conversionId: string): Promise<ConversionProgress>
   subscribeToConversion(subscription: ConversionSubscription): void
   unsubscribeFromConversion(conversionId: string, userId: string): void
@@ -280,25 +284,41 @@ export interface ConversionService {
 }
 
 export interface AnalyticsService {
-  getConversionAnalytics(workspaceId: string, templateId?: string, timeRange?: {
-    start: string
-    end: string
-  }): Promise<ConversionAnalytics>
-  trackConversion(metadata: ConversionMetadata): Promise<void>
-  getPopularTemplates(workspaceId: string, limit?: number): Promise<Array<{
-    template: WorkflowTemplate
-    usage_stats: {
-      conversion_count: number
-      success_rate: number
-      average_duration_ms: number
+  getConversionAnalytics(
+    workspaceId: string,
+    templateId?: string,
+    timeRange?: {
+      start: string
+      end: string
     }
-  }>>
+  ): Promise<ConversionAnalytics>
+  trackConversion(metadata: ConversionMetadata): Promise<void>
+  getPopularTemplates(
+    workspaceId: string,
+    limit?: number
+  ): Promise<
+    Array<{
+      template: WorkflowTemplate
+      usage_stats: {
+        conversion_count: number
+        success_rate: number
+        average_duration_ms: number
+      }
+    }>
+  >
 }
 
 // Export utility types
-export type ConversionEventType = 'template_created' | 'template_updated' | 'template_deleted' |
-                                  'conversion_started' | 'conversion_completed' | 'conversion_failed' |
-                                  'cache_hit' | 'cache_miss' | 'parameters_validated'
+export type ConversionEventType =
+  | 'template_created'
+  | 'template_updated'
+  | 'template_deleted'
+  | 'conversion_started'
+  | 'conversion_completed'
+  | 'conversion_failed'
+  | 'cache_hit'
+  | 'cache_miss'
+  | 'parameters_validated'
 
 export interface ConversionEvent {
   type: ConversionEventType

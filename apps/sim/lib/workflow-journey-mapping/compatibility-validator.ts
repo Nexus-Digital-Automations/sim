@@ -7,11 +7,10 @@
  * CORE PRINCIPLE: ZERO BREAKING CHANGES to existing workflow functionality
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import type { Edge } from 'reactflow'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
-import type { BlockConfig } from '@/blocks/types'
+import { createLogger } from '@/lib/logs/console/logger'
 import { getBlock } from '@/blocks'
+import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 
 const logger = createLogger('CompatibilityValidator')
 
@@ -83,7 +82,7 @@ export class WorkflowJourneyCompatibilityValidator {
     this.logger.info('Starting comprehensive workflow compatibility validation', {
       originalBlockCount: Object.keys(originalWorkflow.blocks).length,
       originalEdgeCount: originalWorkflow.edges.length,
-      hasJourneyMapping: !!journeyMappedWorkflow
+      hasJourneyMapping: !!journeyMappedWorkflow,
     })
 
     const errors: CompatibilityError[] = []
@@ -111,11 +110,17 @@ export class WorkflowJourneyCompatibilityValidator {
 
       // 7. If journey mapping exists, validate dual-mode operation
       if (journeyMappedWorkflow) {
-        await this.validateDualModeOperation(originalWorkflow, journeyMappedWorkflow, errors, warnings)
+        await this.validateDualModeOperation(
+          originalWorkflow,
+          journeyMappedWorkflow,
+          errors,
+          warnings
+        )
       }
 
       // Determine overall compatibility
-      const isCompatible = errors.filter(e => e.severity === 'CRITICAL' || e.severity === 'HIGH').length === 0
+      const isCompatible =
+        errors.filter((e) => e.severity === 'CRITICAL' || e.severity === 'HIGH').length === 0
 
       const migrationSafety: MigrationSafety = {
         canRollback: true,
@@ -125,15 +130,15 @@ export class WorkflowJourneyCompatibilityValidator {
           'Automatic workflow state snapshots before any changes',
           'Dual-mode operation ensuring ReactFlow always available',
           'Zero-modification approach to existing data structures',
-          'Comprehensive rollback mechanisms'
-        ]
+          'Comprehensive rollback mechanisms',
+        ],
       }
 
       this.logger.info('Compatibility validation completed', {
         isCompatible,
         errorCount: errors.length,
         warningCount: warnings.length,
-        preservedFeatureCount: preservedFeatures.length
+        preservedFeatureCount: preservedFeatures.length,
       })
 
       return {
@@ -141,28 +146,29 @@ export class WorkflowJourneyCompatibilityValidator {
         errors,
         warnings,
         preservedFeatures,
-        migrationSafety
+        migrationSafety,
       }
-
     } catch (error) {
       this.logger.error('Compatibility validation failed', { error })
       return {
         isCompatible: false,
-        errors: [{
-          type: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          message: 'Compatibility validation system failure',
-          details: error instanceof Error ? error.message : 'Unknown validation error',
-          suggestedFix: 'Review journey mapping system implementation'
-        }],
+        errors: [
+          {
+            type: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            message: 'Compatibility validation system failure',
+            details: error instanceof Error ? error.message : 'Unknown validation error',
+            suggestedFix: 'Review journey mapping system implementation',
+          },
+        ],
         warnings: [],
         preservedFeatures: [],
         migrationSafety: {
           canRollback: true,
           dataBackupRequired: true,
           riskLevel: 'HIGH',
-          safetyMeasures: ['Full workflow backup required', 'Manual verification needed']
-        }
+          safetyMeasures: ['Full workflow backup required', 'Manual verification needed'],
+        },
       }
     }
   }
@@ -183,7 +189,7 @@ export class WorkflowJourneyCompatibilityValidator {
         severity: 'CRITICAL',
         message: 'Blocks structure must be preserved',
         details: 'The blocks object is missing or invalid',
-        suggestedFix: 'Ensure blocks remain as Record<string, BlockState>'
+        suggestedFix: 'Ensure blocks remain as Record<string, BlockState>',
       })
       return
     }
@@ -195,7 +201,7 @@ export class WorkflowJourneyCompatibilityValidator {
         severity: 'CRITICAL',
         message: 'Edges structure must be preserved',
         details: 'The edges array is missing or invalid',
-        suggestedFix: 'Ensure edges remain as Edge[] from ReactFlow'
+        suggestedFix: 'Ensure edges remain as Edge[] from ReactFlow',
       })
       return
     }
@@ -203,7 +209,7 @@ export class WorkflowJourneyCompatibilityValidator {
     preservedFeatures.push({
       feature: 'ReactFlow Data Structures',
       status: 'FULLY_PRESERVED',
-      description: 'All ReactFlow nodes, edges, and data structures remain unchanged'
+      description: 'All ReactFlow nodes, edges, and data structures remain unchanged',
     })
 
     // Validate each block has required ReactFlow-compatible properties
@@ -215,7 +221,7 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: 'Block missing required ReactFlow properties',
           details: `Block ${blockId} is missing id, type, or position`,
-          suggestedFix: 'Ensure all blocks maintain ReactFlow node structure'
+          suggestedFix: 'Ensure all blocks maintain ReactFlow node structure',
         })
       }
 
@@ -226,7 +232,7 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: 'Block position incomplete',
           details: `Block ${blockId} position missing x or y coordinates`,
-          suggestedFix: 'Ensure position has both x and y numeric values'
+          suggestedFix: 'Ensure position has both x and y numeric values',
         })
       }
     }
@@ -252,13 +258,13 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: `Unsupported block type: ${block.type}`,
           details: `Block ${blockId} has type ${block.type} which is not recognized`,
-          suggestedFix: 'Ensure block type is registered in the block registry'
+          suggestedFix: 'Ensure block type is registered in the block registry',
         })
         continue
       }
 
       // Validate sub-blocks structure for regular blocks
-      if (blockConfig && blockConfig.subBlocks) {
+      if (blockConfig?.subBlocks) {
         if (!block.subBlocks || typeof block.subBlocks !== 'object') {
           errors.push({
             type: 'DATA_LOSS',
@@ -266,7 +272,7 @@ export class WorkflowJourneyCompatibilityValidator {
             blockId,
             message: 'Sub-blocks structure invalid',
             details: `Block ${blockId} sub-blocks are missing or invalid`,
-            suggestedFix: 'Ensure sub-blocks structure is preserved'
+            suggestedFix: 'Ensure sub-blocks structure is preserved',
           })
         }
       }
@@ -279,7 +285,7 @@ export class WorkflowJourneyCompatibilityValidator {
             blockId,
             message: 'Container block missing data structure',
             details: `Container block ${blockId} should have data object for dimensions and config`,
-            impact: 'May affect visual rendering of container blocks'
+            impact: 'May affect visual rendering of container blocks',
           })
         }
       }
@@ -305,7 +311,7 @@ export class WorkflowJourneyCompatibilityValidator {
           edgeId: edge.id,
           message: 'Edge missing required properties',
           details: `Edge ${edge.id} is missing id, source, or target`,
-          suggestedFix: 'Ensure all edges have id, source, and target properties'
+          suggestedFix: 'Ensure all edges have id, source, and target properties',
         })
         continue
       }
@@ -318,7 +324,7 @@ export class WorkflowJourneyCompatibilityValidator {
           edgeId: edge.id,
           message: 'Edge source block missing',
           details: `Edge ${edge.id} references non-existent source block ${edge.source}`,
-          suggestedFix: 'Ensure all edge sources reference valid blocks'
+          suggestedFix: 'Ensure all edge sources reference valid blocks',
         })
       }
 
@@ -329,7 +335,7 @@ export class WorkflowJourneyCompatibilityValidator {
           edgeId: edge.id,
           message: 'Edge target block missing',
           details: `Edge ${edge.id} references non-existent target block ${edge.target}`,
-          suggestedFix: 'Ensure all edge targets reference valid blocks'
+          suggestedFix: 'Ensure all edge targets reference valid blocks',
         })
       }
 
@@ -340,7 +346,7 @@ export class WorkflowJourneyCompatibilityValidator {
           edgeId: edge.id,
           message: 'Edge source handle type unexpected',
           details: `Edge ${edge.id} sourceHandle should be string or null`,
-          impact: 'May affect visual connection rendering'
+          impact: 'May affect visual connection rendering',
         })
       }
 
@@ -350,7 +356,7 @@ export class WorkflowJourneyCompatibilityValidator {
           edgeId: edge.id,
           message: 'Edge target handle type unexpected',
           details: `Edge ${edge.id} targetHandle should be string or null`,
-          impact: 'May affect visual connection rendering'
+          impact: 'May affect visual connection rendering',
         })
       }
     }
@@ -374,7 +380,7 @@ export class WorkflowJourneyCompatibilityValidator {
             blockId: loopId,
             message: 'Loop structure invalid',
             details: `Loop ${loopId} missing id or nodes array`,
-            suggestedFix: 'Ensure loop has id and nodes array properties'
+            suggestedFix: 'Ensure loop has id and nodes array properties',
           })
         }
 
@@ -387,7 +393,7 @@ export class WorkflowJourneyCompatibilityValidator {
                 blockId: loopId,
                 message: 'Loop references missing node',
                 details: `Loop ${loopId} references non-existent node ${nodeId}`,
-                impact: 'May affect loop execution behavior'
+                impact: 'May affect loop execution behavior',
               })
             }
           }
@@ -405,7 +411,7 @@ export class WorkflowJourneyCompatibilityValidator {
             blockId: parallelId,
             message: 'Parallel structure invalid',
             details: `Parallel ${parallelId} missing id or nodes array`,
-            suggestedFix: 'Ensure parallel has id and nodes array properties'
+            suggestedFix: 'Ensure parallel has id and nodes array properties',
           })
         }
 
@@ -418,7 +424,7 @@ export class WorkflowJourneyCompatibilityValidator {
                 blockId: parallelId,
                 message: 'Parallel references missing node',
                 details: `Parallel ${parallelId} references non-existent node ${nodeId}`,
-                impact: 'May affect parallel execution behavior'
+                impact: 'May affect parallel execution behavior',
               })
             }
           }
@@ -443,7 +449,7 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: 'Block enabled property type unexpected',
           details: `Block ${blockId} enabled property should be boolean`,
-          impact: 'May affect block execution state'
+          impact: 'May affect block execution state',
         })
       }
 
@@ -454,7 +460,7 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: 'Block outputs structure invalid',
           details: `Block ${blockId} outputs should be object`,
-          suggestedFix: 'Ensure outputs structure is preserved for execution'
+          suggestedFix: 'Ensure outputs structure is preserved for execution',
         })
       }
     }
@@ -474,7 +480,7 @@ export class WorkflowJourneyCompatibilityValidator {
         type: 'PERFORMANCE',
         message: 'Workflow lastUpdate timestamp invalid',
         details: 'lastUpdate should be numeric timestamp for collaboration sync',
-        impact: 'May affect real-time collaboration synchronization'
+        impact: 'May affect real-time collaboration synchronization',
       })
     }
 
@@ -488,7 +494,7 @@ export class WorkflowJourneyCompatibilityValidator {
             blockId,
             message: 'Block position coordinates invalid',
             details: `Block ${blockId} position x,y must be numbers for collaboration`,
-            suggestedFix: 'Ensure position coordinates are numeric'
+            suggestedFix: 'Ensure position coordinates are numeric',
           })
         }
       }
@@ -513,7 +519,7 @@ export class WorkflowJourneyCompatibilityValidator {
         type: 'UX_CHANGE',
         message: 'Block count mismatch between modes',
         details: 'Journey mapping may have added or removed blocks',
-        impact: 'Users may see different blocks in different modes'
+        impact: 'Users may see different blocks in different modes',
       })
     }
 
@@ -526,7 +532,7 @@ export class WorkflowJourneyCompatibilityValidator {
           blockId,
           message: 'Block missing in journey mode',
           details: `Block ${blockId} exists in ReactFlow but not in journey mapping`,
-          suggestedFix: 'Ensure all ReactFlow blocks are represented in journey mapping'
+          suggestedFix: 'Ensure all ReactFlow blocks are represented in journey mapping',
         })
       }
     }
@@ -548,8 +554,8 @@ export class WorkflowJourneyCompatibilityValidator {
       metadata: {
         createdAt: new Date(),
         snapshotId,
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     }
   }
 
@@ -559,7 +565,7 @@ export class WorkflowJourneyCompatibilityValidator {
   async restoreFromSnapshot(snapshot: ReactFlowWorkflowSnapshot): Promise<WorkflowState> {
     this.logger.info('Restoring workflow from snapshot', {
       snapshotId: snapshot.metadata.snapshotId,
-      snapshotDate: snapshot.metadata.createdAt
+      snapshotDate: snapshot.metadata.createdAt,
     })
 
     return {
@@ -567,7 +573,7 @@ export class WorkflowJourneyCompatibilityValidator {
       edges: [...snapshot.edges],
       loops: { ...snapshot.loops },
       parallels: { ...snapshot.parallels },
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     } as WorkflowState
   }
 }

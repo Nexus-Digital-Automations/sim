@@ -7,12 +7,7 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
-import type {
-  ResultFormatter,
-  ResultProcessor,
-  FormatContext,
-  ResultFormat,
-} from '../types'
+import type { FormatContext, ResultFormat, ResultFormatter, ResultProcessor } from '../types'
 
 const logger = createLogger('FormatterRegistry')
 
@@ -132,7 +127,7 @@ export class FormatterRegistry {
   getFormattersByFormat(format: ResultFormat): ResultFormatter[] {
     const formatterIds = this.formatIndex.get(format) || new Set()
     return Array.from(formatterIds)
-      .map(id => this.formatters.get(id)!)
+      .map((id) => this.formatters.get(id)!)
       .filter(Boolean)
       .sort((a, b) => b.priority - a.priority)
   }
@@ -151,12 +146,12 @@ export class FormatterRegistry {
   getFormattersByTool(toolId: string): ResultFormatter[] {
     const formatterIds = this.toolIndex.get(toolId) || new Set()
     const directFormatters = Array.from(formatterIds)
-      .map(id => this.formatters.get(id)!)
+      .map((id) => this.formatters.get(id)!)
       .filter(Boolean)
 
     // Also include formatters that don't exclude this tool
     const allFormatters = Array.from(this.formatters.values())
-    const compatibleFormatters = allFormatters.filter(formatter => {
+    const compatibleFormatters = allFormatters.filter((formatter) => {
       const excluded = formatter.toolCompatibility?.excludedTools || []
       return !excluded.includes(toolId)
     })
@@ -169,8 +164,8 @@ export class FormatterRegistry {
 
     return Array.from(combined.values()).sort((a, b) => {
       // Prefer tool-specific formatters
-      const aIsTool = formatter => formatter.toolCompatibility?.preferredTools?.includes(toolId)
-      const bIsTool = formatter => formatter.toolCompatibility?.preferredTools?.includes(toolId)
+      const aIsTool = (formatter) => formatter.toolCompatibility?.preferredTools?.includes(toolId)
+      const bIsTool = (formatter) => formatter.toolCompatibility?.preferredTools?.includes(toolId)
 
       if (aIsTool(a) && !bIsTool(b)) return -1
       if (!aIsTool(a) && bIsTool(b)) return 1
@@ -183,14 +178,11 @@ export class FormatterRegistry {
   /**
    * Get compatible formatters for a result and context
    */
-  getCompatibleFormatters(
-    result: ToolResponse,
-    context: FormatContext
-  ): ResultFormatter[] {
+  getCompatibleFormatters(result: ToolResponse, context: FormatContext): ResultFormatter[] {
     const allFormatters = Array.from(this.formatters.values())
 
     return allFormatters
-      .filter(formatter => {
+      .filter((formatter) => {
         try {
           return formatter.canFormat(result, context)
         } catch (error) {
@@ -304,7 +296,7 @@ export class FormatterRegistry {
   healthCheck(): { healthy: boolean; details: Record<string, any> } {
     try {
       const stats = this.getStatistics()
-      const hasBasicFormatters = ['text', 'json', 'table'].every(format =>
+      const hasBasicFormatters = ['text', 'json', 'table'].every((format) =>
         this.formatIndex.has(format as ResultFormat)
       )
 
@@ -393,15 +385,15 @@ export class FormatterRegistry {
 
     if (typeof output === 'object' && output !== null) {
       // More specific object type detection
-      if (output.hasOwnProperty('data') && Array.isArray(output.data)) {
+      if (Object.hasOwn(output, 'data') && Array.isArray(output.data)) {
         return 'tabular'
       }
 
-      if (output.hasOwnProperty('url') || output.hasOwnProperty('base64')) {
+      if (Object.hasOwn(output, 'url') || Object.hasOwn(output, 'base64')) {
         return 'file'
       }
 
-      if (output.hasOwnProperty('results') && Array.isArray(output.results)) {
+      if (Object.hasOwn(output, 'results') && Array.isArray(output.results)) {
         return 'search'
       }
 

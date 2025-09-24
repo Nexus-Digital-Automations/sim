@@ -6,16 +6,13 @@
  */
 
 import type {
-  JourneyDefinition,
-  WorkflowData,
-  ExecutionResult,
   ConversationMessage,
-  ProgressTracker
+  JourneyDefinition,
+  ProgressTracker,
 } from '../types/journey-execution-types'
-
-import { JourneyExecutionEngine } from './journey-execution-engine'
 import { AgentCommunicationService } from './agent-communication-service'
 import { ConversationalExecutionInterface } from './conversational-execution-interface'
+import { JourneyExecutionEngine } from './journey-execution-engine'
 import { RealTimeProgressService } from './real-time-progress-service'
 
 /**
@@ -174,7 +171,10 @@ export class SimInfrastructureIntegration {
         socket.userPermissions = user.permissions || []
 
         // Verify workspace access
-        const hasAccess = await this.workspaceManager.verifyWorkspaceAccess(user.id, socket.workspaceId)
+        const hasAccess = await this.workspaceManager.verifyWorkspaceAccess(
+          user.id,
+          socket.workspaceId
+        )
         if (!hasAccess) {
           return next(new Error('Workspace access denied'))
         }
@@ -188,7 +188,9 @@ export class SimInfrastructureIntegration {
 
     // Handle connections with workspace isolation
     journeyNamespace.on('connection', (socket: any) => {
-      console.log(`Journey socket connected: ${socket.id} (user: ${socket.userId}, workspace: ${socket.workspaceId})`)
+      console.log(
+        `Journey socket connected: ${socket.id} (user: ${socket.userId}, workspace: ${socket.workspaceId})`
+      )
 
       // Workspace-scoped room
       const workspaceRoom = `workspace:${socket.workspaceId}`
@@ -198,7 +200,11 @@ export class SimInfrastructureIntegration {
       socket.on('subscribe_to_journey', async (data: { journeyId: string; sessionId: string }) => {
         try {
           // Verify user has access to this journey
-          const hasAccess = await this.verifyJourneyAccess(socket.userId, data.journeyId, socket.workspaceId)
+          const hasAccess = await this.verifyJourneyAccess(
+            socket.userId,
+            data.journeyId,
+            socket.workspaceId
+          )
           if (!hasAccess) {
             socket.emit('error', { message: 'Journey access denied' })
             return
@@ -216,59 +222,62 @@ export class SimInfrastructureIntegration {
       })
 
       // Handle journey execution requests
-      socket.on('start_journey_execution', async (data: {
-        workflowId: string
-        preferences?: any
-      }) => {
-        try {
-          const context = this.createExecutionContext(socket, data.workflowId)
+      socket.on(
+        'start_journey_execution',
+        async (data: { workflowId: string; preferences?: any }) => {
+          try {
+            const context = this.createExecutionContext(socket, data.workflowId)
 
-          // Start conversational execution
-          const conversationContext = await this.conversationalInterface.initializeConversation(
-            data.workflowId,
-            socket.userId,
-            socket.workspaceId,
-            data.preferences
-          )
+            // Start conversational execution
+            const conversationContext = await this.conversationalInterface.initializeConversation(
+              data.workflowId,
+              socket.userId,
+              socket.workspaceId,
+              data.preferences
+            )
 
-          // Notify client
-          socket.emit('journey_started', {
-            sessionId: conversationContext.sessionId,
-            journeyId: conversationContext.journeyId,
-            workflowId: data.workflowId
-          })
+            // Notify client
+            socket.emit('journey_started', {
+              sessionId: conversationContext.sessionId,
+              journeyId: conversationContext.journeyId,
+              workflowId: data.workflowId,
+            })
 
-          console.log(`Journey execution started for user ${socket.userId}`)
-        } catch (error) {
-          console.error('Failed to start journey execution:', error)
-          socket.emit('error', { message: 'Failed to start journey execution' })
+            console.log(`Journey execution started for user ${socket.userId}`)
+          } catch (error) {
+            console.error('Failed to start journey execution:', error)
+            socket.emit('error', { message: 'Failed to start journey execution' })
+          }
         }
-      })
+      )
 
       // Handle user messages
-      socket.on('send_message', async (data: {
-        sessionId: string
-        message: string
-        attachments?: any[]
-      }) => {
-        try {
-          // Process message through conversational interface
-          const response = await this.conversationalInterface.processMessage(
-            data.sessionId,
-            data.message,
-            data.attachments
-          )
+      socket.on(
+        'send_message',
+        async (data: { sessionId: string; message: string; attachments?: any[] }) => {
+          try {
+            // Process message through conversational interface
+            const response = await this.conversationalInterface.processMessage(
+              data.sessionId,
+              data.message,
+              data.attachments
+            )
 
-          // Send response back to client
-          socket.emit('agent_response', response)
+            // Send response back to client
+            socket.emit('agent_response', response)
 
-          // Log for monitoring
-          await this.monitoringService.logUserInteraction(socket.userId, data.sessionId, data.message)
-        } catch (error) {
-          console.error('Failed to process message:', error)
-          socket.emit('error', { message: 'Failed to process message' })
+            // Log for monitoring
+            await this.monitoringService.logUserInteraction(
+              socket.userId,
+              data.sessionId,
+              data.message
+            )
+          } catch (error) {
+            console.error('Failed to process message:', error)
+            socket.emit('error', { message: 'Failed to process message' })
+          }
         }
-      })
+      )
 
       // Handle disconnection
       socket.on('disconnect', () => {
@@ -313,7 +322,7 @@ export class SimInfrastructureIntegration {
         journeyId: '', // Will be set after creation
         sessionId: '', // Will be set after creation
         userPermissions: await this.getUserPermissions(userId),
-        workspaceSettings: await this.getWorkspaceSettings(workspaceId)
+        workspaceSettings: await this.getWorkspaceSettings(workspaceId),
       }
 
       // Start conversational execution
@@ -350,7 +359,7 @@ export class SimInfrastructureIntegration {
         },
         onCompletion: async (update) => {
           await this.handleExecutionCompletion(update, context)
-        }
+        },
       })
 
       console.log(`Journey execution started: ${conversationContext.sessionId}`)
@@ -358,7 +367,7 @@ export class SimInfrastructureIntegration {
       return {
         sessionId: conversationContext.sessionId,
         journeyId: conversationContext.journeyId,
-        conversationContext
+        conversationContext,
       }
     } catch (error) {
       console.error('Failed to start journey execution:', error)
@@ -387,21 +396,21 @@ export class SimInfrastructureIntegration {
     if (this.persistenceService) {
       persistedData = await this.persistenceService.loadExecutionState(sessionId, {
         userId,
-        workspaceId
+        workspaceId,
       } as SimExecutionContext)
     }
 
     return {
       execution: executionContext,
       conversation: conversationStats,
-      persisted: persistedData
+      persisted: persistedData,
     }
   }
 
   /**
    * Get workspace journey analytics
    */
-  async getWorkspaceAnalytics(workspaceId: string, userId: string, timeRange: string = '7d'): Promise<any> {
+  async getWorkspaceAnalytics(workspaceId: string, userId: string, timeRange = '7d'): Promise<any> {
     // Verify workspace access
     await this.workspaceManager.verifyWorkspaceAccess(userId, workspaceId)
 
@@ -422,8 +431,8 @@ export class SimInfrastructureIntegration {
       monitoring: monitoringData,
       workspace: {
         id: workspaceId,
-        settings: await this.getWorkspaceSettings(workspaceId)
-      }
+        settings: await this.getWorkspaceSettings(workspaceId),
+      },
     }
   }
 
@@ -443,7 +452,7 @@ export class SimInfrastructureIntegration {
     if (this.socketServer) {
       this.socketServer.to(`workspace:${context.workspaceId}`).emit('journey:state_changed', {
         ...update,
-        workspaceId: context.workspaceId
+        workspaceId: context.workspaceId,
       })
     }
   }
@@ -469,12 +478,15 @@ export class SimInfrastructureIntegration {
     if (this.socketServer) {
       this.socketServer.to(`workspace:${context.workspaceId}`).emit('journey:execution_error', {
         ...update,
-        workspaceId: context.workspaceId
+        workspaceId: context.workspaceId,
       })
     }
   }
 
-  private async handleExecutionCompletion(update: any, context: SimExecutionContext): Promise<void> {
+  private async handleExecutionCompletion(
+    update: any,
+    context: SimExecutionContext
+  ): Promise<void> {
     // Finalize database records
     if (this.persistenceService) {
       await this.persistenceService.saveExecutionState(context.sessionId, update, context)
@@ -487,9 +499,12 @@ export class SimInfrastructureIntegration {
     await this.monitoringService.trackJourneyCompletion(update, context)
 
     // Cleanup resources
-    setTimeout(() => {
-      this.progressService.unregisterUpdateHandler(context.sessionId)
-    }, 5 * 60 * 1000) // 5 minutes
+    setTimeout(
+      () => {
+        this.progressService.unregisterUpdateHandler(context.sessionId)
+      },
+      5 * 60 * 1000
+    ) // 5 minutes
   }
 
   /**
@@ -503,16 +518,24 @@ export class SimInfrastructureIntegration {
       journeyId: '',
       sessionId: '',
       userPermissions: socket.userPermissions,
-      workspaceSettings: {}
+      workspaceSettings: {},
     }
   }
 
-  private async verifyJourneyAccess(userId: string, journeyId: string, workspaceId: string): Promise<boolean> {
+  private async verifyJourneyAccess(
+    userId: string,
+    journeyId: string,
+    workspaceId: string
+  ): Promise<boolean> {
     // Implementation would check database for journey ownership/permissions
     return true // Mock implementation
   }
 
-  private async verifyExecutionPermissions(userId: string, workspaceId: string, workflowId: string): Promise<void> {
+  private async verifyExecutionPermissions(
+    userId: string,
+    workspaceId: string,
+    workflowId: string
+  ): Promise<void> {
     const hasAccess = await this.workspaceManager.verifyWorkspaceAccess(userId, workspaceId)
     if (!hasAccess) {
       throw new Error('Workspace access denied')
@@ -521,7 +544,11 @@ export class SimInfrastructureIntegration {
     // Additional workflow-specific permission checks would go here
   }
 
-  private async verifySessionAccess(sessionId: string, userId: string, workspaceId: string): Promise<void> {
+  private async verifySessionAccess(
+    sessionId: string,
+    userId: string,
+    workspaceId: string
+  ): Promise<void> {
     // Implementation would verify session ownership
   }
 
@@ -545,14 +572,17 @@ export class SimInfrastructureIntegration {
     return await this.workspaceManager.getWorkspaceSettings(workspaceId)
   }
 
-  private async getJourneyForWorkflow(workflowId: string, context: SimExecutionContext): Promise<JourneyDefinition> {
+  private async getJourneyForWorkflow(
+    workflowId: string,
+    context: SimExecutionContext
+  ): Promise<JourneyDefinition> {
     // Mock implementation - would convert workflow to journey
     return {
       id: `journey_${workflowId}`,
       title: 'Generated Journey',
       description: 'Journey generated from workflow',
       conditions: ['User requested workflow execution'],
-      states: []
+      states: [],
     }
   }
 
@@ -576,8 +606,6 @@ export class SimInfrastructureIntegration {
  */
 
 class AuthenticationHandler {
-  constructor(private config: any) {}
-
   async verifyToken(token: string): Promise<any> {
     // Mock implementation - would integrate with Better Auth
     return { id: 'user123', permissions: ['read', 'write'] }
@@ -590,8 +618,6 @@ class AuthenticationHandler {
 }
 
 class WorkspaceManager {
-  constructor(private config: any) {}
-
   async verifyWorkspaceAccess(userId: string, workspaceId: string): Promise<boolean> {
     // Mock implementation - would check database
     return true
@@ -625,7 +651,7 @@ class DatabaseIntegration {
       saveConversationHistory: async () => {},
       getConversationHistory: async () => [],
       updateProgress: async () => {},
-      getExecutionMetrics: async () => ({})
+      getExecutionMetrics: async () => ({}),
     } as JourneyPersistenceService
   }
 

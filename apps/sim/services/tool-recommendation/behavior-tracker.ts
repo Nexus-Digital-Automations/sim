@@ -8,15 +8,13 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  UserBehaviorProfile,
-  UserPreferences,
-  UsagePattern,
-  ToolSequence,
-  ToolFamiliarityScore,
-  ToolSuccessRate,
   CollaborationStyle,
   LearningEvent,
   LearningEventType,
+  ToolSequence,
+  UsagePattern,
+  UserBehaviorProfile,
+  UserPreferences,
 } from './types'
 
 const logger = createLogger('BehaviorTracker')
@@ -286,7 +284,10 @@ export class BehaviorTracker {
   /**
    * Analyze usage patterns for insights
    */
-  async analyzeUsagePatterns(userId: string, workspaceId: string): Promise<{
+  async analyzeUsagePatterns(
+    userId: string,
+    workspaceId: string
+  ): Promise<{
     dominantPatterns: UsagePattern[]
     toolPreferences: string[]
     collaborationInsights: CollaborationStyle
@@ -296,9 +297,7 @@ export class BehaviorTracker {
     const profile = await this.getUserProfile(userId, workspaceId)
 
     // Find dominant usage patterns
-    const dominantPatterns = profile.patterns
-      .sort((a, b) => b.frequency - a.frequency)
-      .slice(0, 5)
+    const dominantPatterns = profile.patterns.sort((a, b) => b.frequency - a.frequency).slice(0, 5)
 
     // Identify tool preferences
     const toolPreferences = Object.entries(profile.toolFamiliarity)
@@ -337,9 +336,7 @@ export class BehaviorTracker {
     const existingPatterns = this.patternCache.get(patternKey) || []
 
     // Find or create pattern for this time slot
-    let pattern = existingPatterns.find(
-      p => p.timeOfDay === hour && p.dayOfWeek === dayOfWeek
-    )
+    let pattern = existingPatterns.find((p) => p.timeOfDay === hour && p.dayOfWeek === dayOfWeek)
 
     if (!pattern) {
       pattern = {
@@ -358,13 +355,14 @@ export class BehaviorTracker {
 
     // Update tool sequences
     for (const sequence of toolSequences) {
-      const existingSequence = pattern.toolSequences.find(s =>
+      const existingSequence = pattern.toolSequences.find((s) =>
         this.arraysEqual(s.tools, sequence.tools)
       )
 
       if (existingSequence) {
         existingSequence.frequency++
-        existingSequence.averageDuration = (existingSequence.averageDuration + sequence.averageDuration) / 2
+        existingSequence.averageDuration =
+          (existingSequence.averageDuration + sequence.averageDuration) / 2
         existingSequence.successRate = this.calculateSequenceSuccessRate(session, sequence.tools)
       } else {
         pattern.toolSequences.push({
@@ -403,22 +401,22 @@ export class BehaviorTracker {
 
       // Update familiarity score based on usage and success
       const successfulUses = session.interactions.filter(
-        i => i.toolId === toolId && i.outcome === 'success'
+        (i) => i.toolId === toolId && i.outcome === 'success'
       ).length
-      const totalUses = session.interactions.filter(i => i.toolId === toolId).length
+      const totalUses = session.interactions.filter((i) => i.toolId === toolId).length
       const sessionSuccessRate = totalUses > 0 ? successfulUses / totalUses : 0
 
       familiarity.score = Math.min(1, familiarity.score + 0.1 * sessionSuccessRate)
 
       // Update error rate
       const errors = session.interactions.filter(
-        i => i.toolId === toolId && i.type === 'error'
+        (i) => i.toolId === toolId && i.type === 'error'
       ).length
       familiarity.errorRate = (familiarity.errorRate + errors / totalUses) / 2
 
       // Update help requests
       const helpRequests = session.interactions.filter(
-        i => i.toolId === toolId && i.type === 'help_request'
+        (i) => i.toolId === toolId && i.type === 'help_request'
       ).length
       familiarity.helpRequests += helpRequests
     }
@@ -437,8 +435,8 @@ export class BehaviorTracker {
       }
 
       const successRate = profile.successRates[toolId]
-      const toolInteractions = session.interactions.filter(i => i.toolId === toolId)
-      const successes = toolInteractions.filter(i => i.outcome === 'success').length
+      const toolInteractions = session.interactions.filter((i) => i.toolId === toolId)
+      const successes = toolInteractions.filter((i) => i.outcome === 'success').length
 
       successRate.attempts += toolInteractions.length
       successRate.successes += successes
@@ -447,8 +445,8 @@ export class BehaviorTracker {
 
       // Update common errors
       const errors = toolInteractions
-        .filter(i => i.type === 'error')
-        .map(i => i.data.errorType)
+        .filter((i) => i.type === 'error')
+        .map((i) => i.data.errorType)
         .filter(Boolean)
 
       for (const error of errors) {
@@ -469,7 +467,10 @@ export class BehaviorTracker {
   /**
    * Create a new user profile with default values
    */
-  private async createNewProfile(userId: string, workspaceId: string): Promise<UserBehaviorProfile> {
+  private async createNewProfile(
+    userId: string,
+    workspaceId: string
+  ): Promise<UserBehaviorProfile> {
     return {
       userId,
       workspaceId,
@@ -539,7 +540,7 @@ export class BehaviorTracker {
   private extractToolSequences(interactions: InteractionEvent[]): ToolSequence[] {
     const sequences: ToolSequence[] = []
     const toolEvents = interactions
-      .filter(i => i.type === 'tool_execution' && i.toolId)
+      .filter((i) => i.type === 'tool_execution' && i.toolId)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
     // Group consecutive tool uses into sequences
@@ -555,8 +556,7 @@ export class BehaviorTracker {
 
       // End sequence if next event is far apart or we're at the end
       const isEndOfSequence =
-        !nextEvent ||
-        nextEvent.timestamp.getTime() - event.timestamp.getTime() > 300000 // 5 minutes
+        !nextEvent || nextEvent.timestamp.getTime() - event.timestamp.getTime() > 300000 // 5 minutes
 
       if (isEndOfSequence && currentSequence.length > 1) {
         sequences.push({
@@ -582,11 +582,11 @@ export class BehaviorTracker {
 
     for (const toolId of tools) {
       const toolInteractions = session.interactions.filter(
-        i => i.toolId === toolId && i.type === 'tool_execution'
+        (i) => i.toolId === toolId && i.type === 'tool_execution'
       )
 
       totalAttempts += toolInteractions.length
-      successfulAttempts += toolInteractions.filter(i => i.outcome === 'success').length
+      successfulAttempts += toolInteractions.filter((i) => i.outcome === 'success').length
     }
 
     return totalAttempts > 0 ? successfulAttempts / totalAttempts : 0
@@ -597,10 +597,12 @@ export class BehaviorTracker {
    */
   private calculateLearningProgress(profile: UserBehaviorProfile): number {
     const familiarityScores = Object.values(profile.toolFamiliarity)
-    const averageFamiliarity = familiarityScores.reduce((sum, f) => sum + f.score, 0) / familiarityScores.length || 0
+    const averageFamiliarity =
+      familiarityScores.reduce((sum, f) => sum + f.score, 0) / familiarityScores.length || 0
 
     const successRates = Object.values(profile.successRates)
-    const averageSuccess = successRates.reduce((sum, s) => sum + s.rate, 0) / successRates.length || 0
+    const averageSuccess =
+      successRates.reduce((sum, s) => sum + s.rate, 0) / successRates.length || 0
 
     return (averageFamiliarity + averageSuccess) / 2
   }
@@ -613,25 +615,27 @@ export class BehaviorTracker {
 
     // Check for improvement opportunities
     const lowFamiliarityTools = Object.values(profile.toolFamiliarity)
-      .filter(f => f.score < 0.3 && f.usageCount > 0)
-      .map(f => f.toolId)
+      .filter((f) => f.score < 0.3 && f.usageCount > 0)
+      .map((f) => f.toolId)
 
     if (lowFamiliarityTools.length > 0) {
       recommendations.push('Consider additional training on frequently used but unfamiliar tools')
     }
 
     const lowSuccessTools = Object.values(profile.successRates)
-      .filter(s => s.rate < 0.5 && s.attempts > 3)
-      .map(s => s.toolId)
+      .filter((s) => s.rate < 0.5 && s.attempts > 3)
+      .map((s) => s.toolId)
 
     if (lowSuccessTools.length > 0) {
       recommendations.push('Review tool documentation for tools with low success rates')
     }
 
     // Pattern-based recommendations
-    const hasConsistentPatterns = profile.patterns.some(p => p.frequency > 5)
+    const hasConsistentPatterns = profile.patterns.some((p) => p.frequency > 5)
     if (!hasConsistentPatterns) {
-      recommendations.push('Try to establish consistent work patterns for better tool recommendations')
+      recommendations.push(
+        'Try to establish consistent work patterns for better tool recommendations'
+      )
     }
 
     return recommendations
@@ -650,7 +654,10 @@ export class BehaviorTracker {
   /**
    * Get user behavior analytics
    */
-  async getUserAnalytics(userId: string, workspaceId: string): Promise<{
+  async getUserAnalytics(
+    userId: string,
+    workspaceId: string
+  ): Promise<{
     totalSessions: number
     averageSessionDuration: number
     mostUsedTools: string[]
@@ -662,8 +669,11 @@ export class BehaviorTracker {
     const profile = await this.getUserProfile(userId, workspaceId)
 
     // Calculate session metrics
-    const sessions = events.filter(e => e.eventType === 'tool_selected').length
-    const totalDuration = profile.patterns.reduce((sum, p) => sum + p.sessionDuration * p.frequency, 0)
+    const sessions = events.filter((e) => e.eventType === 'tool_selected').length
+    const totalDuration = profile.patterns.reduce(
+      (sum, p) => sum + p.sessionDuration * p.frequency,
+      0
+    )
     const averageDuration = sessions > 0 ? totalDuration / sessions : 0
 
     // Most used tools
@@ -673,7 +683,7 @@ export class BehaviorTracker {
       .map(([toolId]) => toolId)
 
     // Learning velocity (improvement rate)
-    const learningEvents = events.filter(e => e.outcome === 'positive').length
+    const learningEvents = events.filter((e) => e.outcome === 'positive').length
     const learningVelocity = events.length > 0 ? learningEvents / events.length : 0
 
     return {
@@ -683,7 +693,7 @@ export class BehaviorTracker {
       learningVelocity,
       collaborationMetrics: {
         helpsGiven: profile.collaborationStyle.mentorsOthers ? 1 : 0,
-        helpsReceived: events.filter(e => e.eventType === 'help_requested').length,
+        helpsReceived: events.filter((e) => e.eventType === 'help_requested').length,
         workflowsShared: profile.collaborationStyle.sharesWorkflows ? 1 : 0,
       },
     }

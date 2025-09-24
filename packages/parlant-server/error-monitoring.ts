@@ -6,18 +6,15 @@
  * existing error tracking and provides advanced analytics and notification capabilities.
  */
 
-import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
-import {
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorImpact,
-  type ErrorClassification
-} from './error-taxonomy'
-import { type BaseToolError } from './error-handler'
-import { parlantErrorTracker, type ErrorDetails } from './error-tracking'
-import { errorRecoveryService, type CircuitBreakerStatus, CircuitBreakerState } from './error-recovery'
 import { EventEmitter } from 'events'
+import { createLogger } from '../../apps/sim/lib/logs/console/logger'
+import type { BaseToolError } from './error-handler'
+import {
+  CircuitBreakerState,
+  type CircuitBreakerStatus,
+  errorRecoveryService,
+} from './error-recovery'
+import { type ErrorCategory, ErrorSeverity } from './error-taxonomy'
 
 const logger = createLogger('ErrorMonitoring')
 
@@ -29,18 +26,18 @@ export enum AlertLevel {
   WARNING = 'warning',
   ERROR = 'error',
   CRITICAL = 'critical',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
 }
 
 /**
  * Monitoring metric types
  */
 export enum MetricType {
-  COUNTER = 'counter',           // Incrementing count
-  GAUGE = 'gauge',              // Current value
-  HISTOGRAM = 'histogram',      // Distribution of values
-  RATE = 'rate',               // Events per time period
-  PERCENTAGE = 'percentage'     // Percentage value
+  COUNTER = 'counter', // Incrementing count
+  GAUGE = 'gauge', // Current value
+  HISTOGRAM = 'histogram', // Distribution of values
+  RATE = 'rate', // Events per time period
+  PERCENTAGE = 'percentage', // Percentage value
 }
 
 /**
@@ -250,7 +247,7 @@ export class ErrorMonitoringService extends EventEmitter {
     value: number,
     tags: Record<string, string> = {},
     metadata: Record<string, any> = {},
-    description: string = ''
+    description = ''
   ): void {
     const metric: MonitoringMetric = {
       name,
@@ -259,7 +256,7 @@ export class ErrorMonitoringService extends EventEmitter {
       timestamp: Date.now(),
       tags,
       metadata,
-      description
+      description,
     }
 
     if (!this.metrics.has(name)) {
@@ -296,11 +293,11 @@ export class ErrorMonitoringService extends EventEmitter {
         subcategory: error.subcategory,
         severity: error.severity,
         component: error.component,
-        recoverable: error.recoverable.toString()
+        recoverable: error.recoverable.toString(),
       },
       {
         errorId: error.id,
-        message: error.message
+        message: error.message,
       },
       'Total number of errors by category and severity'
     )
@@ -329,8 +326,8 @@ export class ErrorMonitoringService extends EventEmitter {
         tags: {
           severity: error.severity,
           category: error.category,
-          ...performanceData.tags
-        }
+          ...performanceData.tags,
+        },
       }
 
       this.performanceData.push(perfData)
@@ -343,7 +340,7 @@ export class ErrorMonitoringService extends EventEmitter {
     logger.debug('Error recorded for monitoring', {
       errorId: error.id,
       category: error.category,
-      severity: error.severity
+      severity: error.severity,
     })
   }
 
@@ -375,7 +372,7 @@ export class ErrorMonitoringService extends EventEmitter {
       operation,
       duration,
       success: true,
-      tags
+      tags,
     }
 
     this.performanceData.push(perfData)
@@ -394,7 +391,7 @@ export class ErrorMonitoringService extends EventEmitter {
     logger.debug('Success recorded for monitoring', {
       component,
       operation,
-      duration
+      duration,
     })
   }
 
@@ -418,7 +415,7 @@ export class ErrorMonitoringService extends EventEmitter {
           uptime: 0,
           metrics: {},
           errors: [],
-          dependencies: []
+          dependencies: [],
         }
       }
     }
@@ -430,14 +427,14 @@ export class ErrorMonitoringService extends EventEmitter {
     const activeAlerts = this.activeAlerts.size
 
     // Determine overall system health
-    const componentStatuses = Object.values(components).map(c => c.status)
+    const componentStatuses = Object.values(components).map((c) => c.status)
     let overall: SystemHealthStatus['overall'] = 'healthy'
 
-    if (componentStatuses.some(status => status === 'critical')) {
+    if (componentStatuses.some((status) => status === 'critical')) {
       overall = 'critical'
-    } else if (componentStatuses.some(status => status === 'unhealthy')) {
+    } else if (componentStatuses.some((status) => status === 'unhealthy')) {
       overall = 'unhealthy'
-    } else if (componentStatuses.some(status => status === 'degraded') || errorRate > 0.1) {
+    } else if (componentStatuses.some((status) => status === 'degraded') || errorRate > 0.1) {
       overall = 'degraded'
     }
 
@@ -450,17 +447,17 @@ export class ErrorMonitoringService extends EventEmitter {
         averageResponseTime: avgResponseTime,
         circuitBreakerTrips,
         activeAlerts,
-        systemLoad: await this.getSystemLoad()
+        systemLoad: await this.getSystemLoad(),
       },
       uptime: process.uptime() * 1000,
-      version: process.env.npm_package_version || '1.0.0'
+      version: process.env.npm_package_version || '1.0.0',
     }
 
     logger.debug('System health calculated', {
       overall,
       errorRate,
       activeAlerts,
-      components: Object.keys(components).length
+      components: Object.keys(components).length,
     })
 
     return health
@@ -475,7 +472,7 @@ export class ErrorMonitoringService extends EventEmitter {
     logger.info('Alert configuration added', {
       alertId: config.id,
       name: config.name,
-      enabled: config.enabled
+      enabled: config.enabled,
     })
   }
 
@@ -488,14 +485,17 @@ export class ErrorMonitoringService extends EventEmitter {
     logger.info('Dashboard created', {
       dashboardId: config.id,
       name: config.name,
-      widgets: config.widgets.length
+      widgets: config.widgets.length,
     })
   }
 
   /**
    * Get dashboard data
    */
-  getDashboardData(dashboardId: string, timeRange?: { start: number; end: number }): {
+  getDashboardData(
+    dashboardId: string,
+    timeRange?: { start: number; end: number }
+  ): {
     config: DashboardConfig
     data: Record<string, any>
   } | null {
@@ -505,7 +505,7 @@ export class ErrorMonitoringService extends EventEmitter {
     const data: Record<string, any> = {}
 
     // Collect data for each widget
-    dashboard.widgets.forEach(widget => {
+    dashboard.widgets.forEach((widget) => {
       switch (widget.type) {
         case 'chart':
           data[widget.id] = this.getChartData(widget, timeRange)
@@ -543,7 +543,7 @@ export class ErrorMonitoringService extends EventEmitter {
   /**
    * Get monitoring statistics
    */
-  getMonitoringStats(timeWindowMs: number = 3600000): {
+  getMonitoringStats(timeWindowMs = 3600000): {
     totalMetrics: number
     totalErrors: number
     errorRate: number
@@ -556,8 +556,9 @@ export class ErrorMonitoringService extends EventEmitter {
     const cutoff = Date.now() - timeWindowMs
 
     // Count total metrics in time window
-    const totalMetrics = Array.from(this.metrics.values()).flat()
-      .filter(metric => metric.timestamp >= cutoff).length
+    const totalMetrics = Array.from(this.metrics.values())
+      .flat()
+      .filter((metric) => metric.timestamp >= cutoff).length
 
     // Count total errors
     const errorMetrics = this.getMetricValues('errors_total', timeWindowMs)
@@ -570,15 +571,16 @@ export class ErrorMonitoringService extends EventEmitter {
     const averageResponseTime = this.calculateAverageResponseTime(timeWindowMs)
 
     // Count alerts sent
-    const alertsSent = Array.from(this.activeAlerts.values())
-      .filter(alert => alert.timestamp >= cutoff && alert.status === 'sent').length
+    const alertsSent = Array.from(this.activeAlerts.values()).filter(
+      (alert) => alert.timestamp >= cutoff && alert.status === 'sent'
+    ).length
 
     // Count circuit breaker trips
     const circuitBreakerTrips = this.getCircuitBreakerTrips()
 
     // Get top error categories
     const errorsByCategory = new Map<string, number>()
-    errorMetrics.forEach(metric => {
+    errorMetrics.forEach((metric) => {
       const category = metric.tags.category || 'unknown'
       errorsByCategory.set(category, (errorsByCategory.get(category) || 0) + 1)
     })
@@ -599,7 +601,7 @@ export class ErrorMonitoringService extends EventEmitter {
       alertsSent,
       circuitBreakerTrips,
       topErrorCategories,
-      performanceTrends
+      performanceTrends,
     }
   }
 
@@ -615,18 +617,18 @@ export class ErrorMonitoringService extends EventEmitter {
       email: {
         recipients: ['admin@example.com'],
         subject: 'High Error Rate Detected',
-        template: 'Error rate has exceeded threshold: {{errorRate}} errors/min'
+        template: 'Error rate has exceeded threshold: {{errorRate}} errors/min',
       },
       throttling: {
         enabled: true,
         windowMs: 300000, // 5 minutes
-        maxNotifications: 1
+        maxNotifications: 1,
       },
       escalation: {
         enabled: false,
         escalationDelayMs: 900000, // 15 minutes
-        escalationTargets: []
-      }
+        escalationTargets: [],
+      },
     })
 
     // Register default health checks
@@ -637,16 +639,20 @@ export class ErrorMonitoringService extends EventEmitter {
       uptime: process.uptime() * 1000,
       metrics: {
         totalErrors: this.getMetricValues('errors_total', 3600000).length,
-        errorRate: this.calculateErrorRate(300000)
+        errorRate: this.calculateErrorRate(300000),
       },
       errors: [],
-      dependencies: []
+      dependencies: [],
     }))
 
     this.registerHealthCheck('circuit-breakers', async () => {
-      const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<string, CircuitBreakerStatus>
-      const openBreakers = Array.from(breakers.values())
-        .filter(breaker => breaker.state === CircuitBreakerState.OPEN).length
+      const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<
+        string,
+        CircuitBreakerStatus
+      >
+      const openBreakers = Array.from(breakers.values()).filter(
+        (breaker) => breaker.state === CircuitBreakerState.OPEN
+      ).length
 
       return {
         name: 'circuit-breakers',
@@ -656,11 +662,12 @@ export class ErrorMonitoringService extends EventEmitter {
         metrics: {
           totalBreakers: breakers.size,
           openBreakers,
-          halfOpenBreakers: Array.from(breakers.values())
-            .filter(breaker => breaker.state === CircuitBreakerState.HALF_OPEN).length
+          halfOpenBreakers: Array.from(breakers.values()).filter(
+            (breaker) => breaker.state === CircuitBreakerState.HALF_OPEN
+          ).length,
         },
         errors: [],
-        dependencies: []
+        dependencies: [],
       }
     })
   }
@@ -686,7 +693,7 @@ export class ErrorMonitoringService extends EventEmitter {
     const cutoff = Date.now() - this.metricRetentionMs
 
     for (const [name, metrics] of this.metrics) {
-      const filteredMetrics = metrics.filter(metric => metric.timestamp >= cutoff)
+      const filteredMetrics = metrics.filter((metric) => metric.timestamp >= cutoff)
       this.metrics.set(name, filteredMetrics)
     }
 
@@ -695,17 +702,18 @@ export class ErrorMonitoringService extends EventEmitter {
 
   private cleanupPerformanceData(): void {
     const cutoff = Date.now() - this.metricRetentionMs
-    this.performanceData = this.performanceData.filter(data => data.timestamp >= cutoff)
+    this.performanceData = this.performanceData.filter((data) => data.timestamp >= cutoff)
   }
 
   private evaluateAlertConditions(error: BaseToolError): void {
     // Check for high error rate
     const errorRate = this.calculateErrorRate(300000) // Last 5 minutes
-    if (errorRate > 0.1) { // More than 0.1 errors per second
+    if (errorRate > 0.1) {
+      // More than 0.1 errors per second
       this.triggerAlert('high_error_rate', AlertLevel.WARNING, {
         errorRate: errorRate.toFixed(3),
         component: error.component,
-        category: error.category
+        category: error.category,
       })
     }
 
@@ -714,29 +722,29 @@ export class ErrorMonitoringService extends EventEmitter {
       this.triggerAlert('critical_error', AlertLevel.CRITICAL, {
         errorId: error.id,
         component: error.component,
-        message: error.message
+        message: error.message,
       })
     }
   }
 
   private evaluatePeriodicAlerts(): void {
     // Check circuit breaker status
-    const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<string, CircuitBreakerStatus>
-    const openBreakers = Array.from(breakers.entries())
-      .filter(([, breaker]) => breaker.state === CircuitBreakerState.OPEN)
+    const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<
+      string,
+      CircuitBreakerStatus
+    >
+    const openBreakers = Array.from(breakers.entries()).filter(
+      ([, breaker]) => breaker.state === CircuitBreakerState.OPEN
+    )
 
     if (openBreakers.length > 0) {
       this.triggerAlert('circuit_breaker_open', AlertLevel.ERROR, {
-        openBreakers: openBreakers.map(([key]) => key)
+        openBreakers: openBreakers.map(([key]) => key),
       })
     }
   }
 
-  private triggerAlert(
-    alertType: string,
-    level: AlertLevel,
-    context: Record<string, any>
-  ): void {
+  private triggerAlert(alertType: string, level: AlertLevel, context: Record<string, any>): void {
     const alertId = `${alertType}-${Date.now()}`
 
     const notification: AlertNotification = {
@@ -749,7 +757,7 @@ export class ErrorMonitoringService extends EventEmitter {
       targets: [],
       status: 'pending',
       attempts: 0,
-      metadata: context
+      metadata: context,
     }
 
     this.activeAlerts.set(alertId, notification)
@@ -761,7 +769,7 @@ export class ErrorMonitoringService extends EventEmitter {
       alertId,
       alertType,
       level,
-      context
+      context,
     })
   }
 
@@ -770,7 +778,7 @@ export class ErrorMonitoringService extends EventEmitter {
     logger.info('Sending alert notification', {
       alertId: notification.id,
       level: notification.level,
-      title: notification.title
+      title: notification.title,
     })
 
     notification.status = 'sent'
@@ -807,7 +815,7 @@ export class ErrorMonitoringService extends EventEmitter {
   private getMetricValues(metricName: string, timeWindowMs: number): MonitoringMetric[] {
     const metrics = this.metrics.get(metricName) || []
     const cutoff = Date.now() - timeWindowMs
-    return metrics.filter(metric => metric.timestamp >= cutoff)
+    return metrics.filter((metric) => metric.timestamp >= cutoff)
   }
 
   private calculateErrorRate(timeWindowMs: number): number {
@@ -824,9 +832,13 @@ export class ErrorMonitoringService extends EventEmitter {
   }
 
   private getCircuitBreakerTrips(): number {
-    const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<string, CircuitBreakerStatus>
-    return Array.from(breakers.values())
-      .filter(breaker => breaker.state === CircuitBreakerState.OPEN).length
+    const breakers = errorRecoveryService.getCircuitBreakerStatus() as Map<
+      string,
+      CircuitBreakerStatus
+    >
+    return Array.from(breakers.values()).filter(
+      (breaker) => breaker.state === CircuitBreakerState.OPEN
+    ).length
   }
 
   private async getSystemLoad(): Promise<number> {
@@ -875,7 +887,7 @@ export class ErrorMonitoringService extends EventEmitter {
 
   private getActiveAlerts() {
     return Array.from(this.activeAlerts.values())
-      .filter(alert => alert.status !== 'throttled')
+      .filter((alert) => alert.status !== 'throttled')
       .sort((a, b) => b.timestamp - a.timestamp)
   }
 
@@ -884,14 +896,16 @@ export class ErrorMonitoringService extends EventEmitter {
     return { value: 0, trend: 'up', change: '+5%' }
   }
 
-  private calculatePerformanceTrends(timeWindowMs: number): Array<{ timestamp: number; avgResponseTime: number }> {
+  private calculatePerformanceTrends(
+    timeWindowMs: number
+  ): Array<{ timestamp: number; avgResponseTime: number }> {
     const cutoff = Date.now() - timeWindowMs
-    const relevantData = this.performanceData.filter(data => data.timestamp >= cutoff)
+    const relevantData = this.performanceData.filter((data) => data.timestamp >= cutoff)
 
     // Group by hour and calculate averages
     const hourlyData = new Map<number, { total: number; count: number }>()
 
-    relevantData.forEach(data => {
+    relevantData.forEach((data) => {
       const hour = Math.floor(data.timestamp / 3600000) * 3600000
       const current = hourlyData.get(hour) || { total: 0, count: 0 }
       current.total += data.duration
@@ -902,7 +916,7 @@ export class ErrorMonitoringService extends EventEmitter {
     return Array.from(hourlyData.entries())
       .map(([timestamp, data]) => ({
         timestamp,
-        avgResponseTime: data.total / data.count
+        avgResponseTime: data.total / data.count,
       }))
       .sort((a, b) => a.timestamp - b.timestamp)
   }
@@ -919,8 +933,12 @@ export const errorMonitoringService = new ErrorMonitoringService()
 export const recordError = (error: BaseToolError, performanceData?: Partial<PerformanceData>) =>
   errorMonitoringService.recordError(error, performanceData)
 
-export const recordSuccess = (component: string, operation: string, duration: number, tags?: Record<string, string>) =>
-  errorMonitoringService.recordSuccess(component, operation, duration, tags)
+export const recordSuccess = (
+  component: string,
+  operation: string,
+  duration: number,
+  tags?: Record<string, string>
+) => errorMonitoringService.recordSuccess(component, operation, duration, tags)
 
 export const recordMetric = (
   name: string,
@@ -937,7 +955,7 @@ export const getSystemHealth = () => errorMonitoringService.getSystemHealth()
  * Performance monitoring decorator
  */
 export function MonitorPerformance(component: string, operation?: string) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
     const method = descriptor.value
     const operationName = operation || propertyName
 

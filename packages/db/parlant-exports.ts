@@ -27,41 +27,37 @@
 // =============================================================================
 
 export {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
   // Core Parlant tables
   parlantAgent,
-  parlantSession,
+  parlantAgentApiKey,
+  parlantAgentKnowledgeBase,
+  // Junction tables
+  parlantAgentTool,
+  // Workspace integration tables
+  parlantAgentWorkflow,
+  parlantCannedResponse,
+  // Enums
+  parlantEnums,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-
-  // Workspace integration tables
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
+  parlantSession,
   parlantSessionWorkflow,
-
-  // Junction tables
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-
   // All tables collection
   parlantTables,
-
-  // Enums
-  parlantEnums,
-  agentStatusEnum,
+  parlantTerm,
+  parlantTool,
+  parlantToolIntegration,
+  parlantVariable,
   sessionModeEnum,
   sessionStatusEnum,
-  eventTypeEnum,
-  journeyStateTypeEnum,
-  compositionModeEnum,
 } from './parlant-schema'
 
 // =============================================================================
@@ -69,108 +65,96 @@ export {
 // =============================================================================
 
 export type {
+  // Filter types
+  AgentFilters,
+  // Statistics and analytics types
+  AgentStats,
   // Enum types
   AgentStatus,
-  SessionMode,
-  SessionStatus,
-  EventType,
-  JourneyStateType,
+  // Composite types with relations
+  AgentWithRelations,
+  BatchOperationResult,
   CompositionMode,
-
-  // Core entity types (select models)
-  ParlantAgent,
-  ParlantSession,
-  ParlantEvent,
-  ParlantGuideline,
-  ParlantJourney,
-  ParlantJourneyState,
-  ParlantJourneyTransition,
-  ParlantVariable,
-  ParlantTool,
-  ParlantTerm,
-  ParlantCannedResponse,
-
-  // Junction table types
-  ParlantAgentTool,
-  ParlantJourneyGuideline,
-  ParlantAgentKnowledgeBase,
-  ParlantToolIntegration,
-
-  // Insert types
-  ParlantAgentInsert,
-  ParlantSessionInsert,
-  ParlantEventInsert,
-  ParlantGuidelineInsert,
-  ParlantJourneyInsert,
-  ParlantJourneyStateInsert,
-  ParlantJourneyTransitionInsert,
-  ParlantVariableInsert,
-  ParlantToolInsert,
-  ParlantTermInsert,
-  ParlantCannedResponseInsert,
-  ParlantAgentToolInsert,
-  ParlantJourneyGuidelineInsert,
-  ParlantAgentKnowledgeBaseInsert,
-  ParlantToolIntegrationInsert,
-
-  // Update types
-  ParlantAgentUpdate,
-  ParlantSessionUpdate,
-  ParlantEventUpdate,
-  ParlantGuidelineUpdate,
-  ParlantJourneyUpdate,
-  ParlantJourneyStateUpdate,
-  ParlantJourneyTransitionUpdate,
-  ParlantVariableUpdate,
-  ParlantToolUpdate,
-  ParlantTermUpdate,
-  ParlantCannedResponseUpdate,
-  ParlantAgentToolUpdate,
-  ParlantJourneyGuidelineUpdate,
-  ParlantAgentKnowledgeBaseUpdate,
-  ParlantToolIntegrationUpdate,
-
   // Specialized creation types
   CreateAgentParams,
-  CreateSessionParams,
   CreateEventParams,
   CreateGuidelineParams,
   CreateJourneyParams,
+  CreateSessionParams,
   CreateToolParams,
-
-  // Composite types with relations
-  AgentWithRelations,
-  SessionWithRelations,
-  JourneyWithFlow,
-  ToolWithIntegration,
-
-  // Filter types
-  AgentFilters,
-  SessionFilters,
   EventFilters,
-  JourneyFilters,
-
-  // Statistics and analytics types
-  AgentStats,
-  SessionAnalytics,
+  EventType,
+  InferInsertModel,
+  // Utility types
+  InferSelectModel,
   JourneyAnalytics,
-
-  // Error and validation types
-  ParlantError,
-  ValidationError,
-  BatchOperationResult,
-
+  JourneyFilters,
+  JourneyStateType,
+  JourneyWithFlow,
+  PaginatedResponse,
   // Pagination types
   PaginationParams,
-  PaginatedResponse,
-
+  // Core entity types (select models)
+  ParlantAgent,
+  // Insert types
+  ParlantAgentInsert,
+  ParlantAgentKnowledgeBase,
+  ParlantAgentKnowledgeBaseInsert,
+  ParlantAgentKnowledgeBaseUpdate,
+  // Junction table types
+  ParlantAgentTool,
+  ParlantAgentToolInsert,
+  ParlantAgentToolUpdate,
+  // Update types
+  ParlantAgentUpdate,
   // API response types
   ParlantApiResponse,
   ParlantBulkApiResponse,
-
-  // Utility types
-  InferSelectModel,
-  InferInsertModel,
+  ParlantCannedResponse,
+  ParlantCannedResponseInsert,
+  ParlantCannedResponseUpdate,
+  // Error and validation types
+  ParlantError,
+  ParlantEvent,
+  ParlantEventInsert,
+  ParlantEventUpdate,
+  ParlantGuideline,
+  ParlantGuidelineInsert,
+  ParlantGuidelineUpdate,
+  ParlantJourney,
+  ParlantJourneyGuideline,
+  ParlantJourneyGuidelineInsert,
+  ParlantJourneyGuidelineUpdate,
+  ParlantJourneyInsert,
+  ParlantJourneyState,
+  ParlantJourneyStateInsert,
+  ParlantJourneyStateUpdate,
+  ParlantJourneyTransition,
+  ParlantJourneyTransitionInsert,
+  ParlantJourneyTransitionUpdate,
+  ParlantJourneyUpdate,
+  ParlantSession,
+  ParlantSessionInsert,
+  ParlantSessionUpdate,
+  ParlantTerm,
+  ParlantTermInsert,
+  ParlantTermUpdate,
+  ParlantTool,
+  ParlantToolInsert,
+  ParlantToolIntegration,
+  ParlantToolIntegrationInsert,
+  ParlantToolIntegrationUpdate,
+  ParlantToolUpdate,
+  ParlantVariable,
+  ParlantVariableInsert,
+  ParlantVariableUpdate,
+  SessionAnalytics,
+  SessionFilters,
+  SessionMode,
+  SessionStatus,
+  SessionWithRelations,
+  ToolWithIntegration,
+  ValidationError,
 } from './parlant-types'
 
 // =============================================================================
@@ -178,186 +162,162 @@ export type {
 // =============================================================================
 
 export type {
-  // Event content union types
-  ParlantEventContent,
-  CustomerMessageContent,
   AgentMessageContent,
-  ToolCallContent,
-  ToolResultContent,
-  StatusUpdateContent,
-  JourneyTransitionContent,
-  VariableUpdateContent,
-
-  // Journey state configuration union types
-  JourneyStateConfiguration,
-  ChatStateConfig,
-  ToolStateConfig,
-  DecisionStateConfig,
-  FinalStateConfig,
-
-  // Tool integration union types
-  ToolIntegrationConfiguration,
-  CustomToolIntegration,
-  WorkflowBlockIntegration,
-  McpServerIntegration,
-  ExternalApiIntegration,
-
-  // Session context union types
-  SessionContext,
-  AnonymousSessionContext,
-  AuthenticatedSessionContext,
-  CustomerSessionContext,
-
-  // Composite entity types with typing
-  TypedParlantEvent,
-  TypedJourneyState,
-  TypedParlantTool,
-  TypedParlantSession,
-
   // Query result union types
   AgentQueryResult,
-  SessionQueryResult,
-  JourneyQueryResult,
-
+  AnonymousSessionContext,
+  AuthenticatedSessionContext,
+  ChatStateConfig,
+  CustomerMessageContent,
+  CustomerSessionContext,
+  CustomToolIntegration,
+  DecisionStateConfig,
   // Factory interfaces
   EventFactory,
-  StateFactory,
-
+  ExternalApiIntegration,
+  FinalStateConfig,
+  JourneyQueryResult,
+  // Journey state configuration union types
+  JourneyStateConfiguration,
+  JourneyTransitionContent,
+  McpServerIntegration,
+  // Event content union types
+  ParlantEventContent,
   // All union types collection
   ParlantUnionTypes,
+  // Session context union types
+  SessionContext,
+  SessionQueryResult,
+  StateFactory,
+  StatusUpdateContent,
+  ToolCallContent,
+  // Tool integration union types
+  ToolIntegrationConfiguration,
+  ToolResultContent,
+  ToolStateConfig,
+  TypedJourneyState,
+  // Composite entity types with typing
+  TypedParlantEvent,
+  TypedParlantSession,
+  TypedParlantTool,
+  VariableUpdateContent,
+  WorkflowBlockIntegration,
 } from './parlant-unions'
-
 // Re-export type guard functions
 export {
-  // Event content type guards
-  isCustomerMessageContent,
   isAgentMessageContent,
-  isToolCallContent,
-  isToolResultContent,
-  isJourneyTransitionContent,
-
-  // Journey state configuration type guards
-  isChatStateConfig,
-  isToolStateConfig,
-  isDecisionStateConfig,
-  isFinalStateConfig,
-
-  // Tool integration type guards
-  isCustomToolIntegration,
-  isWorkflowBlockIntegration,
-  isMcpServerIntegration,
-
   // Session context type guards
   isAnonymousSession,
   isAuthenticatedSession,
+  // Journey state configuration type guards
+  isChatStateConfig,
+  // Event content type guards
+  isCustomerMessageContent,
   isCustomerSession,
+  // Tool integration type guards
+  isCustomToolIntegration,
+  isDecisionStateConfig,
+  isFinalStateConfig,
+  isJourneyTransitionContent,
+  isMcpServerIntegration,
+  isToolCallContent,
+  isToolResultContent,
+  isToolStateConfig,
+  isWorkflowBlockIntegration,
 } from './parlant-unions'
 
 // =============================================================================
 // Re-export Query Helpers
 // =============================================================================
 
-export {
-  // Query helper classes
-  ParlantAgentQueries,
-  ParlantSessionQueries,
-  ParlantEventQueries,
-
-  // Convenience query factory
-  createParlantQueries,
-
-  // Utility functions
-  withErrorHandling,
-  batchInsert,
-  withWorkspaceScope,
-} from './parlant-queries'
-
 export type {
   // Query helper collection type
   ParlantQueries,
+} from './parlant-queries'
+export {
+  batchInsert,
+  // Convenience query factory
+  createParlantQueries,
+  // Query helper classes
+  ParlantAgentQueries,
+  ParlantEventQueries,
+  ParlantSessionQueries,
+  // Utility functions
+  withErrorHandling,
+  withWorkspaceScope,
 } from './parlant-queries'
 
 // =============================================================================
 // Re-export Validation Schemas
 // =============================================================================
 
+export type {
+  ValidatedAgentFilters,
+  // Validated type definitions
+  ValidatedCreateAgent,
+  ValidatedCreateEvent,
+  ValidatedCreateSession,
+  ValidatedPagination,
+  ValidatedSessionFilters,
+} from './parlant-validation'
 export {
-  // Base validation schemas
-  uuidSchema,
-  timestampSchema,
-  jsonObjectSchema,
-  jsonArraySchema,
-  jsonSchema,
-
+  // Filter schemas
+  agentFilterSchema,
+  // Entity response schemas
+  agentResponseSchema,
   // Enum schemas
   agentStatusSchema,
-  sessionModeSchema,
-  sessionStatusSchema,
-  eventTypeSchema,
-  journeyStateTypeSchema,
+  // API schemas
+  apiResponseSchema,
+  // Bulk operation schemas
+  bulkCreateAgentSchema,
+  bulkCreateSessionSchema,
   compositionModeSchema,
-
   // Entity creation schemas
   createAgentSchema,
-  createSessionSchema,
   createEventSchema,
   createGuidelineSchema,
   createJourneySchema,
   createJourneyStateSchema,
+  createSessionSchema,
   createToolSchema,
   createVariableSchema,
-
-  // Entity update schemas
-  updateAgentSchema,
-  updateSessionSchema,
-  updateGuidelineSchema,
-  updateJourneySchema,
-
-  // Entity response schemas
-  agentResponseSchema,
-  sessionResponseSchema,
   eventResponseSchema,
+  eventTypeSchema,
+  formatValidationErrors,
   guidelineResponseSchema,
   journeyResponseSchema,
   journeyStateResponseSchema,
-  toolResponseSchema,
-  variableResponseSchema,
-
-  // Filter schemas
-  agentFilterSchema,
-  sessionFilterSchema,
-  paginationSchema,
-
-  // Bulk operation schemas
-  bulkCreateAgentSchema,
-  bulkCreateSessionSchema,
-
-  // API schemas
-  apiResponseSchema,
+  journeyStateTypeSchema,
+  jsonArraySchema,
+  jsonObjectSchema,
+  jsonSchema,
   paginatedResponseSchema,
-
+  paginationSchema,
   // All schemas collection
   parlantSchemas,
-
+  safeValidate,
+  sessionFilterSchema,
+  sessionModeSchema,
+  sessionResponseSchema,
+  sessionStatusSchema,
+  timestampSchema,
+  toolResponseSchema,
+  // Entity update schemas
+  updateAgentSchema,
+  updateGuidelineSchema,
+  updateJourneySchema,
+  updateSessionSchema,
+  // Base validation schemas
+  uuidSchema,
+  validateAgentFilters,
   // Validation utility functions
   validateCreateAgent,
-  validateCreateSession,
   validateCreateEvent,
+  validateCreateSession,
   validatePagination,
-  validateAgentFilters,
   validateSessionFilters,
-  safeValidate,
-  formatValidationErrors,
-} from './parlant-validation'
-
-export type {
-  // Validated type definitions
-  ValidatedCreateAgent,
-  ValidatedCreateSession,
-  ValidatedCreateEvent,
-  ValidatedAgentFilters,
-  ValidatedSessionFilters,
-  ValidatedPagination,
+  variableResponseSchema,
 } from './parlant-validation'
 
 // =============================================================================

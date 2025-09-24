@@ -6,15 +6,15 @@
  * validation, database operations, and response formatting.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
-import { NextRequest } from 'next/server'
 import { db } from '@sim/db'
-import { parlantAgent, parlantSession, workspace, user } from '@sim/db/schema'
+import { parlantAgent, parlantSession, user, workspace } from '@sim/db/schema'
 import { eq } from 'drizzle-orm'
-import { GET, POST } from '@/app/api/v1/agents/route'
-import { GET as GetAgent, PUT, DELETE } from '@/app/api/v1/agents/[id]/route'
-import { GET as GetSessions, POST as CreateSession } from '@/app/api/v1/agents/[id]/sessions/route'
+import { NextRequest } from 'next/server'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { DELETE, GET as GetAgent, PUT } from '@/app/api/v1/agents/[id]/route'
+import { POST as CreateSession, GET as GetSessions } from '@/app/api/v1/agents/[id]/sessions/route'
 import { GET as GetStatus } from '@/app/api/v1/agents/[id]/status/route'
+import { GET, POST } from '@/app/api/v1/agents/route'
 
 // Mock authentication for tests
 jest.mock('@/app/api/v1/auth', () => ({
@@ -50,24 +50,30 @@ describe('Parlant Agent Management API', () => {
 
     // Create test workspace if it doesn't exist
     try {
-      await db.insert(workspace).values({
-        id: testWorkspaceId,
-        name: 'Test Workspace',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }).onConflictDoNothing()
+      await db
+        .insert(workspace)
+        .values({
+          id: testWorkspaceId,
+          name: 'Test Workspace',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .onConflictDoNothing()
     } catch (error) {
       // Workspace might already exist
     }
 
     // Create test user if it doesn't exist
     try {
-      await db.insert(user).values({
-        id: testUserId,
-        email: 'test@example.com',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }).onConflictDoNothing()
+      await db
+        .insert(user)
+        .values({
+          id: testUserId,
+          email: 'test@example.com',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .onConflictDoNothing()
     } catch (error) {
       // User might already exist
     }
@@ -241,12 +247,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should filter agents by workspace', async () => {
-      const request = new NextRequest(`http://localhost:3000/api/v1/agents?workspaceId=${testWorkspaceId}`, {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        `http://localhost:3000/api/v1/agents?workspaceId=${testWorkspaceId}`,
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GET(request)
       const data = await response.json()
@@ -492,7 +501,10 @@ describe('Parlant Agent Management API', () => {
       expect(data.message).toContain('test-agent-id')
 
       // Verify the agent is soft deleted
-      const [agent] = await db.select().from(parlantAgent).where(eq(parlantAgent.id, 'test-agent-id'))
+      const [agent] = await db
+        .select()
+        .from(parlantAgent)
+        .where(eq(parlantAgent.id, 'test-agent-id'))
       expect(agent.status).toBe('archived')
       expect(agent.deletedAt).toBeDefined()
     })
@@ -535,25 +547,28 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should create a new session', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/test-agent-id/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'test-api-key',
-        },
-        body: JSON.stringify({
-          mode: 'auto',
-          title: 'Test Session',
-          customerId: 'customer-123',
-          metadata: {
-            channel: 'web',
-            priority: 'high',
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/test-agent-id/sessions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': 'test-api-key',
           },
-          variables: {
-            customerName: 'John Doe',
-          },
-        }),
-      })
+          body: JSON.stringify({
+            mode: 'auto',
+            title: 'Test Session',
+            customerId: 'customer-123',
+            metadata: {
+              channel: 'web',
+              priority: 'high',
+            },
+            variables: {
+              customerName: 'John Doe',
+            },
+          }),
+        }
+      )
 
       const response = await CreateSession(request, { params: { id: 'test-agent-id' } })
       const data = await response.json()
@@ -582,14 +597,17 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should create session with minimal data', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/test-agent-id/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'test-api-key',
-        },
-        body: JSON.stringify({}),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/test-agent-id/sessions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': 'test-api-key',
+          },
+          body: JSON.stringify({}),
+        }
+      )
 
       const response = await CreateSession(request, { params: { id: 'test-agent-id' } })
       const data = await response.json()
@@ -600,14 +618,17 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should return 404 for non-existent agent', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/non-existent-id/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'test-api-key',
-        },
-        body: JSON.stringify({}),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/non-existent-id/sessions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': 'test-api-key',
+          },
+          body: JSON.stringify({}),
+        }
+      )
 
       const response = await CreateSession(request, { params: { id: 'non-existent-id' } })
       const data = await response.json()
@@ -678,12 +699,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should list agent sessions', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/test-agent-id/sessions', {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/test-agent-id/sessions',
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GetSessions(request, { params: { id: 'test-agent-id' } })
       const data = await response.json()
@@ -700,12 +724,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should filter sessions by status', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/test-agent-id/sessions?status=active', {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/test-agent-id/sessions?status=active',
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GetSessions(request, { params: { id: 'test-agent-id' } })
       const data = await response.json()
@@ -716,12 +743,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should apply pagination to sessions', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/test-agent-id/sessions?limit=1', {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/test-agent-id/sessions?limit=1',
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GetSessions(request, { params: { id: 'test-agent-id' } })
       const data = await response.json()
@@ -732,12 +762,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should return 404 for non-existent agent', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/non-existent-id/sessions', {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/non-existent-id/sessions',
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GetSessions(request, { params: { id: 'non-existent-id' } })
       const data = await response.json()
@@ -844,12 +877,15 @@ describe('Parlant Agent Management API', () => {
     })
 
     it('should return 404 for non-existent agent', async () => {
-      const request = new NextRequest('http://localhost:3000/api/v1/agents/non-existent-id/status', {
-        method: 'GET',
-        headers: {
-          'X-API-Key': 'test-api-key',
-        },
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/v1/agents/non-existent-id/status',
+        {
+          method: 'GET',
+          headers: {
+            'X-API-Key': 'test-api-key',
+          },
+        }
+      )
 
       const response = await GetStatus(request, { params: { id: 'non-existent-id' } })
       const data = await response.json()
@@ -860,7 +896,8 @@ describe('Parlant Agent Management API', () => {
 
     it('should return 503 for unhealthy agent', async () => {
       // Update agent to inactive status
-      await db.update(parlantAgent)
+      await db
+        .update(parlantAgent)
         .set({ status: 'inactive' })
         .where(eq(parlantAgent.id, 'test-agent-id'))
 

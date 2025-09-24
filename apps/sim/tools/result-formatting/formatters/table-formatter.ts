@@ -8,11 +8,11 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
   FormatContext,
   FormattedResult,
-  TableContent,
   ResultFormat,
+  ResultFormatter,
+  TableContent,
 } from '../types'
 
 const logger = createLogger('TableFormatter')
@@ -39,12 +39,7 @@ export class TableFormatter implements ResultFormatter {
       'supabase_query',
     ],
     outputTypes: ['array', 'object'],
-    excludedTools: [
-      'thinking',
-      'vision',
-      'mail_send',
-      'sms_send',
-    ],
+    excludedTools: ['thinking', 'vision', 'mail_send', 'sms_send'],
   }
 
   /**
@@ -77,7 +72,11 @@ export class TableFormatter implements ResultFormatter {
       }
 
       // Object with tabular structure
-      if (output.hasOwnProperty('rows') || output.hasOwnProperty('data') || output.hasOwnProperty('results')) {
+      if (
+        Object.hasOwn(output, 'rows') ||
+        Object.hasOwn(output, 'data') ||
+        Object.hasOwn(output, 'results')
+      ) {
         return true
       }
     }
@@ -121,7 +120,6 @@ export class TableFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(tableContent, tableData),
         },
       }
-
     } catch (error) {
       logger.error('Table formatting failed:', error)
       throw new Error(`Table formatting failed: ${(error as Error).message}`)
@@ -157,7 +155,8 @@ export class TableFormatter implements ResultFormatter {
       } else if (rowCount === 1) {
         description += 'A single matching record was found.'
       } else {
-        description += 'Multiple matching records were found and can be explored using the table below.'
+        description +=
+          'Multiple matching records were found and can be explored using the table below.'
       }
 
       // Generate highlights
@@ -172,7 +171,6 @@ export class TableFormatter implements ResultFormatter {
         highlights,
         suggestions,
       }
-
     } catch (error) {
       logger.error('Table summary generation failed:', error)
 
@@ -214,7 +212,10 @@ export class TableFormatter implements ResultFormatter {
     return [output]
   }
 
-  private async generateTableContent(tableData: any[], context: FormatContext): Promise<TableContent> {
+  private async generateTableContent(
+    tableData: any[],
+    context: FormatContext
+  ): Promise<TableContent> {
     if (tableData.length === 0) {
       return {
         type: 'table',
@@ -270,9 +271,10 @@ export class TableFormatter implements ResultFormatter {
     const allKeys = new Set<string>()
     const keyTypes: Record<string, Set<string>> = {}
 
-    for (const item of data.slice(0, 100)) { // Sample first 100 items
+    for (const item of data.slice(0, 100)) {
+      // Sample first 100 items
       if (typeof item === 'object' && item !== null) {
-        Object.keys(item).forEach(key => {
+        Object.keys(item).forEach((key) => {
           allKeys.add(key)
           if (!keyTypes[key]) keyTypes[key] = new Set()
           keyTypes[key].add(this.getValueType(item[key]))
@@ -281,7 +283,7 @@ export class TableFormatter implements ResultFormatter {
     }
 
     // Create columns with appropriate types
-    const columns = Array.from(allKeys).map(key => {
+    const columns = Array.from(allKeys).map((key) => {
       const types = Array.from(keyTypes[key] || new Set())
       const primaryType = this.determinePrimaryType(types)
 
@@ -323,7 +325,10 @@ export class TableFormatter implements ResultFormatter {
     })
   }
 
-  private createPagination(rows: any[], context: FormatContext): TableContent['pagination'] | undefined {
+  private createPagination(
+    rows: any[],
+    context: FormatContext
+  ): TableContent['pagination'] | undefined {
     const maxRowsPerPage = context.displayMode === 'compact' ? 10 : 25
 
     if (rows.length <= maxRowsPerPage) {
@@ -338,21 +343,23 @@ export class TableFormatter implements ResultFormatter {
     }
   }
 
-  private createDefaultSorting(columns: TableContent['columns']): TableContent['sorting'] | undefined {
+  private createDefaultSorting(
+    columns: TableContent['columns']
+  ): TableContent['sorting'] | undefined {
     // Find a good column to sort by default
-    const sortableColumns = columns.filter(col => col.sortable)
+    const sortableColumns = columns.filter((col) => col.sortable)
 
     if (sortableColumns.length === 0) {
       return undefined
     }
 
     // Prefer date columns, then numeric, then string
-    const dateColumn = sortableColumns.find(col => col.type === 'date')
+    const dateColumn = sortableColumns.find((col) => col.type === 'date')
     if (dateColumn) {
       return { column: dateColumn.key, direction: 'desc' }
     }
 
-    const numericColumn = sortableColumns.find(col => col.type === 'number')
+    const numericColumn = sortableColumns.find((col) => col.type === 'number')
     if (numericColumn) {
       return { column: numericColumn.key, direction: 'desc' }
     }
@@ -368,7 +375,7 @@ export class TableFormatter implements ResultFormatter {
     const representations = []
 
     // Add chart representation if numeric data is available
-    const numericColumns = tableContent.columns.filter(col => col.type === 'number')
+    const numericColumns = tableContent.columns.filter((col) => col.type === 'number')
     if (numericColumns.length > 0 && tableContent.rows.length > 1) {
       representations.push({
         format: 'chart' as ResultFormat,
@@ -389,7 +396,7 @@ export class TableFormatter implements ResultFormatter {
         displayHints: {
           expandable: true,
           maxDepth: 3,
-          highlightFields: tableContent.columns.slice(0, 3).map(col => col.key),
+          highlightFields: tableContent.columns.slice(0, 3).map((col) => col.key),
         },
       },
       label: 'JSON View',
@@ -427,7 +434,7 @@ export class TableFormatter implements ResultFormatter {
     }
 
     // Column types
-    const columnTypes = new Set(tableContent.columns.map(col => col.type))
+    const columnTypes = new Set(tableContent.columns.map((col) => col.type))
     if (columnTypes.has('date')) {
       highlights.push('Includes date/time information')
     }
@@ -482,39 +489,39 @@ export class TableFormatter implements ResultFormatter {
   }
 
   private allPrimitives(data: any[]): boolean {
-    return data.every(item =>
-      typeof item !== 'object' || item === null
-    )
+    return data.every((item) => typeof item !== 'object' || item === null)
   }
 
-  private detectColumnType(data: any[]): 'string' | 'number' | 'boolean' | 'date' | 'url' | 'email' {
+  private detectColumnType(
+    data: any[]
+  ): 'string' | 'number' | 'boolean' | 'date' | 'url' | 'email' {
     // Sample the data to determine type
-    const sample = data.slice(0, 10).filter(item => item !== null && item !== undefined)
+    const sample = data.slice(0, 10).filter((item) => item !== null && item !== undefined)
 
     if (sample.length === 0) return 'string'
 
     // Check for numbers
-    if (sample.every(item => typeof item === 'number' || !isNaN(Number(item)))) {
+    if (sample.every((item) => typeof item === 'number' || !Number.isNaN(Number(item)))) {
       return 'number'
     }
 
     // Check for booleans
-    if (sample.every(item => typeof item === 'boolean' || item === 'true' || item === 'false')) {
+    if (sample.every((item) => typeof item === 'boolean' || item === 'true' || item === 'false')) {
       return 'boolean'
     }
 
     // Check for dates
-    if (sample.every(item => !isNaN(Date.parse(item)))) {
+    if (sample.every((item) => !Number.isNaN(Date.parse(item)))) {
       return 'date'
     }
 
     // Check for URLs
-    if (sample.every(item => typeof item === 'string' && this.isUrl(item))) {
+    if (sample.every((item) => typeof item === 'string' && this.isUrl(item))) {
       return 'url'
     }
 
     // Check for emails
-    if (sample.every(item => typeof item === 'string' && this.isEmail(item))) {
+    if (sample.every((item) => typeof item === 'string' && this.isEmail(item))) {
       return 'email'
     }
 
@@ -526,7 +533,7 @@ export class TableFormatter implements ResultFormatter {
     if (typeof value === 'number') return 'number'
     if (typeof value === 'boolean') return 'boolean'
     if (typeof value === 'string') {
-      if (!isNaN(Date.parse(value))) return 'date'
+      if (!Number.isNaN(Date.parse(value))) return 'date'
       if (this.isUrl(value)) return 'url'
       if (this.isEmail(value)) return 'email'
       return 'string'
@@ -535,7 +542,9 @@ export class TableFormatter implements ResultFormatter {
     return 'object'
   }
 
-  private determinePrimaryType(types: string[]): 'string' | 'number' | 'boolean' | 'date' | 'url' | 'email' {
+  private determinePrimaryType(
+    types: string[]
+  ): 'string' | 'number' | 'boolean' | 'date' | 'url' | 'email' {
     if (types.length === 1) return types[0] as any
 
     // Priority order for mixed types
@@ -552,7 +561,7 @@ export class TableFormatter implements ResultFormatter {
     return key
       .replace(/([A-Z])/g, ' $1') // Add space before capital letters
       .replace(/[_-]/g, ' ') // Replace underscores and dashes
-      .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize words
+      .replace(/\b\w/g, (l) => l.toUpperCase()) // Capitalize words
       .trim()
   }
 
@@ -569,12 +578,18 @@ export class TableFormatter implements ResultFormatter {
     const baseWidth = Math.max(80, key.length * 8)
 
     switch (type) {
-      case 'boolean': return Math.min(baseWidth, 100)
-      case 'number': return Math.min(baseWidth, 120)
-      case 'date': return Math.min(baseWidth, 180)
-      case 'url': return Math.min(baseWidth, 200)
-      case 'email': return Math.min(baseWidth, 200)
-      default: return Math.min(baseWidth, 250)
+      case 'boolean':
+        return Math.min(baseWidth, 100)
+      case 'number':
+        return Math.min(baseWidth, 120)
+      case 'date':
+        return Math.min(baseWidth, 180)
+      case 'url':
+        return Math.min(baseWidth, 200)
+      case 'email':
+        return Math.min(baseWidth, 200)
+      default:
+        return Math.min(baseWidth, 250)
     }
   }
 
@@ -582,8 +597,15 @@ export class TableFormatter implements ResultFormatter {
     return columns.sort((a, b) => {
       // Priority order for column importance
       const priorities = {
-        'id': 10, 'name': 9, 'title': 8, 'email': 7, 'date': 6,
-        'created': 5, 'updated': 4, 'status': 3, 'type': 2
+        id: 10,
+        name: 9,
+        title: 8,
+        email: 7,
+        date: 6,
+        created: 5,
+        updated: 4,
+        status: 3,
+        type: 2,
       }
 
       const aPriority = priorities[a.key.toLowerCase()] || 0
@@ -595,7 +617,12 @@ export class TableFormatter implements ResultFormatter {
 
       // Secondary sort: type importance
       const typePriorities = {
-        'date': 5, 'number': 4, 'boolean': 3, 'email': 2, 'url': 1, 'string': 0
+        date: 5,
+        number: 4,
+        boolean: 3,
+        email: 2,
+        url: 1,
+        string: 0,
       }
 
       const aTypePriority = typePriorities[a.type] || 0
@@ -612,7 +639,7 @@ export class TableFormatter implements ResultFormatter {
       case 'date':
         return new Date(value).toISOString()
       case 'number':
-        return typeof value === 'number' ? value : parseFloat(value)
+        return typeof value === 'number' ? value : Number.parseFloat(value)
       case 'boolean':
         return typeof value === 'boolean' ? value : value === 'true'
       case 'url':
@@ -625,7 +652,7 @@ export class TableFormatter implements ResultFormatter {
   }
 
   private convertToChart(tableContent: TableContent): any {
-    const numericColumns = tableContent.columns.filter(col => col.type === 'number')
+    const numericColumns = tableContent.columns.filter((col) => col.type === 'number')
     if (numericColumns.length === 0) return null
 
     const chartData = tableContent.rows.slice(0, 50) // Limit for performance
@@ -636,7 +663,7 @@ export class TableFormatter implements ResultFormatter {
       title: 'Data Visualization',
       data: chartData,
       config: {
-        xAxis: tableContent.columns.find(col => col.type === 'string')?.key || '_index',
+        xAxis: tableContent.columns.find((col) => col.type === 'string')?.key || '_index',
         yAxis: numericColumns[0].key,
         responsive: true,
         tooltips: true,
@@ -665,14 +692,14 @@ export class TableFormatter implements ResultFormatter {
     const titleColumns = ['name', 'title', 'subject', 'email', 'id']
 
     for (const titleCol of titleColumns) {
-      const column = columns.find(col => col.key.toLowerCase().includes(titleCol))
+      const column = columns.find((col) => col.key.toLowerCase().includes(titleCol))
       if (column && row[column.key]) {
         return String(row[column.key])
       }
     }
 
     // Fallback to first string column
-    const firstStringColumn = columns.find(col => col.type === 'string')
+    const firstStringColumn = columns.find((col) => col.type === 'string')
     return firstStringColumn ? String(row[firstStringColumn.key]) : 'Record'
   }
 
@@ -681,7 +708,7 @@ export class TableFormatter implements ResultFormatter {
     const subtitleColumns = ['description', 'summary', 'status', 'type']
 
     for (const subtitleCol of subtitleColumns) {
-      const column = columns.find(col => col.key.toLowerCase().includes(subtitleCol))
+      const column = columns.find((col) => col.key.toLowerCase().includes(subtitleCol))
       if (column && row[column.key]) {
         return String(row[column.key])
       }
@@ -690,15 +717,18 @@ export class TableFormatter implements ResultFormatter {
     return undefined
   }
 
-  private extractCardFields(row: any, columns: TableContent['columns']): Array<{
+  private extractCardFields(
+    row: any,
+    columns: TableContent['columns']
+  ): Array<{
     label: string
     value: string
     type?: string
   }> {
     return columns
-      .filter(col => col.key !== '_index')
+      .filter((col) => col.key !== '_index')
       .slice(0, 5) // Limit fields
-      .map(col => ({
+      .map((col) => ({
         label: col.label,
         value: String(row[col.key] || ''),
         type: col.type,
@@ -710,7 +740,7 @@ export class TableFormatter implements ResultFormatter {
     if (values.length < 3) return false
 
     const firstType = typeof values[0]
-    return values.every(value => typeof value === firstType)
+    return values.every((value) => typeof value === firstType)
   }
 
   private isUrl(str: string): boolean {
@@ -726,13 +756,16 @@ export class TableFormatter implements ResultFormatter {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str)
   }
 
-  private async calculateQualityScore(tableContent: TableContent, originalData: any[]): Promise<number> {
+  private async calculateQualityScore(
+    tableContent: TableContent,
+    originalData: any[]
+  ): Promise<number> {
     let score = 0.7 // Base score
 
     // Adjust based on table quality
     if (tableContent.columns.length > 0) score += 0.1
     if (tableContent.rows.length > 0) score += 0.1
-    if (tableContent.columns.some(col => col.sortable)) score += 0.05
+    if (tableContent.columns.some((col) => col.sortable)) score += 0.05
     if (tableContent.pagination) score += 0.05
 
     return Math.min(1.0, score)

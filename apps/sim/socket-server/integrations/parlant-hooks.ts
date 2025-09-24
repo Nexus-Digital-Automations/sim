@@ -6,11 +6,15 @@
  * the Parlant API endpoints to trigger real-time events.
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import type { Server as SocketIOServer } from 'socket.io'
-import { ParlantEventService } from '@/socket-server/services/parlant-events'
+import { createLogger } from '@/lib/logs/console/logger'
 import { ParlantRoomManager } from '@/socket-server/handlers/parlant'
-import { ParlantAgentStatus, ParlantSessionStatus, ParlantMessageType } from '@/socket-server/types/parlant-events'
+import { ParlantEventService } from '@/socket-server/services/parlant-events'
+import {
+  ParlantAgentStatus,
+  type ParlantMessageType,
+  type ParlantSessionStatus,
+} from '@/socket-server/types/parlant-events'
 
 const logger = createLogger('ParlantHooks')
 
@@ -92,12 +96,7 @@ export const ParlantAgentHooks = {
   ): Promise<void> {
     try {
       const eventService = getEventService()
-      await eventService.broadcastAgentUpdated(
-        agentId,
-        workspaceId,
-        updatedBy,
-        changes
-      )
+      await eventService.broadcastAgentUpdated(agentId, workspaceId, updatedBy, changes)
 
       logger.info(`Triggered real-time events for agent update: ${agentId}`)
     } catch (error) {
@@ -108,18 +107,10 @@ export const ParlantAgentHooks = {
   /**
    * Called when an agent is deleted
    */
-  async onAgentDeleted(
-    agentId: string,
-    workspaceId: string,
-    deletedBy: string
-  ): Promise<void> {
+  async onAgentDeleted(agentId: string, workspaceId: string, deletedBy: string): Promise<void> {
     try {
       const eventService = getEventService()
-      await eventService.broadcastAgentDeleted(
-        agentId,
-        workspaceId,
-        deletedBy
-      )
+      await eventService.broadcastAgentDeleted(agentId, workspaceId, deletedBy)
 
       logger.info(`Triggered real-time events for agent deletion: ${agentId}`)
     } catch (error) {
@@ -138,12 +129,7 @@ export const ParlantAgentHooks = {
   ): Promise<void> {
     try {
       const eventService = getEventService()
-      await eventService.broadcastAgentStatusUpdate(
-        agentId,
-        workspaceId,
-        newStatus,
-        data
-      )
+      await eventService.broadcastAgentStatusUpdate(agentId, workspaceId, newStatus, data)
 
       logger.debug(`Triggered status update for agent ${agentId}: ${newStatus}`)
     } catch (error) {
@@ -166,17 +152,13 @@ export const ParlantAgentHooks = {
   ): Promise<void> {
     try {
       const eventService = getEventService()
-      await eventService.broadcastAgentPerformanceUpdate(
-        agentId,
-        workspaceId,
-        performance
-      )
+      await eventService.broadcastAgentPerformanceUpdate(agentId, workspaceId, performance)
 
       logger.debug(`Triggered performance update for agent ${agentId}`)
     } catch (error) {
       logger.error('Error in onAgentPerformanceUpdate hook:', error)
     }
-  }
+  },
 }
 
 /**
@@ -263,7 +245,9 @@ export const ParlantSessionHooks = {
         previousStatus
       )
 
-      logger.debug(`Triggered status change for session ${sessionId}: ${previousStatus} -> ${newStatus}`)
+      logger.debug(
+        `Triggered status change for session ${sessionId}: ${previousStatus} -> ${newStatus}`
+      )
     } catch (error) {
       logger.error('Error in onSessionStatusChanged hook:', error)
     }
@@ -285,18 +269,13 @@ export const ParlantSessionHooks = {
   ): Promise<void> {
     try {
       const eventService = getEventService()
-      await eventService.broadcastSessionAnalyticsUpdate(
-        sessionId,
-        agentId,
-        workspaceId,
-        analytics
-      )
+      await eventService.broadcastSessionAnalyticsUpdate(sessionId, agentId, workspaceId, analytics)
 
       logger.debug(`Triggered analytics update for session ${sessionId}`)
     } catch (error) {
       logger.error('Error in onSessionAnalyticsUpdate hook:', error)
     }
-  }
+  },
 }
 
 /**
@@ -387,7 +366,7 @@ export const ParlantMessageHooks = {
     } catch (error) {
       logger.error('Error in onTypingIndicator hook:', error)
     }
-  }
+  },
 }
 
 /**
@@ -482,7 +461,7 @@ export const ParlantToolHooks = {
     } catch (broadcastError) {
       logger.error('Error in onToolCallFailed hook:', broadcastError)
     }
-  }
+  },
 }
 
 /**
@@ -514,7 +493,7 @@ export const ParlantHookUtils = {
       return {
         status: 'unhealthy',
         timestamp: Date.now(),
-        error: error.message
+        error: error.message,
       }
     }
   },
@@ -539,7 +518,7 @@ export const ParlantHookUtils = {
       logger.error('Error in test broadcast:', error)
       return { success: false, error: error.message }
     }
-  }
+  },
 }
 
 /**
@@ -551,5 +530,5 @@ export const ParlantHooks = {
   Message: ParlantMessageHooks,
   Tool: ParlantToolHooks,
   Utils: ParlantHookUtils,
-  initialize: initializeParlantHooks
+  initialize: initializeParlantHooks,
 }

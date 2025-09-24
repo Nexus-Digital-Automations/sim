@@ -7,23 +7,18 @@
  */
 
 import type {
+  BlockConfiguration,
+  ChatStateConfiguration,
+  ConversionContext,
+  FinalStateConfiguration,
+  JourneyStateDefinition,
+  ParameterMapping,
   ReactFlowNode,
   SimBlockType,
-  BlockConfiguration,
-  JourneyStateDefinition,
-  JourneyStateConfiguration,
-  ChatStateConfiguration,
   ToolStateConfiguration,
-  ConditionalStateConfiguration,
-  FinalStateConfiguration,
-  WorkflowAnalysisResult,
-  ConversionContext,
-  ToolDependency,
-  ParameterMapping,
-  ErrorMapping,
   TransformationFunction,
   ValidationRule,
-  RecoveryStrategy
+  WorkflowAnalysisResult,
 } from './types'
 
 /**
@@ -75,7 +70,7 @@ export abstract class BlockConverter {
       errorHandling: node.data.errorHandling,
       execution: node.data.execution,
       validation: node.data.validation,
-      ui: node.data.ui
+      ui: node.data.ui,
     }
   }
 
@@ -84,7 +79,7 @@ export abstract class BlockConverter {
       onError: 'retry',
       maxRetries: 3,
       timeout: 30000,
-      fallbackState: node.data?.errorHandling?.fallbackState
+      fallbackState: node.data?.errorHandling?.fallbackState,
     }
   }
 }
@@ -134,13 +129,13 @@ export class EndBlockConverter extends BlockConverter {
       outcome: {
         status: this.determineOutcomeStatus(node),
         message: node.data?.message || node.data?.label || 'Workflow completed',
-        data: node.data?.outputData || {}
+        data: node.data?.outputData || {},
       },
       cleanup: {
         clearVariables: node.data?.clearVariables !== false,
         saveSession: node.data?.saveSession !== false,
-        sendNotifications: node.data?.sendNotifications === true
-      }
+        sendNotifications: node.data?.sendNotifications === true,
+      },
     }
 
     return {
@@ -154,11 +149,13 @@ export class EndBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'end',
-      errorHandling: this.createDefaultErrorHandling(node)
+      errorHandling: this.createDefaultErrorHandling(node),
     }
   }
 
-  private determineOutcomeStatus(node: ReactFlowNode): 'success' | 'failure' | 'cancelled' | 'timeout' {
+  private determineOutcomeStatus(
+    node: ReactFlowNode
+  ): 'success' | 'failure' | 'cancelled' | 'timeout' {
     if (node.data?.status) return node.data.status
     if (node.data?.error || node.data?.failure) return 'failure'
     if (node.data?.cancelled) return 'cancelled'
@@ -203,10 +200,10 @@ export class ToolBlockConverter extends BlockConverter {
         strategy: node.data?.errorHandling?.strategy || 'retry',
         maxRetries: node.data?.errorHandling?.maxRetries || 3,
         fallbackValue: node.data?.errorHandling?.fallbackValue,
-        timeout: node.data?.errorHandling?.timeout || 30000
+        timeout: node.data?.errorHandling?.timeout || 30000,
       },
       async: node.data?.async === true,
-      cacheable: node.data?.cacheable !== false
+      cacheable: node.data?.cacheable !== false,
     }
 
     return {
@@ -222,7 +219,7 @@ export class ToolBlockConverter extends BlockConverter {
       blockType: 'tool',
       dependencies: this.extractDependencies(node, analysis),
       executionGroup: this.getExecutionGroup(node, analysis),
-      errorHandling: this.createToolErrorHandling(node)
+      errorHandling: this.createToolErrorHandling(node),
     }
   }
 
@@ -234,26 +231,31 @@ export class ToolBlockConverter extends BlockConverter {
     node: ReactFlowNode,
     toolId: string,
     analysis: WorkflowAnalysisResult
-  ): Promise<{ inputMapping: ParameterMapping[], outputMapping: ParameterMapping[] }> {
+  ): Promise<{ inputMapping: ParameterMapping[]; outputMapping: ParameterMapping[] }> {
     // Find tool compatibility information
-    const toolCompatibility = analysis.toolAnalysis.toolCompatibility.find(t => t.toolId === toolId)
+    const toolCompatibility = analysis.toolAnalysis.toolCompatibility.find(
+      (t) => t.toolId === toolId
+    )
 
     if (!toolCompatibility) {
       // Create default mappings
       return {
         inputMapping: await this.createDefaultInputMapping(node, toolId),
-        outputMapping: await this.createDefaultOutputMapping(node, toolId)
+        outputMapping: await this.createDefaultOutputMapping(node, toolId),
       }
     }
 
     // Use existing compatibility information to build mappings
     return {
       inputMapping: await this.createInputMappingFromCompatibility(node, toolCompatibility),
-      outputMapping: await this.createOutputMappingFromCompatibility(node, toolCompatibility)
+      outputMapping: await this.createOutputMappingFromCompatibility(node, toolCompatibility),
     }
   }
 
-  private async createDefaultInputMapping(node: ReactFlowNode, toolId: string): Promise<ParameterMapping[]> {
+  private async createDefaultInputMapping(
+    node: ReactFlowNode,
+    toolId: string
+  ): Promise<ParameterMapping[]> {
     const mappings: ParameterMapping[] = []
 
     if (node.data?.config) {
@@ -265,7 +267,7 @@ export class ToolBlockConverter extends BlockConverter {
           validation: this.createValidationRules(key, value),
           required: this.isParameterRequired(key, node),
           defaultValue: value,
-          description: `Parameter ${key} for tool ${toolId}`
+          description: `Parameter ${key} for tool ${toolId}`,
         })
       }
     }
@@ -273,7 +275,10 @@ export class ToolBlockConverter extends BlockConverter {
     return mappings
   }
 
-  private async createDefaultOutputMapping(node: ReactFlowNode, toolId: string): Promise<ParameterMapping[]> {
+  private async createDefaultOutputMapping(
+    node: ReactFlowNode,
+    toolId: string
+  ): Promise<ParameterMapping[]> {
     const mappings: ParameterMapping[] = []
 
     // Standard output mappings
@@ -281,7 +286,7 @@ export class ToolBlockConverter extends BlockConverter {
       workflowParameter: 'result',
       journeyParameter: 'toolResult',
       required: false,
-      description: `Primary result from tool ${toolId}`
+      description: `Primary result from tool ${toolId}`,
     })
 
     mappings.push({
@@ -289,14 +294,14 @@ export class ToolBlockConverter extends BlockConverter {
       journeyParameter: 'executionSuccess',
       required: false,
       defaultValue: false,
-      description: `Success flag for tool ${toolId}`
+      description: `Success flag for tool ${toolId}`,
     })
 
     mappings.push({
       workflowParameter: 'error',
       journeyParameter: 'executionError',
       required: false,
-      description: `Error information from tool ${toolId}`
+      description: `Error information from tool ${toolId}`,
     })
 
     // Add custom output mappings if specified
@@ -306,7 +311,7 @@ export class ToolBlockConverter extends BlockConverter {
           workflowParameter: key,
           journeyParameter: typeof mapping === 'string' ? mapping : key,
           required: false,
-          description: `Custom output ${key} from tool ${toolId}`
+          description: `Custom output ${key} from tool ${toolId}`,
         })
       }
     }
@@ -330,7 +335,10 @@ export class ToolBlockConverter extends BlockConverter {
     return this.createDefaultOutputMapping(node, compatibility.toolId)
   }
 
-  private createTransformationFunction(key: string, value: any): TransformationFunction | undefined {
+  private createTransformationFunction(
+    key: string,
+    value: any
+  ): TransformationFunction | undefined {
     // Create transformation function based on value type and patterns
     if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
       return {
@@ -338,8 +346,8 @@ export class ToolBlockConverter extends BlockConverter {
         expression: value,
         validation: {
           inputTypes: ['string'],
-          outputType: 'string'
-        }
+          outputType: 'string',
+        },
       }
     }
 
@@ -349,8 +357,8 @@ export class ToolBlockConverter extends BlockConverter {
         function: 'array_processing',
         validation: {
           inputTypes: ['array'],
-          outputType: 'array'
-        }
+          outputType: 'array',
+        },
       }
     }
 
@@ -365,7 +373,7 @@ export class ToolBlockConverter extends BlockConverter {
       type: 'type',
       constraint: typeof value,
       errorMessage: `Parameter ${key} must be of type ${typeof value}`,
-      severity: 'error'
+      severity: 'error',
     })
 
     // Value-specific validations
@@ -374,7 +382,7 @@ export class ToolBlockConverter extends BlockConverter {
         type: 'pattern',
         constraint: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         errorMessage: `Parameter ${key} must be a valid email address`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -383,7 +391,7 @@ export class ToolBlockConverter extends BlockConverter {
         type: 'range',
         constraint: { min: 0 },
         errorMessage: `Parameter ${key} must be a positive number`,
-        severity: 'error'
+        severity: 'error',
       })
     }
 
@@ -402,15 +410,18 @@ export class ToolBlockConverter extends BlockConverter {
 
     // Default heuristics
     const requiredKeys = ['email', 'password', 'id', 'name', 'url', 'api_key']
-    return requiredKeys.some(reqKey => key.toLowerCase().includes(reqKey))
+    return requiredKeys.some((reqKey) => key.toLowerCase().includes(reqKey))
   }
 
   private extractDependencies(node: ReactFlowNode, analysis: WorkflowAnalysisResult): string[] {
-    const dependencyNode = analysis.dependencies.nodes.find(n => n.nodeId === node.id)
+    const dependencyNode = analysis.dependencies.nodes.find((n) => n.nodeId === node.id)
     return dependencyNode?.dependencies || []
   }
 
-  private getExecutionGroup(node: ReactFlowNode, analysis: WorkflowAnalysisResult): string | undefined {
+  private getExecutionGroup(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): string | undefined {
     // Find parallel execution group
     for (const section of analysis.structure.parallelSections) {
       for (const branch of section.branches) {
@@ -427,7 +438,7 @@ export class ToolBlockConverter extends BlockConverter {
       onError: node.data?.errorHandling?.onError || 'retry',
       maxRetries: node.data?.errorHandling?.maxRetries || 3,
       timeout: node.data?.errorHandling?.timeout || 30000,
-      fallbackState: node.data?.errorHandling?.fallbackState
+      fallbackState: node.data?.errorHandling?.fallbackState,
     }
   }
 }
@@ -462,10 +473,10 @@ export class ConditionBlockConverter extends BlockConverter {
         template: this.buildConditionalPrompt(node, condition),
         variables: this.extractVariablesFromCondition(condition),
         tone: 'professional',
-        length: 'brief'
+        length: 'brief',
       },
       validation: {
-        required: false // Conditions are evaluated automatically
+        required: false, // Conditions are evaluated automatically
       },
       conditional: {
         condition: this.translateConditionSyntax(condition),
@@ -473,8 +484,8 @@ export class ConditionBlockConverter extends BlockConverter {
         evaluationType: this.determineEvaluationType(condition),
         timeout: node.data?.timeout || 5000,
         async: node.data?.async === true,
-        caching: node.data?.cache !== false
-      }
+        caching: node.data?.cache !== false,
+      },
     }
 
     return {
@@ -488,7 +499,7 @@ export class ConditionBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'condition',
-      errorHandling: this.createConditionalErrorHandling(node)
+      errorHandling: this.createConditionalErrorHandling(node),
     }
   }
 
@@ -510,7 +521,8 @@ export class ConditionBlockConverter extends BlockConverter {
 
   private extractVariablesFromCondition(condition: string): Record<string, string> {
     const variables: Record<string, string> = {}
-    const matches = condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
+    const matches =
+      condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
 
     for (const match of matches) {
       if (!this.isReservedKeyword(match)) {
@@ -523,11 +535,22 @@ export class ConditionBlockConverter extends BlockConverter {
 
   private isReservedKeyword(word: string): boolean {
     const reserved = [
-      'true', 'false', 'null', 'undefined',
-      'and', 'or', 'not',
-      'if', 'then', 'else',
-      'equals', 'contains', 'matches',
-      'greater', 'less', 'than'
+      'true',
+      'false',
+      'null',
+      'undefined',
+      'and',
+      'or',
+      'not',
+      'if',
+      'then',
+      'else',
+      'equals',
+      'contains',
+      'matches',
+      'greater',
+      'less',
+      'than',
     ]
     return reserved.includes(word.toLowerCase())
   }
@@ -551,19 +574,30 @@ export class ConditionBlockConverter extends BlockConverter {
       .replace(/\.test\(/g, ' matches ')
   }
 
-  private determineEvaluationType(condition: string): 'boolean' | 'comparison' | 'regex' | 'custom' {
+  private determineEvaluationType(
+    condition: string
+  ): 'boolean' | 'comparison' | 'regex' | 'custom' {
     if (condition.includes('matches') || condition.includes('test') || condition.includes('/')) {
       return 'regex'
     }
 
-    if (condition.includes('greater') || condition.includes('less') ||
-        condition.includes('>') || condition.includes('<') ||
-        condition.includes('equals') || condition.includes('==')) {
+    if (
+      condition.includes('greater') ||
+      condition.includes('less') ||
+      condition.includes('>') ||
+      condition.includes('<') ||
+      condition.includes('equals') ||
+      condition.includes('==')
+    ) {
       return 'comparison'
     }
 
-    if (condition.includes('and') || condition.includes('or') ||
-        condition === 'true' || condition === 'false') {
+    if (
+      condition.includes('and') ||
+      condition.includes('or') ||
+      condition === 'true' ||
+      condition === 'false'
+    ) {
       return 'boolean'
     }
 
@@ -584,7 +618,7 @@ export class ConditionBlockConverter extends BlockConverter {
       .replace(/\s*\|\|\s*/g, ' | ')
 
     if (summary.length > 30) {
-      summary = summary.substring(0, 27) + '...'
+      summary = `${summary.substring(0, 27)}...`
     }
 
     return summary
@@ -611,7 +645,7 @@ export class ConditionBlockConverter extends BlockConverter {
       maxRetries: 1,
       timeout: node.data?.timeout || 5000,
       fallbackValue: false, // Default to false for failed conditions
-      fallbackState: node.data?.errorHandling?.fallbackState
+      fallbackState: node.data?.errorHandling?.fallbackState,
     }
   }
 }
@@ -640,25 +674,25 @@ export class UserInputBlockConverter extends BlockConverter {
         template: this.buildInputPrompt(node),
         variables: node.data?.variables || {},
         tone: node.data?.tone || 'friendly',
-        length: node.data?.length || 'moderate'
+        length: node.data?.length || 'moderate',
       },
       validation: {
         required: node.data?.required !== false,
         minLength: node.data?.minLength,
         maxLength: node.data?.maxLength,
-        pattern: node.data?.pattern
+        pattern: node.data?.pattern,
       },
       responseOptions: {
         type: this.determineInputType(node),
         choices: node.data?.choices,
-        multiSelect: node.data?.multiSelect === true
+        multiSelect: node.data?.multiSelect === true,
       },
       userInput: {
         placeholder: node.data?.placeholder,
         helpText: node.data?.helpText,
         validation: this.createInputValidation(node),
-        formatting: this.createInputFormatting(node)
-      }
+        formatting: this.createInputFormatting(node),
+      },
     }
 
     return {
@@ -672,7 +706,7 @@ export class UserInputBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'user_input',
-      errorHandling: this.createUserInputErrorHandling(node)
+      errorHandling: this.createUserInputErrorHandling(node),
     }
   }
 
@@ -718,7 +752,7 @@ export class UserInputBlockConverter extends BlockConverter {
 
   private createInputValidation(node: ReactFlowNode): any {
     const validation: any = {
-      required: node.data?.required !== false
+      required: node.data?.required !== false,
     }
 
     if (node.data?.minLength) {
@@ -776,7 +810,7 @@ export class UserInputBlockConverter extends BlockConverter {
       maxRetries: 3,
       timeout: node.data?.timeout || 300000, // 5 minutes for user input
       retryPrompt: node.data?.retryPrompt || 'Please try again. Make sure your input is valid.',
-      fallbackState: node.data?.errorHandling?.fallbackState
+      fallbackState: node.data?.errorHandling?.fallbackState,
     }
   }
 }
@@ -814,17 +848,17 @@ export class MergeBlockConverter extends BlockConverter {
       prompt: {
         template: 'Merging execution paths...',
         tone: 'professional',
-        length: 'brief'
+        length: 'brief',
       },
       validation: {
-        required: false
+        required: false,
       },
       merge: {
         strategy: node.data?.mergeStrategy || 'wait_all',
         timeout: node.data?.timeout || 30000,
         preserveData: node.data?.preserveData !== false,
-        conflictResolution: node.data?.conflictResolution || 'last_wins'
-      }
+        conflictResolution: node.data?.conflictResolution || 'last_wins',
+      },
     }
 
     return {
@@ -838,7 +872,7 @@ export class MergeBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'merge',
-      errorHandling: this.createMergeErrorHandling(node)
+      errorHandling: this.createMergeErrorHandling(node),
     }
   }
 
@@ -856,7 +890,7 @@ export class MergeBlockConverter extends BlockConverter {
       onError: 'continue',
       maxRetries: 1,
       timeout: node.data?.timeout || 30000,
-      partialMerge: node.data?.allowPartialMerge !== false
+      partialMerge: node.data?.allowPartialMerge !== false,
     }
   }
 }
@@ -884,10 +918,10 @@ export class ParallelSplitBlockConverter extends BlockConverter {
       prompt: {
         template: 'Starting parallel execution...',
         tone: 'professional',
-        length: 'brief'
+        length: 'brief',
       },
       validation: {
-        required: false
+        required: false,
       },
       parallelExecution: {
         type: 'split',
@@ -895,8 +929,8 @@ export class ParallelSplitBlockConverter extends BlockConverter {
         timeout: node.data?.timeout,
         errorHandling: node.data?.errorHandling || 'fail_fast',
         resourceAllocation: node.data?.resourceAllocation,
-        loadBalancing: node.data?.loadBalancing
-      }
+        loadBalancing: node.data?.loadBalancing,
+      },
     }
 
     return {
@@ -910,7 +944,7 @@ export class ParallelSplitBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'parallel_split',
-      errorHandling: this.createParallelSplitErrorHandling(node)
+      errorHandling: this.createParallelSplitErrorHandling(node),
     }
   }
 
@@ -919,7 +953,7 @@ export class ParallelSplitBlockConverter extends BlockConverter {
       onError: 'abort',
       maxRetries: 1,
       timeout: node.data?.timeout || 60000,
-      cleanupOnError: node.data?.cleanupOnError !== false
+      cleanupOnError: node.data?.cleanupOnError !== false,
     }
   }
 }
@@ -949,10 +983,10 @@ export class LoopBlockConverter extends BlockConverter {
         template: this.buildLoopPrompt(node, loopCondition),
         variables: this.extractVariablesFromCondition(loopCondition),
         tone: 'professional',
-        length: 'brief'
+        length: 'brief',
       },
       validation: {
-        required: false
+        required: false,
       },
       loop: {
         type: this.determineLoopType(node),
@@ -961,8 +995,8 @@ export class LoopBlockConverter extends BlockConverter {
         iterationVariable: node.data?.iterationVariable || 'iteration',
         breakCondition: node.data?.breakCondition,
         continueCondition: node.data?.continueCondition,
-        iterationDelay: node.data?.iterationDelay || 0
-      }
+        iterationDelay: node.data?.iterationDelay || 0,
+      },
     }
 
     return {
@@ -976,16 +1010,14 @@ export class LoopBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: 'loop',
-      errorHandling: this.createLoopErrorHandling(node)
+      errorHandling: this.createLoopErrorHandling(node),
     }
   }
 
   private extractLoopCondition(node: ReactFlowNode): string {
-    return node.data?.condition ||
-           node.data?.while ||
-           node.data?.until ||
-           node.data?.forEach ||
-           'true'
+    return (
+      node.data?.condition || node.data?.while || node.data?.until || node.data?.forEach || 'true'
+    )
   }
 
   private determineLoopType(node: ReactFlowNode): 'while' | 'for' | 'do_while' | 'foreach' {
@@ -1020,7 +1052,9 @@ export class LoopBlockConverter extends BlockConverter {
     const matches = condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g) || []
 
     for (const match of matches) {
-      if (!['true', 'false', 'null', 'undefined', 'for', 'while', 'do', 'forEach'].includes(match)) {
+      if (
+        !['true', 'false', 'null', 'undefined', 'for', 'while', 'do', 'forEach'].includes(match)
+      ) {
         variables[match] = `\${${match}}`
       }
     }
@@ -1034,7 +1068,7 @@ export class LoopBlockConverter extends BlockConverter {
       maxRetries: 1,
       timeout: node.data?.timeout || 300000, // 5 minutes for loops
       infiniteLoopProtection: node.data?.infiniteLoopProtection !== false,
-      maxExecutionTime: node.data?.maxExecutionTime || 600000 // 10 minutes max
+      maxExecutionTime: node.data?.maxExecutionTime || 600000, // 10 minutes max
     }
   }
 }
@@ -1057,7 +1091,7 @@ export class DefaultBlockConverter extends BlockConverter {
   ): Promise<JourneyStateDefinition | null> {
     this.log('warn', 'Using default converter for unknown block type', {
       nodeId: node.id,
-      blockType: node.type
+      blockType: node.type,
     })
 
     const stateId = this.generateStateId(node.id)
@@ -1068,16 +1102,16 @@ export class DefaultBlockConverter extends BlockConverter {
       prompt: {
         template: node.data?.label || node.data?.prompt || `Processing ${node.type} block`,
         variables: node.data?.variables || {},
-        tone: 'professional'
+        tone: 'professional',
       },
       validation: {
-        required: false
+        required: false,
       },
       generic: {
         originalType: node.type,
         originalData: node.data,
-        fallbackBehavior: 'continue'
-      }
+        fallbackBehavior: 'continue',
+      },
     }
 
     return {
@@ -1091,7 +1125,7 @@ export class DefaultBlockConverter extends BlockConverter {
       position: node.position,
       originalNodeId: node.id,
       blockType: node.type as SimBlockType,
-      errorHandling: this.createDefaultErrorHandling(node)
+      errorHandling: this.createDefaultErrorHandling(node),
     }
   }
 }
@@ -1115,7 +1149,7 @@ export class BlockConverterRegistry {
       new ParallelSplitBlockConverter(context),
       new LoopBlockConverter(context),
       new MergeBlockConverter(context),
-      new DefaultBlockConverter(context) // Always last (lowest priority)
+      new DefaultBlockConverter(context), // Always last (lowest priority)
     ].sort((a, b) => b.getPriority() - a.getPriority())
   }
 
@@ -1123,7 +1157,7 @@ export class BlockConverterRegistry {
    * Find the best converter for a given block type
    */
   getConverter(blockType: SimBlockType): BlockConverter {
-    const converter = this.converters.find(c => c.canHandle(blockType))
+    const converter = this.converters.find((c) => c.canHandle(blockType))
 
     if (!converter) {
       throw new Error(`No converter found for block type: ${blockType}`)

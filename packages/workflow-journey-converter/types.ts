@@ -6,13 +6,10 @@
  */
 
 import type {
-  ParlantJourney,
-  ParlantJourneyState,
-  ParlantJourneyTransition,
   JourneyStateType,
   ParlantJourneyInsert,
   ParlantJourneyStateInsert,
-  ParlantJourneyTransitionInsert
+  ParlantJourneyTransitionInsert,
 } from '@sim/db/parlant'
 
 // =============================================================================
@@ -190,13 +187,15 @@ export interface BlockConfiguration {
 // Journey Conversion Types
 // =============================================================================
 
-export interface JourneyDefinition extends Omit<ParlantJourneyInsert, 'id' | 'createdAt' | 'updatedAt'> {
+export interface JourneyDefinition
+  extends Omit<ParlantJourneyInsert, 'id' | 'createdAt' | 'updatedAt'> {
   states: JourneyStateDefinition[]
   transitions: JourneyTransitionDefinition[]
   metadata: JourneyMetadata
 }
 
-export interface JourneyStateDefinition extends Omit<ParlantJourneyStateInsert, 'id' | 'journeyId'> {
+export interface JourneyStateDefinition
+  extends Omit<ParlantJourneyStateInsert, 'id' | 'journeyId'> {
   id: string
   stateType: JourneyStateType
   configuration: JourneyStateConfiguration
@@ -213,7 +212,8 @@ export interface JourneyStateDefinition extends Omit<ParlantJourneyStateInsert, 
   }
 }
 
-export interface JourneyTransitionDefinition extends Omit<ParlantJourneyTransitionInsert, 'id' | 'journeyId'> {
+export interface JourneyTransitionDefinition
+  extends Omit<ParlantJourneyTransitionInsert, 'id' | 'journeyId'> {
   id: string
   fromStateId: string
   toStateId: string
@@ -782,7 +782,13 @@ export interface ComplianceCheck {
 }
 
 export interface SecurityRecommendation {
-  category: 'authentication' | 'authorization' | 'encryption' | 'validation' | 'logging' | 'monitoring'
+  category:
+    | 'authentication'
+    | 'authorization'
+    | 'encryption'
+    | 'validation'
+    | 'logging'
+    | 'monitoring'
   priority: 'critical' | 'high' | 'medium' | 'low'
   description: string
   implementation: string
@@ -1122,19 +1128,32 @@ export interface ConversionFactory {
 
 // Abstract base classes for implementation
 export abstract class WorkflowAnalysisEngine {
-  abstract analyzeWorkflow(workflow: SimWorkflowDefinition, context: ConversionContext): Promise<WorkflowAnalysisResult>
+  abstract analyzeWorkflow(
+    workflow: SimWorkflowDefinition,
+    context: ConversionContext
+  ): Promise<WorkflowAnalysisResult>
 }
 
 export abstract class JourneyMappingService {
-  abstract mapToJourney(analysis: WorkflowAnalysisResult, context: ConversionContext): Promise<JourneyDefinition>
+  abstract mapToJourney(
+    analysis: WorkflowAnalysisResult,
+    context: ConversionContext
+  ): Promise<JourneyDefinition>
 }
 
 export abstract class ValidationEngine {
-  abstract validateConversion(workflow: SimWorkflowDefinition, journey: JourneyDefinition, context: ConversionContext): Promise<ValidationReport>
+  abstract validateConversion(
+    workflow: SimWorkflowDefinition,
+    journey: JourneyDefinition,
+    context: ConversionContext
+  ): Promise<ValidationReport>
 }
 
 export abstract class OptimizationEngine {
-  abstract optimizeJourney(journey: JourneyDefinition, context: ConversionContext): Promise<JourneyDefinition>
+  abstract optimizeJourney(
+    journey: JourneyDefinition,
+    context: ConversionContext
+  ): Promise<JourneyDefinition>
 }
 
 // =============================================================================
@@ -1182,17 +1201,14 @@ export type {
   ReactFlowNode,
   ReactFlowEdge,
   SimWorkflowDefinition,
-
   // Block and configuration types
   SimBlockType,
   BlockConfiguration,
-
   // Journey definition types
   JourneyDefinition,
   JourneyStateDefinition,
   JourneyTransitionDefinition,
   JourneyMetadata,
-
   // Analysis types
   WorkflowAnalysisResult,
   WorkflowStructure,
@@ -1201,7 +1217,6 @@ export type {
   ConditionalNode,
   ParallelSection,
   LoopStructure,
-
   // Tool integration types
   ToolDependency,
   ParameterMapping,
@@ -1209,14 +1224,12 @@ export type {
   TransformationFunction,
   ValidationRule,
   RecoveryStrategy,
-
   // Context and variable types
   VariableUsage,
   ContextMapping,
   VariableMapping,
   SessionPreservation,
   StatePreservation,
-
   // Result types
   ConversionResult,
   ConversionError,
@@ -1224,13 +1237,11 @@ export type {
   ConversionMetrics,
   ValidationReport,
   ValidationIssue,
-
   // Configuration and context types
   ConversionEngineConfig,
   ConversionContext,
   ConversionCache,
   ConversionFactory,
-
   // Event types
   ConversionEvent,
   ConversionEventData,

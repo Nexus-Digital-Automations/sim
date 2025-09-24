@@ -7,16 +7,16 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
 import {
   ErrorCategory,
-  ErrorSeverity,
-  ErrorImpact,
-  RecoveryStrategy,
   type ErrorClassification,
-  errorClassifier
+  ErrorImpact,
+  ErrorSeverity,
+  errorClassifier,
+  RecoveryStrategy,
 } from './error-taxonomy'
 import { parlantErrorTracker } from './error-tracking'
+import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorHandler')
 
@@ -55,7 +55,12 @@ export abstract class BaseToolError extends Error {
 
     // Classify the error for comprehensive analysis
     this.classification = errorClassifier.classify(
-      category, subcategory, message, originalError, context, component
+      category,
+      subcategory,
+      message,
+      originalError,
+      context,
+      component
     )
 
     this.severity = this.classification.severity
@@ -79,8 +84,11 @@ export abstract class BaseToolError extends Error {
   private async trackError(originalError?: Error): Promise<void> {
     try {
       await parlantErrorTracker.trackError(
-        this.severity === ErrorSeverity.CRITICAL ? 'critical' :
-        this.severity === ErrorSeverity.ERROR ? 'error' : 'warning',
+        this.severity === ErrorSeverity.CRITICAL
+          ? 'critical'
+          : this.severity === ErrorSeverity.ERROR
+            ? 'error'
+            : 'warning',
         this.category as any, // Type conversion for compatibility
         this.component,
         this.message,
@@ -91,14 +99,14 @@ export abstract class BaseToolError extends Error {
           errorClass: this.constructor.name,
           subcategory: this.subcategory,
           recoverable: this.recoverable,
-          recoveryStrategy: this.recoveryStrategy
+          recoveryStrategy: this.recoveryStrategy,
         }
       )
     } catch (trackingError) {
       // Don't let tracking errors break the main error flow
       logger.error('Failed to track error', {
         errorId: this.id,
-        trackingError: trackingError instanceof Error ? trackingError.message : trackingError
+        trackingError: trackingError instanceof Error ? trackingError.message : trackingError,
       })
     }
   }
@@ -121,9 +129,11 @@ export abstract class BaseToolError extends Error {
    * Check if error should trigger immediate escalation
    */
   public shouldEscalate(): boolean {
-    return this.severity === ErrorSeverity.CRITICAL ||
-           this.severity === ErrorSeverity.FATAL ||
-           this.impact === ErrorImpact.CRITICAL
+    return (
+      this.severity === ErrorSeverity.CRITICAL ||
+      this.severity === ErrorSeverity.FATAL ||
+      this.impact === ErrorImpact.CRITICAL
+    )
   }
 
   /**
@@ -149,7 +159,7 @@ export abstract class BaseToolError extends Error {
       recoveryStrategy: this.recoveryStrategy,
       recoveryActions: this.getRecoveryActions(),
       timestamp: this.timestamp,
-      context: this.context
+      context: this.context,
     }
   }
 }
@@ -166,7 +176,14 @@ export class ToolAdapterError extends BaseToolError {
     originalError?: Error
   ) {
     const enhancedContext = { ...context, toolName }
-    super(message, ErrorCategory.TOOL_ADAPTER, subcategory, `tool-adapter:${toolName}`, enhancedContext, originalError)
+    super(
+      message,
+      ErrorCategory.TOOL_ADAPTER,
+      subcategory,
+      `tool-adapter:${toolName}`,
+      enhancedContext,
+      originalError
+    )
   }
 
   protected generateUserMessage(): string {
@@ -211,7 +228,14 @@ export class ToolExecutionError extends BaseToolError {
     executionTime?: number
   ) {
     const enhancedContext = { ...context, toolName, operationId }
-    super(message, ErrorCategory.TOOL_EXECUTION, subcategory, `tool-execution:${toolName}`, enhancedContext, originalError)
+    super(
+      message,
+      ErrorCategory.TOOL_EXECUTION,
+      subcategory,
+      `tool-execution:${toolName}`,
+      enhancedContext,
+      originalError
+    )
     this.operationId = operationId
     this.executionTime = executionTime
   }
@@ -261,7 +285,14 @@ export class ToolAuthenticationError extends BaseToolError {
     tokenExpired?: boolean
   ) {
     const enhancedContext = { ...context, toolName, authMethod }
-    super(message, ErrorCategory.TOOL_AUTHENTICATION, subcategory, `tool-auth:${toolName}`, enhancedContext, originalError)
+    super(
+      message,
+      ErrorCategory.TOOL_AUTHENTICATION,
+      subcategory,
+      `tool-auth:${toolName}`,
+      enhancedContext,
+      originalError
+    )
     this.authMethod = authMethod
     this.tokenExpired = tokenExpired
   }
@@ -360,7 +391,14 @@ export class SystemResourceError extends BaseToolError {
     limit?: number
   ) {
     const enhancedContext = { ...context, resourceType, currentUsage, limit }
-    super(message, ErrorCategory.SYSTEM_RESOURCE, subcategory, `system-resource:${resourceType}`, enhancedContext, originalError)
+    super(
+      message,
+      ErrorCategory.SYSTEM_RESOURCE,
+      subcategory,
+      `system-resource:${resourceType}`,
+      enhancedContext,
+      originalError
+    )
     this.resourceType = resourceType
     this.currentUsage = currentUsage
     this.limit = limit
@@ -409,7 +447,14 @@ export class ExternalServiceError extends BaseToolError {
     retryAfter?: number
   ) {
     const enhancedContext = { ...context, serviceName, serviceUrl, httpStatus }
-    super(message, ErrorCategory.EXTERNAL_SERVICE, subcategory, `external-service:${serviceName}`, enhancedContext, originalError)
+    super(
+      message,
+      ErrorCategory.EXTERNAL_SERVICE,
+      subcategory,
+      `external-service:${serviceName}`,
+      enhancedContext,
+      originalError
+    )
     this.serviceName = serviceName
     this.serviceUrl = serviceUrl
     this.httpStatus = httpStatus
@@ -445,7 +490,10 @@ export class ExternalServiceError extends BaseToolError {
 export class UniversalErrorHandler {
   private readonly logger = createLogger('UniversalErrorHandler')
   private errorProcessors = new Map<ErrorSeverity, (error: BaseToolError) => Promise<void>>()
-  private recoveryStrategies = new Map<RecoveryStrategy, (error: BaseToolError) => Promise<boolean>>()
+  private recoveryStrategies = new Map<
+    RecoveryStrategy,
+    (error: BaseToolError) => Promise<boolean>
+  >()
 
   constructor() {
     this.initializeErrorProcessors()
@@ -472,8 +520,14 @@ export class UniversalErrorHandler {
   private initializeRecoveryStrategies(): void {
     this.recoveryStrategies.set(RecoveryStrategy.RETRY, this.attemptRetry.bind(this))
     this.recoveryStrategies.set(RecoveryStrategy.FALLBACK, this.attemptFallback.bind(this))
-    this.recoveryStrategies.set(RecoveryStrategy.CIRCUIT_BREAKER, this.applyCircuitBreaker.bind(this))
-    this.recoveryStrategies.set(RecoveryStrategy.GRACEFUL_DEGRADATION, this.gracefulDegrade.bind(this))
+    this.recoveryStrategies.set(
+      RecoveryStrategy.CIRCUIT_BREAKER,
+      this.applyCircuitBreaker.bind(this)
+    )
+    this.recoveryStrategies.set(
+      RecoveryStrategy.GRACEFUL_DEGRADATION,
+      this.gracefulDegrade.bind(this)
+    )
     this.recoveryStrategies.set(RecoveryStrategy.MANUAL, this.logManualIntervention.bind(this))
     this.recoveryStrategies.set(RecoveryStrategy.NONE, this.logNoRecovery.bind(this))
   }
@@ -492,7 +546,7 @@ export class UniversalErrorHandler {
       errorId: error.id,
       category: error.category,
       severity: error.severity,
-      component: error.component
+      component: error.component,
     })
 
     try {
@@ -513,13 +567,13 @@ export class UniversalErrorHandler {
         recovered,
         userMessage: error.getUserMessage(),
         recoveryActions: error.getRecoveryActions(),
-        shouldEscalate: error.shouldEscalate()
+        shouldEscalate: error.shouldEscalate(),
       }
-
     } catch (processingError) {
       this.logger.error('Error processing failed', {
         errorId: error.id,
-        processingError: processingError instanceof Error ? processingError.message : processingError
+        processingError:
+          processingError instanceof Error ? processingError.message : processingError,
       })
 
       return {
@@ -527,7 +581,7 @@ export class UniversalErrorHandler {
         recovered: false,
         userMessage: 'An unexpected error occurred. Please try again or contact support.',
         recoveryActions: ['Try again', 'Contact support if issue persists'],
-        shouldEscalate: true
+        shouldEscalate: true,
       }
     }
   }
@@ -540,7 +594,7 @@ export class UniversalErrorHandler {
     if (!strategy) {
       this.logger.warn('No recovery strategy found', {
         errorId: error.id,
-        strategy: error.recoveryStrategy
+        strategy: error.recoveryStrategy,
       })
       return false
     }
@@ -550,14 +604,14 @@ export class UniversalErrorHandler {
       this.logger.info('Recovery attempt completed', {
         errorId: error.id,
         strategy: error.recoveryStrategy,
-        success: recovered
+        success: recovered,
       })
       return recovered
     } catch (recoveryError) {
       this.logger.error('Recovery attempt failed', {
         errorId: error.id,
         strategy: error.recoveryStrategy,
-        recoveryError: recoveryError instanceof Error ? recoveryError.message : recoveryError
+        recoveryError: recoveryError instanceof Error ? recoveryError.message : recoveryError,
       })
       return false
     }
@@ -580,7 +634,7 @@ export class UniversalErrorHandler {
     this.logger.warn(`WARNING: ${error.message}`, {
       errorId: error.id,
       component: error.component,
-      recoverable: error.recoverable
+      recoverable: error.recoverable,
     })
   }
 
@@ -590,7 +644,7 @@ export class UniversalErrorHandler {
       component: error.component,
       category: error.category,
       subcategory: error.subcategory,
-      context: error.context
+      context: error.context,
     })
   }
 
@@ -602,7 +656,7 @@ export class UniversalErrorHandler {
       subcategory: error.subcategory,
       impact: error.impact,
       context: error.context,
-      stack: error.stack
+      stack: error.stack,
     })
   }
 
@@ -614,7 +668,7 @@ export class UniversalErrorHandler {
       subcategory: error.subcategory,
       impact: error.impact,
       context: error.context,
-      stack: error.stack
+      stack: error.stack,
     })
     // Fatal errors might require immediate attention or system shutdown
   }
@@ -647,7 +701,7 @@ export class UniversalErrorHandler {
   private async logManualIntervention(error: BaseToolError): Promise<boolean> {
     this.logger.warn('Manual intervention required', {
       errorId: error.id,
-      actions: error.getRecoveryActions()
+      actions: error.getRecoveryActions(),
     })
     return false
   }
@@ -687,7 +741,16 @@ export const createToolExecutionError = (
   originalError?: Error,
   operationId?: string,
   executionTime?: number
-) => new ToolExecutionError(message, subcategory, toolName, context, originalError, operationId, executionTime)
+) =>
+  new ToolExecutionError(
+    message,
+    subcategory,
+    toolName,
+    context,
+    originalError,
+    operationId,
+    executionTime
+  )
 
 export const createToolAuthenticationError = (
   message: string,
@@ -697,7 +760,16 @@ export const createToolAuthenticationError = (
   originalError?: Error,
   authMethod?: string,
   tokenExpired?: boolean
-) => new ToolAuthenticationError(message, subcategory, toolName, context, originalError, authMethod, tokenExpired)
+) =>
+  new ToolAuthenticationError(
+    message,
+    subcategory,
+    toolName,
+    context,
+    originalError,
+    authMethod,
+    tokenExpired
+  )
 
 export const createUserInputError = (
   message: string,
@@ -716,7 +788,16 @@ export const createSystemResourceError = (
   originalError?: Error,
   currentUsage?: number,
   limit?: number
-) => new SystemResourceError(message, subcategory, resourceType, context, originalError, currentUsage, limit)
+) =>
+  new SystemResourceError(
+    message,
+    subcategory,
+    resourceType,
+    context,
+    originalError,
+    currentUsage,
+    limit
+  )
 
 export const createExternalServiceError = (
   message: string,
@@ -727,4 +808,14 @@ export const createExternalServiceError = (
   serviceUrl?: string,
   httpStatus?: number,
   retryAfter?: number
-) => new ExternalServiceError(message, subcategory, serviceName, context, originalError, serviceUrl, httpStatus, retryAfter)
+) =>
+  new ExternalServiceError(
+    message,
+    subcategory,
+    serviceName,
+    context,
+    originalError,
+    serviceUrl,
+    httpStatus,
+    retryAfter
+  )

@@ -6,16 +6,15 @@
  */
 
 import type {
+  CompletionUpdate,
+  ConversationMessage,
+  ErrorUpdate,
+  ExecutionStatistics,
+  PerformanceTrend,
   ProgressTracker,
+  ProgressUpdate,
   RealTimeUpdateHandler,
   StateChangeUpdate,
-  ProgressUpdate,
-  ErrorUpdate,
-  CompletionUpdate,
-  ExecutionMetrics,
-  PerformanceTrend,
-  ExecutionStatistics,
-  ConversationMessage
 } from '../types/journey-execution-types'
 
 /**
@@ -132,10 +131,16 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       })
 
       // Handle progress visualization requests
-      socket.on('journey:request_visualization', async (data: { journeyId: string; type: string }) => {
-        const visualization = await this.generateProgressVisualization(data.journeyId, data.type as any)
-        socket.emit('journey:visualization_data', visualization)
-      })
+      socket.on(
+        'journey:request_visualization',
+        async (data: { journeyId: string; type: string }) => {
+          const visualization = await this.generateProgressVisualization(
+            data.journeyId,
+            data.type as any
+          )
+          socket.emit('journey:visualization_data', visualization)
+        }
+      )
 
       // Handle performance metrics requests
       socket.on('journey:request_metrics', (data: { journeyId: string }) => {
@@ -169,7 +174,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
         journeyId,
         sessionId,
         progress: currentProgress,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
 
@@ -272,15 +277,22 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
 
     // Generate completion visualization
     const completionViz = await this.generateCompletionVisualization(update)
-    this.emitToJourneySubscribers(update.journeyId, 'journey:completion_visualization', completionViz)
+    this.emitToJourneySubscribers(
+      update.journeyId,
+      'journey:completion_visualization',
+      completionViz
+    )
 
     // Final performance metrics
     await this.finalizePerformanceMetrics(update.journeyId)
 
     // Cleanup after delay
-    setTimeout(() => {
-      this.cleanupJourneyData(update.journeyId)
-    }, 5 * 60 * 1000) // 5 minutes
+    setTimeout(
+      () => {
+        this.cleanupJourneyData(update.journeyId)
+      },
+      5 * 60 * 1000
+    ) // 5 minutes
   }
 
   /**
@@ -296,13 +308,16 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     }
 
     // Convert milestones to data points
-    const dataPoints: ProgressDataPoint[] = progress.milestones.map(milestone => ({
+    const dataPoints: ProgressDataPoint[] = progress.milestones.map((milestone) => ({
       id: milestone.id,
       name: milestone.name,
-      status: milestone.completed ? 'completed' :
-              (milestone.stateId === progress.currentStateName ? 'active' : 'pending'),
+      status: milestone.completed
+        ? 'completed'
+        : milestone.stateId === progress.currentStateName
+          ? 'active'
+          : 'pending',
       progress: milestone.completed ? 100 : 0,
-      timestamp: milestone.timestamp
+      timestamp: milestone.timestamp,
     }))
 
     const visualization: ProgressVisualization = {
@@ -313,8 +328,8 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
         completedSteps: progress.completedStates,
         estimatedTimeRemaining: progress.estimatedTimeRemaining || 0,
         currentPhase: progress.currentStateName,
-        theme: 'auto'
-      }
+        theme: 'auto',
+      },
     }
 
     // Cache visualization
@@ -335,15 +350,14 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
    */
   getExecutionStatistics(): ExecutionStatistics {
     const totalJourneys = this.progressTrackers.size
-    const completedJourneys = Array.from(this.progressTrackers.values())
-      .filter(p => p.completionPercentage === 100).length
+    const completedJourneys = Array.from(this.progressTrackers.values()).filter(
+      (p) => p.completionPercentage === 100
+    ).length
     const activeJourneys = totalJourneys - completedJourneys
 
     // Calculate metrics from performance data
     const allMetrics = Array.from(this.performanceMetrics.values())
-    const avgExecutionTime = this.calculateAverage(
-      allMetrics.flatMap(m => m.executionTime)
-    )
+    const avgExecutionTime = this.calculateAverage(allMetrics.flatMap((m) => m.executionTime))
     const successRate = completedJourneys / (totalJourneys || 1)
     const errorRate = 1 - successRate
 
@@ -355,7 +369,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       successRate,
       errorRate,
       toolUsageStats: [], // Would be populated with actual tool usage data
-      performanceTrends: this.generatePerformanceTrends()
+      performanceTrends: this.generatePerformanceTrends(),
     }
   }
 
@@ -379,7 +393,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       journeyId,
       sessionId,
       message,
-      timestamp: new Date()
+      timestamp: new Date(),
     })
   }
 
@@ -416,7 +430,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       progress.currentStateName = update.stateName
 
       // Update milestone completion
-      const milestone = progress.milestones.find(m => m.stateId === update.currentState)
+      const milestone = progress.milestones.find((m) => m.stateId === update.currentState)
       if (milestone && !milestone.completed) {
         milestone.completed = true
         milestone.timestamp = new Date()
@@ -432,13 +446,13 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     const progress = this.progressTrackers.get(update.journeyId)
     if (!progress) return
 
-    const milestone = progress.milestones.find(m => m.stateId === update.currentState)
-    if (milestone && milestone.completed) {
+    const milestone = progress.milestones.find((m) => m.stateId === update.currentState)
+    if (milestone?.completed) {
       this.emitToJourneySubscribers(update.journeyId, 'journey:milestone_reached', {
         journeyId: update.journeyId,
         milestone,
         progress: progress.completionPercentage,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
   }
@@ -457,13 +471,14 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     const lastEmit = (this as any).lastProgressEmit?.get(update.journeyId) || 0
     const now = Date.now()
 
-    if (now - lastEmit > 500) { // Max 2 updates per second
+    if (now - lastEmit > 500) {
+      // Max 2 updates per second
       this.emitToJourneySubscribers(update.journeyId, 'journey:progress_updated', update)
 
       if (!(this as any).lastProgressEmit) {
-        (this as any).lastProgressEmit = new Map()
+        ;(this as any).lastProgressEmit = new Map()
       }
-      (this as any).lastProgressEmit.set(update.journeyId, now)
+      ;(this as any).lastProgressEmit.set(update.journeyId, now)
     }
   }
 
@@ -484,8 +499,9 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       case 'threshold':
         return update.progress.completionPercentage >= condition.value
       case 'duration':
-        return update.estimatedCompletion ?
-          (new Date(update.estimatedCompletion).getTime() - Date.now()) > condition.value : false
+        return update.estimatedCompletion
+          ? new Date(update.estimatedCompletion).getTime() - Date.now() > condition.value
+          : false
       default:
         return false
     }
@@ -500,7 +516,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
           this.emitToJourneySubscribers(update.journeyId, 'journey:alert', {
             alert,
             update,
-            timestamp: new Date()
+            timestamp: new Date(),
           })
           break
         case 'escalate':
@@ -515,7 +531,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     const alerts = this.activeAlerts.get(update.journeyId)
     if (!alerts) return
 
-    const errorAlerts = alerts.filter(a => a.type === 'error' && a.enabled)
+    const errorAlerts = alerts.filter((a) => a.type === 'error' && a.enabled)
     for (const alert of errorAlerts) {
       await this.triggerAlert(alert, update as any)
     }
@@ -534,7 +550,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     const viz = this.progressVisualizers.get(update.journeyId)
     if (viz) {
       // Mark current step as error
-      const currentStep = viz.data.find(d => d.status === 'active')
+      const currentStep = viz.data.find((d) => d.status === 'active')
       if (currentStep) {
         currentStep.status = 'error'
       }
@@ -560,7 +576,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       errorRates: [],
       userInteractionTimes: [],
       throughput: [],
-      latency: []
+      latency: [],
     }
     this.performanceMetrics.set(journeyId, metrics)
     return metrics
@@ -579,11 +595,14 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
         viz.metadata.currentPhase = progress.currentStateName
 
         // Update data points
-        viz.data.forEach(point => {
-          const milestone = progress.milestones.find(m => m.id === point.id)
+        viz.data.forEach((point) => {
+          const milestone = progress.milestones.find((m) => m.id === point.id)
           if (milestone) {
-            point.status = milestone.completed ? 'completed' :
-                         (milestone.stateId === progress.currentStateName ? 'active' : 'pending')
+            point.status = milestone.completed
+              ? 'completed'
+              : milestone.stateId === progress.currentStateName
+                ? 'active'
+                : 'pending'
             point.progress = milestone.completed ? 100 : 0
           }
         })
@@ -591,11 +610,14 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     }
   }
 
-  private async updateVisualizationWithError(journeyId: string, update: ErrorUpdate): Promise<void> {
+  private async updateVisualizationWithError(
+    journeyId: string,
+    update: ErrorUpdate
+  ): Promise<void> {
     const viz = this.progressVisualizers.get(journeyId)
     if (viz) {
       // Find current step and mark as error
-      const currentStep = viz.data.find(d => d.status === 'active')
+      const currentStep = viz.data.find((d) => d.status === 'active')
       if (currentStep) {
         currentStep.status = 'error'
       }
@@ -608,8 +630,8 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       summary: update.summary,
       visualizations: {
         timeline: await this.generateProgressVisualization(update.journeyId, 'timeline'),
-        metrics: this.getPerformanceMetrics(update.journeyId)
-      }
+        metrics: this.getPerformanceMetrics(update.journeyId),
+      },
     }
   }
 
@@ -622,14 +644,14 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
         averageExecutionTime: this.calculateAverage(metrics.executionTime),
         totalErrors: metrics.errorRates.length,
         peakMemoryUsage: Math.max(...metrics.memoryUsage),
-        averageLatency: this.calculateAverage(metrics.latency)
+        averageLatency: this.calculateAverage(metrics.latency),
       }
 
       // Emit final metrics
       this.emitToJourneySubscribers(journeyId, 'journey:performance_metric', {
         journeyId,
         metrics: finalMetrics,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
     }
   }
@@ -642,19 +664,19 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
       return date.toISOString().split('T')[0]
     }).reverse()
 
-    return dates.map(date => ({
+    return dates.map((date) => ({
       date,
       executionCount: Math.floor(Math.random() * 50) + 10,
       averageTime: Math.random() * 5000 + 1000,
       successRate: 0.85 + Math.random() * 0.14,
-      errorRate: Math.random() * 0.15
+      errorRate: Math.random() * 0.15,
     }))
   }
 
   private emitToJourneySubscribers(journeyId: string, event: ProgressEventType, data: any): void {
     const subscribers = this.updateSubscribers.get(journeyId)
     if (subscribers) {
-      subscribers.forEach(socketId => {
+      subscribers.forEach((socketId) => {
         this.emitToSocket(socketId, event, data)
       })
     }
@@ -704,7 +726,7 @@ export class RealTimeProgressService implements RealTimeUpdateHandler {
     }
 
     // Close all socket connections
-    this.socketConnections.forEach(socket => {
+    this.socketConnections.forEach((socket) => {
       socket.disconnect()
     })
 

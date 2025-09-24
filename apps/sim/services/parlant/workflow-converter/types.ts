@@ -5,7 +5,7 @@
  * Provides type safety and clear interfaces for all conversion operations.
  */
 
-import type { Node, Edge } from 'reactflow'
+import type { Edge, Node } from 'reactflow'
 
 // ========================================
 // REACTFLOW INPUT TYPES
@@ -177,10 +177,7 @@ export interface ConversionMetadata {
 
 export interface NodeConverter {
   canConvert(node: ReactFlowNode): boolean
-  convert(
-    node: ReactFlowNode,
-    context: ConversionContext
-  ): Promise<NodeConversionResult>
+  convert(node: ReactFlowNode, context: ConversionContext): Promise<NodeConversionResult>
   validateInput?(node: ReactFlowNode): ValidationResult
 }
 

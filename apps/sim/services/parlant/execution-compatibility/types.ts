@@ -403,9 +403,18 @@ export interface IntegrationCompatibilityConfig {
 
 export interface IntegrationPointValidator {
   validateApiIntegration(call: ApiCall, expected: ApiCall): IntegrationValidationResult
-  validateDatabaseIntegration(op: DatabaseOperation, expected: DatabaseOperation): IntegrationValidationResult
-  validateExternalIntegration(integration: ExternalIntegration, expected: ExternalIntegration): IntegrationValidationResult
-  validateWebhookIntegration(webhook: WebhookCall, expected: WebhookCall): IntegrationValidationResult
+  validateDatabaseIntegration(
+    op: DatabaseOperation,
+    expected: DatabaseOperation
+  ): IntegrationValidationResult
+  validateExternalIntegration(
+    integration: ExternalIntegration,
+    expected: ExternalIntegration
+  ): IntegrationValidationResult
+  validateWebhookIntegration(
+    webhook: WebhookCall,
+    expected: WebhookCall
+  ): IntegrationValidationResult
 }
 
 export interface IntegrationValidationResult {

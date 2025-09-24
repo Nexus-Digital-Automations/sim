@@ -6,15 +6,15 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { BaseNodeConverter } from './base-converter'
 import type {
-  ReactFlowNode,
   ConversionContext,
   NodeConversionResult,
-  ValidationResult,
   ParlantState,
-  ParlantStateType
+  ParlantStateType,
+  ReactFlowNode,
+  ValidationResult,
 } from '../types'
+import { BaseNodeConverter } from './base-converter'
 
 const logger = createLogger('StarterConverter')
 
@@ -46,25 +46,24 @@ export class StarterNodeConverter extends BaseNodeConverter {
           name: 'start_input',
           type: 'json',
           description: 'Input variable passed to the workflow',
-          defaultValue: node.data.input
+          defaultValue: node.data.input,
         })
       }
 
       this.logConversion(node, 'Starter node converted successfully', {
         stateId: initialState.id,
-        variableCount: variables.length
+        variableCount: variables.length,
       })
 
       return {
         states: [initialState],
         transitions: [], // Initial states don't have incoming transitions
-        variables: variables.length > 0 ? variables : undefined
+        variables: variables.length > 0 ? variables : undefined,
       }
-
     } catch (error) {
       logger.error('Failed to convert starter node', {
         nodeId: node.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       // Add error to context
@@ -77,7 +76,7 @@ export class StarterNodeConverter extends BaseNodeConverter {
           [
             'Check starter node configuration',
             'Verify trigger conditions',
-            'Review input parameters'
+            'Review input parameters',
           ]
         )
       )
@@ -86,7 +85,7 @@ export class StarterNodeConverter extends BaseNodeConverter {
       return {
         states: [this.createFallbackInitialState(node)],
         transitions: [],
-        variables: undefined
+        variables: undefined,
       }
     }
   }
@@ -174,7 +173,7 @@ export class StarterNodeConverter extends BaseNodeConverter {
       description: this.generateDescription(node),
       content,
       conditions: conditions.length > 0 ? conditions : undefined,
-      tools: this.extractTools(node)
+      tools: this.extractTools(node),
     })
   }
 
@@ -183,7 +182,7 @@ export class StarterNodeConverter extends BaseNodeConverter {
       name: 'Journey Start (Fallback)',
       description: 'Fallback initial state created due to conversion error',
       content: 'Journey started with fallback configuration',
-      conditions: ['Journey started (fallback)']
+      conditions: ['Journey started (fallback)'],
     })
   }
 

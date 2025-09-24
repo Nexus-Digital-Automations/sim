@@ -6,11 +6,11 @@
  * data flow validation, and integration point monitoring.
  */
 
-import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { parlantLoggers } from './logging'
-import { errorTracker } from './error-tracking'
-import { db } from '../db'
 import { sql } from 'drizzle-orm'
+import { createLogger } from '../../apps/sim/lib/logs/console/logger'
+import { db } from '../db'
+import { errorTracker } from './error-tracking'
+import { parlantLoggers } from './logging'
 
 const logger = createLogger('ParlantIntegrationHealth')
 
@@ -75,7 +75,7 @@ export class ParlantIntegrationHealthMonitor {
           SELECT COUNT(*) as count
           FROM information_schema.tables
           WHERE table_name = 'session'
-        `)
+        `),
       ])
 
       const duration = performance.now() - startTime
@@ -84,10 +84,12 @@ export class ParlantIntegrationHealthMonitor {
         user: tableChecks[0].status === 'fulfilled',
         workspace: tableChecks[1].status === 'fulfilled',
         workflow: tableChecks[2].status === 'fulfilled',
-        subscription: tableChecks[3].status === 'fulfilled' &&
-          parseInt((tableChecks[3].value as any)[0]?.count || '0') > 0,
-        session: tableChecks[4].status === 'fulfilled' &&
-          parseInt((tableChecks[4].value as any)[0]?.count || '0') > 0
+        subscription:
+          tableChecks[3].status === 'fulfilled' &&
+          Number.parseInt((tableChecks[3].value as any)[0]?.count || '0') > 0,
+        session:
+          tableChecks[4].status === 'fulfilled' &&
+          Number.parseInt((tableChecks[4].value as any)[0]?.count || '0') > 0,
       }
 
       // Determine status - core tables must be accessible
@@ -102,7 +104,7 @@ export class ParlantIntegrationHealthMonitor {
           new Error('Table access validation failed'),
           {
             operation: 'sim_table_access_check',
-            duration
+            duration,
           }
         )
       }
@@ -117,17 +119,23 @@ export class ParlantIntegrationHealthMonitor {
           coreTablesAccessible: coreTablesHealthy,
           optionalTablesAvailable: {
             subscription: tableStatus.subscription,
-            session: tableStatus.session
+            session: tableStatus.session,
           },
           accessValidation: {
-            userTableRecords: tableChecks[0].status === 'fulfilled' ?
-              parseInt((tableChecks[0].value as any)[0]?.count || '0') : 0,
-            workspaceTableRecords: tableChecks[1].status === 'fulfilled' ?
-              parseInt((tableChecks[1].value as any)[0]?.count || '0') : 0,
-            workflowTableRecords: tableChecks[2].status === 'fulfilled' ?
-              parseInt((tableChecks[2].value as any)[0]?.count || '0') : 0
-          }
-        }
+            userTableRecords:
+              tableChecks[0].status === 'fulfilled'
+                ? Number.parseInt((tableChecks[0].value as any)[0]?.count || '0')
+                : 0,
+            workspaceTableRecords:
+              tableChecks[1].status === 'fulfilled'
+                ? Number.parseInt((tableChecks[1].value as any)[0]?.count || '0')
+                : 0,
+            workflowTableRecords:
+              tableChecks[2].status === 'fulfilled'
+                ? Number.parseInt((tableChecks[2].value as any)[0]?.count || '0')
+                : 0,
+          },
+        },
       }
 
       this.lastCheckResults.set('sim-table-access', result)
@@ -137,7 +145,7 @@ export class ParlantIntegrationHealthMonitor {
         status,
         duration,
         coreTablesHealthy,
-        tablesChecked: Object.keys(tableStatus).length
+        tablesChecked: Object.keys(tableStatus).length,
       })
 
       return result
@@ -152,7 +160,7 @@ export class ParlantIntegrationHealthMonitor {
         {
           operation: 'sim_table_access_check',
           duration,
-          errorType: 'integration'
+          errorType: 'integration',
         }
       )
 
@@ -164,8 +172,8 @@ export class ParlantIntegrationHealthMonitor {
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
           tables: {},
-          coreTablesAccessible: false
-        }
+          coreTablesAccessible: false,
+        },
       }
     }
   }
@@ -194,23 +202,36 @@ export class ParlantIntegrationHealthMonitor {
           JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
           WHERE tc.constraint_type = 'FOREIGN KEY'
           AND kcu.table_name LIKE 'parlant_%'
-        `)
+        `),
       ])
 
       const duration = performance.now() - startTime
 
-      const parlantTables = parlantTableChecks[0].status === 'fulfilled' ?
-        (parlantTableChecks[0].value as any[]).map(row => row.table_name) : []
+      const parlantTables =
+        parlantTableChecks[0].status === 'fulfilled'
+          ? (parlantTableChecks[0].value as any[]).map((row) => row.table_name)
+          : []
 
-      const foreignKeyCount = parlantTableChecks[1].status === 'fulfilled' ?
-        parseInt((parlantTableChecks[1].value as any)[0]?.count || '0') : 0
+      const foreignKeyCount =
+        parlantTableChecks[1].status === 'fulfilled'
+          ? Number.parseInt((parlantTableChecks[1].value as any)[0]?.count || '0')
+          : 0
 
       // Expected Parlant tables
-      const expectedTables = ['parlant_agents', 'parlant_sessions', 'parlant_guidelines', 'parlant_journeys']
-      const hasRequiredTables = expectedTables.every(table => parlantTables.includes(table))
+      const expectedTables = [
+        'parlant_agents',
+        'parlant_sessions',
+        'parlant_guidelines',
+        'parlant_journeys',
+      ]
+      const hasRequiredTables = expectedTables.every((table) => parlantTables.includes(table))
 
-      const status = hasRequiredTables && foreignKeyCount > 0 ? 'healthy' :
-                    parlantTables.length > 0 ? 'degraded' : 'unhealthy'
+      const status =
+        hasRequiredTables && foreignKeyCount > 0
+          ? 'healthy'
+          : parlantTables.length > 0
+            ? 'degraded'
+            : 'unhealthy'
 
       const result: IntegrationHealthResult = {
         status,
@@ -222,14 +243,14 @@ export class ParlantIntegrationHealthMonitor {
             tablesFound: parlantTables,
             expectedTables,
             hasRequiredTables,
-            foreignKeyConstraints: foreignKeyCount
+            foreignKeyConstraints: foreignKeyCount,
           },
           readiness: {
             schemaInstalled: parlantTables.length > 0,
             foreignKeysConfigured: foreignKeyCount > 0,
-            fullIntegrationReady: hasRequiredTables && foreignKeyCount > 0
-          }
-        }
+            fullIntegrationReady: hasRequiredTables && foreignKeyCount > 0,
+          },
+        },
       }
 
       if (status === 'unhealthy') {
@@ -242,7 +263,7 @@ export class ParlantIntegrationHealthMonitor {
             operation: 'parlant_schema_check',
             duration,
             tablesFound: parlantTables.length,
-            expectedTables: expectedTables.length
+            expectedTables: expectedTables.length,
           }
         )
       }
@@ -254,7 +275,7 @@ export class ParlantIntegrationHealthMonitor {
         status,
         duration,
         tablesFound: parlantTables.length,
-        foreignKeyCount
+        foreignKeyCount,
       })
 
       return result
@@ -269,7 +290,7 @@ export class ParlantIntegrationHealthMonitor {
         {
           operation: 'parlant_schema_check',
           duration,
-          errorType: 'integration'
+          errorType: 'integration',
         }
       )
 
@@ -280,8 +301,8 @@ export class ParlantIntegrationHealthMonitor {
         duration,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          schema: { tablesFound: [], expectedTables: [], hasRequiredTables: false }
-        }
+          schema: { tablesFound: [], expectedTables: [], hasRequiredTables: false },
+        },
       }
     }
   }
@@ -320,28 +341,37 @@ export class ParlantIntegrationHealthMonitor {
           WHERE tc.constraint_type = 'FOREIGN KEY'
           AND kcu.column_name LIKE '%workspace%'
           AND kcu.table_name LIKE 'parlant_%'
-        `)
+        `),
       ])
 
       const duration = performance.now() - startTime
 
-      const workspaceColumns = workspaceChecks[0].status === 'fulfilled' ?
-        (workspaceChecks[0].value as any[]).map(col => ({ name: col.column_name, type: col.data_type })) : []
+      const workspaceColumns =
+        workspaceChecks[0].status === 'fulfilled'
+          ? (workspaceChecks[0].value as any[]).map((col) => ({
+              name: col.column_name,
+              type: col.data_type,
+            }))
+          : []
 
-      const sampleWorkspaces = workspaceChecks[1].status === 'fulfilled' ?
-        (workspaceChecks[1].value as any[]) : []
+      const sampleWorkspaces =
+        workspaceChecks[1].status === 'fulfilled' ? (workspaceChecks[1].value as any[]) : []
 
-      const parlantWorkspaceKeys = workspaceChecks[2].status === 'fulfilled' ?
-        (workspaceChecks[2].value as any[]) : []
+      const parlantWorkspaceKeys =
+        workspaceChecks[2].status === 'fulfilled' ? (workspaceChecks[2].value as any[]) : []
 
       // Check if workspace table has required fields for isolation
       const requiredColumns = ['id', 'name']
-      const hasRequiredColumns = requiredColumns.every(col =>
-        workspaceColumns.some(wCol => wCol.name === col)
+      const hasRequiredColumns = requiredColumns.every((col) =>
+        workspaceColumns.some((wCol) => wCol.name === col)
       )
 
-      const status = hasRequiredColumns && sampleWorkspaces.length > 0 ? 'healthy' :
-                    hasRequiredColumns ? 'degraded' : 'unhealthy'
+      const status =
+        hasRequiredColumns && sampleWorkspaces.length > 0
+          ? 'healthy'
+          : hasRequiredColumns
+            ? 'degraded'
+            : 'unhealthy'
 
       const result: IntegrationHealthResult = {
         status,
@@ -353,15 +383,15 @@ export class ParlantIntegrationHealthMonitor {
             tableStructure: workspaceColumns,
             hasRequiredColumns,
             sampleCount: sampleWorkspaces.length,
-            parlantIntegrationKeys: parlantWorkspaceKeys.length
+            parlantIntegrationKeys: parlantWorkspaceKeys.length,
           },
           isolation: {
             multiTenancyReady: hasRequiredColumns,
             parlantLinksConfigured: parlantWorkspaceKeys.length > 0,
-            workspacesAvailable: sampleWorkspaces.length > 0
+            workspacesAvailable: sampleWorkspaces.length > 0,
           },
-          sampleWorkspaces: sampleWorkspaces.slice(0, 3) // Include sample data for debugging
-        }
+          sampleWorkspaces: sampleWorkspaces.slice(0, 3), // Include sample data for debugging
+        },
       }
 
       this.lastCheckResults.set('workspace-isolation', result)
@@ -371,7 +401,7 @@ export class ParlantIntegrationHealthMonitor {
         status,
         duration,
         workspaceCount: sampleWorkspaces.length,
-        parlantKeys: parlantWorkspaceKeys.length
+        parlantKeys: parlantWorkspaceKeys.length,
       })
 
       return result
@@ -386,7 +416,7 @@ export class ParlantIntegrationHealthMonitor {
         {
           operation: 'workspace_isolation_check',
           duration,
-          errorType: 'integration'
+          errorType: 'integration',
         }
       )
 
@@ -397,8 +427,8 @@ export class ParlantIntegrationHealthMonitor {
         duration,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          workspace: { hasRequiredColumns: false, sampleCount: 0 }
-        }
+          workspace: { hasRequiredColumns: false, sampleCount: 0 },
+        },
       }
     }
   }
@@ -417,7 +447,7 @@ export class ParlantIntegrationHealthMonitor {
         healthEndpoint: true, // We know this works since we're running
         authEndpoint: await this.checkEndpointAccessibility('/api/v1/auth'),
         logsEndpoint: await this.checkEndpointAccessibility('/api/v1/logs'),
-        webhookEndpoint: process.env.WEBHOOK_URL ? true : false
+        webhookEndpoint: !!process.env.WEBHOOK_URL,
       }
 
       // Check environment configuration
@@ -425,7 +455,7 @@ export class ParlantIntegrationHealthMonitor {
         databaseUrl: !!process.env.DATABASE_URL || !!process.env.POSTGRES_URL,
         nextAuthSecret: !!process.env.NEXTAUTH_SECRET,
         nextAuthUrl: !!process.env.NEXTAUTH_URL,
-        parlantConfig: !!process.env.PARLANT_API_KEY || !!process.env.PARLANT_SERVER_URL
+        parlantConfig: !!process.env.PARLANT_API_KEY || !!process.env.PARLANT_SERVER_URL,
       }
 
       const duration = performance.now() - startTime
@@ -433,8 +463,12 @@ export class ParlantIntegrationHealthMonitor {
       const endpointsHealthy = Object.values(apiChecks).filter(Boolean).length
       const configHealthy = Object.values(envConfig).filter(Boolean).length
 
-      const status = endpointsHealthy >= 3 && configHealthy >= 3 ? 'healthy' :
-                    endpointsHealthy >= 2 && configHealthy >= 2 ? 'degraded' : 'unhealthy'
+      const status =
+        endpointsHealthy >= 3 && configHealthy >= 3
+          ? 'healthy'
+          : endpointsHealthy >= 2 && configHealthy >= 2
+            ? 'degraded'
+            : 'unhealthy'
 
       const result: IntegrationHealthResult = {
         status,
@@ -448,9 +482,9 @@ export class ParlantIntegrationHealthMonitor {
             endpointsAccessible: endpointsHealthy,
             totalEndpoints: Object.keys(apiChecks).length,
             configurationComplete: configHealthy,
-            totalConfigItems: Object.keys(envConfig).length
-          }
-        }
+            totalConfigItems: Object.keys(envConfig).length,
+          },
+        },
       }
 
       this.lastCheckResults.set('api-integration', result)
@@ -460,7 +494,7 @@ export class ParlantIntegrationHealthMonitor {
         status,
         duration,
         endpointsHealthy,
-        configHealthy
+        configHealthy,
       })
 
       return result
@@ -475,7 +509,7 @@ export class ParlantIntegrationHealthMonitor {
         {
           operation: 'api_integration_check',
           duration,
-          errorType: 'integration'
+          errorType: 'integration',
         }
       )
 
@@ -485,8 +519,8 @@ export class ParlantIntegrationHealthMonitor {
         component: 'api-integration',
         duration,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       }
     }
   }
@@ -527,35 +561,63 @@ export class ParlantIntegrationHealthMonitor {
       logger.info('Running comprehensive integration health check')
 
       // Run all integration checks in parallel
-      const [
-        simTableAccess,
-        parlantSchema,
-        workspaceIsolation,
-        apiIntegration
-      ] = await Promise.allSettled([
-        this.checkSimTableAccess(),
-        this.checkParlantSchemaReadiness(),
-        this.checkWorkspaceIsolation(),
-        this.checkApiIntegrationHealth()
-      ])
+      const [simTableAccess, parlantSchema, workspaceIsolation, apiIntegration] =
+        await Promise.allSettled([
+          this.checkSimTableAccess(),
+          this.checkParlantSchemaReadiness(),
+          this.checkWorkspaceIsolation(),
+          this.checkApiIntegrationHealth(),
+        ])
 
       const components = {
-        'sim-table-access': simTableAccess.status === 'fulfilled' ? simTableAccess.value :
-          { status: 'unhealthy' as const, timestamp: new Date().toISOString(), component: 'sim-table-access', duration: 0, details: {} },
-        'parlant-schema': parlantSchema.status === 'fulfilled' ? parlantSchema.value :
-          { status: 'unhealthy' as const, timestamp: new Date().toISOString(), component: 'parlant-schema', duration: 0, details: {} },
-        'workspace-isolation': workspaceIsolation.status === 'fulfilled' ? workspaceIsolation.value :
-          { status: 'unhealthy' as const, timestamp: new Date().toISOString(), component: 'workspace-isolation', duration: 0, details: {} },
-        'api-integration': apiIntegration.status === 'fulfilled' ? apiIntegration.value :
-          { status: 'unhealthy' as const, timestamp: new Date().toISOString(), component: 'api-integration', duration: 0, details: {} }
+        'sim-table-access':
+          simTableAccess.status === 'fulfilled'
+            ? simTableAccess.value
+            : {
+                status: 'unhealthy' as const,
+                timestamp: new Date().toISOString(),
+                component: 'sim-table-access',
+                duration: 0,
+                details: {},
+              },
+        'parlant-schema':
+          parlantSchema.status === 'fulfilled'
+            ? parlantSchema.value
+            : {
+                status: 'unhealthy' as const,
+                timestamp: new Date().toISOString(),
+                component: 'parlant-schema',
+                duration: 0,
+                details: {},
+              },
+        'workspace-isolation':
+          workspaceIsolation.status === 'fulfilled'
+            ? workspaceIsolation.value
+            : {
+                status: 'unhealthy' as const,
+                timestamp: new Date().toISOString(),
+                component: 'workspace-isolation',
+                duration: 0,
+                details: {},
+              },
+        'api-integration':
+          apiIntegration.status === 'fulfilled'
+            ? apiIntegration.value
+            : {
+                status: 'unhealthy' as const,
+                timestamp: new Date().toISOString(),
+                component: 'api-integration',
+                duration: 0,
+                details: {},
+              },
       }
 
       // Calculate summary statistics
-      const statuses = Object.values(components).map(c => c.status)
+      const statuses = Object.values(components).map((c) => c.status)
       const totalChecks = statuses.length
-      const healthyChecks = statuses.filter(s => s === 'healthy').length
-      const degradedChecks = statuses.filter(s => s === 'degraded').length
-      const unhealthyChecks = statuses.filter(s => s === 'unhealthy').length
+      const healthyChecks = statuses.filter((s) => s === 'healthy').length
+      const degradedChecks = statuses.filter((s) => s === 'degraded').length
+      const unhealthyChecks = statuses.filter((s) => s === 'unhealthy').length
 
       // Determine overall status
       let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
@@ -590,9 +652,9 @@ export class ParlantIntegrationHealthMonitor {
           degradedChecks,
           unhealthyChecks,
           criticalIssues,
-          recommendations
+          recommendations,
         },
-        duration
+        duration,
       }
 
       // Log comprehensive results
@@ -603,7 +665,7 @@ export class ParlantIntegrationHealthMonitor {
         healthyChecks,
         degradedChecks,
         unhealthyChecks,
-        criticalIssues: criticalIssues.length
+        criticalIssues: criticalIssues.length,
       })
 
       // Track critical issues
@@ -617,7 +679,7 @@ export class ParlantIntegrationHealthMonitor {
             operation: 'comprehensive_integration_check',
             duration,
             unhealthyChecks,
-            criticalIssues: criticalIssues.length
+            criticalIssues: criticalIssues.length,
           }
         )
       }
@@ -634,7 +696,7 @@ export class ParlantIntegrationHealthMonitor {
         {
           operation: 'comprehensive_integration_check',
           duration,
-          errorType: 'system'
+          errorType: 'system',
         }
       )
 
@@ -673,5 +735,5 @@ export const integrationHealth = {
   checkApiIntegration: () => parlantIntegrationHealthMonitor.checkApiIntegrationHealth(),
   checkComprehensive: () => parlantIntegrationHealthMonitor.checkComprehensiveIntegrationHealth(),
   getLastResults: () => parlantIntegrationHealthMonitor.getLastCheckResults(),
-  clearCache: () => parlantIntegrationHealthMonitor.clearCache()
+  clearCache: () => parlantIntegrationHealthMonitor.clearCache(),
 }

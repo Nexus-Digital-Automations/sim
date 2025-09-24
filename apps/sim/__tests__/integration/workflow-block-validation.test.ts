@@ -15,18 +15,17 @@
  * - Integration between different block types
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
+import { createLogger } from '@/lib/logs/console/logger'
+import { getAllBlocks } from '@/blocks'
+import { WorkflowToJourneyConverter } from '@/services/parlant/journey-conversion/conversion-engine'
 import type {
   BlockState,
-  WorkflowState,
-  ConversionContext,
   ConversionConfig,
-  JourneyConversionResult
+  ConversionContext,
+  JourneyConversionResult,
+  WorkflowState,
 } from '@/services/parlant/journey-conversion/types'
-import { WorkflowToJourneyConverter } from '@/services/parlant/journey-conversion/conversion-engine'
-import { getAllBlocks, getBlock } from '@/blocks'
-import { createLogger } from '@/lib/logs/console/logger'
-import type { BlockDefinition } from '@/blocks/types'
 
 const logger = createLogger('BlockValidationTests')
 
@@ -37,7 +36,7 @@ const BLOCK_TEST_CONFIG: ConversionConfig = {
   enable_parameter_substitution: true,
   include_error_handling: true,
   optimization_level: 'standard',
-  cache_duration_ms: 0 // Disable caching for tests
+  cache_duration_ms: 0, // Disable caching for tests
 }
 
 // Block-specific test data generators
@@ -47,20 +46,20 @@ class BlockTestDataGenerator {
       // Core workflow blocks
       starter: {
         label: 'Test Starter',
-        description: 'Starting point for test workflow'
+        description: 'Starting point for test workflow',
       },
 
       condition: {
         label: 'Test Condition',
         condition: '{{test_value}} > 0',
-        description: 'Conditional branch logic'
+        description: 'Conditional branch logic',
       },
 
       parallel: {
         label: 'Test Parallel',
         blocks: ['parallel-task-1', 'parallel-task-2'],
         wait_for_all: true,
-        timeout: 30000
+        timeout: 30000,
       },
 
       router: {
@@ -68,9 +67,9 @@ class BlockTestDataGenerator {
         routes: [
           { condition: '{{route_type}} === "a"', target: 'route-a-target' },
           { condition: '{{route_type}} === "b"', target: 'route-b-target' },
-          { condition: 'true', target: 'default-route-target' }
+          { condition: 'true', target: 'default-route-target' },
         ],
-        default_route: 'default-route-target'
+        default_route: 'default-route-target',
       },
 
       // Agent and AI blocks
@@ -80,7 +79,7 @@ class BlockTestDataGenerator {
         prompt: 'Process the following input: {{user_input}}',
         temperature: 0.7,
         max_tokens: 1000,
-        system_prompt: 'You are a helpful assistant for testing purposes.'
+        system_prompt: 'You are a helpful assistant for testing purposes.',
       },
 
       function: {
@@ -96,7 +95,7 @@ class BlockTestDataGenerator {
             return result;
           }
           return processData(input);
-        `
+        `,
       },
 
       evaluator: {
@@ -104,8 +103,8 @@ class BlockTestDataGenerator {
         expression: '{{input_value}} * {{multiplier}} + {{offset}}',
         variables: {
           multiplier: 2,
-          offset: 10
-        }
+          offset: 10,
+        },
       },
 
       // API and external service blocks
@@ -115,15 +114,15 @@ class BlockTestDataGenerator {
         url: '{{api_endpoint}}/test',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer {{api_token}}'
+          Authorization: 'Bearer {{api_token}}',
         },
         body: JSON.stringify({
           action: 'test',
           data: '{{request_data}}',
-          timestamp: '{{current_time}}'
+          timestamp: '{{current_time}}',
         }),
         timeout: 10000,
-        retry_count: 3
+        retry_count: 3,
       },
 
       webhook: {
@@ -131,12 +130,12 @@ class BlockTestDataGenerator {
         url: '{{webhook_url}}',
         method: 'POST',
         headers: {
-          'X-Webhook-Source': 'sim-workflow-test'
+          'X-Webhook-Source': 'sim-workflow-test',
         },
         payload: JSON.stringify({
           event: 'test_event',
-          data: '{{webhook_data}}'
-        })
+          data: '{{webhook_data}}',
+        }),
       },
 
       // Database blocks
@@ -144,7 +143,7 @@ class BlockTestDataGenerator {
         label: 'Test PostgreSQL Query',
         query: 'SELECT * FROM test_table WHERE id = {{record_id}}',
         connection_string: '{{postgres_connection}}',
-        timeout: 5000
+        timeout: 5000,
       },
 
       mysql: {
@@ -154,8 +153,8 @@ class BlockTestDataGenerator {
           host: '{{mysql_host}}',
           user: '{{mysql_user}}',
           password: '{{mysql_password}}',
-          database: '{{mysql_database}}'
-        }
+          database: '{{mysql_database}}',
+        },
       },
 
       mongodb: {
@@ -163,7 +162,7 @@ class BlockTestDataGenerator {
         operation: 'findOne',
         collection: 'test_collection',
         filter: JSON.stringify({ _id: '{{document_id}}' }),
-        connection_string: '{{mongodb_connection}}'
+        connection_string: '{{mongodb_connection}}',
       },
 
       // Communication blocks
@@ -172,14 +171,14 @@ class BlockTestDataGenerator {
         to: '{{recipient_email}}',
         subject: 'Test Email from Workflow: {{subject_suffix}}',
         body: 'This is a test email generated by workflow automation.\n\nData: {{email_data}}',
-        from: '{{sender_email}}'
+        from: '{{sender_email}}',
       },
 
       slack: {
         label: 'Test Slack Message',
         channel: '{{slack_channel}}',
         message: 'Workflow notification: {{notification_message}}',
-        webhook_url: '{{slack_webhook_url}}'
+        webhook_url: '{{slack_webhook_url}}',
       },
 
       discord: {
@@ -190,16 +189,16 @@ class BlockTestDataGenerator {
           {
             title: 'Workflow Status',
             description: '{{status_description}}',
-            color: 3447003
-          }
-        ]
+            color: 3447003,
+          },
+        ],
       },
 
       sms: {
         label: 'Test SMS',
         to: '{{phone_number}}',
         message: 'Workflow alert: {{sms_message}}',
-        from: '{{sms_from_number}}'
+        from: '{{sms_from_number}}',
       },
 
       // File and storage blocks
@@ -208,7 +207,7 @@ class BlockTestDataGenerator {
         action: 'upload',
         file_path: '{{file_path}}',
         folder_id: '{{drive_folder_id}}',
-        file_name: '{{uploaded_file_name}}'
+        file_name: '{{uploaded_file_name}}',
       },
 
       s3: {
@@ -216,7 +215,7 @@ class BlockTestDataGenerator {
         bucket: '{{s3_bucket}}',
         key: '{{s3_key}}',
         file_content: '{{file_content}}',
-        region: 'us-east-1'
+        region: 'us-east-1',
       },
 
       // External service blocks
@@ -226,7 +225,7 @@ class BlockTestDataGenerator {
         repo: '{{github_repo}}',
         title: 'Automated Issue: {{issue_title}}',
         body: 'Issue created by workflow.\n\nDetails: {{issue_details}}',
-        token: '{{github_token}}'
+        token: '{{github_token}}',
       },
 
       jira: {
@@ -236,7 +235,7 @@ class BlockTestDataGenerator {
         issue_type: 'Task',
         summary: 'Workflow Task: {{task_summary}}',
         description: '{{task_description}}',
-        assignee: '{{assignee_email}}'
+        assignee: '{{assignee_email}}',
       },
 
       // Knowledge and search blocks
@@ -245,7 +244,7 @@ class BlockTestDataGenerator {
         knowledge_base_id: '{{kb_id}}',
         query: '{{search_query}}',
         max_results: 5,
-        similarity_threshold: 0.7
+        similarity_threshold: 0.7,
       },
 
       // Specialized blocks
@@ -253,7 +252,7 @@ class BlockTestDataGenerator {
         label: 'Test Schedule',
         cron: '0 9 * * 1', // Every Monday at 9 AM
         timezone: 'America/New_York',
-        enabled: true
+        enabled: true,
       },
 
       memory: {
@@ -261,57 +260,59 @@ class BlockTestDataGenerator {
         action: 'store',
         key: '{{memory_key}}',
         value: '{{memory_value}}',
-        ttl: 3600
-      }
+        ttl: 3600,
+      },
     }
 
-    return testDataMap[blockType] || {
-      label: `Test ${blockType}`,
-      description: `Test configuration for ${blockType} block`
-    }
+    return (
+      testDataMap[blockType] || {
+        label: `Test ${blockType}`,
+        description: `Test configuration for ${blockType} block`,
+      }
+    )
   }
 
   static generateParametersForBlock(blockType: string): Record<string, any> {
     const parameterMap: Record<string, Record<string, any>> = {
       condition: {
-        test_value: 42
+        test_value: 42,
       },
 
       parallel: {
         'parallel-task-1': 'Task 1 data',
-        'parallel-task-2': 'Task 2 data'
+        'parallel-task-2': 'Task 2 data',
       },
 
       router: {
-        route_type: 'a'
+        route_type: 'a',
       },
 
       agent: {
         user_input: 'Test input for AI processing',
-        system_context: 'Testing environment'
+        system_context: 'Testing environment',
       },
 
       evaluator: {
         input_value: 10,
         multiplier: 3,
-        offset: 5
+        offset: 5,
       },
 
       api: {
         api_endpoint: 'https://api.test.example.com',
         api_token: 'test-token-123',
         request_data: { test: true, value: 'sample' },
-        current_time: new Date().toISOString()
+        current_time: new Date().toISOString(),
       },
 
       webhook: {
         webhook_url: 'https://webhook.test.example.com/receive',
-        webhook_data: { event: 'test', source: 'workflow' }
+        webhook_data: { event: 'test', source: 'workflow' },
       },
 
       postgresql: {
         record_id: 123,
-        postgres_connection: 'postgresql://test:test@localhost:5432/testdb'
+        postgres_connection: 'postgresql://test:test@localhost:5432/testdb',
       },
 
       mysql: {
@@ -319,82 +320,82 @@ class BlockTestDataGenerator {
         mysql_host: 'localhost',
         mysql_user: 'test',
         mysql_password: 'testpass',
-        mysql_database: 'testdb'
+        mysql_database: 'testdb',
       },
 
       mongodb: {
         document_id: '507f1f77bcf86cd799439011',
-        mongodb_connection: 'mongodb://localhost:27017/testdb'
+        mongodb_connection: 'mongodb://localhost:27017/testdb',
       },
 
       gmail: {
         recipient_email: 'test@example.com',
         subject_suffix: 'Automated Test',
         email_data: 'Test data payload',
-        sender_email: 'workflow@example.com'
+        sender_email: 'workflow@example.com',
       },
 
       slack: {
         slack_channel: '#testing',
         notification_message: 'Test workflow completed successfully',
-        slack_webhook_url: 'https://hooks.slack.com/test-webhook'
+        slack_webhook_url: 'https://hooks.slack.com/test-webhook',
       },
 
       discord: {
         discord_webhook_url: 'https://discord.com/api/webhooks/test',
         discord_message: 'Workflow test notification',
-        status_description: 'All tests passing'
+        status_description: 'All tests passing',
       },
 
       sms: {
         phone_number: '+1234567890',
         sms_message: 'Test workflow alert',
-        sms_from_number: '+0987654321'
+        sms_from_number: '+0987654321',
       },
 
       google_drive: {
         file_path: '/tmp/test-file.txt',
         drive_folder_id: '1AbCdEfGhIjKlMnOpQrStUv',
-        uploaded_file_name: 'workflow-test-file.txt'
+        uploaded_file_name: 'workflow-test-file.txt',
       },
 
       s3: {
         s3_bucket: 'test-workflow-bucket',
         s3_key: 'tests/workflow-output.json',
-        file_content: JSON.stringify({ test: true, timestamp: Date.now() })
+        file_content: JSON.stringify({ test: true, timestamp: Date.now() }),
       },
 
       github: {
         github_repo: 'testuser/test-repo',
         issue_title: 'Automated workflow issue',
         issue_details: 'Issue created during workflow testing',
-        github_token: 'ghp_test_token_123'
+        github_token: 'ghp_test_token_123',
       },
 
       jira: {
         jira_project: 'TEST',
         task_summary: 'Workflow generated task',
         task_description: 'Task created by automated workflow',
-        assignee_email: 'assignee@example.com'
+        assignee_email: 'assignee@example.com',
       },
 
       knowledge: {
         kb_id: 'kb_test_123',
-        search_query: 'test documentation workflow'
+        search_query: 'test documentation workflow',
       },
 
       memory: {
         memory_key: 'workflow_test_key',
-        memory_value: 'Test workflow value'
-      }
+        memory_value: 'Test workflow value',
+      },
     }
 
     return parameterMap[blockType] || {}
   }
 
   static createWorkflowForBlock(blockType: string): WorkflowState {
-    const blockData = this.generateBlockTestData(blockType)
-    const parameters = this.generateParametersForBlock(blockType)
+    const blockData = BlockTestDataGenerator.generateBlockTestData(blockType)
+    const parameters = BlockTestDataGenerator.generateParametersForBlock(blockType)
 
     const testBlock: BlockState = {
       id: `test-${blockType}-1`,
@@ -402,7 +403,7 @@ class BlockTestDataGenerator {
       position: { x: 200, y: 200 },
       data: blockData,
       width: 250,
-      height: 150
+      height: 150,
     }
 
     // Add starter block for non-starter blocks
@@ -416,14 +417,14 @@ class BlockTestDataGenerator {
         position: { x: 50, y: 200 },
         data: { label: 'Start' },
         width: 150,
-        height: 100
+        height: 100,
       })
 
       edges.push({
         id: 'edge-to-test-block',
         source: 'starter-1',
         target: testBlock.id,
-        type: 'default'
+        type: 'default',
       })
     }
 
@@ -434,7 +435,7 @@ class BlockTestDataGenerator {
       name: `Test Workflow for ${blockType}`,
       description: `Isolated test workflow for validating ${blockType} block conversion`,
       blocks,
-      edges
+      edges,
     }
   }
 }
@@ -451,7 +452,7 @@ class BlockValidationUtils {
 
     // Find corresponding journey step
     const correspondingStep = conversionResult.steps.find(
-      step => step.source_block_id === originalBlock.id
+      (step) => step.source_block_id === originalBlock.id
     )
 
     if (!correspondingStep) {
@@ -475,26 +476,51 @@ class BlockValidationUtils {
     // Validate block-specific conversion
     switch (originalBlock.type) {
       case 'agent':
-        this.validateAgentBlockConversion(originalBlock, correspondingStep, errors, warnings)
+        BlockValidationUtils.validateAgentBlockConversion(
+          originalBlock,
+          correspondingStep,
+          errors,
+          warnings
+        )
         break
       case 'api':
-        this.validateApiBlockConversion(originalBlock, correspondingStep, errors, warnings)
+        BlockValidationUtils.validateApiBlockConversion(
+          originalBlock,
+          correspondingStep,
+          errors,
+          warnings
+        )
         break
       case 'condition':
-        this.validateConditionBlockConversion(originalBlock, correspondingStep, errors, warnings)
+        BlockValidationUtils.validateConditionBlockConversion(
+          originalBlock,
+          correspondingStep,
+          errors,
+          warnings
+        )
         break
       case 'parallel':
-        this.validateParallelBlockConversion(originalBlock, correspondingStep, errors, warnings)
+        BlockValidationUtils.validateParallelBlockConversion(
+          originalBlock,
+          correspondingStep,
+          errors,
+          warnings
+        )
         break
       case 'router':
-        this.validateRouterBlockConversion(originalBlock, correspondingStep, errors, warnings)
+        BlockValidationUtils.validateRouterBlockConversion(
+          originalBlock,
+          correspondingStep,
+          errors,
+          warnings
+        )
         break
       // Add more block-specific validations as needed
     }
 
     // Validate parameter substitution if parameters were provided
     if (expectedParameters) {
-      this.validateParameterSubstitution(
+      BlockValidationUtils.validateParameterSubstitution(
         originalBlock,
         correspondingStep,
         expectedParameters,
@@ -506,7 +532,7 @@ class BlockValidationUtils {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -536,7 +562,9 @@ class BlockValidationUtils {
     warnings: string[]
   ): void {
     if (block.data.method && step.configuration?.method !== block.data.method) {
-      errors.push(`API method not preserved: expected ${block.data.method}, got ${step.configuration?.method}`)
+      errors.push(
+        `API method not preserved: expected ${block.data.method}, got ${step.configuration?.method}`
+      )
     }
 
     if (block.data.url && !step.configuration?.url) {
@@ -570,7 +598,10 @@ class BlockValidationUtils {
     errors: string[],
     warnings: string[]
   ): void {
-    if (block.data.blocks && (!step.configuration?.parallel_tasks || step.configuration.parallel_tasks.length === 0)) {
+    if (
+      block.data.blocks &&
+      (!step.configuration?.parallel_tasks || step.configuration.parallel_tasks.length === 0)
+    ) {
       errors.push(`Parallel blocks not preserved in conversion`)
     }
 
@@ -585,7 +616,10 @@ class BlockValidationUtils {
     errors: string[],
     warnings: string[]
   ): void {
-    if (block.data.routes && (!step.configuration?.routes || step.configuration.routes.length === 0)) {
+    if (
+      block.data.routes &&
+      (!step.configuration?.routes || step.configuration.routes.length === 0)
+    ) {
       errors.push(`Router routes not preserved in conversion`)
     }
 
@@ -610,7 +644,9 @@ class BlockValidationUtils {
     for (const template of remainingTemplates) {
       const paramName = template.replace(/[{}]/g, '').trim()
       if (parameters[paramName] !== undefined) {
-        errors.push(`Parameter template '${template}' was not substituted in step for block ${block.id}`)
+        errors.push(
+          `Parameter template '${template}' was not substituted in step for block ${block.id}`
+        )
       } else {
         warnings.push(`Unresolved parameter template '${template}' in step for block ${block.id}`)
       }
@@ -629,7 +665,7 @@ describe('Workflow Block Validation Tests', () => {
 
     // Get all available block types
     const allBlocks = getAllBlocks()
-    allBlockTypes = allBlocks.map(block => block.type)
+    allBlockTypes = allBlocks.map((block) => block.type)
     logger.info(`Found ${allBlockTypes.length} block types to test:`, allBlockTypes)
   })
 
@@ -643,7 +679,7 @@ describe('Workflow Block Validation Tests', () => {
 
   describe('Individual Block Type Conversion', () => {
     // Dynamically generate tests for each block type
-    allBlockTypes.forEach(blockType => {
+    allBlockTypes.forEach((blockType) => {
       test(`should convert ${blockType} block correctly`, async () => {
         const workflow = BlockTestDataGenerator.createWorkflowForBlock(blockType)
         const parameters = BlockTestDataGenerator.generateParametersForBlock(blockType)
@@ -653,17 +689,16 @@ describe('Workflow Block Validation Tests', () => {
           workspace_id: 'test-workspace',
           user_id: 'test-user',
           parameters,
-          config: BLOCK_TEST_CONFIG
+          config: BLOCK_TEST_CONFIG,
         }
 
         // Mock workflow retrieval
-        jest.spyOn(converter as any, 'getWorkflowState')
-          .mockResolvedValue(workflow)
+        jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
         const result = await converter.convertWorkflowToJourney(context)
 
         // Find the test block (skip starter if present)
-        const testBlock = workflow.blocks.find(b => b.type === blockType)!
+        const testBlock = workflow.blocks.find((b) => b.type === blockType)!
 
         const validation = BlockValidationUtils.validateBlockConversion(
           testBlock,
@@ -695,11 +730,11 @@ describe('Workflow Block Validation Tests', () => {
         position: { x: 200, y: 200 },
         data: {
           label: 'Incomplete Agent',
-          prompt: 'Test prompt'
+          prompt: 'Test prompt',
           // Missing required 'model' field
         },
         width: 200,
-        height: 150
+        height: 150,
       }
 
       const workflow: WorkflowState = {
@@ -707,7 +742,7 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Incomplete Agent',
         description: 'Test workflow with incomplete agent configuration',
         blocks: [incompleteAgentBlock],
-        edges: []
+        edges: [],
       }
 
       const context: ConversionContext = {
@@ -715,11 +750,10 @@ describe('Workflow Block Validation Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters: {},
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       const result = await converter.convertWorkflowToJourney(context)
 
@@ -736,10 +770,10 @@ describe('Workflow Block Validation Tests', () => {
           label: 'Invalid API',
           method: 'INVALID_METHOD', // Invalid HTTP method
           url: 'not-a-valid-url', // Invalid URL format
-          timeout: 'not-a-number' // Invalid timeout type
+          timeout: 'not-a-number', // Invalid timeout type
         },
         width: 200,
-        height: 150
+        height: 150,
       }
 
       const workflow: WorkflowState = {
@@ -747,7 +781,7 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Invalid API',
         description: 'Test workflow with invalid API configuration',
         blocks: [invalidApiBlock],
-        edges: []
+        edges: [],
       }
 
       const context: ConversionContext = {
@@ -755,16 +789,15 @@ describe('Workflow Block Validation Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters: {},
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       const result = await converter.convertWorkflowToJourney(context)
 
       // Should handle invalid configuration gracefully
-      expect(result.warnings.some(w => w.type === 'validation_failed')).toBe(true)
+      expect(result.warnings.some((w) => w.type === 'validation_failed')).toBe(true)
     })
 
     test('should handle blocks with circular parameter references', async () => {
@@ -777,11 +810,11 @@ describe('Workflow Block Validation Tests', () => {
           expression: '{{param_a}} + {{param_b}}',
           variables: {
             param_a: '{{param_b}}',
-            param_b: '{{param_a}}'
-          }
+            param_b: '{{param_a}}',
+          },
         },
         width: 200,
-        height: 150
+        height: 150,
       }
 
       const workflow: WorkflowState = {
@@ -789,7 +822,7 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Circular References',
         description: 'Test workflow with circular parameter references',
         blocks: [circularRefBlock],
-        edges: []
+        edges: [],
       }
 
       const context: ConversionContext = {
@@ -798,17 +831,15 @@ describe('Workflow Block Validation Tests', () => {
         user_id: 'test-user',
         parameters: {
           param_a: '10',
-          param_b: '20'
+          param_b: '20',
         },
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       // Should either handle gracefully or detect circular references
-      await expect(converter.convertWorkflowToJourney(context))
-        .resolves.toBeDefined()
+      await expect(converter.convertWorkflowToJourney(context)).resolves.toBeDefined()
     })
   })
 
@@ -819,7 +850,7 @@ describe('Workflow Block Validation Tests', () => {
       const edges = []
 
       let x = 100
-      let y = 200
+      const y = 200
 
       majorBlockTypes.forEach((blockType, index) => {
         const blockData = BlockTestDataGenerator.generateBlockTestData(blockType)
@@ -829,7 +860,7 @@ describe('Workflow Block Validation Tests', () => {
           position: { x, y },
           data: blockData,
           width: 200,
-          height: 150
+          height: 150,
         }
 
         blocks.push(block)
@@ -840,7 +871,7 @@ describe('Workflow Block Validation Tests', () => {
             id: `edge-${index}`,
             source: `${majorBlockTypes[index - 1]}-${index - 1}`,
             target: block.id,
-            type: 'default'
+            type: 'default',
           })
         }
 
@@ -852,14 +883,14 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Major Block Types',
         description: 'Test workflow with all major block types',
         blocks,
-        edges
+        edges,
       }
 
       const parameters = {
         test_value: 42,
         route_type: 'a',
         user_input: 'Test input for comprehensive workflow',
-        api_endpoint: 'https://api.test.example.com'
+        api_endpoint: 'https://api.test.example.com',
       }
 
       const context: ConversionContext = {
@@ -867,11 +898,10 @@ describe('Workflow Block Validation Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       const result = await converter.convertWorkflowToJourney(context)
 
@@ -879,8 +909,8 @@ describe('Workflow Block Validation Tests', () => {
       expect(result.steps.length).toBe(blocks.length)
 
       // Validate that each major block type has a corresponding step
-      const stepTypes = result.steps.map(step => step.source_block_type)
-      majorBlockTypes.forEach(blockType => {
+      const stepTypes = result.steps.map((step) => step.source_block_type)
+      majorBlockTypes.forEach((blockType) => {
         expect(stepTypes).toContain(blockType)
       })
     })
@@ -897,7 +927,7 @@ describe('Workflow Block Validation Tests', () => {
             position: { x: 100, y: 200 },
             data: { label: 'Start' },
             width: 150,
-            height: 100
+            height: 100,
           },
           {
             id: 'condition-outer',
@@ -905,10 +935,10 @@ describe('Workflow Block Validation Tests', () => {
             position: { x: 300, y: 200 },
             data: {
               label: 'Outer Condition',
-              condition: '{{process_type}} === "complex"'
+              condition: '{{process_type}} === "complex"',
             },
             width: 200,
-            height: 120
+            height: 120,
           },
           {
             id: 'parallel-nested',
@@ -917,10 +947,10 @@ describe('Workflow Block Validation Tests', () => {
             data: {
               label: 'Nested Parallel Processing',
               blocks: ['condition-inner-1', 'condition-inner-2'],
-              wait_for_all: true
+              wait_for_all: true,
             },
             width: 250,
-            height: 150
+            height: 150,
           },
           {
             id: 'condition-inner-1',
@@ -928,10 +958,10 @@ describe('Workflow Block Validation Tests', () => {
             position: { x: 850, y: 100 },
             data: {
               label: 'Inner Condition 1',
-              condition: '{{data_source}} === "primary"'
+              condition: '{{data_source}} === "primary"',
             },
             width: 200,
-            height: 120
+            height: 120,
           },
           {
             id: 'condition-inner-2',
@@ -939,16 +969,22 @@ describe('Workflow Block Validation Tests', () => {
             position: { x: 850, y: 250 },
             data: {
               label: 'Inner Condition 2',
-              condition: '{{validation_passed}} === true'
+              condition: '{{validation_passed}} === true',
             },
             width: 200,
-            height: 120
-          }
+            height: 120,
+          },
         ],
         edges: [
           { id: 'e1', source: 'start-1', target: 'condition-outer', type: 'default' },
-          { id: 'e2', source: 'condition-outer', target: 'parallel-nested', type: 'conditional', data: { condition: 'true' } }
-        ]
+          {
+            id: 'e2',
+            source: 'condition-outer',
+            target: 'parallel-nested',
+            type: 'conditional',
+            data: { condition: 'true' },
+          },
+        ],
       }
 
       const context: ConversionContext = {
@@ -958,13 +994,12 @@ describe('Workflow Block Validation Tests', () => {
         parameters: {
           process_type: 'complex',
           data_source: 'primary',
-          validation_passed: true
+          validation_passed: true,
         },
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(nestedWorkflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(nestedWorkflow)
 
       const result = await converter.convertWorkflowToJourney(context)
 
@@ -982,10 +1017,10 @@ describe('Workflow Block Validation Tests', () => {
         position: { x: 200, y: 200 },
         data: {
           label: 'Problematic Function',
-          code: 'invalid javascript syntax { missing parenthesis'
+          code: 'invalid javascript syntax { missing parenthesis',
         },
         width: 200,
-        height: 150
+        height: 150,
       }
 
       const workflow: WorkflowState = {
@@ -993,7 +1028,7 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Problematic Block',
         description: 'Test workflow with problematic block configuration',
         blocks: [problematicBlock],
-        edges: []
+        edges: [],
       }
 
       const context: ConversionContext = {
@@ -1001,11 +1036,10 @@ describe('Workflow Block Validation Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters: {},
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       // Should not throw but should handle errors gracefully
       const result = await converter.convertWorkflowToJourney(context)
@@ -1022,10 +1056,10 @@ describe('Workflow Block Validation Tests', () => {
         position: { x: 200, y: 200 },
         data: {
           label: 'Unsupported Block',
-          config: 'some configuration'
+          config: 'some configuration',
         },
         width: 200,
-        height: 150
+        height: 150,
       }
 
       const workflow: WorkflowState = {
@@ -1033,7 +1067,7 @@ describe('Workflow Block Validation Tests', () => {
         name: 'Test Unsupported Block',
         description: 'Test workflow with unsupported block type',
         blocks: [unsupportedBlock],
-        edges: []
+        edges: [],
       }
 
       const context: ConversionContext = {
@@ -1041,23 +1075,18 @@ describe('Workflow Block Validation Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters: {},
-        config: BLOCK_TEST_CONFIG
+        config: BLOCK_TEST_CONFIG,
       }
 
-      jest.spyOn(converter as any, 'getWorkflowState')
-        .mockResolvedValue(workflow)
+      jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
 
       const result = await converter.convertWorkflowToJourney(context)
 
       expect(result).toBeDefined()
-      expect(result.warnings.some(w => w.type === 'unsupported_block')).toBe(true)
+      expect(result.warnings.some((w) => w.type === 'unsupported_block')).toBe(true)
     })
   })
 })
 
 // Export utilities for use in other test files
-export {
-  BlockTestDataGenerator,
-  BlockValidationUtils,
-  BLOCK_TEST_CONFIG
-}
+export { BlockTestDataGenerator, BlockValidationUtils, BLOCK_TEST_CONFIG }

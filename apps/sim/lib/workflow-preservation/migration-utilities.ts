@@ -12,10 +12,9 @@
  * 5. Automatic backup and restore
  */
 
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
-import type { Edge } from 'reactflow'
 import { createLogger } from '@/lib/logs/console/logger'
-import { workflowPreservationSystem, type CompatibilityVersion } from './compatibility-layer'
+import type { WorkflowState } from '@/stores/workflows/workflow/types'
+import { type CompatibilityVersion, workflowPreservationSystem } from './compatibility-layer'
 
 const logger = createLogger('MigrationUtilities')
 
@@ -123,14 +122,15 @@ export class MigrationUtilities {
     const conversationalMigration: MigrationPlan = {
       id: 'add-conversational-v1',
       name: 'Add Conversational Capabilities',
-      description: 'Safely add Parlant conversational layer while preserving all ReactFlow functionality',
+      description:
+        'Safely add Parlant conversational layer while preserving all ReactFlow functionality',
       fromVersion: {
         major: 1,
         minor: 0,
         patch: 0,
         reactFlowVersion: '11.11.4',
         simVersion: '0.1.0',
-        timestamp: new Date()
+        timestamp: new Date(),
       },
       toVersion: {
         major: 1,
@@ -138,7 +138,7 @@ export class MigrationUtilities {
         patch: 0,
         reactFlowVersion: '11.11.4',
         simVersion: '0.2.0',
-        timestamp: new Date()
+        timestamp: new Date(),
       },
       operations: [
         {
@@ -146,29 +146,29 @@ export class MigrationUtilities {
           type: 'create-backup',
           description: 'Create complete workflow backup',
           params: { includeHistory: true, includeMetadata: true },
-          reversible: true
+          reversible: true,
         },
         {
           id: 'add-journey-metadata',
           type: 'add-metadata',
           description: 'Add journey mapping metadata to blocks',
           params: { metadataType: 'journey-mapping' },
-          reversible: true
+          reversible: true,
         },
         {
           id: 'enable-coexistence',
           type: 'enable-feature',
           description: 'Enable dual-mode coexistence',
           params: { feature: 'conversational-mode' },
-          reversible: true
+          reversible: true,
         },
         {
           id: 'validate-preservation',
           type: 'validate-integrity',
           description: 'Validate all ReactFlow functionality preserved',
           params: { comprehensive: true },
-          reversible: false
-        }
+          reversible: false,
+        },
       ],
       validations: [
         {
@@ -176,38 +176,38 @@ export class MigrationUtilities {
           name: 'ReactFlow Compatibility',
           description: 'Ensure ReactFlow components work unchanged',
           type: 'compatibility',
-          validator: this.validateReactFlowCompatibility
+          validator: this.validateReactFlowCompatibility,
         },
         {
           id: 'data-integrity',
           name: 'Data Integrity',
           description: 'Verify workflow data integrity',
           type: 'data-integrity',
-          validator: this.validateDataIntegrity
+          validator: this.validateDataIntegrity,
         },
         {
           id: 'functionality-preservation',
           name: 'Functionality Preservation',
           description: 'Confirm all features work as before',
           type: 'functionality',
-          validator: this.validateFunctionalityPreservation
-        }
+          validator: this.validateFunctionalityPreservation,
+        },
       ],
       rollbackStrategy: {
         type: 'checkpoint',
         checkpoints: [],
         timeoutMs: 30000,
-        maxRetries: 3
+        maxRetries: 3,
       },
       estimatedDuration: 5000, // 5 seconds
-      riskLevel: 'low'
+      riskLevel: 'low',
     }
 
     this.migrationPlans.set(conversationalMigration.id, conversationalMigration)
 
     logger.info('Migration plans initialized', {
       planCount: this.migrationPlans.size,
-      plans: Array.from(this.migrationPlans.keys())
+      plans: Array.from(this.migrationPlans.keys()),
     })
   }
 
@@ -228,8 +228,8 @@ export class MigrationUtilities {
         details: {
           operationResults: [],
           validationResults: [],
-          checkpoints: []
-        }
+          checkpoints: [],
+        },
       }
     }
 
@@ -241,7 +241,7 @@ export class MigrationUtilities {
     logger.info(`Starting migration: ${plan.name}`, {
       workflowId,
       migrationId,
-      operationCount: plan.operations.length
+      operationCount: plan.operations.length,
     })
 
     try {
@@ -296,8 +296,8 @@ export class MigrationUtilities {
         details: {
           operationResults,
           validationResults,
-          checkpoints
-        }
+          checkpoints,
+        },
       }
 
       // Store migration history
@@ -313,17 +313,16 @@ export class MigrationUtilities {
         migrationId,
         duration: `${duration}ms`,
         operationsCompleted: operationResults.length,
-        checkpointsCreated: checkpoints.length
+        checkpointsCreated: checkpoints.length,
       })
 
       return successfulResult
-
     } catch (error) {
       logger.error('Migration failed, initiating rollback', {
         workflowId,
         migrationId,
         error,
-        operationsCompleted: operationResults.length
+        operationsCompleted: operationResults.length,
       })
 
       // Attempt rollback
@@ -337,15 +336,15 @@ export class MigrationUtilities {
         success: false,
         migrationId,
         duration,
-        operationsCompleted: operationResults.filter(r => r.success).length,
-        operationsFailed: operationResults.filter(r => !r.success).length + 1,
+        operationsCompleted: operationResults.filter((r) => r.success).length,
+        operationsFailed: operationResults.filter((r) => !r.success).length + 1,
         rollbackAvailable: rollbackResult.success,
         error: error instanceof Error ? error.message : String(error),
         details: {
           operationResults,
           validationResults,
-          checkpoints
-        }
+          checkpoints,
+        },
       }
 
       return failedResult
@@ -355,14 +354,17 @@ export class MigrationUtilities {
   /**
    * Execute single migration operation
    */
-  private async executeOperation(workflowId: string, operation: MigrationOperation): Promise<OperationResult> {
+  private async executeOperation(
+    workflowId: string,
+    operation: MigrationOperation
+  ): Promise<OperationResult> {
     const startTime = Date.now()
 
     try {
       logger.debug(`Executing operation: ${operation.id}`, {
         workflowId,
         type: operation.type,
-        description: operation.description
+        description: operation.description,
       })
 
       let rollbackData: any = null
@@ -393,15 +395,14 @@ export class MigrationUtilities {
         operationId: operation.id,
         success: true,
         duration: Date.now() - startTime,
-        rollbackData
+        rollbackData,
       }
-
     } catch (error) {
       return {
         operationId: operation.id,
         success: false,
         duration: Date.now() - startTime,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -409,7 +410,10 @@ export class MigrationUtilities {
   /**
    * Execute backup operation
    */
-  private async executeBackupOperation(workflowId: string, params: Record<string, any>): Promise<any> {
+  private async executeBackupOperation(
+    workflowId: string,
+    params: Record<string, any>
+  ): Promise<any> {
     const workflow = await this.getCurrentWorkflow(workflowId)
 
     const backup = {
@@ -418,15 +422,15 @@ export class MigrationUtilities {
       timestamp: new Date(),
       metadata: {
         includeHistory: params.includeHistory || false,
-        includeMetadata: params.includeMetadata || false
-      }
+        includeMetadata: params.includeMetadata || false,
+      },
     }
 
     // Store backup (in production, this would go to persistent storage)
     logger.info('Backup created', {
       workflowId,
       blockCount: Object.keys(workflow.blocks).length,
-      edgeCount: workflow.edges.length
+      edgeCount: workflow.edges.length,
     })
 
     return backup
@@ -435,16 +439,19 @@ export class MigrationUtilities {
   /**
    * Execute add metadata operation
    */
-  private async executeAddMetadataOperation(workflowId: string, params: Record<string, any>): Promise<any> {
+  private async executeAddMetadataOperation(
+    workflowId: string,
+    params: Record<string, any>
+  ): Promise<any> {
     const workflow = await this.getCurrentWorkflow(workflowId)
     const originalMetadata = { blocks: {}, edges: {} }
 
     // Add journey mapping metadata to blocks
     if (params.metadataType === 'journey-mapping') {
-      Object.values(workflow.blocks).forEach(block => {
+      Object.values(workflow.blocks).forEach((block) => {
         // Store original state for rollback
         originalMetadata.blocks[block.id] = {
-          data: block.data ? this.deepClone(block.data) : null
+          data: block.data ? this.deepClone(block.data) : null,
         }
 
         // Add journey mapping metadata
@@ -454,8 +461,8 @@ export class MigrationUtilities {
             enabled: false,
             nodeType: this.getJourneyNodeType(block.type),
             capabilities: this.getBlockCapabilities(block.type),
-            addedAt: new Date()
-          }
+            addedAt: new Date(),
+          },
         }
       })
     }
@@ -463,7 +470,7 @@ export class MigrationUtilities {
     logger.info('Metadata added', {
       workflowId,
       metadataType: params.metadataType,
-      blocksUpdated: Object.keys(workflow.blocks).length
+      blocksUpdated: Object.keys(workflow.blocks).length,
     })
 
     return originalMetadata
@@ -472,7 +479,10 @@ export class MigrationUtilities {
   /**
    * Execute enable feature operation
    */
-  private async executeEnableFeatureOperation(workflowId: string, params: Record<string, any>): Promise<any> {
+  private async executeEnableFeatureOperation(
+    workflowId: string,
+    params: Record<string, any>
+  ): Promise<any> {
     const workflow = await this.getCurrentWorkflow(workflowId)
 
     // Enable conversational mode
@@ -488,13 +498,13 @@ export class MigrationUtilities {
           enabled: true,
           version: '1.0.0',
           enabledAt: new Date(),
-          modes: ['visual', 'conversational', 'hybrid']
+          modes: ['visual', 'conversational', 'hybrid'],
         }
       }
 
       logger.info('Conversational mode enabled', {
         workflowId,
-        modes: workflow.conversationalCapabilities.modes
+        modes: workflow.conversationalCapabilities.modes,
       })
 
       return { originalData }
@@ -506,7 +516,10 @@ export class MigrationUtilities {
   /**
    * Execute validation operation
    */
-  private async executeValidationOperation(workflowId: string, params: Record<string, any>): Promise<void> {
+  private async executeValidationOperation(
+    workflowId: string,
+    params: Record<string, any>
+  ): Promise<void> {
     const workflow = await this.getCurrentWorkflow(workflowId)
 
     if (params.comprehensive) {
@@ -519,7 +532,7 @@ export class MigrationUtilities {
       logger.info('Comprehensive validation passed', {
         workflowId,
         checksRun: validation.details.totalChecks,
-        checksPassed: validation.details.passedChecks
+        checksPassed: validation.details.passedChecks,
       })
     }
   }
@@ -527,7 +540,11 @@ export class MigrationUtilities {
   /**
    * Create rollback checkpoint
    */
-  async createCheckpoint(workflowId: string, checkpointId: string, description: string): Promise<RollbackCheckpoint> {
+  async createCheckpoint(
+    workflowId: string,
+    checkpointId: string,
+    description: string
+  ): Promise<RollbackCheckpoint> {
     const workflow = await this.getCurrentWorkflow(workflowId)
 
     const checkpoint: RollbackCheckpoint = {
@@ -538,14 +555,14 @@ export class MigrationUtilities {
       metadata: {
         workflowId,
         blockCount: Object.keys(workflow.blocks).length,
-        edgeCount: workflow.edges.length
-      }
+        edgeCount: workflow.edges.length,
+      },
     }
 
     logger.debug('Checkpoint created', {
       workflowId,
       checkpointId,
-      description
+      description,
     })
 
     return checkpoint
@@ -554,14 +571,17 @@ export class MigrationUtilities {
   /**
    * Rollback to specific checkpoint
    */
-  async rollbackToCheckpoint(workflowId: string, checkpointId: string): Promise<{ success: boolean; error?: string }> {
+  async rollbackToCheckpoint(
+    workflowId: string,
+    checkpointId: string
+  ): Promise<{ success: boolean; error?: string }> {
     const workflowCheckpoints = this.checkpoints.get(workflowId) || []
-    const checkpoint = workflowCheckpoints.find(cp => cp.id === checkpointId)
+    const checkpoint = workflowCheckpoints.find((cp) => cp.id === checkpointId)
 
     if (!checkpoint) {
       return {
         success: false,
-        error: `Checkpoint not found: ${checkpointId}`
+        error: `Checkpoint not found: ${checkpointId}`,
       }
     }
 
@@ -572,21 +592,20 @@ export class MigrationUtilities {
       logger.info('Rollback successful', {
         workflowId,
         checkpointId,
-        restoredBlocks: Object.keys(checkpoint.workflow.blocks).length
+        restoredBlocks: Object.keys(checkpoint.workflow.blocks).length,
       })
 
       return { success: true }
-
     } catch (error) {
       logger.error('Rollback failed', {
         workflowId,
         checkpointId,
-        error
+        error,
       })
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -623,7 +642,7 @@ export class MigrationUtilities {
       edges: [],
       loops: {},
       parallels: {},
-      lastSaved: Date.now()
+      lastSaved: Date.now(),
     }
   }
 
@@ -631,18 +650,18 @@ export class MigrationUtilities {
     // In production, this would update the workflow store
     logger.debug('Restoring workflow state', {
       workflowId,
-      blockCount: Object.keys(workflow.blocks).length
+      blockCount: Object.keys(workflow.blocks).length,
     })
   }
 
   private getJourneyNodeType(blockType: string): string {
     const typeMapping: Record<string, string> = {
-      'starter': 'root',
-      'agent': 'action',
-      'condition': 'decision',
-      'response': 'end',
-      'loop': 'subflow',
-      'parallel': 'subflow'
+      starter: 'root',
+      agent: 'action',
+      condition: 'decision',
+      response: 'end',
+      loop: 'subflow',
+      parallel: 'subflow',
     }
 
     return typeMapping[blockType] || 'action'
@@ -650,10 +669,10 @@ export class MigrationUtilities {
 
   private getBlockCapabilities(blockType: string): string[] {
     const capabilityMapping: Record<string, string[]> = {
-      'agent': ['ai-interaction', 'tool-usage', 'context-aware'],
-      'condition': ['branching', 'logic-evaluation'],
-      'loop': ['iteration', 'collection-processing'],
-      'parallel': ['concurrent-execution', 'load-balancing']
+      agent: ['ai-interaction', 'tool-usage', 'context-aware'],
+      condition: ['branching', 'logic-evaluation'],
+      loop: ['iteration', 'collection-processing'],
+      parallel: ['concurrent-execution', 'load-balancing'],
     }
 
     return capabilityMapping[blockType] || ['basic-operation']
@@ -665,9 +684,13 @@ export class MigrationUtilities {
     try {
       // Check that all blocks have required ReactFlow properties
       const blocks = Object.values(workflow.blocks)
-      const incompatibleBlocks = blocks.filter(block =>
-        !block.id || !block.type || !block.position ||
-        typeof block.position.x !== 'number' || typeof block.position.y !== 'number'
+      const incompatibleBlocks = blocks.filter(
+        (block) =>
+          !block.id ||
+          !block.type ||
+          !block.position ||
+          typeof block.position.x !== 'number' ||
+          typeof block.position.y !== 'number'
       )
 
       if (incompatibleBlocks.length > 0) {
@@ -675,31 +698,28 @@ export class MigrationUtilities {
           checkId: '',
           success: false,
           error: `${incompatibleBlocks.length} blocks are not ReactFlow compatible`,
-          details: { incompatibleBlocks: incompatibleBlocks.map(b => b.id) }
+          details: { incompatibleBlocks: incompatibleBlocks.map((b) => b.id) },
         }
       }
 
       // Check edges
-      const invalidEdges = workflow.edges.filter(edge =>
-        !edge.id || !edge.source || !edge.target
-      )
+      const invalidEdges = workflow.edges.filter((edge) => !edge.id || !edge.source || !edge.target)
 
       if (invalidEdges.length > 0) {
         return {
           checkId: '',
           success: false,
           error: `${invalidEdges.length} edges are not ReactFlow compatible`,
-          details: { invalidEdges: invalidEdges.map(e => e.id) }
+          details: { invalidEdges: invalidEdges.map((e) => e.id) },
         }
       }
 
       return { checkId: '', success: true }
-
     } catch (error) {
       return {
         checkId: '',
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -709,8 +729,8 @@ export class MigrationUtilities {
       const blockIds = new Set(Object.keys(workflow.blocks))
 
       // Validate edge references
-      const invalidEdges = workflow.edges.filter(edge =>
-        !blockIds.has(edge.source) || !blockIds.has(edge.target)
+      const invalidEdges = workflow.edges.filter(
+        (edge) => !blockIds.has(edge.source) || !blockIds.has(edge.target)
       )
 
       if (invalidEdges.length > 0) {
@@ -718,32 +738,32 @@ export class MigrationUtilities {
           checkId: '',
           success: false,
           error: `${invalidEdges.length} edges reference non-existent blocks`,
-          details: { invalidEdges: invalidEdges.map(e => e.id) }
+          details: { invalidEdges: invalidEdges.map((e) => e.id) },
         }
       }
 
       return { checkId: '', success: true }
-
     } catch (error) {
       return {
         checkId: '',
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
 
-  private async validateFunctionalityPreservation(workflow: WorkflowState): Promise<ValidationResult> {
+  private async validateFunctionalityPreservation(
+    workflow: WorkflowState
+  ): Promise<ValidationResult> {
     try {
       // This would run comprehensive functionality tests in production
       // For now, simulate a successful validation
       return { checkId: '', success: true }
-
     } catch (error) {
       return {
         checkId: '',
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }

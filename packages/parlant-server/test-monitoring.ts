@@ -5,15 +5,15 @@
  * systems, including integration tests and validation of all monitoring components.
  */
 
-import { createParlantLogger } from './logging'
 import {
-  initializeParlantMonitoring,
+  createErrorHandler,
   getSystemStatus,
+  initializeParlantMonitoring,
+  monitorPerformance,
   quickHealthCheck,
   trackAgentSession,
-  createErrorHandler,
-  monitorPerformance
 } from './index'
+import { createParlantLogger } from './logging'
 
 const logger = createParlantLogger('MonitoringTest')
 
@@ -48,7 +48,7 @@ export class MonitoringTestSuite {
     const startTime = performance.now()
 
     logger.info('Starting comprehensive monitoring test suite', {
-      operation: 'test_suite_start'
+      operation: 'test_suite_start',
     })
 
     // Reset results
@@ -65,8 +65,8 @@ export class MonitoringTestSuite {
     await this.testPerformanceMonitoring()
 
     const totalDuration = performance.now() - startTime
-    const passed = this.results.filter(r => r.passed).length
-    const failed = this.results.filter(r => !r.passed).length
+    const passed = this.results.filter((r) => r.passed).length
+    const failed = this.results.filter((r) => !r.passed).length
 
     const summary = `Test Suite Complete: ${passed}/${this.results.length} tests passed (${failed} failed) in ${totalDuration.toFixed(2)}ms`
 
@@ -75,7 +75,7 @@ export class MonitoringTestSuite {
       duration: totalDuration,
       passed,
       failed,
-      total: this.results.length
+      total: this.results.length,
     })
 
     return {
@@ -84,7 +84,7 @@ export class MonitoringTestSuite {
       total: this.results.length,
       duration: totalDuration,
       results: this.results,
-      summary
+      summary,
     }
   }
 
@@ -116,7 +116,7 @@ export class MonitoringTestSuite {
 
       return {
         status: healthStatus.status,
-        serviceCount: Object.keys(healthStatus.services).length
+        serviceCount: Object.keys(healthStatus.services).length,
       }
     })
 
@@ -136,7 +136,7 @@ export class MonitoringTestSuite {
       return {
         status: dbHealth.status,
         duration: dbHealth.duration,
-        connectionStatus: dbHealth.details?.connectionStatus
+        connectionStatus: dbHealth.details?.connectionStatus,
       }
     })
   }
@@ -156,7 +156,7 @@ export class MonitoringTestSuite {
       return {
         timestamp: systemMetrics.timestamp,
         memoryUsage: systemMetrics.memory.heapUsed,
-        uptime: systemMetrics.uptime
+        uptime: systemMetrics.uptime,
       }
     })
 
@@ -171,7 +171,7 @@ export class MonitoringTestSuite {
       return {
         period: usageMetrics.period,
         agentCount: usageMetrics.agents.total,
-        sessionCount: usageMetrics.sessions.total
+        sessionCount: usageMetrics.sessions.total,
       }
     })
 
@@ -185,7 +185,7 @@ export class MonitoringTestSuite {
 
       return {
         alertCount: alertCheck.alerts.length,
-        systemHealth: alertCheck.systemHealth
+        systemHealth: alertCheck.systemHealth,
       }
     })
   }
@@ -207,7 +207,7 @@ export class MonitoringTestSuite {
       testLogger.logAgentOperation('agent_create', 'Test agent operation', {
         agentId: 'test-agent-123',
         workspaceId: 'test-workspace-456',
-        duration: 100
+        duration: 100,
       })
 
       const recentLogs = testLogger.getRecentLogs(10)
@@ -217,7 +217,7 @@ export class MonitoringTestSuite {
 
       return {
         logCount: recentLogs.length,
-        hasCorrelationId: recentLogs.some(log => log.correlationId === 'test-correlation-123')
+        hasCorrelationId: recentLogs.some((log) => log.correlationId === 'test-correlation-123'),
       }
     })
 
@@ -228,13 +228,13 @@ export class MonitoringTestSuite {
       testLogger.info('Test operation 1', {
         operation: 'agent_create',
         agentId: 'agent-1',
-        workspaceId: 'workspace-1'
+        workspaceId: 'workspace-1',
       })
 
       testLogger.warn('Test operation 2', {
         operation: 'session_start',
         agentId: 'agent-2',
-        workspaceId: 'workspace-1'
+        workspaceId: 'workspace-1',
       })
 
       // Test filtering
@@ -249,7 +249,7 @@ export class MonitoringTestSuite {
         agentLogCount: agentLogs.length,
         workspaceLogCount: workspaceLogs.length,
         operationLogCount: operationLogs.length,
-        aggregatedOperations: Object.keys(aggregation.operations).length
+        aggregatedOperations: Object.keys(aggregation.operations).length,
       }
     })
   }
@@ -259,7 +259,11 @@ export class MonitoringTestSuite {
    */
   private async testMetricsCollection(): Promise<void> {
     await this.runTest('Agent Session Tracking', async () => {
-      const sessionTracker = trackAgentSession('test-agent-123', 'test-workspace-456', 'test-session-789')
+      const sessionTracker = trackAgentSession(
+        'test-agent-123',
+        'test-workspace-456',
+        'test-session-789'
+      )
 
       // Simulate session lifecycle
       sessionTracker.start()
@@ -281,7 +285,7 @@ export class MonitoringTestSuite {
       return {
         sessionTracked: true,
         messageCount: 3,
-        toolCallCount: 3
+        toolCallCount: 3,
       }
     })
 
@@ -296,7 +300,7 @@ export class MonitoringTestSuite {
       return {
         systemHealthy: dashboard.systemMetrics.reliability.uptime > 0,
         agentCount: dashboard.systemMetrics.agents.total,
-        alertCount: dashboard.recentAlerts.length
+        alertCount: dashboard.recentAlerts.length,
       }
     })
   }
@@ -347,14 +351,14 @@ export class MonitoringTestSuite {
         activeAlertCount: activeAlerts.length,
         totalAlerts: alertMetrics.total,
         acknowledgmentWorked: acknowledged,
-        resolutionWorked: resolved
+        resolutionWorked: resolved,
       }
     })
 
     await this.runTest('Error Handling with Alerts', async () => {
       const errorHandler = createErrorHandler('test-suite', {
         testType: 'error_handling',
-        operation: 'test_error'
+        operation: 'test_error',
       })
 
       // Test different types of errors
@@ -370,13 +374,13 @@ export class MonitoringTestSuite {
       // Verify alert was created
       const { alerts } = await initializeParlantMonitoring()
       const recentAlerts = alerts.getActiveAlerts()
-      const hasTestAlert = recentAlerts.some(alert =>
+      const hasTestAlert = recentAlerts.some((alert) =>
         alert.description.includes('Test error for monitoring')
       )
 
       return {
         errorHandled: true,
-        alertCreated: hasTestAlert
+        alertCreated: hasTestAlert,
       }
     })
   }
@@ -400,15 +404,19 @@ export class MonitoringTestSuite {
         overallStatus: systemStatus.status,
         uptime: systemStatus.uptime,
         agentCount: systemStatus.summary.totalAgents,
-        errorRate: systemStatus.summary.errorRate
+        errorRate: systemStatus.summary.errorRate,
       }
     })
 
     await this.runTest('Monitoring System Initialization', async () => {
       const monitoringSystem = await initializeParlantMonitoring()
 
-      if (!monitoringSystem.health || !monitoringSystem.monitoring ||
-          !monitoringSystem.metrics || !monitoringSystem.alerts) {
+      if (
+        !monitoringSystem.health ||
+        !monitoringSystem.monitoring ||
+        !monitoringSystem.metrics ||
+        !monitoringSystem.alerts
+      ) {
         throw new Error('Monitoring system initialization incomplete')
       }
 
@@ -419,7 +427,7 @@ export class MonitoringTestSuite {
       return {
         initializationSuccessful: true,
         systemStatus: monitoringSystem.status,
-        componentsInitialized: 4
+        componentsInitialized: 4,
       }
     })
   }
@@ -434,7 +442,7 @@ export class MonitoringTestSuite {
 
       const errorHandler = createErrorHandler('database-test', {
         operation: 'database_query',
-        queryType: 'test'
+        queryType: 'test',
       })
 
       const connectionError = new Error('Connection refused')
@@ -444,7 +452,7 @@ export class MonitoringTestSuite {
 
       return {
         errorHandled: true,
-        errorType: 'ConnectionError'
+        errorType: 'ConnectionError',
       }
     })
 
@@ -452,7 +460,7 @@ export class MonitoringTestSuite {
       // Simulate slow operations
       const slowOperation = monitorPerformance(
         async (delay: number) => {
-          await new Promise(resolve => setTimeout(resolve, delay))
+          await new Promise((resolve) => setTimeout(resolve, delay))
           return 'completed'
         },
         'test_slow_operation',
@@ -462,7 +470,7 @@ export class MonitoringTestSuite {
       const result = await slowOperation(100) // 100ms delay
       return {
         operationCompleted: result === 'completed',
-        performanceMonitored: true
+        performanceMonitored: true,
       }
     })
   }
@@ -477,7 +485,7 @@ export class MonitoringTestSuite {
       const monitoredFunction = monitorPerformance(
         async (input: string) => {
           executionCount++
-          await new Promise(resolve => setTimeout(resolve, 50))
+          await new Promise((resolve) => setTimeout(resolve, 50))
           return `processed: ${input}`
         },
         'test_monitored_function',
@@ -497,19 +505,23 @@ export class MonitoringTestSuite {
 
       return {
         functionsExecuted: executionCount,
-        monitoringWorking: true
+        monitoringWorking: true,
       }
     })
 
     await this.runTest('Response Time Tracking', async () => {
       // Test response time tracking through session monitoring
-      const tracker = trackAgentSession('perf-test-agent', 'perf-test-workspace', 'perf-test-session')
+      const tracker = trackAgentSession(
+        'perf-test-agent',
+        'perf-test-workspace',
+        'perf-test-session'
+      )
 
       tracker.start()
 
       // Record various response times
       const responseTimes = [500, 1000, 1500, 2000, 2500]
-      responseTimes.forEach(time => {
+      responseTimes.forEach((time) => {
         tracker.recordMessage(time, 50, 1, false)
       })
 
@@ -518,7 +530,8 @@ export class MonitoringTestSuite {
       // The metrics should now include performance data
       return {
         responseTimesRecorded: responseTimes.length,
-        averageResponseTime: responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+        averageResponseTime:
+          responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length,
       }
     })
   }
@@ -539,13 +552,13 @@ export class MonitoringTestSuite {
         name,
         passed: true,
         duration,
-        details: result
+        details: result,
       })
 
       logger.debug(`Test passed: ${name}`, {
         operation: 'test_pass',
         testName: name,
-        duration
+        duration,
       })
     } catch (error) {
       const duration = performance.now() - startTime
@@ -555,14 +568,14 @@ export class MonitoringTestSuite {
         name,
         passed: false,
         duration,
-        error: errorMessage
+        error: errorMessage,
       })
 
       logger.warn(`Test failed: ${name}`, {
         operation: 'test_fail',
         testName: name,
         duration,
-        error: errorMessage
+        error: errorMessage,
       })
     }
   }
@@ -571,8 +584,8 @@ export class MonitoringTestSuite {
    * Generate test report
    */
   generateReport(): string {
-    const passed = this.results.filter(r => r.passed).length
-    const failed = this.results.filter(r => !r.passed).length
+    const passed = this.results.filter((r) => r.passed).length
+    const failed = this.results.filter((r) => !r.passed).length
     const totalDuration = this.results.reduce((sum, r) => sum + r.duration, 0)
 
     let report = `\n=== Parlant Monitoring Test Report ===\n`
@@ -584,16 +597,20 @@ export class MonitoringTestSuite {
 
     if (failed > 0) {
       report += `Failed Tests:\n`
-      this.results.filter(r => !r.passed).forEach(result => {
-        report += `  ❌ ${result.name}: ${result.error}\n`
-      })
+      this.results
+        .filter((r) => !r.passed)
+        .forEach((result) => {
+          report += `  ❌ ${result.name}: ${result.error}\n`
+        })
       report += `\n`
     }
 
     report += `Passed Tests:\n`
-    this.results.filter(r => r.passed).forEach(result => {
-      report += `  ✅ ${result.name} (${result.duration.toFixed(2)}ms)\n`
-    })
+    this.results
+      .filter((r) => r.passed)
+      .forEach((result) => {
+        report += `  ✅ ${result.name} (${result.duration.toFixed(2)}ms)\n`
+      })
 
     return report
   }
@@ -616,7 +633,7 @@ export async function runMonitoringTests(): Promise<void> {
         operation: 'test_suite_complete',
         passed: results.passed,
         failed: results.failed,
-        total: results.total
+        total: results.total,
       })
       process.exit(1)
     } else {
@@ -624,13 +641,13 @@ export async function runMonitoringTests(): Promise<void> {
         operation: 'test_suite_complete',
         passed: results.passed,
         total: results.total,
-        duration: results.duration
+        duration: results.duration,
       })
     }
   } catch (error) {
     logger.error('Test suite execution failed', {
       operation: 'test_suite_error',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
     process.exit(1)
   }

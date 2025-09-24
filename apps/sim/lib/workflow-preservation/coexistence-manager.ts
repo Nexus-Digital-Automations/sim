@@ -12,9 +12,8 @@
  * 5. All changes sync bidirectionally in real-time
  */
 
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
-import type { Edge } from 'reactflow'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { WorkflowState } from '@/stores/workflows/workflow/types'
 import { workflowPreservationSystem } from './compatibility-layer'
 
 const logger = createLogger('CoexistenceManager')
@@ -92,7 +91,7 @@ export class CoexistenceManager {
     defaultMode: 'visual',
     allowModeSwitch: true,
     showModeIndicators: true,
-    autoSyncEnabled: true
+    autoSyncEnabled: true,
   }
 
   /**
@@ -108,24 +107,24 @@ export class CoexistenceManager {
         current: 'visual',
         available: ['visual', 'conversational', 'hybrid'],
         preferences: this.defaultPreferences,
-        restrictions: []
+        restrictions: [],
       },
       visualState: this.deepClone(initialWorkflow),
       conversationalContext: {
         isActive: false,
-        contextData: {}
+        contextData: {},
       },
       syncStatus: {
         isInSync: true,
         lastSyncTime: new Date(),
         pendingChanges: [],
-        conflictCount: 0
+        conflictCount: 0,
       },
       lastActivity: {
         mode: 'visual',
         action: 'initialized',
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     }
 
     this.coexistenceStates.set(workflowId, coexistenceState)
@@ -133,7 +132,7 @@ export class CoexistenceManager {
     logger.info('Coexistence initialized', {
       workflowId,
       mode: coexistenceState.mode.current,
-      blockCount: Object.keys(initialWorkflow.blocks).length
+      blockCount: Object.keys(initialWorkflow.blocks).length,
     })
 
     return coexistenceState
@@ -142,13 +141,17 @@ export class CoexistenceManager {
   /**
    * Switch between visual and conversational modes
    */
-  async switchMode(workflowId: string, targetMode: WorkflowMode, userId?: string): Promise<ModeSwitchResult> {
+  async switchMode(
+    workflowId: string,
+    targetMode: WorkflowMode,
+    userId?: string
+  ): Promise<ModeSwitchResult> {
     const state = this.coexistenceStates.get(workflowId)
     if (!state) {
       return {
         success: false,
         error: 'Workflow not found',
-        details: { workflowId }
+        details: { workflowId },
       }
     }
 
@@ -158,7 +161,7 @@ export class CoexistenceManager {
       return {
         success: false,
         error: canSwitch.reason,
-        details: { workflowId, targetMode, restrictions: canSwitch.restrictions }
+        details: { workflowId, targetMode, restrictions: canSwitch.restrictions },
       }
     }
 
@@ -174,7 +177,7 @@ export class CoexistenceManager {
         mode: targetMode,
         action: `switched from ${previousMode}`,
         timestamp: new Date(),
-        userId
+        userId,
       }
 
       // Initialize conversational context if switching to conversational mode
@@ -191,7 +194,7 @@ export class CoexistenceManager {
         workflowId,
         fromMode: previousMode,
         toMode: targetMode,
-        userId
+        userId,
       })
 
       return {
@@ -200,20 +203,24 @@ export class CoexistenceManager {
           workflowId,
           fromMode: previousMode,
           toMode: targetMode,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       }
     } catch (error) {
       logger.error('Mode switch failed', {
         workflowId,
         targetMode,
-        error
+        error,
       })
 
       return {
         success: false,
         error: 'Mode switch failed',
-        details: { workflowId, targetMode, error: error instanceof Error ? error.message : String(error) }
+        details: {
+          workflowId,
+          targetMode,
+          error: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
@@ -235,7 +242,7 @@ export class CoexistenceManager {
     state.lastActivity = {
       mode: 'visual',
       action: changeType,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     // Sync to conversational mode if active
@@ -244,12 +251,15 @@ export class CoexistenceManager {
     }
 
     // Validate preservation
-    const validation = await workflowPreservationSystem.validatePreservation(workflowId, state.visualState)
+    const validation = await workflowPreservationSystem.validatePreservation(
+      workflowId,
+      state.visualState
+    )
     if (!validation.success) {
       logger.warn('Visual change broke preservation', {
         workflowId,
         changeType,
-        validationError: validation.error
+        validationError: validation.error,
       })
     }
   }
@@ -257,7 +267,11 @@ export class CoexistenceManager {
   /**
    * Handle workflow changes from conversational mode
    */
-  async handleConversationalChange(workflowId: string, changeType: string, changeData: any): Promise<void> {
+  async handleConversationalChange(
+    workflowId: string,
+    changeType: string,
+    changeData: any
+  ): Promise<void> {
     const state = this.coexistenceStates.get(workflowId)
     if (!state) {
       logger.warn('Conversational change received for unknown workflow', { workflowId })
@@ -275,7 +289,7 @@ export class CoexistenceManager {
       source: 'conversational',
       type: changeType as any,
       data: changeData,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     state.syncStatus.pendingChanges.push(pendingChange)
@@ -284,7 +298,7 @@ export class CoexistenceManager {
     state.lastActivity = {
       mode: 'conversational',
       action: changeType,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     // Apply change to visual state
@@ -315,7 +329,7 @@ export class CoexistenceManager {
 
       logger.debug('States synced successfully', {
         workflowId,
-        timestamp: state.syncStatus.lastSyncTime
+        timestamp: state.syncStatus.lastSyncTime,
       })
     } catch (error) {
       logger.error('State sync failed', { workflowId, error })
@@ -344,14 +358,14 @@ export class CoexistenceManager {
           'block-modification',
           'edge-creation',
           'workflow-execution',
-          'natural-language-interaction'
-        ]
-      }
+          'natural-language-interaction',
+        ],
+      },
     }
 
     logger.info('Conversational mode initialized', {
       workflowId: state.workflowId,
-      sessionId: state.conversationalContext.sessionId
+      sessionId: state.conversationalContext.sessionId,
     })
   }
 
@@ -370,18 +384,22 @@ export class CoexistenceManager {
 
     state.conversationalContext = {
       isActive: false,
-      contextData: {}
+      contextData: {},
     }
 
     logger.info('Conversational mode deactivated', {
-      workflowId: state.workflowId
+      workflowId: state.workflowId,
     })
   }
 
   /**
    * Apply visual changes to state
    */
-  private async applyVisualChange(state: CoexistenceState, changeType: string, changeData: any): Promise<void> {
+  private async applyVisualChange(
+    state: CoexistenceState,
+    changeType: string,
+    changeData: any
+  ): Promise<void> {
     switch (changeType) {
       case 'block-add':
         if (changeData.block) {
@@ -393,7 +411,7 @@ export class CoexistenceManager {
         if (changeData.blockId && state.visualState.blocks[changeData.blockId]) {
           state.visualState.blocks[changeData.blockId] = {
             ...state.visualState.blocks[changeData.blockId],
-            ...changeData.updates
+            ...changeData.updates,
           }
         }
         break
@@ -412,7 +430,9 @@ export class CoexistenceManager {
 
       case 'edge-delete':
         if (changeData.edgeId) {
-          state.visualState.edges = state.visualState.edges.filter(edge => edge.id !== changeData.edgeId)
+          state.visualState.edges = state.visualState.edges.filter(
+            (edge) => edge.id !== changeData.edgeId
+          )
         }
         break
 
@@ -424,7 +444,11 @@ export class CoexistenceManager {
   /**
    * Sync visual changes to conversational context
    */
-  private async syncVisualToConversational(state: CoexistenceState, changeType: string, changeData: any): Promise<void> {
+  private async syncVisualToConversational(
+    state: CoexistenceState,
+    changeType: string,
+    changeData: any
+  ): Promise<void> {
     if (!state.conversationalContext.isActive) {
       return
     }
@@ -433,32 +457,35 @@ export class CoexistenceManager {
     state.conversationalContext.contextData.lastVisualChange = {
       type: changeType,
       data: changeData,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     logger.debug('Visual change synced to conversational context', {
       workflowId: state.workflowId,
-      changeType
+      changeType,
     })
   }
 
   /**
    * Sync conversational changes to visual state
    */
-  private async syncConversationalToVisual(state: CoexistenceState, change: PendingChange): Promise<void> {
+  private async syncConversationalToVisual(
+    state: CoexistenceState,
+    change: PendingChange
+  ): Promise<void> {
     try {
       await this.applyVisualChange(state, change.type, change.data)
 
       logger.debug('Conversational change synced to visual state', {
         workflowId: state.workflowId,
         changeType: change.type,
-        changeId: change.id
+        changeId: change.id,
       })
     } catch (error) {
       logger.error('Failed to sync conversational change to visual', {
         workflowId: state.workflowId,
         changeId: change.id,
-        error
+        error,
       })
       throw error
     }
@@ -467,7 +494,10 @@ export class CoexistenceManager {
   /**
    * Check if mode switch is allowed
    */
-  private canSwitchMode(state: CoexistenceState, targetMode: WorkflowMode): {
+  private canSwitchMode(
+    state: CoexistenceState,
+    targetMode: WorkflowMode
+  ): {
     allowed: boolean
     reason?: string
     restrictions?: ModeRestriction[]
@@ -476,19 +506,19 @@ export class CoexistenceManager {
       return {
         allowed: false,
         reason: 'Mode switching disabled in preferences',
-        restrictions: state.mode.restrictions
+        restrictions: state.mode.restrictions,
       }
     }
 
     // Check for mode-specific restrictions
-    const restrictions = state.mode.restrictions.filter(r => r.mode === targetMode)
+    const restrictions = state.mode.restrictions.filter((r) => r.mode === targetMode)
     if (restrictions.length > 0) {
-      const blockingRestrictions = restrictions.filter(r => !r.canOverride)
+      const blockingRestrictions = restrictions.filter((r) => !r.canOverride)
       if (blockingRestrictions.length > 0) {
         return {
           allowed: false,
           reason: `Mode ${targetMode} is restricted: ${blockingRestrictions[0].reason}`,
-          restrictions: blockingRestrictions
+          restrictions: blockingRestrictions,
         }
       }
     }
@@ -498,7 +528,7 @@ export class CoexistenceManager {
       return {
         allowed: false,
         reason: `Mode ${targetMode} is not available`,
-        restrictions: state.mode.restrictions
+        restrictions: state.mode.restrictions,
       }
     }
 
@@ -528,8 +558,8 @@ export class CoexistenceManager {
   removeModeRestriction(workflowId: string, mode: WorkflowMode, reason?: string): void {
     const state = this.coexistenceStates.get(workflowId)
     if (state) {
-      state.mode.restrictions = state.mode.restrictions.filter(r =>
-        r.mode !== mode || (reason && r.reason !== reason)
+      state.mode.restrictions = state.mode.restrictions.filter(
+        (r) => r.mode !== mode || (reason && r.reason !== reason)
       )
     }
   }
@@ -542,7 +572,7 @@ export class CoexistenceManager {
     if (state) {
       state.mode.preferences = {
         ...state.mode.preferences,
-        ...preferences
+        ...preferences,
       }
     }
   }

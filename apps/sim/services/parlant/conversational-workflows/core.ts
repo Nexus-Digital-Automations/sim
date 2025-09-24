@@ -8,25 +8,23 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import { getParlantClient } from '../client'
-import type {
-  ConversationalWorkflowState,
-  CreateConversationalWorkflowRequest,
-  CreateConversationalWorkflowResponse,
-  ProcessNaturalLanguageCommandRequest,
-  ProcessNaturalLanguageCommandResponse,
-  WorkflowToJourneyMapping,
-  NodeStateMapping,
-  ConversationalWorkflowCommand,
-  NLPProcessingResult,
-  WorkflowCommandType,
-  ConversationalWorkflowUpdate,
-  ParlantJourneyState,
-  WorkflowExecutionStatus,
-} from './types'
+import { CommandProcessingError, ConversationalWorkflowError, WorkflowMappingError } from './errors'
 import { WorkflowJourneyMapper } from './mapper'
 import { NaturalLanguageProcessor } from './nlp'
 import { RealtimeStateManager } from './state-manager'
-import { ConversationalWorkflowError, WorkflowMappingError, CommandProcessingError } from './errors'
+import type {
+  ConversationalWorkflowCommand,
+  ConversationalWorkflowState,
+  ConversationalWorkflowUpdate,
+  CreateConversationalWorkflowRequest,
+  CreateConversationalWorkflowResponse,
+  NodeStateMapping,
+  ProcessNaturalLanguageCommandRequest,
+  ProcessNaturalLanguageCommandResponse,
+  WorkflowCommandType,
+  WorkflowExecutionStatus,
+  WorkflowToJourneyMapping,
+} from './types'
 
 const logger = createLogger('ConversationalWorkflowCore')
 
@@ -61,7 +59,15 @@ export class ConversationalWorkflowService {
   async createConversationalWorkflow(
     request: CreateConversationalWorkflowRequest
   ): Promise<CreateConversationalWorkflowResponse> {
-    const { workflowId, workspaceId, userId, conversationalConfig, executionConfig, initialInput, sessionMetadata } = request
+    const {
+      workflowId,
+      workspaceId,
+      userId,
+      conversationalConfig,
+      executionConfig,
+      initialInput,
+      sessionMetadata,
+    } = request
 
     logger.info('Creating conversational workflow session', {
       workflowId,
@@ -121,7 +127,11 @@ export class ConversationalWorkflowService {
       await this.stateManager.registerSession(sessionId, initialState)
 
       // Generate welcome message based on workflow and configuration
-      const welcomeMessage = await this.generateWelcomeMessage(mapping, conversationalConfig, agentSession.agentResponse)
+      const welcomeMessage = await this.generateWelcomeMessage(
+        mapping,
+        conversationalConfig,
+        agentSession.agentResponse
+      )
 
       // Extract available commands from mapping and configuration
       const availableCommands = this.extractAvailableCommands(mapping, executionConfig)
@@ -207,7 +217,11 @@ export class ConversationalWorkflowService {
       const updatedState = await this.updateSessionState(sessionId, executionResult.stateUpdates)
 
       // Generate agent response
-      const agentResponse = await this.generateAgentResponse(workflowCommand, executionResult, updatedState)
+      const agentResponse = await this.generateAgentResponse(
+        workflowCommand,
+        executionResult,
+        updatedState
+      )
 
       // Extract suggested actions
       const suggestedActions = this.extractSuggestedActions(updatedState, executionResult)
@@ -293,7 +307,7 @@ export class ConversationalWorkflowService {
   ): Promise<WorkflowToJourneyMapping> {
     // Check cache first
     const cached = this.journeyMappings.get(workflowId)
-    if (cached && cached.isActive) {
+    if (cached?.isActive) {
       return cached
     }
 
@@ -438,7 +452,11 @@ export class ConversationalWorkflowService {
             details: { command: commandType },
             timestamp: new Date(),
             retryable: true,
-            suggestedActions: ['Try rephrasing your command', 'Check workflow status', 'Contact support'],
+            suggestedActions: [
+              'Try rephrasing your command',
+              'Check workflow status',
+              'Contact support',
+            ],
           },
           errorCount: currentState.errorCount + 1,
         },
@@ -476,7 +494,11 @@ export class ConversationalWorkflowService {
     }
 
     // Begin workflow execution
-    const executionResult = await this.executeWorkflowNode(startNode, currentState, command.extractedParameters)
+    const executionResult = await this.executeWorkflowNode(
+      startNode,
+      currentState,
+      command.extractedParameters
+    )
 
     return {
       success: true,
@@ -506,7 +528,9 @@ export class ConversationalWorkflowService {
     command: ConversationalWorkflowCommand,
     currentState: ConversationalWorkflowState
   ): Promise<any> {
-    const progressPercentage = Math.round((currentState.completedNodes.length / currentState.totalNodes) * 100)
+    const progressPercentage = Math.round(
+      (currentState.completedNodes.length / currentState.totalNodes) * 100
+    )
 
     return {
       success: true,
@@ -529,7 +553,10 @@ export class ConversationalWorkflowService {
   // Additional command handlers would be implemented here...
   // For brevity, I'm including placeholder implementations
 
-  private async handlePauseWorkflow(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handlePauseWorkflow(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: { executionStatus: 'paused' as WorkflowExecutionStatus },
@@ -538,7 +565,10 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleResumeWorkflow(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleResumeWorkflow(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: { executionStatus: 'running' as WorkflowExecutionStatus },
@@ -547,7 +577,10 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleCancelWorkflow(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleCancelWorkflow(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: { executionStatus: 'cancelled' as WorkflowExecutionStatus },
@@ -556,9 +589,14 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleExplainStep(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleExplainStep(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     const mapping = this.journeyMappings.get(currentState.workflowId)
-    const currentNode = mapping?.nodeStateMappings.find((n) => n.nodeId === currentState.currentNodeId)
+    const currentNode = mapping?.nodeStateMappings.find(
+      (n) => n.nodeId === currentState.currentNodeId
+    )
 
     return {
       success: true,
@@ -572,11 +610,17 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleShowProgress(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleShowProgress(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return this.handleGetStatus(command, currentState)
   }
 
-  private async handleRetryStep(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleRetryStep(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: { errorCount: Math.max(0, currentState.errorCount - 1) },
@@ -585,7 +629,10 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleSkipStep(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleSkipStep(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     if (currentState.currentNodeId) {
       return {
         success: true,
@@ -599,7 +646,10 @@ export class ConversationalWorkflowService {
     return { success: false, stateUpdates: {}, significant: false, details: {} }
   }
 
-  private async handleModifyInput(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleModifyInput(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: {
@@ -610,7 +660,10 @@ export class ConversationalWorkflowService {
     }
   }
 
-  private async handleListOptions(command: ConversationalWorkflowCommand, currentState: ConversationalWorkflowState): Promise<any> {
+  private async handleListOptions(
+    command: ConversationalWorkflowCommand,
+    currentState: ConversationalWorkflowState
+  ): Promise<any> {
     return {
       success: true,
       stateUpdates: {},
@@ -698,7 +751,8 @@ export class ConversationalWorkflowService {
     agentResponse?: string
   ): Promise<string> {
     const baseMessage = `Welcome! I'm here to help you with your workflow. You can interact with me using natural language.`
-    const customMessage = agentResponse || `This workflow has ${mapping.nodeStateMappings.length} steps.`
+    const customMessage =
+      agentResponse || `This workflow has ${mapping.nodeStateMappings.length} steps.`
     return `${baseMessage} ${customMessage} How would you like to proceed?`
   }
 
@@ -733,26 +787,39 @@ export class ConversationalWorkflowService {
     return updatedState
   }
 
-  private async generateAgentResponse(command: ConversationalWorkflowCommand, result: any, state: ConversationalWorkflowState): Promise<string> {
+  private async generateAgentResponse(
+    command: ConversationalWorkflowCommand,
+    result: any,
+    state: ConversationalWorkflowState
+  ): Promise<string> {
     // This would integrate with Parlant's response generation
     // For now, returning contextual responses based on command type
 
     const commandResponses: Record<WorkflowCommandType, (result: any, state: any) => string> = {
-      'start-workflow': () => `Great! I've started your workflow. ${result.details?.startedNode ? `We're beginning with: ${result.details.startedNode}` : ''}`,
-      'pause-workflow': () => `I've paused the workflow execution. You can resume it anytime by saying "resume".`,
+      'start-workflow': () =>
+        `Great! I've started your workflow. ${result.details?.startedNode ? `We're beginning with: ${result.details.startedNode}` : ''}`,
+      'pause-workflow': () =>
+        `I've paused the workflow execution. You can resume it anytime by saying "resume".`,
       'resume-workflow': () => `Resuming workflow execution from where we left off.`,
-      'cancel-workflow': () => `I've cancelled the workflow execution. All progress has been saved.`,
-      'get-status': () => `Your workflow is ${state.executionStatus}. Progress: ${result.details?.progress || 0}% complete.`,
-      'explain-step': () => `The current step is: ${result.details?.currentStep || 'Unknown'}. ${result.details?.description || ''}`,
-      'show-progress': () => `Progress update: ${result.details?.completedSteps || 0} of ${result.details?.totalSteps || 0} steps completed.`,
+      'cancel-workflow': () =>
+        `I've cancelled the workflow execution. All progress has been saved.`,
+      'get-status': () =>
+        `Your workflow is ${state.executionStatus}. Progress: ${result.details?.progress || 0}% complete.`,
+      'explain-step': () =>
+        `The current step is: ${result.details?.currentStep || 'Unknown'}. ${result.details?.description || ''}`,
+      'show-progress': () =>
+        `Progress update: ${result.details?.completedSteps || 0} of ${result.details?.totalSteps || 0} steps completed.`,
       'retry-step': () => `I've retried the current step. Let's see how it goes now.`,
       'skip-step': () => `I've skipped the current step as requested. Moving to the next step.`,
       'modify-input': () => `I've updated the input parameters as requested.`,
-      'list-options': () => `Here are your available options: ${result.details?.availableCommands?.join(', ') || 'status, help, pause'}.`,
+      'list-options': () =>
+        `Here are your available options: ${result.details?.availableCommands?.join(', ') || 'status, help, pause'}.`,
     }
 
     const responseGenerator = commandResponses[command.commandType]
-    return responseGenerator ? responseGenerator(result, state) : `I've processed your ${command.commandType} request.`
+    return responseGenerator
+      ? responseGenerator(result, state)
+      : `I've processed your ${command.commandType} request.`
   }
 
   private extractSuggestedActions(state: ConversationalWorkflowState, result: any) {
@@ -814,7 +881,10 @@ export class ConversationalWorkflowService {
     return errorResponses[Math.floor(Math.random() * errorResponses.length)]
   }
 
-  private async loadWorkflowMapping(workflowId: string, workspaceId: string): Promise<WorkflowToJourneyMapping | null> {
+  private async loadWorkflowMapping(
+    workflowId: string,
+    workspaceId: string
+  ): Promise<WorkflowToJourneyMapping | null> {
     // This would load from database - returning null for now to trigger creation
     return null
   }

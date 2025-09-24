@@ -16,47 +16,42 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type { WorkflowState } from '@/stores/workflows/workflow/types'
-
 // Import all system components
 import {
-  workflowCompatibilityValidator,
   type CompatibilityValidationResult,
-  type ReactFlowWorkflowSnapshot
+  type ReactFlowWorkflowSnapshot,
+  workflowCompatibilityValidator,
 } from './compatibility-validator'
-
 import {
-  workflowRegressionTestRunner,
-  type RegressionTestSuite,
-  establishRegressionBaseline,
-  validateNoRegressions
-} from './regression-tests'
-
-import {
-  dualModeArchitecture,
-  type DualModeConfig,
-  type WorkflowExecutionContext,
-  initializeDualMode,
-  executeDualModeWorkflow,
-  switchWorkflowMode,
-  getWorkflowExecutionMode,
-  isDualModeSupported
-} from './dual-mode-architecture'
-
-import {
+  createSafetySnapshot,
   dataConsistencyManager,
-  type WorkflowSnapshot,
   type MigrationOperation,
-  validateWorkflowConsistency,
   performSafeMigration,
-  createSafetySnapshot
+  validateWorkflowConsistency,
+  type WorkflowSnapshot,
 } from './data-consistency'
-
 import {
-  workflowPreservationValidator,
+  type DualModeConfig,
+  dualModeArchitecture,
+  executeDualModeWorkflow,
+  getWorkflowExecutionMode,
+  initializeDualMode,
+  isDualModeSupported,
+  switchWorkflowMode,
+  type WorkflowExecutionContext,
+} from './dual-mode-architecture'
+import {
+  establishRegressionBaseline,
+  type RegressionTestSuite,
+  validateNoRegressions,
+  workflowRegressionTestRunner,
+} from './regression-tests'
+import {
+  certifyWorkflowForJourneyMapping,
+  getPreservationReport,
   type PreservationValidationResult,
   validatePreservation,
-  getPreservationReport,
-  certifyWorkflowForJourneyMapping
+  workflowPreservationValidator,
 } from './workflow-preservation-validator'
 
 const logger = createLogger('WorkflowJourneyMapping')
@@ -114,20 +109,22 @@ export class WorkflowJourneyMappingSystem {
   private config: JourneyMappingConfig
   private workflowStatuses: Map<string, JourneyMappingStatus> = new Map()
 
-  constructor(config: JourneyMappingConfig = {
-    enableCompatibilityValidation: true,
-    enableRegressionTesting: true,
-    enableDataConsistency: true,
-    strictValidation: true,
-    createBackups: true,
-    dualModeConfig: {
-      reactFlowEnabled: true,
-      journeyMappingEnabled: true,
-      preferredMode: 'reactflow',
-      fallbackMode: 'reactflow',
-      synchronizationEnabled: true
+  constructor(
+    config: JourneyMappingConfig = {
+      enableCompatibilityValidation: true,
+      enableRegressionTesting: true,
+      enableDataConsistency: true,
+      strictValidation: true,
+      createBackups: true,
+      dualModeConfig: {
+        reactFlowEnabled: true,
+        journeyMappingEnabled: true,
+        preferredMode: 'reactflow',
+        fallbackMode: 'reactflow',
+        synchronizationEnabled: true,
+      },
     }
-  }) {
+  ) {
     this.config = config
     this.logger.info('Workflow Journey Mapping System initialized', { config })
   }
@@ -143,7 +140,7 @@ export class WorkflowJourneyMappingSystem {
 
     this.logger.info('Enabling journey mapping for workflow', {
       workflowId,
-      blockCount: Object.keys(reactFlowState.blocks).length
+      blockCount: Object.keys(reactFlowState.blocks).length,
     })
 
     try {
@@ -153,11 +150,24 @@ export class WorkflowJourneyMappingSystem {
       // 1. Compatibility validation
       const compatibilityResult = this.config.enableCompatibilityValidation
         ? await workflowCompatibilityValidator.validateWorkflowCompatibility(reactFlowState)
-        : { isCompatible: true, errors: [], warnings: [], preservedFeatures: [], migrationSafety: { canRollback: true, dataBackupRequired: false, riskLevel: 'MINIMAL', safetyMeasures: [] } }
+        : {
+            isCompatible: true,
+            errors: [],
+            warnings: [],
+            preservedFeatures: [],
+            migrationSafety: {
+              canRollback: true,
+              dataBackupRequired: false,
+              riskLevel: 'MINIMAL',
+              safetyMeasures: [],
+            },
+          }
 
       if (!compatibilityResult.isCompatible) {
-        throw new Error('Workflow compatibility validation failed: ' +
-          compatibilityResult.errors.map(e => e.message).join(', '))
+        throw new Error(
+          'Workflow compatibility validation failed: ' +
+            compatibilityResult.errors.map((e) => e.message).join(', ')
+        )
       }
 
       // 2. Regression baseline establishment
@@ -216,7 +226,7 @@ export class WorkflowJourneyMappingSystem {
       if (regressionBaseline) {
         const regressionValidation = await validateNoRegressions(reactFlowState, regressionBaseline)
         if (!regressionValidation.success) {
-          throw new Error('Regressions detected: ' + regressionValidation.regressions.join(', '))
+          throw new Error(`Regressions detected: ${regressionValidation.regressions.join(', ')}`)
         }
       }
 
@@ -228,7 +238,7 @@ export class WorkflowJourneyMappingSystem {
         lastValidation: new Date(),
         preservationCertified: preservationResult.preservationCertified,
         backupAvailable: !!backupSnapshot,
-        migrationSafe: true
+        migrationSafe: true,
       }
 
       this.workflowStatuses.set(workflowId, status)
@@ -238,7 +248,7 @@ export class WorkflowJourneyMappingSystem {
       this.logger.info('Journey mapping enabled successfully', {
         workflowId,
         executionTime,
-        preservationCertified: preservationResult.preservationCertified
+        preservationCertified: preservationResult.preservationCertified,
       })
 
       return {
@@ -256,21 +266,22 @@ export class WorkflowJourneyMappingSystem {
         recommendations: [
           'Journey mapping enabled successfully',
           'ReactFlow functionality preserved',
-          'Both visual and conversational modes available'
+          'Both visual and conversational modes available',
         ],
         nextSteps: [
           'Test workflow in both ReactFlow and journey modes',
           'Monitor performance and user experience',
-          'Provide user training on new conversational features'
+          'Provide user training on new conversational features',
         ],
         rollbackAvailable: !!backupSnapshot,
-        rollbackInstructions: backupSnapshot ? [
-          `Backup snapshot available: ${backupSnapshot.snapshotId}`,
-          'Contact support for rollback assistance if needed',
-          'All data can be fully restored'
-        ] : []
+        rollbackInstructions: backupSnapshot
+          ? [
+              `Backup snapshot available: ${backupSnapshot.snapshotId}`,
+              'Contact support for rollback assistance if needed',
+              'All data can be fully restored',
+            ]
+          : [],
       }
-
     } catch (error) {
       this.logger.error('Journey mapping enablement failed', { error, workflowId })
 
@@ -286,40 +297,111 @@ export class WorkflowJourneyMappingSystem {
         workflowId,
         timestamp: new Date(),
         executionTime: Date.now() - startTime,
-        compatibilityResult: { isCompatible: false, errors: [], warnings: [], preservedFeatures: [], migrationSafety: { canRollback: true, dataBackupRequired: true, riskLevel: 'HIGH', safetyMeasures: [] } },
+        compatibilityResult: {
+          isCompatible: false,
+          errors: [],
+          warnings: [],
+          preservedFeatures: [],
+          migrationSafety: {
+            canRollback: true,
+            dataBackupRequired: true,
+            riskLevel: 'HIGH',
+            safetyMeasures: [],
+          },
+        },
         preservationResult: {
           overallSuccess: false,
           workflowId,
           validationTimestamp: new Date(),
           executionTime: 0,
-          compatibilityResult: { isCompatible: false, errors: [], warnings: [], preservedFeatures: [], migrationSafety: { canRollback: true, dataBackupRequired: true, riskLevel: 'HIGH', safetyMeasures: [] } },
-          regressionResult: { suiteName: 'Failed', totalTests: 0, passedTests: 0, failedTests: 0, results: [], overallSuccess: false, executionTime: 0 },
-          consistencyResult: { isConsistent: false, inconsistencies: [], warnings: [], recommendations: [], canProceed: false },
-          visualEditorValidation: { category: 'Visual Editor', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-          executionValidation: { category: 'Execution', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-          collaborationValidation: { category: 'Collaboration', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-          performanceValidation: { category: 'Performance', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-          dataIntegrityValidation: { category: 'Data Integrity', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
+          compatibilityResult: {
+            isCompatible: false,
+            errors: [],
+            warnings: [],
+            preservedFeatures: [],
+            migrationSafety: {
+              canRollback: true,
+              dataBackupRequired: true,
+              riskLevel: 'HIGH',
+              safetyMeasures: [],
+            },
+          },
+          regressionResult: {
+            suiteName: 'Failed',
+            totalTests: 0,
+            passedTests: 0,
+            failedTests: 0,
+            results: [],
+            overallSuccess: false,
+            executionTime: 0,
+          },
+          consistencyResult: {
+            isConsistent: false,
+            inconsistencies: [],
+            warnings: [],
+            recommendations: [],
+            canProceed: false,
+          },
+          visualEditorValidation: {
+            category: 'Visual Editor',
+            passed: false,
+            score: 0,
+            details: [],
+            issues: [],
+            executionTime: 0,
+          },
+          executionValidation: {
+            category: 'Execution',
+            passed: false,
+            score: 0,
+            details: [],
+            issues: [],
+            executionTime: 0,
+          },
+          collaborationValidation: {
+            category: 'Collaboration',
+            passed: false,
+            score: 0,
+            details: [],
+            issues: [],
+            executionTime: 0,
+          },
+          performanceValidation: {
+            category: 'Performance',
+            passed: false,
+            score: 0,
+            details: [],
+            issues: [],
+            executionTime: 0,
+          },
+          dataIntegrityValidation: {
+            category: 'Data Integrity',
+            passed: false,
+            score: 0,
+            details: [],
+            issues: [],
+            executionTime: 0,
+          },
           criticalIssues: [],
           warnings: [],
           recommendations: [],
           preservationCertified: false,
           certificationLevel: 'FAILED',
-          certificationDetails: []
+          certificationDetails: [],
         },
         status: 'FAILED',
         recommendations: [
           'Fix validation errors before attempting journey mapping',
           'Review compatibility and preservation reports',
-          'Contact support for assistance'
+          'Contact support for assistance',
         ],
         nextSteps: [
           'Review error logs and fix issues',
           'Run validation again',
-          'Consider workflow simplification if needed'
+          'Consider workflow simplification if needed',
         ],
         rollbackAvailable: false,
-        rollbackInstructions: ['No rollback needed - original workflow unchanged']
+        rollbackInstructions: ['No rollback needed - original workflow unchanged'],
       }
     }
   }
@@ -342,7 +424,8 @@ export class WorkflowJourneyMappingSystem {
     try {
       // Run comprehensive validation
       const preservationResult = await getPreservationReport(workflowId, reactFlowState)
-      const compatibilityResult = await workflowCompatibilityValidator.validateWorkflowCompatibility(reactFlowState)
+      const compatibilityResult =
+        await workflowCompatibilityValidator.validateWorkflowCompatibility(reactFlowState)
 
       // Calculate scores
       const validationScores = [
@@ -350,17 +433,20 @@ export class WorkflowJourneyMappingSystem {
         preservationResult.executionValidation.score,
         preservationResult.collaborationValidation.score,
         preservationResult.performanceValidation.score,
-        preservationResult.dataIntegrityValidation.score
+        preservationResult.dataIntegrityValidation.score,
       ]
 
-      const preservationScore = validationScores.reduce((sum, score) => sum + score, 0) / validationScores.length
-      const compatibilityScore = compatibilityResult.isCompatible ? 100 :
-        Math.max(0, 100 - (compatibilityResult.errors.length * 10))
+      const preservationScore =
+        validationScores.reduce((sum, score) => sum + score, 0) / validationScores.length
+      const compatibilityScore = compatibilityResult.isCompatible
+        ? 100
+        : Math.max(0, 100 - compatibilityResult.errors.length * 10)
 
       // Determine readiness
-      const ready = preservationResult.overallSuccess &&
-                   compatibilityResult.isCompatible &&
-                   preservationScore >= 90
+      const ready =
+        preservationResult.overallSuccess &&
+        compatibilityResult.isCompatible &&
+        preservationScore >= 90
 
       // Compile recommendations and issues
       const recommendations: string[] = []
@@ -374,12 +460,12 @@ export class WorkflowJourneyMappingSystem {
 
         if (!compatibilityResult.isCompatible) {
           recommendations.push('Fix compatibility issues first')
-          issues.push(...compatibilityResult.errors.map(e => e.message))
+          issues.push(...compatibilityResult.errors.map((e) => e.message))
         }
 
         if (!preservationResult.overallSuccess) {
           recommendations.push('Address preservation validation failures')
-          issues.push(...preservationResult.criticalIssues.map(i => i.description))
+          issues.push(...preservationResult.criticalIssues.map((i) => i.description))
         }
       }
 
@@ -390,9 +476,8 @@ export class WorkflowJourneyMappingSystem {
         compatibilityScore,
         preservationScore,
         recommendations,
-        issues
+        issues,
       }
-
     } catch (error) {
       this.logger.error('Workflow readiness validation failed', { error, workflowId })
 
@@ -401,7 +486,7 @@ export class WorkflowJourneyMappingSystem {
         compatibilityScore: 0,
         preservationScore: 0,
         recommendations: ['Fix validation system errors'],
-        issues: [error instanceof Error ? error.message : 'Unknown validation error']
+        issues: [error instanceof Error ? error.message : 'Unknown validation error'],
       }
     }
   }
@@ -416,10 +501,7 @@ export class WorkflowJourneyMappingSystem {
   /**
    * Switch workflow execution mode
    */
-  async switchMode(
-    workflowId: string,
-    mode: 'reactflow' | 'journey'
-  ): Promise<void> {
+  async switchMode(workflowId: string, mode: 'reactflow' | 'journey'): Promise<void> {
     const status = this.workflowStatuses.get(workflowId)
     if (!status || !status.isJourneyMappingEnabled) {
       throw new Error(`Journey mapping not enabled for workflow ${workflowId}`)
@@ -436,10 +518,7 @@ export class WorkflowJourneyMappingSystem {
   /**
    * Execute workflow with dual-mode support
    */
-  async executeWorkflow(
-    workflowId: string,
-    options: any = {}
-  ): Promise<any> {
+  async executeWorkflow(workflowId: string, options: any = {}): Promise<any> {
     const status = this.workflowStatuses.get(workflowId)
     if (!status || !status.isJourneyMappingEnabled) {
       throw new Error(`Journey mapping not enabled for workflow ${workflowId}`)
@@ -454,7 +533,7 @@ export class WorkflowJourneyMappingSystem {
   async createWorkflowBackup(
     workflowId: string,
     reactFlowState: WorkflowState,
-    reason: string = 'Manual backup'
+    reason = 'Manual backup'
   ): Promise<WorkflowSnapshot> {
     return await createSafetySnapshot(workflowId, reactFlowState, reason)
   }
@@ -480,18 +559,16 @@ export const workflowJourneyMappingSystem = new WorkflowJourneyMappingSystem()
 export {
   // Compatibility validation
   workflowCompatibilityValidator,
-  validateWorkflowCompatibility,
+  type validateWorkflowCompatibility,
   type CompatibilityValidationResult,
   type ReactFlowWorkflowSnapshot,
-
   // Regression testing
   workflowRegressionTestRunner,
-  runQuickRegressionTest,
-  runFullRegressionTest,
+  type runQuickRegressionTest,
+  type runFullRegressionTest,
   establishRegressionBaseline,
   validateNoRegressions,
   type RegressionTestSuite,
-
   // Dual-mode architecture
   dualModeArchitecture,
   initializeDualMode,
@@ -501,7 +578,6 @@ export {
   isDualModeSupported,
   type DualModeConfig,
   type WorkflowExecutionContext,
-
   // Data consistency
   dataConsistencyManager,
   validateWorkflowConsistency,
@@ -509,13 +585,12 @@ export {
   createSafetySnapshot,
   type WorkflowSnapshot,
   type MigrationOperation,
-
   // Preservation validation
   workflowPreservationValidator,
   validatePreservation,
   getPreservationReport,
   certifyWorkflowForJourneyMapping,
-  type PreservationValidationResult
+  type PreservationValidationResult,
 }
 
 /**
@@ -556,9 +631,6 @@ export function getJourneyMappingStatus(workflowId: string): JourneyMappingStatu
 /**
  * Execute workflow with journey mapping support
  */
-export async function executeJourneyWorkflow(
-  workflowId: string,
-  options: any = {}
-): Promise<any> {
+export async function executeJourneyWorkflow(workflowId: string, options: any = {}): Promise<any> {
   return await workflowJourneyMappingSystem.executeWorkflow(workflowId, options)
 }

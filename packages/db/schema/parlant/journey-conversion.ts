@@ -8,21 +8,18 @@
 
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
+  decimal,
+  index,
+  integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
-  integer,
-  boolean,
-  jsonb,
-  uuid,
-  index,
   uniqueIndex,
-  primaryKey,
-  decimal,
 } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { z } from 'zod'
-import { workspaces, users } from '../core'
+import { users, workspaces } from '../core'
 import { agents } from './agents'
 
 // Workflow Templates Table
@@ -51,8 +48,11 @@ export const workflowTemplates = pgTable(
     tagsIdx: index('workflow_templates_tags_idx').on(table.tags),
     usageCountIdx: index('workflow_templates_usage_count_idx').on(table.usage_count),
     createdAtIdx: index('workflow_templates_created_at_idx').on(table.created_at),
-    uniqueWorkspaceWorkflow: uniqueIndex('workflow_templates_workspace_workflow_unique')
-      .on(table.workspace_id, table.workflow_id, table.name),
+    uniqueWorkspaceWorkflow: uniqueIndex('workflow_templates_workspace_workflow_unique').on(
+      table.workspace_id,
+      table.workflow_id,
+      table.name
+    ),
   })
 )
 
@@ -77,8 +77,10 @@ export const templateParameters = pgTable(
   (table) => ({
     templateIdx: index('template_parameters_template_idx').on(table.template_id),
     orderIdx: index('template_parameters_order_idx').on(table.display_order),
-    uniqueTemplateName: uniqueIndex('template_parameters_template_name_unique')
-      .on(table.template_id, table.name),
+    uniqueTemplateName: uniqueIndex('template_parameters_template_name_unique').on(
+      table.template_id,
+      table.name
+    ),
   })
 )
 
@@ -89,7 +91,9 @@ export const conversionCache = pgTable(
     id: text('id').primaryKey(),
     cache_key: text('cache_key').notNull(),
     workflow_id: text('workflow_id').notNull(),
-    template_id: text('template_id').references(() => workflowTemplates.id, { onDelete: 'cascade' }),
+    template_id: text('template_id').references(() => workflowTemplates.id, {
+      onDelete: 'cascade',
+    }),
     workspace_id: text('workspace_id')
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
@@ -176,7 +180,9 @@ export const templateUsageStats = pgTable(
   (table) => ({
     templateIdx: uniqueIndex('template_usage_stats_template_unique').on(table.template_id),
     workspaceIdx: index('template_usage_stats_workspace_idx').on(table.workspace_id),
-    conversionCountIdx: index('template_usage_stats_conversion_count_idx').on(table.conversion_count),
+    conversionCountIdx: index('template_usage_stats_conversion_count_idx').on(
+      table.conversion_count
+    ),
     lastUsedIdx: index('template_usage_stats_last_used_idx').on(table.last_used_at),
   })
 )
@@ -187,8 +193,9 @@ export const journeyGenerationHistory = pgTable(
   {
     id: text('id').primaryKey(),
     journey_id: text('journey_id').notNull(),
-    conversion_id: text('conversion_id')
-      .references(() => conversionHistory.id, { onDelete: 'set null' }),
+    conversion_id: text('conversion_id').references(() => conversionHistory.id, {
+      onDelete: 'set null',
+    }),
     template_id: text('template_id').references(() => workflowTemplates.id),
     workflow_id: text('workflow_id').notNull(),
     agent_id: text('agent_id')
@@ -238,8 +245,10 @@ export const parameterUsageAnalytics = pgTable(
     updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    templateParamIdx: uniqueIndex('parameter_usage_analytics_template_param_unique')
-      .on(table.template_id, table.parameter_name),
+    templateParamIdx: uniqueIndex('parameter_usage_analytics_template_param_unique').on(
+      table.template_id,
+      table.parameter_name
+    ),
     workspaceIdx: index('parameter_usage_analytics_workspace_idx').on(table.workspace_id),
     usageCountIdx: index('parameter_usage_analytics_usage_count_idx').on(table.usage_count),
     lastUsedIdx: index('parameter_usage_analytics_last_used_idx').on(table.last_used_at),
@@ -271,9 +280,13 @@ export const conversionProgress = pgTable(
       .default(sql`now() + interval '1 hour'`),
   },
   (table) => ({
-    conversionIdIdx: uniqueIndex('conversion_progress_conversion_id_unique').on(table.conversion_id),
-    workspaceUserIdx: index('conversion_progress_workspace_user_idx')
-      .on(table.workspace_id, table.user_id),
+    conversionIdIdx: uniqueIndex('conversion_progress_conversion_id_unique').on(
+      table.conversion_id
+    ),
+    workspaceUserIdx: index('conversion_progress_workspace_user_idx').on(
+      table.workspace_id,
+      table.user_id
+    ),
     statusIdx: index('conversion_progress_status_idx').on(table.status),
     expiresAtIdx: index('conversion_progress_expires_at_idx').on(table.expires_at),
     updatedAtIdx: index('conversion_progress_updated_at_idx').on(table.updated_at),

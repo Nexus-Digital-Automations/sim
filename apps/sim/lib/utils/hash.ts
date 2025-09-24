@@ -10,17 +10,14 @@ import { createHash as cryptoCreateHash } from 'crypto'
 /**
  * Create a consistent hash from a string
  */
-export function createHash(input: string, algorithm: string = 'sha256'): string {
-  return cryptoCreateHash(algorithm)
-    .update(input)
-    .digest('hex')
-    .substring(0, 32) // Truncate to 32 characters for readability
+export function createHash(input: string, algorithm = 'sha256'): string {
+  return cryptoCreateHash(algorithm).update(input).digest('hex').substring(0, 32) // Truncate to 32 characters for readability
 }
 
 /**
  * Create a hash from an object by stringifying it consistently
  */
-export function createObjectHash(obj: any, algorithm: string = 'sha256'): string {
+export function createObjectHash(obj: any, algorithm = 'sha256'): string {
   const jsonString = JSON.stringify(obj, Object.keys(obj).sort())
   return createHash(jsonString, algorithm)
 }
@@ -30,7 +27,7 @@ export function createObjectHash(obj: any, algorithm: string = 'sha256'): string
  */
 export function createCacheKey(...components: (string | number | object)[]): string {
   const keyString = components
-    .map(component => {
+    .map((component) => {
       if (typeof component === 'object') {
         return JSON.stringify(component, Object.keys(component).sort())
       }

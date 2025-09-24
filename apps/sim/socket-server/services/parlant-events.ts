@@ -1,16 +1,16 @@
-import { createLogger } from '@/lib/logs/console/logger'
 import type { Server as SocketIOServer } from 'socket.io'
+import { createLogger } from '@/lib/logs/console/logger'
+import type { ParlantRoomManager } from '@/socket-server/handlers/parlant'
 import {
-  ParlantEventType,
-  ParlantAgentStatus,
-  ParlantSessionStatus,
-  ParlantMessageType,
   type ParlantAgentEvent,
-  type ParlantSessionEvent,
+  ParlantAgentStatus,
+  ParlantEventType,
   type ParlantMessageEvent,
-  type ParlantStatusEvent
+  ParlantMessageType,
+  type ParlantSessionEvent,
+  ParlantSessionStatus,
+  type ParlantStatusEvent,
 } from '@/socket-server/types/parlant-events'
-import { ParlantRoomManager } from '@/socket-server/handlers/parlant'
 
 const logger = createLogger('ParlantEventService')
 
@@ -53,18 +53,20 @@ export class ParlantEventService {
           status: ParlantAgentStatus.OFFLINE,
           configuration: {
             model: agentData.model,
-            temperature: agentData.temperature
-          }
+            temperature: agentData.temperature,
+          },
         },
         metadata: {
           createdBy: userId,
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       }
 
       await this.roomManager.broadcastAgentEvent(event)
 
-      logger.info(`Broadcasted agent created event for agent ${agentId} in workspace ${workspaceId}`)
+      logger.info(
+        `Broadcasted agent created event for agent ${agentId} in workspace ${workspaceId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting agent created event:', error)
     }
@@ -89,13 +91,15 @@ export class ParlantEventService {
         data: changes,
         metadata: {
           updatedBy: userId,
-          changeKeys: Object.keys(changes)
-        }
+          changeKeys: Object.keys(changes),
+        },
       }
 
       await this.roomManager.broadcastAgentEvent(event)
 
-      logger.info(`Broadcasted agent updated event for agent ${agentId} in workspace ${workspaceId}`)
+      logger.info(
+        `Broadcasted agent updated event for agent ${agentId} in workspace ${workspaceId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting agent updated event:', error)
     }
@@ -104,11 +108,7 @@ export class ParlantEventService {
   /**
    * Broadcast agent deleted event
    */
-  async broadcastAgentDeleted(
-    agentId: string,
-    workspaceId: string,
-    userId: string
-  ): Promise<void> {
+  async broadcastAgentDeleted(agentId: string, workspaceId: string, userId: string): Promise<void> {
     try {
       const event: ParlantAgentEvent = {
         type: ParlantEventType.AGENT_DELETED,
@@ -117,13 +117,15 @@ export class ParlantEventService {
         userId,
         timestamp: Date.now(),
         metadata: {
-          deletedBy: userId
-        }
+          deletedBy: userId,
+        },
       }
 
       await this.roomManager.broadcastAgentEvent(event)
 
-      logger.info(`Broadcasted agent deleted event for agent ${agentId} in workspace ${workspaceId}`)
+      logger.info(
+        `Broadcasted agent deleted event for agent ${agentId} in workspace ${workspaceId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting agent deleted event:', error)
     }
@@ -148,8 +150,8 @@ export class ParlantEventService {
         data,
         metadata: {
           previousStatus: data?.previousStatus,
-          reason: data?.reason
-        }
+          reason: data?.reason,
+        },
       }
 
       await this.roomManager.broadcastStatusEvent(event)
@@ -183,17 +185,19 @@ export class ParlantEventService {
         data: {
           status: ParlantSessionStatus.ACTIVE,
           title: sessionData?.title,
-          messageCount: 0
+          messageCount: 0,
         },
         metadata: {
           startedBy: userId || customerId,
-          sessionType: userId ? 'authenticated' : 'anonymous'
-        }
+          sessionType: userId ? 'authenticated' : 'anonymous',
+        },
       }
 
       await this.roomManager.broadcastSessionEvent(event)
 
-      logger.info(`Broadcasted session started event for session ${sessionId} with agent ${agentId}`)
+      logger.info(
+        `Broadcasted session started event for session ${sessionId} with agent ${agentId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting session started event:', error)
     }
@@ -219,11 +223,11 @@ export class ParlantEventService {
         data: {
           status: ParlantSessionStatus.COMPLETED,
           endReason,
-          analytics
+          analytics,
         },
         metadata: {
-          endedAt: Date.now()
-        }
+          endedAt: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastSessionEvent(event)
@@ -252,17 +256,19 @@ export class ParlantEventService {
         workspaceId,
         timestamp: Date.now(),
         data: {
-          status: newStatus
+          status: newStatus,
         },
         metadata: {
           previousStatus,
-          statusChangedAt: Date.now()
-        }
+          statusChangedAt: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastSessionEvent(event)
 
-      logger.info(`Broadcasted session status change for session ${sessionId}: ${previousStatus} -> ${newStatus}`)
+      logger.info(
+        `Broadcasted session status change for session ${sessionId}: ${previousStatus} -> ${newStatus}`
+      )
     } catch (error) {
       logger.error('Error broadcasting session status change:', error)
     }
@@ -293,9 +299,9 @@ export class ParlantEventService {
         data: {
           messageIndex: metadata?.messageIndex,
           processingTime: metadata?.processingTime,
-          tokens: metadata?.tokens
+          tokens: metadata?.tokens,
         },
-        metadata
+        metadata,
       }
 
       await this.roomManager.broadcastMessageEvent(event)
@@ -328,9 +334,9 @@ export class ParlantEventService {
         timestamp: Date.now(),
         data: {
           messageIndex: metadata?.messageIndex,
-          processingTime: metadata?.processingTime
+          processingTime: metadata?.processingTime,
         },
-        metadata
+        metadata,
       }
 
       await this.roomManager.broadcastMessageEvent(event)
@@ -362,12 +368,12 @@ export class ParlantEventService {
         userId,
         timestamp: Date.now(),
         data: {
-          isTyping
+          isTyping,
         },
         metadata: {
           agentId,
-          typingIndicator: true
-        }
+          typingIndicator: true,
+        },
       }
 
       await this.roomManager.broadcastMessageEvent(event)
@@ -401,11 +407,11 @@ export class ParlantEventService {
         data: {
           toolCallId,
           toolName,
-          toolParameters: parameters
+          toolParameters: parameters,
         },
         metadata: {
-          toolCallStarted: Date.now()
-        }
+          toolCallStarted: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastMessageEvent(event)
@@ -441,16 +447,18 @@ export class ParlantEventService {
           toolCallId,
           toolName,
           toolResult: result,
-          processingTime
+          processingTime,
         },
         metadata: {
-          toolCallCompleted: Date.now()
-        }
+          toolCallCompleted: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastMessageEvent(event)
 
-      logger.info(`Broadcasted tool call completed event for session ${sessionId}: ${toolName} (${processingTime}ms)`)
+      logger.info(
+        `Broadcasted tool call completed event for session ${sessionId}: ${toolName} (${processingTime}ms)`
+      )
     } catch (error) {
       logger.error('Error broadcasting tool call completed event:', error)
     }
@@ -482,17 +490,19 @@ export class ParlantEventService {
           error: {
             code: error.code || 'TOOL_CALL_FAILED',
             message: error.message || 'Unknown error',
-            details: error.details
-          }
+            details: error.details,
+          },
         },
         metadata: {
-          toolCallFailed: Date.now()
-        }
+          toolCallFailed: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastMessageEvent(event)
 
-      logger.warn(`Broadcasted tool call failed event for session ${sessionId}: ${toolName} - ${error.message}`)
+      logger.warn(
+        `Broadcasted tool call failed event for session ${sessionId}: ${toolName} - ${error.message}`
+      )
     } catch (broadcastError) {
       logger.error('Error broadcasting tool call failed event:', broadcastError)
     }
@@ -513,12 +523,12 @@ export class ParlantEventService {
         workspaceId,
         timestamp: Date.now(),
         data: {
-          performance
+          performance,
         },
         metadata: {
           performanceUpdate: true,
-          calculatedAt: Date.now()
-        }
+          calculatedAt: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastAgentEvent(event)
@@ -546,12 +556,12 @@ export class ParlantEventService {
         workspaceId,
         timestamp: Date.now(),
         data: {
-          analytics
+          analytics,
         },
         metadata: {
           analyticsUpdate: true,
-          calculatedAt: Date.now()
-        }
+          calculatedAt: Date.now(),
+        },
       }
 
       await this.roomManager.broadcastSessionEvent(event)
@@ -588,7 +598,7 @@ export class ParlantEventService {
       totalConnections,
       agentRooms,
       sessionRooms,
-      workspaceRooms
+      workspaceRooms,
     }
   }
 
@@ -606,14 +616,14 @@ export class ParlantEventService {
       return {
         status: 'healthy',
         timestamp: Date.now(),
-        stats
+        stats,
       }
     } catch (error) {
       logger.error('Health check failed:', error)
       return {
         status: 'unhealthy',
         timestamp: Date.now(),
-        stats: { error: error.message }
+        stats: { error: error.message },
       }
     }
   }

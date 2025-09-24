@@ -5,16 +5,12 @@
  * API endpoints for managing workflow-to-journey mappings.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
-import { WorkflowJourneyMapper } from '@/services/parlant/conversational-workflows/mapper'
-import type {
-  WorkflowToJourneyMapping,
-  ConversationalConfig,
-  WorkflowExecutionConfig,
-} from '@/services/parlant/conversational-workflows/types'
-import { WorkflowMappingError } from '@/services/parlant/conversational-workflows/errors'
+import { type NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { createLogger } from '@/lib/logs/console/logger'
+import { WorkflowMappingError } from '@/services/parlant/conversational-workflows/errors'
+import { WorkflowJourneyMapper } from '@/services/parlant/conversational-workflows/mapper'
+import type { WorkflowToJourneyMapping } from '@/services/parlant/conversational-workflows/types'
 
 const logger = createLogger('WorkflowMappingAPI')
 
@@ -28,10 +24,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Parse request body
@@ -116,18 +109,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Extract query parameters
     const { searchParams } = new URL(request.url)
     const workspaceId = searchParams.get('workspaceId')
     const workflowId = searchParams.get('workflowId')
-    const limit = parseInt(searchParams.get('limit') || '20', 10)
-    const offset = parseInt(searchParams.get('offset') || '0', 10)
+    const limit = Number.parseInt(searchParams.get('limit') || '20', 10)
+    const offset = Number.parseInt(searchParams.get('offset') || '0', 10)
 
     // Validate workspace access if specified
     if (workspaceId) {
@@ -165,9 +155,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       error: error.message,
     })
 
-    return NextResponse.json(
-      { error: 'Failed to retrieve mappings' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to retrieve mappings' }, { status: 500 })
   }
 }

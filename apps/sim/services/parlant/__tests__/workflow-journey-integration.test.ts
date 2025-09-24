@@ -5,13 +5,13 @@
  * accuracy, performance, and system integration.
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
+import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 import type {
-  WorkflowDefinition,
-  JourneyDefinition,
   ConversionResult,
+  JourneyDefinition,
+  PerformanceMetrics,
   ValidationReport,
-  PerformanceMetrics
+  WorkflowDefinition,
 } from '../types'
 
 // Test data and mocks
@@ -26,7 +26,7 @@ const SAMPLE_WORKFLOWS = {
         id: 'start',
         type: 'start',
         position: { x: 100, y: 100 },
-        data: { label: 'Start' }
+        data: { label: 'Start' },
       },
       {
         id: 'step1',
@@ -35,8 +35,8 @@ const SAMPLE_WORKFLOWS = {
         data: {
           label: 'Send Email',
           toolId: 'email_sender',
-          config: { recipient: '{{customer_email}}', template: 'welcome' }
-        }
+          config: { recipient: '{{customer_email}}', template: 'welcome' },
+        },
       },
       {
         id: 'step2',
@@ -45,21 +45,21 @@ const SAMPLE_WORKFLOWS = {
         data: {
           label: 'Update CRM',
           toolId: 'crm_update',
-          config: { status: 'contacted' }
-        }
+          config: { status: 'contacted' },
+        },
       },
       {
         id: 'end',
         type: 'end',
         position: { x: 400, y: 100 },
-        data: { label: 'End' }
-      }
+        data: { label: 'End' },
+      },
     ],
     edges: [
       { id: 'e1', source: 'start', target: 'step1' },
       { id: 'e2', source: 'step1', target: 'step2' },
-      { id: 'e3', source: 'step2', target: 'end' }
-    ]
+      { id: 'e3', source: 'step2', target: 'end' },
+    ],
   },
   complex_branching: {
     id: 'workflow_complex_branching',
@@ -71,7 +71,7 @@ const SAMPLE_WORKFLOWS = {
         id: 'start',
         type: 'start',
         position: { x: 100, y: 200 },
-        data: { label: 'Start' }
+        data: { label: 'Start' },
       },
       {
         id: 'check_user',
@@ -79,8 +79,8 @@ const SAMPLE_WORKFLOWS = {
         position: { x: 200, y: 200 },
         data: {
           label: 'Check User Status',
-          condition: 'user.status === "premium"'
-        }
+          condition: 'user.status === "premium"',
+        },
       },
       {
         id: 'premium_path',
@@ -88,8 +88,8 @@ const SAMPLE_WORKFLOWS = {
         position: { x: 300, y: 150 },
         data: {
           label: 'Premium Service',
-          toolId: 'premium_handler'
-        }
+          toolId: 'premium_handler',
+        },
       },
       {
         id: 'standard_path',
@@ -97,30 +97,40 @@ const SAMPLE_WORKFLOWS = {
         position: { x: 300, y: 250 },
         data: {
           label: 'Standard Service',
-          toolId: 'standard_handler'
-        }
+          toolId: 'standard_handler',
+        },
       },
       {
         id: 'merge',
         type: 'merge',
         position: { x: 400, y: 200 },
-        data: { label: 'Merge' }
+        data: { label: 'Merge' },
       },
       {
         id: 'end',
         type: 'end',
         position: { x: 500, y: 200 },
-        data: { label: 'End' }
-      }
+        data: { label: 'End' },
+      },
     ],
     edges: [
       { id: 'e1', source: 'start', target: 'check_user' },
-      { id: 'e2', source: 'check_user', target: 'premium_path', condition: 'user.status === "premium"' },
-      { id: 'e3', source: 'check_user', target: 'standard_path', condition: 'user.status === "standard"' },
+      {
+        id: 'e2',
+        source: 'check_user',
+        target: 'premium_path',
+        condition: 'user.status === "premium"',
+      },
+      {
+        id: 'e3',
+        source: 'check_user',
+        target: 'standard_path',
+        condition: 'user.status === "standard"',
+      },
       { id: 'e4', source: 'premium_path', target: 'merge' },
       { id: 'e5', source: 'standard_path', target: 'merge' },
-      { id: 'e6', source: 'merge', target: 'end' }
-    ]
+      { id: 'e6', source: 'merge', target: 'end' },
+    ],
   },
   error_handling: {
     id: 'workflow_error_handling',
@@ -132,7 +142,7 @@ const SAMPLE_WORKFLOWS = {
         id: 'start',
         type: 'start',
         position: { x: 100, y: 200 },
-        data: { label: 'Start' }
+        data: { label: 'Start' },
       },
       {
         id: 'api_call',
@@ -144,9 +154,9 @@ const SAMPLE_WORKFLOWS = {
           errorHandling: {
             retry: 3,
             timeout: 30000,
-            fallback: 'error_handler'
-          }
-        }
+            fallback: 'error_handler',
+          },
+        },
       },
       {
         id: 'success_handler',
@@ -154,8 +164,8 @@ const SAMPLE_WORKFLOWS = {
         position: { x: 300, y: 150 },
         data: {
           label: 'Success Handler',
-          toolId: 'success_processor'
-        }
+          toolId: 'success_processor',
+        },
       },
       {
         id: 'error_handler',
@@ -163,24 +173,24 @@ const SAMPLE_WORKFLOWS = {
         position: { x: 300, y: 250 },
         data: {
           label: 'Error Handler',
-          toolId: 'error_processor'
-        }
+          toolId: 'error_processor',
+        },
       },
       {
         id: 'end',
         type: 'end',
         position: { x: 400, y: 200 },
-        data: { label: 'End' }
-      }
+        data: { label: 'End' },
+      },
     ],
     edges: [
       { id: 'e1', source: 'start', target: 'api_call' },
       { id: 'e2', source: 'api_call', target: 'success_handler', condition: 'success' },
       { id: 'e3', source: 'api_call', target: 'error_handler', condition: 'error' },
       { id: 'e4', source: 'success_handler', target: 'end' },
-      { id: 'e5', source: 'error_handler', target: 'end' }
-    ]
-  }
+      { id: 'e5', source: 'error_handler', target: 'end' },
+    ],
+  },
 }
 
 class WorkflowToJourneyConverter {
@@ -203,8 +213,8 @@ class WorkflowToJourneyConverter {
         metadata: {
           originalWorkflowId: workflow.id,
           conversionTimestamp: new Date().toISOString(),
-          preservedAttributes: this.extractPreservedAttributes(workflow)
-        }
+          preservedAttributes: this.extractPreservedAttributes(workflow),
+        },
       }
 
       const conversionTime = Date.now() - startTime
@@ -218,9 +228,9 @@ class WorkflowToJourneyConverter {
           originalEdgeCount: workflow.edges.length,
           resultingStateCount: journey.states.length,
           resultingTransitionCount: journey.transitions.length,
-          preservationScore: this.calculatePreservationScore(workflow, journey)
+          preservationScore: this.calculatePreservationScore(workflow, journey),
         },
-        validationReport: await this.validateConversion(workflow, journey)
+        validationReport: await this.validateConversion(workflow, journey),
       }
     } catch (error) {
       return {
@@ -228,7 +238,7 @@ class WorkflowToJourneyConverter {
         error: {
           message: error instanceof Error ? error.message : 'Unknown conversion error',
           code: 'CONVERSION_FAILED',
-          details: { workflow: workflow.id, timestamp: new Date().toISOString() }
+          details: { workflow: workflow.id, timestamp: new Date().toISOString() },
         },
         metrics: {
           conversionTimeMs: Date.now() - startTime,
@@ -236,40 +246,40 @@ class WorkflowToJourneyConverter {
           originalEdgeCount: workflow.edges.length,
           resultingStateCount: 0,
           resultingTransitionCount: 0,
-          preservationScore: 0
-        }
+          preservationScore: 0,
+        },
       }
     }
   }
 
   private convertNodesToStates(nodes: any[]): any[] {
-    return nodes.map(node => ({
+    return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
       name: node.data.label || node.id,
       config: node.data.config || {},
       position: node.position,
-      originalNodeId: node.id
+      originalNodeId: node.id,
     }))
   }
 
   private convertEdgesToTransitions(edges: any[]): any[] {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       id: `transition_${edge.id}`,
       from: `state_${edge.source}`,
       to: `state_${edge.target}`,
       condition: edge.condition || null,
-      originalEdgeId: edge.id
+      originalEdgeId: edge.id,
     }))
   }
 
   private mapNodeTypeToStateType(nodeType: string): string {
     const mapping: Record<string, string> = {
-      'start': 'initial',
-      'end': 'final',
-      'tool': 'tool_state',
-      'condition': 'chat_state',
-      'merge': 'chat_state'
+      start: 'initial',
+      end: 'final',
+      tool: 'tool_state',
+      condition: 'chat_state',
+      merge: 'chat_state',
     }
     return mapping[nodeType] || 'chat_state'
   }
@@ -279,48 +289,59 @@ class WorkflowToJourneyConverter {
       name: workflow.name,
       description: workflow.description,
       version: workflow.version,
-      nodeTypes: [...new Set(workflow.nodes.map(n => n.type))],
-      hasConditionalLogic: workflow.edges.some(e => e.condition),
-      complexityScore: this.calculateWorkflowComplexity(workflow)
+      nodeTypes: [...new Set(workflow.nodes.map((n) => n.type))],
+      hasConditionalLogic: workflow.edges.some((e) => e.condition),
+      complexityScore: this.calculateWorkflowComplexity(workflow),
     }
   }
 
   private calculateWorkflowComplexity(workflow: WorkflowDefinition): number {
     const nodeCount = workflow.nodes.length
     const edgeCount = workflow.edges.length
-    const conditionalEdges = workflow.edges.filter(e => e.condition).length
-    const uniqueNodeTypes = new Set(workflow.nodes.map(n => n.type)).size
+    const conditionalEdges = workflow.edges.filter((e) => e.condition).length
+    const uniqueNodeTypes = new Set(workflow.nodes.map((n) => n.type)).size
 
-    return (nodeCount * 1) + (edgeCount * 0.5) + (conditionalEdges * 2) + (uniqueNodeTypes * 0.5)
+    return nodeCount * 1 + edgeCount * 0.5 + conditionalEdges * 2 + uniqueNodeTypes * 0.5
   }
 
-  private calculatePreservationScore(workflow: WorkflowDefinition, journey: JourneyDefinition): number {
+  private calculatePreservationScore(
+    workflow: WorkflowDefinition,
+    journey: JourneyDefinition
+  ): number {
     // Mock preservation score calculation
     const nodePreservation = journey.states.length / workflow.nodes.length
     const edgePreservation = journey.transitions.length / workflow.edges.length
-    const complexityPreservation = journey.states.filter(s => s.type === 'tool_state').length /
-                                   workflow.nodes.filter(n => n.type === 'tool').length
+    const complexityPreservation =
+      journey.states.filter((s) => s.type === 'tool_state').length /
+      workflow.nodes.filter((n) => n.type === 'tool').length
 
     return Math.round(((nodePreservation + edgePreservation + complexityPreservation) / 3) * 100)
   }
 
-  private async validateConversion(workflow: WorkflowDefinition, journey: JourneyDefinition): Promise<ValidationReport> {
+  private async validateConversion(
+    workflow: WorkflowDefinition,
+    journey: JourneyDefinition
+  ): Promise<ValidationReport> {
     const issues: string[] = []
     const warnings: string[] = []
 
     // Validate state mapping
     if (journey.states.length !== workflow.nodes.length) {
-      warnings.push(`State count mismatch: ${journey.states.length} states vs ${workflow.nodes.length} nodes`)
+      warnings.push(
+        `State count mismatch: ${journey.states.length} states vs ${workflow.nodes.length} nodes`
+      )
     }
 
     // Validate transition mapping
     if (journey.transitions.length !== workflow.edges.length) {
-      warnings.push(`Transition count mismatch: ${journey.transitions.length} transitions vs ${workflow.edges.length} edges`)
+      warnings.push(
+        `Transition count mismatch: ${journey.transitions.length} transitions vs ${workflow.edges.length} edges`
+      )
     }
 
     // Validate required states
-    const hasInitialState = journey.states.some(s => s.type === 'initial')
-    const hasFinalState = journey.states.some(s => s.type === 'final')
+    const hasInitialState = journey.states.some((s) => s.type === 'initial')
+    const hasFinalState = journey.states.some((s) => s.type === 'final')
 
     if (!hasInitialState) {
       issues.push('Missing initial state in journey')
@@ -331,18 +352,20 @@ class WorkflowToJourneyConverter {
     }
 
     // Validate tool preservation
-    const workflowTools = workflow.nodes.filter(n => n.type === 'tool')
-    const journeyTools = journey.states.filter(s => s.type === 'tool_state')
+    const workflowTools = workflow.nodes.filter((n) => n.type === 'tool')
+    const journeyTools = journey.states.filter((s) => s.type === 'tool_state')
 
     if (workflowTools.length !== journeyTools.length) {
-      warnings.push(`Tool count mismatch: ${journeyTools.length} tool states vs ${workflowTools.length} tool nodes`)
+      warnings.push(
+        `Tool count mismatch: ${journeyTools.length} tool states vs ${workflowTools.length} tool nodes`
+      )
     }
 
     return {
       isValid: issues.length === 0,
       issues,
       warnings,
-      score: issues.length === 0 ? (warnings.length === 0 ? 100 : 85) : 60
+      score: issues.length === 0 ? (warnings.length === 0 ? 100 : 85) : 60,
     }
   }
 }
@@ -373,7 +396,7 @@ class WorkflowJourneyTestSuite {
           conversionTime: result.metrics.conversionTimeMs,
           preservationScore: result.metrics.preservationScore,
           complexity: (workflow as WorkflowDefinition).nodes.length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
         console.log(`✅ ${testName}: Preservation Score ${result.metrics.preservationScore}%`)
@@ -393,20 +416,24 @@ class WorkflowJourneyTestSuite {
         const journey = result.journey!
 
         // Test that all tools are preserved
-        const workflowTools = (workflow as WorkflowDefinition).nodes.filter(n => n.type === 'tool')
-        const journeyTools = journey.states.filter(s => s.type === 'tool_state')
+        const workflowTools = (workflow as WorkflowDefinition).nodes.filter(
+          (n) => n.type === 'tool'
+        )
+        const journeyTools = journey.states.filter((s) => s.type === 'tool_state')
 
         expect(journeyTools).toHaveLength(workflowTools.length)
 
         // Test that conditional logic is preserved
-        const workflowConditionals = (workflow as WorkflowDefinition).edges.filter(e => e.condition)
-        const journeyConditionals = journey.transitions.filter(t => t.condition)
+        const workflowConditionals = (workflow as WorkflowDefinition).edges.filter(
+          (e) => e.condition
+        )
+        const journeyConditionals = journey.transitions.filter((t) => t.condition)
 
         expect(journeyConditionals).toHaveLength(workflowConditionals.length)
 
         // Test that execution flow is preserved
-        expect(journey.states.some(s => s.type === 'initial')).toBe(true)
-        expect(journey.states.some(s => s.type === 'final')).toBe(true)
+        expect(journey.states.some((s) => s.type === 'initial')).toBe(true)
+        expect(journey.states.some((s) => s.type === 'final')).toBe(true)
 
         console.log(`✅ ${testName}: Functional equivalence verified`)
       })
@@ -420,7 +447,7 @@ class WorkflowJourneyTestSuite {
       { name: 'Small workflow (5 nodes)', size: 5 },
       { name: 'Medium workflow (20 nodes)', size: 20 },
       { name: 'Large workflow (50 nodes)', size: 50 },
-      { name: 'Extra large workflow (100 nodes)', size: 100 }
+      { name: 'Extra large workflow (100 nodes)', size: 100 },
     ]
 
     for (const testCase of performanceTests) {
@@ -434,7 +461,9 @@ class WorkflowJourneyTestSuite {
         expect(result.success).toBe(true)
         expect(conversionTime).toBeLessThan(testCase.size * 100) // Max 100ms per node
 
-        console.log(`⚡ ${testCase.name}: ${conversionTime}ms (${(conversionTime/testCase.size).toFixed(2)}ms/node)`)
+        console.log(
+          `⚡ ${testCase.name}: ${conversionTime}ms (${(conversionTime / testCase.size).toFixed(2)}ms/node)`
+        )
       })
     }
   }
@@ -498,7 +527,7 @@ class WorkflowJourneyTestSuite {
       id: 'start',
       type: 'start',
       position: { x: 0, y: 100 },
-      data: { label: 'Start' }
+      data: { label: 'Start' },
     })
 
     // Generate intermediate nodes
@@ -510,14 +539,14 @@ class WorkflowJourneyTestSuite {
         data: {
           label: `Node ${i}`,
           toolId: `tool_${i}`,
-          config: { param: `value_${i}` }
-        }
+          config: { param: `value_${i}` },
+        },
       })
 
       edges.push({
         id: `edge_${i}`,
-        source: i === 1 ? 'start' : `node_${i-1}`,
-        target: `node_${i}`
+        source: i === 1 ? 'start' : `node_${i - 1}`,
+        target: `node_${i}`,
       })
     }
 
@@ -526,13 +555,13 @@ class WorkflowJourneyTestSuite {
       id: 'end',
       type: 'end',
       position: { x: (nodeCount - 1) * 100, y: 100 },
-      data: { label: 'End' }
+      data: { label: 'End' },
     })
 
     edges.push({
       id: `edge_${nodeCount}`,
       source: `node_${nodeCount - 2}`,
-      target: 'end'
+      target: 'end',
     })
 
     return {
@@ -541,7 +570,7 @@ class WorkflowJourneyTestSuite {
       description: `Generated workflow with ${nodeCount} nodes for performance testing`,
       version: '1.0',
       nodes,
-      edges
+      edges,
     }
   }
 
@@ -550,10 +579,14 @@ class WorkflowJourneyTestSuite {
       return { message: 'No performance metrics available' }
     }
 
-    const avgConversionTime = this.performanceMetrics.reduce((sum, m) => sum + m.conversionTime, 0) / this.performanceMetrics.length
-    const avgPreservationScore = this.performanceMetrics.reduce((sum, m) => sum + m.preservationScore, 0) / this.performanceMetrics.length
-    const maxConversionTime = Math.max(...this.performanceMetrics.map(m => m.conversionTime))
-    const minConversionTime = Math.min(...this.performanceMetrics.map(m => m.conversionTime))
+    const avgConversionTime =
+      this.performanceMetrics.reduce((sum, m) => sum + m.conversionTime, 0) /
+      this.performanceMetrics.length
+    const avgPreservationScore =
+      this.performanceMetrics.reduce((sum, m) => sum + m.preservationScore, 0) /
+      this.performanceMetrics.length
+    const maxConversionTime = Math.max(...this.performanceMetrics.map((m) => m.conversionTime))
+    const minConversionTime = Math.min(...this.performanceMetrics.map((m) => m.conversionTime))
 
     return {
       totalTests: this.performanceMetrics.length,
@@ -561,7 +594,7 @@ class WorkflowJourneyTestSuite {
       avgPreservationScore: Math.round(avgPreservationScore),
       maxConversionTime,
       minConversionTime,
-      performanceGrade: avgConversionTime < 1000 ? 'A' : avgConversionTime < 2000 ? 'B' : 'C'
+      performanceGrade: avgConversionTime < 1000 ? 'A' : avgConversionTime < 2000 ? 'B' : 'C',
     }
   }
 }

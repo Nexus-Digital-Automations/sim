@@ -5,19 +5,18 @@
  * Tests conversion accuracy, error handling, and edge cases.
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals'
-import { createLogger } from '@/lib/logs/console/logger'
+import { beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
-  WorkflowConversionEngine,
-  createWorkflowConverter,
   convertWorkflowToJourney,
-  validateWorkflowForConversion
+  createWorkflowConverter,
+  validateWorkflowForConversion,
+  WorkflowConversionEngine,
 } from '../index'
 import type {
-  ReactFlowWorkflow,
   ConversionOptions,
   ConversionResult,
-  ValidationResult
+  ReactFlowWorkflow,
+  ValidationResult,
 } from '../types'
 
 // Mock logger to avoid console noise in tests
@@ -26,8 +25,8 @@ jest.mock('@/lib/logs/console/logger', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
-    debug: jest.fn()
-  }))
+    debug: jest.fn(),
+  })),
 }))
 
 describe('WorkflowConversionEngine', () => {
@@ -49,8 +48,8 @@ describe('WorkflowConversionEngine', () => {
           position: { x: 100, y: 100 },
           data: {
             type: 'starter',
-            name: 'Start Process'
-          }
+            name: 'Start Process',
+          },
         },
         {
           id: 'node-2',
@@ -59,8 +58,8 @@ describe('WorkflowConversionEngine', () => {
           data: {
             type: 'agent',
             name: 'AI Assistant',
-            prompt: 'Hello! How can I help you today?'
-          }
+            prompt: 'Hello! How can I help you today?',
+          },
         },
         {
           id: 'node-3',
@@ -70,9 +69,9 @@ describe('WorkflowConversionEngine', () => {
             type: 'api',
             name: 'Data Fetch',
             url: 'https://api.example.com/data',
-            method: 'GET'
-          }
-        }
+            method: 'GET',
+          },
+        },
       ],
       edges: [
         {
@@ -81,7 +80,7 @@ describe('WorkflowConversionEngine', () => {
           target: 'node-2',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
+          type: 'workflowEdge',
         },
         {
           id: 'edge-2',
@@ -89,14 +88,14 @@ describe('WorkflowConversionEngine', () => {
           target: 'node-3',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
-        }
+          type: 'workflowEdge',
+        },
       ],
       metadata: {
         version: '1.0.0',
         createdAt: '2024-01-01T00:00:00.000Z',
-        workspaceId: 'test-workspace'
-      }
+        workspaceId: 'test-workspace',
+      },
     }
   })
 
@@ -125,18 +124,18 @@ describe('WorkflowConversionEngine', () => {
       expect(result.journey?.states).toHaveLength(3)
 
       // Check initial state
-      const initialState = result.journey?.states.find(s => s.type === 'initial')
+      const initialState = result.journey?.states.find((s) => s.type === 'initial')
       expect(initialState).toBeDefined()
       expect(initialState?.name).toBe('Start Process')
 
       // Check chat state
-      const chatState = result.journey?.states.find(s => s.type === 'chat')
+      const chatState = result.journey?.states.find((s) => s.type === 'chat')
       expect(chatState).toBeDefined()
       expect(chatState?.name).toBe('AI Assistant')
       expect(chatState?.content).toContain('Hello!')
 
       // Check tool state
-      const toolState = result.journey?.states.find(s => s.type === 'tool')
+      const toolState = result.journey?.states.find((s) => s.type === 'tool')
       expect(toolState).toBeDefined()
       expect(toolState?.name).toBe('Data Fetch')
       expect(toolState?.tools).toBeDefined()
@@ -148,7 +147,7 @@ describe('WorkflowConversionEngine', () => {
       expect(result.journey?.transitions).toHaveLength(2)
 
       // Check transition structure
-      result.journey?.transitions.forEach(transition => {
+      result.journey?.transitions.forEach((transition) => {
         expect(transition.id).toBeDefined()
         expect(transition.sourceStateId).toBeDefined()
         expect(transition.targetStateId).toBeDefined()
@@ -160,7 +159,7 @@ describe('WorkflowConversionEngine', () => {
     test('should respect layout preservation option', async () => {
       const options: ConversionOptions = {
         preserveLayout: true,
-        includeDebugInfo: false
+        includeDebugInfo: false,
       }
 
       const result: ConversionResult = await engine.convert(mockWorkflow, options)
@@ -168,8 +167,8 @@ describe('WorkflowConversionEngine', () => {
       expect(result.success).toBe(true)
 
       // Check that positions are preserved
-      result.journey?.states.forEach(state => {
-        const originalNode = mockWorkflow.nodes.find(n => state.name === n.data.name)
+      result.journey?.states.forEach((state) => {
+        const originalNode = mockWorkflow.nodes.find((n) => state.name === n.data.name)
         if (originalNode) {
           expect(state.position).toEqual(originalNode.position)
         }
@@ -178,14 +177,14 @@ describe('WorkflowConversionEngine', () => {
 
     test('should handle validation option', async () => {
       const options: ConversionOptions = {
-        validateOutput: true
+        validateOutput: true,
       }
 
       const result: ConversionResult = await engine.convert(mockWorkflow, options)
 
       expect(result.success).toBe(true)
       // Validation should not add errors for a valid workflow
-      expect(result.errors.filter(e => e.code.includes('VALIDATION')).length).toBe(0)
+      expect(result.errors.filter((e) => e.code.includes('VALIDATION')).length).toBe(0)
     })
   })
 
@@ -194,14 +193,14 @@ describe('WorkflowConversionEngine', () => {
       const invalidWorkflow = {
         ...mockWorkflow,
         nodes: [], // No nodes
-        edges: mockWorkflow.edges // But has edges
+        edges: mockWorkflow.edges, // But has edges
       }
 
       const result: ConversionResult = await engine.convert(invalidWorkflow)
 
       expect(result.success).toBe(false)
       expect(result.errors.length).toBeGreaterThan(0)
-      expect(result.errors.some(e => e.code.includes('MISSING'))).toBe(true)
+      expect(result.errors.some((e) => e.code.includes('MISSING'))).toBe(true)
     })
 
     test('should handle invalid edge references', async () => {
@@ -214,16 +213,16 @@ describe('WorkflowConversionEngine', () => {
             target: 'node-2',
             sourceHandle: 'source',
             targetHandle: 'target',
-            type: 'workflowEdge'
-          }
-        ]
+            type: 'workflowEdge',
+          },
+        ],
       }
 
       const result: ConversionResult = await engine.convert(invalidWorkflow)
 
       // Should still attempt conversion but with warnings
       expect(result.warnings.length).toBeGreaterThan(0)
-      expect(result.warnings.some(w => w.code.includes('MISSING_STATES'))).toBe(true)
+      expect(result.warnings.some((w) => w.code.includes('MISSING_STATES'))).toBe(true)
     })
 
     test('should recover from node conversion errors', async () => {
@@ -238,17 +237,17 @@ describe('WorkflowConversionEngine', () => {
             position: { x: 700, y: 100 },
             data: {
               type: 'unsupported-type',
-              name: 'Unsupported Node'
-            }
-          }
-        ]
+              name: 'Unsupported Node',
+            },
+          },
+        ],
       }
 
       const result: ConversionResult = await engine.convert(workflowWithUnsupportedNode)
 
       // Should still succeed with warnings
       expect(result.warnings.length).toBeGreaterThan(0)
-      expect(result.warnings.some(w => w.code.includes('NO_CONVERTER'))).toBe(true)
+      expect(result.warnings.some((w) => w.code.includes('NO_CONVERTER'))).toBe(true)
     })
   })
 
@@ -261,10 +260,10 @@ describe('WorkflowConversionEngine', () => {
       expect(progressCallback).toHaveBeenCalled()
 
       // Check that progress steps are called in order
-      const calls = progressCallback.mock.calls.map(call => call[0])
-      expect(calls.some(call => call.step.includes('Analyzing'))).toBe(true)
-      expect(calls.some(call => call.step.includes('Converting'))).toBe(true)
-      expect(calls.some(call => call.step.includes('completed'))).toBe(true)
+      const calls = progressCallback.mock.calls.map((call) => call[0])
+      expect(calls.some((call) => call.step.includes('Analyzing'))).toBe(true)
+      expect(calls.some((call) => call.step.includes('Converting'))).toBe(true)
+      expect(calls.some((call) => call.step.includes('completed'))).toBe(true)
     })
   })
 
@@ -272,11 +271,13 @@ describe('WorkflowConversionEngine', () => {
     test('should allow registering custom converters', () => {
       const mockConverter = {
         canConvert: jest.fn(() => true),
-        convert: jest.fn(() => Promise.resolve({
-          states: [],
-          transitions: []
-        })),
-        validateInput: jest.fn(() => ({ valid: true, errors: [], warnings: [] }))
+        convert: jest.fn(() =>
+          Promise.resolve({
+            states: [],
+            transitions: [],
+          })
+        ),
+        validateInput: jest.fn(() => ({ valid: true, errors: [], warnings: [] })),
       }
 
       engine.registerNodeConverter('custom-type', mockConverter)
@@ -309,11 +310,11 @@ describe('Factory Functions', () => {
             id: 'start',
             type: 'starter',
             position: { x: 0, y: 0 },
-            data: { type: 'starter', name: 'Start' }
-          }
+            data: { type: 'starter', name: 'Start' },
+          },
         ],
         edges: [],
-        metadata: { version: '1.0.0' }
+        metadata: { version: '1.0.0' },
       }
 
       const result = await convertWorkflowToJourney(mockWorkflow)
@@ -333,26 +334,26 @@ describe('Factory Functions', () => {
             id: 'start',
             type: 'starter',
             position: { x: 0, y: 0 },
-            data: { type: 'starter', name: 'Start' }
-          }
+            data: { type: 'starter', name: 'Start' },
+          },
         ],
         edges: [],
-        metadata: { version: '1.0.0' }
+        metadata: { version: '1.0.0' },
       }
 
       const result: ValidationResult = await validateWorkflowForConversion(mockWorkflow)
 
       expect(result.valid).toBe(true)
-      expect(result.errors.filter(e => e.severity === 'critical').length).toBe(0)
+      expect(result.errors.filter((e) => e.severity === 'critical').length).toBe(0)
     })
 
     test('should identify validation issues', async () => {
       const invalidWorkflow: ReactFlowWorkflow = {
-        id: '',  // Missing ID
+        id: '', // Missing ID
         name: '',
-        nodes: [],  // No nodes
+        nodes: [], // No nodes
         edges: [],
-        metadata: { version: '1.0.0' }
+        metadata: { version: '1.0.0' },
       }
 
       const result: ValidationResult = await validateWorkflowForConversion(invalidWorkflow)
@@ -373,14 +374,14 @@ describe('Edge Cases and Complex Scenarios', () => {
           id: 'node-a',
           type: 'starter',
           position: { x: 0, y: 0 },
-          data: { type: 'starter', name: 'Node A' }
+          data: { type: 'starter', name: 'Node A' },
         },
         {
           id: 'node-b',
           type: 'agent',
           position: { x: 100, y: 0 },
-          data: { type: 'agent', name: 'Node B', prompt: 'Test' }
-        }
+          data: { type: 'agent', name: 'Node B', prompt: 'Test' },
+        },
       ],
       edges: [
         {
@@ -389,7 +390,7 @@ describe('Edge Cases and Complex Scenarios', () => {
           target: 'node-b',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
+          type: 'workflowEdge',
         },
         {
           id: 'edge-ba',
@@ -397,16 +398,18 @@ describe('Edge Cases and Complex Scenarios', () => {
           target: 'node-a',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
-        }
+          type: 'workflowEdge',
+        },
       ],
-      metadata: { version: '1.0.0' }
+      metadata: { version: '1.0.0' },
     }
 
     const result = await convertWorkflowToJourney(circularWorkflow)
 
     // Should convert but with warnings about cycles
-    expect(result.warnings.some(w => w.code.includes('CYCLE') || w.code.includes('LOOP'))).toBe(true)
+    expect(result.warnings.some((w) => w.code.includes('CYCLE') || w.code.includes('LOOP'))).toBe(
+      true
+    )
   })
 
   test('should handle large workflows efficiently', async () => {
@@ -421,8 +424,8 @@ describe('Edge Cases and Complex Scenarios', () => {
         data: {
           type: i === 0 ? 'starter' : 'agent',
           name: `Node ${i}`,
-          ...(i > 0 && { prompt: 'Test prompt' })
-        }
+          ...(i > 0 && { prompt: 'Test prompt' }),
+        },
       })),
       edges: Array.from({ length: 99 }, (_, i) => ({
         id: `edge-${i}`,
@@ -430,9 +433,9 @@ describe('Edge Cases and Complex Scenarios', () => {
         target: `node-${i + 1}`,
         sourceHandle: 'source',
         targetHandle: 'target',
-        type: 'workflowEdge'
+        type: 'workflowEdge',
       })),
-      metadata: { version: '1.0.0' }
+      metadata: { version: '1.0.0' },
     }
 
     const startTime = Date.now()
@@ -458,7 +461,7 @@ describe('Integration Tests', () => {
           id: 'start-node',
           type: 'starter',
           position: { x: 0, y: 0 },
-          data: { type: 'starter', name: 'Workflow Start' }
+          data: { type: 'starter', name: 'Workflow Start' },
         },
         {
           id: 'agent-node',
@@ -468,8 +471,8 @@ describe('Integration Tests', () => {
             type: 'agent',
             name: 'AI Assistant',
             prompt: 'How can I help you?',
-            model: 'gpt-4'
-          }
+            model: 'gpt-4',
+          },
         },
         {
           id: 'api-node',
@@ -480,9 +483,9 @@ describe('Integration Tests', () => {
             name: 'Fetch Data',
             url: 'https://api.example.com/users',
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          }
-        }
+            headers: { 'Content-Type': 'application/json' },
+          },
+        },
       ],
       edges: [
         {
@@ -491,7 +494,7 @@ describe('Integration Tests', () => {
           target: 'agent-node',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
+          type: 'workflowEdge',
         },
         {
           id: 'agent-to-api',
@@ -499,10 +502,10 @@ describe('Integration Tests', () => {
           target: 'api-node',
           sourceHandle: 'source',
           targetHandle: 'target',
-          type: 'workflowEdge'
-        }
+          type: 'workflowEdge',
+        },
       ],
-      metadata: { version: '1.0.0' }
+      metadata: { version: '1.0.0' },
     }
 
     const result = await convertWorkflowToJourney(comprehensiveWorkflow)
@@ -511,9 +514,9 @@ describe('Integration Tests', () => {
     expect(result.journey?.states).toHaveLength(3)
 
     // Verify each state type is correctly converted
-    const initialState = result.journey?.states.find(s => s.type === 'initial')
-    const chatState = result.journey?.states.find(s => s.type === 'chat')
-    const toolState = result.journey?.states.find(s => s.type === 'tool')
+    const initialState = result.journey?.states.find((s) => s.type === 'initial')
+    const chatState = result.journey?.states.find((s) => s.type === 'chat')
+    const toolState = result.journey?.states.find((s) => s.type === 'tool')
 
     expect(initialState).toBeDefined()
     expect(chatState).toBeDefined()

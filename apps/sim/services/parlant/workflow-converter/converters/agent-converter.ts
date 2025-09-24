@@ -6,15 +6,15 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { BaseNodeConverter } from './base-converter'
 import type {
-  ReactFlowNode,
   ConversionContext,
   NodeConversionResult,
-  ValidationResult,
   ParlantState,
-  ParlantStateType
+  ParlantStateType,
+  ReactFlowNode,
+  ValidationResult,
 } from '../types'
+import { BaseNodeConverter } from './base-converter'
 
 const logger = createLogger('AgentConverter')
 
@@ -46,19 +46,18 @@ export class AgentNodeConverter extends BaseNodeConverter {
       this.logConversion(node, 'Agent node converted successfully', {
         stateId: chatState.id,
         hasPrompt: !!node.data?.prompt,
-        toolCount: this.extractTools(node).length
+        toolCount: this.extractTools(node).length,
       })
 
       return {
         states: [chatState],
         transitions: [],
-        variables: variables.length > 0 ? variables : undefined
+        variables: variables.length > 0 ? variables : undefined,
       }
-
     } catch (error) {
       logger.error('Failed to convert agent node', {
         nodeId: node.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       context.errors.push(
@@ -67,18 +66,14 @@ export class AgentNodeConverter extends BaseNodeConverter {
           'AGENT_CONVERSION_ERROR',
           `Failed to convert agent node: ${error instanceof Error ? error.message : String(error)}`,
           'error',
-          [
-            'Check agent configuration',
-            'Verify prompt is valid',
-            'Review tool access permissions'
-          ]
+          ['Check agent configuration', 'Verify prompt is valid', 'Review tool access permissions']
         )
       )
 
       return {
         states: [this.createFallbackChatState(node)],
         transitions: [],
-        variables: undefined
+        variables: undefined,
       }
     }
   }
@@ -101,7 +96,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
           [
             'Add a system prompt to guide agent behavior',
             'Configure message content for the conversation',
-            'Add instructions for the agent'
+            'Add instructions for the agent',
           ]
         )
       )
@@ -118,7 +113,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
           [
             'Specify an AI model to use',
             'Configure model parameters',
-            'Use default model if appropriate'
+            'Use default model if appropriate',
           ]
         )
       )
@@ -160,7 +155,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
       description: this.generateDescription(node),
       content,
       tools: tools.length > 0 ? tools : undefined,
-      conditions: conditions.length > 0 ? conditions : undefined
+      conditions: conditions.length > 0 ? conditions : undefined,
     })
   }
 
@@ -224,7 +219,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
         name: `${node.id}_model`,
         type: 'string' as const,
         description: `AI model for ${node.data?.name || 'agent'}`,
-        defaultValue: model
+        defaultValue: model,
       })
     }
 
@@ -235,7 +230,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
         name: `${node.id}_temperature`,
         type: 'number' as const,
         description: 'Temperature setting for AI responses',
-        defaultValue: temperature
+        defaultValue: temperature,
       })
     }
 
@@ -245,7 +240,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
         name: `${node.id}_max_tokens`,
         type: 'number' as const,
         description: 'Maximum tokens for AI responses',
-        defaultValue: maxTokens
+        defaultValue: maxTokens,
       })
     }
 
@@ -255,7 +250,7 @@ export class AgentNodeConverter extends BaseNodeConverter {
         name: `${node.id}_context`,
         type: 'json' as const,
         description: 'Context information for the agent',
-        defaultValue: node.data.context
+        defaultValue: node.data.context,
       })
     }
 
@@ -266,8 +261,8 @@ export class AgentNodeConverter extends BaseNodeConverter {
     return this.createBaseState(node, 'chat', {
       name: 'AI Agent (Fallback)',
       description: 'Fallback chat state created due to conversion error',
-      content: 'I\'m an AI assistant. How can I help you today?',
-      conditions: ['Agent interaction required']
+      content: "I'm an AI assistant. How can I help you today?",
+      conditions: ['Agent interaction required'],
     })
   }
 }

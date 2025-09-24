@@ -7,25 +7,23 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
+import { NodeAnalyzer } from './analyzers/node-analyzer'
+import { TransitionBuilder } from './builders/transition-builder'
+import { ErrorRecovery } from './error-handling/error-recovery'
+import { StateGenerator } from './generators/state-generator'
 import type {
-  ReactFlowWorkflow,
-  ParlantJourney,
-  ConversionOptions,
-  ConversionResult,
   ConversionContext,
   ConversionError,
-  ConversionWarning,
   ConversionMetadata,
+  ConversionOptions,
+  ConversionResult,
+  ConversionWarning,
   NodeConverter,
-  ParlantState,
-  ParlantTransition,
-  ProgressCallback
+  ParlantJourney,
+  ProgressCallback,
+  ReactFlowWorkflow,
 } from './types'
-import { NodeAnalyzer } from './analyzers/node-analyzer'
-import { StateGenerator } from './generators/state-generator'
-import { TransitionBuilder } from './builders/transition-builder'
 import { ValidationEngine } from './validation/validation-engine'
-import { ErrorRecovery } from './error-handling/error-recovery'
 
 const logger = createLogger('WorkflowConverter')
 
@@ -66,7 +64,7 @@ export class WorkflowConversionEngine {
     logger.info('Starting workflow conversion', {
       workflowId: workflow.id,
       nodeCount: workflow.nodes.length,
-      edgeCount: workflow.edges.length
+      edgeCount: workflow.edges.length,
     })
 
     try {
@@ -94,11 +92,7 @@ export class WorkflowConversionEngine {
       const journey = await this.finalizeJourney(context)
 
       // Create conversion result
-      const result = this.createConversionResult(
-        journey,
-        context,
-        Date.now() - startTime
-      )
+      const result = this.createConversionResult(journey, context, Date.now() - startTime)
 
       logger.info('Workflow conversion completed successfully', {
         workflowId: workflow.id,
@@ -106,17 +100,16 @@ export class WorkflowConversionEngine {
         processingTimeMs: result.metadata.processingTimeMs,
         convertedNodes: result.metadata.convertedNodes,
         totalErrors: result.errors.length,
-        totalWarnings: result.warnings.length
+        totalWarnings: result.warnings.length,
       })
 
       progressCallback?.({ step: 'Conversion completed', completed: 5, total: 5 })
       return result
-
     } catch (error) {
       logger.error('Critical error during workflow conversion', {
         workflowId: workflow.id,
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       })
 
       return this.createErrorResult(workflow, error, Date.now() - startTime)
@@ -158,11 +151,11 @@ export class WorkflowConversionEngine {
     options: ConversionOptions
   ): Promise<ConversionContext> {
     // Build node and edge maps for efficient lookups
-    const nodeMap = new Map(workflow.nodes.map(node => [node.id, node]))
+    const nodeMap = new Map(workflow.nodes.map((node) => [node.id, node]))
     const edgeMap = new Map<string, any[]>()
 
     // Group edges by source node
-    workflow.edges.forEach(edge => {
+    workflow.edges.forEach((edge) => {
       if (!edgeMap.has(edge.source)) {
         edgeMap.set(edge.source, [])
       }
@@ -175,21 +168,21 @@ export class WorkflowConversionEngine {
         preserveLayout: true,
         includeDebugInfo: false,
         validateOutput: true,
-        ...options
+        ...options,
       },
       nodeMap,
       edgeMap,
       stateMap: new Map(),
       variables: new Map(),
       errors: [],
-      warnings: []
+      warnings: [],
     }
   }
 
   private async analyzeWorkflowStructure(context: ConversionContext): Promise<void> {
     logger.info('Analyzing workflow structure', {
       totalNodes: context.workflow.nodes.length,
-      totalEdges: context.workflow.edges.length
+      totalEdges: context.workflow.edges.length,
     })
 
     // Analyze each node
@@ -205,8 +198,8 @@ export class WorkflowConversionEngine {
           suggestions: [
             'Check node configuration',
             'Verify node type is supported',
-            'Review node data structure'
-          ]
+            'Review node data structure',
+          ],
         }
         context.warnings.push(conversionError)
       }
@@ -214,7 +207,7 @@ export class WorkflowConversionEngine {
 
     logger.info('Workflow structure analysis completed', {
       analyzedNodes: context.workflow.nodes.length,
-      warnings: context.warnings.length
+      warnings: context.warnings.length,
     })
   }
 
@@ -233,7 +226,7 @@ export class WorkflowConversionEngine {
           step: 'Converting nodes to states',
           completed: 1,
           total: 5,
-          currentNode: node.data.name || node.id
+          currentNode: node.data.name || node.id,
         })
 
         // Find appropriate converter
@@ -247,8 +240,8 @@ export class WorkflowConversionEngine {
             suggestions: [
               'Register a custom converter for this node type',
               'Use a generic converter',
-              'Skip this node'
-            ]
+              'Skip this node',
+            ],
           }
           context.warnings.push(warning)
           continue
@@ -258,19 +251,18 @@ export class WorkflowConversionEngine {
         const conversionResult = await converter.convert(node, context)
 
         // Store generated states
-        conversionResult.states.forEach(state => {
+        conversionResult.states.forEach((state) => {
           context.stateMap.set(state.id, state)
         })
 
         // Store variables if any
         if (conversionResult.variables) {
-          conversionResult.variables.forEach(variable => {
+          conversionResult.variables.forEach((variable) => {
             context.variables.set(variable.name, variable)
           })
         }
 
         processedNodes++
-
       } catch (error) {
         const conversionError: ConversionError = {
           code: 'NODE_CONVERSION_ERROR',
@@ -280,8 +272,8 @@ export class WorkflowConversionEngine {
           suggestions: [
             'Check node configuration',
             'Review converter implementation',
-            'Try error recovery'
-          ]
+            'Try error recovery',
+          ],
         }
         context.errors.push(conversionError)
 
@@ -292,7 +284,7 @@ export class WorkflowConversionEngine {
           logger.error('Failed to recover from node conversion error', {
             nodeId: node.id,
             originalError: error,
-            recoveryError
+            recoveryError,
           })
         }
       }
@@ -302,7 +294,7 @@ export class WorkflowConversionEngine {
       totalNodes,
       processedNodes,
       generatedStates: context.stateMap.size,
-      errors: context.errors.length
+      errors: context.errors.length,
     })
   }
 
@@ -316,7 +308,7 @@ export class WorkflowConversionEngine {
           // Transitions will be collected in the context
           logger.debug('Built transition', {
             from: transition.sourceStateId,
-            to: transition.targetStateId
+            to: transition.targetStateId,
           })
         }
       } catch (error) {
@@ -327,8 +319,8 @@ export class WorkflowConversionEngine {
           suggestions: [
             'Check edge configuration',
             'Verify source and target states exist',
-            'Review transition logic'
-          ]
+            'Review transition logic',
+          ],
         }
         context.warnings.push(conversionError)
       }
@@ -359,7 +351,8 @@ export class WorkflowConversionEngine {
     const journey: ParlantJourney = {
       id: `journey_${context.workflow.id}`,
       title: context.workflow.name,
-      description: context.workflow.description || `Converted from workflow: ${context.workflow.name}`,
+      description:
+        context.workflow.description || `Converted from workflow: ${context.workflow.name}`,
       conditions: [`Converted from workflow ${context.workflow.name}`],
       states,
       transitions,
@@ -367,11 +360,13 @@ export class WorkflowConversionEngine {
         originalWorkflowId: context.workflow.id,
         conversionTimestamp: new Date().toISOString(),
         conversionVersion: '1.0.0',
-        preservedData: context.options.preserveLayout ? {
-          originalNodes: context.workflow.nodes,
-          originalEdges: context.workflow.edges
-        } : {}
-      }
+        preservedData: context.options.preserveLayout
+          ? {
+              originalNodes: context.workflow.nodes,
+              originalEdges: context.workflow.edges,
+            }
+          : {},
+      },
     }
 
     // Validate if requested
@@ -387,21 +382,21 @@ export class WorkflowConversionEngine {
   private findNodeConverter(node: any): NodeConverter | undefined {
     // Try exact type match first
     let converter = this.nodeConverters.get(node.type)
-    if (converter && converter.canConvert(node)) {
+    if (converter?.canConvert(node)) {
       return converter
     }
 
     // Try data.type match
     if (node.data?.type) {
       converter = this.nodeConverters.get(node.data.type)
-      if (converter && converter.canConvert(node)) {
+      if (converter?.canConvert(node)) {
         return converter
       }
     }
 
     // Try generic converter as fallback
     converter = this.nodeConverters.get('generic')
-    if (converter && converter.canConvert(node)) {
+    if (converter?.canConvert(node)) {
       return converter
     }
 
@@ -420,15 +415,17 @@ export class WorkflowConversionEngine {
       totalEdges: context.workflow.edges.length,
       convertedTransitions: journey.transitions.length,
       processingTimeMs,
-      conversionMap: this.buildConversionMap(context)
+      conversionMap: this.buildConversionMap(context),
     }
 
     return {
-      success: context.errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0,
+      success:
+        context.errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length ===
+        0,
       journey,
       errors: context.errors,
       warnings: context.warnings,
-      metadata
+      metadata,
     }
   }
 
@@ -445,8 +442,8 @@ export class WorkflowConversionEngine {
         'Check workflow structure',
         'Verify all nodes are valid',
         'Review conversion options',
-        'Contact support if issue persists'
-      ]
+        'Contact support if issue persists',
+      ],
     }
 
     return {
@@ -460,18 +457,19 @@ export class WorkflowConversionEngine {
         totalEdges: workflow.edges.length,
         convertedTransitions: 0,
         processingTimeMs,
-        conversionMap: {}
-      }
+        conversionMap: {},
+      },
     }
   }
 
   private buildConversionMap(context: ConversionContext): Record<string, string> {
     const map: Record<string, string> = {}
 
-    context.workflow.nodes.forEach(node => {
+    context.workflow.nodes.forEach((node) => {
       // Find corresponding states for this node
-      const nodeStates = Array.from(context.stateMap.values())
-        .filter(state => state.id.startsWith(node.id) || state.name.includes(node.data.name || ''))
+      const nodeStates = Array.from(context.stateMap.values()).filter(
+        (state) => state.id.startsWith(node.id) || state.name.includes(node.data.name || '')
+      )
 
       if (nodeStates.length > 0) {
         map[node.id] = nodeStates[0].id

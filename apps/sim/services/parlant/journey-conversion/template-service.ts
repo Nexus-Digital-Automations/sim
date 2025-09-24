@@ -6,23 +6,19 @@
  * and template lifecycle operations.
  */
 
+import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
-import { db } from '@/db'
-import {
-  workflowTemplates,
-  templateParameters,
-  templateUsageStats
-} from '@/db/schema/parlant'
-import { eq, and, desc, asc, like, inArray, sql } from 'drizzle-orm'
 import { generateId } from '@/lib/utils'
-import {
-  type TemplateService as ITemplateService,
-  type WorkflowTemplate,
-  type TemplateParameter,
-  type TemplateCreateRequest,
-  type TemplateUpdateRequest,
-  type TemplateListQuery,
-  type ConversionError,
+import { db } from '@/db'
+import { templateParameters, templateUsageStats, workflowTemplates } from '@/db/schema/parlant'
+import type {
+  ConversionError,
+  TemplateService as ITemplateService,
+  TemplateCreateRequest,
+  TemplateListQuery,
+  TemplateParameter,
+  TemplateUpdateRequest,
+  WorkflowTemplate,
 } from './types'
 
 const logger = createLogger('TemplateService')
@@ -108,7 +104,6 @@ export class TemplateService implements ITemplateService {
       })
 
       return completeTemplate
-
     } catch (error) {
       logger.error('Failed to create template', { error: error.message, request })
       throw this.createError('template', 'TEMPLATE_CREATE_FAILED', error.message, { request })
@@ -118,7 +113,10 @@ export class TemplateService implements ITemplateService {
   /**
    * Update an existing workflow template
    */
-  async updateTemplate(templateId: string, request: TemplateUpdateRequest): Promise<WorkflowTemplate> {
+  async updateTemplate(
+    templateId: string,
+    request: TemplateUpdateRequest
+  ): Promise<WorkflowTemplate> {
     const startTime = Date.now()
     logger.info('Updating workflow template', { templateId })
 
@@ -141,9 +139,7 @@ export class TemplateService implements ITemplateService {
         // Update parameters if provided
         if (request.parameters) {
           // Delete existing parameters
-          await tx
-            .delete(templateParameters)
-            .where(eq(templateParameters.template_id, templateId))
+          await tx.delete(templateParameters).where(eq(templateParameters.template_id, templateId))
 
           // Insert new parameters
           if (request.parameters.length > 0) {
@@ -175,10 +171,12 @@ export class TemplateService implements ITemplateService {
       })
 
       return template
-
     } catch (error) {
       logger.error('Failed to update template', { error: error.message, templateId, request })
-      throw this.createError('template', 'TEMPLATE_UPDATE_FAILED', error.message, { templateId, request })
+      throw this.createError('template', 'TEMPLATE_UPDATE_FAILED', error.message, {
+        templateId,
+        request,
+      })
     }
   }
 
@@ -206,7 +204,6 @@ export class TemplateService implements ITemplateService {
       }
 
       return this.mapDbTemplateToApiTemplate(template)
-
     } catch (error) {
       logger.error('Failed to get template', { error: error.message, templateId, workspaceId })
       if (error instanceof Error && error.name === 'ConversionError') {
@@ -231,24 +228,19 @@ export class TemplateService implements ITemplateService {
       const conditions: any[] = [eq(workflowTemplates.workspace_id, query.workspace_id)]
 
       if (query.search) {
-        conditions.push(
-          like(workflowTemplates.name, `%${query.search}%`)
-        )
+        conditions.push(like(workflowTemplates.name, `%${query.search}%`))
       }
 
       if (query.tags && query.tags.length > 0) {
         // PostgreSQL array overlap operator
-        conditions.push(
-          sql`${workflowTemplates.tags} && ${query.tags}`
-        )
+        conditions.push(sql`${workflowTemplates.tags} && ${query.tags}`)
       }
 
       // Build order by
       const sortField = query.sort_by || 'created_at'
       const sortOrder = query.sort_order || 'desc'
-      const orderBy = sortOrder === 'asc'
-        ? asc(workflowTemplates[sortField])
-        : desc(workflowTemplates[sortField])
+      const orderBy =
+        sortOrder === 'asc' ? asc(workflowTemplates[sortField]) : desc(workflowTemplates[sortField])
 
       // Get templates with count
       const [templates, [{ count }]] = await Promise.all([
@@ -286,7 +278,6 @@ export class TemplateService implements ITemplateService {
           has_more: offset + templates.length < Number(count),
         },
       }
-
     } catch (error) {
       logger.error('Failed to list templates', { error: error.message, query })
       throw this.createError('template', 'TEMPLATE_LIST_FAILED', error.message, { query })
@@ -311,30 +302,27 @@ export class TemplateService implements ITemplateService {
         })
 
         if (!template) {
-          throw this.createError('template', 'TEMPLATE_NOT_FOUND', `Template ${templateId} not found`)
+          throw this.createError(
+            'template',
+            'TEMPLATE_NOT_FOUND',
+            `Template ${templateId} not found`
+          )
         }
 
         // Delete parameters
-        await tx
-          .delete(templateParameters)
-          .where(eq(templateParameters.template_id, templateId))
+        await tx.delete(templateParameters).where(eq(templateParameters.template_id, templateId))
 
         // Delete usage stats
-        await tx
-          .delete(templateUsageStats)
-          .where(eq(templateUsageStats.template_id, templateId))
+        await tx.delete(templateUsageStats).where(eq(templateUsageStats.template_id, templateId))
 
         // Delete template
-        await tx
-          .delete(workflowTemplates)
-          .where(eq(workflowTemplates.id, templateId))
+        await tx.delete(workflowTemplates).where(eq(workflowTemplates.id, templateId))
       })
 
       logger.info('Template deleted successfully', {
         templateId,
         duration: Date.now() - startTime,
       })
-
     } catch (error) {
       logger.error('Failed to delete template', { error: error.message, templateId })
       if (error instanceof Error && error.name === 'ConversionError') {
@@ -348,7 +336,10 @@ export class TemplateService implements ITemplateService {
    * Validate template parameters
    */
   async validateParameters(templateId: string, parameters: Record<string, any>) {
-    logger.info('Validating template parameters', { templateId, parametersCount: Object.keys(parameters).length })
+    logger.info('Validating template parameters', {
+      templateId,
+      parametersCount: Object.keys(parameters).length,
+    })
 
     try {
       const template = await this.getTemplate(templateId, '')
@@ -378,7 +369,7 @@ export class TemplateService implements ITemplateService {
       }
 
       // Check for unexpected parameters
-      const validParamNames = new Set(template.parameters.map(p => p.name))
+      const validParamNames = new Set(template.parameters.map((p) => p.name))
       for (const paramName of Object.keys(parameters)) {
         if (!validParamNames.has(paramName)) {
           errors.push({
@@ -392,21 +383,18 @@ export class TemplateService implements ITemplateService {
         valid: errors.length === 0,
         errors,
       }
-
     } catch (error) {
       logger.error('Failed to validate parameters', { error: error.message, templateId })
-      throw this.createError('validation', 'PARAMETER_VALIDATION_FAILED', error.message, { templateId })
+      throw this.createError('validation', 'PARAMETER_VALIDATION_FAILED', error.message, {
+        templateId,
+      })
     }
   }
 
   /**
    * Update template usage statistics
    */
-  async updateUsageStats(
-    templateId: string,
-    success: boolean,
-    durationMs: number
-  ): Promise<void> {
+  async updateUsageStats(templateId: string, success: boolean, durationMs: number): Promise<void> {
     try {
       await db.transaction(async (tx) => {
         // Increment template usage count
@@ -438,7 +426,6 @@ export class TemplateService implements ITemplateService {
       })
 
       logger.debug('Usage stats updated', { templateId, success, durationMs })
-
     } catch (error) {
       logger.error('Failed to update usage stats', { error: error.message, templateId })
       // Don't throw error as this is non-critical
@@ -476,7 +463,10 @@ export class TemplateService implements ITemplateService {
     }
   }
 
-  private validateParameter(param: TemplateParameter, value: any): { valid: boolean; error?: string } {
+  private validateParameter(
+    param: TemplateParameter,
+    value: any
+  ): { valid: boolean; error?: string } {
     // Type validation
     if (!this.validateParameterType(param.type, value)) {
       return {
@@ -533,7 +523,7 @@ export class TemplateService implements ITemplateService {
       case 'string':
         return typeof value === 'string'
       case 'number':
-        return typeof value === 'number' && !isNaN(value)
+        return typeof value === 'number' && !Number.isNaN(value)
       case 'boolean':
         return typeof value === 'boolean'
       case 'array':

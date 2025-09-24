@@ -5,9 +5,9 @@
  * memory usage, scalability, and production readiness under various load conditions.
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
-import { performance } from 'perf_hooks'
 import * as os from 'os'
+import { performance } from 'perf_hooks'
+import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 
 interface PerformanceMetrics {
   testName: string
@@ -35,7 +35,7 @@ interface LoadTestResult {
 
 class PerformanceMonitor {
   private metrics: PerformanceMetrics[] = []
-  private startTime: number = 0
+  private startTime = 0
   private startMemory: NodeJS.MemoryUsage | null = null
   private cpuStartUsage: NodeJS.CpuUsage | null = null
 
@@ -45,7 +45,7 @@ class PerformanceMonitor {
     this.cpuStartUsage = process.cpuUsage()
   }
 
-  endMeasurement(testName: string, accuracy: number = 100, errorRate: number = 0): PerformanceMetrics {
+  endMeasurement(testName: string, accuracy = 100, errorRate = 0): PerformanceMetrics {
     const executionTimeMs = performance.now() - this.startTime
     const endMemory = process.memoryUsage()
     const cpuEndUsage = process.cpuUsage(this.cpuStartUsage || undefined)
@@ -62,7 +62,7 @@ class PerformanceMonitor {
       throughputOpsPerSec,
       accuracy,
       errorRate,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     this.metrics.push(metric)
@@ -78,9 +78,12 @@ class PerformanceMonitor {
       return { error: 'No metrics available' }
     }
 
-    const avgExecutionTime = this.metrics.reduce((sum, m) => sum + m.executionTimeMs, 0) / this.metrics.length
-    const avgMemoryUsage = this.metrics.reduce((sum, m) => sum + m.memoryUsageMB, 0) / this.metrics.length
-    const avgThroughput = this.metrics.reduce((sum, m) => sum + m.throughputOpsPerSec, 0) / this.metrics.length
+    const avgExecutionTime =
+      this.metrics.reduce((sum, m) => sum + m.executionTimeMs, 0) / this.metrics.length
+    const avgMemoryUsage =
+      this.metrics.reduce((sum, m) => sum + m.memoryUsageMB, 0) / this.metrics.length
+    const avgThroughput =
+      this.metrics.reduce((sum, m) => sum + m.throughputOpsPerSec, 0) / this.metrics.length
     const avgAccuracy = this.metrics.reduce((sum, m) => sum + m.accuracy, 0) / this.metrics.length
     const avgErrorRate = this.metrics.reduce((sum, m) => sum + m.errorRate, 0) / this.metrics.length
 
@@ -91,13 +94,17 @@ class PerformanceMonitor {
       averageThroughputOpsPerSec: Math.round(avgThroughput * 100) / 100,
       averageAccuracy: Math.round(avgAccuracy * 100) / 100,
       averageErrorRate: Math.round(avgErrorRate * 100) / 100,
-      maxExecutionTime: Math.max(...this.metrics.map(m => m.executionTimeMs)),
-      minExecutionTime: Math.min(...this.metrics.map(m => m.executionTimeMs)),
-      performanceGrade: this.calculatePerformanceGrade(avgExecutionTime, avgAccuracy, avgErrorRate)
+      maxExecutionTime: Math.max(...this.metrics.map((m) => m.executionTimeMs)),
+      minExecutionTime: Math.min(...this.metrics.map((m) => m.executionTimeMs)),
+      performanceGrade: this.calculatePerformanceGrade(avgExecutionTime, avgAccuracy, avgErrorRate),
     }
   }
 
-  private calculatePerformanceGrade(avgTime: number, avgAccuracy: number, avgErrorRate: number): string {
+  private calculatePerformanceGrade(
+    avgTime: number,
+    avgAccuracy: number,
+    avgErrorRate: number
+  ): string {
     if (avgTime < 100 && avgAccuracy > 95 && avgErrorRate < 1) return 'A+'
     if (avgTime < 200 && avgAccuracy > 90 && avgErrorRate < 2) return 'A'
     if (avgTime < 500 && avgAccuracy > 85 && avgErrorRate < 5) return 'B'
@@ -119,12 +126,12 @@ class WorkflowGenerator {
       id: 'start',
       type: 'start',
       position: { x: 0, y: 100 },
-      data: { label: 'Start' }
+      data: { label: 'Start' },
     })
 
     // Generate intermediate nodes based on complexity
     for (let i = 1; i < nodeCount - 1; i++) {
-      const nodeType = this.getRandomNodeType(complexity)
+      const nodeType = WorkflowGenerator.getRandomNodeType(complexity)
       nodes.push({
         id: `node_${i}`,
         type: nodeType,
@@ -133,8 +140,8 @@ class WorkflowGenerator {
           label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} ${i}`,
           toolId: nodeType === 'tool' ? `tool_${i}` : undefined,
           condition: nodeType === 'condition' ? `variable_${i} === 'value'` : undefined,
-          config: this.generateNodeConfig(nodeType, complexity)
-        }
+          config: WorkflowGenerator.generateNodeConfig(nodeType, complexity),
+        },
       })
 
       // Create edges - add some branching for complex workflows
@@ -142,17 +149,17 @@ class WorkflowGenerator {
         // Create branching
         edges.push({
           id: `edge_${i}_branch`,
-          source: `node_${i-2}`,
+          source: `node_${i - 2}`,
           target: `node_${i}`,
-          condition: `branch_condition_${i}`
+          condition: `branch_condition_${i}`,
         })
       }
 
       edges.push({
         id: `edge_${i}`,
-        source: i === 1 ? 'start' : `node_${i-1}`,
+        source: i === 1 ? 'start' : `node_${i - 1}`,
         target: `node_${i}`,
-        condition: complexity === 'complex' && Math.random() > 0.7 ? `condition_${i}` : undefined
+        condition: complexity === 'complex' && Math.random() > 0.7 ? `condition_${i}` : undefined,
       })
     }
 
@@ -161,13 +168,13 @@ class WorkflowGenerator {
       id: 'end',
       type: 'end',
       position: { x: (nodeCount - 1) * 150, y: 100 },
-      data: { label: 'End' }
+      data: { label: 'End' },
     })
 
     edges.push({
       id: `edge_end`,
       source: `node_${nodeCount - 2}`,
-      target: 'end'
+      target: 'end',
     })
 
     return {
@@ -181,21 +188,36 @@ class WorkflowGenerator {
         generated: true,
         nodeCount,
         complexity,
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      },
     }
   }
 
   private static getRandomNodeType(complexity: string): string {
     const simpleTypes = ['tool', 'tool', 'tool', 'condition']
     const mediumTypes = ['tool', 'tool', 'condition', 'form', 'delay']
-    const complexTypes = ['tool', 'condition', 'form', 'delay', 'loop', 'merge', 'split', 'subprocess']
+    const complexTypes = [
+      'tool',
+      'condition',
+      'form',
+      'delay',
+      'loop',
+      'merge',
+      'split',
+      'subprocess',
+    ]
 
     let types: string[]
     switch (complexity) {
-      case 'simple': types = simpleTypes; break
-      case 'complex': types = complexTypes; break
-      default: types = mediumTypes; break
+      case 'simple':
+        types = simpleTypes
+        break
+      case 'complex':
+        types = complexTypes
+        break
+      default:
+        types = mediumTypes
+        break
     }
 
     return types[Math.floor(Math.random() * types.length)]
@@ -208,14 +230,14 @@ class WorkflowGenerator {
       case 'tool':
         baseConfig.timeout = complexity === 'complex' ? 30000 : 10000
         baseConfig.retries = complexity === 'complex' ? 3 : 1
-        baseConfig.parameters = this.generateParameters(complexity)
+        baseConfig.parameters = WorkflowGenerator.generateParameters(complexity)
         break
       case 'condition':
         baseConfig.expression = `input.${complexity}_field === 'expected_value'`
         baseConfig.defaultBranch = 'false'
         break
       case 'form':
-        baseConfig.fields = this.generateFormFields(complexity)
+        baseConfig.fields = WorkflowGenerator.generateFormFields(complexity)
         baseConfig.validation = complexity === 'complex'
         break
       case 'delay':
@@ -252,7 +274,7 @@ class WorkflowGenerator {
         name: `field_${i}`,
         type: i % 3 === 0 ? 'select' : i % 3 === 1 ? 'textarea' : 'text',
         required: Math.random() > 0.5,
-        validation: complexity === 'complex' ? `validation_rule_${i}` : undefined
+        validation: complexity === 'complex' ? `validation_rule_${i}` : undefined,
       })
     }
 
@@ -286,8 +308,8 @@ class MockWorkflowToJourneyConverter {
           originalWorkflowId: workflow.id,
           conversionTimestamp: new Date().toISOString(),
           preservedNodeCount: workflow.nodes.length,
-          preservedEdgeCount: workflow.edges.length
-        }
+          preservedEdgeCount: workflow.edges.length,
+        },
       }
 
       // Calculate accuracy based on preservation
@@ -303,8 +325,8 @@ class MockWorkflowToJourneyConverter {
         performance: {
           conversionTimeMs: metrics.executionTimeMs,
           memoryUsedMB: metrics.memoryUsageMB,
-          throughputOpsPerSec: metrics.throughputOpsPerSec
-        }
+          throughputOpsPerSec: metrics.throughputOpsPerSec,
+        },
       }
     } catch (error) {
       const metrics = this.performanceMonitor.endMeasurement(testName, 0, 100)
@@ -315,8 +337,8 @@ class MockWorkflowToJourneyConverter {
         performance: {
           conversionTimeMs: metrics.executionTimeMs,
           memoryUsedMB: metrics.memoryUsageMB,
-          throughputOpsPerSec: 0
-        }
+          throughputOpsPerSec: 0,
+        },
       }
     }
   }
@@ -341,19 +363,19 @@ class MockWorkflowToJourneyConverter {
   private async processNode(node: any, options: any): Promise<void> {
     // Simulate processing time based on node complexity
     const processingTime = this.calculateNodeProcessingTime(node, options)
-    await new Promise(resolve => setTimeout(resolve, processingTime))
+    await new Promise((resolve) => setTimeout(resolve, processingTime))
   }
 
   private async processEdge(edge: any, options: any): Promise<void> {
     // Simulate edge processing
     const processingTime = edge.condition ? 5 : 1
-    await new Promise(resolve => setTimeout(resolve, processingTime))
+    await new Promise((resolve) => setTimeout(resolve, processingTime))
   }
 
   private async simulateOptimization(workflow: any): Promise<void> {
     // Simulate optimization work proportional to workflow size
     const optimizationTime = Math.min(100, workflow.nodes.length * 2)
-    await new Promise(resolve => setTimeout(resolve, optimizationTime))
+    await new Promise((resolve) => setTimeout(resolve, optimizationTime))
   }
 
   private calculateNodeProcessingTime(node: any, options: any): number {
@@ -398,37 +420,37 @@ class MockWorkflowToJourneyConverter {
   }
 
   private convertNodesToStates(nodes: any[]): any[] {
-    return nodes.map(node => ({
+    return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
       name: node.data?.label || node.id,
       config: node.data?.config || {},
-      originalNodeId: node.id
+      originalNodeId: node.id,
     }))
   }
 
   private convertEdgesToTransitions(edges: any[]): any[] {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       id: `transition_${edge.id}`,
       from: `state_${edge.source}`,
       to: `state_${edge.target}`,
       condition: edge.condition || null,
-      originalEdgeId: edge.id
+      originalEdgeId: edge.id,
     }))
   }
 
   private mapNodeTypeToStateType(nodeType: string): string {
     const mapping: Record<string, string> = {
-      'start': 'initial',
-      'end': 'final',
-      'tool': 'tool_state',
-      'condition': 'chat_state',
-      'form': 'chat_state',
-      'delay': 'tool_state',
-      'loop': 'chat_state',
-      'merge': 'chat_state',
-      'split': 'chat_state',
-      'subprocess': 'tool_state'
+      start: 'initial',
+      end: 'final',
+      tool: 'tool_state',
+      condition: 'chat_state',
+      form: 'chat_state',
+      delay: 'tool_state',
+      loop: 'chat_state',
+      merge: 'chat_state',
+      split: 'chat_state',
+      subprocess: 'tool_state',
     }
     return mapping[nodeType] || 'chat_state'
   }
@@ -443,8 +465,8 @@ class MockWorkflowToJourneyConverter {
     const initialStates = journey.states.filter((s: any) => s.type === 'initial').length
     const finalStates = journey.states.filter((s: any) => s.type === 'final').length
 
-    const structureAccuracy = ((startNodes === initialStates ? 50 : 0) +
-                              (endNodes === finalStates ? 50 : 0))
+    const structureAccuracy =
+      (startNodes === initialStates ? 50 : 0) + (endNodes === finalStates ? 50 : 0)
 
     return Math.min(100, (nodeAccuracy + edgeAccuracy + structureAccuracy) / 3)
   }
@@ -461,11 +483,13 @@ class MockWorkflowToJourneyConverter {
 // Performance Test Suite
 describe('Workflow to Journey Performance Benchmarking', () => {
   let converter: MockWorkflowToJourneyConverter
-  let performanceResults: any[] = []
+  const performanceResults: any[] = []
 
   beforeAll(() => {
     console.log('🚀 Initializing Performance Benchmark Suite')
-    console.log(`📊 System Info: ${os.cpus().length} CPU cores, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM`)
+    console.log(
+      `📊 System Info: ${os.cpus().length} CPU cores, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM`
+    )
     converter = new MockWorkflowToJourneyConverter()
   })
 
@@ -486,7 +510,7 @@ describe('Workflow to Journey Performance Benchmarking', () => {
   describe('Scalability Performance Tests', () => {
     const testSizes = [5, 10, 25, 50, 100, 200]
 
-    testSizes.forEach(size => {
+    testSizes.forEach((size) => {
       test(`should handle ${size}-node workflow efficiently`, async () => {
         const workflow = WorkflowGenerator.generateWorkflow(size, 'medium')
         const startTime = performance.now()
@@ -502,7 +526,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
         expect(executionTime).toBeLessThan(size * 50) // Max 50ms per node
         expect(result.performance.memoryUsedMB).toBeLessThan(size * 0.1) // Max 0.1MB per node
 
-        console.log(`📊 ${size} nodes: ${Math.round(executionTime)}ms, ${result.performance.memoryUsedMB.toFixed(2)}MB`)
+        console.log(
+          `📊 ${size} nodes: ${Math.round(executionTime)}ms, ${result.performance.memoryUsedMB.toFixed(2)}MB`
+        )
       }, 30000) // 30 second timeout for large workflows
     })
   })
@@ -510,7 +536,7 @@ describe('Workflow to Journey Performance Benchmarking', () => {
   describe('Complexity Performance Tests', () => {
     const complexities: Array<'simple' | 'medium' | 'complex'> = ['simple', 'medium', 'complex']
 
-    complexities.forEach(complexity => {
+    complexities.forEach((complexity) => {
       test(`should handle ${complexity} workflow complexity efficiently`, async () => {
         const workflow = WorkflowGenerator.generateWorkflow(50, complexity)
         const result = await converter.convertWorkflowToJourney(workflow)
@@ -522,7 +548,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
         const maxTime = complexity === 'simple' ? 1000 : complexity === 'medium' ? 2000 : 4000
         expect(result.performance.conversionTimeMs).toBeLessThan(maxTime)
 
-        console.log(`🔧 ${complexity}: ${Math.round(result.performance.conversionTimeMs)}ms, accuracy: ${result.metrics.accuracy}%`)
+        console.log(
+          `🔧 ${complexity}: ${Math.round(result.performance.conversionTimeMs)}ms, accuracy: ${result.metrics.accuracy}%`
+        )
       })
     })
   })
@@ -536,18 +564,20 @@ describe('Workflow to Journey Performance Benchmarking', () => {
 
       const startTime = performance.now()
       const results = await Promise.all(
-        workflows.map(workflow => converter.convertWorkflowToJourney(workflow))
+        workflows.map((workflow) => converter.convertWorkflowToJourney(workflow))
       )
       const totalTime = performance.now() - startTime
 
       // Verify all conversions succeeded
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.success).toBe(true)
       })
 
       // Performance assertions for concurrent processing
       expect(totalTime).toBeLessThan(concurrentWorkflows * 1000) // Should be much faster than sequential
-      console.log(`⚡ ${concurrentWorkflows} concurrent conversions: ${Math.round(totalTime)}ms total`)
+      console.log(
+        `⚡ ${concurrentWorkflows} concurrent conversions: ${Math.round(totalTime)}ms total`
+      )
     })
 
     test('should maintain performance under sustained load', async () => {
@@ -562,7 +592,7 @@ describe('Workflow to Journey Performance Benchmarking', () => {
         throughput: 0,
         errorRate: 0,
         memoryPeakMB: 0,
-        cpuPeakPercent: 0
+        cpuPeakPercent: 0,
       }
 
       const responseTimes: number[] = []
@@ -594,11 +624,12 @@ describe('Workflow to Journey Performance Benchmarking', () => {
         }
 
         // Small delay to simulate realistic load
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
       }
 
       const totalTime = performance.now() - startTime
-      results.averageResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+      results.averageResponseTime =
+        responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
       results.throughput = (results.successfulRequests * 1000) / totalTime
       results.errorRate = (results.failedRequests / results.totalRequests) * 100
 
@@ -609,7 +640,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
       expect(results.memoryPeakMB).toBeLessThan(100) // Memory usage under 100MB
 
       console.log(`🔄 Sustained load (${iterations} iterations):`)
-      console.log(`   Success Rate: ${((results.successfulRequests/results.totalRequests)*100).toFixed(1)}%`)
+      console.log(
+        `   Success Rate: ${((results.successfulRequests / results.totalRequests) * 100).toFixed(1)}%`
+      )
       console.log(`   Avg Response: ${Math.round(results.averageResponseTime)}ms`)
       console.log(`   Throughput: ${results.throughput.toFixed(1)} ops/sec`)
       console.log(`   Peak Memory: ${results.memoryPeakMB.toFixed(1)}MB`)
@@ -641,8 +674,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
       }
 
       // Verify memory scaling is roughly linear
-      const memoryGrowthRate = (memorySnapshots[memorySnapshots.length - 1] - memorySnapshots[0]) /
-                               (testSizes[testSizes.length - 1] - testSizes[0])
+      const memoryGrowthRate =
+        (memorySnapshots[memorySnapshots.length - 1] - memorySnapshots[0]) /
+        (testSizes[testSizes.length - 1] - testSizes[0])
       expect(memoryGrowthRate).toBeLessThan(0.1) // Less than 0.1MB per additional node
 
       console.log(`💾 Memory scaling: ${memoryGrowthRate.toFixed(3)}MB per additional node`)
@@ -678,7 +712,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
       // Memory increase should be minimal (less than 10MB over 20 iterations)
       expect(memoryIncrease).toBeLessThan(10)
 
-      console.log(`🔍 Memory leak check: ${memoryIncrease.toFixed(1)}MB increase over ${iterations} iterations`)
+      console.log(
+        `🔍 Memory leak check: ${memoryIncrease.toFixed(1)}MB increase over ${iterations} iterations`
+      )
     })
   })
 
@@ -697,7 +733,9 @@ describe('Workflow to Journey Performance Benchmarking', () => {
       // Optimization may take longer for processing but should maintain or improve quality
       expect(optimizedResult.metrics.accuracy).toBeGreaterThanOrEqual(normalResult.metrics.accuracy)
 
-      console.log(`🎯 Optimization impact: Normal: ${Math.round(normalResult.performance.conversionTimeMs)}ms, Optimized: ${Math.round(optimizedResult.performance.conversionTimeMs)}ms`)
+      console.log(
+        `🎯 Optimization impact: Normal: ${Math.round(normalResult.performance.conversionTimeMs)}ms, Optimized: ${Math.round(optimizedResult.performance.conversionTimeMs)}ms`
+      )
     })
   })
 })

@@ -6,7 +6,7 @@
  * and journey-specific configurations.
  */
 
-import { ConditionalExpression, OptimizationHint, PerformanceSettings } from './template-types'
+import type { ConditionalExpression } from './template-types'
 
 // ============================================================================
 // Journey Generation Types
@@ -186,15 +186,15 @@ export interface JourneyState {
 }
 
 export type JourneyStateType =
-  | 'chat'           // Standard conversational interaction
-  | 'tool'           // Tool execution state
-  | 'decision'       // Decision/branching point
-  | 'input'          // User input collection
-  | 'confirmation'   // User confirmation state
-  | 'processing'     // Background processing state
-  | 'wait'           // Waiting for external event
-  | 'final'          // Journey completion state
-  | 'error'          // Error handling state
+  | 'chat' // Standard conversational interaction
+  | 'tool' // Tool execution state
+  | 'decision' // Decision/branching point
+  | 'input' // User input collection
+  | 'confirmation' // User confirmation state
+  | 'processing' // Background processing state
+  | 'wait' // Waiting for external event
+  | 'final' // Journey completion state
+  | 'error' // Error handling state
 
 export interface JourneyStateContent {
   // Chat state content
@@ -376,11 +376,11 @@ export type VariableType =
   | 'reference'
 
 export type VariableScope =
-  | 'state'      // Available only in current state
-  | 'journey'    // Available throughout journey
-  | 'session'    // Available throughout user session
-  | 'user'       // Available across all user sessions
-  | 'global'     // Available globally (admin only)
+  | 'state' // Available only in current state
+  | 'journey' // Available throughout journey
+  | 'session' // Available throughout user session
+  | 'user' // Available across all user sessions
+  | 'global' // Available globally (admin only)
 
 export interface VariableValidation {
   rules: ValidationRule[]
@@ -525,12 +525,12 @@ export interface ResourceUsage {
 // ============================================================================
 
 export type OptimizationTarget =
-  | 'performance'      // Optimize for speed
-  | 'memory'          // Optimize for memory usage
+  | 'performance' // Optimize for speed
+  | 'memory' // Optimize for memory usage
   | 'user_experience' // Optimize for UX
   | 'completion_rate' // Optimize for completion
   | 'error_reduction' // Optimize for reliability
-  | 'accessibility'   // Optimize for accessibility
+  | 'accessibility' // Optimize for accessibility
 
 export interface JourneyOptimization {
   target: OptimizationTarget

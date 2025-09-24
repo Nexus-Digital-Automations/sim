@@ -12,14 +12,15 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { Edge } from 'reactflow'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 import { getBlock } from '@/blocks'
 import { Serializer } from '@/serializer'
-import { workflowCompatibilityValidator, type CompatibilityValidationResult } from './compatibility-validator'
-import { workflowRegressionTestRunner, type RegressionTestSuite } from './regression-tests'
-import { dataConsistencyManager, type ConsistencyValidationResult } from './data-consistency'
-import { dualModeArchitecture } from './dual-mode-architecture'
+import type { WorkflowState } from '@/stores/workflows/workflow/types'
+import {
+  type CompatibilityValidationResult,
+  workflowCompatibilityValidator,
+} from './compatibility-validator'
+import { type ConsistencyValidationResult, dataConsistencyManager } from './data-consistency'
+import { type RegressionTestSuite, workflowRegressionTestRunner } from './regression-tests'
 
 const logger = createLogger('WorkflowPreservationValidator')
 
@@ -93,13 +94,15 @@ export class WorkflowPreservationValidator {
   private logger = createLogger('WorkflowPreservationValidator')
   private config: WorkflowPreservationConfig
 
-  constructor(config: WorkflowPreservationConfig = {
-    strictValidation: true,
-    performanceThresholdMs: 1000,
-    minimumPassingScore: 95,
-    enableDeepTesting: true,
-    validateAllBlockTypes: true
-  }) {
+  constructor(
+    config: WorkflowPreservationConfig = {
+      strictValidation: true,
+      performanceThresholdMs: 1000,
+      minimumPassingScore: 95,
+      enableDeepTesting: true,
+      validateAllBlockTypes: true,
+    }
+  ) {
     this.config = config
     this.logger.info('Workflow preservation validator initialized', { config })
   }
@@ -118,16 +121,17 @@ export class WorkflowPreservationValidator {
       workflowId,
       blockCount: Object.keys(reactFlowState.blocks).length,
       edgeCount: reactFlowState.edges.length,
-      hasJourneyState: !!journeyState
+      hasJourneyState: !!journeyState,
     })
 
     try {
       // 1. Core compatibility validation
       this.logger.info('Running compatibility validation')
-      const compatibilityResult = await workflowCompatibilityValidator.validateWorkflowCompatibility(
-        reactFlowState,
-        journeyState
-      )
+      const compatibilityResult =
+        await workflowCompatibilityValidator.validateWorkflowCompatibility(
+          reactFlowState,
+          journeyState
+        )
 
       // 2. Regression test suite
       this.logger.info('Running regression test suite')
@@ -163,30 +167,25 @@ export class WorkflowPreservationValidator {
 
       // Compile results
       const executionTime = Date.now() - startTime
-      const result = await this.compileValidationResult(
-        workflowId,
-        executionTime,
-        {
-          compatibilityResult,
-          regressionResult,
-          consistencyResult,
-          visualEditorValidation,
-          executionValidation,
-          collaborationValidation,
-          performanceValidation,
-          dataIntegrityValidation
-        }
-      )
+      const result = await this.compileValidationResult(workflowId, executionTime, {
+        compatibilityResult,
+        regressionResult,
+        consistencyResult,
+        visualEditorValidation,
+        executionValidation,
+        collaborationValidation,
+        performanceValidation,
+        dataIntegrityValidation,
+      })
 
       this.logger.info('Workflow preservation validation completed', {
         workflowId,
         overallSuccess: result.overallSuccess,
         executionTime,
-        certificationLevel: result.certificationLevel
+        certificationLevel: result.certificationLevel,
       })
 
       return result
-
     } catch (error) {
       this.logger.error('Workflow preservation validation failed', { error, workflowId })
 
@@ -195,28 +194,90 @@ export class WorkflowPreservationValidator {
         workflowId,
         validationTimestamp: new Date(),
         executionTime: Date.now() - startTime,
-        compatibilityResult: { isCompatible: false, errors: [], warnings: [], preservedFeatures: [], migrationSafety: { canRollback: true, dataBackupRequired: true, riskLevel: 'HIGH', safetyMeasures: [] } },
-        regressionResult: { suiteName: 'Failed', totalTests: 0, passedTests: 0, failedTests: 1, results: [], overallSuccess: false, executionTime: 0 },
-        consistencyResult: { isConsistent: false, inconsistencies: [], warnings: [], recommendations: [], canProceed: false },
-        visualEditorValidation: { category: 'Visual Editor', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-        executionValidation: { category: 'Execution', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-        collaborationValidation: { category: 'Collaboration', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-        performanceValidation: { category: 'Performance', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-        dataIntegrityValidation: { category: 'Data Integrity', passed: false, score: 0, details: [], issues: [], executionTime: 0 },
-        criticalIssues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Validation system failure',
-          impact: 'Cannot verify workflow preservation',
-          affectedComponent: 'WorkflowPreservationValidator',
-          suggestedFix: 'Review validation system and retry',
-          blocksCertification: true
-        }],
+        compatibilityResult: {
+          isCompatible: false,
+          errors: [],
+          warnings: [],
+          preservedFeatures: [],
+          migrationSafety: {
+            canRollback: true,
+            dataBackupRequired: true,
+            riskLevel: 'HIGH',
+            safetyMeasures: [],
+          },
+        },
+        regressionResult: {
+          suiteName: 'Failed',
+          totalTests: 0,
+          passedTests: 0,
+          failedTests: 1,
+          results: [],
+          overallSuccess: false,
+          executionTime: 0,
+        },
+        consistencyResult: {
+          isConsistent: false,
+          inconsistencies: [],
+          warnings: [],
+          recommendations: [],
+          canProceed: false,
+        },
+        visualEditorValidation: {
+          category: 'Visual Editor',
+          passed: false,
+          score: 0,
+          details: [],
+          issues: [],
+          executionTime: 0,
+        },
+        executionValidation: {
+          category: 'Execution',
+          passed: false,
+          score: 0,
+          details: [],
+          issues: [],
+          executionTime: 0,
+        },
+        collaborationValidation: {
+          category: 'Collaboration',
+          passed: false,
+          score: 0,
+          details: [],
+          issues: [],
+          executionTime: 0,
+        },
+        performanceValidation: {
+          category: 'Performance',
+          passed: false,
+          score: 0,
+          details: [],
+          issues: [],
+          executionTime: 0,
+        },
+        dataIntegrityValidation: {
+          category: 'Data Integrity',
+          passed: false,
+          score: 0,
+          details: [],
+          issues: [],
+          executionTime: 0,
+        },
+        criticalIssues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Validation system failure',
+            impact: 'Cannot verify workflow preservation',
+            affectedComponent: 'WorkflowPreservationValidator',
+            suggestedFix: 'Review validation system and retry',
+            blocksCertification: true,
+          },
+        ],
         warnings: [],
         recommendations: ['Fix validation system before proceeding with journey mapping'],
         preservationCertified: false,
         certificationLevel: 'FAILED',
-        certificationDetails: ['Validation system failure prevents certification']
+        certificationDetails: ['Validation system failure prevents certification'],
       }
     }
   }
@@ -245,7 +306,7 @@ export class WorkflowPreservationValidator {
               impact: 'Visual rendering may be incorrect',
               affectedComponent: 'ReactFlow Renderer',
               suggestedFix: 'Ensure container blocks have width and height properties',
-              blocksCertification: false
+              blocksCertification: false,
             })
             score -= 5
           }
@@ -261,7 +322,7 @@ export class WorkflowPreservationValidator {
               impact: 'Block will not render in visual editor',
               affectedComponent: 'Block Registry',
               suggestedFix: 'Ensure block type is registered',
-              blocksCertification: true
+              blocksCertification: true,
             })
             score -= 15
           }
@@ -283,7 +344,7 @@ export class WorkflowPreservationValidator {
             impact: 'Edge will not render correctly',
             affectedComponent: 'ReactFlow Edge Renderer',
             suggestedFix: 'Clean up orphaned edges',
-            blocksCertification: false
+            blocksCertification: false,
           })
           score -= 3
         }
@@ -303,7 +364,7 @@ export class WorkflowPreservationValidator {
           impact: 'Users may not be able to drag blocks properly',
           affectedComponent: 'Visual Editor',
           suggestedFix: 'Verify position and parent-child relationships',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -319,7 +380,7 @@ export class WorkflowPreservationValidator {
           impact: 'Loop and parallel blocks may not work correctly',
           affectedComponent: 'Container Nodes',
           suggestedFix: 'Fix parent-child relationships and container dimensions',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -331,25 +392,26 @@ export class WorkflowPreservationValidator {
         score,
         details,
         issues,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
-
     } catch (error) {
       return {
         category: 'Visual Editor',
         passed: false,
         score: 0,
         details: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        issues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Visual editor validation system failure',
-          impact: 'Cannot verify visual editor functionality',
-          affectedComponent: 'Visual Editor Validator',
-          suggestedFix: 'Fix validation system',
-          blocksCertification: true
-        }],
-        executionTime: Date.now() - startTime
+        issues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Visual editor validation system failure',
+            impact: 'Cannot verify visual editor functionality',
+            affectedComponent: 'Visual Editor Validator',
+            suggestedFix: 'Fix validation system',
+            blocksCertification: true,
+          },
+        ],
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -357,7 +419,10 @@ export class WorkflowPreservationValidator {
   /**
    * Validate workflow execution functionality
    */
-  private async validateExecution(workflowId: string, workflow: WorkflowState): Promise<ValidationResult> {
+  private async validateExecution(
+    workflowId: string,
+    workflow: WorkflowState
+  ): Promise<ValidationResult> {
     const startTime = Date.now()
     const issues: PreservationIssue[] = []
     const details: string[] = []
@@ -386,7 +451,7 @@ export class WorkflowPreservationValidator {
           impact: 'Workflow cannot be executed',
           affectedComponent: 'Serializer',
           suggestedFix: 'Fix workflow structure for proper serialization',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -421,7 +486,7 @@ export class WorkflowPreservationValidator {
           impact: 'Workflow execution may fail or produce incorrect results',
           affectedComponent: 'Block Execution System',
           suggestedFix: 'Fix block configuration and state properties',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -437,7 +502,7 @@ export class WorkflowPreservationValidator {
           impact: 'Workflow may not execute in correct order',
           affectedComponent: 'Execution Engine',
           suggestedFix: 'Fix edge connections and block dependencies',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -453,7 +518,7 @@ export class WorkflowPreservationValidator {
           impact: 'Loop and parallel blocks may not execute correctly',
           affectedComponent: 'Container Execution',
           suggestedFix: 'Fix loop and parallel block configurations',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -465,25 +530,26 @@ export class WorkflowPreservationValidator {
         score,
         details,
         issues,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
-
     } catch (error) {
       return {
         category: 'Execution',
         passed: false,
         score: 0,
         details: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        issues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Execution validation system failure',
-          impact: 'Cannot verify execution functionality',
-          affectedComponent: 'Execution Validator',
-          suggestedFix: 'Fix validation system',
-          blocksCertification: true
-        }],
-        executionTime: Date.now() - startTime
+        issues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Execution validation system failure',
+            impact: 'Cannot verify execution functionality',
+            affectedComponent: 'Execution Validator',
+            suggestedFix: 'Fix validation system',
+            blocksCertification: true,
+          },
+        ],
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -491,7 +557,10 @@ export class WorkflowPreservationValidator {
   /**
    * Validate collaboration functionality
    */
-  private async validateCollaboration(workflowId: string, workflow: WorkflowState): Promise<ValidationResult> {
+  private async validateCollaboration(
+    workflowId: string,
+    workflow: WorkflowState
+  ): Promise<ValidationResult> {
     const startTime = Date.now()
     const issues: PreservationIssue[] = []
     const details: string[] = []
@@ -501,11 +570,13 @@ export class WorkflowPreservationValidator {
       // Test 1: Position update compatibility
       let positionTest = true
       for (const [blockId, block] of Object.entries(workflow.blocks)) {
-        if (!block.position ||
-            typeof block.position.x !== 'number' ||
-            typeof block.position.y !== 'number' ||
-            !Number.isFinite(block.position.x) ||
-            !Number.isFinite(block.position.y)) {
+        if (
+          !block.position ||
+          typeof block.position.x !== 'number' ||
+          typeof block.position.y !== 'number' ||
+          !Number.isFinite(block.position.x) ||
+          !Number.isFinite(block.position.y)
+        ) {
           positionTest = false
           score -= 5
         }
@@ -520,7 +591,7 @@ export class WorkflowPreservationValidator {
           impact: 'Real-time collaboration may not work properly',
           affectedComponent: 'Collaborative Editing',
           suggestedFix: 'Fix block position properties to be finite numbers',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -536,7 +607,7 @@ export class WorkflowPreservationValidator {
           impact: 'Collaboration synchronization may be affected',
           affectedComponent: 'Timestamp Tracking',
           suggestedFix: 'Ensure lastUpdate is a numeric timestamp',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -552,7 +623,7 @@ export class WorkflowPreservationValidator {
           impact: 'Concurrent editing may cause data corruption',
           affectedComponent: 'State Management',
           suggestedFix: 'Ensure all state updates are safe for concurrent access',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -564,25 +635,26 @@ export class WorkflowPreservationValidator {
         score,
         details,
         issues,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
-
     } catch (error) {
       return {
         category: 'Collaboration',
         passed: false,
         score: 0,
         details: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        issues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Collaboration validation system failure',
-          impact: 'Cannot verify collaboration functionality',
-          affectedComponent: 'Collaboration Validator',
-          suggestedFix: 'Fix validation system',
-          blocksCertification: true
-        }],
-        executionTime: Date.now() - startTime
+        issues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Collaboration validation system failure',
+            impact: 'Cannot verify collaboration functionality',
+            affectedComponent: 'Collaboration Validator',
+            suggestedFix: 'Fix validation system',
+            blocksCertification: true,
+          },
+        ],
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -612,11 +684,13 @@ export class WorkflowPreservationValidator {
           impact: 'May impact performance with journey mapping',
           affectedComponent: 'Journey Conversion',
           suggestedFix: 'Consider breaking into smaller sub-workflows',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
-      details.push(`Structure size: ${blockCount} blocks, ${edgeCount} edges - ${sizeTest ? 'PASS' : 'WARN'}`)
+      details.push(
+        `Structure size: ${blockCount} blocks, ${edgeCount} edges - ${sizeTest ? 'PASS' : 'WARN'}`
+      )
 
       // Test 2: Deep structure complexity
       const maxDepth = this.calculateMaxNestingDepth(workflow)
@@ -631,7 +705,7 @@ export class WorkflowPreservationValidator {
           impact: 'May complicate journey execution logic',
           affectedComponent: 'Journey State Machine',
           suggestedFix: 'Flatten container structure where possible',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -655,7 +729,9 @@ export class WorkflowPreservationValidator {
       const operationTime = Date.now() - operationStart
       const performanceTest = operationTime < this.config.performanceThresholdMs
 
-      details.push(`Operation performance: ${operationTime}ms - ${performanceTest ? 'PASS' : 'WARN'}`)
+      details.push(
+        `Operation performance: ${operationTime}ms - ${performanceTest ? 'PASS' : 'WARN'}`
+      )
 
       if (!performanceTest) {
         score -= 20
@@ -666,7 +742,7 @@ export class WorkflowPreservationValidator {
           impact: 'User experience may be degraded',
           affectedComponent: 'Workflow Operations',
           suggestedFix: 'Optimize workflow structure or improve performance',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -678,25 +754,26 @@ export class WorkflowPreservationValidator {
         score,
         details,
         issues,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
-
     } catch (error) {
       return {
         category: 'Performance',
         passed: false,
         score: 0,
         details: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        issues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Performance validation system failure',
-          impact: 'Cannot verify performance characteristics',
-          affectedComponent: 'Performance Validator',
-          suggestedFix: 'Fix validation system',
-          blocksCertification: true
-        }],
-        executionTime: Date.now() - startTime
+        issues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Performance validation system failure',
+            impact: 'Cannot verify performance characteristics',
+            affectedComponent: 'Performance Validator',
+            suggestedFix: 'Fix validation system',
+            blocksCertification: true,
+          },
+        ],
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -735,7 +812,7 @@ export class WorkflowPreservationValidator {
           impact: 'Data persistence and snapshots will fail',
           affectedComponent: 'Data Serialization',
           suggestedFix: 'Fix non-serializable properties in workflow state',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -751,7 +828,7 @@ export class WorkflowPreservationValidator {
           impact: 'Workflow relationships may be corrupted',
           affectedComponent: 'Data References',
           suggestedFix: 'Fix broken references between blocks and edges',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
 
@@ -767,7 +844,7 @@ export class WorkflowPreservationValidator {
           impact: 'Workflow behavior may be unpredictable',
           affectedComponent: 'Data Consistency',
           suggestedFix: 'Fix data consistency issues',
-          blocksCertification: false
+          blocksCertification: false,
         })
       }
 
@@ -779,25 +856,26 @@ export class WorkflowPreservationValidator {
         score,
         details,
         issues,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       }
-
     } catch (error) {
       return {
         category: 'Data Integrity',
         passed: false,
         score: 0,
         details: [`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        issues: [{
-          category: 'BREAKING_CHANGE',
-          severity: 'CRITICAL',
-          description: 'Data integrity validation system failure',
-          impact: 'Cannot verify data integrity',
-          affectedComponent: 'Data Integrity Validator',
-          suggestedFix: 'Fix validation system',
-          blocksCertification: true
-        }],
-        executionTime: Date.now() - startTime
+        issues: [
+          {
+            category: 'BREAKING_CHANGE',
+            severity: 'CRITICAL',
+            description: 'Data integrity validation system failure',
+            impact: 'Cannot verify data integrity',
+            affectedComponent: 'Data Integrity Validator',
+            suggestedFix: 'Fix validation system',
+            blocksCertification: true,
+          },
+        ],
+        executionTime: Date.now() - startTime,
       }
     }
   }
@@ -819,14 +897,13 @@ export class WorkflowPreservationValidator {
       dataIntegrityValidation: ValidationResult
     }
   ): Promise<PreservationValidationResult> {
-
     // Collect all critical issues
     const criticalIssues: PreservationIssue[] = []
     const warnings: PreservationWarning[] = []
     const recommendations: string[] = []
 
     // Add compatibility errors as critical issues
-    results.compatibilityResult.errors.forEach(error => {
+    results.compatibilityResult.errors.forEach((error) => {
       if (error.severity === 'CRITICAL' || error.severity === 'HIGH') {
         criticalIssues.push({
           category: 'BREAKING_CHANGE',
@@ -835,13 +912,13 @@ export class WorkflowPreservationValidator {
           impact: error.details,
           affectedComponent: error.blockId || error.edgeId || 'Unknown',
           suggestedFix: error.suggestedFix || 'Review compatibility documentation',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
     })
 
     // Add regression test failures as critical issues
-    results.regressionResult.results.forEach(test => {
+    results.regressionResult.results.forEach((test) => {
       if (!test.passed) {
         criticalIssues.push({
           category: 'FUNCTIONALITY_LOSS',
@@ -850,7 +927,7 @@ export class WorkflowPreservationValidator {
           impact: test.error || 'Functionality regression detected',
           affectedComponent: 'Regression Test Suite',
           suggestedFix: 'Fix the underlying functionality issue',
-          blocksCertification: true
+          blocksCertification: true,
         })
       }
     })
@@ -861,36 +938,39 @@ export class WorkflowPreservationValidator {
       results.executionValidation,
       results.collaborationValidation,
       results.performanceValidation,
-      results.dataIntegrityValidation
+      results.dataIntegrityValidation,
     ]
 
-    validations.forEach(validation => {
+    validations.forEach((validation) => {
       criticalIssues.push(...validation.issues)
     })
 
     // Add compatibility warnings as warnings
-    results.compatibilityResult.warnings.forEach(warning => {
+    results.compatibilityResult.warnings.forEach((warning) => {
       warnings.push({
         type: 'MINOR_CHANGE',
         description: warning.message,
         recommendation: warning.details,
-        impact: warning.impact
+        impact: warning.impact,
       })
     })
 
     // Compile recommendations
-    recommendations.push(...results.compatibilityResult.preservedFeatures.map(f =>
-      `✓ ${f.feature}: ${f.description}`
-    ))
+    recommendations.push(
+      ...results.compatibilityResult.preservedFeatures.map(
+        (f) => `✓ ${f.feature}: ${f.description}`
+      )
+    )
     recommendations.push(...results.consistencyResult.recommendations)
 
     // Determine overall success
-    const blockingIssues = criticalIssues.filter(issue => issue.blocksCertification)
-    const overallSuccess = blockingIssues.length === 0 &&
-                          results.compatibilityResult.isCompatible &&
-                          results.regressionResult.overallSuccess &&
-                          results.consistencyResult.canProceed &&
-                          validations.every(v => v.passed)
+    const blockingIssues = criticalIssues.filter((issue) => issue.blocksCertification)
+    const overallSuccess =
+      blockingIssues.length === 0 &&
+      results.compatibilityResult.isCompatible &&
+      results.regressionResult.overallSuccess &&
+      results.consistencyResult.canProceed &&
+      validations.every((v) => v.passed)
 
     // Determine certification level
     let certificationLevel: 'FULL' | 'PARTIAL' | 'FAILED' = 'FAILED'
@@ -930,7 +1010,7 @@ export class WorkflowPreservationValidator {
       recommendations,
       preservationCertified: overallSuccess,
       certificationLevel,
-      certificationDetails
+      certificationDetails,
     }
   }
 
@@ -939,9 +1019,11 @@ export class WorkflowPreservationValidator {
    */
   private validateDragDropStructure(workflow: WorkflowState): boolean {
     for (const [blockId, block] of Object.entries(workflow.blocks)) {
-      if (!block.position ||
-          typeof block.position.x !== 'number' ||
-          typeof block.position.y !== 'number') {
+      if (
+        !block.position ||
+        typeof block.position.x !== 'number' ||
+        typeof block.position.y !== 'number'
+      ) {
         return false
       }
     }
@@ -1106,6 +1188,6 @@ export async function certifyWorkflowForJourneyMapping(
   return {
     certified: result.preservationCertified,
     level: result.certificationLevel,
-    details: result.certificationDetails
+    details: result.certificationDetails,
   }
 }

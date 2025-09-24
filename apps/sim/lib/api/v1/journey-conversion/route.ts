@@ -5,11 +5,11 @@
  * API endpoints for workflow-to-journey conversion system
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createLogger } from '@/lib/logs/console/logger'
-import { validateSession } from '@/lib/auth/validate-session'
-import { conversionService, templateService } from '@/services/parlant/journey-conversion'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { validateSession } from '@/lib/auth/validate-session'
+import { createLogger } from '@/lib/logs/console/logger'
+import { conversionService } from '@/services/parlant/journey-conversion'
 
 const logger = createLogger('JourneyConversionAPI')
 
@@ -20,14 +20,16 @@ const ConvertWorkflowSchema = z.object({
   journey_name: z.string().optional(),
   journey_description: z.string().optional(),
   parameters: z.record(z.any()).optional(),
-  config: z.object({
-    preserve_block_names: z.boolean().optional(),
-    generate_descriptions: z.boolean().optional(),
-    enable_parameter_substitution: z.boolean().optional(),
-    include_error_handling: z.boolean().optional(),
-    optimization_level: z.enum(['basic', 'standard', 'advanced']).optional(),
-    cache_duration_ms: z.number().optional(),
-  }).optional(),
+  config: z
+    .object({
+      preserve_block_names: z.boolean().optional(),
+      generate_descriptions: z.boolean().optional(),
+      enable_parameter_substitution: z.boolean().optional(),
+      include_error_handling: z.boolean().optional(),
+      optimization_level: z.enum(['basic', 'standard', 'advanced']).optional(),
+      cache_duration_ms: z.number().optional(),
+    })
+    .optional(),
 })
 
 const ConvertTemplateSchema = z.object({
@@ -36,14 +38,16 @@ const ConvertTemplateSchema = z.object({
   parameters: z.record(z.any()),
   journey_name: z.string().optional(),
   journey_description: z.string().optional(),
-  config: z.object({
-    preserve_block_names: z.boolean().optional(),
-    generate_descriptions: z.boolean().optional(),
-    enable_parameter_substitution: z.boolean().optional(),
-    include_error_handling: z.boolean().optional(),
-    optimization_level: z.enum(['basic', 'standard', 'advanced']).optional(),
-    cache_duration_ms: z.number().optional(),
-  }).optional(),
+  config: z
+    .object({
+      preserve_block_names: z.boolean().optional(),
+      generate_descriptions: z.boolean().optional(),
+      enable_parameter_substitution: z.boolean().optional(),
+      include_error_handling: z.boolean().optional(),
+      optimization_level: z.enum(['basic', 'standard', 'advanced']).optional(),
+      cache_duration_ms: z.number().optional(),
+    })
+    .optional(),
 })
 
 /**
@@ -54,10 +58,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await validateSession(request)
     if (!session) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const body = await request.json()
@@ -73,7 +74,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { workflow_id, agent_id, journey_name, journey_description, parameters, config } = validation.data
+    const { workflow_id, agent_id, journey_name, journey_description, parameters, config } =
+      validation.data
 
     logger.info('Converting workflow to journey', {
       workflowId: workflow_id,
@@ -97,7 +99,6 @@ export async function POST(request: NextRequest) {
       data: result,
       message: 'Workflow converted to journey successfully',
     })
-
   } catch (error) {
     logger.error('Workflow conversion failed', { error: error.message })
 
@@ -117,17 +118,11 @@ export async function POST(request: NextRequest) {
  * GET /api/v1/journey-conversion/progress/{conversionId}
  * Get conversion progress
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { conversionId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { conversionId: string } }) {
   try {
     const session = await validateSession(request)
     if (!session) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const { conversionId } = params
@@ -138,7 +133,6 @@ export async function GET(
       success: true,
       data: progress,
     })
-
   } catch (error) {
     logger.error('Failed to get conversion progress', { error: error.message })
 
@@ -160,10 +154,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await validateSession(request)
     if (!session) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -177,7 +168,6 @@ export async function DELETE(request: NextRequest) {
         ? `Cache cleared for template ${templateId}`
         : 'All cache cleared for workspace',
     })
-
   } catch (error) {
     logger.error('Failed to clear cache', { error: error.message })
 

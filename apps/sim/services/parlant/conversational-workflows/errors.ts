@@ -18,7 +18,7 @@ export class ConversationalWorkflowError extends Error {
     message: string,
     errorCode: string,
     context: Record<string, any> = {},
-    retryable: boolean = false
+    retryable = false
   ) {
     super(message)
     this.name = 'ConversationalWorkflowError'
@@ -54,7 +54,7 @@ export class WorkflowMappingError extends ConversationalWorkflowError {
     message: string,
     errorCode: string,
     context: Record<string, any> = {},
-    retryable: boolean = false
+    retryable = false
   ) {
     super(message, errorCode, context, retryable)
     this.name = 'WorkflowMappingError'
@@ -74,7 +74,7 @@ export class NLPProcessingError extends ConversationalWorkflowError {
     originalInput: string,
     processingStage: string,
     context: Record<string, any> = {},
-    retryable: boolean = true
+    retryable = true
   ) {
     super(message, errorCode, context, retryable)
     this.name = 'NLPProcessingError'
@@ -101,7 +101,7 @@ export class CommandProcessingError extends ConversationalWorkflowError {
     message: string,
     errorCode: string,
     context: Record<string, any> = {},
-    retryable: boolean = true,
+    retryable = true,
     userFriendlyMessage?: string
   ) {
     super(message, errorCode, context, retryable)
@@ -128,7 +128,7 @@ export class SessionManagementError extends ConversationalWorkflowError {
     errorCode: string,
     sessionId: string,
     context: Record<string, any> = {},
-    retryable: boolean = false
+    retryable = false
   ) {
     super(message, errorCode, context, retryable)
     this.name = 'SessionManagementError'
@@ -154,7 +154,7 @@ export class RealtimeCommunicationError extends ConversationalWorkflowError {
     errorCode: string,
     communicationType: 'socket' | 'webhook' | 'poll',
     context: Record<string, any> = {},
-    retryable: boolean = true
+    retryable = true
   ) {
     super(message, errorCode, context, retryable)
     this.name = 'RealtimeCommunicationError'

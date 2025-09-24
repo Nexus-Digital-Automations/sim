@@ -8,26 +8,14 @@
  * @version 2.0.0
  */
 
-import { readdir, readFile, stat } from 'fs/promises'
-import { join, extname, basename } from 'path'
-import { watch, FSWatcher } from 'fs'
 import EventEmitter from 'events'
-
-import type {
-  BlockConfig,
-  SubBlockConfig,
-  BlockCategory
-} from '@/blocks/types'
-
-import type {
-  AdapterConfiguration,
-  AdapterRegistryEntry,
-  ToolDiscoveryQuery,
-  DiscoveredTool
-} from '../types/adapter-interfaces'
-
-import { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
-import { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
+import { type FSWatcher, watch } from 'fs'
+import { readdir, readFile, stat } from 'fs/promises'
+import { basename, extname, join } from 'path'
+import type { BlockCategory, BlockConfig } from '@/blocks/types'
+import type { EnhancedAdapterFramework } from '../core/enhanced-adapter-framework'
+import type { EnhancedAdapterRegistry } from '../registry/enhanced-adapter-registry'
+import type { AdapterConfiguration } from '../types/adapter-interfaces'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('AutoDiscoverySystem')
@@ -36,7 +24,6 @@ const logger = createLogger('AutoDiscoverySystem')
  * Automatic discovery and registration system for Sim tools
  */
 export class AutoDiscoverySystem extends EventEmitter {
-
   // Core dependencies
   private readonly framework: EnhancedAdapterFramework
   private readonly registry: EnhancedAdapterRegistry
@@ -57,7 +44,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     successfulRegistrations: 0,
     failedRegistrations: 0,
     duplicatesSkipped: 0,
-    lastRunTime: 0
+    lastRunTime: 0,
   }
 
   constructor(
@@ -73,11 +60,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     this.config = {
       // Default configuration
       enabled: true,
-      scanPaths: [
-        './apps/sim/blocks/blocks',
-        './packages/sim-blocks',
-        './blocks'
-      ],
+      scanPaths: ['./apps/sim/blocks/blocks', './packages/sim-blocks', './blocks'],
       scanInterval: 60000, // 1 minute
       watchForChanges: true,
       autoRegister: true,
@@ -90,7 +73,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       validationStrict: false,
       enableCaching: true,
       cacheTtl: 300000, // 5 minutes
-      ...config
+      ...config,
     }
 
     if (this.config.enabled) {
@@ -101,7 +84,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       enabled: this.config.enabled,
       scanPaths: this.config.scanPaths.length,
       autoRegister: this.config.autoRegister,
-      watchForChanges: this.config.watchForChanges
+      watchForChanges: this.config.watchForChanges,
     })
   }
 
@@ -126,10 +109,9 @@ export class AutoDiscoverySystem extends EventEmitter {
       }
 
       logger.info('Auto discovery system started successfully')
-
     } catch (error) {
       logger.error('Failed to initialize auto discovery system', {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -149,7 +131,7 @@ export class AutoDiscoverySystem extends EventEmitter {
 
     logger.info('Starting full discovery scan', {
       scanPaths: this.config.scanPaths,
-      patterns: this.config.includePatterns
+      patterns: this.config.includePatterns,
     })
 
     try {
@@ -165,16 +147,14 @@ export class AutoDiscoverySystem extends EventEmitter {
         scanned: result.scannedFiles,
         discovered: result.discoveredBlocks,
         registered: result.registeredAdapters,
-        errors: result.errors.length
+        errors: result.errors.length,
       })
 
       return result
-
     } catch (error) {
       logger.error('Full discovery failed', { error: error.message })
       this.emit('discovery:error', error)
       throw error
-
     } finally {
       this.isDiscovering = false
     }
@@ -192,7 +172,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     const startTime = Date.now()
 
     logger.debug('Starting incremental discovery', {
-      queuedFiles: this.discoveryQueue.size
+      queuedFiles: this.discoveryQueue.size,
     })
 
     try {
@@ -209,15 +189,13 @@ export class AutoDiscoverySystem extends EventEmitter {
       logger.debug('Incremental discovery completed', {
         processed: filesToProcess.length,
         discovered: result.discoveredBlocks,
-        registered: result.registeredAdapters
+        registered: result.registeredAdapters,
       })
 
       return result
-
     } catch (error) {
       logger.error('Incremental discovery failed', { error: error.message })
       throw error
-
     } finally {
       this.isDiscovering = false
     }
@@ -234,7 +212,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       discoveredBlocks: 0,
       registeredAdapters: 0,
       errors: [],
-      blocks: []
+      blocks: [],
     }
 
     // Discover files in all scan paths
@@ -246,12 +224,12 @@ export class AutoDiscoverySystem extends EventEmitter {
       } catch (error) {
         logger.warn('Failed to scan path', {
           path: scanPath,
-          error: error.message
+          error: error.message,
         })
         result.errors.push({
           type: 'path_scan_error',
           message: `Failed to scan ${scanPath}: ${error.message}`,
-          path: scanPath
+          path: scanPath,
         })
       }
     }
@@ -322,7 +300,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     } catch (error) {
       logger.warn('Failed to read directory', {
         path: dirPath,
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -337,7 +315,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       discoveredBlocks: 0,
       registeredAdapters: 0,
       errors: [],
-      blocks: []
+      blocks: [],
     }
 
     const startTime = Date.now()
@@ -347,13 +325,13 @@ export class AutoDiscoverySystem extends EventEmitter {
     for (let i = 0; i < filePaths.length; i += batchSize) {
       const batch = filePaths.slice(i, i + batchSize)
 
-      const batchPromises = batch.map(async filePath => {
+      const batchPromises = batch.map(async (filePath) => {
         try {
           return await this.processFile(filePath)
         } catch (error) {
           logger.debug('Failed to process file', {
             path: filePath,
-            error: error.message
+            error: error.message,
           })
           return null
         }
@@ -380,16 +358,15 @@ export class AutoDiscoverySystem extends EventEmitter {
                 type: 'registration_error',
                 message: `Failed to register ${blockResult.blockConfig.type}: ${error.message}`,
                 path: filePath,
-                blockType: blockResult.blockConfig.type
+                blockType: blockResult.blockConfig.type,
               })
             }
           }
-
         } else if (batchResult.status === 'rejected') {
           result.errors.push({
             type: 'processing_error',
             message: `Failed to process ${filePath}: ${batchResult.reason.message}`,
-            path: filePath
+            path: filePath,
           })
         }
       }
@@ -427,18 +404,17 @@ export class AutoDiscoverySystem extends EventEmitter {
         blockConfig,
         lastModified: (await stat(filePath)).mtime,
         discovered: new Date(),
-        hash: this.generateHash(content)
+        hash: this.generateHash(content),
       }
 
       // Store in cache
       this.discoveredBlocks.set(blockConfig.type, entry)
 
       return entry
-
     } catch (error) {
       logger.debug('Error processing file', {
         path: filePath,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -471,7 +447,7 @@ export class AutoDiscoverySystem extends EventEmitter {
         /export\s+const\s+(\w+)Block\s*:\s*BlockConfig/,
         /export\s+const\s+(\w+)\s*:\s*BlockConfig/,
         /const\s+(\w+)Block\s*:\s*BlockConfig.*?export.*?\1Block/s,
-        /export\s+default.*?BlockConfig/
+        /export\s+default.*?BlockConfig/,
       ]
 
       let blockName = ''
@@ -509,21 +485,19 @@ export class AutoDiscoverySystem extends EventEmitter {
         if (this.isBlockConfig(module.default)) {
           return module.default as BlockConfig
         }
-
       } catch (importError) {
         // If dynamic import fails, use static analysis
         logger.debug('Dynamic import failed, using static analysis', {
           path: filePath,
-          error: importError.message
+          error: importError.message,
         })
 
         return this.parseBlockConfigStatic(content, blockName)
       }
-
     } catch (error) {
       logger.debug('Failed to extract BlockConfig from TS/JS file', {
         path: filePath,
-        error: error.message
+        error: error.message,
       })
     }
 
@@ -540,7 +514,6 @@ export class AutoDiscoverySystem extends EventEmitter {
       if (this.isBlockConfig(parsed)) {
         return parsed as BlockConfig
       }
-
     } catch (error) {
       logger.debug('Failed to parse JSON BlockConfig', { error: error.message })
     }
@@ -574,7 +547,6 @@ export class AutoDiscoverySystem extends EventEmitter {
       // For now, we'll return a minimal BlockConfig structure
       // This would need to be much more sophisticated in a real implementation
       return this.createMinimalBlockConfig(blockName, content)
-
     } catch (error) {
       logger.debug('Static parsing failed', { error: error.message })
       return null
@@ -601,7 +573,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       subBlocks: [],
       tools: { access: [] },
       inputs: {},
-      outputs: {}
+      outputs: {},
     }
   }
 
@@ -675,13 +647,12 @@ export class AutoDiscoverySystem extends EventEmitter {
       logger.info('Successfully registered BlockConfig adapter', {
         type: entry.blockConfig.type,
         name: entry.blockConfig.name,
-        category: entry.blockConfig.category
+        category: entry.blockConfig.category,
       })
-
     } catch (error) {
       logger.error('Failed to register BlockConfig adapter', {
         type: entry.blockConfig.type,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -690,7 +661,9 @@ export class AutoDiscoverySystem extends EventEmitter {
   /**
    * Create adapter configuration for a BlockConfig
    */
-  private async createAdapterConfiguration(blockConfig: BlockConfig): Promise<Partial<AdapterConfiguration>> {
+  private async createAdapterConfiguration(
+    blockConfig: BlockConfig
+  ): Promise<Partial<AdapterConfiguration>> {
     return {
       parlantId: `autodiscovered_${blockConfig.type}`,
       displayName: blockConfig.name,
@@ -700,12 +673,12 @@ export class AutoDiscoverySystem extends EventEmitter {
         'autodiscovered',
         blockConfig.category,
         blockConfig.type,
-        ...this.extractTagsFromBlockConfig(blockConfig)
+        ...this.extractTagsFromBlockConfig(blockConfig),
       ],
       caching: {
         enabled: this.config.enableCaching,
-        ttlMs: this.config.cacheTtl
-      }
+        ttlMs: this.config.cacheTtl,
+      },
     }
   }
 
@@ -721,10 +694,7 @@ export class AutoDiscoverySystem extends EventEmitter {
           const fullPath = join(scanPath, filename)
 
           // Check if file matches our patterns
-          if (
-            this.matchesIncludePatterns(fullPath) &&
-            !this.shouldExcludePath(fullPath)
-          ) {
+          if (this.matchesIncludePatterns(fullPath) && !this.shouldExcludePath(fullPath)) {
             logger.debug('File change detected', { path: fullPath, event: eventType })
 
             // Add to discovery queue
@@ -738,11 +708,10 @@ export class AutoDiscoverySystem extends EventEmitter {
         this.watchedPaths.set(scanPath, watcher)
 
         logger.debug('Set up file watching', { path: scanPath })
-
       } catch (error) {
         logger.warn('Failed to setup file watching', {
           path: scanPath,
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -752,18 +721,14 @@ export class AutoDiscoverySystem extends EventEmitter {
    * Check if file matches include patterns
    */
   private matchesIncludePatterns(filePath: string): boolean {
-    return this.config.includePatterns.some(pattern =>
-      this.matchesGlob(filePath, pattern)
-    )
+    return this.config.includePatterns.some((pattern) => this.matchesGlob(filePath, pattern))
   }
 
   /**
    * Check if path should be excluded
    */
   private shouldExcludePath(path: string): boolean {
-    return this.config.excludePatterns.some(pattern =>
-      this.matchesGlob(path, pattern)
-    )
+    return this.config.excludePatterns.some((pattern) => this.matchesGlob(path, pattern))
   }
 
   /**
@@ -785,10 +750,14 @@ export class AutoDiscoverySystem extends EventEmitter {
    */
   private mapBlockCategory(category: string): string {
     switch (category) {
-      case 'tools': return 'external-integration'
-      case 'blocks': return 'workflow-management'
-      case 'triggers': return 'automation'
-      default: return 'utility'
+      case 'tools':
+        return 'external-integration'
+      case 'blocks':
+        return 'workflow-management'
+      case 'triggers':
+        return 'automation'
+      default:
+        return 'utility'
     }
   }
 
@@ -799,7 +768,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     const tags: string[] = []
 
     // Add tags based on subBlocks
-    blockConfig.subBlocks.forEach(subBlock => {
+    blockConfig.subBlocks.forEach((subBlock) => {
       if (subBlock.type === 'oauth-input') tags.push('oauth', 'authentication')
       if (subBlock.type === 'file-selector') tags.push('files')
       if (subBlock.type === 'webhook-config') tags.push('webhooks')
@@ -807,7 +776,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     })
 
     // Add tags from tools
-    blockConfig.tools.access.forEach(tool => {
+    blockConfig.tools.access.forEach((tool) => {
       const parts = tool.split('_')
       tags.push(...parts)
     })
@@ -823,7 +792,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     let hash = 0
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32bit integer
     }
     return hash.toString(16)
@@ -859,7 +828,7 @@ export class AutoDiscoverySystem extends EventEmitter {
     } catch (error) {
       logger.error('Failed to rediscover file', {
         path: filePath,
-        error: error.message
+        error: error.message,
       })
       return false
     }
@@ -879,7 +848,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       } catch (error) {
         logger.warn('Error closing file watcher', {
           path,
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -899,7 +868,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       discoveredBlocks: this.discoveredBlocks.size,
       registeredAdapters: this.discoveryStats.successfulRegistrations,
       errors: [],
-      blocks: Array.from(this.discoveredBlocks.values())
+      blocks: Array.from(this.discoveredBlocks.values()),
     }
   }
 
@@ -910,7 +879,7 @@ export class AutoDiscoverySystem extends EventEmitter {
       discoveredBlocks: 0,
       registeredAdapters: 0,
       errors: [],
-      blocks: []
+      blocks: [],
     }
   }
 }
@@ -1006,7 +975,7 @@ export async function extractBlockConfigFromFile(filePath: string): Promise<Bloc
   } catch (error) {
     logger.error('Failed to extract BlockConfig from file', {
       path: filePath,
-      error: error.message
+      error: error.message,
     })
     return null
   }

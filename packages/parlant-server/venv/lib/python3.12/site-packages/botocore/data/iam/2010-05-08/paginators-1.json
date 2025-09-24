@@ -5,12 +5,7 @@
       "limit_key": "MaxItems",
       "more_results": "IsTruncated",
       "output_token": "Marker",
-      "result_key": [
-        "UserDetailList",
-        "GroupDetailList",
-        "RoleDetailList",
-        "Policies"
-      ]
+      "result_key": ["UserDetailList", "GroupDetailList", "RoleDetailList", "Policies"]
     },
     "GetGroup": {
       "input_token": "Marker",
@@ -18,9 +13,7 @@
       "more_results": "IsTruncated",
       "output_token": "Marker",
       "result_key": "Users",
-      "non_aggregate_keys": [
-        "Group"
-      ]
+      "non_aggregate_keys": ["Group"]
     },
     "ListAccessKeys": {
       "input_token": "Marker",
@@ -62,11 +55,7 @@
       "limit_key": "MaxItems",
       "more_results": "IsTruncated",
       "output_token": "Marker",
-      "result_key": [
-        "PolicyGroups",
-        "PolicyUsers",
-        "PolicyRoles"
-      ]
+      "result_key": ["PolicyGroups", "PolicyUsers", "PolicyRoles"]
     },
     "ListGroupPolicies": {
       "input_token": "Marker",

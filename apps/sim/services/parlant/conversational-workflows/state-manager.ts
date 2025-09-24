@@ -7,12 +7,12 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
+import { RealtimeCommunicationError } from './errors'
 import type {
   ConversationalWorkflowState,
   ConversationalWorkflowUpdate,
   WorkflowUpdateType,
 } from './types'
-import { RealtimeCommunicationError } from './errors'
 
 const logger = createLogger('ConversationalWorkflowStateManager')
 
@@ -24,7 +24,10 @@ export class RealtimeStateManager {
   private readonly sessionStates = new Map<string, ConversationalWorkflowState>()
 
   // Session subscribers for real-time updates
-  private readonly sessionSubscribers = new Map<string, Set<(update: ConversationalWorkflowUpdate) => void>>()
+  private readonly sessionSubscribers = new Map<
+    string,
+    Set<(update: ConversationalWorkflowUpdate) => void>
+  >()
 
   // Update history for debugging and replay
   private readonly updateHistory = new Map<string, ConversationalWorkflowUpdate[]>()
@@ -47,7 +50,10 @@ export class RealtimeStateManager {
   /**
    * Register a new conversational workflow session
    */
-  async registerSession(sessionId: string, initialState: ConversationalWorkflowState): Promise<void> {
+  async registerSession(
+    sessionId: string,
+    initialState: ConversationalWorkflowState
+  ): Promise<void> {
     logger.info('Registering conversational workflow session', { sessionId })
 
     try {
@@ -101,7 +107,10 @@ export class RealtimeStateManager {
   /**
    * Update session state and broadcast changes
    */
-  async updateSession(sessionId: string, stateUpdates: Partial<ConversationalWorkflowState>): Promise<ConversationalWorkflowState> {
+  async updateSession(
+    sessionId: string,
+    stateUpdates: Partial<ConversationalWorkflowState>
+  ): Promise<ConversationalWorkflowState> {
     const startTime = Date.now()
 
     logger.info('Updating session state', {
@@ -112,12 +121,9 @@ export class RealtimeStateManager {
     try {
       const currentState = this.sessionStates.get(sessionId)
       if (!currentState) {
-        throw new RealtimeCommunicationError(
-          'Session not found',
-          'SESSION_NOT_FOUND',
-          'socket',
-          { sessionId }
-        )
+        throw new RealtimeCommunicationError('Session not found', 'SESSION_NOT_FOUND', 'socket', {
+          sessionId,
+        })
       }
 
       // Merge updates with current state
@@ -225,7 +231,7 @@ export class RealtimeStateManager {
   /**
    * Get update history for session
    */
-  getUpdateHistory(sessionId: string, limit: number = 50): ConversationalWorkflowUpdate[] {
+  getUpdateHistory(sessionId: string, limit = 50): ConversationalWorkflowUpdate[] {
     const history = this.updateHistory.get(sessionId) || []
     return history.slice(-limit)
   }
@@ -284,7 +290,10 @@ export class RealtimeStateManager {
   /**
    * Broadcast update to session subscribers
    */
-  private async broadcastSessionUpdate(sessionId: string, update: ConversationalWorkflowUpdate): Promise<void> {
+  private async broadcastSessionUpdate(
+    sessionId: string,
+    update: ConversationalWorkflowUpdate
+  ): Promise<void> {
     const subscribers = this.sessionSubscribers.get(sessionId)
     if (!subscribers || subscribers.size === 0) {
       logger.debug('No subscribers for session update', { sessionId })
@@ -345,7 +354,9 @@ export class RealtimeStateManager {
     if (previousState.executionStatus !== currentState.executionStatus) {
       switch (currentState.executionStatus) {
         case 'running':
-          return previousState.executionStatus === 'not-started' ? 'execution-started' : 'execution-resumed'
+          return previousState.executionStatus === 'not-started'
+            ? 'execution-started'
+            : 'execution-resumed'
         case 'paused':
           return 'execution-paused'
         case 'completed':
@@ -426,7 +437,9 @@ export class RealtimeStateManager {
   /**
    * Sanitize state for transmission (remove sensitive data)
    */
-  private sanitizeStateForTransmission(state: ConversationalWorkflowState): Partial<ConversationalWorkflowState> {
+  private sanitizeStateForTransmission(
+    state: ConversationalWorkflowState
+  ): Partial<ConversationalWorkflowState> {
     return {
       workflowId: state.workflowId,
       journeyId: state.journeyId,

@@ -5,12 +5,12 @@
  * and analytics for the Universal Tool Adapter System.
  */
 
-import { ToolRegistryService } from './registry-service'
-import { ToolDiscoveryService } from './discovery-service'
-import { ToolConfigurationService } from './configuration-service'
 import { ToolAnalyticsService } from './analytics-service'
-import { ToolRecommendationService } from './recommendation-service'
+import { ToolConfigurationService } from './configuration-service'
+import { ToolDiscoveryService } from './discovery-service'
 import { ToolHealthService } from './health-service'
+import { ToolRecommendationService } from './recommendation-service'
+import { ToolRegistryService } from './registry-service'
 
 // Export all service classes
 export {

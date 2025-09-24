@@ -1,26 +1,26 @@
-import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm'
 import type {
+  agentStatusEnum,
+  compositionModeEnum,
+  eventTypeEnum,
+  journeyStateTypeEnum,
   parlantAgent,
-  parlantSession,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
+  parlantCannedResponse,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
+  parlantJourneyGuideline,
   parlantJourneyState,
   parlantJourneyTransition,
-  parlantVariable,
-  parlantTool,
+  parlantSession,
   parlantTerm,
-  parlantCannedResponse,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
+  parlantTool,
   parlantToolIntegration,
-  agentStatusEnum,
+  parlantVariable,
   sessionModeEnum,
   sessionStatusEnum,
-  eventTypeEnum,
-  journeyStateTypeEnum,
-  compositionModeEnum,
 } from './parlant-schema'
 
 /**
@@ -219,16 +219,28 @@ export type ParlantSessionUpdate = Partial<Omit<ParlantSessionInsert, 'id'>> & {
 export type ParlantEventUpdate = Partial<Omit<ParlantEventInsert, 'id'>> & { id: string }
 export type ParlantGuidelineUpdate = Partial<Omit<ParlantGuidelineInsert, 'id'>> & { id: string }
 export type ParlantJourneyUpdate = Partial<Omit<ParlantJourneyInsert, 'id'>> & { id: string }
-export type ParlantJourneyStateUpdate = Partial<Omit<ParlantJourneyStateInsert, 'id'>> & { id: string }
-export type ParlantJourneyTransitionUpdate = Partial<Omit<ParlantJourneyTransitionInsert, 'id'>> & { id: string }
+export type ParlantJourneyStateUpdate = Partial<Omit<ParlantJourneyStateInsert, 'id'>> & {
+  id: string
+}
+export type ParlantJourneyTransitionUpdate = Partial<Omit<ParlantJourneyTransitionInsert, 'id'>> & {
+  id: string
+}
 export type ParlantVariableUpdate = Partial<Omit<ParlantVariableInsert, 'id'>> & { id: string }
 export type ParlantToolUpdate = Partial<Omit<ParlantToolInsert, 'id'>> & { id: string }
 export type ParlantTermUpdate = Partial<Omit<ParlantTermInsert, 'id'>> & { id: string }
-export type ParlantCannedResponseUpdate = Partial<Omit<ParlantCannedResponseInsert, 'id'>> & { id: string }
+export type ParlantCannedResponseUpdate = Partial<Omit<ParlantCannedResponseInsert, 'id'>> & {
+  id: string
+}
 export type ParlantAgentToolUpdate = Partial<Omit<ParlantAgentToolInsert, 'id'>> & { id: string }
-export type ParlantJourneyGuidelineUpdate = Partial<Omit<ParlantJourneyGuidelineInsert, 'id'>> & { id: string }
-export type ParlantAgentKnowledgeBaseUpdate = Partial<Omit<ParlantAgentKnowledgeBaseInsert, 'id'>> & { id: string }
-export type ParlantToolIntegrationUpdate = Partial<Omit<ParlantToolIntegrationInsert, 'id'>> & { id: string }
+export type ParlantJourneyGuidelineUpdate = Partial<Omit<ParlantJourneyGuidelineInsert, 'id'>> & {
+  id: string
+}
+export type ParlantAgentKnowledgeBaseUpdate = Partial<
+  Omit<ParlantAgentKnowledgeBaseInsert, 'id'>
+> & { id: string }
+export type ParlantToolIntegrationUpdate = Partial<Omit<ParlantToolIntegrationInsert, 'id'>> & {
+  id: string
+}
 
 // =============================================================================
 // Specialized Types for Common Operations
@@ -520,8 +532,15 @@ export type JourneyAnalytics = {
  * Parlant-specific error types
  */
 export type ParlantError = {
-  code: 'AGENT_NOT_FOUND' | 'SESSION_NOT_FOUND' | 'INVALID_EVENT' | 'JOURNEY_INVALID' |
-         'TOOL_NOT_FOUND' | 'GUIDELINE_CONFLICT' | 'WORKSPACE_ACCESS_DENIED' | 'VALIDATION_ERROR'
+  code:
+    | 'AGENT_NOT_FOUND'
+    | 'SESSION_NOT_FOUND'
+    | 'INVALID_EVENT'
+    | 'JOURNEY_INVALID'
+    | 'TOOL_NOT_FOUND'
+    | 'GUIDELINE_CONFLICT'
+    | 'WORKSPACE_ACCESS_DENIED'
+    | 'VALIDATION_ERROR'
   message: string
   details?: Record<string, unknown>
   field?: string

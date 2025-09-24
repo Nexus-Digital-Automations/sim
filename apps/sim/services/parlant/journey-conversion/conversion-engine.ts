@@ -7,21 +7,19 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { BlockState, Edge, WorkflowState } from '@/stores/workflows/workflow/types'
-import type { Journey, JourneyStep } from '@/services/parlant/types'
 import { getBlock } from '@/blocks'
-import {
-  type BlockJourneyMapping,
-  type ConversionConfig,
-  type ConversionContext,
-  type ConversionError,
-  type ConversionMetadata,
-  type ConversionResult,
-  type ConversionWarning,
-  type EdgeJourneyMapping,
-  type JourneyConversionResult,
-  type TemplateParameter,
-  type ToolCall,
+import type { Journey, JourneyStep } from '@/services/parlant/types'
+import type { BlockState, Edge, WorkflowState } from '@/stores/workflows/workflow/types'
+import type {
+  BlockJourneyMapping,
+  ConversionConfig,
+  ConversionContext,
+  ConversionError,
+  ConversionMetadata,
+  ConversionWarning,
+  EdgeJourneyMapping,
+  JourneyConversionResult,
+  ToolCall,
 } from './types'
 
 const logger = createLogger('ConversionEngine')
@@ -90,10 +88,11 @@ export class WorkflowToJourneyConverter {
       })
 
       return result
-
     } catch (error) {
       logger.error('Conversion failed', { error: error.message, context })
-      throw this.createConversionError('conversion', 'CONVERSION_FAILED', error.message, { context })
+      throw this.createConversionError('conversion', 'CONVERSION_FAILED', error.message, {
+        context,
+      })
     }
   }
 
@@ -124,7 +123,6 @@ export class WorkflowToJourneyConverter {
 
         steps.push(step)
         stepOrder++
-
       } catch (error) {
         this.addWarning('unsupported_block', error.message, blockId, 'medium')
         logger.warn('Failed to convert block', { blockId, error: error.message })
@@ -320,7 +318,10 @@ export class WorkflowToJourneyConverter {
     }
 
     // Standard optimizations
-    if (this.config.optimization_level === 'standard' || this.config.optimization_level === 'advanced') {
+    if (
+      this.config.optimization_level === 'standard' ||
+      this.config.optimization_level === 'advanced'
+    ) {
       optimizedSteps = this.optimizeSequentialSteps(optimizedSteps, transitions)
       optimizedSteps = this.optimizeConditionalSteps(optimizedSteps, transitions)
     }
@@ -383,7 +384,10 @@ export class WorkflowToJourneyConverter {
     throw new Error('Method not implemented')
   }
 
-  private async validateParameters(parameters: Record<string, any>, templateVersion: string): Promise<void> {
+  private async validateParameters(
+    parameters: Record<string, any>,
+    templateVersion: string
+  ): Promise<void> {
     // TODO: Implement parameter validation against template
     // This would validate types, ranges, and required parameters
   }
@@ -412,7 +416,9 @@ export class WorkflowToJourneyConverter {
 
   private isConditionSubBlock(subBlockId: string, subBlockState: any): boolean {
     // Determine if sub-block represents a condition
-    return subBlockId.includes('condition') || subBlockId.includes('if') || subBlockId.includes('when')
+    return (
+      subBlockId.includes('condition') || subBlockId.includes('if') || subBlockId.includes('when')
+    )
   }
 
   private isActionSubBlock(subBlockId: string, subBlockState: any): boolean {
@@ -428,7 +434,11 @@ export class WorkflowToJourneyConverter {
     return `Execute ${subBlockId} with value: ${subBlockState.value}`
   }
 
-  private extractToolParameters(blockState: BlockState, toolId: string, context: ConversionContext): Record<string, any> {
+  private extractToolParameters(
+    blockState: BlockState,
+    toolId: string,
+    context: ConversionContext
+  ): Record<string, any> {
     const parameters: Record<string, any> = {}
 
     // Extract parameters from block sub-blocks
@@ -455,7 +465,10 @@ export class WorkflowToJourneyConverter {
     return mapping
   }
 
-  private determineTransitionType(edge: Edge, context: ConversionContext): 'sequential' | 'conditional' | 'parallel' | 'loop' {
+  private determineTransitionType(
+    edge: Edge,
+    context: ConversionContext
+  ): 'sequential' | 'conditional' | 'parallel' | 'loop' {
     // Analyze edge properties to determine transition type
     if (edge.data?.conditional) return 'conditional'
     if (edge.data?.parallel) return 'parallel'
@@ -486,22 +499,34 @@ export class WorkflowToJourneyConverter {
     return conditions
   }
 
-  private optimizeSequentialSteps(steps: JourneyStep[], transitions: EdgeJourneyMapping[]): JourneyStep[] {
+  private optimizeSequentialSteps(
+    steps: JourneyStep[],
+    transitions: EdgeJourneyMapping[]
+  ): JourneyStep[] {
     // TODO: Implement sequential step optimization
     return steps
   }
 
-  private optimizeConditionalSteps(steps: JourneyStep[], transitions: EdgeJourneyMapping[]): JourneyStep[] {
+  private optimizeConditionalSteps(
+    steps: JourneyStep[],
+    transitions: EdgeJourneyMapping[]
+  ): JourneyStep[] {
     // TODO: Implement conditional step optimization
     return steps
   }
 
-  private optimizeParallelSteps(steps: JourneyStep[], transitions: EdgeJourneyMapping[]): JourneyStep[] {
+  private optimizeParallelSteps(
+    steps: JourneyStep[],
+    transitions: EdgeJourneyMapping[]
+  ): JourneyStep[] {
     // TODO: Implement parallel step optimization
     return steps
   }
 
-  private optimizeLoopSteps(steps: JourneyStep[], transitions: EdgeJourneyMapping[]): JourneyStep[] {
+  private optimizeLoopSteps(
+    steps: JourneyStep[],
+    transitions: EdgeJourneyMapping[]
+  ): JourneyStep[] {
     // TODO: Implement loop step optimization
     return steps
   }
@@ -514,12 +539,18 @@ export class WorkflowToJourneyConverter {
     ]
   }
 
-  private async getWorkflowMetadata(workflowId: string, workspaceId: string): Promise<{ name: string; description?: string }> {
+  private async getWorkflowMetadata(
+    workflowId: string,
+    workspaceId: string
+  ): Promise<{ name: string; description?: string }> {
     // TODO: Implement workflow metadata retrieval
     return { name: `Workflow ${workflowId}`, description: 'Converted workflow' }
   }
 
-  private extractParameterSubstitutions(blockState: BlockState, parameters: Record<string, any>): Record<string, string> {
+  private extractParameterSubstitutions(
+    blockState: BlockState,
+    parameters: Record<string, any>
+  ): Record<string, string> {
     const substitutions: Record<string, string> = {}
 
     // Track which parameters were used in this block

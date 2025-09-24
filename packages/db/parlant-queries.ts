@@ -1,52 +1,35 @@
-import { and, desc, eq, gte, in as inOp, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, in as inOp, isNull, lte, or, sql } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import type * as schema from './schema'
 import {
   parlantAgent,
-  parlantSession,
+  parlantAgentKnowledgeBase,
+  parlantAgentTool,
   parlantEvent,
   parlantGuideline,
   parlantJourney,
   parlantJourneyState,
-  parlantJourneyTransition,
-  parlantVariable,
+  parlantSession,
   parlantTool,
-  parlantTerm,
-  parlantCannedResponse,
-  parlantAgentTool,
-  parlantJourneyGuideline,
-  parlantAgentKnowledgeBase,
-  parlantToolIntegration,
-  parlantAgentWorkflow,
-  parlantAgentApiKey,
-  parlantSessionWorkflow,
+  parlantVariable,
 } from './parlant-schema'
 import type {
-  ParlantAgent,
-  ParlantSession,
-  ParlantEvent,
-  ParlantGuideline,
-  ParlantJourney,
-  ParlantTool,
   AgentFilters,
-  SessionFilters,
-  EventFilters,
-  JourneyFilters,
-  PaginationParams,
-  PaginatedResponse,
   AgentWithRelations,
-  SessionWithRelations,
-  JourneyWithFlow,
-  ToolWithIntegration,
-  CreateAgentParams,
-  CreateSessionParams,
-  CreateEventParams,
-  CreateGuidelineParams,
-  CreateJourneyParams,
-  CreateToolParams,
   BatchOperationResult,
+  CreateAgentParams,
+  CreateEventParams,
+  CreateSessionParams,
+  EventFilters,
+  PaginatedResponse,
+  PaginationParams,
+  ParlantAgent,
   ParlantError,
+  ParlantEvent,
+  ParlantSession,
+  SessionFilters,
+  SessionWithRelations,
 } from './parlant-types'
+import type * as schema from './schema'
 
 /**
  * Parlant Query Helpers
@@ -73,7 +56,7 @@ export class ParlantAgentQueries {
       .from(parlantAgent)
       .where(and(eq(parlantAgent.id, id), isNull(parlantAgent.deletedAt)))
       .limit(1)
-      .then(rows => rows[0] || null)
+      .then((rows) => rows[0] || null)
 
     if (!agent || !includeRelations) {
       return agent as AgentWithRelations | null
@@ -213,11 +196,13 @@ export class ParlantAgentQueries {
       .select()
       .from(parlantAgentTool)
       .innerJoin(parlantTool, eq(parlantAgentTool.toolId, parlantTool.id))
-      .where(and(
-        eq(parlantAgentTool.agentId, agentId),
-        eq(parlantAgentTool.enabled, true),
-        eq(parlantTool.enabled, true)
-      ))
+      .where(
+        and(
+          eq(parlantAgentTool.agentId, agentId),
+          eq(parlantAgentTool.enabled, true),
+          eq(parlantTool.enabled, true)
+        )
+      )
       .orderBy(desc(parlantAgentTool.priority))
   }
 
@@ -228,10 +213,7 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantGuideline)
-      .where(and(
-        eq(parlantGuideline.agentId, agentId),
-        eq(parlantGuideline.enabled, true)
-      ))
+      .where(and(eq(parlantGuideline.agentId, agentId), eq(parlantGuideline.enabled, true)))
       .orderBy(desc(parlantGuideline.priority))
   }
 
@@ -242,10 +224,7 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantJourney)
-      .where(and(
-        eq(parlantJourney.agentId, agentId),
-        eq(parlantJourney.enabled, true)
-      ))
+      .where(and(eq(parlantJourney.agentId, agentId), eq(parlantJourney.enabled, true)))
       .orderBy(desc(parlantJourney.lastUsedAt))
   }
 
@@ -268,11 +247,16 @@ export class ParlantAgentQueries {
         },
       })
       .from(parlantAgentKnowledgeBase)
-      .innerJoin(schema.knowledgeBase, eq(parlantAgentKnowledgeBase.knowledgeBaseId, schema.knowledgeBase.id))
-      .where(and(
-        eq(parlantAgentKnowledgeBase.agentId, agentId),
-        eq(parlantAgentKnowledgeBase.enabled, true)
-      ))
+      .innerJoin(
+        schema.knowledgeBase,
+        eq(parlantAgentKnowledgeBase.knowledgeBaseId, schema.knowledgeBase.id)
+      )
+      .where(
+        and(
+          eq(parlantAgentKnowledgeBase.agentId, agentId),
+          eq(parlantAgentKnowledgeBase.enabled, true)
+        )
+      )
       .orderBy(desc(parlantAgentKnowledgeBase.priority))
   }
 
@@ -283,10 +267,7 @@ export class ParlantAgentQueries {
     return this.db
       .select()
       .from(parlantSession)
-      .where(and(
-        eq(parlantSession.agentId, agentId),
-        eq(parlantSession.status, 'active')
-      ))
+      .where(and(eq(parlantSession.agentId, agentId), eq(parlantSession.status, 'active')))
       .orderBy(desc(parlantSession.lastActivityAt))
       .limit(10) // Limit to recent active sessions
   }
@@ -351,10 +332,12 @@ export class ParlantAgentQueries {
     }
 
     if (filters.search) {
-      conditions.push(or(
-        sql`${parlantAgent.name} ILIKE ${`%${filters.search}%`}`,
-        sql`${parlantAgent.description} ILIKE ${`%${filters.search}%`}`
-      ))
+      conditions.push(
+        or(
+          sql`${parlantAgent.name} ILIKE ${`%${filters.search}%`}`,
+          sql`${parlantAgent.description} ILIKE ${`%${filters.search}%`}`
+        )
+      )
     }
 
     return and(...conditions)
@@ -364,14 +347,15 @@ export class ParlantAgentQueries {
    * Build order by clause for agents
    */
   private buildAgentOrderBy(sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
-    const column = {
-      createdAt: parlantAgent.createdAt,
-      updatedAt: parlantAgent.updatedAt,
-      name: parlantAgent.name,
-      lastActiveAt: parlantAgent.lastActiveAt,
-      totalSessions: parlantAgent.totalSessions,
-      totalMessages: parlantAgent.totalMessages,
-    }[sortBy] || parlantAgent.createdAt
+    const column =
+      {
+        createdAt: parlantAgent.createdAt,
+        updatedAt: parlantAgent.updatedAt,
+        name: parlantAgent.name,
+        lastActiveAt: parlantAgent.lastActiveAt,
+        totalSessions: parlantAgent.totalSessions,
+        totalMessages: parlantAgent.totalMessages,
+      }[sortBy] || parlantAgent.createdAt
 
     return sortOrder === 'asc' ? [column] : [desc(column)]
   }
@@ -393,7 +377,7 @@ export class ParlantSessionQueries {
       .from(parlantSession)
       .where(eq(parlantSession.id, id))
       .limit(1)
-      .then(rows => rows[0] || null)
+      .then((rows) => rows[0] || null)
 
     if (!session || !includeRelations) {
       return session as SessionWithRelations | null
@@ -519,7 +503,7 @@ export class ParlantSessionQueries {
       .from(parlantAgent)
       .where(eq(parlantAgent.id, agentId))
       .limit(1)
-      .then(rows => rows[0] || null)
+      .then((rows) => rows[0] || null)
   }
 
   private async getSessionEvents(sessionId: string) {
@@ -537,7 +521,7 @@ export class ParlantSessionQueries {
       .from(parlantJourney)
       .where(eq(parlantJourney.id, journeyId))
       .limit(1)
-      .then(rows => rows[0] || null)
+      .then((rows) => rows[0] || null)
   }
 
   private async getJourneyStateById(stateId: string) {
@@ -546,7 +530,7 @@ export class ParlantSessionQueries {
       .from(parlantJourneyState)
       .where(eq(parlantJourneyState.id, stateId))
       .limit(1)
-      .then(rows => rows[0] || null)
+      .then((rows) => rows[0] || null)
   }
 
   private async getSessionVariables(sessionId: string) {
@@ -609,23 +593,26 @@ export class ParlantSessionQueries {
     }
 
     if (filters.search) {
-      conditions.push(or(
-        sql`${parlantSession.title} ILIKE ${`%${filters.search}%`}`,
-        sql`${parlantSession.metadata}::text ILIKE ${`%${filters.search}%`}`
-      ))
+      conditions.push(
+        or(
+          sql`${parlantSession.title} ILIKE ${`%${filters.search}%`}`,
+          sql`${parlantSession.metadata}::text ILIKE ${`%${filters.search}%`}`
+        )
+      )
     }
 
     return conditions.length > 0 ? and(...conditions) : undefined
   }
 
   private buildSessionOrderBy(sortBy = 'startedAt', sortOrder: 'asc' | 'desc' = 'desc') {
-    const column = {
-      startedAt: parlantSession.startedAt,
-      lastActivityAt: parlantSession.lastActivityAt,
-      endedAt: parlantSession.endedAt,
-      messageCount: parlantSession.messageCount,
-      eventCount: parlantSession.eventCount,
-    }[sortBy] || parlantSession.startedAt
+    const column =
+      {
+        startedAt: parlantSession.startedAt,
+        lastActivityAt: parlantSession.lastActivityAt,
+        endedAt: parlantSession.endedAt,
+        messageCount: parlantSession.messageCount,
+        eventCount: parlantSession.eventCount,
+      }[sortBy] || parlantSession.startedAt
 
     return sortOrder === 'asc' ? [column] : [desc(column)]
   }

@@ -15,10 +15,7 @@
  * 8. Collaboration Features
  */
 
-import type { WorkflowState, BlockState } from '@/stores/workflows/workflow/types'
-import type { Edge } from 'reactflow'
 import { createLogger } from '@/lib/logs/console/logger'
-import { workflowPreservationSystem } from './compatibility-layer'
 
 const logger = createLogger('RegressionTesting')
 
@@ -129,12 +126,12 @@ export class RegressionTestingFramework {
       this.createWorkflowExecutionTestSuite(),
       this.createUIInteractionsTestSuite(),
       this.createDataPersistenceTestSuite(),
-      this.createCollaborationTestSuite()
+      this.createCollaborationTestSuite(),
     ]
 
     logger.info('Test suites initialized', {
       suiteCount: this.testSuites.length,
-      totalTests: this.testSuites.reduce((sum, suite) => sum + suite.tests.length, 0)
+      totalTests: this.testSuites.reduce((sum, suite) => sum + suite.tests.length, 0),
     })
   }
 
@@ -156,16 +153,16 @@ export class RegressionTestingFramework {
             {
               type: 'create-workflow',
               description: 'Create new workflow',
-              params: { name: 'Test Workflow' }
-            }
+              params: { name: 'Test Workflow' },
+            },
           ],
           expectedResults: [
             {
               type: 'ui-element',
               assertion: 'canvas-visible',
-              value: true
-            }
-          ]
+              value: true,
+            },
+          ],
         },
         {
           id: 'reactflow-zoom-pan',
@@ -176,21 +173,21 @@ export class RegressionTestingFramework {
             {
               type: 'ui-interaction',
               description: 'Zoom in',
-              params: { action: 'zoom', direction: 'in', factor: 1.5 }
+              params: { action: 'zoom', direction: 'in', factor: 1.5 },
             },
             {
               type: 'ui-interaction',
               description: 'Pan canvas',
-              params: { action: 'pan', deltaX: 100, deltaY: 50 }
-            }
+              params: { action: 'pan', deltaX: 100, deltaY: 50 },
+            },
           ],
           expectedResults: [
             {
               type: 'ui-element',
               assertion: 'zoom-level-changed',
-              value: 1.5
-            }
-          ]
+              value: 1.5,
+            },
+          ],
         },
         {
           id: 'reactflow-viewport-fit',
@@ -201,23 +198,23 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add test block',
-              params: { type: 'starter', position: { x: 0, y: 0 } }
+              params: { type: 'starter', position: { x: 0, y: 0 } },
             },
             {
               type: 'ui-interaction',
               description: 'Fit view',
-              params: { action: 'fit-view' }
-            }
+              params: { action: 'fit-view' },
+            },
           ],
           expectedResults: [
             {
               type: 'ui-element',
               assertion: 'viewport-centered',
-              value: true
-            }
-          ]
-        }
-      ]
+              value: true,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -239,26 +236,26 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add starter block',
-              params: { type: 'starter', position: { x: 100, y: 100 } }
+              params: { type: 'starter', position: { x: 100, y: 100 } },
             },
             {
               type: 'add-block',
               description: 'Add agent block',
-              params: { type: 'agent', position: { x: 300, y: 100 } }
-            }
+              params: { type: 'agent', position: { x: 300, y: 100 } },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'block-count',
-              value: 2
+              value: 2,
             },
             {
               type: 'ui-element',
               assertion: 'blocks-rendered',
-              value: true
-            }
-          ]
+              value: true,
+            },
+          ],
         },
         {
           id: 'block-drag-drop',
@@ -269,21 +266,21 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add test block',
-              params: { type: 'condition', position: { x: 200, y: 200 } }
+              params: { type: 'condition', position: { x: 200, y: 200 } },
             },
             {
               type: 'drag-block',
               description: 'Drag block to new position',
-              params: { blockId: 'test-block', newPosition: { x: 400, y: 300 } }
-            }
+              params: { blockId: 'test-block', newPosition: { x: 400, y: 300 } },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'block-position',
-              value: { x: 400, y: 300 }
-            }
-          ]
+              value: { x: 400, y: 300 },
+            },
+          ],
         },
         {
           id: 'block-configuration',
@@ -294,7 +291,7 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add agent block',
-              params: { type: 'agent', position: { x: 100, y: 100 } }
+              params: { type: 'agent', position: { x: 100, y: 100 } },
             },
             {
               type: 'update-block',
@@ -303,18 +300,18 @@ export class RegressionTestingFramework {
                 blockId: 'agent-block',
                 subBlocks: {
                   systemPrompt: { value: 'Test system prompt' },
-                  model: { value: 'gpt-4' }
-                }
-              }
-            }
+                  model: { value: 'gpt-4' },
+                },
+              },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'subblock-value',
-              value: 'Test system prompt'
-            }
-          ]
+              value: 'Test system prompt',
+            },
+          ],
         },
         {
           id: 'block-deletion',
@@ -325,23 +322,23 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add test block',
-              params: { type: 'response', position: { x: 150, y: 150 } }
+              params: { type: 'response', position: { x: 150, y: 150 } },
             },
             {
               type: 'delete-block',
               description: 'Delete test block',
-              params: { blockId: 'response-block' }
-            }
+              params: { blockId: 'response-block' },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'block-count',
-              value: 0
-            }
-          ]
-        }
-      ]
+              value: 0,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -363,12 +360,12 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add source block',
-              params: { type: 'starter', position: { x: 100, y: 100 } }
+              params: { type: 'starter', position: { x: 100, y: 100 } },
             },
             {
               type: 'add-block',
               description: 'Add target block',
-              params: { type: 'agent', position: { x: 300, y: 100 } }
+              params: { type: 'agent', position: { x: 300, y: 100 } },
             },
             {
               type: 'connect-blocks',
@@ -377,17 +374,17 @@ export class RegressionTestingFramework {
                 sourceId: 'starter-block',
                 targetId: 'agent-block',
                 sourceHandle: 'source',
-                targetHandle: 'target'
-              }
-            }
+                targetHandle: 'target',
+              },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'edge-count',
-              value: 1
-            }
-          ]
+              value: 1,
+            },
+          ],
         },
         {
           id: 'conditional-edge',
@@ -398,12 +395,12 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add condition block',
-              params: { type: 'condition', position: { x: 200, y: 200 } }
+              params: { type: 'condition', position: { x: 200, y: 200 } },
             },
             {
               type: 'add-block',
               description: 'Add target block',
-              params: { type: 'response', position: { x: 400, y: 200 } }
+              params: { type: 'response', position: { x: 400, y: 200 } },
             },
             {
               type: 'connect-blocks',
@@ -412,17 +409,17 @@ export class RegressionTestingFramework {
                 sourceId: 'condition-block',
                 targetId: 'response-block',
                 sourceHandle: 'condition-0',
-                targetHandle: 'target'
-              }
-            }
+                targetHandle: 'target',
+              },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'edge-type',
-              value: 'conditional'
-            }
-          ]
+              value: 'conditional',
+            },
+          ],
         },
         {
           id: 'edge-deletion',
@@ -433,33 +430,33 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add source block',
-              params: { type: 'starter', position: { x: 100, y: 100 } }
+              params: { type: 'starter', position: { x: 100, y: 100 } },
             },
             {
               type: 'add-block',
               description: 'Add target block',
-              params: { type: 'agent', position: { x: 300, y: 100 } }
+              params: { type: 'agent', position: { x: 300, y: 100 } },
             },
             {
               type: 'connect-blocks',
               description: 'Connect blocks',
-              params: { sourceId: 'starter-block', targetId: 'agent-block' }
+              params: { sourceId: 'starter-block', targetId: 'agent-block' },
             },
             {
               type: 'disconnect-blocks',
               description: 'Delete edge',
-              params: { edgeId: 'test-edge' }
-            }
+              params: { edgeId: 'test-edge' },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'edge-count',
-              value: 0
-            }
-          ]
-        }
-      ]
+              value: 0,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -481,16 +478,16 @@ export class RegressionTestingFramework {
             {
               type: 'create-container',
               description: 'Create loop container',
-              params: { type: 'loop', position: { x: 200, y: 200 } }
-            }
+              params: { type: 'loop', position: { x: 200, y: 200 } },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'container-exists',
-              value: true
-            }
-          ]
+              value: true,
+            },
+          ],
         },
         {
           id: 'container-resize',
@@ -501,21 +498,21 @@ export class RegressionTestingFramework {
             {
               type: 'create-container',
               description: 'Create parallel container',
-              params: { type: 'parallel', position: { x: 300, y: 300 } }
+              params: { type: 'parallel', position: { x: 300, y: 300 } },
             },
             {
               type: 'resize-container',
               description: 'Resize container',
-              params: { containerId: 'parallel-container', width: 600, height: 400 }
-            }
+              params: { containerId: 'parallel-container', width: 600, height: 400 },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'container-size',
-              value: { width: 600, height: 400 }
-            }
-          ]
+              value: { width: 600, height: 400 },
+            },
+          ],
         },
         {
           id: 'block-in-container',
@@ -526,7 +523,7 @@ export class RegressionTestingFramework {
             {
               type: 'create-container',
               description: 'Create loop container',
-              params: { type: 'loop', position: { x: 100, y: 100 } }
+              params: { type: 'loop', position: { x: 100, y: 100 } },
             },
             {
               type: 'add-block',
@@ -534,19 +531,19 @@ export class RegressionTestingFramework {
               params: {
                 type: 'agent',
                 position: { x: 150, y: 150 },
-                parentId: 'loop-container'
-              }
-            }
+                parentId: 'loop-container',
+              },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'block-parent',
-              value: 'loop-container'
-            }
-          ]
-        }
-      ]
+              value: 'loop-container',
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -568,33 +565,33 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add starter block',
-              params: { type: 'starter', position: { x: 100, y: 100 } }
+              params: { type: 'starter', position: { x: 100, y: 100 } },
             },
             {
               type: 'add-block',
               description: 'Add response block',
-              params: { type: 'response', position: { x: 300, y: 100 } }
+              params: { type: 'response', position: { x: 300, y: 100 } },
             },
             {
               type: 'connect-blocks',
               description: 'Connect blocks',
-              params: { sourceId: 'starter-block', targetId: 'response-block' }
+              params: { sourceId: 'starter-block', targetId: 'response-block' },
             },
             {
               type: 'execute-workflow',
               description: 'Execute workflow',
-              params: { workflowId: 'test-workflow' }
-            }
+              params: { workflowId: 'test-workflow' },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'execution-status',
-              value: 'completed'
-            }
-          ]
-        }
-      ]
+              value: 'completed',
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -616,18 +613,18 @@ export class RegressionTestingFramework {
             {
               type: 'ui-interaction',
               description: 'Auto-layout shortcut',
-              params: { action: 'keyboard', key: 'Shift+L' }
-            }
+              params: { action: 'keyboard', key: 'Shift+L' },
+            },
           ],
           expectedResults: [
             {
               type: 'ui-element',
               assertion: 'layout-applied',
-              value: true
-            }
-          ]
-        }
-      ]
+              value: true,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -649,21 +646,21 @@ export class RegressionTestingFramework {
             {
               type: 'add-block',
               description: 'Add test block',
-              params: { type: 'starter', position: { x: 100, y: 100 } }
+              params: { type: 'starter', position: { x: 100, y: 100 } },
             },
             {
               type: 'save-workflow',
               description: 'Save workflow',
-              params: { workflowId: 'test-workflow' }
-            }
+              params: { workflowId: 'test-workflow' },
+            },
           ],
           expectedResults: [
             {
               type: 'data-validation',
               assertion: 'save-successful',
-              value: true
-            }
-          ]
+              value: true,
+            },
+          ],
         },
         {
           id: 'load-workflow',
@@ -674,18 +671,18 @@ export class RegressionTestingFramework {
             {
               type: 'load-workflow',
               description: 'Load existing workflow',
-              params: { workflowId: 'existing-workflow' }
-            }
+              params: { workflowId: 'existing-workflow' },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'workflow-loaded',
-              value: true
-            }
-          ]
-        }
-      ]
+              value: true,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -707,18 +704,18 @@ export class RegressionTestingFramework {
             {
               type: 'collaborate',
               description: 'Simulate collaborative edit',
-              params: { action: 'add-block', userId: 'user2' }
-            }
+              params: { action: 'add-block', userId: 'user2' },
+            },
           ],
           expectedResults: [
             {
               type: 'workflow-state',
               assertion: 'change-synced',
-              value: true
-            }
-          ]
-        }
-      ]
+              value: true,
+            },
+          ],
+        },
+      ],
     }
   }
 
@@ -753,7 +750,7 @@ export class RegressionTestingFramework {
       totalTests: results.length,
       passed: summary.passed,
       failed: summary.failed,
-      duration: `${duration}ms`
+      duration: `${duration}ms`,
     })
 
     return summary
@@ -786,7 +783,7 @@ export class RegressionTestingFramework {
         assertionResults.push(assertionResult)
       }
 
-      const allAssertionsPassed = assertionResults.every(r => r.success)
+      const allAssertionsPassed = assertionResults.every((r) => r.success)
       const duration = Date.now() - startTime
 
       const result: TestResult = {
@@ -795,12 +792,12 @@ export class RegressionTestingFramework {
         duration,
         operations: operationResults,
         assertions: assertionResults,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
 
       if (!allAssertionsPassed) {
-        const failedAssertions = assertionResults.filter(r => !r.success)
-        result.error = `Assertions failed: ${failedAssertions.map(a => a.error).join(', ')}`
+        const failedAssertions = assertionResults.filter((r) => !r.success)
+        result.error = `Assertions failed: ${failedAssertions.map((a) => a.error).join(', ')}`
       }
 
       // Cleanup
@@ -809,7 +806,6 @@ export class RegressionTestingFramework {
       }
 
       return result
-
     } catch (error) {
       const duration = Date.now() - startTime
       return {
@@ -819,7 +815,7 @@ export class RegressionTestingFramework {
         operations: operationResults,
         assertions: assertionResults,
         error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
   }
@@ -837,14 +833,14 @@ export class RegressionTestingFramework {
       return {
         operation,
         success: true,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       }
     } catch (error) {
       return {
         operation,
         success: false,
         duration: Date.now() - startTime,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -857,7 +853,7 @@ export class RegressionTestingFramework {
     // For now, we simulate the operations
 
     const delay = operation.timeout || 100
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await new Promise((resolve) => setTimeout(resolve, delay))
 
     switch (operation.type) {
       case 'create-workflow':
@@ -888,14 +884,14 @@ export class RegressionTestingFramework {
         expectedResult,
         actualValue,
         success,
-        error: success ? undefined : `Expected ${expectedResult.value}, got ${actualValue}`
+        error: success ? undefined : `Expected ${expectedResult.value}, got ${actualValue}`,
       }
     } catch (error) {
       return {
         expectedResult,
         actualValue: null,
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -939,17 +935,15 @@ export class RegressionTestingFramework {
    * Create execution summary
    */
   private createExecutionSummary(results: TestResult[], duration: number): TestExecutionSummary {
-    const passed = results.filter(r => r.success).length
+    const passed = results.filter((r) => r.success).length
     const failed = results.length - passed
 
     const categoryResults = new Map<TestCategory, { passed: number; failed: number }>()
 
-    this.testSuites.forEach(suite => {
-      const suiteResults = results.filter(r =>
-        suite.tests.some(t => t.id === r.testCaseId)
-      )
+    this.testSuites.forEach((suite) => {
+      const suiteResults = results.filter((r) => suite.tests.some((t) => t.id === r.testCaseId))
 
-      const suitePassed = suiteResults.filter(r => r.success).length
+      const suitePassed = suiteResults.filter((r) => r.success).length
       const suiteFailed = suiteResults.length - suitePassed
 
       categoryResults.set(suite.category, { passed: suitePassed, failed: suiteFailed })
@@ -963,7 +957,7 @@ export class RegressionTestingFramework {
       duration,
       categoryResults: Object.fromEntries(categoryResults),
       details: results,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 

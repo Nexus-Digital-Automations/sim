@@ -12,14 +12,11 @@
  * 4. SHARED STATE MANAGEMENT with consistency guarantees
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import type { Edge } from 'reactflow'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
-import type { BlockConfig } from '@/blocks/types'
+import { createLogger } from '@/lib/logs/console/logger'
 import { getBlock } from '@/blocks'
-import type { SerializedWorkflow } from '@/serializer/types'
+import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
 import { workflowCompatibilityValidator } from './compatibility-validator'
-import { workflowRegressionTestRunner } from './regression-tests'
 
 const logger = createLogger('DualModeArchitecture')
 
@@ -69,7 +66,13 @@ export interface SynchronizationStatus {
 }
 
 export interface Change {
-  type: 'BLOCK_ADDED' | 'BLOCK_REMOVED' | 'BLOCK_MODIFIED' | 'EDGE_ADDED' | 'EDGE_REMOVED' | 'EDGE_MODIFIED'
+  type:
+    | 'BLOCK_ADDED'
+    | 'BLOCK_REMOVED'
+    | 'BLOCK_MODIFIED'
+    | 'EDGE_ADDED'
+    | 'EDGE_REMOVED'
+    | 'EDGE_MODIFIED'
   entityId: string
   timestamp: Date
   source: 'reactflow' | 'journey'
@@ -92,13 +95,15 @@ export class DualModeExecutionArchitecture {
   private config: DualModeConfig
   private executionContexts: Map<string, WorkflowExecutionContext> = new Map()
 
-  constructor(config: DualModeConfig = {
-    reactFlowEnabled: true,
-    journeyMappingEnabled: true,
-    preferredMode: 'reactflow',
-    fallbackMode: 'reactflow',
-    synchronizationEnabled: true
-  }) {
+  constructor(
+    config: DualModeConfig = {
+      reactFlowEnabled: true,
+      journeyMappingEnabled: true,
+      preferredMode: 'reactflow',
+      fallbackMode: 'reactflow',
+      synchronizationEnabled: true,
+    }
+  ) {
     this.config = config
     this.logger.info('Dual-mode execution architecture initialized', { config })
   }
@@ -114,12 +119,13 @@ export class DualModeExecutionArchitecture {
 
     try {
       // Validate ReactFlow state integrity first
-      const compatibilityResult = await workflowCompatibilityValidator.validateWorkflowCompatibility(reactFlowState)
+      const compatibilityResult =
+        await workflowCompatibilityValidator.validateWorkflowCompatibility(reactFlowState)
 
       if (!compatibilityResult.isCompatible) {
         this.logger.error('ReactFlow state validation failed', {
           errors: compatibilityResult.errors,
-          workflowId
+          workflowId,
         })
         throw new Error('ReactFlow state is not compatible with dual-mode execution')
       }
@@ -128,14 +134,14 @@ export class DualModeExecutionArchitecture {
       const executionMode = await this.determineExecutionMode(reactFlowState)
 
       // Initialize journey state if journey mapping is enabled
-      let journeyState = undefined
+      let journeyState
       if (this.config.journeyMappingEnabled) {
         try {
           journeyState = await this.initializeJourneyState(reactFlowState)
         } catch (error) {
           this.logger.warn('Journey state initialization failed, falling back to ReactFlow only', {
             error,
-            workflowId
+            workflowId,
           })
           // Continue with ReactFlow-only mode
         }
@@ -146,7 +152,7 @@ export class DualModeExecutionArchitecture {
         isInSync: true,
         lastSyncTime: new Date(),
         pendingChanges: [],
-        conflicts: []
+        conflicts: [],
       }
 
       const context: WorkflowExecutionContext = {
@@ -154,7 +160,7 @@ export class DualModeExecutionArchitecture {
         executionMode,
         reactFlowState: { ...reactFlowState }, // Deep copy to prevent mutations
         journeyState,
-        synchronizationStatus
+        synchronizationStatus,
       }
 
       this.executionContexts.set(workflowId, context)
@@ -162,11 +168,10 @@ export class DualModeExecutionArchitecture {
       this.logger.info('Dual-mode context initialized successfully', {
         workflowId,
         mode: executionMode.mode,
-        hasJourneyState: !!journeyState
+        hasJourneyState: !!journeyState,
       })
 
       return context
-
     } catch (error) {
       this.logger.error('Failed to initialize dual-mode context', { error, workflowId })
       throw error
@@ -176,10 +181,7 @@ export class DualModeExecutionArchitecture {
   /**
    * Execute workflow in the appropriate mode
    */
-  async executeWorkflow(
-    workflowId: string,
-    executionOptions: any = {}
-  ): Promise<any> {
+  async executeWorkflow(workflowId: string, executionOptions: any = {}): Promise<any> {
     const context = this.executionContexts.get(workflowId)
     if (!context) {
       throw new Error(`No dual-mode context found for workflow ${workflowId}`)
@@ -188,7 +190,7 @@ export class DualModeExecutionArchitecture {
     this.logger.info('Executing workflow in dual-mode', {
       workflowId,
       mode: context.executionMode.mode,
-      options: executionOptions
+      options: executionOptions,
     })
 
     try {
@@ -203,12 +205,15 @@ export class DualModeExecutionArchitecture {
       }
 
       // If both modes are available and sync is enabled, validate consistency
-      if (this.config.synchronizationEnabled && context.journeyState && context.executionMode.mode === 'reactflow') {
+      if (
+        this.config.synchronizationEnabled &&
+        context.journeyState &&
+        context.executionMode.mode === 'reactflow'
+      ) {
         await this.validateExecutionConsistency(context, result)
       }
 
       return result
-
     } catch (error) {
       this.logger.error('Workflow execution failed', { error, workflowId })
 
@@ -216,7 +221,7 @@ export class DualModeExecutionArchitecture {
       if (context.executionMode.mode !== this.config.fallbackMode) {
         this.logger.info('Attempting fallback execution', {
           workflowId,
-          fallbackMode: this.config.fallbackMode
+          fallbackMode: this.config.fallbackMode,
         })
 
         try {
@@ -238,10 +243,7 @@ export class DualModeExecutionArchitecture {
   /**
    * Switch execution mode for a workflow
    */
-  async switchExecutionMode(
-    workflowId: string,
-    newMode: 'reactflow' | 'journey'
-  ): Promise<void> {
+  async switchExecutionMode(workflowId: string, newMode: 'reactflow' | 'journey'): Promise<void> {
     const context = this.executionContexts.get(workflowId)
     if (!context) {
       throw new Error(`No dual-mode context found for workflow ${workflowId}`)
@@ -250,7 +252,7 @@ export class DualModeExecutionArchitecture {
     this.logger.info('Switching execution mode', {
       workflowId,
       currentMode: context.executionMode.mode,
-      newMode
+      newMode,
     })
 
     // Validate mode switch is possible
@@ -264,14 +266,11 @@ export class DualModeExecutionArchitecture {
     }
 
     // Update execution mode
-    context.executionMode = await this.determineExecutionMode(
-      context.reactFlowState,
-      newMode
-    )
+    context.executionMode = await this.determineExecutionMode(context.reactFlowState, newMode)
 
     this.logger.info('Execution mode switched successfully', {
       workflowId,
-      newMode: context.executionMode.mode
+      newMode: context.executionMode.mode,
     })
   }
 
@@ -291,7 +290,7 @@ export class DualModeExecutionArchitecture {
     }
 
     this.logger.info('Synchronizing ReactFlow and Journey states', {
-      workflowId: context.workflowId
+      workflowId: context.workflowId,
     })
 
     try {
@@ -311,7 +310,7 @@ export class DualModeExecutionArchitecture {
         context.synchronizationStatus.conflicts = conflicts
         this.logger.warn('State conflicts detected during synchronization', {
           workflowId: context.workflowId,
-          conflictCount: conflicts.length
+          conflictCount: conflicts.length,
         })
 
         // Apply conflict resolution strategy
@@ -325,18 +324,17 @@ export class DualModeExecutionArchitecture {
         isInSync: true,
         lastSyncTime: new Date(),
         pendingChanges: [],
-        conflicts: []
+        conflicts: [],
       }
 
       this.logger.info('State synchronization completed', {
         workflowId: context.workflowId,
-        changeCount: changes.length
+        changeCount: changes.length,
       })
-
     } catch (error) {
       this.logger.error('State synchronization failed', {
         error,
-        workflowId: context.workflowId
+        workflowId: context.workflowId,
       })
 
       context.synchronizationStatus.isInSync = false
@@ -356,7 +354,7 @@ export class DualModeExecutionArchitecture {
     // Analyze workflow complexity and features
     const blockCount = Object.keys(workflow.blocks).length
     const edgeCount = workflow.edges.length
-    const hasContainers = Object.values(workflow.blocks).some(b =>
+    const hasContainers = Object.values(workflow.blocks).some((b) =>
       ['loop', 'parallel'].includes(b.type)
     )
 
@@ -366,43 +364,43 @@ export class DualModeExecutionArchitecture {
         description: 'Interactive visual workflow editor',
         available: true,
         reactFlowSupported: true,
-        journeySupported: false
+        journeySupported: false,
       },
       {
         name: 'Conversational Interaction',
         description: 'Natural language workflow interaction',
         available: this.config.journeyMappingEnabled,
         reactFlowSupported: false,
-        journeySupported: true
+        journeySupported: true,
       },
       {
         name: 'Container Nodes',
         description: 'Loop and parallel execution containers',
         available: hasContainers,
         reactFlowSupported: true,
-        journeySupported: true
+        journeySupported: true,
       },
       {
         name: 'Real-time Collaboration',
         description: 'Multi-user editing capabilities',
         available: true,
         reactFlowSupported: true,
-        journeySupported: false
-      }
+        journeySupported: false,
+      },
     ]
 
     const performanceProfile: PerformanceProfile = {
       startupTime: mode === 'reactflow' ? 100 : 200,
       memoryUsage: blockCount * 10,
       executionSpeed: mode === 'reactflow' ? 95 : 85,
-      scalabilityRating: blockCount > 100 ? 'HIGH' : 'MEDIUM'
+      scalabilityRating: blockCount > 100 ? 'HIGH' : 'MEDIUM',
     }
 
     return {
       mode: mode === 'auto' ? 'reactflow' : mode, // Default to ReactFlow for auto
       capabilities,
       limitations: mode === 'journey' ? ['Limited visual editing'] : [],
-      performanceProfile
+      performanceProfile,
     }
   }
 
@@ -421,8 +419,8 @@ export class DualModeExecutionArchitecture {
       metadata: {
         sourceWorkflow: 'reactflow',
         createdAt: new Date(),
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     }
   }
 
@@ -442,13 +440,13 @@ export class DualModeExecutionArchitecture {
         config: {
           originalBlock: block,
           blockConfig,
-          enabled: block.enabled
+          enabled: block.enabled,
         },
         position: block.position,
         metadata: {
           reactFlowBlockId: blockId,
-          originalType: block.type
-        }
+          originalType: block.type,
+        },
       })
     }
 
@@ -459,7 +457,7 @@ export class DualModeExecutionArchitecture {
    * Convert ReactFlow edges to Journey transitions
    */
   private async convertEdgesToJourneyTransitions(edges: Edge[]): Promise<any[]> {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       id: edge.id,
       from: edge.source,
       to: edge.target,
@@ -467,8 +465,8 @@ export class DualModeExecutionArchitecture {
       metadata: {
         reactFlowEdgeId: edge.id,
         sourceHandle: edge.sourceHandle,
-        targetHandle: edge.targetHandle
-      }
+        targetHandle: edge.targetHandle,
+      },
     }))
   }
 
@@ -477,12 +475,12 @@ export class DualModeExecutionArchitecture {
    */
   private mapBlockTypeToJourneyState(blockType: string): string {
     const mapping: Record<string, string> = {
-      'starter': 'entry_state',
-      'condition': 'conditional_state',
-      'loop': 'loop_state',
-      'parallel': 'parallel_state',
-      'webhook': 'webhook_state',
-      'schedule': 'schedule_state'
+      starter: 'entry_state',
+      condition: 'conditional_state',
+      loop: 'loop_state',
+      parallel: 'parallel_state',
+      webhook: 'webhook_state',
+      schedule: 'schedule_state',
     }
 
     return mapping[blockType] || 'action_state'
@@ -496,7 +494,7 @@ export class DualModeExecutionArchitecture {
     options: any
   ): Promise<any> {
     this.logger.info('Executing workflow in ReactFlow mode', {
-      workflowId: context.workflowId
+      workflowId: context.workflowId,
     })
 
     // Use existing ReactFlow execution system
@@ -517,7 +515,7 @@ export class DualModeExecutionArchitecture {
     options: any
   ): Promise<any> {
     this.logger.info('Executing workflow in Journey mode', {
-      workflowId: context.workflowId
+      workflowId: context.workflowId,
     })
 
     if (!context.journeyState) {
@@ -532,8 +530,8 @@ export class DualModeExecutionArchitecture {
       journeyId: context.journeyState.journeyId,
       results: {
         message: 'Journey execution completed successfully',
-        statesExecuted: context.journeyState.states.length
-      }
+        statesExecuted: context.journeyState.states.length,
+      },
     }
   }
 
@@ -549,7 +547,7 @@ export class DualModeExecutionArchitecture {
     }
 
     this.logger.info('Validating execution consistency between modes', {
-      workflowId: context.workflowId
+      workflowId: context.workflowId,
     })
 
     try {
@@ -561,14 +559,13 @@ export class DualModeExecutionArchitecture {
         this.logger.warn('Execution consistency validation failed', {
           workflowId: context.workflowId,
           reactFlowSuccess: reactFlowResult.success,
-          journeySuccess: journeyResult.success
+          journeySuccess: journeyResult.success,
         })
       }
-
     } catch (error) {
       this.logger.error('Execution consistency validation failed', {
         error,
-        workflowId: context.workflowId
+        workflowId: context.workflowId,
       })
     }
   }
@@ -609,7 +606,7 @@ export class DualModeExecutionArchitecture {
         case 'MANUAL_RESOLUTION_REQUIRED':
           this.logger.warn('Manual conflict resolution required', {
             workflowId: context.workflowId,
-            conflict
+            conflict,
           })
           break
       }
@@ -619,10 +616,7 @@ export class DualModeExecutionArchitecture {
   /**
    * Apply state changes to maintain synchronization
    */
-  private async applyChanges(
-    context: WorkflowExecutionContext,
-    changes: Change[]
-  ): Promise<void> {
+  private async applyChanges(context: WorkflowExecutionContext, changes: Change[]): Promise<void> {
     for (const change of changes) {
       switch (change.type) {
         case 'BLOCK_ADDED':
@@ -666,10 +660,7 @@ export async function initializeDualMode(
 /**
  * Execute workflow with dual-mode support
  */
-export async function executeDualModeWorkflow(
-  workflowId: string,
-  options: any = {}
-): Promise<any> {
+export async function executeDualModeWorkflow(workflowId: string, options: any = {}): Promise<any> {
   return await dualModeArchitecture.executeWorkflow(workflowId, options)
 }
 
@@ -696,7 +687,8 @@ export function getWorkflowExecutionMode(workflowId: string): ExecutionMode | un
  */
 export async function isDualModeSupported(workflow: WorkflowState): Promise<boolean> {
   try {
-    const compatibilityResult = await workflowCompatibilityValidator.validateWorkflowCompatibility(workflow)
+    const compatibilityResult =
+      await workflowCompatibilityValidator.validateWorkflowCompatibility(workflow)
     return compatibilityResult.isCompatible
   } catch {
     return false

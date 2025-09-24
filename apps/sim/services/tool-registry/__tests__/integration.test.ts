@@ -2,17 +2,17 @@
  * Integration Tests for Tool Registry System
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { z } from 'zod'
 import {
-  ToolRegistryService,
-  ToolDiscoveryService,
-  ToolConfigurationService,
-  ToolAnalyticsService,
   getToolRegistry,
   initializeToolRegistry,
+  ToolAnalyticsService,
+  ToolConfigurationService,
+  ToolDiscoveryService,
+  type ToolRegistryService,
 } from '../index'
 import type { ToolDefinition } from '../types'
-import { z } from 'zod'
 
 // Mock all external dependencies
 vi.mock('@/packages/db', () => ({
@@ -62,14 +62,16 @@ vi.mock('@/lib/logs/console/logger', () => ({
 
 vi.mock('../adapters', () => ({
   ToolAdapter: vi.fn(() => ({
-    getAllSimTools: vi.fn(() => Promise.resolve([
-      {
-        id: 'get_user_workflow',
-        source: 'copilot',
-        name: 'get_user_workflow',
-        schema: z.object({}),
-      },
-    ])),
+    getAllSimTools: vi.fn(() =>
+      Promise.resolve([
+        {
+          id: 'get_user_workflow',
+          source: 'copilot',
+          name: 'get_user_workflow',
+          schema: z.object({}),
+        },
+      ])
+    ),
     adaptTool: vi.fn((tool) => ({
       id: tool.id,
       name: tool.name,
@@ -108,9 +110,11 @@ const testToolDefinition: ToolDefinition = {
   keywords: ['test', 'integration', 'mock'],
   schema: z.object({
     input: z.string(),
-    options: z.object({
-      format: z.enum(['json', 'text']).optional(),
-    }).optional(),
+    options: z
+      .object({
+        format: z.enum(['json', 'text']).optional(),
+      })
+      .optional(),
   }),
   metadata: {
     author: 'Integration Test',
@@ -199,7 +203,7 @@ describe('Tool Registry Integration Tests', () => {
         configurationId: configuration.id,
         userId: 'test_user_123',
         workspaceId: 'test_workspace_123',
-        executionId: 'exec_' + Date.now(),
+        executionId: `exec_${Date.now()}`,
         startTime: new Date(Date.now() - 1000),
         endTime: new Date(),
         durationMs: 1000,
@@ -325,8 +329,9 @@ describe('Tool Registry Integration Tests', () => {
 
       const discoveryService = new ToolDiscoveryService()
 
-      await expect(discoveryService.searchTools({ limit: 10 }))
-        .rejects.toThrow('Database connection failed')
+      await expect(discoveryService.searchTools({ limit: 10 })).rejects.toThrow(
+        'Database connection failed'
+      )
 
       // Restore mock
       mockDb.db.select = originalSelect
@@ -339,8 +344,7 @@ describe('Tool Registry Integration Tests', () => {
         // ... other required fields missing
       } as unknown as ToolDefinition
 
-      await expect(registry.registerTool(invalidTool))
-        .rejects.toThrow()
+      await expect(registry.registerTool(invalidTool)).rejects.toThrow()
     })
   })
 
@@ -358,7 +362,7 @@ describe('Tool Registry Integration Tests', () => {
       }
 
       // Register all tools
-      const promises = tools.map(tool => registry.registerTool(tool))
+      const promises = tools.map((tool) => registry.registerTool(tool))
       await expect(Promise.all(promises)).resolves.not.toThrow()
     })
 
@@ -392,7 +396,7 @@ describe('Tool Registry Integration Tests', () => {
 
       // All operations should complete (successfully or with error)
       expect(results).toHaveLength(4)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(['fulfilled', 'rejected'].includes(result.status)).toBe(true)
       })
     })

@@ -6,21 +6,16 @@
  */
 
 import type {
-  JourneyDefinition,
-  WorkflowData,
-  ConversationMessage,
-  ProgressTracker,
-  ExecutionResult,
   AgentResponse,
-  ConversationalInterface,
-  ExecutionError,
+  ConversationMessage,
+  JourneyDefinition,
+  MessageAttachment,
+  ProgressTracker,
   RecommendedAction,
-  InputSchema,
-  MessageAttachment
+  WorkflowData,
 } from '../types/journey-execution-types'
-
-import { AgentCommunicationService } from './agent-communication-service'
-import { JourneyExecutionEngine } from './journey-execution-engine'
+import type { AgentCommunicationService } from './agent-communication-service'
+import type { JourneyExecutionEngine } from './journey-execution-engine'
 
 /**
  * Conversation context for maintaining state across interactions
@@ -134,8 +129,8 @@ export class ConversationalExecutionInterface {
         preferences: {
           verbosity: 'standard',
           autoConfirm: false,
-          timeout: 30000
-        }
+          timeout: 30000,
+        },
       })
 
       // Create conversation context
@@ -155,8 +150,8 @@ export class ConversationalExecutionInterface {
           lastActivity: new Date(),
           messageCount: 0,
           errorCount: 0,
-          completionRate: 0
-        }
+          completionRate: 0,
+        },
       }
 
       // Store context
@@ -169,7 +164,9 @@ export class ConversationalExecutionInterface {
       return context
     } catch (error) {
       console.error('Failed to initialize conversational workflow:', error)
-      throw new Error(`Failed to initialize conversation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to initialize conversation: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -197,7 +194,7 @@ export class ConversationalExecutionInterface {
         role: 'user',
         content: message,
         timestamp: new Date(),
-        metadata: { attachments }
+        metadata: { attachments },
       }
       context.history.push(userMessage)
 
@@ -229,8 +226,8 @@ export class ConversationalExecutionInterface {
         content: conversationalResponse.message,
         timestamp: new Date(),
         metadata: {
-          progressUpdate: true
-        }
+          progressUpdate: true,
+        },
       }
       context.history.push(agentMessage)
 
@@ -269,10 +266,10 @@ export class ConversationalExecutionInterface {
 
     // Send mode change notification
     const modeDescriptions = {
-      guided: 'I\'ll guide you step-by-step through each part of the workflow.',
+      guided: "I'll guide you step-by-step through each part of the workflow.",
       freeform: 'You can interact with the workflow in any way you prefer.',
-      expert: 'I\'ll provide minimal guidance and assume you know what you\'re doing.',
-      tutorial: 'I\'ll explain each step in detail to help you learn.'
+      expert: "I'll provide minimal guidance and assume you know what you're doing.",
+      tutorial: "I'll explain each step in detail to help you learn.",
     }
 
     await this.sendAgentMessage(
@@ -284,7 +281,10 @@ export class ConversationalExecutionInterface {
   /**
    * Update conversation preferences
    */
-  async updatePreferences(sessionId: string, preferences: Partial<ConversationPreferences>): Promise<void> {
+  async updatePreferences(
+    sessionId: string,
+    preferences: Partial<ConversationPreferences>
+  ): Promise<void> {
     const context = this.activeContexts.get(sessionId)
     if (!context) {
       throw new Error(`Conversation context not found: ${sessionId}`)
@@ -292,10 +292,7 @@ export class ConversationalExecutionInterface {
 
     context.preferences = { ...context.preferences, ...preferences }
 
-    await this.sendAgentMessage(
-      context,
-      '✅ Your conversation preferences have been updated!'
-    )
+    await this.sendAgentMessage(context, '✅ Your conversation preferences have been updated!')
   }
 
   /**
@@ -343,12 +340,12 @@ export class ConversationalExecutionInterface {
 
       // Extract key steps from journey
       const keySteps = journey.states
-        .filter(s => s.type !== 'initial' && s.type !== 'final')
+        .filter((s) => s.type !== 'initial' && s.type !== 'final')
         .slice(0, 3)
         .map((s, i) => `${i + 1}. ${s.name || s.id}`)
         .join('\n')
 
-      welcomeMessage += keySteps + '\n\n'
+      welcomeMessage += `${keySteps}\n\n`
     }
 
     welcomeMessage += this.getConversationModeInstructions(context.conversationMode)
@@ -378,7 +375,10 @@ export class ConversationalExecutionInterface {
     let enhancedMessage = executionResult.message
 
     // Add personality based on conversation mode
-    enhancedMessage = this.responseGenerator.addPersonality(enhancedMessage, context.conversationMode)
+    enhancedMessage = this.responseGenerator.addPersonality(
+      enhancedMessage,
+      context.conversationMode
+    )
 
     // Add progress context if appropriate
     if (executionResult.progress && context.preferences.progressNotifications) {
@@ -399,16 +399,26 @@ export class ConversationalExecutionInterface {
     return {
       ...executionResult,
       message: enhancedMessage,
-      actions: [...(executionResult.actions || []), ...suggestions]
+      actions: [...(executionResult.actions || []), ...suggestions],
     }
   }
 
   /**
    * Handle special conversational commands
    */
-  private async handleSpecialCommands(nlCommand: NLCommand, context: ConversationContext): Promise<boolean> {
+  private async handleSpecialCommands(
+    nlCommand: NLCommand,
+    context: ConversationContext
+  ): Promise<boolean> {
     const specialCommands = [
-      'help', 'status', 'pause', 'resume', 'restart', 'quit', 'mode', 'preferences'
+      'help',
+      'status',
+      'pause',
+      'resume',
+      'restart',
+      'quit',
+      'mode',
+      'preferences',
     ]
 
     return specialCommands.includes(nlCommand.intent)
@@ -417,7 +427,10 @@ export class ConversationalExecutionInterface {
   /**
    * Generate response for special commands
    */
-  private generateSpecialCommandResponse(nlCommand: NLCommand, context: ConversationContext): AgentResponse {
+  private generateSpecialCommandResponse(
+    nlCommand: NLCommand,
+    context: ConversationContext
+  ): AgentResponse {
     switch (nlCommand.intent) {
       case 'help':
         return this.generateHelpResponse(context)
@@ -428,8 +441,8 @@ export class ConversationalExecutionInterface {
       default:
         return {
           sessionId: context.sessionId,
-          message: "I understand that command, but let me process it properly for you.",
-          requiresInput: false
+          message: 'I understand that command, but let me process it properly for you.',
+          requiresInput: false,
         }
     }
   }
@@ -438,7 +451,8 @@ export class ConversationalExecutionInterface {
    * Generate help response
    */
   private generateHelpResponse(context: ConversationContext): AgentResponse {
-    const help = `🆘 **Help & Commands**\n\n` +
+    const help =
+      `🆘 **Help & Commands**\n\n` +
       `**Navigation:**\n` +
       `• "next" or "continue" - Move to the next step\n` +
       `• "back" or "previous" - Go back to the previous step\n` +
@@ -467,9 +481,9 @@ export class ConversationalExecutionInterface {
           id: 'continue_workflow',
           label: 'Continue Workflow',
           description: 'Return to workflow execution',
-          type: 'continue'
-        }
-      ]
+          type: 'continue',
+        },
+      ],
     }
   }
 
@@ -494,7 +508,7 @@ export class ConversationalExecutionInterface {
     return {
       sessionId: context.sessionId,
       message: statusMessage,
-      requiresInput: false
+      requiresInput: false,
     }
   }
 
@@ -504,32 +518,39 @@ export class ConversationalExecutionInterface {
   private generatePauseResponse(context: ConversationContext): AgentResponse {
     return {
       sessionId: context.sessionId,
-      message: "⏸️ Workflow paused. Take your time - I'll be here when you're ready to continue. Just say 'resume' when you want to proceed.",
+      message:
+        "⏸️ Workflow paused. Take your time - I'll be here when you're ready to continue. Just say 'resume' when you want to proceed.",
       requiresInput: false,
       actions: [
         {
           id: 'resume',
           label: 'Resume',
           description: 'Continue from where we left off',
-          type: 'continue'
-        }
-      ]
+          type: 'continue',
+        },
+      ],
     }
   }
 
   /**
    * Generate step explanation
    */
-  private async generateStepExplanation(context: ConversationContext, nlCommand: NLCommand): Promise<string | null> {
+  private async generateStepExplanation(
+    context: ConversationContext,
+    nlCommand: NLCommand
+  ): Promise<string | null> {
     // This would integrate with a knowledge base to provide step explanations
     // For now, return a generic explanation
-    return "This step processes your input and moves the workflow forward based on the configured logic."
+    return 'This step processes your input and moves the workflow forward based on the configured logic.'
   }
 
   /**
    * Generate contextual suggestions
    */
-  private async generateSuggestions(context: ConversationContext, result: AgentResponse): Promise<RecommendedAction[]> {
+  private async generateSuggestions(
+    context: ConversationContext,
+    result: AgentResponse
+  ): Promise<RecommendedAction[]> {
     const suggestions: RecommendedAction[] = []
 
     // Add suggestions based on conversation mode
@@ -538,7 +559,7 @@ export class ConversationalExecutionInterface {
         id: 'explain_more',
         label: 'Explain This Step',
         description: 'Get a detailed explanation of what just happened',
-        type: 'continue'
+        type: 'continue',
       })
     }
 
@@ -546,8 +567,8 @@ export class ConversationalExecutionInterface {
       suggestions.push({
         id: 'skip_step',
         label: 'Skip This Step',
-        description: 'Skip this step if it\'s not relevant',
-        type: 'skip'
+        description: "Skip this step if it's not relevant",
+        type: 'skip',
       })
     }
 
@@ -578,7 +599,8 @@ export class ConversationalExecutionInterface {
    * Generate error response
    */
   private generateErrorResponse(context: ConversationContext, error: any): AgentResponse {
-    const errorMessage = `❌ I encountered an issue: ${error instanceof Error ? error.message : 'Unknown error'}\n\n` +
+    const errorMessage =
+      `❌ I encountered an issue: ${error instanceof Error ? error.message : 'Unknown error'}\n\n` +
       `Don't worry! Here are some things you can try:\n` +
       `• Say "retry" to try again\n` +
       `• Say "help" for assistance\n` +
@@ -594,15 +616,15 @@ export class ConversationalExecutionInterface {
           id: 'retry',
           label: 'Retry',
           description: 'Try the last action again',
-          type: 'continue'
+          type: 'continue',
         },
         {
           id: 'help',
           label: 'Get Help',
           description: 'Show help and available commands',
-          type: 'continue'
-        }
-      ]
+          type: 'continue',
+        },
+      ],
     }
   }
 
@@ -614,7 +636,7 @@ export class ConversationalExecutionInterface {
       id: `msg_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       role: 'agent',
       content: message,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     context.history.push(agentMessage)
@@ -632,16 +654,16 @@ export class ConversationalExecutionInterface {
       errorHandling: preferences.errorHandling || 'interactive',
       progressNotifications: preferences.progressNotifications ?? true,
       explanations: preferences.explanations ?? true,
-      suggestions: preferences.suggestions ?? true
+      suggestions: preferences.suggestions ?? true,
     }
   }
 
   private getConversationModeInstructions(mode: ConversationMode): string {
     const instructions = {
-      guided: 'I\'ll guide you step-by-step and ask for confirmation at important points.',
-      freeform: 'Feel free to interact naturally - I\'ll understand what you need.',
-      expert: 'I\'ll keep explanations brief and assume you\'re familiar with the process.',
-      tutorial: 'I\'ll explain everything in detail to help you learn as we go.'
+      guided: "I'll guide you step-by-step and ask for confirmation at important points.",
+      freeform: "Feel free to interact naturally - I'll understand what you need.",
+      expert: "I'll keep explanations brief and assume you're familiar with the process.",
+      tutorial: "I'll explain everything in detail to help you learn as we go.",
     }
 
     return `🎯 **Mode: ${mode}** - ${instructions[mode]}`
@@ -661,7 +683,7 @@ export class ConversationalExecutionInterface {
       description: 'A sample workflow for demonstration',
       version: '1.0',
       nodes: [],
-      edges: []
+      edges: [],
     }
   }
 
@@ -674,8 +696,8 @@ export class ConversationalExecutionInterface {
       conditions: [`User wants to execute ${workflow.name}`],
       states: [
         { id: 'start', type: 'initial', name: 'Start' },
-        { id: 'end', type: 'final', name: 'Complete' }
-      ]
+        { id: 'end', type: 'final', name: 'Complete' },
+      ],
     }
   }
 }
@@ -693,7 +715,7 @@ class NaturalLanguageProcessor {
       intent,
       entities,
       confidence: 0.85,
-      parameters: {}
+      parameters: {},
     }
   }
 
@@ -726,18 +748,18 @@ class ContextualHelpSystem {
         'Tell me about this step',
         'What happens next?',
         'Skip to the end',
-        'Go back to the previous step'
+        'Go back to the previous step',
       ],
       tips: [
         'You can ask questions in natural language',
         'Use "explain" for detailed information',
-        'Say "brief" for shorter responses'
+        'Say "brief" for shorter responses',
       ],
       troubleshooting: [
         'If stuck, try saying "help"',
         'Use "restart" to begin fresh',
-        'Ask specific questions about what\'s confusing'
-      ]
+        "Ask specific questions about what's confusing",
+      ],
     }
   }
 }
@@ -751,7 +773,7 @@ class ResponseGenerator {
       guided: '👉 ',
       freeform: '💬 ',
       expert: '🔧 ',
-      tutorial: '📚 '
+      tutorial: '📚 ',
     }
 
     return personalities[mode] + message

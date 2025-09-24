@@ -8,15 +8,14 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  LearningEvent,
   PersonalizationConfig,
   PersonalizationRule,
-  PersonalizationAction,
   PrivacySettings,
-  LearningEvent,
-  UserBehaviorProfile,
-  ToolRecommendation,
   RecommendationSet,
   SuggestionFeedback,
+  ToolRecommendation,
+  UserBehaviorProfile,
 } from './types'
 
 const logger = createLogger('PersonalizationEngine')
@@ -111,7 +110,7 @@ export class PersonalizationEngine {
     // Apply personalization rules
     let personalizedRecommendations = [...recommendations.recommendations]
 
-    for (const rule of config.customRules.filter(r => r.enabled)) {
+    for (const rule of config.customRules.filter((r) => r.enabled)) {
       personalizedRecommendations = this.applyPersonalizationRule(
         personalizedRecommendations,
         rule,
@@ -161,7 +160,7 @@ export class PersonalizationEngine {
     const model = await this.getLearningModel(userId, workspaceId)
 
     // Apply adaptation rules
-    for (const rule of this.adaptationRules.filter(r => r.enabled)) {
+    for (const rule of this.adaptationRules.filter((r) => r.enabled)) {
       if (rule.condition(event, profile)) {
         rule.adaptation(profile, event)
 
@@ -222,14 +221,15 @@ export class PersonalizationEngine {
 
     let adjustmentFactor = 0
     if (feedback.helpful && feedback.accurate) {
-      adjustmentFactor = 0.1 * feedback.rating / 5 // Positive adjustment
+      adjustmentFactor = (0.1 * feedback.rating) / 5 // Positive adjustment
     } else if (!feedback.helpful || !feedback.accurate) {
-      adjustmentFactor = -0.05 * (5 - feedback.rating) / 5 // Negative adjustment
+      adjustmentFactor = (-0.05 * (5 - feedback.rating)) / 5 // Negative adjustment
     }
 
-    const newPreference = Math.max(0, Math.min(1,
-      currentPreference + adjustmentFactor * config.feedbackSensitivity
-    ))
+    const newPreference = Math.max(
+      0,
+      Math.min(1, currentPreference + adjustmentFactor * config.feedbackSensitivity)
+    )
 
     model.preferences.set(toolId, newPreference)
 
@@ -372,7 +372,7 @@ export class PersonalizationEngine {
     model: LearningModel,
     config: PersonalizationConfig
   ): ToolRecommendation[] {
-    return recommendations.map(rec => {
+    return recommendations.map((rec) => {
       const preference = model.preferences.get(rec.toolId) || 0.5
       const learningAdjustment = (preference - 0.5) * config.adaptationRate
 
@@ -390,7 +390,7 @@ export class PersonalizationEngine {
   ): ToolRecommendation[] {
     if (!privacy.collectDetailedAnalytics) {
       // Remove detailed reasoning if privacy mode is strict
-      return recommendations.map(rec => ({
+      return recommendations.map((rec) => ({
         ...rec,
         reasons: rec.reasons.slice(0, 2), // Keep only top 2 reasons
       }))
@@ -405,7 +405,7 @@ export class PersonalizationEngine {
     config: PersonalizationConfig
   ): Promise<void> {
     const patternKey = `${event.eventType}_${event.toolId || 'general'}`
-    let pattern = model.patterns.get(patternKey) || { frequency: 0, lastSeen: null }
+    const pattern = model.patterns.get(patternKey) || { frequency: 0, lastSeen: null }
 
     pattern.frequency += 1
     pattern.lastSeen = event.timestamp
@@ -436,7 +436,7 @@ export class PersonalizationEngine {
     const hour = new Date().getHours()
     const timePattern = `feedback_time_${hour}`
 
-    let pattern = model.patterns.get(timePattern) || { tools: new Set(), ratings: [] }
+    const pattern = model.patterns.get(timePattern) || { tools: new Set(), ratings: [] }
     pattern.tools = new Set([...Array.from(pattern.tools), toolId])
     pattern.ratings.push(feedback.rating)
 
@@ -470,12 +470,14 @@ export class PersonalizationEngine {
 
     // Recommend training for tools with consistent errors
     const problemTools = Object.values(profile.successRates)
-      .filter(sr => sr.rate < 0.6 && sr.attempts > 3)
+      .filter((sr) => sr.rate < 0.6 && sr.attempts > 3)
       .sort((a, b) => a.rate - b.rate)
       .slice(0, 3)
 
     for (const tool of problemTools) {
-      training.push(`Advanced training for ${tool.toolId} (${Math.round(tool.rate * 100)}% success rate)`)
+      training.push(
+        `Advanced training for ${tool.toolId} (${Math.round(tool.rate * 100)}% success rate)`
+      )
     }
 
     // Recommend exploration of underutilized tools
@@ -490,7 +492,10 @@ export class PersonalizationEngine {
     return training
   }
 
-  private assessToolMastery(profile: UserBehaviorProfile, model: LearningModel): Array<{ toolId: string; level: string }> {
+  private assessToolMastery(
+    profile: UserBehaviorProfile,
+    model: LearningModel
+  ): Array<{ toolId: string; level: string }> {
     const mastery: Array<{ toolId: string; level: string }> = []
 
     for (const [toolId, familiarity] of Object.entries(profile.toolFamiliarity)) {
@@ -570,7 +575,7 @@ export class PersonalizationEngine {
     const boost = rule.parameters.boost || 0.2
     const targetTool = rule.parameters.toolId
 
-    return recommendations.map(rec => {
+    return recommendations.map((rec) => {
       if (!targetTool || rec.toolId === targetTool) {
         return { ...rec, score: Math.min(1, rec.score + boost) }
       }
@@ -586,13 +591,13 @@ export class PersonalizationEngine {
     const targetTool = rule.parameters.toolId
 
     return recommendations
-      .map(rec => {
+      .map((rec) => {
         if (!targetTool || rec.toolId === targetTool) {
           return { ...rec, score: Math.max(0, rec.score - suppress) }
         }
         return rec
       })
-      .filter(rec => rec.score > 0.1) // Remove heavily suppressed recommendations
+      .filter((rec) => rec.score > 0.1) // Remove heavily suppressed recommendations
   }
 
   private reorderRecommendations(
@@ -623,8 +628,8 @@ export class PersonalizationEngine {
     // Custom logic based on rule parameters and user profile
     const customizations = rule.parameters.customizations || {}
 
-    return recommendations.map(rec => {
-      let customizedRec = { ...rec }
+    return recommendations.map((rec) => {
+      const customizedRec = { ...rec }
 
       // Apply custom scoring adjustments
       if (customizations.categoryBoosts) {
@@ -679,12 +684,13 @@ export class PersonalizationEngine {
       },
       {
         id: 'help_request_adaptation',
-        condition: (event, profile) =>
-          event.eventType === 'help_requested',
+        condition: (event, profile) => event.eventType === 'help_requested',
         adaptation: (profile, event) => {
           // Adjust complexity tolerance based on help-seeking behavior
-          if (profile.preferences.toolComplexityTolerance === 'advanced' &&
-              profile.collaborationStyle.askForHelp === 'often') {
+          if (
+            profile.preferences.toolComplexityTolerance === 'advanced' &&
+            profile.collaborationStyle.askForHelp === 'often'
+          ) {
             profile.preferences.toolComplexityTolerance = 'intermediate'
           }
         },
@@ -699,7 +705,10 @@ export class PersonalizationEngine {
   /**
    * Get personalization insights for a user
    */
-  async getPersonalizationInsights(userId: string, workspaceId: string): Promise<{
+  async getPersonalizationInsights(
+    userId: string,
+    workspaceId: string
+  ): Promise<{
     adaptationLevel: number
     recentAdaptations: AdaptationEvent[]
     preferenceStrength: number
@@ -713,13 +722,14 @@ export class PersonalizationEngine {
 
     // Calculate preference strength (how different from neutral)
     const preferences = Array.from(model.preferences.values())
-    const preferenceStrength = preferences.length > 0
-      ? preferences.reduce((sum, pref) => sum + Math.abs(pref - 0.5), 0) / preferences.length
-      : 0
+    const preferenceStrength =
+      preferences.length > 0
+        ? preferences.reduce((sum, pref) => sum + Math.abs(pref - 0.5), 0) / preferences.length
+        : 0
 
     // Calculate learning velocity (recent adaptation frequency)
     const recentEvents = model.adaptationHistory.filter(
-      event => Date.now() - event.timestamp.getTime() < 7 * 24 * 60 * 60 * 1000 // Last 7 days
+      (event) => Date.now() - event.timestamp.getTime() < 7 * 24 * 60 * 60 * 1000 // Last 7 days
     )
     const learningVelocity = recentEvents.length / 7 // Events per day
 
@@ -731,7 +741,9 @@ export class PersonalizationEngine {
       recommendations: [
         preferenceStrength < 0.2 ? 'Try providing more feedback to improve recommendations' : '',
         learningVelocity < 0.5 ? 'Explore new tools to accelerate your learning' : '',
-        config.explorationRate < 0.1 ? 'Consider increasing exploration to discover new capabilities' : '',
+        config.explorationRate < 0.1
+          ? 'Consider increasing exploration to discover new capabilities'
+          : '',
       ].filter(Boolean),
     }
   }

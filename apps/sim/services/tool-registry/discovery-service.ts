@@ -5,27 +5,20 @@
  * recommendations, and similarity matching.
  */
 
-import { eq, and, or, desc, asc, ilike, inArray, sql, count, exists } from 'drizzle-orm'
-import { db } from '@/packages/db'
-import {
-  toolRegistry,
-  toolCategories,
-  toolConfigurations,
-  toolUsageAnalytics,
-  toolRecommendations,
-} from '@/packages/db/schema'
+import { and, asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
-
+import { db } from '@/packages/db'
+import { toolCategories, toolRegistry } from '@/packages/db/schema'
+import { ToolAnalyticsService } from './analytics-service'
 import type {
-  IToolDiscoveryService,
-  ToolSearchQuery,
-  ToolSearchResult,
-  ToolSearchFacets,
   EnrichedTool,
+  IToolDiscoveryService,
   RecommendationContext,
   ToolAnalytics,
+  ToolSearchFacets,
+  ToolSearchQuery,
+  ToolSearchResult,
 } from './types'
-import { ToolAnalyticsService } from './analytics-service'
 
 const logger = createLogger('ToolDiscoveryService')
 
@@ -63,9 +56,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
       const sortedQuery = this.applySorting(searchQuery, query.sortBy, query.sortOrder)
 
       // Apply pagination
-      const paginatedQuery = sortedQuery
-        .limit(query.limit || 50)
-        .offset(query.offset || 0)
+      const paginatedQuery = sortedQuery.limit(query.limit || 50).offset(query.offset || 0)
 
       // Execute main search
       const results = await paginatedQuery
@@ -76,9 +67,8 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         .from(toolRegistry)
         .leftJoin(toolCategories, eq(toolRegistry.categoryId, toolCategories.id))
 
-      const totalWithConditions = conditions.length > 0
-        ? totalQuery.where(and(...conditions))
-        : totalQuery
+      const totalWithConditions =
+        conditions.length > 0 ? totalQuery.where(and(...conditions)) : totalQuery
 
       const [{ count: total }] = await totalWithConditions
 
@@ -94,7 +84,9 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
       const facets = await this.generateSearchFacets(query)
 
       // Generate search suggestions if query has text
-      const suggestions = query.query ? await this.generateSearchSuggestions(query.query) : undefined
+      const suggestions = query.query
+        ? await this.generateSearchSuggestions(query.query)
+        : undefined
 
       return {
         tools: enrichedTools,
@@ -115,11 +107,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     logger.debug('Finding similar tools', { toolId, limit })
 
     try {
-      const tool = await db
-        .select()
-        .from(toolRegistry)
-        .where(eq(toolRegistry.id, toolId))
-        .limit(1)
+      const tool = await db.select().from(toolRegistry).where(eq(toolRegistry.id, toolId)).limit(1)
 
       if (tool.length === 0) {
         throw new Error(`Tool not found: ${toolId}`)
@@ -145,9 +133,9 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
               // Same category
               eq(toolRegistry.categoryId, targetTool.categoryId),
               // Similar tags (using JSON operators)
-              sql`${toolRegistry.tags}::jsonb ?| array[${targetTags.map(t => `'${t}'`).join(',')}]`,
+              sql`${toolRegistry.tags}::jsonb ?| array[${targetTags.map((t) => `'${t}'`).join(',')}]`,
               // Similar keywords
-              sql`${toolRegistry.keywords}::jsonb ?| array[${targetKeywords.map(k => `'${k}'`).join(',')}]`,
+              sql`${toolRegistry.keywords}::jsonb ?| array[${targetKeywords.map((k) => `'${k}'`).join(',')}]`,
               // Same type
               eq(toolRegistry.toolType, targetTool.toolType)
             )
@@ -185,12 +173,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         })
         .from(toolRegistry)
         .leftJoin(toolCategories, eq(toolRegistry.categoryId, toolCategories.id))
-        .where(
-          and(
-            eq(toolRegistry.status, 'active'),
-            eq(toolRegistry.isPublic, true)
-          )
-        )
+        .where(and(eq(toolRegistry.status, 'active'), eq(toolRegistry.isPublic, true)))
 
       // If workspace-specific, consider workspace usage patterns
       if (workspaceId) {
@@ -245,7 +228,9 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         }
 
         if (dismissed.length > 0) {
-          conditions.push(sql`${toolRegistry.id} NOT IN (${dismissed.map(id => `'${id}'`).join(',')})`)
+          conditions.push(
+            sql`${toolRegistry.id} NOT IN (${dismissed.map((id) => `'${id}'`).join(',')})`
+          )
         }
       }
 
@@ -257,12 +242,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         })
         .from(toolRegistry)
         .leftJoin(toolCategories, eq(toolRegistry.categoryId, toolCategories.id))
-        .where(
-          and(
-            eq(toolRegistry.status, 'active'),
-            ...conditions
-          )
-        )
+        .where(and(eq(toolRegistry.status, 'active'), ...conditions))
 
       // Apply contextual sorting
       if (context.recentTools && context.recentTools.length > 0) {
@@ -295,7 +275,9 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
       )
 
       // Sort by recommendation score
-      return enrichedTools.sort((a, b) => (b.recommendation?.score || 0) - (a.recommendation?.score || 0))
+      return enrichedTools.sort(
+        (a, b) => (b.recommendation?.score || 0) - (a.recommendation?.score || 0)
+      )
     } catch (error) {
       logger.error('Failed to get recommended tools', { context, error })
       throw error
@@ -316,12 +298,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         })
         .from(toolRegistry)
         .leftJoin(toolCategories, eq(toolRegistry.categoryId, toolCategories.id))
-        .where(
-          and(
-            eq(toolRegistry.categoryId, categoryId),
-            eq(toolRegistry.status, 'active')
-          )
-        )
+        .where(and(eq(toolRegistry.categoryId, categoryId), eq(toolRegistry.status, 'active')))
         .orderBy(desc(toolRegistry.usageCount), asc(toolRegistry.displayName))
 
       // Enrich and return
@@ -356,7 +333,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         .where(
           and(
             eq(toolRegistry.status, 'active'),
-            sql`${toolRegistry.tags}::jsonb ?| array[${tags.map(tag => `'${tag}'`).join(',')}]`
+            sql`${toolRegistry.tags}::jsonb ?| array[${tags.map((tag) => `'${tag}'`).join(',')}]`
           )
         )
         .orderBy(desc(toolRegistry.usageCount))
@@ -392,8 +369,8 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
           ilike(toolRegistry.displayName, `%${query.query}%`),
           ilike(toolRegistry.description, `%${query.query}%`),
           ilike(toolRegistry.naturalLanguageDescription, `%${query.query}%`),
-          sql`${toolRegistry.tags}::text ILIKE ${'%' + query.query + '%'}`,
-          sql`${toolRegistry.keywords}::text ILIKE ${'%' + query.query + '%'}`
+          sql`${toolRegistry.tags}::text ILIKE ${`%${query.query}%`}`,
+          sql`${toolRegistry.keywords}::text ILIKE ${`%${query.query}%`}`
         )
       )
     }
@@ -424,7 +401,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     // Filter by tags
     if (query.tags && query.tags.length > 0) {
       conditions.push(
-        sql`${toolRegistry.tags}::jsonb ?| array[${query.tags.map(tag => `'${tag}'`).join(',')}]`
+        sql`${toolRegistry.tags}::jsonb ?| array[${query.tags.map((tag) => `'${tag}'`).join(',')}]`
       )
     }
 
@@ -456,7 +433,6 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
         return query.orderBy(orderFunc(toolRegistry.successRate))
       case 'recent':
         return query.orderBy(orderFunc(toolRegistry.lastUsed))
-      case 'relevance':
       default:
         // Default relevance sorting: usage count + success rate
         return query.orderBy(desc(toolRegistry.usageCount), desc(toolRegistry.successRate))
@@ -507,9 +483,9 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     const tags: Array<{ tag: string; count: number }> = []
 
     return {
-      categories: categories.map(c => ({ id: c.id, name: c.name, count: Number(c.count) })),
-      types: types.map(t => ({ type: t.type, count: Number(t.count) })),
-      scopes: scopes.map(s => ({ scope: s.scope, count: Number(s.count) })),
+      categories: categories.map((c) => ({ id: c.id, name: c.name, count: Number(c.count) })),
+      types: types.map((t) => ({ type: t.type, count: Number(t.count) })),
+      scopes: scopes.map((s) => ({ scope: s.scope, count: Number(s.count) })),
       tags,
     }
   }
@@ -526,15 +502,10 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
     const similarTools = await db
       .select({ name: toolRegistry.displayName })
       .from(toolRegistry)
-      .where(
-        and(
-          eq(toolRegistry.status, 'active'),
-          ilike(toolRegistry.displayName, `%${query}%`)
-        )
-      )
+      .where(and(eq(toolRegistry.status, 'active'), ilike(toolRegistry.displayName, `%${query}%`)))
       .limit(5)
 
-    suggestions.push(...similarTools.map(t => t.name))
+    suggestions.push(...similarTools.map((t) => t.name))
 
     // Get related categories
     const relatedCategories = await db
@@ -543,7 +514,7 @@ export class ToolDiscoveryService implements IToolDiscoveryService {
       .where(ilike(toolCategories.name, `%${query}%`))
       .limit(3)
 
-    suggestions.push(...relatedCategories.map(c => c.name))
+    suggestions.push(...relatedCategories.map((c) => c.name))
 
     return suggestions.slice(0, 8) // Limit total suggestions
   }

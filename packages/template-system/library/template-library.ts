@@ -8,15 +8,12 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
-import {
-  WorkflowTemplate,
-  TemplateParameter,
+import type {
+  TemplateAnalytics,
   TemplateSearchFilters,
   TemplateSearchResult,
-  TemplateAnalytics,
-  TemplateMixin,
+  WorkflowTemplate,
 } from '../types/template-types'
-import { JourneyGenerationRequest } from '../types/journey-types'
 
 export class TemplateLibrary {
   private readonly builtInTemplates = new Map<string, WorkflowTemplate>()
@@ -54,7 +51,10 @@ export class TemplateLibrary {
     const suggestions = await this.generateSearchSuggestions(filters, allTemplates)
 
     // Get related templates
-    const relatedTemplates = await this.getRelatedTemplates(filteredTemplates.slice(0, 5), workspaceId)
+    const relatedTemplates = await this.getRelatedTemplates(
+      filteredTemplates.slice(0, 5),
+      workspaceId
+    )
 
     return {
       templates: filteredTemplates,
@@ -232,7 +232,7 @@ export class TemplateLibrary {
     }
 
     // Check permissions (in a real implementation)
-    if (template.createdBy !== userId && !await this.hasDeletePermission(userId, workspaceId)) {
+    if (template.createdBy !== userId && !(await this.hasDeletePermission(userId, workspaceId))) {
       throw new Error('Insufficient permissions to delete template')
     }
 
@@ -278,7 +278,7 @@ export class TemplateLibrary {
   async findSimilarTemplates(
     templateId: string,
     workspaceId: string,
-    limit: number = 10
+    limit = 10
   ): Promise<WorkflowTemplate[]> {
     const sourceTemplate = await this.getTemplate(templateId, workspaceId)
     if (!sourceTemplate) {
@@ -293,7 +293,10 @@ export class TemplateLibrary {
   // Private Helper Methods
   // ============================================================================
 
-  private async getAllTemplates(workspaceId: string, includePublic: boolean = true): Promise<WorkflowTemplate[]> {
+  private async getAllTemplates(
+    workspaceId: string,
+    includePublic = true
+  ): Promise<WorkflowTemplate[]> {
     const templates: WorkflowTemplate[] = []
 
     // Add built-in templates
@@ -308,69 +311,71 @@ export class TemplateLibrary {
     return templates
   }
 
-  private applyFilters(templates: WorkflowTemplate[], filters: TemplateSearchFilters): WorkflowTemplate[] {
+  private applyFilters(
+    templates: WorkflowTemplate[],
+    filters: TemplateSearchFilters
+  ): WorkflowTemplate[] {
     let filtered = templates
 
     if (filters.category) {
-      filtered = filtered.filter(t => t.category === filters.category)
+      filtered = filtered.filter((t) => t.category === filters.category)
     }
 
     if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(t =>
-        filters.tags!.some(tag => t.tags.includes(tag))
-      )
+      filtered = filtered.filter((t) => filters.tags!.some((tag) => t.tags.includes(tag)))
     }
 
     if (filters.difficulty) {
-      filtered = filtered.filter(t => t.difficulty === filters.difficulty)
+      filtered = filtered.filter((t) => t.difficulty === filters.difficulty)
     }
 
     if (filters.author) {
-      filtered = filtered.filter(t =>
+      filtered = filtered.filter((t) =>
         t.author.toLowerCase().includes(filters.author!.toLowerCase())
       )
     }
 
     if (filters.rating) {
-      filtered = filtered.filter(t => (t.averageRating || 0) >= filters.rating!)
+      filtered = filtered.filter((t) => (t.averageRating || 0) >= filters.rating!)
     }
 
     if (filters.usageCount) {
       const { min, max } = filters.usageCount
-      filtered = filtered.filter(t => {
+      filtered = filtered.filter((t) => {
         const usage = t.usageCount
         return (!min || usage >= min) && (!max || usage <= max)
       })
     }
 
     if (filters.isPublic !== undefined) {
-      filtered = filtered.filter(t => t.isPublic === filters.isPublic)
+      filtered = filtered.filter((t) => t.isPublic === filters.isPublic)
     }
 
     if (filters.isVerified !== undefined) {
-      filtered = filtered.filter(t => t.isVerified === filters.isVerified)
+      filtered = filtered.filter((t) => t.isVerified === filters.isVerified)
     }
 
     if (filters.hasParameters !== undefined) {
-      filtered = filtered.filter(t =>
+      filtered = filtered.filter((t) =>
         filters.hasParameters ? t.parameters.length > 0 : t.parameters.length === 0
       )
     }
 
     if (filters.createdAfter) {
-      filtered = filtered.filter(t => t.createdAt >= filters.createdAfter!)
+      filtered = filtered.filter((t) => t.createdAt >= filters.createdAfter!)
     }
 
     if (filters.createdBefore) {
-      filtered = filtered.filter(t => t.createdAt <= filters.createdBefore!)
+      filtered = filtered.filter((t) => t.createdAt <= filters.createdBefore!)
     }
 
     if (filters.query) {
       const query = filters.query.toLowerCase()
-      filtered = filtered.filter(t =>
-        t.name.toLowerCase().includes(query) ||
-        (t.description && t.description.toLowerCase().includes(query)) ||
-        t.tags.some(tag => tag.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query) ||
+          t.description?.toLowerCase().includes(query) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(query))
       )
     }
 
@@ -420,10 +425,16 @@ export class TemplateLibrary {
     }
 
     return {
-      categories: Array.from(categories.entries()).map(([category, count]) => ({ category, count })),
+      categories: Array.from(categories.entries()).map(([category, count]) => ({
+        category,
+        count,
+      })),
       tags: Array.from(tags.entries()).map(([tag, count]) => ({ tag, count })),
       authors: Array.from(authors.entries()).map(([author, count]) => ({ author, count })),
-      difficulties: Array.from(difficulties.entries()).map(([difficulty, count]) => ({ difficulty, count })),
+      difficulties: Array.from(difficulties.entries()).map(([difficulty, count]) => ({
+        difficulty,
+        count,
+      })),
     }
   }
 
@@ -434,7 +445,7 @@ export class TemplateLibrary {
     const suggestions: string[] = []
 
     // Add popular categories
-    const categories = new Set(templates.map(t => t.category))
+    const categories = new Set(templates.map((t) => t.category))
     suggestions.push(...Array.from(categories).slice(0, 3))
 
     // Add popular tags
@@ -463,14 +474,14 @@ export class TemplateLibrary {
     const allTemplates = await this.getAllTemplates(workspaceId, true)
 
     for (const template of templates) {
-      const related = allTemplates.filter(t => {
+      const related = allTemplates.filter((t) => {
         if (t.id === template.id) return false
 
         // Same category
         if (t.category === template.category) return true
 
         // Shared tags
-        if (template.tags.some(tag => t.tags.includes(tag))) return true
+        if (template.tags.some((tag) => t.tags.includes(tag))) return true
 
         return false
       })
@@ -503,7 +514,7 @@ export class TemplateLibrary {
       if (!param.name || param.name.trim().length === 0) {
         errors.push({
           code: 'INVALID_PARAMETER_NAME',
-          message: `Parameter name is required for parameter ${param.id}`
+          message: `Parameter name is required for parameter ${param.id}`,
         })
       }
     }
@@ -515,7 +526,10 @@ export class TemplateLibrary {
   // Database Methods (Stubs)
   // ============================================================================
 
-  private async loadTemplateFromDatabase(templateId: string, workspaceId: string): Promise<WorkflowTemplate | null> {
+  private async loadTemplateFromDatabase(
+    templateId: string,
+    workspaceId: string
+  ): Promise<WorkflowTemplate | null> {
     // Implementation would load from database
     return null
   }
@@ -566,7 +580,8 @@ export class TemplateLibrary {
       id: 'customer-onboarding',
       workspaceId: 'public',
       name: 'Customer Onboarding',
-      description: 'A comprehensive customer onboarding flow that guides new users through setup and initial configuration',
+      description:
+        'A comprehensive customer onboarding flow that guides new users through setup and initial configuration',
       workflowId: 'workflow-customer-onboarding',
       version: '1.0.0',
       parameters: [
@@ -574,7 +589,7 @@ export class TemplateLibrary {
           id: 'customer-name',
           name: 'customerName',
           type: 'string',
-          description: 'Customer\'s name for personalization',
+          description: "Customer's name for personalization",
           required: true,
           validation: {
             minLength: 2,
@@ -587,7 +602,7 @@ export class TemplateLibrary {
           id: 'company-size',
           name: 'companySize',
           type: 'enum',
-          description: 'Size of the customer\'s company',
+          description: "Size of the customer's company",
           required: true,
           validation: {
             options: [
@@ -645,17 +660,17 @@ export class TemplateLibrary {
       isVerified: true,
       isDeprecated: false,
       localizations: {
-        'en': {
+        en: {
           locale: 'en',
           name: 'Customer Onboarding',
           description: 'A comprehensive customer onboarding flow',
           parameterLabels: {
-            'customerName': 'Customer Name',
-            'companySize': 'Company Size',
+            customerName: 'Customer Name',
+            companySize: 'Company Size',
           },
           parameterDescriptions: {
-            'customerName': 'Enter the customer\'s full name',
-            'companySize': 'Select the size of the customer\'s company',
+            customerName: "Enter the customer's full name",
+            companySize: "Select the size of the customer's company",
           },
           blockLabels: {},
           validationMessages: {},
@@ -1045,14 +1060,14 @@ class TemplatePatternMatcher {
   ): WorkflowTemplate[] {
     // Simple similarity matching based on tags and category
     return templates
-      .filter(t => t.id !== sourceTemplate.id)
-      .map(t => ({
+      .filter((t) => t.id !== sourceTemplate.id)
+      .map((t) => ({
         template: t,
         score: this.calculateSimilarity(sourceTemplate, t),
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
-      .map(item => item.template)
+      .map((item) => item.template)
   }
 
   private calculateSimilarity(template1: WorkflowTemplate, template2: WorkflowTemplate): number {
@@ -1064,7 +1079,7 @@ class TemplatePatternMatcher {
     }
 
     // Tag matches
-    const commonTags = template1.tags.filter(tag => template2.tags.includes(tag))
+    const commonTags = template1.tags.filter((tag) => template2.tags.includes(tag))
     score += commonTags.length * 5
 
     // Difficulty match
@@ -1077,7 +1092,10 @@ class TemplatePatternMatcher {
 }
 
 class TemplateValidationError extends Error {
-  constructor(message: string, public readonly errors: any[]) {
+  constructor(
+    message: string,
+    public readonly errors: any[]
+  ) {
     super(message)
     this.name = 'TemplateValidationError'
   }

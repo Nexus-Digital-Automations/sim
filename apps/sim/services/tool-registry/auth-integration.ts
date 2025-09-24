@@ -5,24 +5,18 @@
  * to provide secure, multi-tenant tool access and configuration.
  */
 
-import { eq, and, inArray } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { auth } from '@/lib/auth'
+import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/packages/db'
 import {
+  permissions,
+  toolConfigurations,
+  toolRegistry,
   user,
   workspace,
-  permissions,
-  toolRegistry,
-  toolConfigurations,
 } from '@/packages/db/schema'
-import { createLogger } from '@/lib/logs/console/logger'
-import { auth } from '@/lib/auth'
-
-import type {
-  ToolDefinition,
-  EnrichedTool,
-  ToolConfiguration,
-  ToolSearchQuery,
-} from './types'
+import type { EnrichedTool, ToolSearchQuery } from './types'
 
 const logger = createLogger('ToolRegistryAuth')
 
@@ -71,7 +65,11 @@ export class ToolRegistryAuthService {
 
       // Check workspace permissions if workspace-scoped
       if (workspaceId && tool.scope === 'workspace') {
-        const hasWorkspaceAccess = await this.hasWorkspaceAccess(userId, workspaceId, requiredPermission)
+        const hasWorkspaceAccess = await this.hasWorkspaceAccess(
+          userId,
+          workspaceId,
+          requiredPermission
+        )
         if (!hasWorkspaceAccess) {
           return false
         }
@@ -126,11 +124,7 @@ export class ToolRegistryAuthService {
   /**
    * Apply authentication-based filters to a tool search query
    */
-  applyAuthFilters(
-    query: ToolSearchQuery,
-    userId: string,
-    workspaceId?: string
-  ): ToolSearchQuery {
+  applyAuthFilters(query: ToolSearchQuery, userId: string, workspaceId?: string): ToolSearchQuery {
     // If user is not authenticated, only show public tools that don't require auth
     const authFilters: Partial<ToolSearchQuery> = {
       ...query,
@@ -152,12 +146,14 @@ export class ToolRegistryAuthService {
   /**
    * Get user's accessible workspaces
    */
-  async getUserWorkspaces(userId: string): Promise<Array<{
-    id: string
-    name: string
-    role: string
-    permissions: string[]
-  }>> {
+  async getUserWorkspaces(userId: string): Promise<
+    Array<{
+      id: string
+      name: string
+      role: string
+      permissions: string[]
+    }>
+  > {
     try {
       const workspaces = await db
         .select({
@@ -166,18 +162,24 @@ export class ToolRegistryAuthService {
           permission: permissions.permissionType,
         })
         .from(workspace)
-        .innerJoin(permissions, and(
-          eq(permissions.entityId, workspace.id),
-          eq(permissions.entityType, 'workspace'),
-          eq(permissions.userId, userId)
-        ))
+        .innerJoin(
+          permissions,
+          and(
+            eq(permissions.entityId, workspace.id),
+            eq(permissions.entityType, 'workspace'),
+            eq(permissions.userId, userId)
+          )
+        )
 
       // Group permissions by workspace
-      const workspaceMap = new Map<string, {
-        id: string
-        name: string
-        permissions: string[]
-      }>()
+      const workspaceMap = new Map<
+        string,
+        {
+          id: string
+          name: string
+          permissions: string[]
+        }
+      >()
 
       for (const ws of workspaces) {
         if (!workspaceMap.has(ws.id)) {
@@ -191,7 +193,7 @@ export class ToolRegistryAuthService {
       }
 
       // Convert to result format
-      return Array.from(workspaceMap.values()).map(ws => ({
+      return Array.from(workspaceMap.values()).map((ws) => ({
         ...ws,
         role: this.determineRole(ws.permissions),
       }))
@@ -226,7 +228,12 @@ export class ToolRegistryAuthService {
 
       return true
     } catch (error) {
-      logger.error('Failed to check configuration creation access', { userId, toolId, workspaceId, error })
+      logger.error('Failed to check configuration creation access', {
+        userId,
+        toolId,
+        workspaceId,
+        error,
+      })
       return false
     }
   }
@@ -234,10 +241,7 @@ export class ToolRegistryAuthService {
   /**
    * Check if user can modify a tool configuration
    */
-  async canModifyConfiguration(
-    userId: string,
-    configurationId: string
-  ): Promise<boolean> {
+  async canModifyConfiguration(userId: string, configurationId: string): Promise<boolean> {
     try {
       // Get configuration details
       const [config] = await db
@@ -270,7 +274,11 @@ export class ToolRegistryAuthService {
 
       return false
     } catch (error) {
-      logger.error('Failed to check configuration modification access', { userId, configurationId, error })
+      logger.error('Failed to check configuration modification access', {
+        userId,
+        configurationId,
+        error,
+      })
       return false
     }
   }
@@ -303,7 +311,7 @@ export class ToolRegistryAuthService {
 
       // Get user workspaces
       const workspaces = await this.getUserWorkspaces(userId)
-      const workspaceIds = workspaces.map(ws => ws.id)
+      const workspaceIds = workspaces.map((ws) => ws.id)
 
       // Get user permissions (simplified)
       const userPermissions = await db
@@ -311,7 +319,7 @@ export class ToolRegistryAuthService {
         .from(permissions)
         .where(eq(permissions.userId, userId))
 
-      const allPermissions = userPermissions.map(p => p.permission)
+      const allPermissions = userPermissions.map((p) => p.permission)
 
       return {
         id: userData.id,
@@ -409,11 +417,13 @@ export class ToolRegistryAuthService {
       const [permission] = await db
         .select({ permissionType: permissions.permissionType })
         .from(permissions)
-        .where(and(
-          eq(permissions.userId, userId),
-          eq(permissions.entityType, 'workspace'),
-          eq(permissions.entityId, workspaceId)
-        ))
+        .where(
+          and(
+            eq(permissions.userId, userId),
+            eq(permissions.entityType, 'workspace'),
+            eq(permissions.entityId, workspaceId)
+          )
+        )
         .limit(1)
 
       if (!permission) {
@@ -442,9 +452,7 @@ export class ToolRegistryAuthService {
         return true
       }
 
-      const conditions = [
-        eq(permissions.userId, userId),
-      ]
+      const conditions = [eq(permissions.userId, userId)]
 
       if (workspaceId) {
         conditions.push(
@@ -458,10 +466,10 @@ export class ToolRegistryAuthService {
         .from(permissions)
         .where(and(...conditions))
 
-      const userPermissions = userPerms.map(p => p.permissionType)
+      const userPermissions = userPerms.map((p) => p.permissionType)
 
       // Check if user has any of the required permissions
-      return requiredPermissions.some(req => userPermissions.includes(req))
+      return requiredPermissions.some((req) => userPermissions.includes(req))
     } catch (error) {
       logger.error('Failed to check required permissions', { userId, requiredPermissions, error })
       return false
@@ -471,14 +479,11 @@ export class ToolRegistryAuthService {
   /**
    * Check permission level hierarchy
    */
-  private hasPermissionLevel(
-    userPermission: string,
-    requiredPermission: string
-  ): boolean {
+  private hasPermissionLevel(userPermission: string, requiredPermission: string): boolean {
     const hierarchy = {
-      'read': 1,
-      'write': 2,
-      'admin': 3,
+      read: 1,
+      write: 2,
+      admin: 3,
     }
 
     const userLevel = hierarchy[userPermission as keyof typeof hierarchy] || 0

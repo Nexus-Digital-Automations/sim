@@ -19,10 +19,7 @@ export const uuidSchema = z.string().uuid('Invalid UUID format')
 /**
  * Common timestamp schema
  */
-export const timestampSchema = z.union([
-  z.string().datetime('Invalid datetime format'),
-  z.date(),
-])
+export const timestampSchema = z.union([z.string().datetime('Invalid datetime format'), z.date()])
 
 /**
  * JSON object schema
@@ -55,17 +52,20 @@ export const sessionStatusSchema = z.enum(['active', 'completed', 'abandoned'], 
   errorMap: () => ({ message: 'Session status must be active, completed, or abandoned' }),
 })
 
-export const eventTypeSchema = z.enum([
-  'customer_message',
-  'agent_message',
-  'tool_call',
-  'tool_result',
-  'status_update',
-  'journey_transition',
-  'variable_update'
-], {
-  errorMap: () => ({ message: 'Invalid event type' }),
-})
+export const eventTypeSchema = z.enum(
+  [
+    'customer_message',
+    'agent_message',
+    'tool_call',
+    'tool_result',
+    'status_update',
+    'journey_transition',
+    'variable_update',
+  ],
+  {
+    errorMap: () => ({ message: 'Invalid event type' }),
+  }
+)
 
 export const journeyStateTypeSchema = z.enum(['chat', 'tool', 'decision', 'final'], {
   errorMap: () => ({ message: 'Journey state type must be chat, tool, decision, or final' }),
@@ -95,21 +95,48 @@ export const createAgentSchema = z.object({
   // AI Model configuration
   modelProvider: z.string().min(1, 'Model provider is required').default('openai'),
   modelName: z.string().min(1, 'Model name is required').default('gpt-4'),
-  temperature: z.number().int().min(0).max(100, 'Temperature must be between 0 and 100').default(70),
-  maxTokens: z.number().int().min(1).max(100000, 'Max tokens must be between 1 and 100,000').default(2000),
+  temperature: z
+    .number()
+    .int()
+    .min(0)
+    .max(100, 'Temperature must be between 0 and 100')
+    .default(70),
+  maxTokens: z
+    .number()
+    .int()
+    .min(1)
+    .max(100000, 'Max tokens must be between 1 and 100,000')
+    .default(2000),
 
   // Advanced configuration
-  responseTimeoutMs: z.number().int().min(1000).max(300000, 'Response timeout must be between 1-300 seconds').default(30000),
-  maxContextLength: z.number().int().min(100).max(200000, 'Max context length must be between 100-200,000').default(8000),
+  responseTimeoutMs: z
+    .number()
+    .int()
+    .min(1000)
+    .max(300000, 'Response timeout must be between 1-300 seconds')
+    .default(30000),
+  maxContextLength: z
+    .number()
+    .int()
+    .min(100)
+    .max(200000, 'Max context length must be between 100-200,000')
+    .default(8000),
   systemInstructions: z.string().max(5000, 'System instructions are too long').optional(),
 
   // Behavior controls
   allowInterruption: z.boolean().default(true),
   allowProactiveMessages: z.boolean().default(false),
-  conversationStyle: z.enum(['casual', 'professional', 'technical', 'friendly']).default('professional'),
+  conversationStyle: z
+    .enum(['casual', 'professional', 'technical', 'friendly'])
+    .default('professional'),
 
   // Privacy and security
-  dataRetentionDays: z.number().int().min(1).max(365, 'Data retention must be between 1-365 days').default(30),
+  dataRetentionDays: z
+    .number()
+    .int()
+    .min(1)
+    .max(365, 'Data retention must be between 1-365 days')
+    .default(30),
   allowDataExport: z.boolean().default(true),
   piiHandlingMode: z.enum(['strict', 'standard', 'relaxed']).default('standard'),
 
@@ -164,7 +191,10 @@ export const createSessionSchema = z.object({
   userAgent: z.string().max(500, 'User agent is too long').optional(),
   ipAddress: z.string().ip().optional(),
   referrer: z.string().url().optional(),
-  locale: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/, 'Invalid locale format').default('en'),
+  locale: z
+    .string()
+    .regex(/^[a-z]{2}(-[A-Z]{2})?$/, 'Invalid locale format')
+    .default('en'),
   timezone: z.string().max(50, 'Timezone is too long').default('UTC'),
 })
 
@@ -281,7 +311,9 @@ export const createJourneySchema = z.object({
   agentId: uuidSchema,
   title: z.string().min(1, 'Journey title is required').max(255, 'Journey title is too long'),
   description: z.string().max(2000, 'Journey description is too long').optional(),
-  conditions: z.array(z.string().min(1, 'Condition cannot be empty')).min(1, 'At least one condition is required'),
+  conditions: z
+    .array(z.string().min(1, 'Condition cannot be empty'))
+    .min(1, 'At least one condition is required'),
   enabled: z.boolean().default(true),
   allowSkipping: z.boolean().default(true),
   allowRevisiting: z.boolean().default(true),
@@ -335,21 +367,24 @@ const journeyStateBaseSchema = z.object({
 /**
  * Journey state creation schema (with validation refinements)
  */
-export const createJourneyStateSchema = journeyStateBaseSchema.refine((data) => {
-  // Validate state type requirements
-  if (data.stateType === 'chat' && !data.chatPrompt) {
-    return false
+export const createJourneyStateSchema = journeyStateBaseSchema.refine(
+  (data) => {
+    // Validate state type requirements
+    if (data.stateType === 'chat' && !data.chatPrompt) {
+      return false
+    }
+    if (data.stateType === 'tool' && !data.toolId) {
+      return false
+    }
+    if (data.stateType === 'decision' && !data.condition) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'State content must match state type requirements',
   }
-  if (data.stateType === 'tool' && !data.toolId) {
-    return false
-  }
-  if (data.stateType === 'decision' && !data.condition) {
-    return false
-  }
-  return true
-}, {
-  message: 'State content must match state type requirements',
-})
+)
 
 /**
  * Journey state response schema
@@ -425,7 +460,10 @@ export const toolResponseSchema = createToolSchema.extend({
 const variableBaseSchema = z.object({
   agentId: uuidSchema,
   sessionId: uuidSchema.optional(),
-  key: z.string().min(1, 'Variable key is required').max(255, 'Variable key is too long')
+  key: z
+    .string()
+    .min(1, 'Variable key is required')
+    .max(255, 'Variable key is too long')
     .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, 'Variable key must be a valid identifier'),
   scope: z.enum(['session', 'customer', 'global']).default('session'),
   value: jsonSchema,
@@ -437,26 +475,29 @@ const variableBaseSchema = z.object({
 /**
  * Variable creation schema (with validation refinements)
  */
-export const createVariableSchema = variableBaseSchema.refine((data) => {
-  // Validate value matches valueType
-  const value = data.value
-  switch (data.valueType) {
-    case 'string':
-      return typeof value === 'string'
-    case 'number':
-      return typeof value === 'number'
-    case 'boolean':
-      return typeof value === 'boolean'
-    case 'object':
-      return typeof value === 'object' && !Array.isArray(value) && value !== null
-    case 'array':
-      return Array.isArray(value)
-    default:
-      return false
+export const createVariableSchema = variableBaseSchema.refine(
+  (data) => {
+    // Validate value matches valueType
+    const value = data.value
+    switch (data.valueType) {
+      case 'string':
+        return typeof value === 'string'
+      case 'number':
+        return typeof value === 'number'
+      case 'boolean':
+        return typeof value === 'boolean'
+      case 'object':
+        return typeof value === 'object' && !Array.isArray(value) && value !== null
+      case 'array':
+        return Array.isArray(value)
+      default:
+        return false
+    }
+  },
+  {
+    message: 'Variable value must match the specified value type',
   }
-}, {
-  message: 'Variable value must match the specified value type',
-})
+)
 
 /**
  * Variable response schema
@@ -524,14 +565,20 @@ export const paginationSchema = z.object({
  * Bulk agent creation schema
  */
 export const bulkCreateAgentSchema = z.object({
-  agents: z.array(createAgentSchema).min(1, 'At least one agent is required').max(50, 'Cannot create more than 50 agents at once'),
+  agents: z
+    .array(createAgentSchema)
+    .min(1, 'At least one agent is required')
+    .max(50, 'Cannot create more than 50 agents at once'),
 })
 
 /**
  * Bulk session creation schema
  */
 export const bulkCreateSessionSchema = z.object({
-  sessions: z.array(createSessionSchema).min(1, 'At least one session is required').max(100, 'Cannot create more than 100 sessions at once'),
+  sessions: z
+    .array(createSessionSchema)
+    .min(1, 'At least one session is required')
+    .max(100, 'Cannot create more than 100 sessions at once'),
 })
 
 // =============================================================================
@@ -541,32 +588,36 @@ export const bulkCreateSessionSchema = z.object({
 /**
  * Standard API response schema
  */
-export const apiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) => z.object({
-  success: z.boolean(),
-  data: dataSchema.optional(),
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: jsonObjectSchema.optional(),
-    field: z.string().optional(),
-  }).optional(),
-  timestamp: timestampSchema,
-})
+export const apiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    success: z.boolean(),
+    data: dataSchema.optional(),
+    error: z
+      .object({
+        code: z.string(),
+        message: z.string(),
+        details: jsonObjectSchema.optional(),
+        field: z.string().optional(),
+      })
+      .optional(),
+    timestamp: timestampSchema,
+  })
 
 /**
  * Paginated API response schema
  */
-export const paginatedResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) => z.object({
-  data: z.array(dataSchema),
-  pagination: z.object({
-    page: z.number().int().min(1),
-    pageSize: z.number().int().min(1),
-    total: z.number().int().min(0),
-    totalPages: z.number().int().min(0),
-    hasNext: z.boolean(),
-    hasPrevious: z.boolean(),
-  }),
-})
+export const paginatedResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    data: z.array(dataSchema),
+    pagination: z.object({
+      page: z.number().int().min(1),
+      pageSize: z.number().int().min(1),
+      total: z.number().int().min(0),
+      totalPages: z.number().int().min(0),
+      hasNext: z.boolean(),
+      hasPrevious: z.boolean(),
+    }),
+  })
 
 // =============================================================================
 // Utility Validation Functions
@@ -617,27 +668,31 @@ export function validateSessionFilters(data: unknown) {
 /**
  * Safe validation with error handling
  */
-export function safeValidate<T>(schema: z.ZodSchema<T>, data: unknown): {
-  success: true
-  data: T
-} | {
-  success: false
-  errors: z.ZodError
-} {
+export function safeValidate<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+):
+  | {
+      success: true
+      data: T
+    }
+  | {
+      success: false
+      errors: z.ZodError
+    } {
   const result = schema.safeParse(data)
 
   if (result.success) {
     return { success: true, data: result.data }
-  } else {
-    return { success: false, errors: result.error }
   }
+  return { success: false, errors: result.error }
 }
 
 /**
  * Transform Zod errors to API-friendly format
  */
 export function formatValidationErrors(zodError: z.ZodError) {
-  return zodError.errors.map(error => ({
+  return zodError.errors.map((error) => ({
     field: error.path.join('.'),
     message: error.message,
     code: error.code,

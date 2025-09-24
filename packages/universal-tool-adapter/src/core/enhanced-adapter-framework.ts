@@ -14,44 +14,25 @@ import type {
   BlockConfig,
   SubBlockConfig,
   SubBlockType,
-  ParamConfig,
-  OutputFieldDefinition,
-  PrimitiveValueType,
 } from '@/blocks/types'
-
+import { ResultFormatter } from '../formatting/result-formatter'
+import { ParameterMapper } from '../mapping/parameter-mapper'
 import type {
+  AdapterConfiguration,
+  AdapterPlugin,
+  AdapterRegistryEntry,
+  DiscoveredTool,
+  NaturalLanguageConfig,
+  ParameterMapping,
   // Universal Adapter types
   SimToolDefinition,
-  AdapterConfiguration,
-  ParameterMapping,
-  ValidationConfig,
-  NaturalLanguageConfig,
-  AdapterRegistryEntry,
-  AdapterExecutionContext,
-  AdapterExecutionResult,
-  AdapterPlugin,
-  CachingConfig,
-  MonitoringConfig,
-  PerformanceConfig,
-  SecurityConfig,
   ToolDiscoveryQuery,
-  DiscoveredTool,
+  ValidationConfig,
 } from '../types/adapter-interfaces'
-
-import type {
-  // Parlant interface types
-  ParlantTool,
-  ParlantToolResult,
-  ParlantExecutionContext,
-  ParameterDefinition,
-  ParlantToolMetadata,
-} from '../types/parlant-interfaces'
-
-import { BaseAdapter } from './base-adapter'
-import { ParameterMapper } from '../mapping/parameter-mapper'
-import { ValidationEngine } from '../validation/validation-engine'
-import { ResultFormatter } from '../formatting/result-formatter'
+import type { ParameterDefinition } from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
+import { ValidationEngine } from '../validation/validation-engine'
+import { BaseAdapter } from './base-adapter'
 
 const logger = createLogger('EnhancedAdapterFramework')
 
@@ -94,7 +75,7 @@ export class EnhancedAdapterFramework {
       metricsRetentionDays: 30,
       enableSecurity: true,
       enablePerformanceOptimization: true,
-      ...config
+      ...config,
     }
 
     // Initialize core subsystems
@@ -114,14 +95,14 @@ export class EnhancedAdapterFramework {
       caching: this.config.enableCaching,
       monitoring: this.config.enableMonitoring,
       plugins: this.config.enablePlugins,
-      maxCacheSize: this.config.maxCacheSize
+      maxCacheSize: this.config.maxCacheSize,
     })
   }
 
   /**
    * Transform a Sim BlockConfig into a Parlant-compatible tool adapter
    */
-  async createAdapterFromBlockConfig<T extends any = any>(
+  async createAdapterFromBlockConfig<T = any>(
     blockConfig: BlockConfig<T>,
     customConfig: Partial<AdapterConfiguration> = {}
   ): Promise<BlockConfigAdapter<T>> {
@@ -159,7 +140,7 @@ export class EnhancedAdapterFramework {
       logger.info('Successfully created adapter', {
         type: blockConfig.type,
         duration,
-        parameterCount: parameterMappings.length
+        parameterCount: parameterMappings.length,
       })
 
       // Update metrics
@@ -167,16 +148,18 @@ export class EnhancedAdapterFramework {
       this.analytics.recordAdapterCreation(blockConfig.type, duration)
 
       return adapter
-
     } catch (error) {
       const duration = Date.now() - startTime
       logger.error('Failed to create adapter from BlockConfig', {
         type: blockConfig.type,
         error: error.message,
-        duration
+        duration,
       })
 
-      this.metrics.set('adapter_creation_errors', (this.metrics.get('adapter_creation_errors') || 0) + 1)
+      this.metrics.set(
+        'adapter_creation_errors',
+        (this.metrics.get('adapter_creation_errors') || 0) + 1
+      )
       throw error
     }
   }
@@ -202,7 +185,7 @@ export class EnhancedAdapterFramework {
         ttlMs: this.config.cacheTtlMs,
         maxSize: Math.floor(this.config.maxCacheSize / 10), // Per-adapter cache size
         keyStrategy: 'parameters',
-        ...customConfig.caching
+        ...customConfig.caching,
       },
 
       // Monitoring configuration
@@ -211,7 +194,7 @@ export class EnhancedAdapterFramework {
         performance: { enabled: this.config.enablePerformanceOptimization },
         errorTracking: { enabled: true },
         analytics: { enabled: true },
-        ...customConfig.monitoring
+        ...customConfig.monitoring,
       },
 
       // Security configuration
@@ -221,8 +204,8 @@ export class EnhancedAdapterFramework {
           accessControl: { requiredPermissions: [] },
           rateLimiting: { enabled: true, maxRequestsPerMinute: 100 },
           privacy: { logParameters: false, logResults: false },
-          ...customConfig.security
-        }
+          ...customConfig.security,
+        },
       }),
 
       // Error handling configuration
@@ -230,13 +213,13 @@ export class EnhancedAdapterFramework {
         strategies: {
           validation: 'strict',
           execution: 'retry',
-          timeout: 'fail'
+          timeout: 'fail',
         },
         retry: {
           maxAttempts: 3,
-          backoffMs: 1000
+          backoffMs: 1000,
         },
-        ...customConfig.errorHandling
+        ...customConfig.errorHandling,
       },
 
       // Result formatting
@@ -246,10 +229,10 @@ export class EnhancedAdapterFramework {
         enableContextualHints: true,
         maxDetailsLength: 1000,
         maxActionsCount: 5,
-        ...customConfig.resultFormatting
+        ...customConfig.resultFormatting,
       },
 
-      ...customConfig
+      ...customConfig,
     }
 
     return config
@@ -258,9 +241,7 @@ export class EnhancedAdapterFramework {
   /**
    * Build parameter mappings from SubBlockConfig definitions
    */
-  private async buildParameterMappings(
-    subBlocks: SubBlockConfig[]
-  ): Promise<ParameterMapping[]> {
+  private async buildParameterMappings(subBlocks: SubBlockConfig[]): Promise<ParameterMapping[]> {
     const mappings: ParameterMapping[] = []
 
     for (const subBlock of subBlocks) {
@@ -276,9 +257,7 @@ export class EnhancedAdapterFramework {
   /**
    * Create parameter mapping from a SubBlockConfig
    */
-  private async createParameterMapping(
-    subBlock: SubBlockConfig
-  ): Promise<ParameterMapping | null> {
+  private async createParameterMapping(subBlock: SubBlockConfig): Promise<ParameterMapping | null> {
     // Skip hidden or trigger-specific blocks
     if (subBlock.hidden || subBlock.type === 'trigger-config') {
       return null
@@ -293,7 +272,7 @@ export class EnhancedAdapterFramework {
       transformations: await this.buildTransformations(subBlock),
       validation: await this.buildParameterValidation(subBlock),
       conditions: subBlock.condition ? [this.buildMappingRule(subBlock.condition)] : undefined,
-      contextualValue: await this.buildContextualValue(subBlock)
+      contextualValue: await this.buildContextualValue(subBlock),
     }
 
     return mapping
@@ -302,9 +281,7 @@ export class EnhancedAdapterFramework {
   /**
    * Build transformations for a specific SubBlock type
    */
-  private async buildTransformations(
-    subBlock: SubBlockConfig
-  ): Promise<MappingTransformation[]> {
+  private async buildTransformations(subBlock: SubBlockConfig): Promise<MappingTransformation[]> {
     const transformations: MappingTransformation[] = []
 
     // Type-specific transformations
@@ -315,8 +292,8 @@ export class EnhancedAdapterFramework {
           config: {
             provider: subBlock.provider,
             serviceId: subBlock.serviceId,
-            requiredScopes: subBlock.requiredScopes || []
-          }
+            requiredScopes: subBlock.requiredScopes || [],
+          },
         })
         break
 
@@ -328,8 +305,8 @@ export class EnhancedAdapterFramework {
           type: 'resource_id_resolver',
           config: {
             resourceType: subBlock.type.replace('-selector', ''),
-            provider: subBlock.provider
-          }
+            provider: subBlock.provider,
+          },
         })
         break
 
@@ -339,8 +316,9 @@ export class EnhancedAdapterFramework {
           transformations.push({
             type: 'option_value_resolver',
             config: {
-              options: typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-            }
+              options:
+                typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options,
+            },
           })
         }
         break
@@ -352,8 +330,8 @@ export class EnhancedAdapterFramework {
             min: subBlock.min,
             max: subBlock.max,
             step: subBlock.step,
-            integer: subBlock.integer
-          }
+            integer: subBlock.integer,
+          },
         })
         break
 
@@ -362,8 +340,8 @@ export class EnhancedAdapterFramework {
           type: 'code_processor',
           config: {
             language: subBlock.language || 'javascript',
-            generationType: subBlock.generationType
-          }
+            generationType: subBlock.generationType,
+          },
         })
         break
 
@@ -371,7 +349,7 @@ export class EnhancedAdapterFramework {
         if (subBlock.placeholder?.includes('JSON')) {
           transformations.push({
             type: 'json_parser',
-            config: { validateJson: true }
+            config: { validateJson: true },
           })
         }
         break
@@ -379,14 +357,14 @@ export class EnhancedAdapterFramework {
       case 'time-input':
         transformations.push({
           type: 'time_normalizer',
-          config: { outputFormat: 'iso8601' }
+          config: { outputFormat: 'iso8601' },
         })
         break
 
       case 'checkbox-list':
         transformations.push({
           type: 'array_normalizer',
-          config: { ensureArray: true }
+          config: { ensureArray: true },
         })
         break
     }
@@ -397,8 +375,8 @@ export class EnhancedAdapterFramework {
         type: 'conditional_processor',
         config: {
           condition: subBlock.condition,
-          skipIfConditionFalse: true
-        }
+          skipIfConditionFalse: true,
+        },
       })
     }
 
@@ -408,12 +386,10 @@ export class EnhancedAdapterFramework {
   /**
    * Build validation configuration for a parameter
    */
-  private async buildParameterValidation(
-    subBlock: SubBlockConfig
-  ): Promise<ValidationConfig> {
+  private async buildParameterValidation(subBlock: SubBlockConfig): Promise<ValidationConfig> {
     const validation: ValidationConfig = {
       enableStrictValidation: true,
-      required: subBlock.required || false
+      required: subBlock.required || false,
     }
 
     // Type-specific validation
@@ -434,9 +410,10 @@ export class EnhancedAdapterFramework {
       case 'slider':
         validation.type = 'number'
         if (typeof subBlock.min !== 'undefined' || typeof subBlock.max !== 'undefined') {
-          validation.schema = z.number()
-            .min(subBlock.min || -Infinity)
-            .max(subBlock.max || Infinity)
+          validation.schema = z
+            .number()
+            .min(subBlock.min || Number.NEGATIVE_INFINITY)
+            .max(subBlock.max || Number.POSITIVE_INFINITY)
         }
         break
 
@@ -448,29 +425,37 @@ export class EnhancedAdapterFramework {
       case 'dropdown':
       case 'combobox':
         if (subBlock.options) {
-          const options = typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-          validation.schema = z.enum(options.map(opt => opt.id) as [string, ...string[]])
+          const options =
+            typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
+          validation.schema = z.enum(options.map((opt) => opt.id) as [string, ...string[]])
         }
         break
 
       case 'oauth-input':
-        validation.businessRules = [{
-          name: 'oauth_credential_validation',
-          type: 'user_permissions',
-          description: 'Validate OAuth credential has required scopes',
-          resource: subBlock.provider || 'unknown',
-          dependencies: subBlock.requiredScopes?.map(scope => ({ type: 'oauth_scope', id: scope }))
-        }]
+        validation.businessRules = [
+          {
+            name: 'oauth_credential_validation',
+            type: 'user_permissions',
+            description: 'Validate OAuth credential has required scopes',
+            resource: subBlock.provider || 'unknown',
+            dependencies: subBlock.requiredScopes?.map((scope) => ({
+              type: 'oauth_scope',
+              id: scope,
+            })),
+          },
+        ]
         break
 
       case 'file-selector':
-        validation.businessRules = [{
-          name: 'file_access_validation',
-          type: 'resource_quota',
-          description: 'Validate file access permissions',
-          resourceType: 'file',
-          dependencies: [{ type: 'file_access', id: subBlock.mimeType || 'any' }]
-        }]
+        validation.businessRules = [
+          {
+            name: 'file_access_validation',
+            type: 'resource_quota',
+            description: 'Validate file access permissions',
+            resourceType: 'file',
+            dependencies: [{ type: 'file_access', id: subBlock.mimeType || 'any' }],
+          },
+        ]
         break
     }
 
@@ -481,7 +466,7 @@ export class EnhancedAdapterFramework {
         name: 'dependency_validation',
         type: 'data_dependencies',
         description: 'Validate required dependencies are provided',
-        dependencies: subBlock.dependsOn.map(dep => ({ type: 'parameter', id: dep }))
+        dependencies: subBlock.dependsOn.map((dep) => ({ type: 'parameter', id: dep })),
       })
     }
 
@@ -504,11 +489,11 @@ export class EnhancedAdapterFramework {
           } catch (error) {
             logger.warn('Error computing contextual value', {
               subBlockId: subBlock.id,
-              error: error.message
+              error: error.message,
             })
             return originalValue
           }
-        }
+        },
       }
     }
 
@@ -516,7 +501,7 @@ export class EnhancedAdapterFramework {
     if (subBlock.type === 'oauth-input') {
       return {
         source: 'context',
-        path: `credentials.${subBlock.provider}`
+        path: `credentials.${subBlock.provider}`,
       }
     }
 
@@ -524,7 +509,7 @@ export class EnhancedAdapterFramework {
     if (subBlock.defaultValue !== undefined) {
       return {
         source: 'constant',
-        value: subBlock.defaultValue
+        value: subBlock.defaultValue,
       }
     }
 
@@ -555,7 +540,7 @@ export class EnhancedAdapterFramework {
       exampleUsage,
       conversationalHints,
       keywords,
-      aliases
+      aliases,
     }
   }
 
@@ -589,10 +574,13 @@ export class EnhancedAdapterFramework {
     examples.push(`When you need to ${blockConfig.description.toLowerCase()}`)
 
     // Operation-specific examples
-    const operationBlock = blockConfig.subBlocks.find(sb => sb.id === 'operation')
-    if (operationBlock && operationBlock.options) {
-      const options = typeof operationBlock.options === 'function' ? operationBlock.options() : operationBlock.options
-      options.forEach(option => {
+    const operationBlock = blockConfig.subBlocks.find((sb) => sb.id === 'operation')
+    if (operationBlock?.options) {
+      const options =
+        typeof operationBlock.options === 'function'
+          ? operationBlock.options()
+          : operationBlock.options
+      options.forEach((option) => {
         examples.push(`To ${option.label.toLowerCase()} using ${blockConfig.name}`)
       })
     }
@@ -623,15 +611,16 @@ export class EnhancedAdapterFramework {
     results: string
   } {
     const requiredParams = blockConfig.subBlocks
-      .filter(sb => sb.required && !sb.hidden)
-      .map(sb => sb.title || sb.id)
+      .filter((sb) => sb.required && !sb.hidden)
+      .map((sb) => sb.title || sb.id)
 
     return {
       whenToUse: `This tool is helpful when you need to ${blockConfig.description.toLowerCase()}, especially for ${blockConfig.category} operations`,
-      parameters: requiredParams.length > 0
-        ? `I'll help you provide the required information: ${requiredParams.join(', ')}`
-        : 'I\'ll guide you through the available options for this tool',
-      results: `I'll explain the ${blockConfig.name} results in a clear and actionable way, highlighting any important data or next steps`
+      parameters:
+        requiredParams.length > 0
+          ? `I'll help you provide the required information: ${requiredParams.join(', ')}`
+          : "I'll guide you through the available options for this tool",
+      results: `I'll explain the ${blockConfig.name} results in a clear and actionable way, highlighting any important data or next steps`,
     }
   }
 
@@ -652,19 +641,19 @@ export class EnhancedAdapterFramework {
         version: '2.0.0',
         source: 'blockconfig',
         category: blockConfig.category,
-        tags: this.generateTags(blockConfig)
+        tags: this.generateTags(blockConfig),
       },
       statistics: {
         executionCount: 0,
         averageExecutionTimeMs: 0,
         successRate: 1.0,
-        errorCount: 0
+        errorCount: 0,
       },
       health: {
         status: 'healthy',
         lastCheckAt: new Date(),
-        issues: []
-      }
+        issues: [],
+      },
     }
 
     this.registry.set(adapter.id, registryEntry)
@@ -677,7 +666,7 @@ export class EnhancedAdapterFramework {
     logger.info('Registered adapter in registry', {
       adapterId: adapter.id,
       category: blockConfig.category,
-      version: registryEntry.metadata.version
+      version: registryEntry.metadata.version,
     })
 
     return registryEntry
@@ -700,13 +689,13 @@ export class EnhancedAdapterFramework {
 
         logger.debug('Applied plugin to adapter', {
           pluginName,
-          adapterId: adapter.id
+          adapterId: adapter.id,
         })
       } catch (error) {
         logger.warn('Failed to apply plugin', {
           pluginName,
           adapterId: adapter.id,
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -731,10 +720,10 @@ export class EnhancedAdapterFramework {
           relevanceScore,
           usageStats: {
             executionCount: entry.statistics?.executionCount || 0,
-            successRate: entry.statistics?.successRate || 0
+            successRate: entry.statistics?.successRate || 0,
           },
           capabilities: this.extractCapabilitiesFromEntry(entry),
-          requirements: this.extractRequirementsFromEntry(entry)
+          requirements: this.extractRequirementsFromEntry(entry),
         })
       }
     }
@@ -754,16 +743,22 @@ export class EnhancedAdapterFramework {
    */
   getFrameworkStats(): FrameworkStats {
     const totalAdapters = this.registry.size
-    const healthyAdapters = Array.from(this.registry.values())
-      .filter(entry => entry.health?.status === 'healthy').length
+    const healthyAdapters = Array.from(this.registry.values()).filter(
+      (entry) => entry.health?.status === 'healthy'
+    ).length
 
-    const totalExecutions = Array.from(this.registry.values())
-      .reduce((sum, entry) => sum + (entry.statistics?.executionCount || 0), 0)
+    const totalExecutions = Array.from(this.registry.values()).reduce(
+      (sum, entry) => sum + (entry.statistics?.executionCount || 0),
+      0
+    )
 
-    const averageSuccessRate = totalAdapters > 0
-      ? Array.from(this.registry.values())
-          .reduce((sum, entry) => sum + (entry.statistics?.successRate || 0), 0) / totalAdapters
-      : 0
+    const averageSuccessRate =
+      totalAdapters > 0
+        ? Array.from(this.registry.values()).reduce(
+            (sum, entry) => sum + (entry.statistics?.successRate || 0),
+            0
+          ) / totalAdapters
+        : 0
 
     return {
       totalAdapters,
@@ -775,7 +770,7 @@ export class EnhancedAdapterFramework {
       averageExecutionTimeMs: this.analytics.getAverageExecutionTime(),
       pluginsLoaded: this.plugins.size,
       memoryUsageMB: this.getMemoryUsage(),
-      uptime: Date.now() - this.startTime
+      uptime: Date.now() - this.startTime,
     }
   }
 
@@ -797,7 +792,7 @@ export class EnhancedAdapterFramework {
     logger.info('Registered plugin', {
       name: plugin.name,
       version: plugin.version,
-      dependencies: plugin.dependencies?.length || 0
+      dependencies: plugin.dependencies?.length || 0,
     })
 
     // Apply to existing adapters if needed
@@ -810,7 +805,7 @@ export class EnhancedAdapterFramework {
             logger.warn('Failed to apply new plugin to existing adapter', {
               pluginName: plugin.name,
               adapterId: entry.id,
-              error: error.message
+              error: error.message,
             })
           }
         }
@@ -842,10 +837,14 @@ export class EnhancedAdapterFramework {
   // Helper methods for mapping and transformation
   private mapBlockCategory(category: string): string {
     switch (category) {
-      case 'tools': return 'external-integration'
-      case 'blocks': return 'workflow-management'
-      case 'triggers': return 'automation'
-      default: return 'utility'
+      case 'tools':
+        return 'external-integration'
+      case 'blocks':
+        return 'workflow-management'
+      case 'triggers':
+        return 'automation'
+      default:
+        return 'utility'
     }
   }
 
@@ -857,16 +856,17 @@ export class EnhancedAdapterFramework {
     tags.push(...nameParts)
 
     // Add capability tags
-    tags.push(...this.extractCapabilities(blockConfig).map(cap => cap.toLowerCase()))
+    tags.push(...this.extractCapabilities(blockConfig).map((cap) => cap.toLowerCase()))
 
     return [...new Set(tags)] // Remove duplicates
   }
 
   private extractActionWords(blockConfig: BlockConfig): string[] {
-    const operations = blockConfig.subBlocks.find(sb => sb.id === 'operation')
-    if (operations && operations.options) {
-      const options = typeof operations.options === 'function' ? operations.options() : operations.options
-      return options.map(opt => opt.label.toLowerCase())
+    const operations = blockConfig.subBlocks.find((sb) => sb.id === 'operation')
+    if (operations?.options) {
+      const options =
+        typeof operations.options === 'function' ? operations.options() : operations.options
+      return options.map((opt) => opt.label.toLowerCase())
     }
     return []
   }
@@ -879,18 +879,26 @@ export class EnhancedAdapterFramework {
 
     // From tools access
     if (blockConfig.tools?.access) {
-      capabilities.push(...blockConfig.tools.access.map(tool =>
-        tool.replace(/^.*_/, '').replace(/_/g, ' ')
-      ))
+      capabilities.push(
+        ...blockConfig.tools.access.map((tool) => tool.replace(/^.*_/, '').replace(/_/g, ' '))
+      )
     }
 
     // From subBlocks features
-    blockConfig.subBlocks.forEach(subBlock => {
+    blockConfig.subBlocks.forEach((subBlock) => {
       switch (subBlock.type) {
-        case 'oauth-input': capabilities.push('authentication'); break
-        case 'file-selector': capabilities.push('file operations'); break
-        case 'webhook-config': capabilities.push('webhooks'); break
-        case 'trigger-config': capabilities.push('event triggers'); break
+        case 'oauth-input':
+          capabilities.push('authentication')
+          break
+        case 'file-selector':
+          capabilities.push('file operations')
+          break
+        case 'webhook-config':
+          capabilities.push('webhooks')
+          break
+        case 'trigger-config':
+          capabilities.push('event triggers')
+          break
       }
     })
 
@@ -902,13 +910,14 @@ export class EnhancedAdapterFramework {
       blockConfig.name.toLowerCase(),
       ...blockConfig.name.toLowerCase().split(/[\s_-]+/),
       blockConfig.type,
-      blockConfig.category
+      blockConfig.category,
     ]
 
     // Add description keywords
-    const descWords = blockConfig.description.toLowerCase()
+    const descWords = blockConfig.description
+      .toLowerCase()
       .split(/\s+/)
-      .filter(word => word.length > 3)
+      .filter((word) => word.length > 3)
     keywords.push(...descWords)
 
     return [...new Set(keywords)]
@@ -919,10 +928,10 @@ export class EnhancedAdapterFramework {
 
     // Common aliases for popular tools
     const commonAliases = {
-      'google_sheets': ['sheets', 'spreadsheet', 'gsheets'],
-      'slack': ['slack', 'messaging', 'chat'],
-      'github': ['git', 'repository', 'repo'],
-      'openai': ['gpt', 'chatgpt', 'ai'],
+      google_sheets: ['sheets', 'spreadsheet', 'gsheets'],
+      slack: ['slack', 'messaging', 'chat'],
+      github: ['git', 'repository', 'repo'],
+      openai: ['gpt', 'chatgpt', 'ai'],
     }
 
     if (commonAliases[blockConfig.type]) {
@@ -937,13 +946,13 @@ export class EnhancedAdapterFramework {
       name: blockConfig.type,
       metadata: {
         displayNames: {},
-        description: blockConfig.description
+        description: blockConfig.description,
       },
       hasInterrupt: false, // BlockConfigs don't typically have interrupts
       execute: async (ctx, args) => {
         // This is a placeholder - actual execution would be handled by Sim's tool system
         return { status: 200, message: 'Tool executed successfully' }
-      }
+      },
     }
   }
 
@@ -951,7 +960,7 @@ export class EnhancedAdapterFramework {
     return {
       field: condition.field,
       operator: 'equals',
-      value: condition.value
+      value: condition.value,
     }
   }
 
@@ -975,9 +984,7 @@ export class EnhancedAdapterFramework {
 
     // Tag matching
     if (query.tags) {
-      const matchingTags = query.tags.filter(tag =>
-        entry.metadata.tags.includes(tag)
-      )
+      const matchingTags = query.tags.filter((tag) => entry.metadata.tags.includes(tag))
       score += matchingTags.length * 3
     }
 
@@ -990,8 +997,8 @@ export class EnhancedAdapterFramework {
   }
 
   private extractCapabilitiesFromEntry(entry: AdapterRegistryEntry): string[] {
-    return entry.metadata.tags.filter(tag =>
-      !['sim-block', 'tools', 'blocks', 'triggers'].includes(tag)
+    return entry.metadata.tags.filter(
+      (tag) => !['sim-block', 'tools', 'blocks', 'triggers'].includes(tag)
     )
   }
 
@@ -1033,12 +1040,12 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
       name: blockConfig.type,
       metadata: {
         displayNames: {},
-        description: blockConfig.description
+        description: blockConfig.description,
       },
       execute: async (ctx, args) => {
         // This would integrate with Sim's actual tool execution system
         return { status: 200, message: 'Tool executed successfully' }
-      }
+      },
     }
 
     super(simTool, config)
@@ -1068,8 +1075,8 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
           subBlockType: subBlock.type,
           placeholder: subBlock.placeholder,
           provider: subBlock.provider,
-          dependsOn: subBlock.dependsOn
-        }
+          dependsOn: subBlock.dependsOn,
+        },
       }
 
       parameters.push(param)
@@ -1147,8 +1154,9 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
   private extractEnumValues(subBlock: SubBlockConfig): string[] | undefined {
     if (subBlock.type === 'dropdown' || subBlock.type === 'combobox') {
       if (subBlock.options) {
-        const options = typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-        return options.map(opt => opt.id)
+        const options =
+          typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
+        return options.map((opt) => opt.id)
       }
     }
     return undefined
@@ -1165,12 +1173,13 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
       case 'folder-selector':
         return z.string()
 
-      case 'slider':
+      case 'slider': {
         let numberSchema = z.number()
         if (subBlock.min !== undefined) numberSchema = numberSchema.min(subBlock.min)
         if (subBlock.max !== undefined) numberSchema = numberSchema.max(subBlock.max)
         if (subBlock.integer) numberSchema = numberSchema.int()
         return numberSchema
+      }
 
       case 'switch':
         return z.boolean()
@@ -1178,8 +1187,9 @@ export class BlockConfigAdapter<T = any> extends BaseAdapter<any, T, any> {
       case 'dropdown':
       case 'combobox':
         if (subBlock.options) {
-          const options = typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
-          const enumValues = options.map(opt => opt.id) as [string, ...string[]]
+          const options =
+            typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
+          const enumValues = options.map((opt) => opt.id) as [string, ...string[]]
           return z.enum(enumValues)
         }
         return z.string()
@@ -1220,8 +1230,6 @@ class PerformanceOptimizer {
 }
 
 class ConnectionPool {
-  constructor(private config: FrameworkConfiguration) {}
-
   async close(): Promise<void> {
     // Close any open connections
   }
@@ -1248,13 +1256,13 @@ class FrameworkMonitor {
       entry.health = {
         status: 'healthy',
         lastCheckAt: new Date(),
-        issues: []
+        issues: [],
       }
     } catch (error) {
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: [error.message]
+        issues: [error.message],
       }
     }
   }
@@ -1317,7 +1325,17 @@ interface MappingRule {
 }
 
 interface ContextualValue {
-  source: 'context' | 'user' | 'workspace' | 'session' | 'agent' | 'timestamp' | 'uuid' | 'original' | 'constant' | 'computed'
+  source:
+    | 'context'
+    | 'user'
+    | 'workspace'
+    | 'session'
+    | 'agent'
+    | 'timestamp'
+    | 'uuid'
+    | 'original'
+    | 'constant'
+    | 'computed'
   path?: string
   value?: any
   compute?: (context: any, originalValue?: any) => any

@@ -5,16 +5,13 @@
  * quality standards, and conversational presentation.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { ToolResponse, ToolConfig } from '@/tools/types'
-import type { FormatContext } from '../types'
-
-import { TextFormatter } from '../formatters/text-formatter'
-import { TableFormatter } from '../formatters/table-formatter'
-import { JsonFormatter } from '../formatters/json-formatter'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ToolConfig, ToolResponse } from '@/tools/types'
 import { ChartFormatter } from '../formatters/chart-formatter'
-import { CardFormatter } from '../formatters/card-formatter'
-import { ImageFormatter } from '../formatters/image-formatter'
+import { JsonFormatter } from '../formatters/json-formatter'
+import { TableFormatter } from '../formatters/table-formatter'
+import { TextFormatter } from '../formatters/text-formatter'
+import type { FormatContext } from '../types'
 
 // Mock logger to avoid console output in tests
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -140,13 +137,14 @@ describe('Result Formatters', () => {
     it('should handle markdown representation for rich text', async () => {
       const result: ToolResponse = {
         success: true,
-        output: 'This is a long text with multiple paragraphs.\n\nIt has URLs like https://example.com and lists:\n* Item 1\n* Item 2',
+        output:
+          'This is a long text with multiple paragraphs.\n\nIt has URLs like https://example.com and lists:\n* Item 1\n* Item 2',
       }
 
       const formatted = await formatter.format(result, mockContext)
 
       expect(formatted.representations).toHaveLength(2)
-      const markdownRep = formatted.representations.find(r => r.format === 'markdown')
+      const markdownRep = formatted.representations.find((r) => r.format === 'markdown')
       expect(markdownRep).toBeDefined()
       expect(markdownRep?.content.markdown).toContain('[https://example.com](https://example.com)')
     })
@@ -184,7 +182,13 @@ describe('Result Formatters', () => {
       const result: ToolResponse = {
         success: true,
         output: [
-          { id: 1, email: 'test@example.com', created: '2023-01-01T00:00:00Z', score: 95.5, active: true },
+          {
+            id: 1,
+            email: 'test@example.com',
+            created: '2023-01-01T00:00:00Z',
+            score: 95.5,
+            active: true,
+          },
         ],
       }
 
@@ -228,7 +232,7 @@ describe('Result Formatters', () => {
       }
 
       const formatted = await formatter.format(result, mockContext)
-      const chartRep = formatted.representations.find(r => r.format === 'chart')
+      const chartRep = formatted.representations.find((r) => r.format === 'chart')
 
       expect(chartRep).toBeDefined()
       expect(chartRep?.content.chartType).toBe('bar')
@@ -380,7 +384,7 @@ describe('Result Formatters', () => {
       }
 
       const formatted = await formatter.format(result, mockContext)
-      const tableRep = formatted.representations.find(r => r.format === 'table')
+      const tableRep = formatted.representations.find((r) => r.format === 'table')
 
       expect(tableRep).toBeDefined()
     })
@@ -450,8 +454,8 @@ describe('Result Formatters', () => {
       const formatted = await formatter.format(result, mockContext)
 
       expect(formatted.representations.length).toBeGreaterThan(1)
-      expect(formatted.representations.some(r => r.format === 'table')).toBe(true)
-      expect(formatted.representations.some(r => r.format === 'text')).toBe(true)
+      expect(formatted.representations.some((r) => r.format === 'table')).toBe(true)
+      expect(formatted.representations.some((r) => r.format === 'text')).toBe(true)
     })
 
     it('should calculate statistics for numerical data', async () => {
@@ -556,8 +560,8 @@ describe('Result Formatters', () => {
       const formatted = await tableFormatter.format(result, mockContext)
 
       expect(formatted.representations.length).toBeGreaterThan(1)
-      expect(formatted.representations.some(r => r.format === 'chart')).toBe(true)
-      expect(formatted.representations.some(r => r.format === 'json')).toBe(true)
+      expect(formatted.representations.some((r) => r.format === 'chart')).toBe(true)
+      expect(formatted.representations.some((r) => r.format === 'json')).toBe(true)
     })
 
     it('should handle edge cases gracefully', async () => {

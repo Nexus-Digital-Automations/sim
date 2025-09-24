@@ -29,7 +29,7 @@ export enum ParlantPermission {
   READ_MESSAGES = 'parlant:read:messages',
   WRITE_MESSAGES = 'parlant:write:messages',
   MONITOR_PERFORMANCE = 'parlant:monitor:performance',
-  ADMIN_WORKSPACE = 'parlant:admin:workspace'
+  ADMIN_WORKSPACE = 'parlant:admin:workspace',
 }
 
 /**
@@ -55,7 +55,7 @@ export async function validateParlantAccess(
   logger.debug(`Validating Parlant access for user ${userId}`, {
     workspaceId,
     agentId,
-    sessionId
+    sessionId,
   })
 
   try {
@@ -68,7 +68,7 @@ export async function validateParlantAccess(
       userId,
       workspaceId,
       agentId,
-      sessionId
+      sessionId,
     }
 
     // Step 1: Validate workspace access using existing Sim permissions
@@ -83,7 +83,12 @@ export async function validateParlantAccess(
 
     // Step 2: Validate agent access if agentId provided
     if (agentId) {
-      const agentAccess = await validateAgentAccess(userId, workspaceId, agentId, accessInfo.permissions)
+      const agentAccess = await validateAgentAccess(
+        userId,
+        workspaceId,
+        agentId,
+        accessInfo.permissions
+      )
       accessInfo.canAccessAgent = agentAccess.hasAccess
 
       if (!accessInfo.canAccessAgent) {
@@ -113,11 +118,10 @@ export async function validateParlantAccess(
       canAccessWorkspace: accessInfo.canAccessWorkspace,
       canAccessAgent: accessInfo.canAccessAgent,
       canAccessSession: accessInfo.canAccessSession,
-      permissionCount: accessInfo.permissions.length
+      permissionCount: accessInfo.permissions.length,
     })
 
     return accessInfo
-
   } catch (error) {
     logger.error(`Error validating Parlant access for user ${userId}:`, error)
 
@@ -130,7 +134,7 @@ export async function validateParlantAccess(
       userId,
       workspaceId,
       agentId,
-      sessionId
+      sessionId,
     }
   }
 }
@@ -163,17 +167,16 @@ async function validateWorkspaceAccess(
       ParlantPermission.WRITE_SESSIONS,
       ParlantPermission.READ_MESSAGES,
       ParlantPermission.WRITE_MESSAGES,
-      ParlantPermission.MONITOR_PERFORMANCE
+      ParlantPermission.MONITOR_PERFORMANCE,
     ]
 
     logger.debug(`Workspace access validation result for user ${userId}:`, {
       workspaceId,
       hasAccess,
-      permissions: permissions.length
+      permissions: permissions.length,
     })
 
     return { hasAccess, permissions }
-
   } catch (error) {
     logger.error(`Error validating workspace access for user ${userId}:`, error)
     return { hasAccess: false, permissions: [] }
@@ -192,7 +195,7 @@ async function validateAgentAccess(
   try {
     logger.debug(`Validating agent access for user ${userId}`, {
       workspaceId,
-      agentId
+      agentId,
     })
 
     // Check if user has read access to agents
@@ -215,11 +218,10 @@ async function validateAgentAccess(
 
     logger.debug(`Agent access validation result for user ${userId}:`, {
       agentId,
-      hasAccess
+      hasAccess,
     })
 
     return { hasAccess }
-
   } catch (error) {
     logger.error(`Error validating agent access for user ${userId}:`, error)
     return { hasAccess: false }
@@ -239,7 +241,7 @@ async function validateSessionAccess(
     logger.debug(`Validating session access for user ${userId}`, {
       workspaceId,
       agentId,
-      sessionId
+      sessionId,
     })
 
     // TODO: Check session ownership and permissions
@@ -258,11 +260,10 @@ async function validateSessionAccess(
 
     logger.debug(`Session access validation result for user ${userId}:`, {
       sessionId,
-      hasAccess
+      hasAccess,
     })
 
     return { hasAccess }
-
   } catch (error) {
     logger.error(`Error validating session access for user ${userId}:`, error)
     return { hasAccess: false }
@@ -272,8 +273,14 @@ async function validateSessionAccess(
 /**
  * Check if user has specific Parlant permission
  */
-export function hasPermission(permissions: string[], requiredPermission: ParlantPermission): boolean {
-  return permissions.includes(requiredPermission) || permissions.includes(ParlantPermission.ADMIN_WORKSPACE)
+export function hasPermission(
+  permissions: string[],
+  requiredPermission: ParlantPermission
+): boolean {
+  return (
+    permissions.includes(requiredPermission) ||
+    permissions.includes(ParlantPermission.ADMIN_WORKSPACE)
+  )
 }
 
 /**
@@ -286,13 +293,16 @@ export class ParlantRateLimiter {
   private static readonly LIMITS = {
     joinRoom: 30, // 30 room joins per minute
     requestStatus: 60, // 60 status requests per minute
-    generalEvents: 300 // 300 general events per minute
+    generalEvents: 300, // 300 general events per minute
   }
 
   /**
    * Check if user has exceeded rate limit for specific action
    */
-  checkRateLimit(userId: string, action: keyof typeof ParlantRateLimiter.LIMITS): {
+  checkRateLimit(
+    userId: string,
+    action: keyof typeof ParlantRateLimiter.LIMITS
+  ): {
     allowed: boolean
     remaining: number
     resetTime: number
@@ -308,7 +318,7 @@ export class ParlantRateLimiter {
     if (!record || record.resetTime <= now) {
       record = {
         count: 0,
-        resetTime: windowStart + 60000 // Reset at end of current minute
+        resetTime: windowStart + 60000, // Reset at end of current minute
       }
       this.limits.set(key, record)
     }
@@ -321,7 +331,7 @@ export class ParlantRateLimiter {
     return {
       allowed,
       remaining: Math.max(0, limit - record.count),
-      resetTime: record.resetTime
+      resetTime: record.resetTime,
     }
   }
 

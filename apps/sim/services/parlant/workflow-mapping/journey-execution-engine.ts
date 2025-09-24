@@ -7,13 +7,10 @@
  */
 
 import type {
-  JourneyDefinition,
-  JourneyExecutionContext,
-  JourneyState,
-  StateTransition,
+  ConversationalInterface,
   ExecutionResult,
-  WorkflowData,
-  ConversationalInterface
+  JourneyDefinition,
+  JourneyState,
 } from '../types'
 
 /**
@@ -151,8 +148,8 @@ export class JourneyExecutionEngine {
       metadata: {
         originalWorkflowId: journeyDefinition.metadata?.originalWorkflowId,
         executionMode: 'conversational',
-        progressTracker: this.initializeProgressTracker(journeyDefinition)
-      }
+        progressTracker: this.initializeProgressTracker(journeyDefinition),
+      },
     }
 
     // Store context and interface
@@ -213,11 +210,7 @@ export class JourneyExecutionEngine {
       if (stateResult.success) {
         // Send agent response if provided
         if (stateResult.conversationResponse) {
-          await this.sendConversationMessage(
-            context,
-            'agent',
-            stateResult.conversationResponse
-          )
+          await this.sendConversationMessage(context, 'agent', stateResult.conversationResponse)
         }
 
         // Transition to next state if specified
@@ -235,25 +228,24 @@ export class JourneyExecutionEngine {
           progress: context.metadata.progressTracker,
           response: stateResult.conversationResponse,
           userInputRequired: stateResult.userInputRequired,
-          completed: this.isJourneyCompleted(journey, context)
+          completed: this.isJourneyCompleted(journey, context),
         }
-      } else {
-        // Handle execution error
-        const errorMessage = stateResult.error?.message || 'An error occurred during execution'
-        await this.sendConversationMessage(context, 'agent', errorMessage)
+      }
+      // Handle execution error
+      const errorMessage = stateResult.error?.message || 'An error occurred during execution'
+      await this.sendConversationMessage(context, 'agent', errorMessage)
 
-        // Try recovery if possible
-        if (stateResult.error?.recoverable && stateResult.error.fallbackStateId) {
-          await this.transitionToState(context, journey, stateResult.error.fallbackStateId)
-        }
+      // Try recovery if possible
+      if (stateResult.error?.recoverable && stateResult.error.fallbackStateId) {
+        await this.transitionToState(context, journey, stateResult.error.fallbackStateId)
+      }
 
-        return {
-          success: false,
-          journeyId: context.journeyId,
-          currentState: context.currentStateId,
-          error: stateResult.error,
-          progress: context.metadata.progressTracker
-        }
+      return {
+        success: false,
+        journeyId: context.journeyId,
+        currentState: context.currentStateId,
+        error: stateResult.error,
+        progress: context.metadata.progressTracker,
       }
     } catch (error) {
       console.error(`Journey execution error for ${journeyId}:`, error)
@@ -271,9 +263,9 @@ export class JourneyExecutionEngine {
         error: {
           code: 'JOURNEY_EXECUTION_ERROR',
           message: error instanceof Error ? error.message : 'Unknown error',
-          recoverable: false
+          recoverable: false,
         },
-        progress: context.metadata.progressTracker
+        progress: context.metadata.progressTracker,
       }
     }
   }
@@ -306,8 +298,8 @@ export class JourneyExecutionEngine {
         error: {
           code: 'STATE_EXECUTION_ERROR',
           message: error instanceof Error ? error.message : 'State execution failed',
-          recoverable: true
-        }
+          recoverable: true,
+        },
       }
     }
   }
@@ -320,7 +312,7 @@ export class JourneyExecutionEngine {
     journey: JourneyDefinition,
     nextStateId: string
   ): Promise<void> {
-    const nextState = journey.states.find(s => s.id === nextStateId)
+    const nextState = journey.states.find((s) => s.id === nextStateId)
     if (!nextState) {
       throw new Error(`Next state not found: ${nextStateId}`)
     }
@@ -367,7 +359,7 @@ export class JourneyExecutionEngine {
       role,
       content,
       timestamp: new Date(),
-      metadata
+      metadata,
     }
 
     // Add to context
@@ -407,7 +399,7 @@ export class JourneyExecutionEngine {
    * Find the initial state in a journey
    */
   private findInitialState(journey: JourneyDefinition): JourneyState {
-    const initialState = journey.states.find(s => s.type === 'initial')
+    const initialState = journey.states.find((s) => s.type === 'initial')
     if (!initialState) {
       throw new Error('Journey must have an initial state')
     }
@@ -417,8 +409,11 @@ export class JourneyExecutionEngine {
   /**
    * Get current state from journey
    */
-  private getCurrentState(journey: JourneyDefinition, context: JourneyExecutionContext): JourneyState | undefined {
-    return journey.states.find(s => s.id === context.currentStateId)
+  private getCurrentState(
+    journey: JourneyDefinition,
+    context: JourneyExecutionContext
+  ): JourneyState | undefined {
+    return journey.states.find((s) => s.id === context.currentStateId)
   }
 
   /**
@@ -426,13 +421,13 @@ export class JourneyExecutionEngine {
    */
   private initializeProgressTracker(journey: JourneyDefinition): ProgressTracker {
     const milestones = journey.states
-      .filter(s => s.type !== 'initial' && s.type !== 'final')
+      .filter((s) => s.type !== 'initial' && s.type !== 'final')
       .map((state, index) => ({
         id: state.id,
         name: state.name || state.id,
         description: state.description || `Execute ${state.name || state.id}`,
         stateId: state.id,
-        completed: false
+        completed: false,
       }))
 
     return {
@@ -440,7 +435,7 @@ export class JourneyExecutionEngine {
       completedStates: 0,
       currentStateName: 'Starting...',
       completionPercentage: 0,
-      milestones
+      milestones,
     }
   }
 
@@ -455,7 +450,7 @@ export class JourneyExecutionEngine {
       tracker.currentStateName = currentState.name || currentState.id
 
       // Mark current milestone as completed
-      const milestone = tracker.milestones.find(m => m.stateId === context.currentStateId)
+      const milestone = tracker.milestones.find((m) => m.stateId === context.currentStateId)
       if (milestone && !milestone.completed) {
         milestone.completed = true
         milestone.timestamp = new Date()
@@ -463,14 +458,19 @@ export class JourneyExecutionEngine {
       }
 
       // Update completion percentage
-      tracker.completionPercentage = Math.round((tracker.completedStates / tracker.totalStates) * 100)
+      tracker.completionPercentage = Math.round(
+        (tracker.completedStates / tracker.totalStates) * 100
+      )
     }
   }
 
   /**
    * Check if journey is completed
    */
-  private isJourneyCompleted(journey: JourneyDefinition, context: JourneyExecutionContext): boolean {
+  private isJourneyCompleted(
+    journey: JourneyDefinition,
+    context: JourneyExecutionContext
+  ): boolean {
     const currentState = this.getCurrentState(journey, context)
     return currentState?.type === 'final'
   }
@@ -485,7 +485,10 @@ export class JourneyExecutionEngine {
   /**
    * Execute state actions
    */
-  private async executeStateActions(actions: any[], context: JourneyExecutionContext): Promise<void> {
+  private async executeStateActions(
+    actions: any[],
+    context: JourneyExecutionContext
+  ): Promise<void> {
     for (const action of actions) {
       // Implementation would depend on action types
       console.log(`Executing state action:`, action)
@@ -545,12 +548,12 @@ class InitialStateHandler extends StateHandler {
     journey: JourneyDefinition
   ): Promise<StateExecutionResult> {
     // Find first transition from initial state
-    const firstTransition = journey.transitions?.find(t => t.from === state.id)
+    const firstTransition = journey.transitions?.find((t) => t.from === state.id)
 
     return {
       success: true,
       nextStateId: firstTransition?.to,
-      conversationResponse: `Starting ${journey.title}...`
+      conversationResponse: `Starting ${journey.title}...`,
     }
   }
 }
@@ -566,7 +569,7 @@ class FinalStateHandler extends StateHandler {
   ): Promise<StateExecutionResult> {
     return {
       success: true,
-      conversationResponse: `✅ Journey "${journey.title}" completed successfully! 🎉\n\nSummary:\n- Total states executed: ${context.metadata.progressTracker.completedStates}\n- Execution time: ${Math.round((Date.now() - context.startTime.getTime()) / 1000)}s\n- Tools used: ${context.toolResults.length}`
+      conversationResponse: `✅ Journey "${journey.title}" completed successfully! 🎉\n\nSummary:\n- Total states executed: ${context.metadata.progressTracker.completedStates}\n- Execution time: ${Math.round((Date.now() - context.startTime.getTime()) / 1000)}s\n- Tools used: ${context.toolResults.length}`,
     }
   }
 }
@@ -596,7 +599,7 @@ class ToolStateHandler extends StateHandler {
       context.toolResults.push(toolResult)
 
       // Find next transition
-      const nextTransition = journey.transitions?.find(t => t.from === state.id)
+      const nextTransition = journey.transitions?.find((t) => t.from === state.id)
 
       return {
         success: toolResult.success,
@@ -604,7 +607,7 @@ class ToolStateHandler extends StateHandler {
         conversationResponse: toolResult.success
           ? `✅ Executed ${state.name || toolId} successfully`
           : `❌ Failed to execute ${state.name || toolId}: ${toolResult.error?.message}`,
-        toolExecutions: [toolResult]
+        toolExecutions: [toolResult],
       }
     } catch (error) {
       return {
@@ -612,8 +615,8 @@ class ToolStateHandler extends StateHandler {
         error: {
           code: 'TOOL_EXECUTION_ERROR',
           message: error instanceof Error ? error.message : 'Tool execution failed',
-          recoverable: true
-        }
+          recoverable: true,
+        },
       }
     }
   }
@@ -639,7 +642,7 @@ class ToolStateHandler extends StateHandler {
         output: { success: true, data: 'Mock tool execution result' },
         executionTime: Date.now() - startTime,
         success: true,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     } catch (error) {
       return {
@@ -653,9 +656,9 @@ class ToolStateHandler extends StateHandler {
         error: {
           code: 'TOOL_ERROR',
           message: error instanceof Error ? error.message : 'Unknown tool error',
-          retryable: true
+          retryable: true,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
   }
@@ -675,18 +678,19 @@ class ChatStateHandler extends StateHandler {
     if (!userInput) {
       return {
         success: true,
-        conversationResponse: state.description || state.name || 'Please provide input to continue.',
-        userInputRequired: true
+        conversationResponse:
+          state.description || state.name || 'Please provide input to continue.',
+        userInputRequired: true,
       }
     }
 
     // Process user input and continue
-    const nextTransition = journey.transitions?.find(t => t.from === state.id)
+    const nextTransition = journey.transitions?.find((t) => t.from === state.id)
 
     return {
       success: true,
       nextStateId: nextTransition?.to,
-      conversationResponse: `Thank you for your input. Continuing...`
+      conversationResponse: `Thank you for your input. Continuing...`,
     }
   }
 }
@@ -705,21 +709,26 @@ class ConditionalStateHandler extends StateHandler {
     const evaluationResult = await this.evaluateCondition(condition, context)
 
     // Find appropriate transition based on condition result
-    const transitions = journey.transitions?.filter(t => t.from === state.id) || []
-    const selectedTransition = transitions.find(t =>
-      (evaluationResult && t.condition === 'true') ||
-      (!evaluationResult && t.condition === 'false') ||
-      !t.condition // Default transition
-    ) || transitions[0]
+    const transitions = journey.transitions?.filter((t) => t.from === state.id) || []
+    const selectedTransition =
+      transitions.find(
+        (t) =>
+          (evaluationResult && t.condition === 'true') ||
+          (!evaluationResult && t.condition === 'false') ||
+          !t.condition // Default transition
+      ) || transitions[0]
 
     return {
       success: true,
       nextStateId: selectedTransition?.to,
-      conversationResponse: `Condition evaluated: ${evaluationResult ? 'true' : 'false'}`
+      conversationResponse: `Condition evaluated: ${evaluationResult ? 'true' : 'false'}`,
     }
   }
 
-  private async evaluateCondition(condition: string, context: JourneyExecutionContext): Promise<boolean> {
+  private async evaluateCondition(
+    condition: string,
+    context: JourneyExecutionContext
+  ): Promise<boolean> {
     // Mock condition evaluation - would implement actual condition logic
     console.log(`Evaluating condition: ${condition}`)
     return true // Default to true for now
@@ -736,17 +745,17 @@ class ParallelStateHandler extends StateHandler {
     journey: JourneyDefinition
   ): Promise<StateExecutionResult> {
     // Execute multiple parallel branches
-    const parallelBranches = state.config?.branches as string[] || []
+    const parallelBranches = (state.config?.branches as string[]) || []
 
     try {
       // This would execute branches in parallel
       // For now, just proceed to next state
-      const nextTransition = journey.transitions?.find(t => t.from === state.id)
+      const nextTransition = journey.transitions?.find((t) => t.from === state.id)
 
       return {
         success: true,
         nextStateId: nextTransition?.to,
-        conversationResponse: `Executed ${parallelBranches.length} parallel branches`
+        conversationResponse: `Executed ${parallelBranches.length} parallel branches`,
       }
     } catch (error) {
       return {
@@ -754,8 +763,8 @@ class ParallelStateHandler extends StateHandler {
         error: {
           code: 'PARALLEL_EXECUTION_ERROR',
           message: error instanceof Error ? error.message : 'Parallel execution failed',
-          recoverable: true
-        }
+          recoverable: true,
+        },
       }
     }
   }

@@ -12,7 +12,7 @@ export enum ParlantAgentStatus {
   ONLINE = 'online',
   OFFLINE = 'offline',
   BUSY = 'busy',
-  MAINTENANCE = 'maintenance'
+  MAINTENANCE = 'maintenance',
 }
 
 /**
@@ -23,7 +23,7 @@ export enum ParlantSessionStatus {
   PAUSED = 'paused',
   COMPLETED = 'completed',
   ABANDONED = 'abandoned',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 /**
@@ -34,7 +34,7 @@ export enum ParlantMessageType {
   AGENT_MESSAGE = 'agent_message',
   SYSTEM_MESSAGE = 'system_message',
   TOOL_CALL = 'tool_call',
-  TOOL_RESULT = 'tool_result'
+  TOOL_RESULT = 'tool_result',
 }
 
 /**
@@ -65,7 +65,7 @@ export enum ParlantEventType {
 
   // Performance and analytics events
   AGENT_PERFORMANCE_UPDATE = 'agent_performance_update',
-  SESSION_ANALYTICS_UPDATE = 'session_analytics_update'
+  SESSION_ANALYTICS_UPDATE = 'session_analytics_update',
 }
 
 /**

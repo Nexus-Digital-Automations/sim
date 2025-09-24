@@ -5,46 +5,33 @@
  * with full fidelity preservation and optimized execution paths.
  */
 
+import type { JourneyStateType } from '@sim/db/parlant'
 import type {
-  WorkflowAnalysisResult,
+  ChatStateConfiguration,
+  ComplexityMetrics,
+  ConditionalNode,
+  ConversionContext,
+  ErrorMapping,
+  FinalStateConfiguration,
   JourneyDefinition,
+  JourneyMetadata,
+  JourneyStateConfiguration,
   JourneyStateDefinition,
   JourneyTransitionDefinition,
-  JourneyMetadata,
-  ConversionContext,
-  SimBlockType,
-  ReactFlowNode,
-  ReactFlowEdge,
-  ToolDependency,
-  ParameterMapping,
-  ErrorMapping,
-  TransformationFunction,
-  ValidationRule,
-  RecoveryStrategy,
-  ConditionalNode,
-  ParallelSection,
   LoopStructure,
-  JourneyStateConfiguration,
-  ChatStateConfiguration,
-  ToolStateConfiguration,
-  ConditionalStateConfiguration,
-  FinalStateConfiguration,
-  VariableUsage,
-  ContextMapping,
-  SessionPreservation,
-  StatePreservation,
-  PreservedAttributes,
-  ComplexityMetrics,
+  ParallelSection,
+  ParameterMapping,
   PerformanceMetrics,
-  ValidationMetrics
+  PreservedAttributes,
+  ReactFlowEdge,
+  ReactFlowNode,
+  SimBlockType,
+  ToolDependency,
+  ToolStateConfiguration,
+  ValidationMetrics,
+  VariableUsage,
+  WorkflowAnalysisResult,
 } from './types'
-
-import type {
-  JourneyStateType,
-  ParlantJourneyInsert,
-  ParlantJourneyStateInsert,
-  ParlantJourneyTransitionInsert
-} from '@sim/db/parlant'
 
 /**
  * Journey Mapping Service that converts workflow analysis results
@@ -72,7 +59,7 @@ export class JourneyMappingService {
     this.log('info', 'Starting journey mapping', {
       workflowId: workflow.id,
       nodeCount: workflow.nodes.length,
-      edgeCount: workflow.edges.length
+      edgeCount: workflow.edges.length,
     })
 
     try {
@@ -108,13 +95,13 @@ export class JourneyMappingService {
         status: 'draft',
         conditions: [
           `User wants to execute workflow: ${workflow.name}`,
-          `Workflow ID: ${workflow.id}`
+          `Workflow ID: ${workflow.id}`,
         ],
         isActive: false,
         version: 1,
         metadata: JSON.stringify(metadata),
         states,
-        transitions
+        transitions,
       }
 
       // Validate journey structure
@@ -126,17 +113,16 @@ export class JourneyMappingService {
         journeyId: journey.id,
         stateCount: states.length,
         transitionCount: transitions.length,
-        mappingTimeMs: mappingTime
+        mappingTimeMs: mappingTime,
       })
 
       return journey
-
     } catch (error) {
       const mappingTime = Date.now() - startTime
       this.log('error', 'Journey mapping failed', {
         workflowId: workflow.id,
         error: error instanceof Error ? error.message : 'Unknown error',
-        mappingTimeMs: mappingTime
+        mappingTimeMs: mappingTime,
       })
       throw error
     }
@@ -147,7 +133,7 @@ export class JourneyMappingService {
    */
   private async initializeToolMappings(analysis: WorkflowAnalysisResult): Promise<void> {
     this.log('debug', 'Initializing tool mappings', {
-      toolCount: analysis.toolAnalysis.totalTools
+      toolCount: analysis.toolAnalysis.totalTools,
     })
 
     for (const compatibility of analysis.toolAnalysis.toolCompatibility) {
@@ -161,7 +147,7 @@ export class JourneyMappingService {
         errorMapping: await this.generateErrorMapping(compatibility.toolId),
         compatibilityLevel: compatibility.compatibility,
         migrationRequired: compatibility.compatibility !== 'full',
-        deprecationWarning: compatibility.issues.find(issue => issue.includes('deprecated'))
+        deprecationWarning: compatibility.issues.find((issue) => issue.includes('deprecated')),
       }
 
       this.toolMappings.set(compatibility.toolId, toolMapping)
@@ -171,12 +157,14 @@ export class JourneyMappingService {
   /**
    * Convert workflow nodes to journey states
    */
-  private async convertNodesToStates(analysis: WorkflowAnalysisResult): Promise<JourneyStateDefinition[]> {
+  private async convertNodesToStates(
+    analysis: WorkflowAnalysisResult
+  ): Promise<JourneyStateDefinition[]> {
     const { workflow, structure } = analysis
     const states: JourneyStateDefinition[] = []
 
     this.log('debug', 'Converting nodes to states', {
-      nodeCount: workflow.nodes.length
+      nodeCount: workflow.nodes.length,
     })
 
     for (const node of workflow.nodes) {
@@ -267,7 +255,7 @@ export class JourneyMappingService {
       blockType,
       dependencies: this.getNodeDependencies(node.id, analysis),
       executionGroup: this.getExecutionGroup(node, analysis),
-      errorHandling: this.createErrorHandling(node, analysis)
+      errorHandling: this.createErrorHandling(node, analysis),
     }
 
     return state
@@ -284,7 +272,7 @@ export class JourneyMappingService {
     const transitions: JourneyTransitionDefinition[] = []
 
     this.log('debug', 'Converting edges to transitions', {
-      edgeCount: workflow.edges.length
+      edgeCount: workflow.edges.length,
     })
 
     for (const edge of workflow.edges) {
@@ -331,8 +319,8 @@ export class JourneyMappingService {
       metadata: {
         animated: edge.animated,
         style: edge.style,
-        label: edge.label
-      }
+        label: edge.label,
+      },
     }
 
     return transition
@@ -380,7 +368,7 @@ export class JourneyMappingService {
     if (!splitStateId) return
 
     // Mark split state with parallel execution metadata
-    const splitState = states.find(s => s.id === splitStateId)
+    const splitState = states.find((s) => s.id === splitStateId)
     if (splitState) {
       const config = JSON.parse(splitState.configuration) as JourneyStateConfiguration
       config.parallelExecution = {
@@ -388,7 +376,7 @@ export class JourneyMappingService {
         branchCount: parallelSection.branches.length,
         synchronization: parallelSection.synchronizationType,
         timeout: parallelSection.timeout,
-        errorHandling: parallelSection.errorHandling
+        errorHandling: parallelSection.errorHandling,
       }
       splitState.configuration = JSON.stringify(config)
     }
@@ -405,13 +393,13 @@ export class JourneyMappingService {
           parallelExecution: {
             type: 'join',
             synchronization: parallelSection.synchronizationType,
-            branchCount: parallelSection.branches.length
-          }
+            branchCount: parallelSection.branches.length,
+          },
         }),
         isInitial: false,
         isFinal: false,
         originalNodeId: parallelSection.joinNode,
-        blockType: 'parallel_join'
+        blockType: 'parallel_join',
       }
 
       states.push(joinState)
@@ -434,7 +422,7 @@ export class JourneyMappingService {
     if (!entryStateId) return
 
     // Add loop metadata to entry state
-    const entryState = states.find(s => s.id === entryStateId)
+    const entryState = states.find((s) => s.id === entryStateId)
     if (entryState) {
       const config = JSON.parse(entryState.configuration) as JourneyStateConfiguration
       config.loop = {
@@ -443,7 +431,7 @@ export class JourneyMappingService {
         maxIterations: loopStructure.maxIterations,
         iterationVariable: loopStructure.iterationVariable,
         bodyNodes: loopStructure.bodyNodes,
-        exitConditions: loopStructure.exitConditions
+        exitConditions: loopStructure.exitConditions,
       }
       entryState.configuration = JSON.stringify(config)
     }
@@ -451,7 +439,7 @@ export class JourneyMappingService {
     // Create loop back transition if it doesn't exist
     if (exitStateId) {
       const loopBackTransition = transitions.find(
-        t => t.fromStateId === exitStateId && t.toStateId === entryStateId
+        (t) => t.fromStateId === exitStateId && t.toStateId === entryStateId
       )
 
       if (!loopBackTransition) {
@@ -463,8 +451,8 @@ export class JourneyMappingService {
           priority: 0, // Lower priority than exit transitions
           metadata: {
             loopBack: true,
-            loopId: loopStructure.id
-          }
+            loopId: loopStructure.id,
+          },
         }
 
         transitions.push(backTransition)
@@ -484,7 +472,7 @@ export class JourneyMappingService {
     const stateId = this.stateIdMapping.get(conditionalNode.nodeId)
     if (!stateId) return
 
-    const state = states.find(s => s.id === stateId)
+    const state = states.find((s) => s.id === stateId)
     if (!state) return
 
     // Ensure the state is configured for conditional logic
@@ -496,7 +484,7 @@ export class JourneyMappingService {
         variables: conditionalNode.variables,
         truePath: conditionalNode.truePath,
         falsePath: conditionalNode.falsePath,
-        complexity: conditionalNode.complexity
+        complexity: conditionalNode.complexity,
       }
       state.configuration = JSON.stringify(chatConfig)
     }
@@ -547,26 +535,29 @@ export class JourneyMappingService {
       description: workflow.description,
       version: workflow.version,
       workspaceId: workflow.workspaceId,
-      nodeTypes: [...new Set(workflow.nodes.map(n => n.type as SimBlockType))],
-      edgeTypes: [...new Set(workflow.edges.map(e => e.type || 'default'))],
+      nodeTypes: [...new Set(workflow.nodes.map((n) => n.type as SimBlockType))],
+      edgeTypes: [...new Set(workflow.edges.map((e) => e.type || 'default'))],
       hasConditionalLogic: analysis.structure.conditionalNodes.length > 0,
       hasParallelExecution: analysis.structure.parallelSections.length > 0,
       hasLoops: analysis.structure.loopStructures.length > 0,
-      hasUserInteraction: workflow.nodes.some(n => n.type === 'user_input'),
+      hasUserInteraction: workflow.nodes.some((n) => n.type === 'user_input'),
       toolDependencies: Array.from(this.toolMappings.values()),
       variableUsage: this.extractVariableUsage(workflow),
-      errorHandlingStrategies: Object.keys(analysis.errorHandlingAnalysis.strategies)
+      errorHandlingStrategies: Object.keys(analysis.errorHandlingAnalysis.strategies),
     }
 
     const complexityMetrics: ComplexityMetrics = {
       nodeCount: workflow.nodes.length,
       edgeCount: workflow.edges.length,
       conditionalBranches: analysis.structure.conditionalNodes.length,
-      parallelPaths: analysis.structure.parallelSections.reduce((sum, section) => sum + section.branches.length, 0),
+      parallelPaths: analysis.structure.parallelSections.reduce(
+        (sum, section) => sum + section.branches.length,
+        0
+      ),
       loopStructures: analysis.structure.loopStructures.length,
       maxDepth: this.calculateMaxExecutionDepth(analysis),
       cyclomaticComplexity: analysis.complexityAnalysis.cyclomatic,
-      halsteadComplexity: this.calculateHalsteadComplexity(workflow)
+      halsteadComplexity: this.calculateHalsteadComplexity(workflow),
     }
 
     const performanceMetrics: PerformanceMetrics = {
@@ -576,16 +567,20 @@ export class JourneyMappingService {
       validationTimeMs: 0,
       memoryUsageMB: 0,
       cacheHitRate: 0,
-      optimizationApplied: this.getAppliedOptimizations()
+      optimizationApplied: this.getAppliedOptimizations(),
     }
 
     const validationMetrics: ValidationMetrics = {
       preservationScore: this.calculatePreservationScore(workflow, states, transitions),
-      functionalEquivalenceScore: this.calculateFunctionalEquivalenceScore(analysis, states, transitions),
+      functionalEquivalenceScore: this.calculateFunctionalEquivalenceScore(
+        analysis,
+        states,
+        transitions
+      ),
       structuralIntegrityScore: this.calculateStructuralIntegrityScore(states, transitions),
       errorCount: 0, // Will be set by validation
       warningCount: 0, // Will be set by validation
-      issueCategories: []
+      issueCategories: [],
     }
 
     return {
@@ -596,7 +591,7 @@ export class JourneyMappingService {
       executionMode: workflow.configuration?.executionMode || 'sequential',
       complexity: complexityMetrics,
       performance: performanceMetrics,
-      validation: validationMetrics
+      validation: validationMetrics,
     }
   }
 
@@ -611,36 +606,44 @@ export class JourneyMappingService {
       validationErrors.push('Journey must have at least one state')
     }
 
-    const hasInitialState = journey.states.some(s => s.isInitial)
+    const hasInitialState = journey.states.some((s) => s.isInitial)
     if (!hasInitialState) {
       validationErrors.push('Journey must have at least one initial state')
     }
 
-    const hasFinalState = journey.states.some(s => s.isFinal)
+    const hasFinalState = journey.states.some((s) => s.isFinal)
     if (!hasFinalState) {
       validationErrors.push('Journey must have at least one final state')
     }
 
     // Validate transitions
     for (const transition of journey.transitions) {
-      const fromState = journey.states.find(s => s.id === transition.fromStateId)
-      const toState = journey.states.find(s => s.id === transition.toStateId)
+      const fromState = journey.states.find((s) => s.id === transition.fromStateId)
+      const toState = journey.states.find((s) => s.id === transition.toStateId)
 
       if (!fromState) {
-        validationErrors.push(`Transition ${transition.id} references non-existent from state: ${transition.fromStateId}`)
+        validationErrors.push(
+          `Transition ${transition.id} references non-existent from state: ${transition.fromStateId}`
+        )
       }
 
       if (!toState) {
-        validationErrors.push(`Transition ${transition.id} references non-existent to state: ${transition.toStateId}`)
+        validationErrors.push(
+          `Transition ${transition.id} references non-existent to state: ${transition.toStateId}`
+        )
       }
     }
 
     // Check for unreachable states
     const reachableStates = this.findReachableStates(journey)
-    const unreachableStates = journey.states.filter(s => !reachableStates.has(s.id) && !s.isInitial)
+    const unreachableStates = journey.states.filter(
+      (s) => !reachableStates.has(s.id) && !s.isInitial
+    )
 
     if (unreachableStates.length > 0) {
-      validationErrors.push(`Found unreachable states: ${unreachableStates.map(s => s.id).join(', ')}`)
+      validationErrors.push(
+        `Found unreachable states: ${unreachableStates.map((s) => s.id).join(', ')}`
+      )
     }
 
     if (validationErrors.length > 0) {
@@ -652,19 +655,22 @@ export class JourneyMappingService {
   // State Configuration Creation Methods
   // =============================================================================
 
-  private createFinalStateConfiguration(node: ReactFlowNode, analysis: WorkflowAnalysisResult): FinalStateConfiguration {
+  private createFinalStateConfiguration(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): FinalStateConfiguration {
     return {
       stateType: 'final',
       outcome: {
         status: 'success',
         message: node.data?.message || 'Workflow completed successfully',
-        data: node.data?.outputData || {}
+        data: node.data?.outputData || {},
       },
       cleanup: {
         clearVariables: node.data?.clearVariables !== false,
         saveSession: node.data?.saveSession !== false,
-        sendNotifications: node.data?.sendNotifications === true
-      }
+        sendNotifications: node.data?.sendNotifications === true,
+      },
     }
   }
 
@@ -673,7 +679,8 @@ export class JourneyMappingService {
     analysis: WorkflowAnalysisResult
   ): Promise<ToolStateConfiguration> {
     const toolId = node.data?.toolId || node.data?.tool || node.id
-    const toolMapping = this.toolMappings.get(toolId) || await this.createDefaultToolMapping(toolId, node)
+    const toolMapping =
+      this.toolMappings.get(toolId) || (await this.createDefaultToolMapping(toolId, node))
 
     return {
       stateType: 'tool',
@@ -685,10 +692,10 @@ export class JourneyMappingService {
         strategy: node.data?.errorHandling?.strategy || 'retry',
         maxRetries: node.data?.errorHandling?.maxRetries || 3,
         fallbackValue: node.data?.errorHandling?.fallbackValue,
-        timeout: node.data?.errorHandling?.timeout || 30000
+        timeout: node.data?.errorHandling?.timeout || 30000,
       },
       async: node.data?.async === true,
-      cacheable: node.data?.cacheable !== false
+      cacheable: node.data?.cacheable !== false,
     }
   }
 
@@ -701,76 +708,85 @@ export class JourneyMappingService {
       prompt: {
         template: node.data?.prompt || `Evaluating condition: ${node.data?.condition || 'true'}`,
         variables: this.extractVariablesFromCondition(node.data?.condition || 'true'),
-        tone: 'professional'
+        tone: 'professional',
       },
       validation: {
-        required: true
+        required: true,
       },
       conditional: {
         condition: node.data?.condition || 'true',
-        variables: this.extractVariablesFromCondition(node.data?.condition || 'true')
-      }
+        variables: this.extractVariablesFromCondition(node.data?.condition || 'true'),
+      },
     }
   }
 
-  private createChatStateConfiguration(node: ReactFlowNode, analysis: WorkflowAnalysisResult): ChatStateConfiguration {
+  private createChatStateConfiguration(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): ChatStateConfiguration {
     return {
       stateType: 'chat',
       prompt: {
         template: node.data?.prompt || node.data?.label || 'Please provide input',
         variables: node.data?.variables || {},
-        tone: node.data?.tone || 'friendly'
+        tone: node.data?.tone || 'friendly',
       },
       validation: {
         required: node.data?.required !== false,
         minLength: node.data?.minLength,
         maxLength: node.data?.maxLength,
-        pattern: node.data?.pattern
+        pattern: node.data?.pattern,
       },
       responseOptions: {
         type: node.data?.inputType || 'text',
         choices: node.data?.choices,
-        multiSelect: node.data?.multiSelect === true
-      }
+        multiSelect: node.data?.multiSelect === true,
+      },
     }
   }
 
-  private createParallelSplitConfiguration(node: ReactFlowNode, analysis: WorkflowAnalysisResult): ChatStateConfiguration {
+  private createParallelSplitConfiguration(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): ChatStateConfiguration {
     return {
       stateType: 'chat',
       prompt: {
         template: 'Initiating parallel execution paths',
-        tone: 'professional'
+        tone: 'professional',
       },
       validation: {
-        required: false
+        required: false,
       },
       parallelExecution: {
         type: 'split',
         synchronization: node.data?.synchronization || 'all',
         timeout: node.data?.timeout,
-        errorHandling: node.data?.errorHandling || 'fail_fast'
-      }
+        errorHandling: node.data?.errorHandling || 'fail_fast',
+      },
     }
   }
 
-  private createLoopStateConfiguration(node: ReactFlowNode, analysis: WorkflowAnalysisResult): ChatStateConfiguration {
+  private createLoopStateConfiguration(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): ChatStateConfiguration {
     return {
       stateType: 'chat',
       prompt: {
         template: `Loop iteration: ${node.data?.condition || 'continuing loop'}`,
         variables: this.extractVariablesFromCondition(node.data?.condition || 'true'),
-        tone: 'professional'
+        tone: 'professional',
       },
       validation: {
-        required: false
+        required: false,
       },
       loop: {
         type: node.data?.loopType || 'while',
         condition: node.data?.condition || 'true',
         maxIterations: node.data?.maxIterations,
-        iterationVariable: node.data?.iterationVariable
-      }
+        iterationVariable: node.data?.iterationVariable,
+      },
     }
   }
 
@@ -787,10 +803,10 @@ export class JourneyMappingService {
       errorHandling: {
         strategy: 'retry',
         maxRetries: 1,
-        timeout: 10000
+        timeout: 10000,
       },
       async: false,
-      cacheable: false
+      cacheable: false,
     }
   }
 
@@ -806,12 +822,15 @@ export class JourneyMappingService {
     return 'custom'
   }
 
-  private async generateInputMapping(toolId: string, analysis: WorkflowAnalysisResult): Promise<ParameterMapping[]> {
+  private async generateInputMapping(
+    toolId: string,
+    analysis: WorkflowAnalysisResult
+  ): Promise<ParameterMapping[]> {
     // Generate parameter mappings based on tool analysis
     const mappings: ParameterMapping[] = []
 
     // Find nodes using this tool
-    const toolNodes = analysis.workflow.nodes.filter(node => node.data?.toolId === toolId)
+    const toolNodes = analysis.workflow.nodes.filter((node) => node.data?.toolId === toolId)
 
     for (const node of toolNodes) {
       if (node.data?.config) {
@@ -821,7 +840,7 @@ export class JourneyMappingService {
             journeyParameter: key,
             required: true,
             defaultValue: value,
-            description: `Parameter ${key} for tool ${toolId}`
+            description: `Parameter ${key} for tool ${toolId}`,
           })
         }
       }
@@ -830,15 +849,18 @@ export class JourneyMappingService {
     return mappings
   }
 
-  private async generateOutputMapping(toolId: string, analysis: WorkflowAnalysisResult): Promise<ParameterMapping[]> {
+  private async generateOutputMapping(
+    toolId: string,
+    analysis: WorkflowAnalysisResult
+  ): Promise<ParameterMapping[]> {
     // Generate output mappings - simplified implementation
     return [
       {
         workflowParameter: 'result',
         journeyParameter: 'toolResult',
         required: false,
-        description: `Output result from tool ${toolId}`
-      }
+        description: `Output result from tool ${toolId}`,
+      },
     ]
   }
 
@@ -851,24 +873,29 @@ export class JourneyMappingService {
         recovery: {
           type: 'retry',
           maxAttempts: 3,
-          backoffDelay: 1000
+          backoffDelay: 1000,
         },
         userMessage: `Error executing tool: ${toolId}`,
-        logLevel: 'error'
-      }
+        logLevel: 'error',
+      },
     ]
   }
 
-  private async createDefaultToolMapping(toolId: string, node: ReactFlowNode): Promise<ToolDependency> {
+  private async createDefaultToolMapping(
+    toolId: string,
+    node: ReactFlowNode
+  ): Promise<ToolDependency> {
     return {
       toolId,
       toolName: toolId,
       toolType: 'custom',
       configuration: node.data?.config || {},
       inputMapping: await this.generateInputMapping(toolId, { workflow: { nodes: [node] } } as any),
-      outputMapping: await this.generateOutputMapping(toolId, { workflow: { nodes: [node] } } as any),
+      outputMapping: await this.generateOutputMapping(toolId, {
+        workflow: { nodes: [node] },
+      } as any),
       errorMapping: await this.generateErrorMapping(toolId),
-      compatibilityLevel: 'partial'
+      compatibilityLevel: 'partial',
     }
   }
 
@@ -891,11 +918,14 @@ export class JourneyMappingService {
   }
 
   private getNodeDependencies(nodeId: string, analysis: WorkflowAnalysisResult): string[] {
-    const dependencyNode = analysis.dependencies.nodes.find(n => n.nodeId === nodeId)
+    const dependencyNode = analysis.dependencies.nodes.find((n) => n.nodeId === nodeId)
     return dependencyNode?.dependencies || []
   }
 
-  private getExecutionGroup(node: ReactFlowNode, analysis: WorkflowAnalysisResult): string | undefined {
+  private getExecutionGroup(
+    node: ReactFlowNode,
+    analysis: WorkflowAnalysisResult
+  ): string | undefined {
     // Determine execution group based on parallel sections
     for (const section of analysis.structure.parallelSections) {
       for (const branch of section.branches) {
@@ -914,7 +944,7 @@ export class JourneyMappingService {
       return {
         onError: 'retry',
         maxRetries: 3,
-        timeout: 30000
+        timeout: 30000,
       }
     }
 
@@ -922,7 +952,7 @@ export class JourneyMappingService {
       onError: errorHandling.strategy || 'retry',
       maxRetries: errorHandling.maxRetries || 3,
       fallbackState: errorHandling.fallbackState,
-      timeout: errorHandling.timeout || 30000
+      timeout: errorHandling.timeout || 30000,
     }
   }
 
@@ -934,7 +964,7 @@ export class JourneyMappingService {
     for (const entryPoint of structure.entryPoints) {
       const stateId = this.stateIdMapping.get(entryPoint)
       if (stateId) {
-        const state = states.find(s => s.id === stateId)
+        const state = states.find((s) => s.id === stateId)
         if (state) {
           state.isInitial = true
         }
@@ -942,7 +972,7 @@ export class JourneyMappingService {
     }
 
     // Ensure we have at least one initial state
-    const hasInitialState = states.some(s => s.isInitial)
+    const hasInitialState = states.some((s) => s.isInitial)
     if (!hasInitialState && states.length > 0) {
       states[0].isInitial = true
     }
@@ -951,7 +981,7 @@ export class JourneyMappingService {
     for (const exitPoint of structure.exitPoints) {
       const stateId = this.stateIdMapping.get(exitPoint)
       if (stateId) {
-        const state = states.find(s => s.id === stateId)
+        const state = states.find((s) => s.id === stateId)
         if (state) {
           state.isFinal = true
         }
@@ -959,7 +989,7 @@ export class JourneyMappingService {
     }
 
     // Ensure we have at least one final state
-    const hasFinalState = states.some(s => s.isFinal)
+    const hasFinalState = states.some((s) => s.isFinal)
     if (!hasFinalState) {
       // Create a default final state
       const finalState: JourneyStateDefinition = {
@@ -971,11 +1001,11 @@ export class JourneyMappingService {
           stateType: 'final',
           outcome: {
             status: 'success',
-            message: 'Journey completed successfully'
-          }
+            message: 'Journey completed successfully',
+          },
         }),
         isInitial: false,
-        isFinal: true
+        isFinal: true,
       }
 
       states.push(finalState)
@@ -989,14 +1019,14 @@ export class JourneyMappingService {
     const implicitTransitions: JourneyTransitionDefinition[] = []
 
     // Create transitions to final states for states that don't have outgoing transitions
-    const statesWithoutTransitions = states.filter(state => {
-      const hasOutgoing = analysis.workflow.edges.some(edge =>
-        this.stateIdMapping.get(edge.source) === state.id
+    const statesWithoutTransitions = states.filter((state) => {
+      const hasOutgoing = analysis.workflow.edges.some(
+        (edge) => this.stateIdMapping.get(edge.source) === state.id
       )
       return !hasOutgoing && !state.isFinal
     })
 
-    const finalStates = states.filter(s => s.isFinal)
+    const finalStates = states.filter((s) => s.isFinal)
     if (finalStates.length > 0) {
       const defaultFinalState = finalStates[0]
 
@@ -1008,8 +1038,8 @@ export class JourneyMappingService {
           priority: 1,
           metadata: {
             implicit: true,
-            reason: 'Default transition to final state'
-          }
+            reason: 'Default transition to final state',
+          },
         })
       }
     }
@@ -1019,7 +1049,8 @@ export class JourneyMappingService {
 
   private extractVariablesFromCondition(condition: string): Record<string, string> {
     const variables: Record<string, string> = {}
-    const matches = condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
+    const matches =
+      condition.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
 
     for (const match of matches) {
       if (!['true', 'false', 'null', 'undefined', 'and', 'or', 'not'].includes(match)) {
@@ -1046,7 +1077,7 @@ export class JourneyMappingService {
           usageCount: 1,
           firstUsed: workflow.id,
           lastModified: workflow.id,
-          description: `Global variable: ${name}`
+          description: `Global variable: ${name}`,
         })
       }
     }
@@ -1073,7 +1104,7 @@ export class JourneyMappingService {
       length,
       volume,
       difficulty: (operators / 2) * (operands / (operands || 1)),
-      effort: volume * ((operators / 2) * (operands / (operands || 1)))
+      effort: volume * ((operators / 2) * (operands / (operands || 1))),
     }
   }
 
@@ -1118,7 +1149,9 @@ export class JourneyMappingService {
     let score = 100
 
     // Reduce score for each missing tool mapping
-    const incompatibleTools = analysis.toolAnalysis.toolCompatibility.filter(t => t.compatibility === 'none')
+    const incompatibleTools = analysis.toolAnalysis.toolCompatibility.filter(
+      (t) => t.compatibility === 'none'
+    )
     score -= incompatibleTools.length * 10
 
     // Reduce score for missing error handling
@@ -1136,31 +1169,34 @@ export class JourneyMappingService {
     let score = 100
 
     // Check for structural issues
-    const hasInitialState = states.some(s => s.isInitial)
-    const hasFinalState = states.some(s => s.isFinal)
+    const hasInitialState = states.some((s) => s.isInitial)
+    const hasFinalState = states.some((s) => s.isFinal)
 
     if (!hasInitialState) score -= 20
     if (!hasFinalState) score -= 20
 
     // Check for orphaned states
     const reachableStates = this.findReachableStates({ states, transitions } as any)
-    const orphanedStates = states.filter(s => !reachableStates.has(s.id) && !s.isInitial)
+    const orphanedStates = states.filter((s) => !reachableStates.has(s.id) && !s.isInitial)
     score -= orphanedStates.length * 5
 
     return Math.max(score, 0)
   }
 
-  private findReachableStates(journey: { states: JourneyStateDefinition[], transitions: JourneyTransitionDefinition[] }): Set<string> {
+  private findReachableStates(journey: {
+    states: JourneyStateDefinition[]
+    transitions: JourneyTransitionDefinition[]
+  }): Set<string> {
     const reachable = new Set<string>()
-    const queue = journey.states.filter(s => s.isInitial).map(s => s.id)
+    const queue = journey.states.filter((s) => s.isInitial).map((s) => s.id)
 
     while (queue.length > 0) {
       const current = queue.shift()!
       if (reachable.has(current)) continue
 
       reachable.add(current)
-      const outgoing = journey.transitions.filter(t => t.fromStateId === current)
-      queue.push(...outgoing.map(t => t.toStateId))
+      const outgoing = journey.transitions.filter((t) => t.fromStateId === current)
+      queue.push(...outgoing.map((t) => t.toStateId))
     }
 
     return reachable

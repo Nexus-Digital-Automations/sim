@@ -7,13 +7,12 @@
 
 'use client'
 
-import React, { useState } from 'react'
-import { Copy, Type, Eye } from 'lucide-react'
+import { useState } from 'react'
+import { Copy, Eye, Type } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-
 import type { TextContent } from '../../types'
 
 interface TextDisplayProps {
@@ -24,7 +23,7 @@ interface TextDisplayProps {
 }
 
 export function TextDisplay({ content, onAction, compact = false, className }: TextDisplayProps) {
-  const [showFullText, setShowFullText] = useState(compact ? false : true)
+  const [showFullText, setShowFullText] = useState(!compact)
 
   const estimatedReadingTime = Math.ceil((content.wordCount || 0) / 200) // 200 words per minute
 
@@ -37,54 +36,58 @@ export function TextDisplay({ content, onAction, compact = false, className }: T
     }
   }
 
-  const displayText = showFullText || content.text.length <= 500
-    ? content.text
-    : `${content.text.substring(0, 500)}...`
+  const displayText =
+    showFullText || content.text.length <= 500
+      ? content.text
+      : `${content.text.substring(0, 500)}...`
 
   return (
     <div className={cn('w-full', className)}>
       {/* Header */}
       {(content.title || content.wordCount) && (
-        <div className="flex items-center justify-between mb-4">
+        <div className='mb-4 flex items-center justify-between'>
           {content.title && (
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className='font-semibold text-gray-900 text-lg dark:text-gray-100'>
               {content.title}
             </h3>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {content.wordCount && (
-              <Badge variant="secondary" className="text-xs">
-                <Type className="h-3 w-3 mr-1" />
+              <Badge variant='secondary' className='text-xs'>
+                <Type className='mr-1 h-3 w-3' />
                 {content.wordCount} words
               </Badge>
             )}
 
             {estimatedReadingTime > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                <Eye className="h-3 w-3 mr-1" />
+              <Badge variant='secondary' className='text-xs'>
+                <Eye className='mr-1 h-3 w-3' />
                 {estimatedReadingTime} min read
               </Badge>
             )}
 
-            <Button variant="ghost" size="sm" onClick={handleCopy}>
-              <Copy className="h-4 w-4" />
+            <Button variant='ghost' size='sm' onClick={handleCopy}>
+              <Copy className='h-4 w-4' />
             </Button>
           </div>
         </div>
       )}
 
       {/* Content */}
-      <Card className="border-0 shadow-none">
-        <CardContent className="p-0">
-          <div className={cn(
-            'prose prose-sm dark:prose-invert max-w-none',
-            content.format === 'rich' && 'prose-headings:text-gray-900 dark:prose-headings:text-gray-100'
-          )}>
+      <Card className='border-0 shadow-none'>
+        <CardContent className='p-0'>
+          <div
+            className={cn(
+              'prose prose-sm dark:prose-invert max-w-none',
+              content.format === 'rich' &&
+                'prose-headings:text-gray-900 dark:prose-headings:text-gray-100'
+            )}
+          >
             {content.format === 'html' ? (
               <div dangerouslySetInnerHTML={{ __html: displayText }} />
             ) : (
-              <div className="whitespace-pre-wrap font-geist-sans leading-relaxed text-gray-800 dark:text-gray-200">
+              <div className='whitespace-pre-wrap font-geist-sans text-gray-800 leading-relaxed dark:text-gray-200'>
                 {displayText}
               </div>
             )}
@@ -92,9 +95,9 @@ export function TextDisplay({ content, onAction, compact = false, className }: T
 
           {/* Show More/Less Button */}
           {content.text.length > 500 && (
-            <div className="mt-4 flex justify-center">
+            <div className='mt-4 flex justify-center'>
               <Button
-                variant="ghost"
+                variant='ghost'
                 onClick={() => {
                   setShowFullText(!showFullText)
                   onAction?.(showFullText ? 'text_collapsed' : 'text_expanded')
@@ -109,9 +112,7 @@ export function TextDisplay({ content, onAction, compact = false, className }: T
 
       {/* Description */}
       {content.description && (
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          {content.description}
-        </p>
+        <p className='mt-2 text-gray-600 text-sm dark:text-gray-400'>{content.description}</p>
       )}
     </div>
   )

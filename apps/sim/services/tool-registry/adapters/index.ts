@@ -6,13 +6,12 @@
  */
 
 import { z } from 'zod'
-import { createLogger } from '@/lib/logs/console/logger'
-import { ToolArgSchemas, ToolResultSchemas, type ToolId } from '@/lib/copilot/registry'
+import { ToolArgSchemas, type ToolId, ToolResultSchemas } from '@/lib/copilot/registry'
 import { getRegisteredTools } from '@/lib/copilot/tools/client/registry'
-
+import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ToolDefinition,
   ToolAdapter as IToolAdapter,
+  ToolDefinition,
   ToolMetadata,
   ToolUsageExample,
 } from '../types'
@@ -56,7 +55,9 @@ export class ToolAdapter implements IToolAdapter {
    * Adapt a Sim tool to registry format
    */
   adaptTool(originalTool: any): ToolDefinition {
-    logger.debug('Adapting tool to registry format', { toolId: originalTool.id || originalTool.name })
+    logger.debug('Adapting tool to registry format', {
+      toolId: originalTool.id || originalTool.name,
+    })
 
     try {
       if (originalTool.source === 'copilot') {
@@ -304,7 +305,7 @@ export class ToolAdapter implements IToolAdapter {
   private formatDisplayName(toolId: string): string {
     return toolId
       .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
   }
 
@@ -481,7 +482,8 @@ export class ToolAdapter implements IToolAdapter {
         },
         {
           question: 'Can I build a workflow without YAML?',
-          answer: 'Currently, workflows must be defined in YAML format, but you can use the visual editor to generate YAML.',
+          answer:
+            'Currently, workflows must be defined in YAML format, but you can use the visual editor to generate YAML.',
         },
       ],
     }

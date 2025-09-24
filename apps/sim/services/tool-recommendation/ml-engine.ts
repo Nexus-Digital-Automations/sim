@@ -11,16 +11,15 @@ import { tools } from '@/tools/registry'
 import type { ToolConfig } from '@/tools/types'
 import type {
   ConversationContext,
-  UserBehaviorProfile,
-  WorkspacePattern,
   FeatureVector,
-  TrainingData,
   MLModelConfig,
   MLModelType,
   ModelPerformance,
-  ToolRecommendation,
   RecommendationRequest,
-  ToolFamiliarityScore,
+  ToolRecommendation,
+  TrainingData,
+  UserBehaviorProfile,
+  WorkspacePattern,
 } from './types'
 
 const logger = createLogger('MLRecommendationEngine')
@@ -67,9 +66,7 @@ export class MLRecommendationEngine {
   /**
    * Generate tool recommendations using hybrid ML approach
    */
-  async generateRecommendations(
-    request: RecommendationRequest
-  ): Promise<ToolRecommendation[]> {
+  async generateRecommendations(request: RecommendationRequest): Promise<ToolRecommendation[]> {
     logger.info('Generating ML-powered tool recommendations')
 
     const startTime = Date.now()
@@ -88,27 +85,15 @@ export class MLRecommendationEngine {
       const candidateTools = this.getCandidateTools(request)
 
       // Generate recommendations using multiple models
-      const collaborativeScores = await this.collaborativeFiltering(
-        request,
-        candidateTools
-      )
+      const collaborativeScores = await this.collaborativeFiltering(request, candidateTools)
       const contentBasedScores = await this.contentBasedFiltering(
         contextFeatures,
         userFeatures,
         candidateTools
       )
-      const contextualScores = await this.contextualFiltering(
-        request.context,
-        candidateTools
-      )
-      const temporalScores = await this.temporalFiltering(
-        request,
-        candidateTools
-      )
-      const workspaceScores = await this.workspaceFiltering(
-        workspaceFeatures,
-        candidateTools
-      )
+      const contextualScores = await this.contextualFiltering(request.context, candidateTools)
+      const temporalScores = await this.temporalFiltering(request, candidateTools)
+      const workspaceScores = await this.workspaceFiltering(workspaceFeatures, candidateTools)
 
       // Combine scores using weighted ensemble
       const combinedScores = this.combineScores({
@@ -204,11 +189,7 @@ export class MLRecommendationEngine {
       if (!tool) continue
 
       const toolFeatures = await this.extractToolFeatures(tool)
-      const score = this.calculateContentSimilarity(
-        contextFeatures,
-        userFeatures,
-        toolFeatures
-      )
+      const score = this.calculateContentSimilarity(contextFeatures, userFeatures, toolFeatures)
 
       scores.set(toolId, score)
     }
@@ -265,8 +246,7 @@ export class MLRecommendationEngine {
 
       // Domain alignment
       for (const domain of domains) {
-        if (this.toolSupportsD
-(domain, tool)) score += 0.15
+        if (this.toolSupportsD(domain, tool)) score += 0.15
       }
 
       scores.set(toolId, Math.min(1, score))
@@ -292,15 +272,12 @@ export class MLRecommendationEngine {
       if (request.userProfile?.patterns) {
         // Find usage patterns matching current time
         const matchingPatterns = request.userProfile.patterns.filter(
-          pattern =>
-            Math.abs(pattern.timeOfDay - currentHour) <= 2 &&
-            pattern.dayOfWeek === currentDay
+          (pattern) =>
+            Math.abs(pattern.timeOfDay - currentHour) <= 2 && pattern.dayOfWeek === currentDay
         )
 
         for (const pattern of matchingPatterns) {
-          const toolUsed = pattern.toolSequences.some(seq =>
-            seq.tools.includes(toolId)
-          )
+          const toolUsed = pattern.toolSequences.some((seq) => seq.tools.includes(toolId))
           if (toolUsed) {
             score += 0.3 * pattern.frequency
           }
@@ -351,7 +328,7 @@ export class MLRecommendationEngine {
     const allTools = new Set<string>()
 
     // Collect all tools
-    Object.values(scores).forEach(scoreMap => {
+    Object.values(scores).forEach((scoreMap) => {
       scoreMap.forEach((_, toolId) => allTools.add(toolId))
     })
 
@@ -525,7 +502,7 @@ export class MLRecommendationEngine {
   // Helper methods
   private getCandidateTools(request: RecommendationRequest): string[] {
     const excludeSet = new Set(request.excludeTools || [])
-    return Object.keys(tools).filter(toolId => !excludeSet.has(toolId))
+    return Object.keys(tools).filter((toolId) => !excludeSet.has(toolId))
   }
 
   private getDefaultUserFeatures(): number[] {
@@ -574,8 +551,7 @@ export class MLRecommendationEngine {
     return 'general'
   }
 
-  private toolSupportsD
-(domain: string, tool: ToolConfig): boolean {
+  private toolSupportsD(domain: string, tool: ToolConfig): boolean {
     const description = tool.description.toLowerCase()
     return description.includes(domain.toLowerCase())
   }
@@ -713,11 +689,11 @@ export class MLRecommendationEngine {
 
   private async trainModel(modelType: MLModelType, data: TrainingData): Promise<ModelPerformance> {
     // Simulate model training
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     return {
       accuracy: 0.75 + Math.random() * 0.15,
-      precision: 0.70 + Math.random() * 0.20,
+      precision: 0.7 + Math.random() * 0.2,
       recall: 0.68 + Math.random() * 0.22,
       f1Score: 0.72 + Math.random() * 0.18,
       auc: 0.78 + Math.random() * 0.15,

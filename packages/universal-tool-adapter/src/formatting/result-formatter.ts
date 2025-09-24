@@ -1,28 +1,15 @@
-/**
- * Universal Tool Adapter - Result Formatter
- *
- * Advanced result formatting system that converts Sim tool outputs into
- * conversational, context-aware responses suitable for Parlant agents.
- * Handles various result types and provides natural language explanations.
- *
- * @author Claude Code Adapter Pattern Design Agent
- * @version 1.0.0
- */
-
 import type {
-  ToolRunResult as SimToolResult
-} from '../types/adapter-interfaces'
-import type {
-  ParlantToolResult,
-  ParlantExecutionContext,
-  ConversationalResult
-} from '../types/parlant-interfaces'
-import type {
+  ConversationalHint,
+  FormattingTemplate,
   NaturalLanguageConfig,
   ResultFormatting,
-  FormattingTemplate,
-  ConversationalHint
+  ToolRunResult as SimToolResult,
 } from '../types/adapter-interfaces'
+import type {
+  ConversationalResult,
+  ParlantExecutionContext,
+  ParlantToolResult,
+} from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
 
 const logger = createLogger('ResultFormatter')
@@ -31,7 +18,6 @@ const logger = createLogger('ResultFormatter')
  * Result formatting strategies for different data types
  */
 export class FormattingStrategies {
-
   /**
    * Format simple string results
    */
@@ -43,7 +29,7 @@ export class FormattingStrategies {
     if (!value || value.trim().length === 0) {
       return {
         summary: 'No result returned from the tool.',
-        suggestion: 'The tool completed but did not return any data.'
+        suggestion: 'The tool completed but did not return any data.',
       }
     }
 
@@ -52,7 +38,7 @@ export class FormattingStrategies {
       return {
         summary: 'Generated a web link for you.',
         details: `Link: ${value}`,
-        actions: ['Open link', 'Copy link']
+        actions: ['Open link', 'Copy link'],
       }
     }
 
@@ -60,13 +46,16 @@ export class FormattingStrategies {
       return {
         summary: 'Retrieved detailed information.',
         details: value.length > 500 ? `${value.substring(0, 500)}...` : value,
-        suggestion: value.length > 500 ? 'The full response is quite long. Would you like me to break it down?' : undefined
+        suggestion:
+          value.length > 500
+            ? 'The full response is quite long. Would you like me to break it down?'
+            : undefined,
       }
     }
 
     return {
       summary: value,
-      suggestion: hints?.results
+      suggestion: hints?.results,
     }
   }
 
@@ -92,11 +81,12 @@ export class FormattingStrategies {
     }
 
     // Provide context based on value
-    let summary = `Result: ${formattedValue}`
+    const summary = `Result: ${formattedValue}`
     let suggestion: string | undefined
 
     if (value === 0) {
-      suggestion = 'The result is zero. This might indicate no matches were found or the operation had no effect.'
+      suggestion =
+        'The result is zero. This might indicate no matches were found or the operation had no effect.'
     } else if (value < 0) {
       suggestion = 'The negative result might indicate an error condition or deficit.'
     } else if (value >= 1000000) {
@@ -117,7 +107,8 @@ export class FormattingStrategies {
     if (value.length === 0) {
       return {
         summary: 'No items found.',
-        suggestion: 'The search or operation did not return any results. You might want to try different parameters.'
+        suggestion:
+          'The search or operation did not return any results. You might want to try different parameters.',
       }
     }
 
@@ -125,18 +116,19 @@ export class FormattingStrategies {
       return {
         summary: 'Found 1 item.',
         details: typeof value[0] === 'string' ? value[0] : JSON.stringify(value[0]),
-        actions: ['View details', 'Use this item']
+        actions: ['View details', 'Use this item'],
       }
     }
 
     const summary = `Found ${value.length} items.`
     let details: string
 
-    if (value.every(item => typeof item === 'string')) {
+    if (value.every((item) => typeof item === 'string')) {
       // List of strings
-      details = value.length <= 5
-        ? value.join(', ')
-        : `${value.slice(0, 5).join(', ')}, and ${value.length - 5} more`
+      details =
+        value.length <= 5
+          ? value.join(', ')
+          : `${value.slice(0, 5).join(', ')}, and ${value.length - 5} more`
     } else {
       // Complex objects
       details = `Items of type: ${typeof value[0]}`
@@ -149,8 +141,11 @@ export class FormattingStrategies {
     return {
       summary,
       details,
-      suggestion: value.length > 10 ? 'There are quite a few results. Would you like me to help you filter or sort them?' : undefined,
-      actions: ['View all', 'Filter results', 'Sort results']
+      suggestion:
+        value.length > 10
+          ? 'There are quite a few results. Would you like me to help you filter or sort them?'
+          : undefined,
+      actions: ['View all', 'Filter results', 'Sort results'],
     }
   }
 
@@ -167,7 +162,7 @@ export class FormattingStrategies {
     if (keys.length === 0) {
       return {
         summary: 'Retrieved empty object.',
-        suggestion: 'The operation completed but returned no data.'
+        suggestion: 'The operation completed but returned no data.',
       }
     }
 
@@ -175,8 +170,8 @@ export class FormattingStrategies {
     if ('id' in value && 'name' in value) {
       return {
         summary: `Retrieved: ${value.name} (ID: ${value.id})`,
-        details: this.formatObjectDetails(value, ['id', 'name']),
-        actions: ['View details', 'Edit', 'Delete']
+        details: FormattingStrategies.formatObjectDetails(value, ['id', 'name']),
+        actions: ['View details', 'Edit', 'Delete'],
       }
     }
 
@@ -184,8 +179,10 @@ export class FormattingStrategies {
       const success = value.success ?? (value.status === 'success' || value.status === 200)
       return {
         summary: success ? 'Operation completed successfully.' : 'Operation encountered an issue.',
-        details: this.formatObjectDetails(value),
-        suggestion: success ? 'Everything went well!' : 'You might want to check the details for more information.'
+        details: FormattingStrategies.formatObjectDetails(value),
+        suggestion: success
+          ? 'Everything went well!'
+          : 'You might want to check the details for more information.',
       }
     }
 
@@ -193,26 +190,23 @@ export class FormattingStrategies {
       const count = value.count ?? value.total
       return {
         summary: `Found ${count} items.`,
-        details: this.formatObjectDetails(value, ['count', 'total']),
-        actions: count > 0 ? ['View items', 'Filter', 'Export'] : ['Try different search']
+        details: FormattingStrategies.formatObjectDetails(value, ['count', 'total']),
+        actions: count > 0 ? ['View items', 'Filter', 'Export'] : ['Try different search'],
       }
     }
 
     // Generic object formatting
     return {
       summary: `Retrieved object with ${keys.length} properties.`,
-      details: this.formatObjectDetails(value),
-      actions: ['View all properties', 'Export data']
+      details: FormattingStrategies.formatObjectDetails(value),
+      actions: ['View all properties', 'Export data'],
     }
   }
 
   /**
    * Format object details for display
    */
-  private static formatObjectDetails(
-    obj: Record<string, any>,
-    excludeKeys: string[] = []
-  ): string {
+  private static formatObjectDetails(obj: Record<string, any>, excludeKeys: string[] = []): string {
     const entries = Object.entries(obj)
       .filter(([key]) => !excludeKeys.includes(key))
       .slice(0, 5) // Limit to first 5 properties
@@ -241,7 +235,7 @@ export class FormattingStrategies {
     context: ParlantExecutionContext,
     hints?: ConversationalHint
   ): ConversationalResult {
-    let summary = 'The tool encountered an error.'
+    const summary = 'The tool encountered an error.'
     let details: string | undefined
     let suggestion: string | undefined
 
@@ -260,15 +254,18 @@ export class FormattingStrategies {
       const lowerDetails = details.toLowerCase()
 
       if (lowerDetails.includes('not found') || lowerDetails.includes('404')) {
-        suggestion = 'The requested resource was not found. Please check if the ID or name is correct.'
+        suggestion =
+          'The requested resource was not found. Please check if the ID or name is correct.'
       } else if (lowerDetails.includes('unauthorized') || lowerDetails.includes('403')) {
-        suggestion = 'You might not have permission to access this resource. Please check your authentication.'
+        suggestion =
+          'You might not have permission to access this resource. Please check your authentication.'
       } else if (lowerDetails.includes('rate limit') || lowerDetails.includes('429')) {
-        suggestion = 'You\'ve hit a rate limit. Please wait a moment before trying again.'
+        suggestion = "You've hit a rate limit. Please wait a moment before trying again."
       } else if (lowerDetails.includes('network') || lowerDetails.includes('timeout')) {
         suggestion = 'There was a network issue. Please check your connection and try again.'
       } else if (lowerDetails.includes('validation') || lowerDetails.includes('invalid')) {
-        suggestion = 'There was an issue with the provided parameters. Please check the values and try again.'
+        suggestion =
+          'There was an issue with the provided parameters. Please check the values and try again.'
       } else {
         suggestion = 'Please try again, or contact support if the problem persists.'
       }
@@ -278,7 +275,7 @@ export class FormattingStrategies {
       summary,
       details,
       suggestion: suggestion || hints?.results,
-      actions: ['Try again', 'Check parameters', 'Get help']
+      actions: ['Try again', 'Check parameters', 'Get help'],
     }
   }
 
@@ -298,13 +295,13 @@ export class FormattingStrategies {
       return {
         summary: `File ready: ${fileName}`,
         details: isUrl ? `Available at: ${fileInfo}` : `Location: ${fileInfo}`,
-        actions: isUrl ? ['Download', 'Open', 'Share'] : ['Open', 'Copy path']
+        actions: isUrl ? ['Download', 'Open', 'Share'] : ['Open', 'Copy path'],
       }
     }
 
     if (fileInfo && typeof fileInfo === 'object') {
       const name = fileInfo.name || fileInfo.filename || 'Unknown file'
-      const size = fileInfo.size ? this.formatFileSize(fileInfo.size) : undefined
+      const size = fileInfo.size ? FormattingStrategies.formatFileSize(fileInfo.size) : undefined
       const type = fileInfo.type || fileInfo.mimeType || undefined
 
       let details = `Name: ${name}`
@@ -314,13 +311,13 @@ export class FormattingStrategies {
       return {
         summary: `File processed: ${name}`,
         details,
-        actions: ['Download', 'Share', 'View properties']
+        actions: ['Download', 'Share', 'View properties'],
       }
     }
 
     return {
       summary: 'File operation completed.',
-      suggestion: hints?.results
+      suggestion: hints?.results,
     }
   }
 
@@ -345,7 +342,6 @@ export class FormattingStrategies {
  * Template-based result formatting with variable substitution
  */
 export class TemplateFormatter {
-
   /**
    * Apply template formatting with variable substitution
    */
@@ -359,18 +355,22 @@ export class TemplateFormatter {
       result: data,
       timestamp: new Date().toLocaleString(),
       user: context.userId,
-      workspace: context.workspaceId
+      workspace: context.workspaceId,
     }
 
-    const summary = this.substituteVariables(template.summary, variables, data)
-    const details = template.details ? this.substituteVariables(template.details, variables, data) : undefined
-    const suggestion = template.suggestion ? this.substituteVariables(template.suggestion, variables, data) : undefined
+    const summary = TemplateFormatter.substituteVariables(template.summary, variables, data)
+    const details = template.details
+      ? TemplateFormatter.substituteVariables(template.details, variables, data)
+      : undefined
+    const suggestion = template.suggestion
+      ? TemplateFormatter.substituteVariables(template.suggestion, variables, data)
+      : undefined
 
     return {
       summary,
       details,
       suggestion,
-      actions: template.actions
+      actions: template.actions,
     }
   }
 
@@ -384,11 +384,11 @@ export class TemplateFormatter {
   ): string {
     return template.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (match, path) => {
       // Try variables first
-      let value = this.getNestedValue(variables, path)
+      let value = TemplateFormatter.getNestedValue(variables, path)
 
       // Fall back to data
       if (value === undefined) {
-        value = this.getNestedValue(data, path)
+        value = TemplateFormatter.getNestedValue(data, path)
       }
 
       // Return formatted value or original placeholder
@@ -415,7 +415,6 @@ export class TemplateFormatter {
  * context-aware Parlant tool results.
  */
 export class ResultFormatter {
-
   private readonly config: ResultFormatting
 
   constructor(config: ResultFormatting = {}) {
@@ -424,7 +423,7 @@ export class ResultFormatter {
       enableTemplateFormatting: true,
       enableContextualHints: true,
       maxDetailsLength: 1000,
-      ...config
+      ...config,
     }
 
     logger.info('Result formatter initialized', this.config)
@@ -438,7 +437,6 @@ export class ResultFormatter {
     context: ParlantExecutionContext,
     naturalLanguage: NaturalLanguageConfig
   ): Promise<ParlantToolResult> {
-
     const startTime = Date.now()
 
     try {
@@ -455,11 +453,10 @@ export class ResultFormatter {
       logger.debug('Result formatting completed', {
         duration,
         resultType,
-        hasConversational: !!finalResult.conversational
+        hasConversational: !!finalResult.conversational,
       })
 
       return finalResult
-
     } catch (error) {
       logger.error('Result formatting failed', { error: error.message })
 
@@ -470,8 +467,8 @@ export class ResultFormatter {
         data: simResult,
         conversational: {
           summary: 'The tool completed but there was an issue formatting the response.',
-          suggestion: 'The raw result is available in the data field.'
-        }
+          suggestion: 'The raw result is available in the data field.',
+        },
       }
     }
   }
@@ -490,7 +487,7 @@ export class ResultFormatter {
     }
 
     // Check for partial success indicators
-    if (simResult.status >= 300 || (simResult.data && simResult.data.partial)) {
+    if (simResult.status >= 300 || simResult.data?.partial) {
       return 'partial'
     }
 
@@ -506,7 +503,6 @@ export class ResultFormatter {
     context: ParlantExecutionContext,
     naturalLanguage: NaturalLanguageConfig
   ): Promise<ParlantToolResult> {
-
     const conversationalHints = naturalLanguage.conversationalHints
 
     // Handle error results
@@ -522,7 +518,7 @@ export class ResultFormatter {
         message: simResult.message || 'Tool execution failed',
         data: simResult.data,
         conversational,
-        metadata: { statusCode: simResult.status }
+        metadata: { statusCode: simResult.status },
       }
     }
 
@@ -537,8 +533,8 @@ export class ResultFormatter {
       conversational,
       metadata: {
         statusCode: simResult.status,
-        formattedAt: new Date().toISOString()
-      }
+        formattedAt: new Date().toISOString(),
+      },
     }
   }
 
@@ -550,11 +546,10 @@ export class ResultFormatter {
     context: ParlantExecutionContext,
     hints?: ConversationalHint
   ): ConversationalResult {
-
     if (!this.config.enableConversationalFormatting) {
       return {
         summary: 'Tool execution completed.',
-        details: data ? JSON.stringify(data) : undefined
+        details: data ? JSON.stringify(data) : undefined,
       }
     }
 
@@ -570,7 +565,7 @@ export class ResultFormatter {
     if (data === null || data === undefined) {
       return {
         summary: 'Tool completed successfully.',
-        suggestion: 'No additional data was returned.'
+        suggestion: 'No additional data was returned.',
       }
     }
 
@@ -599,7 +594,7 @@ export class ResultFormatter {
     return {
       summary: `Tool returned: ${typeof data}`,
       details: String(data),
-      suggestion: hints?.results
+      suggestion: hints?.results,
     }
   }
 
@@ -610,7 +605,6 @@ export class ResultFormatter {
     data: any,
     context: ParlantExecutionContext
   ): FormattingTemplate | undefined {
-
     if (!this.config.templates) {
       return undefined
     }
@@ -619,9 +613,10 @@ export class ResultFormatter {
     for (const template of this.config.templates) {
       if (template.condition) {
         try {
-          const matches = typeof template.condition === 'function'
-            ? template.condition(data, context)
-            : this.evaluateTemplateCondition(template.condition, data, context)
+          const matches =
+            typeof template.condition === 'function'
+              ? template.condition(data, context)
+              : this.evaluateTemplateCondition(template.condition, data, context)
 
           if (matches) {
             return template
@@ -670,7 +665,7 @@ export class ResultFormatter {
 
     // Common file result patterns
     const fileIndicators = ['filename', 'name', 'size', 'type', 'mimeType', 'url', 'path']
-    return fileIndicators.some(indicator => indicator in data)
+    return fileIndicators.some((indicator) => indicator in data)
   }
 
   /**
@@ -680,10 +675,12 @@ export class ResultFormatter {
     result: ParlantToolResult,
     context: ParlantExecutionContext
   ): ParlantToolResult {
-
     // Truncate details if too long
-    if (result.conversational?.details && result.conversational.details.length > this.config.maxDetailsLength!) {
-      result.conversational.details = result.conversational.details.substring(0, this.config.maxDetailsLength!) + '...'
+    if (
+      result.conversational?.details &&
+      result.conversational.details.length > this.config.maxDetailsLength!
+    ) {
+      result.conversational.details = `${result.conversational.details.substring(0, this.config.maxDetailsLength!)}...`
     }
 
     // Add contextual actions if none provided
@@ -706,7 +703,6 @@ export class ResultFormatter {
     result: ParlantToolResult,
     context: ParlantExecutionContext
   ): string[] {
-
     const actions: string[] = []
 
     // Common actions based on result type
@@ -757,7 +753,7 @@ export class ResultFormatter {
   ): Promise<ConversationalResult> {
     const mockSimResult: SimToolResult = {
       status: 200,
-      data: sampleData
+      data: sampleData,
     }
 
     const mockNaturalLanguage: NaturalLanguageConfig = {
@@ -766,8 +762,8 @@ export class ResultFormatter {
       conversationalHints: {
         whenToUse: 'For testing',
         parameters: 'Test parameters',
-        results: 'Test results'
-      }
+        results: 'Test results',
+      },
     }
 
     const result = await this.formatSimResult(mockSimResult, context, mockNaturalLanguage)
@@ -793,7 +789,7 @@ export class ResultFormatter {
       return false
     }
 
-    const index = this.config.templates.findIndex(t => t.name === name)
+    const index = this.config.templates.findIndex((t) => t.name === name)
     if (index !== -1) {
       this.config.templates.splice(index, 1)
       logger.debug(`Removed formatting template: ${name}`)

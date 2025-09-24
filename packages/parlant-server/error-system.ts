@@ -7,70 +7,46 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
-
+import {
+  analyzeTrends,
+  generateAnalyticsReport,
+  identifyErrorPatterns,
+  performRootCauseAnalysis,
+} from './error-analytics'
+import { ExplanationFormat, explainError, UserSkillLevel } from './error-explanations'
+import {
+  BaseToolError,
+  createExternalServiceError,
+  createSystemResourceError,
+  createToolAdapterError,
+  createToolAuthenticationError,
+  createToolExecutionError,
+  createUserInputError,
+  handleError,
+} from './error-handler'
+import {
+  errorMonitoringService,
+  getSystemHealth,
+  MonitorPerformance,
+  recordError,
+  recordMetric,
+  recordSuccess,
+} from './error-monitoring'
+import {
+  errorRecoveryService,
+  executeWithRecovery,
+  type RetryConfig,
+  WithRetry,
+} from './error-recovery'
 // Core error system imports
 import {
   ErrorCategory,
-  ErrorSeverity,
   ErrorImpact,
+  ErrorSeverity,
+  getErrorStats,
   RecoveryStrategy,
-  errorClassifier,
-  classifyError,
-  getErrorStats
 } from './error-taxonomy'
-
-import {
-  BaseToolError,
-  ToolAdapterError,
-  ToolExecutionError,
-  ToolAuthenticationError,
-  UserInputError,
-  SystemResourceError,
-  ExternalServiceError,
-  universalErrorHandler,
-  handleError,
-  createToolAdapterError,
-  createToolExecutionError,
-  createToolAuthenticationError,
-  createUserInputError,
-  createSystemResourceError,
-  createExternalServiceError
-} from './error-handler'
-
-import {
-  UserSkillLevel,
-  ExplanationFormat,
-  errorExplanationService,
-  explainError
-} from './error-explanations'
-
-import {
-  RetryConfig,
-  CircuitBreakerState,
-  errorRecoveryService,
-  executeWithRecovery,
-  WithRetry
-} from './error-recovery'
-
-import {
-  AlertLevel,
-  MetricType,
-  errorMonitoringService,
-  recordError,
-  recordSuccess,
-  recordMetric,
-  getSystemHealth,
-  MonitorPerformance
-} from './error-monitoring'
-
-import {
-  errorAnalyticsService,
-  analyzeTrends,
-  identifyErrorPatterns,
-  performRootCauseAnalysis,
-  generateAnalyticsReport
-} from './error-analytics'
+import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorSystem')
 
@@ -125,7 +101,7 @@ export const DEFAULT_ERROR_SYSTEM_CONFIG: ErrorSystemConfig = {
     maxAttempts: 3,
     initialDelayMs: 1000,
     backoffMultiplier: 2,
-    adaptiveAdjustment: true
+    adaptiveAdjustment: true,
   },
   defaultUserSkillLevel: UserSkillLevel.INTERMEDIATE,
   defaultExplanationFormat: ExplanationFormat.DETAILED,
@@ -135,7 +111,7 @@ export const DEFAULT_ERROR_SYSTEM_CONFIG: ErrorSystemConfig = {
   alertThresholds: {
     errorRate: 0.1, // errors per second
     responseTime: 5000, // 5 seconds
-    circuitBreakerTrips: 3
+    circuitBreakerTrips: 3,
   },
 
   // Analytics
@@ -146,7 +122,7 @@ export const DEFAULT_ERROR_SYSTEM_CONFIG: ErrorSystemConfig = {
   // Integration
   enableAutoExplanations: true,
   enableAutoRecovery: true,
-  enableAutoEscalation: true
+  enableAutoEscalation: true,
 }
 
 /**
@@ -159,7 +135,7 @@ export class UniversalErrorSystem {
   constructor(config: Partial<ErrorSystemConfig> = {}) {
     this.config = { ...DEFAULT_ERROR_SYSTEM_CONFIG, ...config }
     logger.info('Universal Error System created', {
-      enabledFeatures: this.getEnabledFeatures()
+      enabledFeatures: this.getEnabledFeatures(),
     })
   }
 
@@ -214,7 +190,7 @@ export class UniversalErrorSystem {
         recordError(toolError, {
           duration: Date.now() - startTime,
           component: toolError.component,
-          operation: context.operation || 'unknown'
+          operation: context.operation || 'unknown',
         })
       }
 
@@ -240,7 +216,7 @@ export class UniversalErrorSystem {
         } catch (recoveryError) {
           logger.warn('Recovery attempt failed', {
             errorId: toolError.id,
-            recoveryError: recoveryError instanceof Error ? recoveryError.message : recoveryError
+            recoveryError: recoveryError instanceof Error ? recoveryError.message : recoveryError,
           })
         }
       }
@@ -258,23 +234,22 @@ export class UniversalErrorSystem {
           category: toolError.category,
           severity: toolError.severity,
           impact: toolError.impact,
-          recoverable: toolError.recoverable
-        }
+          recoverable: toolError.recoverable,
+        },
       }
 
       logger.info('Error handled successfully', {
         errorId: toolError.id,
         handled: result.handled,
         recovered: result.recovered,
-        processingTime: result.processingTime
+        processingTime: result.processingTime,
       })
 
       return result
-
     } catch (handlingError) {
       logger.error('Error handling pipeline failed', {
         originalError: error.message,
-        handlingError: handlingError instanceof Error ? handlingError.message : handlingError
+        handlingError: handlingError instanceof Error ? handlingError.message : handlingError,
       })
 
       return {
@@ -285,7 +260,7 @@ export class UniversalErrorSystem {
         recoveryActions: ['Try again', 'Contact support'],
         shouldEscalate: true,
         processingTime: Date.now() - startTime,
-        metadata: {}
+        metadata: {},
       }
     }
   }
@@ -313,18 +288,14 @@ export class UniversalErrorSystem {
     const startTime = Date.now()
 
     // Monitor performance if enabled
-    const monitoringEnabled = this.config.enableMonitoring && (options.enableMonitoring !== false)
+    const monitoringEnabled = this.config.enableMonitoring && options.enableMonitoring !== false
 
     try {
       let result: T
 
       // Execute with recovery if enabled
       if (this.config.enableRetryMechanisms && options.enableRecovery !== false) {
-        result = await executeWithRecovery(
-          operation,
-          context,
-          options.retryConfig
-        )
+        result = await executeWithRecovery(operation, context, options.retryConfig)
       } else {
         result = await operation()
       }
@@ -338,20 +309,17 @@ export class UniversalErrorSystem {
           {
             toolName: context.toolName || '',
             category: context.category || '',
-            operationId: context.operationId
+            operationId: context.operationId,
           }
         )
       }
 
       return result
-
     } catch (error) {
       // Handle error through pipeline
-      const handlingResult = await this.handleError(
-        error as Error,
-        context.parlantContext || {},
-        { userSkillLevel: options.userSkillLevel }
-      )
+      const handlingResult = await this.handleError(error as Error, context.parlantContext || {}, {
+        userSkillLevel: options.userSkillLevel,
+      })
 
       if (handlingResult.recovered && handlingResult.recoveryResult) {
         return handlingResult.recoveryResult as T
@@ -382,10 +350,10 @@ export class UniversalErrorSystem {
         errorsBySeverity: errorStats.byLevel,
         topErrorMessages: errorStats.topErrors,
         errorRate: errorStats.total / 3600, // per second
-        criticalErrors: errorStats.byLevel.critical || 0
+        criticalErrors: errorStats.byLevel.critical || 0,
       },
       circuitBreakers: this.getCircuitBreakerStatus(),
-      recommendations: this.generateHealthRecommendations(health, errorStats)
+      recommendations: this.generateHealthRecommendations(health, errorStats),
     }
   }
 
@@ -395,28 +363,25 @@ export class UniversalErrorSystem {
   async getDashboardData(timeRange?: { start: number; end: number }): Promise<ErrorDashboardData> {
     const range = timeRange || {
       start: Date.now() - 86400000, // 24 hours ago
-      end: Date.now()
+      end: Date.now(),
     }
 
-    const [
-      trendAnalysis,
-      errorPatterns,
-      analyticsReport
-    ] = await Promise.all([
+    const [trendAnalysis, errorPatterns, analyticsReport] = await Promise.all([
       analyzeTrends('error_rate', range),
       identifyErrorPatterns(range),
-      generateAnalyticsReport(range)
+      generateAnalyticsReport(range),
     ])
 
     return {
       timeRange: range,
       overview: {
         totalErrors: analyticsReport.summary?.totalErrors || 0,
-        errorRate: trendAnalysis.dataPoints.length > 0
-          ? trendAnalysis.dataPoints[trendAnalysis.dataPoints.length - 1].value
-          : 0,
+        errorRate:
+          trendAnalysis.dataPoints.length > 0
+            ? trendAnalysis.dataPoints[trendAnalysis.dataPoints.length - 1].value
+            : 0,
         trend: trendAnalysis.trend,
-        healthScore: analyticsReport.healthScore
+        healthScore: analyticsReport.healthScore,
       },
       charts: {
         errorTrends: trendAnalysis,
@@ -424,11 +389,11 @@ export class UniversalErrorSystem {
         topErrorCategories: Object.entries(getErrorStats(range.end - range.start).byCategory)
           .map(([category, count]) => ({ category, count }))
           .sort((a, b) => b.count - a.count)
-          .slice(0, 10)
+          .slice(0, 10),
       },
       patterns: errorPatterns,
       alerts: errorMonitoringService.getActiveAlerts(),
-      recommendations: analyticsReport.recommendations || []
+      recommendations: analyticsReport.recommendations || [],
     }
   }
 
@@ -486,10 +451,10 @@ export class UniversalErrorSystem {
       metrics: {
         enabled_features: this.getEnabledFeatures().length,
         processing_errors: 0, // Could track internal errors
-        memory_usage: process.memoryUsage().heapUsed
+        memory_usage: process.memoryUsage().heapUsed,
       },
       errors: [],
-      dependencies: ['error-tracking', 'error-recovery', 'error-analytics']
+      dependencies: ['error-tracking', 'error-recovery', 'error-analytics'],
     }))
 
     // Configure default alerts
@@ -500,18 +465,18 @@ export class UniversalErrorSystem {
       email: {
         recipients: ['admin@system.com'],
         subject: 'Error System High Load Alert',
-        template: 'Error processing is experiencing high load'
+        template: 'Error processing is experiencing high load',
       },
       throttling: {
         enabled: true,
         windowMs: 600000, // 10 minutes
-        maxNotifications: 1
+        maxNotifications: 1,
       },
       escalation: {
         enabled: false,
         escalationDelayMs: 1800000, // 30 minutes
-        escalationTargets: []
-      }
+        escalationTargets: [],
+      },
     })
   }
 
@@ -546,7 +511,7 @@ export class UniversalErrorSystem {
         status[key] = {
           state: breaker.state,
           failureCount: breaker.failureCount,
-          lastFailure: breaker.lastFailureTime
+          lastFailure: breaker.lastFailureTime,
         }
       })
     }
@@ -566,7 +531,9 @@ export class UniversalErrorSystem {
     }
 
     const circuitBreakers = this.getCircuitBreakerStatus()
-    const openBreakers = Object.values(circuitBreakers).filter((b: any) => b.state === 'open').length
+    const openBreakers = Object.values(circuitBreakers).filter(
+      (b: any) => b.state === 'open'
+    ).length
 
     if (openBreakers > 0) {
       recommendations.push(`${openBreakers} circuit breakers open - check service dependencies`)
@@ -666,7 +633,6 @@ export {
   UserSkillLevel,
   ExplanationFormat,
   BaseToolError,
-
   // Error creation functions
   createToolAdapterError,
   createToolExecutionError,
@@ -674,27 +640,23 @@ export {
   createUserInputError,
   createSystemResourceError,
   createExternalServiceError,
-
   // Main handling functions
   handleError,
   explainError,
   executeWithRecovery,
-
   // Monitoring functions
   recordError,
   recordSuccess,
   recordMetric,
   getSystemHealth,
-
   // Analytics functions
   analyzeTrends,
   identifyErrorPatterns,
   performRootCauseAnalysis,
   generateAnalyticsReport,
-
   // Decorators
   WithRetry,
-  MonitorPerformance
+  MonitorPerformance,
 }
 
 /**
@@ -708,7 +670,7 @@ export const setupBasicErrorHandling = async () => {
     enableMonitoring: true,
     enableAnalytics: false, // Disable for basic setup
     enablePredictiveAnalytics: false,
-    enableRootCauseAnalysis: false
+    enableRootCauseAnalysis: false,
   })
   logger.info('Basic error handling system initialized')
 }

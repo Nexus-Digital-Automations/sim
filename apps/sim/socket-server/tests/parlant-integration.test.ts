@@ -5,22 +5,16 @@
  * Tests agent lifecycle, session management, and workspace-scoped broadcasting
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { createServer } from 'http'
-import { Server as SocketIOServer } from 'socket.io'
-import { io as Client } from 'socket.io-client'
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
+import type { Server as SocketIOServer } from 'socket.io'
 import type { Socket as ClientSocket } from 'socket.io-client'
+import { io as Client } from 'socket.io-client'
 import { createSocketIOServer } from '@/socket-server/config/socket'
-import { RoomManager } from '@/socket-server/rooms/manager'
 import { setupParlantHandlers } from '@/socket-server/handlers/parlant'
-import { initializeParlantHooks } from '@/socket-server/integrations/parlant-hooks'
-import { ParlantHooks } from '@/socket-server/integrations/parlant-hooks'
-import {
-  ParlantEventType,
-  ParlantAgentStatus,
-  ParlantSessionStatus,
-  ParlantMessageType
-} from '@/socket-server/types/parlant-events'
+import { initializeParlantHooks, ParlantHooks } from '@/socket-server/integrations/parlant-hooks'
+import { RoomManager } from '@/socket-server/rooms/manager'
+import { ParlantEventType, ParlantMessageType } from '@/socket-server/types/parlant-events'
 
 describe('Parlant Socket.io Integration', () => {
   let httpServer: any
@@ -41,9 +35,9 @@ describe('Parlant Socket.io Integration', () => {
     // Setup socket handlers
     io.on('connection', (socket: any) => {
       // Mock authentication for testing
-      socket.userId = 'test-user-' + Math.random().toString(36).substr(2, 9)
+      socket.userId = `test-user-${Math.random().toString(36).substr(2, 9)}`
       socket.userName = 'Test User'
-      socket.activeOrganizationId = 'test-workspace-' + Math.random().toString(36).substr(2, 9)
+      socket.activeOrganizationId = `test-workspace-${Math.random().toString(36).substr(2, 9)}`
 
       setupParlantHandlers(socket, roomManager)
     })
@@ -59,16 +53,18 @@ describe('Parlant Socket.io Integration', () => {
 
   afterEach(async () => {
     // Clean up client connections
-    await Promise.all(clientSockets.map(socket => {
-      return new Promise<void>(resolve => {
-        if (socket.connected) {
-          socket.disconnect()
-          socket.on('disconnect', () => resolve())
-        } else {
-          resolve()
-        }
+    await Promise.all(
+      clientSockets.map((socket) => {
+        return new Promise<void>((resolve) => {
+          if (socket.connected) {
+            socket.disconnect()
+            socket.on('disconnect', () => resolve())
+          } else {
+            resolve()
+          }
+        })
       })
-    }))
+    )
 
     // Close server
     await new Promise<void>((resolve) => {
@@ -87,8 +83,8 @@ describe('Parlant Socket.io Integration', () => {
       const client = Client(`http://localhost:${port}`, {
         transports: ['websocket'],
         auth: {
-          token: 'mock-token' // Mock authentication token
-        }
+          token: 'mock-token', // Mock authentication token
+        },
       })
 
       client.on('connect', () => {
@@ -117,13 +113,13 @@ describe('Parlant Socket.io Integration', () => {
         agentId,
         workspaceId,
         roomId: `parlant:agent:${agentId}`,
-        workspaceRoomId: `parlant:workspace:${workspaceId}`
+        workspaceRoomId: `parlant:workspace:${workspaceId}`,
       })
     })
 
     it('should reject joining agent room without authentication', async () => {
       const client = Client(`http://localhost:${port}`, {
-        transports: ['websocket']
+        transports: ['websocket'],
       })
 
       const errorResponse = await new Promise((resolve) => {
@@ -133,7 +129,7 @@ describe('Parlant Socket.io Integration', () => {
       })
 
       expect(errorResponse).toMatchObject({
-        error: expect.stringContaining('Authentication')
+        error: expect.stringContaining('Authentication'),
       })
 
       client.disconnect()
@@ -157,7 +153,7 @@ describe('Parlant Socket.io Integration', () => {
 
       expect(response).toMatchObject({
         agentId,
-        roomId: `parlant:agent:${agentId}`
+        roomId: `parlant:agent:${agentId}`,
       })
     })
   })
@@ -178,7 +174,7 @@ describe('Parlant Socket.io Integration', () => {
         sessionId,
         agentId,
         workspaceId,
-        roomId: `parlant:session:${sessionId}`
+        roomId: `parlant:session:${sessionId}`,
       })
     })
 
@@ -191,7 +187,7 @@ describe('Parlant Socket.io Integration', () => {
         client.emit('parlant:join-session-room', {
           sessionId,
           agentId: 'test-agent',
-          workspaceId: 'test-workspace'
+          workspaceId: 'test-workspace',
         })
         client.on('parlant:join-session-room-success', resolve)
       })
@@ -204,7 +200,7 @@ describe('Parlant Socket.io Integration', () => {
 
       expect(response).toMatchObject({
         sessionId,
-        roomId: `parlant:session:${sessionId}`
+        roomId: `parlant:session:${sessionId}`,
       })
     })
   })
@@ -225,7 +221,7 @@ describe('Parlant Socket.io Integration', () => {
         agentId,
         workspaceId,
         status: expect.any(String),
-        timestamp: expect.any(Number)
+        timestamp: expect.any(Number),
       })
     })
   })
@@ -246,7 +242,7 @@ describe('Parlant Socket.io Integration', () => {
         new Promise((resolve) => {
           client2.emit('parlant:join-agent-room', { agentId, workspaceId })
           client2.on('parlant:join-agent-room-success', resolve)
-        })
+        }),
       ])
 
       // Set up event listeners
@@ -264,11 +260,11 @@ describe('Parlant Socket.io Integration', () => {
         description: 'A test agent',
         model: 'gpt-4',
         temperature: 0.7,
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       })
 
       // Wait for events to be received
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(client1Events).toHaveLength(1)
       expect(client2Events).toHaveLength(1)
@@ -276,7 +272,7 @@ describe('Parlant Socket.io Integration', () => {
       expect(client1Events[0]).toMatchObject({
         type: ParlantEventType.AGENT_CREATED,
         agentId,
-        workspaceId
+        workspaceId,
       })
     })
 
@@ -302,18 +298,18 @@ describe('Parlant Socket.io Integration', () => {
         agentId,
         workspaceId,
         userId: 'test-user',
-        title: 'Test Session'
+        title: 'Test Session',
       })
 
       // Wait for event to be received
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(sessionEvents).toHaveLength(1)
       expect(sessionEvents[0]).toMatchObject({
         type: ParlantEventType.SESSION_STARTED,
         sessionId,
         agentId,
-        workspaceId
+        workspaceId,
       })
     })
 
@@ -340,18 +336,18 @@ describe('Parlant Socket.io Integration', () => {
         workspaceId,
         content: 'Hello, world!',
         messageType: ParlantMessageType.USER_MESSAGE,
-        userId: 'test-user'
+        userId: 'test-user',
       })
 
       // Wait for event to be received
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       expect(messageEvents).toHaveLength(1)
       expect(messageEvents[0]).toMatchObject({
         type: ParlantEventType.MESSAGE_SENT,
         sessionId,
         messageId: 'msg-123',
-        content: 'Hello, world!'
+        content: 'Hello, world!',
       })
     })
   })
@@ -364,12 +360,13 @@ describe('Parlant Socket.io Integration', () => {
 
       // Attempt to join rooms rapidly (exceeding rate limit)
       const promises = []
-      for (let i = 0; i < 35; i++) { // Exceeds the 30/minute limit
+      for (let i = 0; i < 35; i++) {
+        // Exceeds the 30/minute limit
         promises.push(
           new Promise((resolve) => {
             client.emit('parlant:join-agent-room', {
               agentId: `${agentId}-${i}`,
-              workspaceId
+              workspaceId,
             })
             client.on('parlant:join-agent-room-success', () => resolve('success'))
             client.on('parlant:join-agent-room-error', (error) => resolve(error))
@@ -380,9 +377,7 @@ describe('Parlant Socket.io Integration', () => {
       const results = await Promise.all(promises)
 
       // Should have some rate limit errors
-      const rateLimitErrors = results.filter(
-        (result: any) => result?.error?.includes('Rate limit')
-      )
+      const rateLimitErrors = results.filter((result: any) => result?.error?.includes('Rate limit'))
 
       expect(rateLimitErrors.length).toBeGreaterThan(0)
     })
@@ -420,7 +415,7 @@ describe('Parlant Socket.io Integration', () => {
       const response = await new Promise((resolve) => {
         client.emit('parlant:join-agent-room', {
           agentId: '<script>alert("xss")</script>',
-          workspaceId: 'test-workspace'
+          workspaceId: 'test-workspace',
         })
         client.on('parlant:join-agent-room-error', resolve)
         client.on('parlant:join-agent-room-success', resolve)
@@ -439,7 +434,7 @@ describe('Parlant Socket.io Integration', () => {
       const response = await new Promise((resolve) => {
         client.emit('parlant:join-agent-room', {
           agentId: largeData,
-          workspaceId: 'test-workspace'
+          workspaceId: 'test-workspace',
         })
         client.on('parlant:join-agent-room-error', resolve)
         client.on('parlant:join-agent-room-success', resolve)
@@ -448,7 +443,7 @@ describe('Parlant Socket.io Integration', () => {
       })
 
       expect(response).toMatchObject({
-        error: expect.any(String)
+        error: expect.any(String),
       })
     })
   })
@@ -464,7 +459,7 @@ export const ParlantTestHelpers = {
     for (let i = 0; i < count; i++) {
       const client = Client(`http://localhost:${port}`, {
         transports: ['websocket'],
-        auth: { token: `mock-token-${i}` }
+        auth: { token: `mock-token-${i}` },
       })
 
       await new Promise((resolve, reject) => {
@@ -504,5 +499,5 @@ export const ParlantTestHelpers = {
         })
       })
     })
-  }
+  },
 }

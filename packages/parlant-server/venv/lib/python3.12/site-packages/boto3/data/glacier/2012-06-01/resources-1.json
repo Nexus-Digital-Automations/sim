@@ -4,9 +4,7 @@
       "CreateVault": {
         "request": {
           "operation": "CreateVault",
-          "params": [
-            { "target": "accountId", "source": "string", "value": "-" }
-          ]
+          "params": [{ "target": "accountId", "source": "string", "value": "-" }]
         },
         "resource": {
           "type": "Vault",
@@ -21,9 +19,7 @@
       "Account": {
         "resource": {
           "type": "Account",
-          "identifiers": [
-            { "target": "Id", "source": "input" }
-          ]
+          "identifiers": [{ "target": "Id", "source": "input" }]
         }
       }
     },
@@ -31,9 +27,7 @@
       "Vaults": {
         "request": {
           "operation": "ListVaults",
-          "params": [
-            { "target": "accountId", "source": "string", "value": "-" }
-          ]
+          "params": [{ "target": "accountId", "source": "string", "value": "-" }]
         },
         "resource": {
           "type": "Vault",
@@ -48,16 +42,12 @@
   },
   "resources": {
     "Account": {
-      "identifiers": [
-        { "name": "Id" }
-      ],
+      "identifiers": [{ "name": "Id" }],
       "actions": {
         "CreateVault": {
           "request": {
             "operation": "CreateVault",
-            "params": [
-              { "target": "accountId", "source": "identifier", "name": "Id" }
-            ]
+            "params": [{ "target": "accountId", "source": "identifier", "name": "Id" }]
           },
           "resource": {
             "type": "Vault",
@@ -83,9 +73,7 @@
         "Vaults": {
           "request": {
             "operation": "ListVaults",
-            "params": [
-              { "target": "accountId", "source": "identifier", "name": "Id" }
-            ]
+            "params": [{ "target": "accountId", "source": "identifier", "name": "Id" }]
           },
           "resource": {
             "type": "Vault",
@@ -99,11 +87,7 @@
       }
     },
     "Archive": {
-      "identifiers": [
-        { "name": "AccountId" },
-        { "name": "VaultName" },
-        { "name": "Id" }
-      ],
+      "identifiers": [{ "name": "AccountId" }, { "name": "VaultName" }, { "name": "Id" }],
       "actions": {
         "Delete": {
           "request": {
@@ -257,10 +241,7 @@
       }
     },
     "Notification": {
-      "identifiers": [
-        { "name": "AccountId" },
-        { "name": "VaultName" }
-      ],
+      "identifiers": [{ "name": "AccountId" }, { "name": "VaultName" }],
       "shape": "VaultNotificationConfig",
       "load": {
         "request": {
@@ -399,9 +380,7 @@
         "Account": {
           "resource": {
             "type": "Account",
-            "identifiers": [
-              { "target": "Id", "source": "identifier", "name": "AccountId" }
-            ]
+            "identifiers": [{ "target": "Id", "source": "identifier", "name": "AccountId" }]
           }
         },
         "Archive": {

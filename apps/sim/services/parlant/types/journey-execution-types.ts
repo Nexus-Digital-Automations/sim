@@ -43,16 +43,16 @@ export interface JourneyState {
  * Available state types in journey execution
  */
 export type StateType =
-  | 'initial'         // Starting state
-  | 'final'           // Completion state
-  | 'tool_state'      // Tool execution
-  | 'chat_state'      // User interaction
-  | 'conditional'     // Conditional logic
-  | 'parallel'        // Parallel execution
-  | 'loop'            // Iterative execution
+  | 'initial' // Starting state
+  | 'final' // Completion state
+  | 'tool_state' // Tool execution
+  | 'chat_state' // User interaction
+  | 'conditional' // Conditional logic
+  | 'parallel' // Parallel execution
+  | 'loop' // Iterative execution
   | 'input_collection' // Data collection
-  | 'merge'           // Branch merging
-  | 'delay'           // Time-based delay
+  | 'merge' // Branch merging
+  | 'delay' // Time-based delay
 
 /**
  * State configuration containing execution parameters
@@ -372,7 +372,13 @@ export interface JourneySession {
   estimatedDuration?: number
 }
 
-export type SessionStatus = 'initializing' | 'active' | 'waiting_input' | 'paused' | 'completed' | 'error'
+export type SessionStatus =
+  | 'initializing'
+  | 'active'
+  | 'waiting_input'
+  | 'paused'
+  | 'completed'
+  | 'error'
 
 export interface AgentResponse {
   sessionId: string

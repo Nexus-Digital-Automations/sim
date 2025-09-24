@@ -6,13 +6,14 @@
  */
 
 import { ResultFormatterService } from '../core/formatter-service'
-import { TextFormatter } from '../formatters/text-formatter'
-import { TableFormatter } from '../formatters/table-formatter'
 import { JsonFormatter } from '../formatters/json-formatter'
+import { TableFormatter } from '../formatters/table-formatter'
+import { TextFormatter } from '../formatters/text-formatter'
+
 // Note: Other formatters will be imported when they're created
 
-import type { ResultFormattingConfig } from '../types'
 import { createLogger } from '@/lib/logs/console/logger'
+import type { ResultFormattingConfig } from '../types'
 
 const logger = createLogger('FormatterFactory')
 

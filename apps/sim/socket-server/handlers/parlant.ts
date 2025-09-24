@@ -1,21 +1,20 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
-import type { RoomManager } from '@/socket-server/rooms/manager'
 import { validateParlantAccess } from '@/socket-server/middleware/parlant-permissions'
 import {
   checkRateLimit,
   connectionTracker,
   logSecurityEvent,
-  validateMessageContent
+  validateMessageContent,
 } from '@/socket-server/middleware/parlant-security'
+import type { RoomManager } from '@/socket-server/rooms/manager'
 import {
-  ParlantAgentStatus,
-  ParlantSessionStatus,
-  ParlantEventType,
   type ParlantAgentEvent,
-  type ParlantSessionEvent,
+  ParlantAgentStatus,
+  ParlantEventType,
   type ParlantMessageEvent,
-  type ParlantStatusEvent
+  type ParlantSessionEvent,
+  type ParlantStatusEvent,
 } from '@/socket-server/types/parlant-events'
 
 const logger = createLogger('ParlantHandlers')
@@ -31,7 +30,9 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
   if (socket.userId) {
     const trackingResult = connectionTracker.trackConnection(socket.userId, socket.id)
     if (!trackingResult.allowed) {
-      logSecurityEvent('Connection denied', socket.userId, socket.id, { reason: trackingResult.reason })
+      logSecurityEvent('Connection denied', socket.userId, socket.id, {
+        reason: trackingResult.reason,
+      })
       socket.disconnect(true)
       return
     }
@@ -56,10 +57,13 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       // Rate limiting check
       const rateLimit = checkRateLimit(socket, 'joinRoom')
       if (!rateLimit.allowed) {
-        logSecurityEvent('Rate limit exceeded', userId, socket.id, { action: 'join-agent-room', agentId })
+        logSecurityEvent('Rate limit exceeded', userId, socket.id, {
+          action: 'join-agent-room',
+          agentId,
+        })
         socket.emit('parlant:join-agent-room-error', {
           error: 'Rate limit exceeded',
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
         })
         return
       }
@@ -67,22 +71,28 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       // Validate message content
       const validation = validateMessageContent({ agentId, workspaceId })
       if (!validation.isValid) {
-        logSecurityEvent('Invalid message content', userId, socket.id, { errors: validation.errors })
+        logSecurityEvent('Invalid message content', userId, socket.id, {
+          errors: validation.errors,
+        })
         socket.emit('parlant:join-agent-room-error', { error: 'Invalid request data' })
         return
       }
 
-      logger.info(`Parlant agent room join request from ${userId} (${userName}) for agent ${agentId} in workspace ${workspaceId}`)
+      logger.info(
+        `Parlant agent room join request from ${userId} (${userName}) for agent ${agentId} in workspace ${workspaceId}`
+      )
 
       // Validate workspace access and agent permissions
       try {
         const access = await validateParlantAccess(userId, workspaceId, agentId)
         if (!access.canAccessAgent) {
-          logger.warn(`User ${userId} (${userName}) denied access to agent ${agentId} in workspace ${workspaceId}`)
+          logger.warn(
+            `User ${userId} (${userName}) denied access to agent ${agentId} in workspace ${workspaceId}`
+          )
           socket.emit('parlant:join-agent-room-error', {
             error: 'Access denied to agent',
             agentId,
-            workspaceId
+            workspaceId,
           })
           return
         }
@@ -106,22 +116,23 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       socket.data.parlantRooms.add(agentRoomId)
       socket.data.parlantRooms.add(workspaceRoomId)
 
-      logger.info(`User ${userId} joined Parlant agent room ${agentRoomId} and workspace room ${workspaceRoomId}`)
+      logger.info(
+        `User ${userId} joined Parlant agent room ${agentRoomId} and workspace room ${workspaceRoomId}`
+      )
 
       socket.emit('parlant:join-agent-room-success', {
         agentId,
         workspaceId,
         roomId: agentRoomId,
         workspaceRoomId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-
     } catch (error) {
       logger.error('Error joining Parlant agent room:', error)
       socket.emit('parlant:join-agent-room-error', {
         error: 'Failed to join agent room',
         agentId,
-        workspaceId
+        workspaceId,
       })
     }
   })
@@ -141,7 +152,9 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
         return
       }
 
-      logger.info(`Parlant session room join request from ${userId} (${userName}) for session ${sessionId}`)
+      logger.info(
+        `Parlant session room join request from ${userId} (${userName}) for session ${sessionId}`
+      )
 
       // Validate session access
       try {
@@ -152,7 +165,7 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
             error: 'Access denied to session',
             sessionId,
             agentId,
-            workspaceId
+            workspaceId,
           })
           return
         }
@@ -178,16 +191,15 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
         agentId,
         workspaceId,
         roomId: sessionRoomId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-
     } catch (error) {
       logger.error('Error joining Parlant session room:', error)
       socket.emit('parlant:join-session-room-error', {
         error: 'Failed to join session room',
         sessionId,
         agentId,
-        workspaceId
+        workspaceId,
       })
     }
   })
@@ -211,13 +223,13 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       socket.emit('parlant:leave-agent-room-success', {
         agentId,
         roomId: agentRoomId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     } catch (error) {
       logger.error('Error leaving Parlant agent room:', error)
       socket.emit('parlant:leave-agent-room-error', {
         error: 'Failed to leave agent room',
-        agentId
+        agentId,
       })
     }
   })
@@ -241,13 +253,13 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       socket.emit('parlant:leave-session-room-success', {
         sessionId,
         roomId: sessionRoomId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     } catch (error) {
       logger.error('Error leaving Parlant session room:', error)
       socket.emit('parlant:leave-session-room-error', {
         error: 'Failed to leave session room',
-        sessionId
+        sessionId,
       })
     }
   })
@@ -271,7 +283,7 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
         socket.emit('parlant:request-agent-status-error', {
           error: 'Access denied to agent',
           agentId,
-          workspaceId
+          workspaceId,
         })
         return
       }
@@ -284,20 +296,19 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
         status: ParlantAgentStatus.ONLINE, // This would come from actual status tracking
         timestamp: Date.now(),
         metadata: {
-          requestedBy: userId
-        }
+          requestedBy: userId,
+        },
       }
 
       socket.emit('parlant:agent-status-update', statusEvent)
 
       logger.info(`Sent agent status update for ${agentId} to user ${userId}`)
-
     } catch (error) {
       logger.error('Error requesting agent status:', error)
       socket.emit('parlant:request-agent-status-error', {
         error: 'Failed to get agent status',
         agentId,
-        workspaceId
+        workspaceId,
       })
     }
   })
@@ -312,11 +323,14 @@ export function setupParlantHandlers(socket: AuthenticatedSocket, roomManager: R
       const parlantRooms = socket.data?.parlantRooms
 
       if (parlantRooms && parlantRooms.size > 0) {
-        logger.info(`Cleaning up Parlant rooms for disconnected socket ${socket.id} (user: ${userId})`, {
-          roomCount: parlantRooms.size,
-          rooms: Array.from(parlantRooms),
-          reason
-        })
+        logger.info(
+          `Cleaning up Parlant rooms for disconnected socket ${socket.id} (user: ${userId})`,
+          {
+            roomCount: parlantRooms.size,
+            rooms: Array.from(parlantRooms),
+            reason,
+          }
+        )
 
         // Leave all Parlant rooms
         parlantRooms.forEach((roomId: string) => {
@@ -361,8 +375,9 @@ export class ParlantRoomManager {
       const workspaceRoomId = `parlant:workspace:${workspaceId}`
       this.roomManager.emitToWorkflow(workspaceRoomId, 'parlant:workspace-agent-event', event)
 
-      logger.info(`Broadcasted agent event ${event.type} for agent ${agentId} to rooms ${agentRoomId} and ${workspaceRoomId}`)
-
+      logger.info(
+        `Broadcasted agent event ${event.type} for agent ${agentId} to rooms ${agentRoomId} and ${workspaceRoomId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting agent event:', error)
       throw error
@@ -384,8 +399,9 @@ export class ParlantRoomManager {
       const agentRoomId = `parlant:agent:${agentId}`
       this.roomManager.emitToWorkflow(agentRoomId, 'parlant:agent-session-event', event)
 
-      logger.info(`Broadcasted session event ${event.type} for session ${sessionId} to rooms ${sessionRoomId} and ${agentRoomId}`)
-
+      logger.info(
+        `Broadcasted session event ${event.type} for session ${sessionId} to rooms ${sessionRoomId} and ${agentRoomId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting session event:', error)
       throw error
@@ -404,7 +420,6 @@ export class ParlantRoomManager {
       this.roomManager.emitToWorkflow(sessionRoomId, 'parlant:message-event', event)
 
       logger.info(`Broadcasted message event for session ${sessionId} to room ${sessionRoomId}`)
-
     } catch (error) {
       logger.error('Error broadcasting message event:', error)
       throw error
@@ -426,8 +441,9 @@ export class ParlantRoomManager {
       const workspaceRoomId = `parlant:workspace:${workspaceId}`
       this.roomManager.emitToWorkflow(workspaceRoomId, 'parlant:workspace-status-event', event)
 
-      logger.info(`Broadcasted status event ${event.type} for agent ${agentId} to rooms ${agentRoomId} and ${workspaceRoomId}`)
-
+      logger.info(
+        `Broadcasted status event ${event.type} for agent ${agentId} to rooms ${agentRoomId} and ${workspaceRoomId}`
+      )
     } catch (error) {
       logger.error('Error broadcasting status event:', error)
       throw error

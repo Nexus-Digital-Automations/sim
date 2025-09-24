@@ -8,12 +8,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ReactFlowNode,
   ConversionContext,
   ConversionError,
   ConversionWarning,
+  NodeConversionResult,
   ParlantState,
-  NodeConversionResult
+  ReactFlowNode,
 } from '../types'
 
 const logger = createLogger('ErrorRecovery')
@@ -37,7 +37,7 @@ export class ErrorRecovery {
     logger.warn('Attempting error recovery for node', {
       nodeId: node.id,
       nodeType: node.type,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     })
 
     try {
@@ -60,12 +60,12 @@ export class ErrorRecovery {
         default:
           return this.createMinimalState(node, context)
       }
-
     } catch (recoveryError) {
       logger.error('Error recovery failed', {
         nodeId: node.id,
         originalError: error,
-        recoveryError: recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
+        recoveryError:
+          recoveryError instanceof Error ? recoveryError.message : String(recoveryError),
       })
 
       // Add critical error to context
@@ -77,8 +77,8 @@ export class ErrorRecovery {
         suggestions: [
           'Check node structure is valid',
           'Review error recovery implementation',
-          'Contact support if issue persists'
-        ]
+          'Contact support if issue persists',
+        ],
       }
       context.errors.push(criticalError)
 
@@ -100,7 +100,7 @@ export class ErrorRecovery {
       edgeId,
       sourceNodeId,
       targetNodeId,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     })
 
     try {
@@ -111,7 +111,7 @@ export class ErrorRecovery {
         targetStateId: `state_${targetNodeId}`,
         description: `Recovered transition from ${sourceNodeId} to ${targetNodeId}`,
         condition: undefined,
-        weight: undefined
+        weight: undefined,
       }
 
       // Add recovery warning
@@ -122,23 +122,23 @@ export class ErrorRecovery {
         suggestions: [
           'Review original transition configuration',
           'Verify transition logic is correct',
-          'Test transition behavior in journey'
-        ]
+          'Test transition behavior in journey',
+        ],
       }
       context.warnings.push(warning)
 
       logger.info('Transition recovery successful', {
         edgeId,
-        recoveredTransitionId: genericTransition.id
+        recoveredTransitionId: genericTransition.id,
       })
 
       return true
-
     } catch (recoveryError) {
       logger.error('Transition recovery failed', {
         edgeId,
         originalError: error,
-        recoveryError: recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
+        recoveryError:
+          recoveryError instanceof Error ? recoveryError.message : String(recoveryError),
       })
 
       const criticalError: ConversionError = {
@@ -148,8 +148,8 @@ export class ErrorRecovery {
         suggestions: [
           'Check edge configuration',
           'Verify source and target nodes exist',
-          'Review transition building logic'
-        ]
+          'Review transition building logic',
+        ],
       }
       context.errors.push(criticalError)
 
@@ -170,7 +170,7 @@ export class ErrorRecovery {
   }> {
     logger.error('Attempting critical error recovery', {
       workflowId: context.workflow.id,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     })
 
     const recoveryActions: string[] = []
@@ -200,9 +200,9 @@ export class ErrorRecovery {
             preservedData: {
               partialConversion: true,
               originalError: error instanceof Error ? error.message : String(error),
-              recoveryActions
-            }
-          }
+              recoveryActions,
+            },
+          },
         }
 
         recoveryActions.push('Created partial journey structure')
@@ -221,8 +221,8 @@ export class ErrorRecovery {
           'Review workflow structure for issues',
           'Check for unsupported node types',
           'Verify workflow configuration is complete',
-          'Test partial journey functionality'
-        ]
+          'Test partial journey functionality',
+        ],
       }
       context.warnings.push(recoveryWarning)
 
@@ -230,14 +230,14 @@ export class ErrorRecovery {
         workflowId: context.workflow.id,
         canRecover,
         recoveryActionsCount: recoveryActions.length,
-        hasPartialResult: !!partialResult
+        hasPartialResult: !!partialResult,
       })
-
     } catch (recoveryError) {
       logger.error('Critical error recovery failed completely', {
         workflowId: context.workflow.id,
         originalError: error,
-        recoveryError: recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
+        recoveryError:
+          recoveryError instanceof Error ? recoveryError.message : String(recoveryError),
       })
 
       recoveryActions.push('Recovery failed - manual intervention required')
@@ -246,7 +246,7 @@ export class ErrorRecovery {
     return {
       canRecover,
       partialResult,
-      recoveryActions
+      recoveryActions,
     }
   }
 
@@ -255,7 +255,7 @@ export class ErrorRecovery {
    */
   async repairConversionContext(context: ConversionContext): Promise<boolean> {
     logger.info('Repairing conversion context', {
-      workflowId: context.workflow.id
+      workflowId: context.workflow.id,
     })
 
     let repaired = false
@@ -264,7 +264,7 @@ export class ErrorRecovery {
       // Repair missing node map entries
       if (context.nodeMap.size !== context.workflow.nodes.length) {
         context.nodeMap.clear()
-        context.workflow.nodes.forEach(node => {
+        context.workflow.nodes.forEach((node) => {
           context.nodeMap.set(node.id, node)
         })
         repaired = true
@@ -272,10 +272,10 @@ export class ErrorRecovery {
       }
 
       // Repair missing edge map entries
-      const expectedEdgeMapSize = new Set(context.workflow.edges.map(e => e.source)).size
+      const expectedEdgeMapSize = new Set(context.workflow.edges.map((e) => e.source)).size
       if (context.edgeMap.size !== expectedEdgeMapSize) {
         context.edgeMap.clear()
-        context.workflow.edges.forEach(edge => {
+        context.workflow.edges.forEach((edge) => {
           if (!context.edgeMap.has(edge.source)) {
             context.edgeMap.set(edge.source, [])
           }
@@ -309,10 +309,9 @@ export class ErrorRecovery {
       if (repaired) {
         logger.info('Conversion context repaired successfully')
       }
-
     } catch (error) {
       logger.error('Failed to repair conversion context', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
     }
 
@@ -323,10 +322,7 @@ export class ErrorRecovery {
   // PRIVATE HELPER METHODS
   // ========================================
 
-  private determineRecoveryStrategy(
-    node: ReactFlowNode,
-    error?: any
-  ): RecoveryStrategy {
+  private determineRecoveryStrategy(node: ReactFlowNode, error?: any): RecoveryStrategy {
     const nodeType = node.data?.type || node.type
 
     // Strategy based on node type
@@ -351,7 +347,7 @@ export class ErrorRecovery {
 
       default:
         // Check error type for strategy
-        if (error && error.message?.includes('unsupported')) {
+        if (error?.message?.includes('unsupported')) {
           return 'skip_node'
         }
         return 'fallback_generic_state'
@@ -367,8 +363,8 @@ export class ErrorRecovery {
       type: 'chat',
       name: node.data?.name || `Fallback Chat (${node.id})`,
       description: `Fallback chat state created due to conversion error`,
-      content: 'I\'m here to help. What can I do for you?',
-      position: node.position
+      content: "I'm here to help. What can I do for you?",
+      position: node.position,
     }
 
     const warning: ConversionWarning = {
@@ -379,14 +375,14 @@ export class ErrorRecovery {
       suggestions: [
         'Review original node configuration',
         'Test fallback state behavior',
-        'Consider manual state configuration'
-      ]
+        'Consider manual state configuration',
+      ],
     }
     context.warnings.push(warning)
 
     return {
       states: [fallbackState],
-      transitions: []
+      transitions: [],
     }
   }
 
@@ -401,7 +397,7 @@ export class ErrorRecovery {
       description: `Fallback tool state created due to conversion error`,
       content: 'Executing fallback operation',
       tools: ['fallback_operation'],
-      position: node.position
+      position: node.position,
     }
 
     const warning: ConversionWarning = {
@@ -412,14 +408,14 @@ export class ErrorRecovery {
       suggestions: [
         'Configure proper tool for this state',
         'Review original node configuration',
-        'Test fallback tool behavior'
-      ]
+        'Test fallback tool behavior',
+      ],
     }
     context.warnings.push(warning)
 
     return {
       states: [fallbackState],
-      transitions: []
+      transitions: [],
     }
   }
 
@@ -433,7 +429,7 @@ export class ErrorRecovery {
       name: node.data?.name || `Fallback State (${node.id})`,
       description: `Generic fallback state created due to conversion error`,
       content: 'Processing request...',
-      position: node.position
+      position: node.position,
     }
 
     const warning: ConversionWarning = {
@@ -444,14 +440,14 @@ export class ErrorRecovery {
       suggestions: [
         'Review node type and configuration',
         'Consider implementing specific converter',
-        'Test fallback state behavior'
-      ]
+        'Test fallback state behavior',
+      ],
     }
     context.warnings.push(warning)
 
     return {
       states: [fallbackState],
-      transitions: []
+      transitions: [],
     }
   }
 
@@ -467,15 +463,15 @@ export class ErrorRecovery {
       suggestions: [
         'Review if node is necessary for workflow',
         'Consider alternative implementation',
-        'Check for updated converter support'
-      ]
+        'Check for updated converter support',
+      ],
     }
     context.warnings.push(warning)
 
     return {
       states: [],
       transitions: [],
-      skipConnections: true
+      skipConnections: true,
     }
   }
 
@@ -489,7 +485,7 @@ export class ErrorRecovery {
       name: `Minimal State (${node.id})`,
       description: 'Minimal state created as last resort',
       content: 'State processed',
-      position: node.position
+      position: node.position,
     }
 
     const warning: ConversionWarning = {
@@ -500,14 +496,14 @@ export class ErrorRecovery {
       suggestions: [
         'This state has minimal functionality',
         'Review and enhance state configuration',
-        'Consider implementing proper converter'
-      ]
+        'Consider implementing proper converter',
+      ],
     }
     context.warnings.push(warning)
 
     return {
       states: [minimalState],
-      transitions: []
+      transitions: [],
     }
   }
 
@@ -519,7 +515,7 @@ export class ErrorRecovery {
       hasWarnings: context.warnings.length > 0,
       stateCount: context.stateMap.size,
       errorCount: context.errors.length,
-      warningCount: context.warnings.length
+      warningCount: context.warnings.length,
     }
   }
 }

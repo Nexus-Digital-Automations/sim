@@ -6,56 +6,56 @@
  * and end-to-end workflow validation.
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
-  toolRecommendationService,
-  contextAnalyzer,
-  mlEngine,
   behaviorTracker,
-  workspaceAnalyzer,
-  realtimeSuggester,
-  personalizationEngine,
+  contextAnalyzer,
   devUtils,
   healthCheck,
+  mlEngine,
+  personalizationEngine,
+  realtimeSuggester,
+  toolRecommendationService,
+  workspaceAnalyzer,
 } from '../index'
 import type {
   ConversationContext,
-  UserBehaviorProfile,
+  RealTimeSuggestion,
   RecommendationRequest,
   ToolRecommendation,
-  RealTimeSuggestion,
+  UserBehaviorProfile,
 } from '../types'
 
 // Test data setup
-const createTestContext = (): ConversationContext => devUtils.createSampleContext({
-  userId: 'test-user-123',
-  workspaceId: 'test-workspace-456',
-  messages: [
-    {
-      id: 'msg-1',
-      role: 'user',
-      content: 'I need to query our PostgreSQL database to get user analytics',
-      timestamp: new Date(),
-    },
-    {
-      id: 'msg-2',
-      role: 'assistant',
-      content: 'I can help you with that database query. What specific analytics are you looking for?',
-      timestamp: new Date(),
-    },
-    {
-      id: 'msg-3',
-      role: 'user',
-      content: 'I want to see monthly active users and their tool usage patterns',
-      timestamp: new Date(),
-    },
-  ],
-})
+const createTestContext = (): ConversationContext =>
+  devUtils.createSampleContext({
+    userId: 'test-user-123',
+    workspaceId: 'test-workspace-456',
+    messages: [
+      {
+        id: 'msg-1',
+        role: 'user',
+        content: 'I need to query our PostgreSQL database to get user analytics',
+        timestamp: new Date(),
+      },
+      {
+        id: 'msg-2',
+        role: 'assistant',
+        content:
+          'I can help you with that database query. What specific analytics are you looking for?',
+        timestamp: new Date(),
+      },
+      {
+        id: 'msg-3',
+        role: 'user',
+        content: 'I want to see monthly active users and their tool usage patterns',
+        timestamp: new Date(),
+      },
+    ],
+  })
 
-const createTestUserProfile = (): UserBehaviorProfile => devUtils.createSampleUserProfile(
-  'test-user-123',
-  'test-workspace-456'
-)
+const createTestUserProfile = (): UserBehaviorProfile =>
+  devUtils.createSampleUserProfile('test-user-123', 'test-workspace-456')
 
 describe('Tool Recommendation System', () => {
   let testContext: ConversationContext
@@ -104,7 +104,7 @@ describe('Tool Recommendation System', () => {
       expect(analyzedContext.messages).toHaveLength(testContext.messages.length)
 
       // Check that messages have been analyzed
-      const userMessages = analyzedContext.messages.filter(m => m.role === 'user')
+      const userMessages = analyzedContext.messages.filter((m) => m.role === 'user')
       expect(userMessages[0].metadata?.intent).toBeDefined()
       expect(userMessages[0].metadata?.entities).toBeDefined()
       expect(userMessages[0].metadata?.sentiment).toBeDefined()
@@ -112,7 +112,7 @@ describe('Tool Recommendation System', () => {
 
     test('should classify intents correctly', async () => {
       const analyzedContext = await contextAnalyzer.analyzeContext(testContext)
-      const firstUserMessage = analyzedContext.messages.find(m => m.role === 'user')
+      const firstUserMessage = analyzedContext.messages.find((m) => m.role === 'user')
 
       expect(firstUserMessage?.metadata?.intent?.primary).toBeDefined()
       expect(firstUserMessage?.metadata?.intent?.confidence).toBeGreaterThan(0)
@@ -122,11 +122,10 @@ describe('Tool Recommendation System', () => {
 
     test('should extract entities from conversation', async () => {
       const analyzedContext = await contextAnalyzer.analyzeContext(testContext)
-      const entities = analyzedContext.messages
-        .flatMap(m => m.metadata?.entities || [])
+      const entities = analyzedContext.messages.flatMap((m) => m.metadata?.entities || [])
 
       expect(entities.length).toBeGreaterThan(0)
-      expect(entities.some(e => e.type === 'database')).toBe(true)
+      expect(entities.some((e) => e.type === 'database')).toBe(true)
     })
 
     test('should provide contextual insights', async () => {
@@ -185,10 +184,11 @@ describe('Tool Recommendation System', () => {
       const recommendations = await mlEngine.generateRecommendations(request)
 
       // Should recommend database-related tools for database queries
-      const hasDbTools = recommendations.some(r =>
-        r.toolId.includes('postgres') ||
-        r.toolId.includes('query') ||
-        r.toolId.includes('database')
+      const hasDbTools = recommendations.some(
+        (r) =>
+          r.toolId.includes('postgres') ||
+          r.toolId.includes('query') ||
+          r.toolId.includes('database')
       )
       expect(hasDbTools).toBe(true)
     })
@@ -207,13 +207,9 @@ describe('Tool Recommendation System', () => {
 
     test('should track tool execution events', () => {
       expect(() => {
-        behaviorTracker.trackToolExecution(
-          sessionId,
-          'postgresql_query',
-          'success',
-          1500,
-          { queryComplexity: 'medium' }
-        )
+        behaviorTracker.trackToolExecution(sessionId, 'postgresql_query', 'success', 1500, {
+          queryComplexity: 'medium',
+        })
       }).not.toThrow()
     })
 
@@ -239,12 +235,7 @@ describe('Tool Recommendation System', () => {
       }).not.toThrow()
 
       expect(() => {
-        behaviorTracker.trackHelpRequest(
-          sessionId,
-          'postgresql_query',
-          'documentation',
-          true
-        )
+        behaviorTracker.trackHelpRequest(sessionId, 'postgresql_query', 'documentation', true)
       }).not.toThrow()
     })
 
@@ -259,7 +250,10 @@ describe('Tool Recommendation System', () => {
     })
 
     test('should analyze usage patterns', async () => {
-      const analysis = await behaviorTracker.analyzeUsagePatterns('test-user-123', 'test-workspace-456')
+      const analysis = await behaviorTracker.analyzeUsagePatterns(
+        'test-user-123',
+        'test-workspace-456'
+      )
 
       expect(analysis.dominantPatterns).toBeDefined()
       expect(analysis.toolPreferences).toBeDefined()
@@ -299,7 +293,7 @@ describe('Tool Recommendation System', () => {
       const workflows = await workspaceAnalyzer.identifyWorkflows('test-workspace-456')
 
       expect(Array.isArray(workflows)).toBe(true)
-      workflows.forEach(workflow => {
+      workflows.forEach((workflow) => {
         expect(workflow.id).toBeDefined()
         expect(workflow.name).toBeDefined()
         expect(workflow.tools).toBeDefined()
@@ -359,7 +353,7 @@ describe('Tool Recommendation System', () => {
 
     test('should detect trigger conditions', async () => {
       // Simulate user pause trigger
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Add message that might trigger suggestions
       await realtimeSuggester.updateContext(conversationId, {
@@ -540,7 +534,6 @@ describe('Tool Recommendation System', () => {
         expect(analytics.metrics).toBeDefined()
         expect(analytics.trends).toBeDefined()
         expect(analytics.insights).toBeDefined()
-
       } finally {
         // End session
         await toolRecommendationService.endSession(sessionId)
@@ -570,7 +563,6 @@ describe('Tool Recommendation System', () => {
         if (suggestions.length > 0) {
           toolRecommendationService.acceptSuggestion(conversationId, suggestions[0].id)
         }
-
       } finally {
         // Stop monitoring
         realtimeSuggester.stopMonitoring(conversationId)
@@ -608,12 +600,12 @@ describe('Tool Recommendation System', () => {
 
       const startTime = Date.now()
       const results = await Promise.all(
-        requests.map(req => toolRecommendationService.getRecommendations(req))
+        requests.map((req) => toolRecommendationService.getRecommendations(req))
       )
       const endTime = Date.now()
 
       expect(results).toHaveLength(10)
-      expect(results.every(r => r.recommendations.length > 0)).toBe(true)
+      expect(results.every((r) => r.recommendations.length > 0)).toBe(true)
 
       // Should handle 10 concurrent requests within 10 seconds
       expect(endTime - startTime).toBeLessThan(10000)
@@ -638,7 +630,7 @@ describe('Tool Recommendation System', () => {
       const maxTime = Math.max(...times)
 
       expect(averageTime).toBeLessThan(2000) // Average under 2 seconds
-      expect(maxTime).toBeLessThan(5000)     // No request over 5 seconds
+      expect(maxTime).toBeLessThan(5000) // No request over 5 seconds
     })
   })
 
@@ -647,7 +639,7 @@ describe('Tool Recommendation System', () => {
       const invalidContext = {
         ...testContext,
         messages: [], // Empty messages
-        id: '',       // Invalid ID
+        id: '', // Invalid ID
       }
 
       const result = await toolRecommendationService.getRecommendations({
@@ -681,15 +673,19 @@ describe('Tool Recommendation System', () => {
 
   describe('Privacy and Security', () => {
     test('should respect privacy settings in personalization', async () => {
-      await personalizationEngine.updatePersonalizationConfig('test-user-123', 'test-workspace-456', {
-        privacySettings: {
-          shareWithTeam: false,
-          shareAcrossWorkspaces: false,
-          collectDetailedAnalytics: false,
-          retentionPeriod: 30,
-          anonymizeData: true,
-        },
-      })
+      await personalizationEngine.updatePersonalizationConfig(
+        'test-user-123',
+        'test-workspace-456',
+        {
+          privacySettings: {
+            shareWithTeam: false,
+            shareAcrossWorkspaces: false,
+            collectDetailedAnalytics: false,
+            retentionPeriod: 30,
+            anonymizeData: true,
+          },
+        }
+      )
 
       const exportData = await personalizationEngine.exportPersonalizationData(
         'test-user-123',
@@ -708,7 +704,7 @@ describe('Tool Recommendation System', () => {
       })
 
       // Check that recommendations don't contain sensitive data
-      result.recommendations.forEach(rec => {
+      result.recommendations.forEach((rec) => {
         expect(rec.reasons).toBeDefined()
         // In a real test, we'd check that no sensitive user data leaks into reasons
       })
@@ -718,7 +714,7 @@ describe('Tool Recommendation System', () => {
 
 // Utility test helpers
 export const testHelpers = {
-  createMockRecommendation: (toolId: string, score: number = 0.8): ToolRecommendation => ({
+  createMockRecommendation: (toolId: string, score = 0.8): ToolRecommendation => ({
     toolId,
     tool: { id: toolId, name: toolId, description: 'Mock tool', version: '1.0.0' } as any,
     score,

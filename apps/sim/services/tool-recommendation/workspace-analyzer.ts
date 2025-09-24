@@ -8,12 +8,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  WorkspacePattern,
-  WorkflowPattern,
-  WorkspaceToolStats,
   IntegrationPattern,
   SeasonalityPattern,
   UserBehaviorProfile,
+  WorkflowPattern,
+  WorkspacePattern,
+  WorkspaceToolStats,
 } from './types'
 
 const logger = createLogger('WorkspaceAnalyzer')
@@ -78,7 +78,7 @@ export class WorkspaceAnalyzer {
   ): void {
     const members = this.teamMembers.get(workspaceId) || []
 
-    const existingMemberIndex = members.findIndex(m => m.userId === userId)
+    const existingMemberIndex = members.findIndex((m) => m.userId === userId)
     const collaborationScore = this.calculateCollaborationScore(profile)
 
     const member: TeamMember = {
@@ -121,18 +121,16 @@ export class WorkspaceAnalyzer {
     // Calculate adoption rates for each tool
     const allTools = new Set<string>()
     for (const member of members) {
-      Object.keys(member.toolUsage).forEach(toolId => allTools.add(toolId))
+      Object.keys(member.toolUsage).forEach((toolId) => allTools.add(toolId))
     }
 
     for (const toolId of allTools) {
-      const usersWithTool = members.filter(m => (m.toolUsage[toolId] || 0) > 0).length
+      const usersWithTool = members.filter((m) => (m.toolUsage[toolId] || 0) > 0).length
       const rate = members.length > 0 ? usersWithTool / members.length : 0
       adoptionRate[toolId] = rate
 
       // Identify champions (high usage users)
-      const champions = members
-        .filter(m => (m.toolUsage[toolId] || 0) > 50)
-        .map(m => m.userId)
+      const champions = members.filter((m) => (m.toolUsage[toolId] || 0) > 50).map((m) => m.userId)
 
       if (champions.length > 0) {
         championUsers[toolId] = champions
@@ -196,7 +194,7 @@ export class WorkspaceAnalyzer {
 
     // Filter and sort workflows by significance
     const significantWorkflows = Array.from(workflows.values())
-      .filter(w => w.frequency >= 2) // Must be used by at least 2 people
+      .filter((w) => w.frequency >= 2) // Must be used by at least 2 people
       .sort((a, b) => b.frequency - a.frequency)
 
     this.workflowTemplates.set(workspaceId, significantWorkflows)
@@ -243,8 +241,8 @@ export class WorkspaceAnalyzer {
     }
 
     const allIntegrations = Array.from(integrationMap.values())
-    const currentIntegrations = allIntegrations.filter(i => i.frequency >= 3)
-    const opportunities = allIntegrations.filter(i => i.frequency >= 2 && i.frequency < 3)
+    const currentIntegrations = allIntegrations.filter((i) => i.frequency >= 3)
+    const opportunities = allIntegrations.filter((i) => i.frequency >= 2 && i.frequency < 3)
 
     const recommendations = this.generateIntegrationRecommendations(
       currentIntegrations,
@@ -304,16 +302,23 @@ export class WorkspaceAnalyzer {
     const { adoptionRate } = await this.analyzeToolAdoption(workspaceId)
 
     const totalUsers = members.length
-    const activeUsers = members.filter(m => Object.values(m.toolUsage).some(count => count > 0)).length
+    const activeUsers = members.filter((m) =>
+      Object.values(m.toolUsage).some((count) => count > 0)
+    ).length
 
-    const toolAdoptionRate = Object.values(adoptionRate).reduce((sum, rate) => sum + rate, 0) /
-      Object.keys(adoptionRate).length || 0
+    const toolAdoptionRate =
+      Object.values(adoptionRate).reduce((sum, rate) => sum + rate, 0) /
+        Object.keys(adoptionRate).length || 0
 
-    const workflowEfficiency = workflows.length > 0 ?
-      workflows.reduce((sum, w) => sum + w.frequency, 0) / workflows.length / totalUsers : 0
+    const workflowEfficiency =
+      workflows.length > 0
+        ? workflows.reduce((sum, w) => sum + w.frequency, 0) / workflows.length / totalUsers
+        : 0
 
-    const collaborationIndex = members.length > 0 ?
-      members.reduce((sum, m) => sum + m.collaborationScore, 0) / members.length : 0
+    const collaborationIndex =
+      members.length > 0
+        ? members.reduce((sum, m) => sum + m.collaborationScore, 0) / members.length
+        : 0
 
     const innovationScore = this.calculateInnovationScore(members, adoptionRate)
 
@@ -349,18 +354,18 @@ export class WorkspaceAnalyzer {
 
     // Workflow recommendations
     const workflowRecommendations = pattern.commonWorkflows
-      .filter(w => w.frequency < 5)
-      .map(w => `Standardize workflow: ${w.name}`)
+      .filter((w) => w.frequency < 5)
+      .map((w) => `Standardize workflow: ${w.name}`)
 
     // Training recommendations for resistance points
     const trainingRecommendations = resistancePoints
       .slice(0, 3)
-      .map(toolId => `Provide training for ${toolId} to improve adoption`)
+      .map((toolId) => `Provide training for ${toolId} to improve adoption`)
 
     // Integration recommendations
     const integrationRecommendations = opportunities
       .slice(0, 3)
-      .map(i => `Consider integrating ${i.sourceToolId} with ${i.targetToolId}`)
+      .map((i) => `Consider integrating ${i.sourceToolId} with ${i.targetToolId}`)
 
     return {
       toolRecommendations,
@@ -393,7 +398,9 @@ export class WorkspaceAnalyzer {
   private async refreshWorkspaceData(pattern: WorkspacePattern): Promise<void> {
     pattern.commonWorkflows = await this.identifyWorkflows(pattern.workspaceId)
     pattern.toolUsageStats = await this.calculateToolStats(pattern.workspaceId)
-    pattern.integrationPoints = (await this.analyzeIntegrations(pattern.workspaceId)).currentIntegrations
+    pattern.integrationPoints = (
+      await this.analyzeIntegrations(pattern.workspaceId)
+    ).currentIntegrations
     pattern.updatedAt = new Date()
   }
 
@@ -439,23 +446,23 @@ export class WorkspaceAnalyzer {
       microsoft_teams_write_chat: 'Team Chat',
     }
 
-    const readable = tools.map(tool => nameMap[tool] || tool).join(' → ')
-    return readable.length > 50 ? readable.substring(0, 47) + '...' : readable
+    const readable = tools.map((tool) => nameMap[tool] || tool).join(' → ')
+    return readable.length > 50 ? `${readable.substring(0, 47)}...` : readable
   }
 
   private async identifyTriggers(tools: string[]): Promise<string[]> {
     // Simulate trigger identification based on tool types
     const triggers: string[] = []
 
-    if (tools.some(t => t.includes('email') || t.includes('outlook') || t.includes('gmail'))) {
+    if (tools.some((t) => t.includes('email') || t.includes('outlook') || t.includes('gmail'))) {
       triggers.push('new_email_received')
     }
 
-    if (tools.some(t => t.includes('calendar'))) {
+    if (tools.some((t) => t.includes('calendar'))) {
       triggers.push('scheduled_meeting')
     }
 
-    if (tools.some(t => t.includes('jira') || t.includes('linear'))) {
+    if (tools.some((t) => t.includes('jira') || t.includes('linear'))) {
       triggers.push('task_assignment')
     }
 
@@ -466,15 +473,15 @@ export class WorkspaceAnalyzer {
     // Simulate outcome identification
     const outcomes: string[] = []
 
-    if (tools.some(t => t.includes('docs') || t.includes('notion'))) {
+    if (tools.some((t) => t.includes('docs') || t.includes('notion'))) {
       outcomes.push('documentation_created')
     }
 
-    if (tools.some(t => t.includes('send') || t.includes('message'))) {
+    if (tools.some((t) => t.includes('send') || t.includes('message'))) {
       outcomes.push('communication_sent')
     }
 
-    if (tools.some(t => t.includes('query') || t.includes('read'))) {
+    if (tools.some((t) => t.includes('query') || t.includes('read'))) {
       outcomes.push('data_retrieved')
     }
 
@@ -498,8 +505,9 @@ export class WorkspaceAnalyzer {
     }
 
     // Medium adoption tools
-    const mediumAdoption = Object.entries(adoptionRate)
-      .filter(([, rate]) => rate > 0.3 && rate < 0.8)
+    const mediumAdoption = Object.entries(adoptionRate).filter(
+      ([, rate]) => rate > 0.3 && rate < 0.8
+    )
 
     if (mediumAdoption.length > 0) {
       recommendations.push('Focus training efforts on medium-adoption tools')
@@ -529,8 +537,8 @@ export class WorkspaceAnalyzer {
     }
 
     // Check for common integration patterns
-    const hasDataFlow = opportunities.some(o =>
-      o.sourceToolId.includes('sheets') || o.targetToolId.includes('database')
+    const hasDataFlow = opportunities.some(
+      (o) => o.sourceToolId.includes('sheets') || o.targetToolId.includes('database')
     )
 
     if (hasDataFlow) {
@@ -577,9 +585,17 @@ export class WorkspaceAnalyzer {
     for (const [toolId, usage] of toolUsage.entries()) {
       if (toolId.includes('slack') || toolId.includes('teams') || toolId.includes('mail')) {
         categoryBreakdown.communication += usage
-      } else if (toolId.includes('sql') || toolId.includes('database') || toolId.includes('mongo')) {
+      } else if (
+        toolId.includes('sql') ||
+        toolId.includes('database') ||
+        toolId.includes('mongo')
+      ) {
         categoryBreakdown.database += usage
-      } else if (toolId.includes('docs') || toolId.includes('sheets') || toolId.includes('notion')) {
+      } else if (
+        toolId.includes('docs') ||
+        toolId.includes('sheets') ||
+        toolId.includes('notion')
+      ) {
         categoryBreakdown.productivity += usage
       } else if (toolId.includes('github') || toolId.includes('jira')) {
         categoryBreakdown.development += usage
@@ -604,8 +620,9 @@ export class WorkspaceAnalyzer {
   ): number {
     // Base innovation on variety of tools and adoption speed
     const toolVariety = Object.keys(adoptionRate).length
-    const averageAdoption = Object.values(adoptionRate).reduce((sum, rate) => sum + rate, 0) /
-      Object.keys(adoptionRate).length || 0
+    const averageAdoption =
+      Object.values(adoptionRate).reduce((sum, rate) => sum + rate, 0) /
+        Object.keys(adoptionRate).length || 0
 
     const varietyScore = Math.min(toolVariety / 50, 1) // Normalize to 0-1
     const adoptionScore = averageAdoption

@@ -6,8 +6,7 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { parlantLoggers, type ParlantLogContext } from './logging'
-import { monitoring } from './monitoring'
+import { type ParlantLogContext, parlantLoggers } from './logging'
 
 const logger = createLogger('ParlantErrorTracking')
 
@@ -107,14 +106,14 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
       errorLevel: ['error', 'critical'],
       frequency: {
         count: 10,
-        timeWindowMinutes: 5
-      }
+        timeWindowMinutes: 5,
+      },
     },
     actions: {
       log: true,
-      notify: true
+      notify: true,
     },
-    cooldownMinutes: 15
+    cooldownMinutes: 15,
   },
   {
     id: 'database-errors',
@@ -126,14 +125,14 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
       errorLevel: ['error', 'critical'],
       frequency: {
         count: 3,
-        timeWindowMinutes: 5
-      }
+        timeWindowMinutes: 5,
+      },
     },
     actions: {
       log: true,
-      notify: true
+      notify: true,
     },
-    cooldownMinutes: 10
+    cooldownMinutes: 10,
   },
   {
     id: 'auth-failures',
@@ -144,14 +143,14 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
       categories: ['authentication'],
       frequency: {
         count: 5,
-        timeWindowMinutes: 10
-      }
+        timeWindowMinutes: 10,
+      },
     },
     actions: {
       log: true,
-      notify: true
+      notify: true,
     },
-    cooldownMinutes: 20
+    cooldownMinutes: 20,
   },
   {
     id: 'agent-critical-errors',
@@ -160,13 +159,13 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
     enabled: true,
     conditions: {
       categories: ['agent'],
-      errorLevel: ['critical']
+      errorLevel: ['critical'],
     },
     actions: {
       log: true,
-      notify: true
+      notify: true,
     },
-    cooldownMinutes: 5
+    cooldownMinutes: 5,
   },
   {
     id: 'system-performance',
@@ -175,15 +174,15 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
     enabled: true,
     conditions: {
       threshold: {
-        responseTime: 30000 // 30 seconds
-      }
+        responseTime: 30000, // 30 seconds
+      },
     },
     actions: {
       log: true,
-      notify: true
+      notify: true,
     },
-    cooldownMinutes: 30
-  }
+    cooldownMinutes: 30,
+  },
 ]
 
 /**
@@ -201,7 +200,7 @@ export class ParlantErrorTracker {
     this.alertRules = alertRules
     logger.info('Parlant Error Tracker initialized', {
       alertRules: alertRules.length,
-      enabledRules: alertRules.filter(r => r.enabled).length
+      enabledRules: alertRules.filter((r) => r.enabled).length,
     })
   }
 
@@ -244,8 +243,8 @@ export class ParlantErrorTracker {
         userId: context.userId,
         workspaceId: context.workspaceId,
         agentId: context.agentId,
-        sessionId: context.sessionId
-      }
+        sessionId: context.sessionId,
+      },
     }
 
     // Store error
@@ -259,7 +258,7 @@ export class ParlantErrorTracker {
       ...context,
       errorId,
       errorLevel: level,
-      errorCategory: category
+      errorCategory: category,
     }
 
     switch (level) {
@@ -270,7 +269,11 @@ export class ParlantErrorTracker {
         parlantLoggers.monitoring.error(message, logContext, errorDetails.metadata.requestId)
         break
       case 'critical':
-        parlantLoggers.monitoring.error(`[CRITICAL] ${message}`, logContext, errorDetails.metadata.requestId)
+        parlantLoggers.monitoring.error(
+          `[CRITICAL] ${message}`,
+          logContext,
+          errorDetails.metadata.requestId
+        )
         break
     }
 
@@ -282,7 +285,7 @@ export class ParlantErrorTracker {
       level,
       category,
       service,
-      hasStack: !!error?.stack
+      hasStack: !!error?.stack,
     })
 
     return errorId
@@ -299,7 +302,7 @@ export class ParlantErrorTracker {
 
       // Check cooldown
       const lastAlert = this.alertCooldowns.get(rule.id)
-      if (lastAlert && (now - lastAlert) < (rule.cooldownMinutes || 0) * 60 * 1000) {
+      if (lastAlert && now - lastAlert < (rule.cooldownMinutes || 0) * 60 * 1000) {
         continue
       }
 
@@ -332,7 +335,11 @@ export class ParlantErrorTracker {
     }
 
     // Check operations
-    if (conditions.operations && error.operation && !conditions.operations.includes(error.operation)) {
+    if (
+      conditions.operations &&
+      error.operation &&
+      !conditions.operations.includes(error.operation)
+    ) {
       return false
     }
 
@@ -341,10 +348,11 @@ export class ParlantErrorTracker {
       const timeWindow = conditions.frequency.timeWindowMinutes * 60 * 1000
       const windowStart = Date.now() - timeWindow
 
-      const recentErrors = this.errors.filter(err =>
-        new Date(err.timestamp).getTime() >= windowStart &&
-        err.category === error.category &&
-        err.service === error.service
+      const recentErrors = this.errors.filter(
+        (err) =>
+          new Date(err.timestamp).getTime() >= windowStart &&
+          err.category === error.category &&
+          err.service === error.service
       )
 
       if (recentErrors.length < conditions.frequency.count) {
@@ -354,8 +362,11 @@ export class ParlantErrorTracker {
 
     // Check threshold conditions
     if (conditions.threshold) {
-      if (conditions.threshold.responseTime &&
-          (!error.metadata.responseTime || error.metadata.responseTime < conditions.threshold.responseTime)) {
+      if (
+        conditions.threshold.responseTime &&
+        (!error.metadata.responseTime ||
+          error.metadata.responseTime < conditions.threshold.responseTime)
+      ) {
         return false
       }
 
@@ -390,7 +401,7 @@ export class ParlantErrorTracker {
       message: this.generateAlertMessage(rule, errors),
       severity: this.determineSeverity(errors),
       errors,
-      resolved: false
+      resolved: false,
     }
 
     // Store alert
@@ -407,7 +418,7 @@ export class ParlantErrorTracker {
       ruleId: rule.id,
       ruleName: rule.name,
       severity: alert.severity,
-      errorCount: errors.length
+      errorCount: errors.length,
     })
   }
 
@@ -416,8 +427,8 @@ export class ParlantErrorTracker {
    */
   private generateAlertMessage(rule: AlertRule, errors: ErrorDetails[]): string {
     const errorCount = errors.length
-    const categories = [...new Set(errors.map(e => e.category))]
-    const services = [...new Set(errors.map(e => e.service))]
+    const categories = [...new Set(errors.map((e) => e.category))]
+    const services = [...new Set(errors.map((e) => e.service))]
 
     let message = `${rule.name}: ${errorCount} error(s) detected`
 
@@ -433,7 +444,7 @@ export class ParlantErrorTracker {
       message += ` from ${services.length} services`
     }
 
-    const criticalErrors = errors.filter(e => e.level === 'critical')
+    const criticalErrors = errors.filter((e) => e.level === 'critical')
     if (criticalErrors.length > 0) {
       message += `. ${criticalErrors.length} critical error(s) require immediate attention.`
     }
@@ -445,10 +456,10 @@ export class ParlantErrorTracker {
    * Determine alert severity from errors
    */
   private determineSeverity(errors: ErrorDetails[]): AlertInstance['severity'] {
-    const levels = errors.map(e => e.level)
+    const levels = errors.map((e) => e.level)
 
     if (levels.includes('critical')) return 'critical'
-    if (levels.filter(l => l === 'error').length >= 5) return 'high'
+    if (levels.filter((l) => l === 'error').length >= 5) return 'high'
     if (levels.includes('error')) return 'medium'
     return 'low'
   }
@@ -466,7 +477,7 @@ export class ParlantErrorTracker {
         alertId: alert.id,
         ruleId: rule.id,
         severity: alert.severity,
-        errorCount: alert.errors.length
+        errorCount: alert.errors.length,
       })
     }
 
@@ -483,7 +494,7 @@ export class ParlantErrorTracker {
     if (actions.email) {
       logger.info('Email alert action configured', {
         alertId: alert.id,
-        recipients: actions.email.recipients.length
+        recipients: actions.email.recipients.length,
       })
       // Email implementation would go here
     }
@@ -492,23 +503,26 @@ export class ParlantErrorTracker {
   /**
    * Execute webhook alert action
    */
-  private async executeWebhook(webhook: NonNullable<AlertRule['actions']['webhook']>, alert: AlertInstance): Promise<void> {
+  private async executeWebhook(
+    webhook: NonNullable<AlertRule['actions']['webhook']>,
+    alert: AlertInstance
+  ): Promise<void> {
     const payload = {
       alert: {
         id: alert.id,
         title: alert.title,
         message: alert.message,
         severity: alert.severity,
-        timestamp: alert.timestamp
+        timestamp: alert.timestamp,
       },
-      errors: alert.errors.map(error => ({
+      errors: alert.errors.map((error) => ({
         id: error.id,
         level: error.level,
         category: error.category,
         service: error.service,
         message: error.message,
-        timestamp: error.timestamp
-      }))
+        timestamp: error.timestamp,
+      })),
     }
 
     // This would typically use fetch or axios
@@ -516,22 +530,22 @@ export class ParlantErrorTracker {
       url: webhook.url,
       method: webhook.method,
       alertId: alert.id,
-      payloadSize: JSON.stringify(payload).length
+      payloadSize: JSON.stringify(payload).length,
     })
   }
 
   /**
    * Get recent errors within specified minutes
    */
-  getRecentErrors(minutes: number = 60): ErrorDetails[] {
+  getRecentErrors(minutes = 60): ErrorDetails[] {
     const cutoff = new Date(Date.now() - minutes * 60 * 1000)
-    return this.errors.filter(error => new Date(error.timestamp) >= cutoff)
+    return this.errors.filter((error) => new Date(error.timestamp) >= cutoff)
   }
 
   /**
    * Get error statistics for a time window
    */
-  getErrorStats(windowMinutes: number = 60): {
+  getErrorStats(windowMinutes = 60): {
     total: number
     byLevel: Record<string, number>
     byCategory: Record<string, number>
@@ -545,7 +559,7 @@ export class ParlantErrorTracker {
     const byService: Record<string, number> = {}
     const messageCounts: Record<string, number> = {}
 
-    recentErrors.forEach(error => {
+    recentErrors.forEach((error) => {
       byLevel[error.level] = (byLevel[error.level] || 0) + 1
       byCategory[error.category] = (byCategory[error.category] || 0) + 1
       byService[error.service] = (byService[error.service] || 0) + 1
@@ -562,7 +576,7 @@ export class ParlantErrorTracker {
       byLevel,
       byCategory,
       byService,
-      topErrors
+      topErrors,
     }
   }
 
@@ -570,14 +584,14 @@ export class ParlantErrorTracker {
    * Get active alerts
    */
   getActiveAlerts(): AlertInstance[] {
-    return this.alerts.filter(alert => !alert.resolved)
+    return this.alerts.filter((alert) => !alert.resolved)
   }
 
   /**
    * Acknowledge an alert
    */
   acknowledgeAlert(alertId: string, acknowledgedBy: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId)
+    const alert = this.alerts.find((a) => a.id === alertId)
     if (alert && !alert.resolved) {
       alert.acknowledgedAt = new Date().toISOString()
       alert.acknowledgedBy = acknowledgedBy
@@ -592,7 +606,7 @@ export class ParlantErrorTracker {
    * Resolve an alert
    */
   resolveAlert(alertId: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId)
+    const alert = this.alerts.find((a) => a.id === alertId)
     if (alert && !alert.resolved) {
       alert.resolved = true
       alert.resolvedAt = new Date().toISOString()
@@ -614,7 +628,7 @@ export class ParlantErrorTracker {
    * Update alert rule
    */
   updateAlertRule(ruleId: string, updates: Partial<AlertRule>): boolean {
-    const ruleIndex = this.alertRules.findIndex(r => r.id === ruleId)
+    const ruleIndex = this.alertRules.findIndex((r) => r.id === ruleId)
     if (ruleIndex >= 0) {
       this.alertRules[ruleIndex] = { ...this.alertRules[ruleIndex], ...updates }
       logger.info('Alert rule updated', { ruleId, updates: Object.keys(updates) })
@@ -633,17 +647,33 @@ export const parlantErrorTracker = new ParlantErrorTracker()
  * Convenience functions for error tracking
  */
 export const errorTracker = {
-  trackWarning: (category: ErrorDetails['category'], service: string, message: string, error?: Error, context?: ParlantLogContext) =>
-    parlantErrorTracker.trackError('warning', category, service, message, error, context),
+  trackWarning: (
+    category: ErrorDetails['category'],
+    service: string,
+    message: string,
+    error?: Error,
+    context?: ParlantLogContext
+  ) => parlantErrorTracker.trackError('warning', category, service, message, error, context),
 
-  trackError: (category: ErrorDetails['category'], service: string, message: string, error?: Error, context?: ParlantLogContext) =>
-    parlantErrorTracker.trackError('error', category, service, message, error, context),
+  trackError: (
+    category: ErrorDetails['category'],
+    service: string,
+    message: string,
+    error?: Error,
+    context?: ParlantLogContext
+  ) => parlantErrorTracker.trackError('error', category, service, message, error, context),
 
-  trackCritical: (category: ErrorDetails['category'], service: string, message: string, error?: Error, context?: ParlantLogContext) =>
-    parlantErrorTracker.trackError('critical', category, service, message, error, context),
+  trackCritical: (
+    category: ErrorDetails['category'],
+    service: string,
+    message: string,
+    error?: Error,
+    context?: ParlantLogContext
+  ) => parlantErrorTracker.trackError('critical', category, service, message, error, context),
 
   getStats: (windowMinutes?: number) => parlantErrorTracker.getErrorStats(windowMinutes),
   getActiveAlerts: () => parlantErrorTracker.getActiveAlerts(),
-  acknowledgeAlert: (alertId: string, acknowledgedBy: string) => parlantErrorTracker.acknowledgeAlert(alertId, acknowledgedBy),
-  resolveAlert: (alertId: string) => parlantErrorTracker.resolveAlert(alertId)
+  acknowledgeAlert: (alertId: string, acknowledgedBy: string) =>
+    parlantErrorTracker.acknowledgeAlert(alertId, acknowledgedBy),
+  resolveAlert: (alertId: string) => parlantErrorTracker.resolveAlert(alertId),
 }

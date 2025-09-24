@@ -12,10 +12,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { Edge } from 'reactflow'
-import type { BlockState, WorkflowState } from '@/stores/workflows/workflow/types'
-import { workflowCompatibilityValidator } from './compatibility-validator'
-import { workflowRegressionTestRunner } from './regression-tests'
+import type { WorkflowState } from '@/stores/workflows/workflow/types'
 
 const logger = createLogger('DataConsistency')
 
@@ -111,13 +108,15 @@ export class DataConsistencyManager {
   private migrations: Map<string, MigrationOperation> = new Map()
   private locks: Map<string, { userId: string; timestamp: Date; operation: string }> = new Map()
 
-  constructor(config: DataConsistencyConfig = {
-    backupEnabled: true,
-    rollbackEnabled: true,
-    incrementalMigration: true,
-    validationStrict: true,
-    concurrentSafetyEnabled: true
-  }) {
+  constructor(
+    config: DataConsistencyConfig = {
+      backupEnabled: true,
+      rollbackEnabled: true,
+      incrementalMigration: true,
+      validationStrict: true,
+      concurrentSafetyEnabled: true,
+    }
+  ) {
     this.config = config
     this.logger.info('Data consistency manager initialized', { config })
   }
@@ -137,7 +136,7 @@ export class DataConsistencyManager {
       workflowId,
       snapshotId,
       reason,
-      hasJourneyState: !!journeyState
+      hasJourneyState: !!journeyState,
     })
 
     // Create deep copy to prevent mutations
@@ -152,15 +151,15 @@ export class DataConsistencyManager {
         reason,
         userInitiated: reason.includes('user'),
         autoCreated: reason.includes('auto'),
-        checksum: await this.calculateChecksum(reactFlowState)
-      }
+        checksum: await this.calculateChecksum(reactFlowState),
+      },
     }
 
     this.snapshots.set(snapshotId, snapshot)
 
     this.logger.info('Workflow snapshot created successfully', {
       snapshotId,
-      checksum: snapshot.metadata.checksum
+      checksum: snapshot.metadata.checksum,
     })
 
     return snapshot
@@ -176,7 +175,7 @@ export class DataConsistencyManager {
   ): Promise<ConsistencyValidationResult> {
     this.logger.info('Validating data consistency', {
       workflowId,
-      hasJourneyState: !!journeyState
+      hasJourneyState: !!journeyState,
     })
 
     const inconsistencies: DataInconsistency[] = []
@@ -202,15 +201,17 @@ export class DataConsistencyManager {
       recommendations.push(...this.generateConsistencyRecommendations(inconsistencies, warnings))
 
       // Determine if we can proceed
-      const criticalIssues = inconsistencies.filter(i => i.severity === 'CRITICAL')
-      const canProceed = criticalIssues.length === 0 && (!this.config.validationStrict || inconsistencies.length === 0)
+      const criticalIssues = inconsistencies.filter((i) => i.severity === 'CRITICAL')
+      const canProceed =
+        criticalIssues.length === 0 &&
+        (!this.config.validationStrict || inconsistencies.length === 0)
 
       const result: ConsistencyValidationResult = {
         isConsistent: inconsistencies.length === 0,
         inconsistencies,
         warnings,
         recommendations,
-        canProceed
+        canProceed,
       }
 
       this.logger.info('Data consistency validation completed', {
@@ -218,29 +219,30 @@ export class DataConsistencyManager {
         isConsistent: result.isConsistent,
         inconsistencyCount: inconsistencies.length,
         warningCount: warnings.length,
-        canProceed
+        canProceed,
       })
 
       return result
-
     } catch (error) {
       this.logger.error('Data consistency validation failed', { error, workflowId })
 
       return {
         isConsistent: false,
-        inconsistencies: [{
-          type: 'CORRUPTED_DATA',
-          severity: 'CRITICAL',
-          location: 'DataConsistencyManager',
-          description: 'Validation process failed',
-          expected: 'Successful validation',
-          actual: error instanceof Error ? error.message : 'Unknown error',
-          autoFixable: false,
-          fixSuggestion: 'Check workflow state integrity and retry'
-        }],
+        inconsistencies: [
+          {
+            type: 'CORRUPTED_DATA',
+            severity: 'CRITICAL',
+            location: 'DataConsistencyManager',
+            description: 'Validation process failed',
+            expected: 'Successful validation',
+            actual: error instanceof Error ? error.message : 'Unknown error',
+            autoFixable: false,
+            fixSuggestion: 'Check workflow state integrity and retry',
+          },
+        ],
         warnings: [],
         recommendations: ['Fix validation errors before proceeding'],
-        canProceed: false
+        canProceed: false,
       }
     }
   }
@@ -257,11 +259,11 @@ export class DataConsistencyManager {
 
     this.logger.info('Starting incremental migration', {
       workflowId,
-      operationId
+      operationId,
     })
 
     // Acquire migration lock
-    if (!await this.acquireLock(workflowId, operationId, 'MIGRATION')) {
+    if (!(await this.acquireLock(workflowId, operationId, 'MIGRATION'))) {
       throw new Error(`Cannot acquire migration lock for workflow ${workflowId}`)
     }
 
@@ -280,7 +282,7 @@ export class DataConsistencyManager {
         workflowId,
         timestamp: new Date(),
         status: 'IN_PROGRESS',
-        preOperationSnapshot: preSnapshot.snapshotId
+        preOperationSnapshot: preSnapshot.snapshotId,
       }
 
       this.migrations.set(operationId, migration)
@@ -288,7 +290,9 @@ export class DataConsistencyManager {
       // Validate pre-migration state
       const preValidation = await this.validateDataConsistency(workflowId, reactFlowState)
       if (!preValidation.canProceed) {
-        throw new Error('Pre-migration validation failed: ' + preValidation.inconsistencies.map(i => i.description).join(', '))
+        throw new Error(
+          `Pre-migration validation failed: ${preValidation.inconsistencies.map((i) => i.description).join(', ')}`
+        )
       }
 
       // Perform incremental steps
@@ -305,16 +309,20 @@ export class DataConsistencyManager {
       migration.postOperationSnapshot = postSnapshot.snapshotId
 
       // Validate post-migration state
-      const postValidation = await this.validateDataConsistency(workflowId, reactFlowState, targetJourneyState)
+      const postValidation = await this.validateDataConsistency(
+        workflowId,
+        reactFlowState,
+        targetJourneyState
+      )
       migration.validationResult = postValidation
 
       if (!postValidation.isConsistent) {
         this.logger.warn('Post-migration validation found inconsistencies', {
           operationId,
-          inconsistencies: postValidation.inconsistencies
+          inconsistencies: postValidation.inconsistencies,
         })
 
-        if (postValidation.inconsistencies.some(i => i.severity === 'CRITICAL')) {
+        if (postValidation.inconsistencies.some((i) => i.severity === 'CRITICAL')) {
           throw new Error('Critical inconsistencies detected after migration')
         }
       }
@@ -323,11 +331,10 @@ export class DataConsistencyManager {
 
       this.logger.info('Incremental migration completed successfully', {
         operationId,
-        workflowId
+        workflowId,
       })
 
       return migration
-
     } catch (error) {
       const migration = this.migrations.get(operationId)
       if (migration) {
@@ -347,7 +354,6 @@ export class DataConsistencyManager {
 
       this.logger.error('Incremental migration failed', { error, operationId })
       throw error
-
     } finally {
       // Release migration lock
       await this.releaseLock(workflowId)
@@ -366,7 +372,7 @@ export class DataConsistencyManager {
     this.logger.info('Performing rollback', {
       operationId,
       workflowId: migration.workflowId,
-      targetSnapshot: migration.preOperationSnapshot
+      targetSnapshot: migration.preOperationSnapshot,
     })
 
     const snapshot = this.snapshots.get(migration.preOperationSnapshot)
@@ -396,7 +402,7 @@ export class DataConsistencyManager {
     migration.rollbackData = {
       rollbackPlan,
       completedAt: new Date(),
-      validationResult
+      validationResult,
     }
 
     this.logger.info('Rollback completed successfully', { operationId })
@@ -413,7 +419,7 @@ export class DataConsistencyManager {
   ): Promise<{ reactFlowState: WorkflowState; journeyState: any }> {
     this.logger.info('Synchronizing states', {
       workflowId,
-      conflictResolution
+      conflictResolution,
     })
 
     // Create pre-sync snapshot
@@ -441,19 +447,23 @@ export class DataConsistencyManager {
     )
 
     // Validate synchronized state
-    const validation = await this.validateDataConsistency(workflowId, updatedReactFlow, updatedJourney)
+    const validation = await this.validateDataConsistency(
+      workflowId,
+      updatedReactFlow,
+      updatedJourney
+    )
     if (!validation.isConsistent) {
       throw new Error('State synchronization resulted in inconsistent data')
     }
 
     this.logger.info('State synchronization completed', {
       workflowId,
-      changeCount: differences.length
+      changeCount: differences.length,
     })
 
     return {
       reactFlowState: updatedReactFlow,
-      journeyState: updatedJourney
+      journeyState: updatedJourney,
     }
   }
 
@@ -473,7 +483,7 @@ export class DataConsistencyManager {
         description: 'Blocks object is missing or invalid',
         expected: 'Object with block data',
         actual: typeof state.blocks,
-        autoFixable: false
+        autoFixable: false,
       })
       return
     }
@@ -486,7 +496,7 @@ export class DataConsistencyManager {
         description: 'Edges array is missing or invalid',
         expected: 'Array of edge objects',
         actual: typeof state.edges,
-        autoFixable: false
+        autoFixable: false,
       })
     }
 
@@ -501,7 +511,7 @@ export class DataConsistencyManager {
           expected: blockId,
           actual: block.id,
           autoFixable: true,
-          fixSuggestion: 'Update block.id to match key'
+          fixSuggestion: 'Update block.id to match key',
         })
       }
 
@@ -513,7 +523,7 @@ export class DataConsistencyManager {
           description: 'Block missing required properties',
           expected: 'type, name, and position properties',
           actual: { type: block.type, name: block.name, position: block.position },
-          autoFixable: false
+          autoFixable: false,
         })
       }
     }
@@ -530,7 +540,7 @@ export class DataConsistencyManager {
           expected: `Block ${edge.source} to exist`,
           actual: 'Block not found',
           autoFixable: true,
-          fixSuggestion: 'Remove orphaned edge or create missing block'
+          fixSuggestion: 'Remove orphaned edge or create missing block',
         })
       }
 
@@ -543,7 +553,7 @@ export class DataConsistencyManager {
           expected: `Block ${edge.target} to exist`,
           actual: 'Block not found',
           autoFixable: true,
-          fixSuggestion: 'Remove orphaned edge or create missing block'
+          fixSuggestion: 'Remove orphaned edge or create missing block',
         })
       }
     }
@@ -564,7 +574,7 @@ export class DataConsistencyManager {
         description: 'Journey state is missing or invalid',
         expected: 'Valid journey state object',
         actual: typeof journeyState,
-        autoFixable: false
+        autoFixable: false,
       })
       return
     }
@@ -578,7 +588,7 @@ export class DataConsistencyManager {
         expected: 'String journey identifier',
         actual: journeyState.journeyId,
         autoFixable: true,
-        fixSuggestion: 'Generate unique journey ID'
+        fixSuggestion: 'Generate unique journey ID',
       })
     }
 
@@ -590,7 +600,7 @@ export class DataConsistencyManager {
         description: 'Journey states array is invalid',
         expected: 'Array of journey state objects',
         actual: typeof journeyState.states,
-        autoFixable: false
+        autoFixable: false,
       })
     }
   }
@@ -621,7 +631,7 @@ export class DataConsistencyManager {
           expected: `Journey state for block ${blockId}`,
           actual: 'Missing',
           autoFixable: true,
-          fixSuggestion: 'Generate journey state for missing block'
+          fixSuggestion: 'Generate journey state for missing block',
         })
       }
     }
@@ -637,7 +647,7 @@ export class DataConsistencyManager {
           expected: `ReactFlow block ${journeyStateId} to exist`,
           actual: 'Block not found',
           autoFixable: true,
-          fixSuggestion: 'Remove orphaned journey state'
+          fixSuggestion: 'Remove orphaned journey state',
         })
       }
     }
@@ -658,7 +668,7 @@ export class DataConsistencyManager {
         type: 'PERFORMANCE_IMPACT',
         message: 'Large workflow detected',
         impact: `${blockCount} blocks may impact journey mapping performance`,
-        recommendation: 'Consider breaking into smaller sub-workflows'
+        recommendation: 'Consider breaking into smaller sub-workflows',
       })
     }
 
@@ -667,7 +677,7 @@ export class DataConsistencyManager {
         type: 'PERFORMANCE_IMPACT',
         message: 'High edge count detected',
         impact: `${edgeCount} edges may slow visual rendering`,
-        recommendation: 'Optimize workflow structure for better performance'
+        recommendation: 'Optimize workflow structure for better performance',
       })
     }
 
@@ -678,7 +688,7 @@ export class DataConsistencyManager {
         type: 'COMPATIBILITY_CONCERN',
         message: 'Deep container nesting detected',
         impact: 'May complicate journey execution logic',
-        recommendation: 'Flatten container structure where possible'
+        recommendation: 'Flatten container structure where possible',
       })
     }
   }
@@ -692,8 +702,8 @@ export class DataConsistencyManager {
   ): string[] {
     const recommendations: string[] = []
 
-    const criticalCount = inconsistencies.filter(i => i.severity === 'CRITICAL').length
-    const highCount = inconsistencies.filter(i => i.severity === 'HIGH').length
+    const criticalCount = inconsistencies.filter((i) => i.severity === 'CRITICAL').length
+    const highCount = inconsistencies.filter((i) => i.severity === 'HIGH').length
 
     if (criticalCount > 0) {
       recommendations.push(`Resolve ${criticalCount} critical inconsistencies before proceeding`)
@@ -703,7 +713,7 @@ export class DataConsistencyManager {
       recommendations.push(`Address ${highCount} high-priority issues for better reliability`)
     }
 
-    const autoFixableCount = inconsistencies.filter(i => i.autoFixable).length
+    const autoFixableCount = inconsistencies.filter((i) => i.autoFixable).length
     if (autoFixableCount > 0) {
       recommendations.push(`${autoFixableCount} issues can be automatically fixed`)
     }
@@ -732,7 +742,7 @@ export class DataConsistencyManager {
     let hash = 0
     for (let i = 0; i < stateString.length; i++) {
       const char = stateString.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(16)
@@ -760,7 +770,11 @@ export class DataConsistencyManager {
     return maxDepth
   }
 
-  private async acquireLock(workflowId: string, userId: string, operation: string): Promise<boolean> {
+  private async acquireLock(
+    workflowId: string,
+    userId: string,
+    operation: string
+  ): Promise<boolean> {
     if (!this.config.concurrentSafetyEnabled) return true
 
     const existingLock = this.locks.get(workflowId)
@@ -775,7 +789,7 @@ export class DataConsistencyManager {
     this.locks.set(workflowId, {
       userId,
       timestamp: new Date(),
-      operation
+      operation,
     })
 
     return true
@@ -793,7 +807,7 @@ export class DataConsistencyManager {
     // Implementation would perform actual migration steps
     // This is a placeholder for the actual migration logic
     this.logger.info('Performing migration steps', {
-      operationId: migration.operationId
+      operationId: migration.operationId,
     })
   }
 
@@ -816,9 +830,9 @@ export class DataConsistencyManager {
           action: 'RESTORE_STATE',
           parameters: { snapshot },
           expectedDuration: 500,
-          rollbackable: true
-        }
-      ]
+          rollbackable: true,
+        },
+      ],
     }
   }
 
@@ -844,7 +858,7 @@ export class DataConsistencyManager {
     // Implementation would resolve conflicts and apply changes
     return {
       updatedReactFlow: reactFlowState,
-      updatedJourney: journeyState
+      updatedJourney: journeyState,
     }
   }
 }
@@ -891,11 +905,7 @@ export async function performSafeMigration(
 export async function createSafetySnapshot(
   workflowId: string,
   reactFlowState: WorkflowState,
-  reason: string = 'User-initiated safety snapshot'
+  reason = 'User-initiated safety snapshot'
 ): Promise<WorkflowSnapshot> {
-  return await dataConsistencyManager.createWorkflowSnapshot(
-    workflowId,
-    reactFlowState,
-    reason
-  )
+  return await dataConsistencyManager.createWorkflowSnapshot(workflowId, reactFlowState, reason)
 }

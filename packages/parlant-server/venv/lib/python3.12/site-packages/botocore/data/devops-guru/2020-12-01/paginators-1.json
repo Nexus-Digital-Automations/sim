@@ -3,31 +3,19 @@
     "DescribeResourceCollectionHealth": {
       "input_token": "NextToken",
       "output_token": "NextToken",
-      "result_key": [
-        "CloudFormation",
-        "Service",
-        "Tags"
-      ]
+      "result_key": ["CloudFormation", "Service", "Tags"]
     },
     "GetResourceCollection": {
       "input_token": "NextToken",
       "output_token": "NextToken",
-      "result_key": [
-        "ResourceCollection.CloudFormation.StackNames",
-        "ResourceCollection.Tags"
-      ],
-      "non_aggregate_keys": [
-        "ResourceCollection"
-      ]
+      "result_key": ["ResourceCollection.CloudFormation.StackNames", "ResourceCollection.Tags"],
+      "non_aggregate_keys": ["ResourceCollection"]
     },
     "ListAnomaliesForInsight": {
       "input_token": "NextToken",
       "output_token": "NextToken",
       "limit_key": "MaxResults",
-      "result_key": [
-        "ReactiveAnomalies",
-        "ProactiveAnomalies"
-      ]
+      "result_key": ["ReactiveAnomalies", "ProactiveAnomalies"]
     },
     "ListEvents": {
       "input_token": "NextToken",
@@ -39,10 +27,7 @@
       "input_token": "NextToken",
       "output_token": "NextToken",
       "limit_key": "MaxResults",
-      "result_key": [
-        "ProactiveInsights",
-        "ReactiveInsights"
-      ]
+      "result_key": ["ProactiveInsights", "ReactiveInsights"]
     },
     "ListNotificationChannels": {
       "input_token": "NextToken",
@@ -58,68 +43,42 @@
       "input_token": "NextToken",
       "output_token": "NextToken",
       "limit_key": "MaxResults",
-      "result_key": [
-        "ProactiveInsights",
-        "ReactiveInsights"
-      ]
+      "result_key": ["ProactiveInsights", "ReactiveInsights"]
     },
     "GetCostEstimation": {
       "input_token": "NextToken",
-      "non_aggregate_keys": [
-        "Status",
-        "TotalCost",
-        "TimeRange",
-        "ResourceCollection"
-      ],
+      "non_aggregate_keys": ["Status", "TotalCost", "TimeRange", "ResourceCollection"],
       "output_token": "NextToken",
-      "result_key": [
-        "Costs"
-      ]
+      "result_key": ["Costs"]
     },
     "DescribeOrganizationResourceCollectionHealth": {
       "input_token": "NextToken",
       "output_token": "NextToken",
-      "result_key": [
-        "CloudFormation",
-        "Account",
-        "Service",
-        "Tags"
-      ]
+      "result_key": ["CloudFormation", "Account", "Service", "Tags"]
     },
     "ListOrganizationInsights": {
       "input_token": "NextToken",
       "limit_key": "MaxResults",
       "output_token": "NextToken",
-      "result_key": [
-        "ProactiveInsights",
-        "ReactiveInsights"
-      ]
+      "result_key": ["ProactiveInsights", "ReactiveInsights"]
     },
     "SearchOrganizationInsights": {
       "input_token": "NextToken",
       "limit_key": "MaxResults",
       "output_token": "NextToken",
-      "result_key": [
-        "ProactiveInsights",
-        "ReactiveInsights"
-      ]
+      "result_key": ["ProactiveInsights", "ReactiveInsights"]
     },
     "ListAnomalousLogGroups": {
       "input_token": "NextToken",
       "limit_key": "MaxResults",
       "output_token": "NextToken",
-      "result_key": [
-        "InsightId",
-        "AnomalousLogGroups"
-      ]
+      "result_key": ["InsightId", "AnomalousLogGroups"]
     },
     "ListMonitoredResources": {
       "input_token": "NextToken",
       "limit_key": "MaxResults",
       "output_token": "NextToken",
-      "result_key": [
-        "MonitoredResourceIdentifiers"
-      ]
+      "result_key": ["MonitoredResourceIdentifiers"]
     }
   }
 }

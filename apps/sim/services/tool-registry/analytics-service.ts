@@ -5,20 +5,11 @@
  * insights for tool optimization and recommendation systems.
  */
 
-import { eq, and, desc, asc, sql, count, avg, sum, gte, lte, isNull, between } from 'drizzle-orm'
-import { db } from '@/packages/db'
-import {
-  toolUsageAnalytics,
-  toolRegistry,
-  toolConfigurations,
-} from '@/packages/db/schema'
+import { and, asc, avg, count, desc, eq, gte, lte, sql, sum } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
-
-import type {
-  IToolAnalyticsService,
-  ToolUsageAnalyticsInsert,
-  ToolAnalytics,
-} from './types'
+import { db } from '@/packages/db'
+import { toolRegistry, toolUsageAnalytics } from '@/packages/db/schema'
+import type { IToolAnalyticsService, ToolAnalytics, ToolUsageAnalyticsInsert } from './types'
 
 const logger = createLogger('ToolAnalyticsService')
 
@@ -26,7 +17,6 @@ const logger = createLogger('ToolAnalyticsService')
  * Service for tracking and analyzing tool usage patterns and performance
  */
 export class ToolAnalyticsService implements IToolAnalyticsService {
-
   /**
    * Record a tool usage event
    */
@@ -71,10 +61,7 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
         )
       }
 
-      const conditions = [
-        eq(toolUsageAnalytics.toolId, toolId),
-        ...timeConditions,
-      ]
+      const conditions = [eq(toolUsageAnalytics.toolId, toolId), ...timeConditions]
 
       // Get basic usage statistics
       const [basicStats] = await db
@@ -143,10 +130,7 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
         )
       }
 
-      const conditions = [
-        eq(toolUsageAnalytics.workspaceId, workspaceId),
-        ...timeConditions,
-      ]
+      const conditions = [eq(toolUsageAnalytics.workspaceId, workspaceId), ...timeConditions]
 
       // Get usage stats grouped by tool
       const workspaceStats = await db
@@ -208,10 +192,7 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
         )
       }
 
-      const conditions = [
-        eq(toolUsageAnalytics.userId, userId),
-        ...timeConditions,
-      ]
+      const conditions = [eq(toolUsageAnalytics.userId, userId), ...timeConditions]
 
       // Get usage stats grouped by tool
       const userStats = await db
@@ -258,9 +239,10 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
   /**
    * Get popularity trends over time
    */
-  async getPopularityTrends(
-    timeRange?: { start: Date; end: Date }
-  ): Promise<Array<{ toolId: string; trend: number }>> {
+  async getPopularityTrends(timeRange?: {
+    start: Date
+    end: Date
+  }): Promise<Array<{ toolId: string; trend: number }>> {
     try {
       const now = new Date()
       const defaultStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
@@ -277,10 +259,7 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
         })
         .from(toolUsageAnalytics)
         .where(
-          and(
-            gte(toolUsageAnalytics.startTime, start),
-            lte(toolUsageAnalytics.startTime, midpoint)
-          )
+          and(gte(toolUsageAnalytics.startTime, start), lte(toolUsageAnalytics.startTime, midpoint))
         )
         .groupBy(toolUsageAnalytics.toolId)
 
@@ -291,23 +270,20 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
         })
         .from(toolUsageAnalytics)
         .where(
-          and(
-            gte(toolUsageAnalytics.startTime, midpoint),
-            lte(toolUsageAnalytics.startTime, end)
-          )
+          and(gte(toolUsageAnalytics.startTime, midpoint), lte(toolUsageAnalytics.startTime, end))
         )
         .groupBy(toolUsageAnalytics.toolId)
 
       // Calculate trends
       const trends: Array<{ toolId: string; trend: number }> = []
       const toolIds = new Set([
-        ...firstHalfUsage.map(u => u.toolId),
-        ...secondHalfUsage.map(u => u.toolId),
+        ...firstHalfUsage.map((u) => u.toolId),
+        ...secondHalfUsage.map((u) => u.toolId),
       ])
 
       for (const toolId of toolIds) {
-        const firstHalf = firstHalfUsage.find(u => u.toolId === toolId)?.count || 0
-        const secondHalf = secondHalfUsage.find(u => u.toolId === toolId)?.count || 0
+        const firstHalf = firstHalfUsage.find((u) => u.toolId === toolId)?.count || 0
+        const secondHalf = secondHalfUsage.find((u) => u.toolId === toolId)?.count || 0
 
         const firstHalfCount = Number(firstHalf)
         const secondHalfCount = Number(secondHalf)
@@ -365,7 +341,7 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
       // Calculate percentages
       const totalErrors = errorStats.reduce((sum, stat) => sum + Number(stat.count), 0)
 
-      return errorStats.map(stat => ({
+      return errorStats.map((stat) => ({
         errorType: stat.errorType || 'unknown',
         count: Number(stat.count),
         percentage: totalErrors > 0 ? (Number(stat.count) / totalErrors) * 100 : 0,
@@ -499,7 +475,9 @@ export class ToolAnalyticsService implements IToolAnalyticsService {
   /**
    * Get user ratings for a tool (placeholder implementation)
    */
-  private async getUserRatings(toolId: string): Promise<{ userRating?: number; reviewCount: number }> {
+  private async getUserRatings(
+    toolId: string
+  ): Promise<{ userRating?: number; reviewCount: number }> {
     // This would typically come from a separate ratings/reviews system
     // For now, return default values
     return {

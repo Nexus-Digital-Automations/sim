@@ -5,15 +5,9 @@
  * Tests for workflow template management service
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TemplateService } from '../template-service'
-import type {
-  TemplateCreateRequest,
-  TemplateUpdateRequest,
-  TemplateListQuery,
-  WorkflowTemplate,
-  TemplateParameter,
-} from '../types'
+import type { TemplateCreateRequest, TemplateParameter, WorkflowTemplate } from '../types'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -122,44 +116,44 @@ describe('TemplateService', () => {
   describe('Parameter Validation', () => {
     describe('validateParameterType', () => {
       it('should validate string types correctly', () => {
-        expect(templateService['validateParameterType']('string', 'hello')).toBe(true)
-        expect(templateService['validateParameterType']('string', 123)).toBe(false)
-        expect(templateService['validateParameterType']('string', null)).toBe(false)
+        expect(templateService.validateParameterType('string', 'hello')).toBe(true)
+        expect(templateService.validateParameterType('string', 123)).toBe(false)
+        expect(templateService.validateParameterType('string', null)).toBe(false)
       })
 
       it('should validate number types correctly', () => {
-        expect(templateService['validateParameterType']('number', 123)).toBe(true)
-        expect(templateService['validateParameterType']('number', 45.67)).toBe(true)
-        expect(templateService['validateParameterType']('number', '123')).toBe(false)
-        expect(templateService['validateParameterType']('number', NaN)).toBe(false)
+        expect(templateService.validateParameterType('number', 123)).toBe(true)
+        expect(templateService.validateParameterType('number', 45.67)).toBe(true)
+        expect(templateService.validateParameterType('number', '123')).toBe(false)
+        expect(templateService.validateParameterType('number', Number.NaN)).toBe(false)
       })
 
       it('should validate boolean types correctly', () => {
-        expect(templateService['validateParameterType']('boolean', true)).toBe(true)
-        expect(templateService['validateParameterType']('boolean', false)).toBe(true)
-        expect(templateService['validateParameterType']('boolean', 'true')).toBe(false)
-        expect(templateService['validateParameterType']('boolean', 1)).toBe(false)
+        expect(templateService.validateParameterType('boolean', true)).toBe(true)
+        expect(templateService.validateParameterType('boolean', false)).toBe(true)
+        expect(templateService.validateParameterType('boolean', 'true')).toBe(false)
+        expect(templateService.validateParameterType('boolean', 1)).toBe(false)
       })
 
       it('should validate array types correctly', () => {
-        expect(templateService['validateParameterType']('array', [])).toBe(true)
-        expect(templateService['validateParameterType']('array', [1, 2, 3])).toBe(true)
-        expect(templateService['validateParameterType']('array', {})).toBe(false)
-        expect(templateService['validateParameterType']('array', 'array')).toBe(false)
+        expect(templateService.validateParameterType('array', [])).toBe(true)
+        expect(templateService.validateParameterType('array', [1, 2, 3])).toBe(true)
+        expect(templateService.validateParameterType('array', {})).toBe(false)
+        expect(templateService.validateParameterType('array', 'array')).toBe(false)
       })
 
       it('should validate object types correctly', () => {
-        expect(templateService['validateParameterType']('object', {})).toBe(true)
-        expect(templateService['validateParameterType']('object', { a: 1 })).toBe(true)
-        expect(templateService['validateParameterType']('object', [])).toBe(false)
-        expect(templateService['validateParameterType']('object', null)).toBe(false)
+        expect(templateService.validateParameterType('object', {})).toBe(true)
+        expect(templateService.validateParameterType('object', { a: 1 })).toBe(true)
+        expect(templateService.validateParameterType('object', [])).toBe(false)
+        expect(templateService.validateParameterType('object', null)).toBe(false)
       })
 
       it('should validate json types correctly', () => {
-        expect(templateService['validateParameterType']('json', {})).toBe(true)
-        expect(templateService['validateParameterType']('json', [])).toBe(true)
-        expect(templateService['validateParameterType']('json', '{"valid": "json"}')).toBe(true)
-        expect(templateService['validateParameterType']('json', '{invalid json')).toBe(false)
+        expect(templateService.validateParameterType('json', {})).toBe(true)
+        expect(templateService.validateParameterType('json', [])).toBe(true)
+        expect(templateService.validateParameterType('json', '{"valid": "json"}')).toBe(true)
+        expect(templateService.validateParameterType('json', '{invalid json')).toBe(false)
       })
     })
 
@@ -174,10 +168,10 @@ describe('TemplateService', () => {
           display_order: 0,
         }
 
-        const result1 = templateService['validateParameter'](param, 'valid string')
+        const result1 = templateService.validateParameter(param, 'valid string')
         expect(result1.valid).toBe(true)
 
-        const result2 = templateService['validateParameter'](param, 123)
+        const result2 = templateService.validateParameter(param, 123)
         expect(result2.valid).toBe(false)
         expect(result2.error).toBe('Value must be of type string')
       })
@@ -196,14 +190,14 @@ describe('TemplateService', () => {
           },
         }
 
-        const result1 = templateService['validateParameter'](param, 50)
+        const result1 = templateService.validateParameter(param, 50)
         expect(result1.valid).toBe(true)
 
-        const result2 = templateService['validateParameter'](param, 5)
+        const result2 = templateService.validateParameter(param, 5)
         expect(result2.valid).toBe(false)
         expect(result2.error).toBe('Value must be at least 10')
 
-        const result3 = templateService['validateParameter'](param, 150)
+        const result3 = templateService.validateParameter(param, 150)
         expect(result3.valid).toBe(false)
         expect(result3.error).toBe('Value must be at most 100')
       })
@@ -221,10 +215,10 @@ describe('TemplateService', () => {
           },
         }
 
-        const result1 = templateService['validateParameter'](param, 'user@example.com')
+        const result1 = templateService.validateParameter(param, 'user@example.com')
         expect(result1.valid).toBe(true)
 
-        const result2 = templateService['validateParameter'](param, 'invalid-email')
+        const result2 = templateService.validateParameter(param, 'invalid-email')
         expect(result2.valid).toBe(false)
         expect(result2.error).toBe('Value does not match required pattern')
       })
@@ -242,10 +236,10 @@ describe('TemplateService', () => {
           },
         }
 
-        const result1 = templateService['validateParameter'](param, 'medium')
+        const result1 = templateService.validateParameter(param, 'medium')
         expect(result1.valid).toBe(true)
 
-        const result2 = templateService['validateParameter'](param, 'critical')
+        const result2 = templateService.validateParameter(param, 'critical')
         expect(result2.valid).toBe(false)
         expect(result2.error).toBe('Value must be one of: low, medium, high')
       })
@@ -279,7 +273,7 @@ describe('TemplateService', () => {
         ],
       }
 
-      const result = templateService['mapDbTemplateToApiTemplate'](dbTemplate)
+      const result = templateService.mapDbTemplateToApiTemplate(dbTemplate)
 
       expect(result).toEqual({
         id: 'template_123',
@@ -319,7 +313,7 @@ describe('TemplateService', () => {
         display_order: 5,
       }
 
-      const result = templateService['mapDbParameterToApiParameter'](dbParam)
+      const result = templateService.mapDbParameterToApiParameter(dbParam)
 
       expect(result).toEqual({
         id: 'param_1',
@@ -336,7 +330,9 @@ describe('TemplateService', () => {
 
   describe('Error Handling', () => {
     it('should create conversion errors correctly', () => {
-      const error = templateService['createError']('template', 'TEST_ERROR', 'Test error', { test: true })
+      const error = templateService.createError('template', 'TEST_ERROR', 'Test error', {
+        test: true,
+      })
 
       expect(error).toBeInstanceOf(Error)
       expect(error.name).toBe('ConversionError')
@@ -383,7 +379,9 @@ describe('TemplateService', () => {
   describe('Parameter Validation Integration', () => {
     it('should validate complete parameter set', async () => {
       // Mock the getTemplate method to return our test template
-      const getTemplateSpy = vi.spyOn(templateService, 'getTemplate').mockResolvedValue(mockTemplate)
+      const getTemplateSpy = vi
+        .spyOn(templateService, 'getTemplate')
+        .mockResolvedValue(mockTemplate)
 
       const parameters = {
         customer_name: 'John Doe',
@@ -392,14 +390,21 @@ describe('TemplateService', () => {
       }
 
       // Since we can't actually call the database, we'll test the validation logic directly
-      const validationResults = mockTemplate.parameters.map(param => {
-        const value = parameters[param.name]
-        if (param.required && value === undefined) {
-          return { parameter: param.name, message: `Required parameter '${param.name}' is missing` }
-        }
-        const validation = templateService['validateParameter'](param, value)
-        return validation.valid ? null : { parameter: param.name, message: validation.error || 'Invalid value' }
-      }).filter(Boolean)
+      const validationResults = mockTemplate.parameters
+        .map((param) => {
+          const value = parameters[param.name]
+          if (param.required && value === undefined) {
+            return {
+              parameter: param.name,
+              message: `Required parameter '${param.name}' is missing`,
+            }
+          }
+          const validation = templateService.validateParameter(param, value)
+          return validation.valid
+            ? null
+            : { parameter: param.name, message: validation.error || 'Invalid value' }
+        })
+        .filter(Boolean)
 
       expect(validationResults).toHaveLength(0) // All parameters should be valid
 
@@ -437,7 +442,7 @@ describe('TemplateService', () => {
       const errors = []
       for (const param of mockTemplate.parameters) {
         if (param.name in parameters) {
-          const validation = templateService['validateParameter'](param, parameters[param.name])
+          const validation = templateService.validateParameter(param, parameters[param.name])
           if (!validation.valid) {
             errors.push({
               parameter: param.name,
@@ -448,8 +453,8 @@ describe('TemplateService', () => {
       }
 
       expect(errors).toHaveLength(2)
-      expect(errors.find(e => e.parameter === 'email')).toBeTruthy()
-      expect(errors.find(e => e.parameter === 'priority_level')).toBeTruthy()
+      expect(errors.find((e) => e.parameter === 'email')).toBeTruthy()
+      expect(errors.find((e) => e.parameter === 'priority_level')).toBeTruthy()
     })
 
     it('should detect unexpected parameters', () => {
@@ -460,7 +465,7 @@ describe('TemplateService', () => {
         unexpected_param: 'value', // This parameter is not in the template
       }
 
-      const validParamNames = new Set(mockTemplate.parameters.map(p => p.name))
+      const validParamNames = new Set(mockTemplate.parameters.map((p) => p.name))
       const errors = []
 
       for (const paramName of Object.keys(parameters)) {

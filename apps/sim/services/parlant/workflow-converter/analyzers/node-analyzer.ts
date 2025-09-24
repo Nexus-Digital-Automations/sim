@@ -8,13 +8,13 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ReactFlowNode,
-  ReactFlowEdge,
-  ConversionContext,
-  EdgeAnalysis,
   ConditionalEdge,
+  ConversionContext,
   ConversionError,
-  ConversionWarning
+  ConversionWarning,
+  EdgeAnalysis,
+  ReactFlowEdge,
+  ReactFlowNode,
 } from '../types'
 
 const logger = createLogger('NodeAnalyzer')
@@ -34,7 +34,7 @@ export class NodeAnalyzer {
     logger.debug('Analyzing node', {
       nodeId: node.id,
       nodeType: node.type,
-      dataType: node.data?.type
+      dataType: node.data?.type,
     })
 
     const analysis: NodeAnalysis = {
@@ -46,7 +46,7 @@ export class NodeAnalyzer {
       conversionStrategy: 'standard',
       requiredStates: 1,
       estimatedComplexity: 'low',
-      specialHandling: []
+      specialHandling: [],
     }
 
     // Determine conversion strategy
@@ -65,8 +65,8 @@ export class NodeAnalyzer {
         suggestions: [
           'Review node configuration',
           'Consider simplifying the node',
-          'Test conversion thoroughly'
-        ]
+          'Test conversion thoroughly',
+        ],
       }
       context.warnings.push(warning)
     }
@@ -75,7 +75,7 @@ export class NodeAnalyzer {
       nodeId: node.id,
       strategy: analysis.conversionStrategy,
       complexity: analysis.estimatedComplexity,
-      requiredStates: analysis.requiredStates
+      requiredStates: analysis.requiredStates,
     })
 
     return analysis
@@ -90,7 +90,7 @@ export class NodeAnalyzer {
     const conditionalOutgoing: ConditionalEdge[] = []
 
     // Find all edges connected to this node
-    context.workflow.edges.forEach(edge => {
+    context.workflow.edges.forEach((edge) => {
       if (edge.target === node.id) {
         incoming.push(edge)
       }
@@ -110,7 +110,7 @@ export class NodeAnalyzer {
       conditionalOutgoing,
       hasConditionalFlow: conditionalOutgoing.length > 0,
       isLoopConnection: this.isLoopConnection(node, context),
-      isParallelConnection: this.isParallelConnection(node, context)
+      isParallelConnection: this.isParallelConnection(node, context),
     }
   }
 
@@ -142,7 +142,7 @@ export class NodeAnalyzer {
    */
   async analyzeAllNodes(context: ConversionContext): Promise<Map<string, NodeAnalysis>> {
     logger.info('Analyzing all workflow nodes', {
-      totalNodes: context.workflow.nodes.length
+      totalNodes: context.workflow.nodes.length,
     })
 
     const analyses = new Map<string, NodeAnalysis>()
@@ -154,7 +154,7 @@ export class NodeAnalyzer {
       } catch (error) {
         logger.error('Failed to analyze node', {
           nodeId: node.id,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
 
         const conversionError: ConversionError = {
@@ -165,8 +165,8 @@ export class NodeAnalyzer {
           suggestions: [
             'Check node structure',
             'Verify node data integrity',
-            'Review node configuration'
-          ]
+            'Review node configuration',
+          ],
         }
         context.warnings.push(conversionError)
       }
@@ -175,7 +175,7 @@ export class NodeAnalyzer {
     logger.info('Node analysis completed', {
       totalNodes: context.workflow.nodes.length,
       analyzedNodes: analyses.size,
-      failedAnalyses: context.workflow.nodes.length - analyses.size
+      failedAnalyses: context.workflow.nodes.length - analyses.size,
     })
 
     return analyses
@@ -212,7 +212,7 @@ export class NodeAnalyzer {
       evaluator: 3,
       router: 4,
       workflow: 5,
-      webhook: 2
+      webhook: 2,
     }
 
     complexity = complexityMap[nodeType] || 2
@@ -344,24 +344,24 @@ export class NodeAnalyzer {
     // Extract condition from handle
     if (edge.sourceHandle?.startsWith('condition-')) {
       condition = edge.sourceHandle.replace('condition-', '')
-      priority = parseInt(condition) || 0
+      priority = Number.parseInt(condition) || 0
     }
 
     return {
       ...edge,
       condition,
-      priority
+      priority,
     }
   }
 
   private isLoopConnection(node: ReactFlowNode, context: ConversionContext): boolean {
-    return node.parentId !== undefined &&
-           context.nodeMap.get(node.parentId)?.data?.type === 'loop'
+    return node.parentId !== undefined && context.nodeMap.get(node.parentId)?.data?.type === 'loop'
   }
 
   private isParallelConnection(node: ReactFlowNode, context: ConversionContext): boolean {
-    return node.parentId !== undefined &&
-           context.nodeMap.get(node.parentId)?.data?.type === 'parallel'
+    return (
+      node.parentId !== undefined && context.nodeMap.get(node.parentId)?.data?.type === 'parallel'
+    )
   }
 
   private extractVariableReferences(node: ReactFlowNode): string[] {
@@ -370,12 +370,12 @@ export class NodeAnalyzer {
 
     // Look for variable reference patterns like {{variable}} or ${variable}
     const patterns = [
-      /\{\{([^}]+)\}\}/g,  // {{variable}}
-      /\$\{([^}]+)\}/g,    // ${variable}
-      /\{([^}]+)\}/g       // {variable}
+      /\{\{([^}]+)\}\}/g, // {{variable}}
+      /\$\{([^}]+)\}/g, // ${variable}
+      /\{([^}]+)\}/g, // {variable}
     ]
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       let match
       while ((match = pattern.exec(data)) !== null) {
         refs.push(match[1].trim())

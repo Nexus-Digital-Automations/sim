@@ -5,32 +5,28 @@
  * Integrates with existing Sim tools and provides discovery capabilities.
  */
 
-import { eq, and, desc, asc, inArray, sql } from 'drizzle-orm'
+import { EventEmitter } from 'events'
+import { asc, eq, sql } from 'drizzle-orm'
+import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/packages/db'
 import {
-  toolRegistry,
-  toolCategories,
-  toolConfigurations,
-  toolUsageAnalytics,
-  type ToolRegistryInsert,
   type ToolCategoryInsert,
+  type ToolRegistryInsert,
+  toolCategories,
+  toolRegistry,
 } from '@/packages/db/schema'
-import { createLogger } from '@/lib/logs/console/logger'
-import { EventEmitter } from 'events'
-
+import { ToolAdapter } from './adapters'
+import { ToolAnalyticsService } from './analytics-service'
+import { ToolDiscoveryService } from './discovery-service'
 import type {
+  EnrichedTool,
   IToolRegistryService,
   ToolDefinition,
-  EnrichedTool,
-  ToolSearchQuery,
-  ToolSearchResult,
   ToolHealth,
   ToolRegistryEvent,
-  ToolAnalytics,
+  ToolSearchQuery,
+  ToolSearchResult,
 } from './types'
-import { ToolAdapter } from './adapters'
-import { ToolDiscoveryService } from './discovery-service'
-import { ToolAnalyticsService } from './analytics-service'
 
 const logger = createLogger('ToolRegistryService')
 
@@ -114,13 +110,16 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
         healthCheckDetails: JSON.stringify({}),
       }
 
-      await db.insert(toolRegistry).values(toolData).onConflictDoUpdate({
-        target: toolRegistry.id,
-        set: {
-          ...toolData,
-          updatedAt: sql`NOW()`,
-        },
-      })
+      await db
+        .insert(toolRegistry)
+        .values(toolData)
+        .onConflictDoUpdate({
+          target: toolRegistry.id,
+          set: {
+            ...toolData,
+            updatedAt: sql`NOW()`,
+          },
+        })
 
       // Emit registration event
       this.emit('tool.registered', {
@@ -176,7 +175,8 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
       // Map updates to database columns
       if (updates.displayName !== undefined) updateData.displayName = updates.displayName
       if (updates.description !== undefined) updateData.description = updates.description
-      if (updates.longDescription !== undefined) updateData.longDescription = updates.longDescription
+      if (updates.longDescription !== undefined)
+        updateData.longDescription = updates.longDescription
       if (updates.version !== undefined) updateData.version = updates.version
       if (updates.status !== undefined) updateData.status = updates.status
       if (updates.categoryId !== undefined) updateData.categoryId = updates.categoryId
@@ -257,7 +257,9 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
       const healthStatus: ToolHealth = {
         status: tool.healthStatus as any,
         lastCheckTime: tool.lastHealthCheck || undefined,
-        errorDetails: tool.healthCheckDetails ? JSON.parse(tool.healthCheckDetails as string).error : undefined,
+        errorDetails: tool.healthCheckDetails
+          ? JSON.parse(tool.healthCheckDetails as string).error
+          : undefined,
       }
 
       const enrichedTool: EnrichedTool = {
@@ -306,7 +308,9 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
   /**
    * Create a new tool category
    */
-  async createCategory(categoryData: Omit<ToolCategoryInsert, 'id' | 'createdAt' | 'updatedAt'>): Promise<any> {
+  async createCategory(
+    categoryData: Omit<ToolCategoryInsert, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<any> {
     try {
       const [category] = await db
         .insert(toolCategories)
@@ -524,7 +528,10 @@ export class ToolRegistryService extends EventEmitter implements IToolRegistrySe
     const clientHealth = await this.checkClientToolHealth(tool)
 
     return {
-      status: serverHealth.status === 'healthy' && clientHealth.status === 'healthy' ? 'healthy' : 'warning',
+      status:
+        serverHealth.status === 'healthy' && clientHealth.status === 'healthy'
+          ? 'healthy'
+          : 'warning',
       lastCheckTime: new Date(),
       responseTime: serverHealth.responseTime,
       uptime: serverHealth.uptime,

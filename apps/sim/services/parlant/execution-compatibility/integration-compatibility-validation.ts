@@ -9,17 +9,17 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  ApiCall,
+  CompatibilityEvent,
+  CompatibilityEventBus,
+  DatabaseOperation,
+  ExecutionContext,
+  ExternalIntegration,
   IntegrationCompatibilityConfig,
+  IntegrationDifference,
   IntegrationPointValidator,
   IntegrationValidationResult,
-  IntegrationDifference,
-  ApiCall,
-  DatabaseOperation,
-  ExternalIntegration,
   WebhookCall,
-  ExecutionContext,
-  CompatibilityEvent,
-  CompatibilityEventBus
 } from './types'
 
 const logger = createLogger('IntegrationCompatibilityValidation')
@@ -34,10 +34,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
   private validationRules: Map<string, ValidationRule[]> = new Map()
   private mockingEnabled: Map<string, MockingConfig> = new Map()
 
-  constructor(
-    config: IntegrationCompatibilityConfig,
-    eventBus?: CompatibilityEventBus
-  ) {
+  constructor(config: IntegrationCompatibilityConfig, eventBus?: CompatibilityEventBus) {
     this.config = config
     this.eventBus = eventBus
     this.initializeValidationRules()
@@ -65,7 +62,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       webhooks: [],
       validationResults: [],
       integrationSequence: [],
-      errors: []
+      errors: [],
     }
 
     this.integrationTrackers.set(executionId, tracker)
@@ -82,7 +79,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       source: mode,
       executionId,
       timestamp: new Date().toISOString(),
-      data: { tracker: { executionId, mode, startTime: tracker.startTime } }
+      data: { tracker: { executionId, mode, startTime: tracker.startTime } },
     })
   }
 
@@ -101,7 +98,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     const enrichedCall = {
       ...call,
       sequenceNumber,
-      recordedAt: new Date().toISOString()
+      recordedAt: new Date().toISOString(),
     }
 
     tracker.apiCalls.push(enrichedCall)
@@ -109,7 +106,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       type: 'api_call',
       id: call.id,
       timestamp: call.timestamp,
-      sequenceNumber
+      sequenceNumber,
     })
 
     // Validate if configured
@@ -124,10 +121,15 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       source: tracker.mode,
       executionId,
       timestamp: new Date().toISOString(),
-      data: { call: enrichedCall }
+      data: { call: enrichedCall },
     })
 
-    logger.debug('API call recorded', { executionId, callId: call.id, url: call.url, method: call.method })
+    logger.debug('API call recorded', {
+      executionId,
+      callId: call.id,
+      url: call.url,
+      method: call.method,
+    })
   }
 
   /**
@@ -141,7 +143,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     const enrichedOperation = {
       ...operation,
       sequenceNumber,
-      recordedAt: new Date().toISOString()
+      recordedAt: new Date().toISOString(),
     }
 
     tracker.databaseOperations.push(enrichedOperation)
@@ -149,7 +151,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       type: 'database_operation',
       id: operation.id,
       timestamp: operation.timestamp,
-      sequenceNumber
+      sequenceNumber,
     })
 
     // Validate if configured
@@ -161,14 +163,17 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       executionId,
       operationId: operation.id,
       table: operation.table,
-      operation: operation.operation
+      operation: operation.operation,
     })
   }
 
   /**
    * Record external integration for validation
    */
-  async recordExternalIntegration(executionId: string, integration: ExternalIntegration): Promise<void> {
+  async recordExternalIntegration(
+    executionId: string,
+    integration: ExternalIntegration
+  ): Promise<void> {
     const tracker = this.integrationTrackers.get(executionId)
     if (!tracker) return
 
@@ -176,7 +181,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     const enrichedIntegration = {
       ...integration,
       sequenceNumber,
-      recordedAt: new Date().toISOString()
+      recordedAt: new Date().toISOString(),
     }
 
     tracker.externalIntegrations.push(enrichedIntegration)
@@ -184,7 +189,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       type: 'external_integration',
       id: integration.id,
       timestamp: integration.timestamp,
-      sequenceNumber
+      sequenceNumber,
     })
 
     // Validate if configured
@@ -195,7 +200,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     logger.debug('External integration recorded', {
       executionId,
       integrationId: integration.id,
-      service: integration.service
+      service: integration.service,
     })
   }
 
@@ -210,7 +215,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     const enrichedWebhook = {
       ...webhook,
       sequenceNumber,
-      recordedAt: new Date().toISOString()
+      recordedAt: new Date().toISOString(),
     }
 
     tracker.webhooks.push(enrichedWebhook)
@@ -218,20 +223,23 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       type: 'webhook',
       id: webhook.id,
       timestamp: webhook.timestamp,
-      sequenceNumber
+      sequenceNumber,
     })
 
     logger.debug('Webhook recorded', {
       executionId,
       webhookId: webhook.id,
-      url: webhook.url
+      url: webhook.url,
     })
   }
 
   /**
    * Validate API integration between workflow and journey executions
    */
-  async validateApiIntegration(call: ApiCall, expected: ApiCall): Promise<IntegrationValidationResult> {
+  async validateApiIntegration(
+    call: ApiCall,
+    expected: ApiCall
+  ): Promise<IntegrationValidationResult> {
     logger.debug('Validating API integration', { callId: call.id, expectedId: expected.id })
 
     const differences: IntegrationDifference[] = []
@@ -243,7 +251,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.url,
         actual: call.url,
         impact: 'high',
-        description: `API endpoint differs: expected ${expected.url}, got ${call.url}`
+        description: `API endpoint differs: expected ${expected.url}, got ${call.url}`,
       })
     }
 
@@ -254,7 +262,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.method,
         actual: call.method,
         impact: 'high',
-        description: `HTTP method differs: expected ${expected.method}, got ${call.method}`
+        description: `HTTP method differs: expected ${expected.method}, got ${call.method}`,
       })
     }
 
@@ -286,14 +294,17 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       valid: differences.length === 0,
       differences,
       severity,
-      recommendation
+      recommendation,
     }
   }
 
   /**
    * Validate database integration
    */
-  async validateDatabaseIntegration(op: DatabaseOperation, expected: DatabaseOperation): Promise<IntegrationValidationResult> {
+  async validateDatabaseIntegration(
+    op: DatabaseOperation,
+    expected: DatabaseOperation
+  ): Promise<IntegrationValidationResult> {
     logger.debug('Validating database integration', { opId: op.id, expectedId: expected.id })
 
     const differences: IntegrationDifference[] = []
@@ -305,7 +316,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.operation,
         actual: op.operation,
         impact: 'high',
-        description: `Database operation type differs: expected ${expected.operation}, got ${op.operation}`
+        description: `Database operation type differs: expected ${expected.operation}, got ${op.operation}`,
       })
     }
 
@@ -316,7 +327,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.table,
         actual: op.table,
         impact: 'high',
-        description: `Database table differs: expected ${expected.table}, got ${op.table}`
+        description: `Database table differs: expected ${expected.table}, got ${op.table}`,
       })
     }
 
@@ -327,7 +338,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.query,
         actual: op.query,
         impact: 'medium',
-        description: `Database query differs from expected`
+        description: `Database query differs from expected`,
       })
     }
 
@@ -338,7 +349,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.parameters,
         actual: op.parameters,
         impact: 'medium',
-        description: `Database parameters differ from expected`
+        description: `Database parameters differ from expected`,
       })
     }
 
@@ -349,15 +360,21 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       valid: differences.length === 0,
       differences,
       severity,
-      recommendation
+      recommendation,
     }
   }
 
   /**
    * Validate external integration
    */
-  async validateExternalIntegration(integration: ExternalIntegration, expected: ExternalIntegration): Promise<IntegrationValidationResult> {
-    logger.debug('Validating external integration', { integrationId: integration.id, service: integration.service })
+  async validateExternalIntegration(
+    integration: ExternalIntegration,
+    expected: ExternalIntegration
+  ): Promise<IntegrationValidationResult> {
+    logger.debug('Validating external integration', {
+      integrationId: integration.id,
+      service: integration.service,
+    })
 
     const differences: IntegrationDifference[] = []
 
@@ -368,7 +385,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.service,
         actual: integration.service,
         impact: 'high',
-        description: `External service differs: expected ${expected.service}, got ${integration.service}`
+        description: `External service differs: expected ${expected.service}, got ${integration.service}`,
       })
     }
 
@@ -379,7 +396,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.action,
         actual: integration.action,
         impact: 'high',
-        description: `External action differs: expected ${expected.action}, got ${integration.action}`
+        description: `External action differs: expected ${expected.action}, got ${integration.action}`,
       })
     }
 
@@ -390,7 +407,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.parameters,
         actual: integration.parameters,
         impact: 'medium',
-        description: `External integration parameters differ from expected`
+        description: `External integration parameters differ from expected`,
       })
     }
 
@@ -405,14 +422,17 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       valid: differences.length === 0,
       differences,
       severity,
-      recommendation
+      recommendation,
     }
   }
 
   /**
    * Validate webhook integration
    */
-  async validateWebhookIntegration(webhook: WebhookCall, expected: WebhookCall): Promise<IntegrationValidationResult> {
+  async validateWebhookIntegration(
+    webhook: WebhookCall,
+    expected: WebhookCall
+  ): Promise<IntegrationValidationResult> {
     logger.debug('Validating webhook integration', { webhookId: webhook.id, url: webhook.url })
 
     const differences: IntegrationDifference[] = []
@@ -424,7 +444,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.url,
         actual: webhook.url,
         impact: 'high',
-        description: `Webhook URL differs: expected ${expected.url}, got ${webhook.url}`
+        description: `Webhook URL differs: expected ${expected.url}, got ${webhook.url}`,
       })
     }
 
@@ -435,7 +455,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.method,
         actual: webhook.method,
         impact: 'medium',
-        description: `Webhook method differs: expected ${expected.method}, got ${webhook.method}`
+        description: `Webhook method differs: expected ${expected.method}, got ${webhook.method}`,
       })
     }
 
@@ -446,7 +466,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.payload,
         actual: webhook.payload,
         impact: 'medium',
-        description: `Webhook payload differs from expected`
+        description: `Webhook payload differs from expected`,
       })
     }
 
@@ -457,7 +477,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       valid: differences.length === 0,
       differences,
       severity,
-      recommendation
+      recommendation,
     }
   }
 
@@ -468,7 +488,10 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     workflowExecutionId: string,
     journeyExecutionId: string
   ): Promise<IntegrationComparisonReport> {
-    logger.info('Comparing integrations between executions', { workflowExecutionId, journeyExecutionId })
+    logger.info('Comparing integrations between executions', {
+      workflowExecutionId,
+      journeyExecutionId,
+    })
 
     const workflowTracker = this.integrationTrackers.get(workflowExecutionId)
     const journeyTracker = this.integrationTrackers.get(journeyExecutionId)
@@ -489,7 +512,10 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         workflowTracker.externalIntegrations,
         journeyTracker.externalIntegrations
       ),
-      webhookComparison: await this.compareWebhooks(workflowTracker.webhooks, journeyTracker.webhooks),
+      webhookComparison: await this.compareWebhooks(
+        workflowTracker.webhooks,
+        journeyTracker.webhooks
+      ),
       sequenceComparison: await this.compareIntegrationSequences(
         workflowTracker.integrationSequence,
         journeyTracker.integrationSequence
@@ -499,8 +525,8 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         workflowExecutionId,
         journeyExecutionId,
         workflowIntegrations: workflowTracker.integrationSequence.length,
-        journeyIntegrations: journeyTracker.integrationSequence.length
-      }
+        journeyIntegrations: journeyTracker.integrationSequence.length,
+      },
     }
 
     // Aggregate all differences
@@ -509,23 +535,23 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       ...report.databaseComparison.differences,
       ...report.externalComparison.differences,
       ...report.webhookComparison.differences,
-      ...report.sequenceComparison.differences
+      ...report.sequenceComparison.differences,
     ]
 
     // Determine overall compatibility
-    report.compatible = report.differences.filter(
-      diff => diff.impact === 'high'
-    ).length === 0
+    report.compatible = report.differences.filter((diff) => diff.impact === 'high').length === 0
 
     // Fail on integration mismatch if configured
     if (!report.compatible && this.config.failOnIntegrationMismatch) {
-      throw new Error(`Integration compatibility validation failed: ${report.differences.length} differences found`)
+      throw new Error(
+        `Integration compatibility validation failed: ${report.differences.length} differences found`
+      )
     }
 
     logger.info('Integration comparison completed', {
       compatible: report.compatible,
       totalDifferences: report.differences.length,
-      highImpactDifferences: report.differences.filter(d => d.impact === 'high').length
+      highImpactDifferences: report.differences.filter((d) => d.impact === 'high').length,
     })
 
     return report
@@ -552,12 +578,12 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         databaseOperations: tracker.databaseOperations.length,
         externalIntegrations: tracker.externalIntegrations.length,
         webhooks: tracker.webhooks.length,
-        total: tracker.integrationSequence.length
+        total: tracker.integrationSequence.length,
       },
       validationResults: tracker.validationResults,
       errors: tracker.errors,
       sequenceAnalysis: await this.analyzeIntegrationSequence(tracker.integrationSequence),
-      recommendations: await this.generateTrackingRecommendations(tracker)
+      recommendations: await this.generateTrackingRecommendations(tracker),
     }
 
     // Cleanup
@@ -570,13 +596,13 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       source: tracker.mode,
       executionId,
       timestamp: new Date().toISOString(),
-      data: { report }
+      data: { report },
     })
 
     logger.info('Integration tracking stopped', {
       executionId,
       duration,
-      totalIntegrations: report.integrationCounts.total
+      totalIntegrations: report.integrationCounts.total,
     })
 
     return report
@@ -593,20 +619,20 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         name: 'endpoint_consistency',
         validate: (actual: any, expected: any) => actual.url === expected.url,
         impact: 'high',
-        message: 'API endpoint must be consistent'
+        message: 'API endpoint must be consistent',
       },
       {
         name: 'method_consistency',
         validate: (actual: any, expected: any) => actual.method === expected.method,
         impact: 'high',
-        message: 'HTTP method must be consistent'
+        message: 'HTTP method must be consistent',
       },
       {
         name: 'header_consistency',
         validate: (actual: any, expected: any) => this.deepEqual(actual.headers, expected.headers),
         impact: 'medium',
-        message: 'Request headers should be consistent'
-      }
+        message: 'Request headers should be consistent',
+      },
     ])
 
     // Database validation rules
@@ -615,27 +641,30 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         name: 'operation_consistency',
         validate: (actual: any, expected: any) => actual.operation === expected.operation,
         impact: 'high',
-        message: 'Database operation type must be consistent'
+        message: 'Database operation type must be consistent',
       },
       {
         name: 'table_consistency',
         validate: (actual: any, expected: any) => actual.table === expected.table,
         impact: 'high',
-        message: 'Database table must be consistent'
-      }
+        message: 'Database table must be consistent',
+      },
     ])
 
     logger.info('Validation rules initialized')
   }
 
-  private async initializeApiMocking(executionId: string, mode: 'workflow' | 'journey'): Promise<void> {
+  private async initializeApiMocking(
+    executionId: string,
+    mode: 'workflow' | 'journey'
+  ): Promise<void> {
     if (!this.config.enableApiMocking) return
 
     const mockingConfig: MockingConfig = {
       enabled: true,
       mode: 'record_replay',
       recordFile: `api_mocks_${executionId}.json`,
-      strictMatching: false
+      strictMatching: false,
     }
 
     this.mockingEnabled.set(executionId, mockingConfig)
@@ -648,17 +677,26 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     logger.debug('Real-time API call validation', { callId: call.id })
   }
 
-  private async validateDatabaseOperationInRealTime(operation: any, tracker: IntegrationTracker): Promise<void> {
+  private async validateDatabaseOperationInRealTime(
+    operation: any,
+    tracker: IntegrationTracker
+  ): Promise<void> {
     // Real-time database operation validation
     logger.debug('Real-time database operation validation', { operationId: operation.id })
   }
 
-  private async validateExternalIntegrationInRealTime(integration: any, tracker: IntegrationTracker): Promise<void> {
+  private async validateExternalIntegrationInRealTime(
+    integration: any,
+    tracker: IntegrationTracker
+  ): Promise<void> {
     // Real-time external integration validation
     logger.debug('Real-time external integration validation', { integrationId: integration.id })
   }
 
-  private compareHeaders(expected: Record<string, string>, actual: Record<string, string>): IntegrationDifference[] {
+  private compareHeaders(
+    expected: Record<string, string>,
+    actual: Record<string, string>
+  ): IntegrationDifference[] {
     const differences: IntegrationDifference[] = []
 
     // Check for missing headers
@@ -669,7 +707,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
           expected: { [key]: value },
           actual: undefined,
           impact: this.isImportantHeader(key) ? 'high' : 'low',
-          description: `Missing header: ${key}`
+          description: `Missing header: ${key}`,
         })
       } else if (actual[key] !== value) {
         differences.push({
@@ -677,7 +715,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
           expected: { [key]: value },
           actual: { [key]: actual[key] },
           impact: this.isImportantHeader(key) ? 'medium' : 'low',
-          description: `Header value differs for ${key}`
+          description: `Header value differs for ${key}`,
         })
       }
     }
@@ -690,7 +728,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
           expected: undefined,
           actual: { [key]: actual[key] },
           impact: 'low',
-          description: `Extra header: ${key}`
+          description: `Extra header: ${key}`,
         })
       }
     }
@@ -707,7 +745,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected,
         actual,
         impact: 'medium',
-        description: 'Request parameters differ'
+        description: 'Request parameters differ',
       })
     }
 
@@ -723,7 +761,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.status,
         actual: actual.status,
         impact: 'high',
-        description: `Response status differs: expected ${expected.status}, got ${actual.status}`
+        description: `Response status differs: expected ${expected.status}, got ${actual.status}`,
       })
     }
 
@@ -733,7 +771,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: expected.body,
         actual: actual.body,
         impact: 'medium',
-        description: 'Response body differs'
+        description: 'Response body differs',
       })
     }
 
@@ -753,7 +791,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
           expected: expected.duration,
           actual: actual.duration,
           impact: 'low',
-          description: `Integration timing differs significantly: ${durationDiff}ms difference`
+          description: `Integration timing differs significantly: ${durationDiff}ms difference`,
         })
       }
     }
@@ -773,7 +811,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: workflowCalls.length,
         actual: journeyCalls.length,
         impact: 'high',
-        description: `Different number of API calls: workflow ${workflowCalls.length}, journey ${journeyCalls.length}`
+        description: `Different number of API calls: workflow ${workflowCalls.length}, journey ${journeyCalls.length}`,
       })
     }
 
@@ -791,7 +829,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
 
     return {
       differences,
-      compatible: differences.filter(d => d.impact === 'high').length === 0
+      compatible: differences.filter((d) => d.impact === 'high').length === 0,
     }
   }
 
@@ -807,7 +845,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: workflowOps.length,
         actual: journeyOps.length,
         impact: 'high',
-        description: `Different number of database operations: workflow ${workflowOps.length}, journey ${journeyOps.length}`
+        description: `Different number of database operations: workflow ${workflowOps.length}, journey ${journeyOps.length}`,
       })
     }
 
@@ -825,7 +863,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
 
     return {
       differences,
-      compatible: differences.filter(d => d.impact === 'high').length === 0
+      compatible: differences.filter((d) => d.impact === 'high').length === 0,
     }
   }
 
@@ -841,13 +879,13 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: workflowIntegrations.length,
         actual: journeyIntegrations.length,
         impact: 'high',
-        description: `Different number of external integrations: workflow ${workflowIntegrations.length}, journey ${journeyIntegrations.length}`
+        description: `Different number of external integrations: workflow ${workflowIntegrations.length}, journey ${journeyIntegrations.length}`,
       })
     }
 
     return {
       differences,
-      compatible: differences.filter(d => d.impact === 'high').length === 0
+      compatible: differences.filter((d) => d.impact === 'high').length === 0,
     }
   }
 
@@ -863,13 +901,13 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
         expected: workflowWebhooks.length,
         actual: journeyWebhooks.length,
         impact: 'medium',
-        description: `Different number of webhooks: workflow ${workflowWebhooks.length}, journey ${journeyWebhooks.length}`
+        description: `Different number of webhooks: workflow ${workflowWebhooks.length}, journey ${journeyWebhooks.length}`,
       })
     }
 
     return {
       differences,
-      compatible: differences.filter(d => d.impact === 'high').length === 0
+      compatible: differences.filter((d) => d.impact === 'high').length === 0,
     }
   }
 
@@ -893,7 +931,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
             expected: undefined,
             actual: journeyItem,
             impact: 'medium',
-            description: `Extra integration in journey at position ${i}`
+            description: `Extra integration in journey at position ${i}`,
           })
         } else if (workflowItem && !journeyItem) {
           differences.push({
@@ -901,7 +939,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
             expected: workflowItem,
             actual: undefined,
             impact: 'medium',
-            description: `Missing integration in journey at position ${i}`
+            description: `Missing integration in journey at position ${i}`,
           })
         } else if (workflowItem && journeyItem && workflowItem.type !== journeyItem.type) {
           differences.push({
@@ -909,7 +947,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
             expected: workflowItem.type,
             actual: journeyItem.type,
             impact: 'medium',
-            description: `Integration type differs at position ${i}: expected ${workflowItem.type}, got ${journeyItem.type}`
+            description: `Integration type differs at position ${i}: expected ${workflowItem.type}, got ${journeyItem.type}`,
           })
         }
       }
@@ -917,7 +955,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
 
     return {
       differences,
-      compatible: differences.filter(d => d.impact === 'high').length === 0
+      compatible: differences.filter((d) => d.impact === 'high').length === 0,
     }
   }
 
@@ -927,7 +965,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       integrationTypes: this.countIntegrationTypes(sequence),
       averageTimeBetweenIntegrations: this.calculateAverageTimeBetween(sequence),
       parallelIntegrations: this.detectParallelIntegrations(sequence),
-      sequencePatterns: this.identifySequencePatterns(sequence)
+      sequencePatterns: this.identifySequencePatterns(sequence),
     }
   }
 
@@ -949,16 +987,18 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     return recommendations
   }
 
-  private determineSeverity(differences: IntegrationDifference[]): 'critical' | 'error' | 'warning' | 'info' {
-    if (differences.some(d => d.impact === 'high')) return 'error'
-    if (differences.some(d => d.impact === 'medium')) return 'warning'
+  private determineSeverity(
+    differences: IntegrationDifference[]
+  ): 'critical' | 'error' | 'warning' | 'info' {
+    if (differences.some((d) => d.impact === 'high')) return 'error'
+    if (differences.some((d) => d.impact === 'medium')) return 'warning'
     return 'info'
   }
 
   private generateRecommendation(type: string, differences: IntegrationDifference[]): string {
     if (differences.length === 0) return 'Integration is compatible'
 
-    const highImpact = differences.filter(d => d.impact === 'high').length
+    const highImpact = differences.filter((d) => d.impact === 'high').length
     if (highImpact > 0) {
       return `Critical integration differences found in ${type}. Review and fix ${highImpact} high-impact issues.`
     }
@@ -972,7 +1012,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       'content-type',
       'accept',
       'x-api-key',
-      'x-auth-token'
+      'x-auth-token',
     ]
     return importantHeaders.includes(headerName.toLowerCase())
   }
@@ -994,7 +1034,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
       const keys2 = Object.keys(obj2)
       if (keys1.length !== keys2.length) return false
 
-      return keys1.every(key => this.deepEqual(obj1[key], obj2[key]))
+      return keys1.every((key) => this.deepEqual(obj1[key], obj2[key]))
     }
 
     return false
@@ -1002,7 +1042,7 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
 
   private countIntegrationTypes(sequence: any[]): Record<string, number> {
     const counts: Record<string, number> = {}
-    sequence.forEach(item => {
+    sequence.forEach((item) => {
       counts[item.type] = (counts[item.type] || 0) + 1
     })
     return counts
@@ -1042,11 +1082,11 @@ export class IntegrationCompatibilityValidator implements IntegrationPointValida
     const patterns: string[] = []
 
     // Identify common patterns
-    if (sequence.some(item => item.type === 'api_call')) {
+    if (sequence.some((item) => item.type === 'api_call')) {
       patterns.push('API integration pattern detected')
     }
 
-    if (sequence.some(item => item.type === 'database_operation')) {
+    if (sequence.some((item) => item.type === 'database_operation')) {
       patterns.push('Database access pattern detected')
     }
 

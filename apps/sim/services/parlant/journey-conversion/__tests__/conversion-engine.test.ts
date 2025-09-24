@@ -5,13 +5,9 @@
  * Comprehensive tests for workflow-to-journey conversion engine
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkflowToJourneyConverter } from '../conversion-engine'
-import type {
-  ConversionConfig,
-  ConversionContext,
-  JourneyConversionResult,
-} from '../types'
+import type { ConversionConfig, ConversionContext } from '../types'
 
 // Mock dependencies
 vi.mock('@/lib/logs/console/logger', () => ({
@@ -64,47 +60,47 @@ describe('WorkflowToJourneyConverter', () => {
   describe('Constructor', () => {
     it('should initialize with provided configuration', () => {
       expect(converter).toBeDefined()
-      expect(converter['config']).toEqual(mockConfig)
+      expect(converter.config).toEqual(mockConfig)
     })
 
     it('should initialize internal state correctly', () => {
-      expect(converter['warnings']).toEqual([])
-      expect(converter['blockMappings']).toBeInstanceOf(Map)
-      expect(converter['edgeMappings']).toBeInstanceOf(Map)
-      expect(converter['parametersUsed']).toBeInstanceOf(Set)
+      expect(converter.warnings).toEqual([])
+      expect(converter.blockMappings).toBeInstanceOf(Map)
+      expect(converter.edgeMappings).toBeInstanceOf(Map)
+      expect(converter.parametersUsed).toBeInstanceOf(Set)
     })
   })
 
   describe('Parameter Substitution', () => {
     it('should substitute single parameter correctly', () => {
       const text = 'Hello {{customer_name}}, welcome to our service!'
-      const result = converter['substituteParameters'](text, mockContext.parameters)
+      const result = converter.substituteParameters(text, mockContext.parameters)
 
       expect(result).toBe('Hello John Doe, welcome to our service!')
-      expect(converter['parametersUsed'].has('customer_name')).toBe(true)
+      expect(converter.parametersUsed.has('customer_name')).toBe(true)
     })
 
     it('should substitute multiple parameters', () => {
       const text = '{{customer_name}} from {{company}} has {{max_iterations}} attempts'
-      const result = converter['substituteParameters'](text, mockContext.parameters)
+      const result = converter.substituteParameters(text, mockContext.parameters)
 
       expect(result).toBe('John Doe from Acme Corp has 5 attempts')
-      expect(converter['parametersUsed'].has('customer_name')).toBe(true)
-      expect(converter['parametersUsed'].has('company')).toBe(true)
-      expect(converter['parametersUsed'].has('max_iterations')).toBe(true)
+      expect(converter.parametersUsed.has('customer_name')).toBe(true)
+      expect(converter.parametersUsed.has('company')).toBe(true)
+      expect(converter.parametersUsed.has('max_iterations')).toBe(true)
     })
 
     it('should handle missing parameters gracefully', () => {
       const text = 'Hello {{missing_param}}, welcome!'
-      const result = converter['substituteParameters'](text, mockContext.parameters)
+      const result = converter.substituteParameters(text, mockContext.parameters)
 
       expect(result).toBe('Hello {{missing_param}}, welcome!')
-      expect(converter['parametersUsed'].has('missing_param')).toBe(false)
+      expect(converter.parametersUsed.has('missing_param')).toBe(false)
     })
 
     it('should handle empty parameters object', () => {
       const text = 'Hello {{customer_name}}'
-      const result = converter['substituteParameters'](text, {})
+      const result = converter.substituteParameters(text, {})
 
       expect(result).toBe('Hello {{customer_name}}')
     })
@@ -112,25 +108,25 @@ describe('WorkflowToJourneyConverter', () => {
 
   describe('Block Type Detection', () => {
     it('should identify condition sub-blocks correctly', () => {
-      expect(converter['isConditionSubBlock']('condition_check', {})).toBe(true)
-      expect(converter['isConditionSubBlock']('if_statement', {})).toBe(true)
-      expect(converter['isConditionSubBlock']('when_trigger', {})).toBe(true)
-      expect(converter['isConditionSubBlock']('action_execute', {})).toBe(false)
+      expect(converter.isConditionSubBlock('condition_check', {})).toBe(true)
+      expect(converter.isConditionSubBlock('if_statement', {})).toBe(true)
+      expect(converter.isConditionSubBlock('when_trigger', {})).toBe(true)
+      expect(converter.isConditionSubBlock('action_execute', {})).toBe(false)
     })
 
     it('should identify action sub-blocks correctly', () => {
-      expect(converter['isActionSubBlock']('execute_action', {})).toBe(true)
-      expect(converter['isActionSubBlock']('send_message', {})).toBe(true)
-      expect(converter['isActionSubBlock']('condition_check', {})).toBe(false)
-      expect(converter['isActionSubBlock']('if_statement', {})).toBe(false)
+      expect(converter.isActionSubBlock('execute_action', {})).toBe(true)
+      expect(converter.isActionSubBlock('send_message', {})).toBe(true)
+      expect(converter.isActionSubBlock('condition_check', {})).toBe(false)
+      expect(converter.isActionSubBlock('if_statement', {})).toBe(false)
     })
   })
 
   describe('ID Generation', () => {
     it('should generate unique step IDs', () => {
       const blockId = 'block-123'
-      const stepId1 = converter['generateStepId'](blockId)
-      const stepId2 = converter['generateStepId'](blockId)
+      const stepId1 = converter.generateStepId(blockId)
+      const stepId2 = converter.generateStepId(blockId)
 
       expect(stepId1).toMatch(/^step_block-123_\d+$/)
       expect(stepId2).toMatch(/^step_block-123_\d+$/)
@@ -139,8 +135,8 @@ describe('WorkflowToJourneyConverter', () => {
 
     it('should generate unique journey IDs', () => {
       const workflowId = 'workflow-456'
-      const journeyId1 = converter['generateJourneyId'](workflowId)
-      const journeyId2 = converter['generateJourneyId'](workflowId)
+      const journeyId1 = converter.generateJourneyId(workflowId)
+      const journeyId2 = converter.generateJourneyId(workflowId)
 
       expect(journeyId1).toMatch(/^journey_workflow-456_\d+$/)
       expect(journeyId2).toMatch(/^journey_workflow-456_\d+$/)
@@ -152,7 +148,7 @@ describe('WorkflowToJourneyConverter', () => {
     it('should format conditions correctly', () => {
       const subBlockId = 'email_validation'
       const subBlockState = { value: 'user@example.com' }
-      const result = converter['formatCondition'](subBlockId, subBlockState)
+      const result = converter.formatCondition(subBlockId, subBlockState)
 
       expect(result).toBe('email_validation: user@example.com')
     })
@@ -160,7 +156,7 @@ describe('WorkflowToJourneyConverter', () => {
     it('should format actions correctly', () => {
       const subBlockId = 'send_welcome_email'
       const subBlockState = { value: 'template_123' }
-      const result = converter['formatAction'](subBlockId, subBlockState)
+      const result = converter.formatAction(subBlockId, subBlockState)
 
       expect(result).toBe('Execute send_welcome_email with value: template_123')
     })
@@ -182,7 +178,7 @@ describe('WorkflowToJourneyConverter', () => {
         enabled: true,
       }
 
-      const result = converter['extractToolParameters'](mockBlockState, 'email_tool', mockContext)
+      const result = converter.extractToolParameters(mockBlockState, 'email_tool', mockContext)
 
       expect(result).toEqual({
         recipient: '{{customer_email}}', // Not substituted since parameter doesn't exist
@@ -200,7 +196,7 @@ describe('WorkflowToJourneyConverter', () => {
         timestamp: { type: 'string', description: 'Send timestamp' },
       }
 
-      const result = converter['createOutputMapping'](outputs)
+      const result = converter.createOutputMapping(outputs)
 
       expect(result).toEqual({
         success: '{{output.success}}',
@@ -213,28 +209,33 @@ describe('WorkflowToJourneyConverter', () => {
   describe('Transition Type Determination', () => {
     it('should determine sequential transition type', () => {
       const edge = { id: 'edge-1', source: 'block-1', target: 'block-2', data: {} }
-      const result = converter['determineTransitionType'](edge, mockContext)
+      const result = converter.determineTransitionType(edge, mockContext)
 
       expect(result).toBe('sequential')
     })
 
     it('should determine conditional transition type', () => {
-      const edge = { id: 'edge-1', source: 'block-1', target: 'block-2', data: { conditional: true } }
-      const result = converter['determineTransitionType'](edge, mockContext)
+      const edge = {
+        id: 'edge-1',
+        source: 'block-1',
+        target: 'block-2',
+        data: { conditional: true },
+      }
+      const result = converter.determineTransitionType(edge, mockContext)
 
       expect(result).toBe('conditional')
     })
 
     it('should determine parallel transition type', () => {
       const edge = { id: 'edge-1', source: 'block-1', target: 'block-2', data: { parallel: true } }
-      const result = converter['determineTransitionType'](edge, mockContext)
+      const result = converter.determineTransitionType(edge, mockContext)
 
       expect(result).toBe('parallel')
     })
 
     it('should determine loop transition type', () => {
       const edge = { id: 'edge-1', source: 'block-1', target: 'block-2', data: { loop: true } }
-      const result = converter['determineTransitionType'](edge, mockContext)
+      const result = converter.determineTransitionType(edge, mockContext)
 
       expect(result).toBe('loop')
     })
@@ -242,10 +243,10 @@ describe('WorkflowToJourneyConverter', () => {
 
   describe('Warning System', () => {
     it('should add warnings correctly', () => {
-      converter['addWarning']('unsupported_block', 'Block type not supported', 'block-123', 'high')
+      converter.addWarning('unsupported_block', 'Block type not supported', 'block-123', 'high')
 
-      expect(converter['warnings']).toHaveLength(1)
-      expect(converter['warnings'][0]).toEqual({
+      expect(converter.warnings).toHaveLength(1)
+      expect(converter.warnings[0]).toEqual({
         type: 'unsupported_block',
         message: 'Block type not supported',
         block_id: 'block-123',
@@ -254,18 +255,23 @@ describe('WorkflowToJourneyConverter', () => {
     })
 
     it('should handle multiple warnings', () => {
-      converter['addWarning']('parameter_missing', 'Parameter not found', undefined, 'medium')
-      converter['addWarning']('validation_failed', 'Validation error', 'block-456', 'low')
+      converter.addWarning('parameter_missing', 'Parameter not found', undefined, 'medium')
+      converter.addWarning('validation_failed', 'Validation error', 'block-456', 'low')
 
-      expect(converter['warnings']).toHaveLength(2)
-      expect(converter['warnings'][0].type).toBe('parameter_missing')
-      expect(converter['warnings'][1].type).toBe('validation_failed')
+      expect(converter.warnings).toHaveLength(2)
+      expect(converter.warnings[0].type).toBe('parameter_missing')
+      expect(converter.warnings[1].type).toBe('validation_failed')
     })
   })
 
   describe('Error Creation', () => {
     it('should create conversion errors correctly', () => {
-      const error = converter['createConversionError']('validation', 'TEST_ERROR', 'Test error message', { test: true })
+      const error = converter.createConversionError(
+        'validation',
+        'TEST_ERROR',
+        'Test error message',
+        { test: true }
+      )
 
       expect(error).toBeInstanceOf(Error)
       expect(error.message).toBe('Test error message')
@@ -278,22 +284,22 @@ describe('WorkflowToJourneyConverter', () => {
   describe('State Management', () => {
     it('should reset state correctly', () => {
       // Add some state
-      converter['warnings'].push({
+      converter.warnings.push({
         type: 'parameter_missing',
         message: 'Test warning',
         severity: 'medium',
       })
-      converter['blockMappings'].set('block-1', {} as any)
-      converter['edgeMappings'].set('edge-1', {} as any)
-      converter['parametersUsed'].add('test_param')
+      converter.blockMappings.set('block-1', {} as any)
+      converter.edgeMappings.set('edge-1', {} as any)
+      converter.parametersUsed.add('test_param')
 
       // Reset state
-      converter['resetState']()
+      converter.resetState()
 
-      expect(converter['warnings']).toEqual([])
-      expect(converter['blockMappings'].size).toBe(0)
-      expect(converter['edgeMappings'].size).toBe(0)
-      expect(converter['parametersUsed'].size).toBe(0)
+      expect(converter.warnings).toEqual([])
+      expect(converter.blockMappings.size).toBe(0)
+      expect(converter.edgeMappings.size).toBe(0)
+      expect(converter.parametersUsed.size).toBe(0)
     })
   })
 
@@ -313,7 +319,7 @@ describe('WorkflowToJourneyConverter', () => {
         enabled: true,
       }
 
-      const result = converter['extractParameterSubstitutions'](mockBlockState, mockContext.parameters)
+      const result = converter.extractParameterSubstitutions(mockBlockState, mockContext.parameters)
 
       expect(result).toEqual({
         'field1.customer_name': '{{customer_name}}',
@@ -335,7 +341,7 @@ describe('WorkflowToJourneyConverter', () => {
         enabled: true,
       }
 
-      const result = converter['extractParameterSubstitutions'](mockBlockState, mockContext.parameters)
+      const result = converter.extractParameterSubstitutions(mockBlockState, mockContext.parameters)
 
       expect(result).toEqual({})
     })
@@ -344,11 +350,25 @@ describe('WorkflowToJourneyConverter', () => {
   describe('Journey Conditions Creation', () => {
     it('should create journey conditions with context information', () => {
       const mockSteps = [
-        { id: 'step-1', journey_id: 'journey-1', order: 1, title: 'First Step', conditions: [], actions: [] },
-        { id: 'step-2', journey_id: 'journey-1', order: 2, title: 'Second Step', conditions: [], actions: [] },
+        {
+          id: 'step-1',
+          journey_id: 'journey-1',
+          order: 1,
+          title: 'First Step',
+          conditions: [],
+          actions: [],
+        },
+        {
+          id: 'step-2',
+          journey_id: 'journey-1',
+          order: 2,
+          title: 'Second Step',
+          conditions: [],
+          actions: [],
+        },
       ]
 
-      const result = converter['createJourneyConditions'](mockSteps, mockContext)
+      const result = converter.createJourneyConditions(mockSteps, mockContext)
 
       expect(result).toEqual([
         'Journey created from workflow conversion',
@@ -358,8 +378,8 @@ describe('WorkflowToJourneyConverter', () => {
     })
 
     it('should handle empty parameters', () => {
-      converter['parametersUsed'].clear()
-      const result = converter['createJourneyConditions']([], mockContext)
+      converter.parametersUsed.clear()
+      const result = converter.createJourneyConditions([], mockContext)
 
       expect(result[2]).toBe('Parameters applied: ')
     })

@@ -1,6 +1,6 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
-import { parlantRateLimiter, type ParlantAccessInfo } from '@/socket-server/middleware/parlant-permissions'
+import { parlantRateLimiter } from '@/socket-server/middleware/parlant-permissions'
 
 const logger = createLogger('ParlantSecurity')
 
@@ -10,26 +10,26 @@ const logger = createLogger('ParlantSecurity')
 export const ParlantSecurityConfig = {
   // Rate limits per user per minute
   rateLimits: {
-    joinRoom: 30,       // Room joins per minute
-    requestStatus: 60,   // Status requests per minute
-    messageEvents: 300,  // General message events per minute
-    maxConnections: 10   // Max concurrent connections per user
+    joinRoom: 30, // Room joins per minute
+    requestStatus: 60, // Status requests per minute
+    messageEvents: 300, // General message events per minute
+    maxConnections: 10, // Max concurrent connections per user
   },
 
   // Message size limits
   messageLimits: {
-    maxMessageSize: 32 * 1024,      // 32KB max message size
-    maxContentLength: 16 * 1024,     // 16KB max content length
-    maxMetadataSize: 8 * 1024        // 8KB max metadata size
+    maxMessageSize: 32 * 1024, // 32KB max message size
+    maxContentLength: 16 * 1024, // 16KB max content length
+    maxMetadataSize: 8 * 1024, // 8KB max metadata size
   },
 
   // Connection monitoring
   monitoring: {
-    connectionTimeoutMs: 60000,      // 60 second connection timeout
-    inactivityTimeoutMs: 300000,     // 5 minute inactivity timeout
-    maxReconnectAttempts: 5,         // Max reconnection attempts
-    healthCheckIntervalMs: 30000     // Health check interval
-  }
+    connectionTimeoutMs: 60000, // 60 second connection timeout
+    inactivityTimeoutMs: 300000, // 5 minute inactivity timeout
+    maxReconnectAttempts: 5, // Max reconnection attempts
+    healthCheckIntervalMs: 30000, // Health check interval
+  },
 }
 
 /**
@@ -37,8 +37,8 @@ export const ParlantSecurityConfig = {
  */
 class ConnectionTracker {
   private userConnections = new Map<string, Set<string>>() // userId -> Set<socketId>
-  private connectionAttempts = new Map<string, { count: number, lastAttempt: number }>()
-  private suspiciousActivity = new Map<string, { events: string[], timestamp: number }>()
+  private connectionAttempts = new Map<string, { count: number; lastAttempt: number }>()
+  private suspiciousActivity = new Map<string, { events: string[]; timestamp: number }>()
 
   /**
    * Track new connection
@@ -50,7 +50,7 @@ class ConnectionTracker {
     if (userSockets.size >= ParlantSecurityConfig.rateLimits.maxConnections) {
       logger.warn(`User ${userId} exceeded max connections limit`, {
         currentConnections: userSockets.size,
-        maxAllowed: ParlantSecurityConfig.rateLimits.maxConnections
+        maxAllowed: ParlantSecurityConfig.rateLimits.maxConnections,
       })
       return { allowed: false, reason: 'Too many concurrent connections' }
     }
@@ -64,7 +64,7 @@ class ConnectionTracker {
 
     logger.debug(`Tracked connection for user ${userId}`, {
       socketId,
-      totalConnections: userSockets.size
+      totalConnections: userSockets.size,
     })
 
     return { allowed: true }
@@ -90,7 +90,7 @@ class ConnectionTracker {
     if (attempts.count > ParlantSecurityConfig.monitoring.maxReconnectAttempts) {
       logger.warn(`User ${userId} blocked due to excessive connection attempts`, {
         attempts: attempts.count,
-        timeWindow: '5 minutes'
+        timeWindow: '5 minutes',
       })
       return { allowed: false, reason: 'Too many connection attempts' }
     }
@@ -129,7 +129,8 @@ class ConnectionTracker {
     const now = Date.now()
     let userActivity = this.suspiciousActivity.get(userId)
 
-    if (!userActivity || now - userActivity.timestamp > 3600000) { // Reset after 1 hour
+    if (!userActivity || now - userActivity.timestamp > 3600000) {
+      // Reset after 1 hour
       userActivity = { events: [], timestamp: now }
     }
 
@@ -145,7 +146,7 @@ class ConnectionTracker {
 
     logger.warn(`Suspicious activity tracked for user ${userId}`, {
       activity,
-      totalEvents: userActivity.events.length
+      totalEvents: userActivity.events.length,
     })
   }
 
@@ -165,7 +166,7 @@ class ConnectionTracker {
       ),
       activeUsers: this.userConnections.size,
       connectionAttempts: this.connectionAttempts.size,
-      suspiciousUsers: this.suspiciousActivity.size
+      suspiciousUsers: this.suspiciousActivity.size,
     }
   }
 }
@@ -195,7 +196,9 @@ export function validateMessageContent(content: any): {
     // Calculate content size
     const contentSize = JSON.stringify(content).length
     if (contentSize > ParlantSecurityConfig.messageLimits.maxMessageSize) {
-      errors.push(`Message size ${contentSize} exceeds limit of ${ParlantSecurityConfig.messageLimits.maxMessageSize}`)
+      errors.push(
+        `Message size ${contentSize} exceeds limit of ${ParlantSecurityConfig.messageLimits.maxMessageSize}`
+      )
     }
 
     // Sanitize and validate different content types
@@ -204,7 +207,9 @@ export function validateMessageContent(content: any): {
     if (typeof content === 'string') {
       // Validate string content length
       if (content.length > ParlantSecurityConfig.messageLimits.maxContentLength) {
-        errors.push(`Content length exceeds limit of ${ParlantSecurityConfig.messageLimits.maxContentLength}`)
+        errors.push(
+          `Content length exceeds limit of ${ParlantSecurityConfig.messageLimits.maxContentLength}`
+        )
       }
 
       // Basic XSS protection - remove script tags and javascript: URLs
@@ -212,12 +217,13 @@ export function validateMessageContent(content: any): {
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
         .replace(/javascript:/gi, '')
         .replace(/on\w+\s*=/gi, '')
-
     } else if (typeof content === 'object') {
       // Validate object metadata size
       const metadataSize = JSON.stringify(content).length
       if (metadataSize > ParlantSecurityConfig.messageLimits.maxMetadataSize) {
-        errors.push(`Metadata size exceeds limit of ${ParlantSecurityConfig.messageLimits.maxMetadataSize}`)
+        errors.push(
+          `Metadata size exceeds limit of ${ParlantSecurityConfig.messageLimits.maxMetadataSize}`
+        )
       }
 
       // Recursively sanitize object properties
@@ -227,9 +233,8 @@ export function validateMessageContent(content: any): {
     return {
       isValid: errors.length === 0,
       sanitized: errors.length === 0 ? sanitized : undefined,
-      errors
+      errors,
     }
-
   } catch (error) {
     logger.error('Error validating message content:', error)
     errors.push('Content validation failed')
@@ -246,7 +251,7 @@ function sanitizeObject(obj: any): any {
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item))
+    return obj.map((item) => sanitizeObject(item))
   }
 
   const sanitized: any = {}
@@ -288,7 +293,7 @@ export function checkRateLimit(
     logger.warn(`Rate limit exceeded for user ${userId}`, {
       action,
       remaining: result.remaining,
-      resetTime: result.resetTime
+      resetTime: result.resetTime,
     })
 
     // Track suspicious activity for repeated rate limit violations
@@ -305,17 +310,18 @@ class IPRateLimiter {
   private ipLimits = new Map<string, { count: number; resetTime: number }>()
 
   private static readonly IP_LIMITS = {
-    connectionsPerMinute: 60,     // 60 connections per minute per IP
-    requestsPerMinute: 300        // 300 requests per minute per IP
+    connectionsPerMinute: 60, // 60 connections per minute per IP
+    requestsPerMinute: 300, // 300 requests per minute per IP
   }
 
   checkIPRateLimit(
     ipAddress: string,
     action: 'connection' | 'request'
   ): { allowed: boolean; remaining: number; resetTime: number } {
-    const limit = action === 'connection'
-      ? IPRateLimiter.IP_LIMITS.connectionsPerMinute
-      : IPRateLimiter.IP_LIMITS.requestsPerMinute
+    const limit =
+      action === 'connection'
+        ? IPRateLimiter.IP_LIMITS.connectionsPerMinute
+        : IPRateLimiter.IP_LIMITS.requestsPerMinute
 
     const key = `${ipAddress}:${action}`
     const now = Date.now()
@@ -326,7 +332,7 @@ class IPRateLimiter {
     if (!record || record.resetTime <= now) {
       record = {
         count: 0,
-        resetTime: windowStart + 60000
+        resetTime: windowStart + 60000,
       }
       this.ipLimits.set(key, record)
     }
@@ -339,7 +345,7 @@ class IPRateLimiter {
     return {
       allowed,
       remaining: Math.max(0, limit - record.count),
-      resetTime: record.resetTime
+      resetTime: record.resetTime,
     }
   }
 
@@ -372,7 +378,7 @@ export class ParlantConnectionHealthMonitor {
     healthyConnections: 0,
     unhealthyConnections: 0,
     averageLatency: 0,
-    lastHealthCheck: Date.now()
+    lastHealthCheck: Date.now(),
   }
 
   /**
@@ -404,7 +410,6 @@ export class ParlantConnectionHealthMonitor {
           })
 
           healthyCount++
-
         } catch (error) {
           logger.debug(`Socket ${socket.id} failed health check:`, error.message)
           // Could disconnect unhealthy sockets here if needed
@@ -417,7 +422,7 @@ export class ParlantConnectionHealthMonitor {
         healthyConnections: healthyCount,
         unhealthyConnections: sockets.length - healthyCount,
         averageLatency: latencyMeasurements > 0 ? totalLatency / latencyMeasurements : 0,
-        lastHealthCheck: Date.now()
+        lastHealthCheck: Date.now(),
       }
 
       const healthCheckDuration = Date.now() - startTime
@@ -427,9 +432,8 @@ export class ParlantConnectionHealthMonitor {
         healthyConnections: this.healthStats.healthyConnections,
         unhealthyConnections: this.healthStats.unhealthyConnections,
         averageLatency: Math.round(this.healthStats.averageLatency),
-        healthCheckDuration
+        healthCheckDuration,
       })
-
     } catch (error) {
       logger.error('Error during Parlant health check:', error)
     }
@@ -476,7 +480,7 @@ export function logSecurityEvent(
     userId,
     socketId,
     timestamp: new Date().toISOString(),
-    details
+    details,
   })
 }
 
@@ -494,6 +498,6 @@ export function initializeParlantSecurity(io: any): void {
   logger.info('Parlant security monitoring initialized', {
     rateLimits: ParlantSecurityConfig.rateLimits,
     messageLimits: ParlantSecurityConfig.messageLimits,
-    monitoring: ParlantSecurityConfig.monitoring
+    monitoring: ParlantSecurityConfig.monitoring,
   })
 }

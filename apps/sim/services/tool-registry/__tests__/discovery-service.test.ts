@@ -2,9 +2,9 @@
  * Tests for ToolDiscoveryService
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ToolDiscoveryService } from '../discovery-service'
-import type { ToolSearchQuery, EnrichedTool } from '../types'
+import type { EnrichedTool, ToolSearchQuery } from '../types'
 
 // Mock database
 vi.mock('@/packages/db', () => ({
@@ -22,13 +22,15 @@ vi.mock('@/packages/db', () => ({
         })),
         where: vi.fn(() => ({
           groupBy: vi.fn(() => ({
-            orderBy: vi.fn(() => Promise.resolve([
-              {
-                id: 'test-category',
-                name: 'Test Category',
-                count: 5,
-              },
-            ])),
+            orderBy: vi.fn(() =>
+              Promise.resolve([
+                {
+                  id: 'test-category',
+                  name: 'Test Category',
+                  count: 5,
+                },
+              ])
+            ),
           })),
         })),
       })),
@@ -48,15 +50,17 @@ vi.mock('@/lib/logs/console/logger', () => ({
 // Mock analytics service
 vi.mock('../analytics-service', () => ({
   ToolAnalyticsService: vi.fn(() => ({
-    getToolAnalytics: vi.fn(() => Promise.resolve({
-      usageCount: 10,
-      successRate: 0.95,
-      avgExecutionTimeMs: 150,
-      errorRate: 0.05,
-      popularityScore: 0.8,
-      reviewCount: 5,
-      userRating: 4.2,
-    })),
+    getToolAnalytics: vi.fn(() =>
+      Promise.resolve({
+        usageCount: 10,
+        successRate: 0.95,
+        avgExecutionTimeMs: 150,
+        errorRate: 0.05,
+        popularityScore: 0.8,
+        reviewCount: 5,
+        userRating: 4.2,
+      })
+    ),
   })),
 }))
 
@@ -163,13 +167,17 @@ describe('ToolDiscoveryService', () => {
       mockDb.db.select.mockReturnValueOnce({
         from: vi.fn(() => ({
           where: vi.fn(() => ({
-            limit: vi.fn(() => Promise.resolve([{
-              id: 'test_tool',
-              tags: JSON.stringify(['test']),
-              keywords: JSON.stringify(['test']),
-              categoryId: 'cat_test',
-              toolType: 'builtin',
-            }])),
+            limit: vi.fn(() =>
+              Promise.resolve([
+                {
+                  id: 'test_tool',
+                  tags: JSON.stringify(['test']),
+                  keywords: JSON.stringify(['test']),
+                  categoryId: 'cat_test',
+                  toolType: 'builtin',
+                },
+              ])
+            ),
           })),
         })),
       })
@@ -189,8 +197,9 @@ describe('ToolDiscoveryService', () => {
         })),
       })
 
-      await expect(discoveryService.getSimilarTools('nonexistent', 5))
-        .rejects.toThrow('Tool not found: nonexistent')
+      await expect(discoveryService.getSimilarTools('nonexistent', 5)).rejects.toThrow(
+        'Tool not found: nonexistent'
+      )
     })
   })
 
@@ -231,8 +240,7 @@ describe('ToolDiscoveryService', () => {
         throw new Error('Database error')
       })
 
-      await expect(discoveryService.searchTools({ limit: 10 }))
-        .rejects.toThrow('Database error')
+      await expect(discoveryService.searchTools({ limit: 10 })).rejects.toThrow('Database error')
     })
   })
 

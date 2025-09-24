@@ -5,16 +5,19 @@
  * API endpoints for managing specific conversational workflow sessions.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getConversationalWorkflowService } from '@/services/parlant/conversational-workflows/core'
+import {
+  ConversationalWorkflowError,
+  SessionManagementError,
+} from '@/services/parlant/conversational-workflows/errors'
 import type {
+  GetWorkflowStateResponse,
   ProcessNaturalLanguageCommandRequest,
   ProcessNaturalLanguageCommandResponse,
-  GetWorkflowStateResponse,
 } from '@/services/parlant/conversational-workflows/types'
-import { ConversationalWorkflowError, SessionManagementError } from '@/services/parlant/conversational-workflows/errors'
-import { auth } from '@/lib/auth'
 
 const logger = createLogger('ConversationalWorkflowSessionAPI')
 
@@ -35,10 +38,7 @@ export async function GET(
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Get workflow service
@@ -47,10 +47,7 @@ export async function GET(
     // Get session state
     const sessionState = await workflowService.getWorkflowState(sessionId)
     if (!sessionState) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
     // Validate user has access to this session
@@ -92,10 +89,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(
-      { error: 'Failed to get session state' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to get session state' }, { status: 500 })
   }
 }
 
@@ -116,10 +110,7 @@ export async function POST(
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Parse request body
@@ -127,10 +118,7 @@ export async function POST(
     const { naturalLanguageInput, workspaceId, workflowId } = body
 
     if (!naturalLanguageInput) {
-      return NextResponse.json(
-        { error: 'naturalLanguageInput is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'naturalLanguageInput is required' }, { status: 400 })
     }
 
     // Build request
@@ -200,10 +188,7 @@ export async function PATCH(
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Parse request body
@@ -217,11 +202,7 @@ export async function PATCH(
     // Get current session state
     const currentState = await stateManager.getSessionState(sessionId)
     if (!currentState) {
-      throw new SessionManagementError(
-        'Session not found',
-        'SESSION_NOT_FOUND',
-        sessionId
-      )
+      throw new SessionManagementError('Session not found', 'SESSION_NOT_FOUND', sessionId)
     }
 
     // Build state updates
@@ -275,10 +256,7 @@ export async function PATCH(
       )
     }
 
-    return NextResponse.json(
-      { error: 'Failed to update session' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update session' }, { status: 500 })
   }
 }
 
@@ -299,10 +277,7 @@ export async function DELETE(
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Get workflow service
@@ -312,10 +287,7 @@ export async function DELETE(
     // Verify session exists and user has access
     const sessionState = await stateManager.getSessionState(sessionId)
     if (!sessionState) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
     // End session
@@ -333,9 +305,6 @@ export async function DELETE(
       error: error.message,
     })
 
-    return NextResponse.json(
-      { error: 'Failed to end session' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to end session' }, { status: 500 })
   }
 }

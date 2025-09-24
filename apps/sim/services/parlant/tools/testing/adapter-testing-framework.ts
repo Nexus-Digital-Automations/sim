@@ -6,9 +6,8 @@
  * Includes mock environments, performance testing, and validation utilities
  */
 
-import { UniversalToolAdapter, ToolExecutionContext, AdapterExecutionResult } from '../adapter-framework'
-import { UniversalToolAdapterRegistry } from '../adapter-registry'
-import type { ToolResponse } from '@/tools/types'
+import type { AdapterExecutionResult, ToolExecutionContext } from '../adapter-framework'
+import type { UniversalToolAdapterRegistry } from '../adapter-registry'
 
 // ================================
 // Testing Types and Interfaces
@@ -196,7 +195,7 @@ export class AdapterMockEnvironment {
   /**
    * Get mock response for a request pattern
    */
-  getMockResponse(url: string, method: string = 'GET'): any {
+  getMockResponse(url: string, method = 'GET'): any {
     const requestKey = `${method}:${url}`
 
     // Check exact matches first
@@ -248,13 +247,13 @@ export class AdapterMockEnvironment {
           oauth_credentials: {
             access_token: 'ya29.mock_google_token',
             refresh_token: 'mock_refresh_token',
-            expires_at: Date.now() / 1000 + 3600
-          }
+            expires_at: Date.now() / 1000 + 3600,
+          },
         }
       default:
         return {
           api_key: `mock-${service}-key`,
-          token: `mock-${service}-token`
+          token: `mock-${service}-token`,
         }
     }
   }
@@ -330,10 +329,7 @@ export class AdapterTestingFramework {
   /**
    * Execute a single test case
    */
-  async executeTestCase(
-    adapterId: string,
-    testCase: AdapterTestCase
-  ): Promise<AdapterTestResult> {
+  async executeTestCase(adapterId: string, testCase: AdapterTestCase): Promise<AdapterTestResult> {
     const startTime = Date.now()
     const adapter = this.registry.getAdapter(adapterId)
 
@@ -344,7 +340,7 @@ export class AdapterTestingFramework {
         timing: {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date().toISOString(),
-          duration: Date.now() - startTime
+          duration: Date.now() - startTime,
         },
         executionResult: {
           success: false,
@@ -352,12 +348,12 @@ export class AdapterTestingFramework {
           timing: {
             startTime: new Date(startTime).toISOString(),
             endTime: new Date().toISOString(),
-            duration: 0
-          }
+            duration: 0,
+          },
         },
         validationResults: [],
         performance: { latencyMs: 0 },
-        errors: [`Adapter '${adapterId}' not found in registry`]
+        errors: [`Adapter '${adapterId}' not found in registry`],
       }
     }
 
@@ -388,16 +384,16 @@ export class AdapterTestingFramework {
         timing: {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date(endTime).toISOString(),
-          duration
+          duration,
         },
         executionResult,
         validationResults,
         performance: {
           latencyMs: executionResult.timing.duration,
           memoryUsageMb: await this.getMemoryUsage(),
-          cpuUsagePercent: await this.getCpuUsage()
+          cpuUsagePercent: await this.getCpuUsage(),
         },
-        errors: this.extractErrors(testCase, executionResult, validationResults)
+        errors: this.extractErrors(testCase, executionResult, validationResults),
       }
 
       // Execute after hook
@@ -406,7 +402,6 @@ export class AdapterTestingFramework {
       }
 
       return testResult
-
     } catch (error) {
       const endTime = Date.now()
       return {
@@ -415,7 +410,7 @@ export class AdapterTestingFramework {
         timing: {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date(endTime).toISOString(),
-          duration: endTime - startTime
+          duration: endTime - startTime,
         },
         executionResult: {
           success: false,
@@ -423,12 +418,12 @@ export class AdapterTestingFramework {
           timing: {
             startTime: new Date(startTime).toISOString(),
             endTime: new Date(endTime).toISOString(),
-            duration: endTime - startTime
-          }
+            duration: endTime - startTime,
+          },
         },
         validationResults: [],
         performance: { latencyMs: endTime - startTime },
-        errors: [error instanceof Error ? error.message : 'Unknown test execution error']
+        errors: [error instanceof Error ? error.message : 'Unknown test execution error'],
       }
     }
   }
@@ -450,31 +445,33 @@ export class AdapterTestingFramework {
       mocking: {
         enabled: true,
         mockApiResponses: true,
-        mockAuthCredentials: true
+        mockAuthCredentials: true,
       },
-      ...config
+      ...config,
     }
 
     const testCases = this.testSuites.get(suiteName) || []
     const startTime = Date.now()
     const results: AdapterTestResult[] = []
 
-    console.log(`[AdapterTesting] Starting test suite '${suiteName}' with ${testCases.length} test cases`)
+    console.log(
+      `[AdapterTesting] Starting test suite '${suiteName}' with ${testCases.length} test cases`
+    )
 
     // Execute test cases (with concurrency control)
     const batches = this.createBatches(testCases, suiteConfig.concurrency)
 
     for (const batch of batches) {
-      const batchPromises = batch.map(testCase =>
-        this.executeTestCase(adapterId, testCase)
-      )
+      const batchPromises = batch.map((testCase) => this.executeTestCase(adapterId, testCase))
 
       const batchResults = await Promise.all(batchPromises)
       results.push(...batchResults)
 
       // Check fail-fast condition
-      if (suiteConfig.failFast && batchResults.some(r => !r.passed)) {
-        console.log(`[AdapterTesting] Stopping test suite '${suiteName}' due to failure (fail-fast enabled)`)
+      if (suiteConfig.failFast && batchResults.some((r) => !r.passed)) {
+        console.log(
+          `[AdapterTesting] Stopping test suite '${suiteName}' due to failure (fail-fast enabled)`
+        )
         break
       }
     }
@@ -485,20 +482,21 @@ export class AdapterTestingFramework {
     // Calculate summary statistics
     const summary = {
       total: results.length,
-      passed: results.filter(r => r.passed).length,
-      failed: results.filter(r => !r.passed).length,
+      passed: results.filter((r) => r.passed).length,
+      failed: results.filter((r) => !r.passed).length,
       skipped: testCases.length - results.length,
       duration,
-      passRate: results.length > 0 ? results.filter(r => r.passed).length / results.length : 0
+      passRate: results.length > 0 ? results.filter((r) => r.passed).length / results.length : 0,
     }
 
     // Calculate performance statistics
-    const latencies = results.map(r => r.performance.latencyMs).filter(l => l > 0)
+    const latencies = results.map((r) => r.performance.latencyMs).filter((l) => l > 0)
     const performance = {
-      averageLatencyMs: latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0,
+      averageLatencyMs:
+        latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0,
       maxLatencyMs: latencies.length > 0 ? Math.max(...latencies) : 0,
       minLatencyMs: latencies.length > 0 ? Math.min(...latencies) : 0,
-      totalMemoryUsageMb: results.reduce((sum, r) => sum + (r.performance.memoryUsageMb || 0), 0)
+      totalMemoryUsageMb: results.reduce((sum, r) => sum + (r.performance.memoryUsageMb || 0), 0),
     }
 
     const suiteResult: TestSuiteResult = {
@@ -510,11 +508,13 @@ export class AdapterTestingFramework {
         startTime: new Date(startTime).toISOString(),
         endTime: new Date(endTime).toISOString(),
         environment: suiteConfig.environment,
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     }
 
-    console.log(`[AdapterTesting] Test suite '${suiteName}' completed: ${summary.passed}/${summary.total} passed (${(summary.passRate * 100).toFixed(1)}%)`)
+    console.log(
+      `[AdapterTesting] Test suite '${suiteName}' completed: ${summary.passed}/${summary.total} passed (${(summary.passRate * 100).toFixed(1)}%)`
+    )
 
     return suiteResult
   }
@@ -534,12 +534,12 @@ export class AdapterTestingFramework {
       priority: 'high',
       input: {
         parameters: {}, // Empty parameters to test validation
-        context: this.createTestContext()
+        context: this.createTestContext(),
       },
       expectations: {
         success: false,
-        errorPatterns: ['required', 'missing']
-      }
+        errorPatterns: ['required', 'missing'],
+      },
     })
 
     // Parameter type validation tests
@@ -552,14 +552,14 @@ export class AdapterTestingFramework {
           priority: 'medium',
           input: {
             parameters: {
-              [param.name]: this.getInvalidTypeValue(param.type)
+              [param.name]: this.getInvalidTypeValue(param.type),
             },
-            context: this.createTestContext()
+            context: this.createTestContext(),
           },
           expectations: {
             success: false,
-            errorPatterns: ['type', 'invalid']
-          }
+            errorPatterns: ['type', 'invalid'],
+          },
         })
       }
     })
@@ -579,14 +579,14 @@ export class AdapterTestingFramework {
       priority: 'critical',
       input: {
         parameters: validParams,
-        context: this.createTestContext()
+        context: this.createTestContext(),
       },
       expectations: {
         success: true,
         performanceThresholds: {
-          maxLatencyMs: 10000 // 10 seconds
-        }
-      }
+          maxLatencyMs: 10000, // 10 seconds
+        },
+      },
     })
 
     return tests
@@ -610,12 +610,12 @@ export class AdapterTestingFramework {
         priority: 'high',
         input: {
           parameters: invalidAuthParams,
-          context: this.createTestContext()
+          context: this.createTestContext(),
         },
         expectations: {
           success: false,
-          errorPatterns: ['auth', 'unauthorized', 'invalid']
-        }
+          errorPatterns: ['auth', 'unauthorized', 'invalid'],
+        },
       })
     }
 
@@ -633,15 +633,15 @@ export class AdapterTestingFramework {
       priority: 'medium',
       input: {
         parameters: this.generateValidParameters(parlantTool),
-        context: this.createTestContext()
+        context: this.createTestContext(),
       },
       expectations: {
         success: true,
         performanceThresholds: {
           maxLatencyMs: 5000, // 5 seconds
-          maxMemoryMb: 100 // 100 MB
-        }
-      }
+          maxMemoryMb: 100, // 100 MB
+        },
+      },
     })
 
     return tests
@@ -654,7 +654,7 @@ export class AdapterTestingFramework {
     if (parlantTool.category === 'data') {
       const maliciousParams = this.generateValidParameters(parlantTool)
       // Add SQL injection payload
-      Object.keys(maliciousParams).forEach(key => {
+      Object.keys(maliciousParams).forEach((key) => {
         if (typeof maliciousParams[key] === 'string') {
           maliciousParams[key] = "'; DROP TABLE users; --"
         }
@@ -667,12 +667,12 @@ export class AdapterTestingFramework {
         priority: 'critical',
         input: {
           parameters: maliciousParams,
-          context: this.createTestContext()
+          context: this.createTestContext(),
         },
         expectations: {
           success: false,
-          errorPatterns: ['invalid', 'sanitization', 'injection']
-        }
+          errorPatterns: ['invalid', 'sanitization', 'injection'],
+        },
       })
     }
 
@@ -685,10 +685,7 @@ export class AdapterTestingFramework {
 
   private setupMockEnvironment(testCase: AdapterTestCase): void {
     // Setup mock API responses based on test case
-    this.mockEnvironment.mockApiResponse(
-      '.*',
-      { success: true, data: 'mock response' }
-    )
+    this.mockEnvironment.mockApiResponse('.*', { success: true, data: 'mock response' })
   }
 
   private async validateTestResult(
@@ -704,8 +701,8 @@ export class AdapterTestingFramework {
       description: 'Success expectation matches',
       comparison: {
         expected: testCase.expectations.success,
-        actual: result.success
-      }
+        actual: result.success,
+      },
     })
 
     // Performance validation
@@ -716,14 +713,14 @@ export class AdapterTestingFramework {
         description: 'Latency within acceptable threshold',
         comparison: {
           expected: `<= ${testCase.expectations.performanceThresholds.maxLatencyMs}ms`,
-          actual: `${result.timing.duration}ms`
-        }
+          actual: `${result.timing.duration}ms`,
+        },
       })
     }
 
     // Error pattern validation
     if (testCase.expectations.errorPatterns && result.error) {
-      const errorMatches = testCase.expectations.errorPatterns.some(pattern =>
+      const errorMatches = testCase.expectations.errorPatterns.some((pattern) =>
         result.error!.toLowerCase().includes(pattern.toLowerCase())
       )
 
@@ -733,8 +730,8 @@ export class AdapterTestingFramework {
         description: 'Error message matches expected patterns',
         comparison: {
           expected: testCase.expectations.errorPatterns,
-          actual: result.error
-        }
+          actual: result.error,
+        },
       })
     }
 
@@ -753,7 +750,7 @@ export class AdapterTestingFramework {
     result: AdapterExecutionResult,
     validations: ValidationResult[]
   ): boolean {
-    return validations.every(v => v.passed)
+    return validations.every((v) => v.passed)
   }
 
   private extractErrors(
@@ -767,7 +764,7 @@ export class AdapterTestingFramework {
       errors.push(result.error)
     }
 
-    validations.forEach(v => {
+    validations.forEach((v) => {
       if (!v.passed && v.error) {
         errors.push(v.error)
       }
@@ -781,7 +778,7 @@ export class AdapterTestingFramework {
       userId: 'test-user-123',
       workspaceId: 'test-workspace-456',
       agentId: 'test-agent-789',
-      sessionId: 'test-session-abc'
+      sessionId: 'test-session-abc',
     }
   }
 
@@ -873,7 +870,10 @@ export class AdapterTestingFramework {
   /**
    * Generate test report in various formats
    */
-  generateTestReport(results: TestSuiteResult, format: 'json' | 'html' | 'markdown' = 'json'): string {
+  generateTestReport(
+    results: TestSuiteResult,
+    format: 'json' | 'html' | 'markdown' = 'json'
+  ): string {
     switch (format) {
       case 'json':
         return JSON.stringify(results, null, 2)
@@ -910,7 +910,9 @@ export class AdapterTestingFramework {
     <p>Duration: ${results.summary.duration}ms</p>
   </div>
   <h2>Test Results</h2>
-  ${results.results.map(result => `
+  ${results.results
+    .map(
+      (result) => `
     <div class="${result.passed ? 'passed' : 'failed'}">
       <h3>${result.testCase.id}</h3>
       <p>${result.testCase.description}</p>
@@ -918,7 +920,9 @@ export class AdapterTestingFramework {
       <p>Duration: ${result.timing.duration}ms</p>
       ${result.errors.length > 0 ? `<p>Errors: ${result.errors.join(', ')}</p>` : ''}
     </div>
-  `).join('')}
+  `
+    )
+    .join('')}
 </body>
 </html>
     `.trim()
@@ -942,15 +946,19 @@ export class AdapterTestingFramework {
 
 ## Test Results
 
-${results.results.map(result => `
+${results.results
+  .map(
+    (result) => `
 ### ${result.testCase.id} ${result.passed ? '✅' : '❌'}
 
 **Description:** ${result.testCase.description}
 **Category:** ${result.testCase.category}
 **Duration:** ${result.timing.duration}ms
 
-${result.errors.length > 0 ? `**Errors:**\n${result.errors.map(e => `- ${e}`).join('\n')}` : ''}
-`).join('\n')}
+${result.errors.length > 0 ? `**Errors:**\n${result.errors.map((e) => `- ${e}`).join('\n')}` : ''}
+`
+  )
+  .join('\n')}
     `.trim()
   }
 }

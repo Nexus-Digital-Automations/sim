@@ -8,30 +8,18 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
-import {
-  JourneyGenerationRequest,
-  JourneyGenerationOptions,
+import { type ProcessedTemplate, TemplateEngine } from '../core/template-engine'
+import type {
+  ConversionResult,
   GeneratedJourney,
+  JourneyGenerationRequest,
   JourneyState,
   JourneyTransition,
   JourneyVariable,
-  ConversionResult,
-  JourneyStateType,
   OptimizationTarget,
 } from '../types/journey-types'
-import {
-  WorkflowTemplate,
-  TemplateBlock,
-  TemplateEdge,
-  ConditionalExpression,
-} from '../types/template-types'
-import {
-  WorkflowAnalysis,
-  BlockConversionMap,
-  WorkflowBlockType,
-  BlockConversionResult,
-} from '../types/workflow-types'
-import { TemplateEngine, ProcessedTemplate } from '../core/template-engine'
+import type { TemplateBlock, TemplateEdge, WorkflowTemplate } from '../types/template-types'
+import type { WorkflowAnalysis, WorkflowBlockType } from '../types/workflow-types'
 
 export class JourneyGenerator {
   private readonly templateEngine = new TemplateEngine()
@@ -121,7 +109,6 @@ export class JourneyGenerator {
 
       console.log(`Journey generation completed successfully in ${result.duration}ms`)
       return result
-
     } catch (error) {
       console.error(`Journey generation failed:`, error)
 
@@ -140,13 +127,15 @@ export class JourneyGenerator {
         optimizationsApplied: 0,
         validationResults: [],
         warnings: [],
-        errors: [{
-          code: 'GENERATION_FAILED',
-          message: error.message,
-          category: 'system',
-          fatal: true,
-          context: { error: error.stack },
-        }],
+        errors: [
+          {
+            code: 'GENERATION_FAILED',
+            message: error.message,
+            category: 'system',
+            fatal: true,
+            context: { error: error.stack },
+          },
+        ],
         performance: this.calculatePerformanceMetrics(startTime),
         cacheHit: false,
       }
@@ -278,7 +267,9 @@ export class JourneyGenerator {
     // Calculate estimated duration
     journey.estimatedDuration = this.calculateEstimatedDuration(journey)
 
-    console.log(`Generated journey with ${journey.states.length} states and ${journey.transitions.length} transitions`)
+    console.log(
+      `Generated journey with ${journey.states.length} states and ${journey.transitions.length} transitions`
+    )
 
     return journey
   }
@@ -374,8 +365,9 @@ export class JourneyGenerator {
         scope: 'journey',
         defaultValue: param.defaultValue,
         persistent: true,
-        encrypted: param.name.toLowerCase().includes('secret') ||
-                  param.name.toLowerCase().includes('password'),
+        encrypted:
+          param.name.toLowerCase().includes('secret') ||
+          param.name.toLowerCase().includes('password'),
         validation: {
           rules: param.validation ? this.convertValidationRules(param.validation) : [],
         },
@@ -500,11 +492,17 @@ export class JourneyGenerator {
     }
   }
 
-  private generateJourneyTitle(template: WorkflowTemplate, parameters: Record<string, any>): string {
+  private generateJourneyTitle(
+    template: WorkflowTemplate,
+    parameters: Record<string, any>
+  ): string {
     return template.name || 'Generated Journey'
   }
 
-  private generateJourneyDescription(template: WorkflowTemplate, parameters: Record<string, any>): string {
+  private generateJourneyDescription(
+    template: WorkflowTemplate,
+    parameters: Record<string, any>
+  ): string {
     return template.description || 'Journey generated from workflow template'
   }
 
@@ -515,7 +513,7 @@ export class JourneyGenerator {
   private setInitialAndFinalStates(journey: GeneratedJourney, analysis: WorkflowAnalysis): void {
     // Set initial states
     for (const entryPoint of analysis.analysis.entryPoints) {
-      const state = journey.states.find(s => s.metadata.sourceBlockId === entryPoint)
+      const state = journey.states.find((s) => s.metadata.sourceBlockId === entryPoint)
       if (state) {
         state.isInitial = true
       }
@@ -523,18 +521,18 @@ export class JourneyGenerator {
 
     // Set final states
     for (const exitPoint of analysis.analysis.exitPoints) {
-      const state = journey.states.find(s => s.metadata.sourceBlockId === exitPoint)
+      const state = journey.states.find((s) => s.metadata.sourceBlockId === exitPoint)
       if (state) {
         state.isFinal = true
       }
     }
 
     // If no initial/final states found, use first/last
-    if (!journey.states.some(s => s.isInitial) && journey.states.length > 0) {
+    if (!journey.states.some((s) => s.isInitial) && journey.states.length > 0) {
       journey.states[0].isInitial = true
     }
 
-    if (!journey.states.some(s => s.isFinal) && journey.states.length > 0) {
+    if (!journey.states.some((s) => s.isFinal) && journey.states.length > 0) {
       journey.states[journey.states.length - 1].isFinal = true
     }
   }
@@ -590,12 +588,18 @@ export class JourneyGenerator {
     }
   }
 
-  private async generateJourneyAnalytics(journey: GeneratedJourney, request: JourneyGenerationRequest): Promise<any> {
+  private async generateJourneyAnalytics(
+    journey: GeneratedJourney,
+    request: JourneyGenerationRequest
+  ): Promise<any> {
     // Generate initial analytics structure
     return journey.analytics
   }
 
-  private async validateJourney(journey: GeneratedJourney, request: JourneyGenerationRequest): Promise<any[]> {
+  private async validateJourney(
+    journey: GeneratedJourney,
+    request: JourneyGenerationRequest
+  ): Promise<any[]> {
     // Implement journey validation
     return []
   }
@@ -612,7 +616,7 @@ export class JourneyGenerator {
         name: block.name || 'Start',
         stateType: 'chat',
         content: {
-          chatPrompt: 'Welcome! Let\'s get started.',
+          chatPrompt: "Welcome! Let's get started.",
         },
         isInitial: true,
         isFinal: false,
@@ -633,7 +637,7 @@ export class JourneyGenerator {
           sourceBlockId: block.id,
           sourceBlockType: block.type,
         },
-      })
+      }),
     })
 
     // Agent block converter
@@ -666,7 +670,7 @@ export class JourneyGenerator {
           sourceBlockType: block.type,
           agentConfiguration: block.data,
         },
-      })
+      }),
     })
 
     // API block converter
@@ -700,7 +704,7 @@ export class JourneyGenerator {
           sourceBlockType: block.type,
           apiConfiguration: block.data,
         },
-      })
+      }),
     })
 
     // Decision block converter
@@ -736,7 +740,7 @@ export class JourneyGenerator {
           sourceBlockType: block.type,
           decisionConfiguration: block.data,
         },
-      })
+      }),
     })
   }
 
@@ -750,7 +754,7 @@ export class JourneyGenerator {
       optimize: async (journey, level) => {
         // Implement performance optimizations
         return journey
-      }
+      },
     })
 
     // User experience optimizer
@@ -758,7 +762,7 @@ export class JourneyGenerator {
       optimize: async (journey, level) => {
         // Implement UX optimizations
         return journey
-      }
+      },
     })
 
     // Memory optimizer
@@ -766,7 +770,7 @@ export class JourneyGenerator {
       optimize: async (journey, level) => {
         // Implement memory optimizations
         return journey
-      }
+      },
     })
   }
 }
@@ -787,5 +791,8 @@ interface BlockConversionContext {
 }
 
 interface JourneyOptimizer {
-  optimize(journey: GeneratedJourney, level: 'minimal' | 'standard' | 'aggressive'): Promise<GeneratedJourney>
+  optimize(
+    journey: GeneratedJourney,
+    level: 'minimal' | 'standard' | 'aggressive'
+  ): Promise<GeneratedJourney>
 }

@@ -7,19 +7,17 @@
  * and generating the final workflow configurations for journey conversion.
  */
 
-import { z } from 'zod'
-import {
-  WorkflowTemplate,
-  TemplateParameter,
-  ParameterValidation,
-  ValidationContext,
-  ValidationResult,
+import type {
   ConditionalExpression,
   ParameterMapping,
-  ComputationRule,
-  TransformationRule,
+  ParameterValidation,
   TemplateMixin,
   TemplateOverrides,
+  TemplateParameter,
+  TransformationRule,
+  ValidationContext,
+  ValidationResult,
+  WorkflowTemplate,
 } from '../types/template-types'
 
 export class TemplateEngine {
@@ -118,7 +116,7 @@ export class TemplateEngine {
     }
 
     // Check for required parameters
-    const requiredParams = template.parameters.filter(p => p.required)
+    const requiredParams = template.parameters.filter((p) => p.required)
     for (const param of requiredParams) {
       if (!(param.name in parameters) || parameters[param.name] == null) {
         errors.push({
@@ -131,7 +129,7 @@ export class TemplateEngine {
     }
 
     // Check for unexpected parameters
-    const expectedParams = new Set(template.parameters.map(p => p.name))
+    const expectedParams = new Set(template.parameters.map((p) => p.name))
     for (const paramName of Object.keys(parameters)) {
       if (!expectedParams.has(paramName)) {
         warnings.push({
@@ -214,7 +212,7 @@ export class TemplateEngine {
         break
 
       case 'number':
-        if (typeof value !== 'number' || isNaN(value)) {
+        if (typeof value !== 'number' || Number.isNaN(value)) {
           errors.push({
             code: 'TYPE_MISMATCH',
             message: `Expected number for parameter '${param.name}', got ${typeof value}`,
@@ -359,7 +357,7 @@ export class TemplateEngine {
       }
 
       if (validation.uniqueItems) {
-        const uniqueItems = new Set(value.map(item => JSON.stringify(item)))
+        const uniqueItems = new Set(value.map((item) => JSON.stringify(item)))
         if (uniqueItems.size !== value.length) {
           errors.push({
             code: 'UNIQUE_ITEMS_VIOLATION',
@@ -371,8 +369,8 @@ export class TemplateEngine {
 
     // Enum validations
     if (validation.options) {
-      const validOptions = validation.options.map(opt => opt.value)
-      if (!validOptions.some(opt => this.deepEqual(opt, value))) {
+      const validOptions = validation.options.map((opt) => opt.value)
+      if (!validOptions.some((opt) => this.deepEqual(opt, value))) {
         errors.push({
           code: 'INVALID_OPTION',
           message: `Value is not one of the allowed options: ${validOptions.join(', ')}`,
@@ -481,11 +479,11 @@ export class TemplateEngine {
         )
 
         if (shouldActivate) {
-          conditionalBlock.blocksToShow?.forEach(blockId => activeBlocks.add(blockId))
-          conditionalBlock.edgesToActivate?.forEach(edgeId => activeEdges.add(edgeId))
+          conditionalBlock.blocksToShow?.forEach((blockId) => activeBlocks.add(blockId))
+          conditionalBlock.edgesToActivate?.forEach((edgeId) => activeEdges.add(edgeId))
         } else {
-          conditionalBlock.blocksToHide?.forEach(blockId => activeBlocks.delete(blockId))
-          conditionalBlock.edgesToDeactivate?.forEach(edgeId => activeEdges.delete(edgeId))
+          conditionalBlock.blocksToHide?.forEach((blockId) => activeBlocks.delete(blockId))
+          conditionalBlock.edgesToDeactivate?.forEach((edgeId) => activeEdges.delete(edgeId))
         }
       }
 
@@ -520,10 +518,7 @@ export class TemplateEngine {
   /**
    * Apply template optimizations
    */
-  private async applyOptimizations(
-    workflowData: any,
-    context: ProcessingContext
-  ): Promise<any> {
+  private async applyOptimizations(workflowData: any, context: ProcessingContext): Promise<any> {
     let result = { ...workflowData }
 
     if (context.optimizationLevel === 'none') {
@@ -569,12 +564,13 @@ export class TemplateEngine {
     const errors: ValidationError[] = []
 
     switch (format) {
-      case 'email':
+      case 'email': {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(value)) {
           errors.push({ code: 'INVALID_EMAIL', message: 'Invalid email format' })
         }
         break
+      }
 
       case 'url':
         try {
@@ -584,12 +580,14 @@ export class TemplateEngine {
         }
         break
 
-      case 'uuid':
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      case 'uuid': {
+        const uuidRegex =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
         if (!uuidRegex.test(value)) {
           errors.push({ code: 'INVALID_UUID', message: 'Invalid UUID format' })
         }
         break
+      }
 
       case 'json':
         try {
@@ -607,7 +605,10 @@ export class TemplateEngine {
     return JSON.stringify(a) === JSON.stringify(b)
   }
 
-  private async loadTemplate(templateId: string, context: ProcessingContext): Promise<WorkflowTemplate> {
+  private async loadTemplate(
+    templateId: string,
+    context: ProcessingContext
+  ): Promise<WorkflowTemplate> {
     // Implementation would load template from database
     throw new Error('Template loading not implemented')
   }
@@ -627,7 +628,10 @@ export class TemplateEngine {
     return template
   }
 
-  private applyOverrides(template: WorkflowTemplate, overrides: TemplateOverrides): WorkflowTemplate {
+  private applyOverrides(
+    template: WorkflowTemplate,
+    overrides: TemplateOverrides
+  ): WorkflowTemplate {
     // Implementation would apply overrides to template
     return template
   }

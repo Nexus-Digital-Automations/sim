@@ -8,18 +8,18 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
+  CompatibilityReport,
+  ExecutionContext,
   ExecutionResult,
-  WorkflowExecutionResult,
+  FormatValidationResult,
   JourneyExecutionResult,
   ResultComparison,
   ResultCompatibilityConfig,
+  ResultDiff,
   ResultFormatter,
   ResultTransformer,
   ResultValidator,
-  ExecutionContext,
-  CompatibilityReport,
-  ResultDiff,
-  FormatValidationResult
+  WorkflowExecutionResult,
 } from './types'
 
 const logger = createLogger('ResultCompatibilityEngine')
@@ -51,7 +51,7 @@ export class ResultCompatibilityEngine {
     logger.info('Starting result comparison', {
       workflowId: workflowResult.workflowId,
       journeyId: journeyResult.journeyId,
-      executionId: context.executionId
+      executionId: context.executionId,
     })
 
     try {
@@ -73,7 +73,7 @@ export class ResultCompatibilityEngine {
       logger.info('Result comparison completed', {
         compatible: comparison.compatible,
         differences: comparison.differences.length,
-        processingTimeMs: processingTime
+        processingTimeMs: processingTime,
       })
 
       return {
@@ -81,15 +81,14 @@ export class ResultCompatibilityEngine {
         metadata: {
           ...comparison.metadata,
           processingTimeMs: processingTime,
-          comparedAt: new Date().toISOString()
-        }
+          comparedAt: new Date().toISOString(),
+        },
       }
-
     } catch (error) {
       logger.error('Result comparison failed', {
         error: error instanceof Error ? error.message : String(error),
         workflowId: workflowResult.workflowId,
-        journeyId: journeyResult.journeyId
+        journeyId: journeyResult.journeyId,
       })
       throw error
     }
@@ -194,7 +193,7 @@ export class ResultCompatibilityEngine {
       variables: result.variables,
       errors: result.errors,
       warnings: result.warnings,
-      metadata: result.metadata
+      metadata: result.metadata,
     }
 
     // Apply standard normalizations
@@ -228,7 +227,7 @@ export class ResultCompatibilityEngine {
       variables: result.variables,
       errors: result.errors,
       warnings: result.warnings,
-      metadata: result.metadata
+      metadata: result.metadata,
     }
 
     // Apply standard normalizations
@@ -312,7 +311,9 @@ export class ResultCompatibilityEngine {
     await this.compareExecutionResults(workflowResult, journeyResult, differences, context)
 
     // Determine overall compatibility
-    compatible = differences.filter(diff => diff.severity === 'critical' || diff.severity === 'error').length === 0
+    compatible =
+      differences.filter((diff) => diff.severity === 'critical' || diff.severity === 'error')
+        .length === 0
 
     // Calculate similarity score
     const similarityScore = this.calculateSimilarityScore(differences)
@@ -327,10 +328,10 @@ export class ResultCompatibilityEngine {
         comparisonId: `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         context,
         totalDifferences: differences.length,
-        criticalDifferences: differences.filter(d => d.severity === 'critical').length,
-        errorDifferences: differences.filter(d => d.severity === 'error').length,
-        warningDifferences: differences.filter(d => d.severity === 'warning').length
-      }
+        criticalDifferences: differences.filter((d) => d.severity === 'critical').length,
+        errorDifferences: differences.filter((d) => d.severity === 'error').length,
+        warningDifferences: differences.filter((d) => d.severity === 'warning').length,
+      },
     }
   }
 
@@ -347,7 +348,7 @@ export class ResultCompatibilityEngine {
         journeyValue: journeyResult.status,
         difference: 'value_mismatch',
         severity: 'error',
-        description: 'Execution status differs between workflow and journey'
+        description: 'Execution status differs between workflow and journey',
       })
     }
 
@@ -363,7 +364,7 @@ export class ResultCompatibilityEngine {
           journeyValue: journeyResult.duration,
           difference: 'performance_variation',
           severity: 'warning',
-          description: `Execution duration differs by ${durationDiff}ms (tolerance: ${tolerance}ms)`
+          description: `Execution duration differs by ${durationDiff}ms (tolerance: ${tolerance}ms)`,
         })
       }
     }
@@ -388,19 +389,13 @@ export class ResultCompatibilityEngine {
         journeyValue: journeyOutputs,
         difference: 'missing_data',
         severity: 'critical',
-        description: 'One execution mode has outputs while the other does not'
+        description: 'One execution mode has outputs while the other does not',
       })
       return
     }
 
     // Deep compare output objects
-    await this.deepCompareObjects(
-      workflowOutputs,
-      journeyOutputs,
-      'outputs',
-      differences,
-      context
-    )
+    await this.deepCompareObjects(workflowOutputs, journeyOutputs, 'outputs', differences, context)
   }
 
   private async compareVariables(
@@ -422,7 +417,7 @@ export class ResultCompatibilityEngine {
           journeyValue: undefined,
           difference: 'missing_key',
           severity: 'error',
-          description: `Variable '${key}' exists in workflow but not in journey`
+          description: `Variable '${key}' exists in workflow but not in journey`,
         })
       }
     }
@@ -435,7 +430,7 @@ export class ResultCompatibilityEngine {
           journeyValue: journeyVars[key],
           difference: 'extra_key',
           severity: 'warning',
-          description: `Variable '${key}' exists in journey but not in workflow`
+          description: `Variable '${key}' exists in journey but not in workflow`,
         })
       }
     }
@@ -453,7 +448,7 @@ export class ResultCompatibilityEngine {
             journeyValue,
             difference: 'value_mismatch',
             severity: 'error',
-            description: `Variable '${key}' has different values`
+            description: `Variable '${key}' has different values`,
           })
         }
       }
@@ -523,7 +518,7 @@ export class ResultCompatibilityEngine {
         journeyValue: stepResult.status,
         difference: 'value_mismatch',
         severity: 'error',
-        description: `Step execution status differs`
+        description: `Step execution status differs`,
       })
     }
 
@@ -545,7 +540,7 @@ export class ResultCompatibilityEngine {
     path: string,
     differences: ResultDiff[],
     context: ExecutionContext,
-    maxDepth: number = 10
+    maxDepth = 10
   ): Promise<void> {
     if (maxDepth <= 0) {
       logger.warn('Maximum comparison depth reached', { path })
@@ -559,7 +554,7 @@ export class ResultCompatibilityEngine {
         journeyValue: obj2,
         difference: 'type_mismatch',
         severity: 'error',
-        description: `Type mismatch at path ${path}`
+        description: `Type mismatch at path ${path}`,
       })
       return
     }
@@ -572,7 +567,7 @@ export class ResultCompatibilityEngine {
           journeyValue: obj2,
           difference: 'value_mismatch',
           severity: 'error',
-          description: `Null value mismatch at path ${path}`
+          description: `Null value mismatch at path ${path}`,
         })
       }
       return
@@ -595,7 +590,7 @@ export class ResultCompatibilityEngine {
               journeyValue: obj2[key],
               difference: 'missing_key',
               severity: 'warning',
-              description: `Key '${key}' missing in workflow result`
+              description: `Key '${key}' missing in workflow result`,
             })
           } else if (!(key in obj2)) {
             differences.push({
@@ -604,7 +599,7 @@ export class ResultCompatibilityEngine {
               journeyValue: undefined,
               difference: 'extra_key',
               severity: 'warning',
-              description: `Key '${key}' missing in journey result`
+              description: `Key '${key}' missing in journey result`,
             })
           } else {
             await this.deepCompareObjects(
@@ -624,7 +619,7 @@ export class ResultCompatibilityEngine {
           journeyValue: obj2,
           difference: 'structure_mismatch',
           severity: 'error',
-          description: `Structure mismatch at path ${path} (array vs object)`
+          description: `Structure mismatch at path ${path} (array vs object)`,
         })
       }
     } else if (obj1 !== obj2) {
@@ -634,7 +629,7 @@ export class ResultCompatibilityEngine {
         journeyValue: obj2,
         difference: 'value_mismatch',
         severity: 'error',
-        description: `Value mismatch at path ${path}`
+        description: `Value mismatch at path ${path}`,
       })
     }
   }
@@ -653,7 +648,7 @@ export class ResultCompatibilityEngine {
         journeyValue: arr2.length,
         difference: 'count_mismatch',
         severity,
-        description: `Array length differs at path ${path}`
+        description: `Array length differs at path ${path}`,
       })
     }
 
@@ -666,7 +661,7 @@ export class ResultCompatibilityEngine {
           journeyValue: arr2[i],
           difference: 'value_mismatch',
           severity,
-          description: `Array element differs at index ${i}`
+          description: `Array element differs at index ${i}`,
         })
       }
     }
@@ -683,18 +678,18 @@ export class ResultCompatibilityEngine {
       similarityScore: comparison.similarityScore,
       summary: {
         totalDifferences: comparison.differences.length,
-        criticalIssues: comparison.differences.filter(d => d.severity === 'critical').length,
-        errorIssues: comparison.differences.filter(d => d.severity === 'error').length,
-        warningIssues: comparison.differences.filter(d => d.severity === 'warning').length,
-        infoIssues: comparison.differences.filter(d => d.severity === 'info').length
+        criticalIssues: comparison.differences.filter((d) => d.severity === 'critical').length,
+        errorIssues: comparison.differences.filter((d) => d.severity === 'error').length,
+        warningIssues: comparison.differences.filter((d) => d.severity === 'warning').length,
+        infoIssues: comparison.differences.filter((d) => d.severity === 'info').length,
       },
       categories: this.categorizeDifferences(comparison.differences),
       recommendations: await this.generateRecommendations(comparison.differences),
       metadata: {
         generatedAt: new Date().toISOString(),
         context,
-        comparisonMetadata: comparison.metadata
-      }
+        comparisonMetadata: comparison.metadata,
+      },
     }
 
     return report
@@ -707,7 +702,7 @@ export class ResultCompatibilityEngine {
       execution: [],
       performance: [],
       errors: [],
-      metadata: []
+      metadata: [],
     }
 
     for (const diff of differences) {
@@ -735,16 +730,22 @@ export class ResultCompatibilityEngine {
     for (const diff of differences) {
       switch (diff.difference) {
         case 'value_mismatch':
-          recommendations.add('Review result transformation logic to ensure consistent value formatting')
+          recommendations.add(
+            'Review result transformation logic to ensure consistent value formatting'
+          )
           break
         case 'missing_key':
-          recommendations.add('Check if all workflow outputs are properly mapped to journey outputs')
+          recommendations.add(
+            'Check if all workflow outputs are properly mapped to journey outputs'
+          )
           break
         case 'type_mismatch':
           recommendations.add('Verify data type consistency between workflow and journey execution')
           break
         case 'performance_variation':
-          recommendations.add('Consider performance optimization to reduce execution time differences')
+          recommendations.add(
+            'Consider performance optimization to reduce execution time differences'
+          )
           break
         case 'structure_mismatch':
           recommendations.add('Ensure result structure compatibility between execution modes')
@@ -762,7 +763,7 @@ export class ResultCompatibilityEngine {
       critical: 20,
       error: 10,
       warning: 5,
-      info: 1
+      info: 1,
     }
 
     const totalPenalty = differences.reduce((penalty, diff) => {
@@ -770,7 +771,7 @@ export class ResultCompatibilityEngine {
     }, 0)
 
     // Scale to 0-100, with diminishing returns for many differences
-    const score = Math.max(0, 100 - (totalPenalty / (1 + Math.log(differences.length + 1)) * 10))
+    const score = Math.max(0, 100 - (totalPenalty / (1 + Math.log(differences.length + 1))) * 10)
     return Math.round(score * 100) / 100
   }
 
@@ -812,7 +813,7 @@ export class ResultCompatibilityEngine {
       const keys2 = Object.keys(obj2)
       if (keys1.length !== keys2.length) return false
 
-      return keys1.every(key => this.deepEqual(obj1[key], obj2[key]))
+      return keys1.every((key) => this.deepEqual(obj1[key], obj2[key]))
     }
 
     return false
@@ -824,7 +825,7 @@ export class ResultCompatibilityEngine {
     const patterns = {
       ms: /(\d+(?:\.\d+)?)\s*ms/g,
       s: /(\d+(?:\.\d+)?)\s*s/g,
-      m: /(\d+(?:\.\d+)?)\s*m/g
+      m: /(\d+(?:\.\d+)?)\s*m/g,
     }
 
     let totalMs = 0
@@ -832,19 +833,19 @@ export class ResultCompatibilityEngine {
     // Parse milliseconds
     const msMatch = duration.match(patterns.ms)
     if (msMatch) {
-      totalMs += parseFloat(msMatch[0].replace(/[^\d.]/g, ''))
+      totalMs += Number.parseFloat(msMatch[0].replace(/[^\d.]/g, ''))
     }
 
     // Parse seconds
     const sMatch = duration.match(patterns.s)
     if (sMatch) {
-      totalMs += parseFloat(sMatch[0].replace(/[^\d.]/g, '')) * 1000
+      totalMs += Number.parseFloat(sMatch[0].replace(/[^\d.]/g, '')) * 1000
     }
 
     // Parse minutes
     const mMatch = duration.match(patterns.m)
     if (mMatch) {
-      totalMs += parseFloat(mMatch[0].replace(/[^\d.]/g, '')) * 60000
+      totalMs += Number.parseFloat(mMatch[0].replace(/[^\d.]/g, '')) * 60000
     }
 
     return totalMs || 0
@@ -852,19 +853,19 @@ export class ResultCompatibilityEngine {
 
   private normalizeStatusValue(status: string): string {
     const statusMap: Record<string, string> = {
-      'success': 'completed',
-      'completed': 'completed',
-      'finished': 'completed',
-      'done': 'completed',
-      'failed': 'error',
-      'error': 'error',
-      'cancelled': 'cancelled',
-      'canceled': 'cancelled',
-      'aborted': 'cancelled',
-      'running': 'running',
-      'executing': 'running',
-      'pending': 'pending',
-      'queued': 'pending'
+      success: 'completed',
+      completed: 'completed',
+      finished: 'completed',
+      done: 'completed',
+      failed: 'error',
+      error: 'error',
+      cancelled: 'cancelled',
+      canceled: 'cancelled',
+      aborted: 'cancelled',
+      running: 'running',
+      executing: 'running',
+      pending: 'pending',
+      queued: 'pending',
     }
 
     return statusMap[status?.toLowerCase()] || status
@@ -900,13 +901,13 @@ export class ResultCompatibilityEngine {
       // Normalize workflow outputs
       if (normalized.blockOutputs) {
         normalized.outputs = normalized.blockOutputs
-        delete normalized.blockOutputs
+        normalized.blockOutputs = undefined
       }
     } else {
       // Normalize journey outputs
       if (normalized.stepOutputs) {
         normalized.outputs = normalized.stepOutputs
-        delete normalized.stepOutputs
+        normalized.stepOutputs = undefined
       }
     }
 
@@ -938,7 +939,7 @@ export class ResultCompatibilityEngine {
       'nodeId',
       'containerId',
       'requestId',
-      'traceId'
+      'traceId',
     ]
 
     for (const key of excludeKeys) {
@@ -951,15 +952,15 @@ export class ResultCompatibilityEngine {
   private initializeBuiltInComponents(): void {
     // Register built-in formatters
     this.registerFormatter('json', {
-      format: async (result: ExecutionResult) => JSON.stringify(result, null, 2)
+      format: async (result: ExecutionResult) => JSON.stringify(result, null, 2),
     })
 
     this.registerFormatter('compact', {
       format: async (result: ExecutionResult) => ({
         status: result.status,
         outputs: result.outputs,
-        duration: result.duration
-      })
+        duration: result.duration,
+      }),
     })
 
     // Register built-in transformers
@@ -973,7 +974,7 @@ export class ResultCompatibilityEngine {
           transformed.endTime = new Date(transformed.endTime).toISOString()
         }
         return transformed
-      }
+      },
     })
 
     // Register built-in validators
@@ -981,8 +982,8 @@ export class ResultCompatibilityEngine {
       validate: async (result: any) => ({
         valid: result && typeof result === 'object' && 'status' in result,
         errors: [],
-        warnings: []
-      })
+        warnings: [],
+      }),
     })
 
     logger.info('Built-in compatibility components initialized')

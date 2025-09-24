@@ -3,10 +3,7 @@
   "merge": {
     "pagination": {
       "GetNetworkInsightsAccessScopeAnalysisFindings": {
-        "non_aggregate_keys": [
-          "AnalysisStatus",
-          "NetworkInsightsAccessScopeAnalysisId"
-        ]
+        "non_aggregate_keys": ["AnalysisStatus", "NetworkInsightsAccessScopeAnalysisId"]
       }
     }
   }

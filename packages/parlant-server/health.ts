@@ -5,9 +5,9 @@
  * integration, including database connectivity, service status, and performance metrics.
  */
 
+import { sql } from 'drizzle-orm'
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
 import { db } from '../db'
-import { sql } from 'drizzle-orm'
 
 const logger = createLogger('ParlantServerHealth')
 
@@ -84,17 +84,26 @@ export class ParlantHealthChecker {
         this.checkDatabaseHealth(),
         this.checkParlantServiceHealth(),
         this.checkSimIntegrationHealth(),
-        this.collectServiceMetrics()
+        this.collectServiceMetrics(),
       ])
 
       // Determine overall status
       const services = {
-        database: databaseHealth.status === 'fulfilled' ? databaseHealth.value : this.createErrorResult('database', databaseHealth.reason),
-        parlant: parlantHealth.status === 'fulfilled' ? parlantHealth.value : this.createErrorResult('parlant', parlantHealth.reason),
-        integration: integrationHealth.status === 'fulfilled' ? integrationHealth.value : this.createErrorResult('integration', integrationHealth.reason)
+        database:
+          databaseHealth.status === 'fulfilled'
+            ? databaseHealth.value
+            : this.createErrorResult('database', databaseHealth.reason),
+        parlant:
+          parlantHealth.status === 'fulfilled'
+            ? parlantHealth.value
+            : this.createErrorResult('parlant', parlantHealth.reason),
+        integration:
+          integrationHealth.status === 'fulfilled'
+            ? integrationHealth.value
+            : this.createErrorResult('integration', integrationHealth.reason),
       }
 
-      const serviceStatuses = Object.values(services).map(s => s.status)
+      const serviceStatuses = Object.values(services).map((s) => s.status)
       const overallStatus = this.determineOverallStatus(serviceStatuses)
 
       const result = {
@@ -102,13 +111,13 @@ export class ParlantHealthChecker {
         timestamp: new Date().toISOString(),
         uptime: Date.now() - this.startTime,
         services,
-        metrics: metrics.status === 'fulfilled' ? metrics.value : this.getDefaultMetrics()
+        metrics: metrics.status === 'fulfilled' ? metrics.value : this.getDefaultMetrics(),
       }
 
       logger.info('Health check completed', {
         status: overallStatus,
         duration: performance.now() - startTime,
-        services: serviceStatuses
+        services: serviceStatuses,
       })
 
       return result
@@ -141,18 +150,22 @@ export class ParlantHealthChecker {
           SELECT count(*) as active_connections
           FROM pg_stat_activity
           WHERE state = 'active'
-        `)
+        `),
       ])
 
       const duration = performance.now() - startTime
       const details: DatabaseHealthDetails = {
         connectionStatus: 'connected',
         queryTime: duration,
-        version: versionResult.status === 'fulfilled' ?
-          (versionResult.value[0] as any)?.version : 'unknown',
-        activeConnections: connectionResult.status === 'fulfilled' ?
-          parseInt((connectionResult.value[0] as any)?.active_connections || '0') : undefined,
-        lastQuery: new Date().toISOString()
+        version:
+          versionResult.status === 'fulfilled'
+            ? (versionResult.value[0] as any)?.version
+            : 'unknown',
+        activeConnections:
+          connectionResult.status === 'fulfilled'
+            ? Number.parseInt((connectionResult.value[0] as any)?.active_connections || '0')
+            : undefined,
+        lastQuery: new Date().toISOString(),
       }
 
       // Determine status based on performance
@@ -170,7 +183,7 @@ export class ParlantHealthChecker {
         timestamp: new Date().toISOString(),
         service: 'database',
         details,
-        duration
+        duration,
       }
     } catch (error) {
       const duration = performance.now() - startTime
@@ -183,8 +196,8 @@ export class ParlantHealthChecker {
         error: error instanceof Error ? error.message : 'Database connection failed',
         duration,
         details: {
-          connectionStatus: 'error' as const
-        }
+          connectionStatus: 'error' as const,
+        },
       }
     }
   }
@@ -202,9 +215,15 @@ export class ParlantHealthChecker {
       // This will be expanded once the Parlant schema is implemented
       const tableChecks = await Promise.allSettled([
         // Placeholder for future Parlant tables
-        db.execute(sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_agents'`),
-        db.execute(sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_sessions'`),
-        db.execute(sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_guidelines'`),
+        db.execute(
+          sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_agents'`
+        ),
+        db.execute(
+          sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_sessions'`
+        ),
+        db.execute(
+          sql`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = 'parlant_guidelines'`
+        ),
       ])
 
       const duration = performance.now() - startTime
@@ -217,7 +236,7 @@ export class ParlantHealthChecker {
         sessionCount: 0, // Will be queried from actual Parlant tables
         guidelineCount: 0, // Will be queried from actual Parlant tables
         journeyCount: 0, // Will be queried from actual Parlant tables
-        lastActivity: new Date().toISOString()
+        lastActivity: new Date().toISOString(),
       }
 
       return {
@@ -225,7 +244,7 @@ export class ParlantHealthChecker {
         timestamp: new Date().toISOString(),
         service: 'parlant',
         details,
-        duration
+        duration,
       }
     } catch (error) {
       const duration = performance.now() - startTime
@@ -238,8 +257,8 @@ export class ParlantHealthChecker {
         error: error instanceof Error ? error.message : 'Parlant service check failed',
         duration,
         details: {
-          serviceStatus: 'error' as const
-        }
+          serviceStatus: 'error' as const,
+        },
       }
     }
   }
@@ -267,11 +286,11 @@ export class ParlantHealthChecker {
         workspaceTableAccessible: integrationChecks[1].status === 'fulfilled',
         workflowTableAccessible: integrationChecks[2].status === 'fulfilled',
         integrationStatus: 'ready' as const, // Will be updated based on actual integration status
-        lastIntegrationCheck: new Date().toISOString()
+        lastIntegrationCheck: new Date().toISOString(),
       }
 
       // Determine integration health
-      const allTablesAccessible = integrationChecks.every(check => check.status === 'fulfilled')
+      const allTablesAccessible = integrationChecks.every((check) => check.status === 'fulfilled')
       const status = allTablesAccessible ? 'healthy' : 'unhealthy'
 
       return {
@@ -279,7 +298,7 @@ export class ParlantHealthChecker {
         timestamp: new Date().toISOString(),
         service: 'integration',
         details,
-        duration
+        duration,
       }
     } catch (error) {
       const duration = performance.now() - startTime
@@ -290,7 +309,7 @@ export class ParlantHealthChecker {
         timestamp: new Date().toISOString(),
         service: 'integration',
         error: error instanceof Error ? error.message : 'Integration check failed',
-        duration
+        duration,
       }
     }
   }
@@ -309,14 +328,14 @@ export class ParlantHealthChecker {
         memory: {
           used: memoryUsage.heapUsed,
           total: memoryUsage.heapTotal,
-          percentage: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100
+          percentage: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100,
         },
         // CPU usage calculation would require more sophisticated monitoring
         // For now, we'll omit it and add it later with proper metrics collection
         connections: {
           active: 0, // Will be implemented with actual connection pool monitoring
-          total: 60  // Based on the database configuration
-        }
+          total: 60, // Based on the database configuration
+        },
       }
     } catch (error) {
       logger.error('Failed to collect service metrics', { error })
@@ -333,7 +352,7 @@ export class ParlantHealthChecker {
       timestamp: new Date().toISOString(),
       service,
       error: error instanceof Error ? error.message : `${service} health check failed`,
-      duration: 0
+      duration: 0,
     }
   }
 
@@ -359,8 +378,8 @@ export class ParlantHealthChecker {
       memory: {
         used: 0,
         total: 0,
-        percentage: 0
-      }
+        percentage: 0,
+      },
     }
   }
 
@@ -390,5 +409,5 @@ export const healthChecks = {
   database: () => parlantHealthChecker.checkDatabaseHealth(),
   parlant: () => parlantHealthChecker.checkParlantServiceHealth(),
   integration: () => parlantHealthChecker.checkSimIntegrationHealth(),
-  quick: () => parlantHealthChecker.quickDatabaseCheck()
+  quick: () => parlantHealthChecker.quickDatabaseCheck(),
 }

@@ -8,17 +8,16 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  StateCompatibilityConfig,
-  ExecutionState,
-  VariableState,
-  ContextState,
-  ProgressState,
-  StateLock,
-  CacheState,
-  SessionState,
-  ExecutionContext,
   CompatibilityEvent,
-  CompatibilityEventBus
+  CompatibilityEventBus,
+  ContextState,
+  ExecutionContext,
+  ExecutionState,
+  ProgressState,
+  SessionState,
+  StateCompatibilityConfig,
+  StateLock,
+  VariableState,
 } from './types'
 
 const logger = createLogger('StateManagementCompatibility')
@@ -35,10 +34,7 @@ export class StateManagementCompatibilityLayer {
   private synchronizationQueue: Map<string, StateUpdate[]> = new Map()
   private stateValidators: Map<string, StateValidator> = new Map()
 
-  constructor(
-    config: StateCompatibilityConfig,
-    eventBus?: CompatibilityEventBus
-  ) {
+  constructor(config: StateCompatibilityConfig, eventBus?: CompatibilityEventBus) {
     this.config = config
     this.eventBus = eventBus
     this.initializeStateValidators()
@@ -66,10 +62,10 @@ export class StateManagementCompatibilityLayer {
           mode,
           workspaceId: context.workspaceId,
           userId: context.userId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         conversationHistory: [],
-        activeTools: []
+        activeTools: [],
       },
       progress: {
         currentStep: '',
@@ -77,7 +73,7 @@ export class StateManagementCompatibilityLayer {
         totalSteps: 0,
         percentage: 0,
         estimatedTimeRemaining: 0,
-        lastProgressUpdate: new Date().toISOString()
+        lastProgressUpdate: new Date().toISOString(),
       },
       locks: [],
       cache: {
@@ -85,7 +81,7 @@ export class StateManagementCompatibilityLayer {
         size: 0,
         maxSize: this.config.maxStateHistorySize || 1024 * 1024, // 1MB default
         hitRate: 0,
-        lastCleanup: new Date().toISOString()
+        lastCleanup: new Date().toISOString(),
       },
       session: {
         sessionId: `session_${executionId}`,
@@ -95,8 +91,8 @@ export class StateManagementCompatibilityLayer {
         userId: context.userId,
         permissions: [],
         preferences: {},
-        temporaryData: {}
-      }
+        temporaryData: {},
+      },
     }
 
     this.executionStates.set(executionId, initialState)
@@ -116,7 +112,7 @@ export class StateManagementCompatibilityLayer {
       source: mode,
       executionId,
       timestamp: new Date().toISOString(),
-      data: { initialState }
+      data: { initialState },
     })
 
     return initialState
@@ -149,7 +145,7 @@ export class StateManagementCompatibilityLayer {
         scope,
         lastUpdated: new Date().toISOString(),
         source,
-        encrypted: this.shouldEncryptVariable(name, value)
+        encrypted: this.shouldEncryptVariable(name, value),
       }
 
       // Validate variable if configured
@@ -168,12 +164,15 @@ export class StateManagementCompatibilityLayer {
           oldValue: existingVariable,
           newValue: newVariable,
           timestamp: new Date().toISOString(),
-          source
+          source,
         })
       }
 
       // Create snapshot if significant change
-      if (this.config.enableStateSnapshots && this.isSignificantChange('variable', existingVariable, newVariable)) {
+      if (
+        this.config.enableStateSnapshots &&
+        this.isSignificantChange('variable', existingVariable, newVariable)
+      ) {
         await this.createStateSnapshot(executionId, `variable_update:${name}`)
       }
 
@@ -184,12 +183,11 @@ export class StateManagementCompatibilityLayer {
         source: source as any,
         executionId,
         timestamp: new Date().toISOString(),
-        data: { name, value, previousValue: existingVariable?.value }
+        data: { name, value, previousValue: existingVariable?.value },
       })
 
       logger.debug('Variable updated', { executionId, name, type: typeof value, source, scope })
       return newVariable
-
     } finally {
       // Release lock
       await this.releaseLock(executionId, `variable:${name}`)
@@ -210,14 +208,14 @@ export class StateManagementCompatibilityLayer {
         synchronized: false,
         reason: 'synchronization_disabled',
         changes: [],
-        conflicts: []
+        conflicts: [],
       }
     }
 
     logger.info('Synchronizing execution states', {
       workflowExecutionId,
       journeyExecutionId,
-      direction
+      direction,
     })
 
     const workflowState = this.executionStates.get(workflowExecutionId)
@@ -275,14 +273,14 @@ export class StateManagementCompatibilityLayer {
           journeyExecutionId,
           changes: changes.length,
           conflicts: conflicts.length,
-          direction
-        }
+          direction,
+        },
       })
 
       logger.info('State synchronization completed', {
         changes: changes.length,
         conflicts: conflicts.length,
-        direction
+        direction,
       })
 
       return {
@@ -290,14 +288,13 @@ export class StateManagementCompatibilityLayer {
         changes,
         conflicts,
         direction,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
-
     } catch (error) {
       logger.error('State synchronization failed', {
         error: error instanceof Error ? error.message : String(error),
         workflowExecutionId,
-        journeyExecutionId
+        journeyExecutionId,
       })
 
       return {
@@ -305,7 +302,7 @@ export class StateManagementCompatibilityLayer {
         reason: 'synchronization_error',
         error: error instanceof Error ? error.message : String(error),
         changes,
-        conflicts
+        conflicts,
       }
     }
   }
@@ -350,10 +347,10 @@ export class StateManagementCompatibilityLayer {
     inconsistencies.push(...progressInconsistencies)
 
     // Calculate consistency score
-    const totalChecks = Object.keys(workflowState.variables).length +
-                       Object.keys(journeyState.variables).length + 10 // Additional checks for context, progress, etc.
-    const consistencyScore = totalChecks > 0 ?
-      Math.max(0, 100 - (inconsistencies.length / totalChecks * 100)) : 100
+    const totalChecks =
+      Object.keys(workflowState.variables).length + Object.keys(journeyState.variables).length + 10 // Additional checks for context, progress, etc.
+    const consistencyScore =
+      totalChecks > 0 ? Math.max(0, 100 - (inconsistencies.length / totalChecks) * 100) : 100
 
     const report: StateConsistencyReport = {
       consistent: inconsistencies.length === 0,
@@ -363,13 +360,13 @@ export class StateManagementCompatibilityLayer {
       workflowExecutionId,
       journeyExecutionId,
       validatedAt: new Date().toISOString(),
-      recommendations: await this.generateConsistencyRecommendations(inconsistencies)
+      recommendations: await this.generateConsistencyRecommendations(inconsistencies),
     }
 
     logger.info('State consistency validation completed', {
       consistent: report.consistent,
       score: report.consistencyScore,
-      inconsistencies: inconsistencies.length
+      inconsistencies: inconsistencies.length,
     })
 
     return report
@@ -378,10 +375,7 @@ export class StateManagementCompatibilityLayer {
   /**
    * Create state snapshot for rollback capabilities
    */
-  async createStateSnapshot(
-    executionId: string,
-    reason: string
-  ): Promise<StateSnapshot> {
+  async createStateSnapshot(executionId: string, reason: string): Promise<StateSnapshot> {
     const state = this.executionStates.get(executionId)
     if (!state) {
       throw new Error(`No execution state found for ID: ${executionId}`)
@@ -393,7 +387,7 @@ export class StateManagementCompatibilityLayer {
       timestamp: new Date().toISOString(),
       reason,
       state: JSON.parse(JSON.stringify(state)), // Deep copy
-      size: JSON.stringify(state).length
+      size: JSON.stringify(state).length,
     }
 
     // Add to snapshots
@@ -414,12 +408,9 @@ export class StateManagementCompatibilityLayer {
   /**
    * Restore state from snapshot
    */
-  async restoreFromSnapshot(
-    executionId: string,
-    snapshotId: string
-  ): Promise<boolean> {
+  async restoreFromSnapshot(executionId: string, snapshotId: string): Promise<boolean> {
     const snapshots = this.stateSnapshots.get(executionId) || []
-    const snapshot = snapshots.find(s => s.id === snapshotId)
+    const snapshot = snapshots.find((s) => s.id === snapshotId)
 
     if (!snapshot) {
       throw new Error(`Snapshot not found: ${snapshotId}`)
@@ -444,8 +435,9 @@ export class StateManagementCompatibilityLayer {
    */
   async cleanupExecutionState(executionId: string): Promise<void> {
     // Release all locks
-    const locks = Array.from(this.stateLocks.values())
-      .filter(lock => lock.acquiredBy === executionId)
+    const locks = Array.from(this.stateLocks.values()).filter(
+      (lock) => lock.acquiredBy === executionId
+    )
 
     for (const lock of locks) {
       await this.releaseLock(executionId, lock.resource)
@@ -470,11 +462,11 @@ export class StateManagementCompatibilityLayer {
         if (typeof oldValue !== typeof newValue) {
           return {
             valid: false,
-            issues: [`Type changed from ${typeof oldValue} to ${typeof newValue} at ${path}`]
+            issues: [`Type changed from ${typeof oldValue} to ${typeof newValue} at ${path}`],
           }
         }
         return { valid: true, issues: [] }
-      }
+      },
     })
 
     // Variable scope validator
@@ -483,11 +475,13 @@ export class StateManagementCompatibilityLayer {
         if (oldValue?.scope && newValue?.scope && oldValue.scope !== newValue.scope) {
           return {
             valid: false,
-            issues: [`Variable scope changed from ${oldValue.scope} to ${newValue.scope} at ${path}`]
+            issues: [
+              `Variable scope changed from ${oldValue.scope} to ${newValue.scope} at ${path}`,
+            ],
           }
         }
         return { valid: true, issues: [] }
-      }
+      },
     })
 
     logger.info('State validators initialized')
@@ -563,12 +557,11 @@ export class StateManagementCompatibilityLayer {
       target[finalKey] = update.newValue
 
       logger.debug('State update applied', { executionId, path: update.path, type: update.type })
-
     } catch (error) {
       logger.error('Failed to apply state update', {
         executionId,
         update,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -577,7 +570,7 @@ export class StateManagementCompatibilityLayer {
     sourceVariables: Record<string, VariableState>,
     targetVariables: Record<string, VariableState>,
     direction: 'workflow_to_journey' | 'journey_to_workflow'
-  ): Promise<{ changes: StateChange[], conflicts: StateConflict[] }> {
+  ): Promise<{ changes: StateChange[]; conflicts: StateConflict[] }> {
     const changes: StateChange[] = []
     const conflicts: StateConflict[] = []
 
@@ -591,7 +584,7 @@ export class StateManagementCompatibilityLayer {
           type: 'variable_added',
           path: `variables.${name}`,
           value: sourceVar,
-          direction
+          direction,
         })
       } else if (sourceVar.value !== targetVar.value) {
         // Variable values differ, handle based on conflict resolution strategy
@@ -604,7 +597,7 @@ export class StateManagementCompatibilityLayer {
                 path: `variables.${name}`,
                 value: sourceVar,
                 previousValue: targetVar,
-                direction
+                direction,
               })
             }
             break
@@ -616,11 +609,11 @@ export class StateManagementCompatibilityLayer {
                 path: `variables.${name}`,
                 value: sourceVar,
                 previousValue: targetVar,
-                direction
+                direction,
               })
             }
             break
-          case 'merge':
+          case 'merge': {
             // Attempt to merge values (implementation depends on value types)
             const mergedValue = await this.mergeVariableValues(targetVar, sourceVar)
             targetVariables[name] = mergedValue
@@ -629,16 +622,17 @@ export class StateManagementCompatibilityLayer {
               path: `variables.${name}`,
               value: mergedValue,
               previousValue: targetVar,
-              direction
+              direction,
             })
             break
+          }
           case 'error':
             conflicts.push({
               type: 'variable_value_conflict',
               path: `variables.${name}`,
               workflowValue: direction === 'workflow_to_journey' ? sourceVar : targetVar,
               journeyValue: direction === 'workflow_to_journey' ? targetVar : sourceVar,
-              resolution: 'unresolved'
+              resolution: 'unresolved',
             })
             break
         }
@@ -661,8 +655,8 @@ export class StateManagementCompatibilityLayer {
     // Synchronize active tools
     if (direction === 'bidirectional') {
       const allTools = new Map()
-      workflowContext.activeTools.forEach(tool => allTools.set(tool.name, tool))
-      journeyContext.activeTools.forEach(tool => allTools.set(tool.name, tool))
+      workflowContext.activeTools.forEach((tool) => allTools.set(tool.name, tool))
+      journeyContext.activeTools.forEach((tool) => allTools.set(tool.name, tool))
 
       const mergedTools = Array.from(allTools.values())
       workflowContext.activeTools = mergedTools
@@ -715,7 +709,7 @@ export class StateManagementCompatibilityLayer {
 
     const allVariableNames = new Set([
       ...Object.keys(workflowVariables),
-      ...Object.keys(journeyVariables)
+      ...Object.keys(journeyVariables),
     ])
 
     for (const name of allVariableNames) {
@@ -729,7 +723,7 @@ export class StateManagementCompatibilityLayer {
           description: `Variable exists in journey but not in workflow`,
           severity: 'warning',
           workflowValue: undefined,
-          journeyValue: journeyVar
+          journeyValue: journeyVar,
         })
       } else if (workflowVar && !journeyVar) {
         inconsistencies.push({
@@ -738,7 +732,7 @@ export class StateManagementCompatibilityLayer {
           description: `Variable exists in workflow but not in journey`,
           severity: 'warning',
           workflowValue: workflowVar,
-          journeyValue: undefined
+          journeyValue: undefined,
         })
       } else if (workflowVar && journeyVar) {
         // Check value consistency
@@ -749,7 +743,7 @@ export class StateManagementCompatibilityLayer {
             description: `Variable values differ between workflow and journey`,
             severity: 'error',
             workflowValue: workflowVar.value,
-            journeyValue: journeyVar.value
+            journeyValue: journeyVar.value,
           })
         }
 
@@ -761,7 +755,7 @@ export class StateManagementCompatibilityLayer {
             description: `Variable types differ between workflow and journey`,
             severity: 'error',
             workflowValue: workflowVar.type,
-            journeyValue: journeyVar.type
+            journeyValue: journeyVar.type,
           })
         }
       }
@@ -784,7 +778,7 @@ export class StateManagementCompatibilityLayer {
         description: 'Workflow has more conversation history than journey',
         severity: 'warning',
         workflowValue: workflowContext.conversationHistory.length,
-        journeyValue: journeyContext.conversationHistory.length
+        journeyValue: journeyContext.conversationHistory.length,
       })
     }
 
@@ -799,14 +793,15 @@ export class StateManagementCompatibilityLayer {
 
     // Compare completion percentages
     const percentageDiff = Math.abs(workflowProgress.percentage - journeyProgress.percentage)
-    if (percentageDiff > 5) { // 5% tolerance
+    if (percentageDiff > 5) {
+      // 5% tolerance
       inconsistencies.push({
         type: 'progress_mismatch',
         path: 'progress.percentage',
         description: 'Progress percentages differ significantly',
         severity: 'warning',
         workflowValue: workflowProgress.percentage,
-        journeyValue: journeyProgress.percentage
+        journeyValue: journeyProgress.percentage,
       })
     }
 
@@ -821,7 +816,9 @@ export class StateManagementCompatibilityLayer {
     for (const inconsistency of inconsistencies) {
       switch (inconsistency.type) {
         case 'missing_variable':
-          recommendations.add('Ensure all variables are properly synchronized between execution modes')
+          recommendations.add(
+            'Ensure all variables are properly synchronized between execution modes'
+          )
           break
         case 'value_mismatch':
           recommendations.add('Review variable update logic to ensure consistency')
@@ -830,7 +827,9 @@ export class StateManagementCompatibilityLayer {
           recommendations.add('Enforce variable type consistency across execution modes')
           break
         case 'progress_mismatch':
-          recommendations.add('Synchronize progress tracking between workflow and journey execution')
+          recommendations.add(
+            'Synchronize progress tracking between workflow and journey execution'
+          )
           break
         case 'data_inconsistency':
           recommendations.add('Review data flow to ensure proper state management')
@@ -854,23 +853,19 @@ export class StateManagementCompatibilityLayer {
 
   private shouldEncryptVariable(name: string, value: any): boolean {
     // Encrypt sensitive variables
-    const sensitivePatterns = [
-      /password/i,
-      /secret/i,
-      /token/i,
-      /key/i,
-      /credential/i
-    ]
+    const sensitivePatterns = [/password/i, /secret/i, /token/i, /key/i, /credential/i]
 
-    return sensitivePatterns.some(pattern => pattern.test(name))
+    return sensitivePatterns.some((pattern) => pattern.test(name))
   }
 
   private isSignificantChange(type: string, oldValue: any, newValue: any): boolean {
     if (type === 'variable') {
       // Consider type changes or large value changes as significant
       if (typeof oldValue !== typeof newValue) return true
-      if (typeof oldValue === 'string' && Math.abs(oldValue.length - newValue.length) > 100) return true
-      if (typeof oldValue === 'number' && Math.abs(oldValue - newValue) > oldValue * 0.1) return true
+      if (typeof oldValue === 'string' && Math.abs(oldValue.length - newValue.length) > 100)
+        return true
+      if (typeof oldValue === 'number' && Math.abs(oldValue - newValue) > oldValue * 0.1)
+        return true
     }
 
     return false
@@ -895,7 +890,7 @@ export class StateManagementCompatibilityLayer {
       type,
       acquiredBy: executionId,
       acquiredAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 30000).toISOString() // 30 second default timeout
+      expiresAt: new Date(Date.now() + 30000).toISOString(), // 30 second default timeout
     }
 
     this.stateLocks.set(lockId, lock)
@@ -918,7 +913,11 @@ export class StateManagementCompatibilityLayer {
 // ========================================
 
 interface StateValidator {
-  validate(path: string, oldValue: any, newValue: any): Promise<{ valid: boolean; issues: string[] }>
+  validate(
+    path: string,
+    oldValue: any,
+    newValue: any
+  ): Promise<{ valid: boolean; issues: string[] }>
 }
 
 interface StateUpdate {
@@ -950,7 +949,12 @@ interface StateSynchronizationResult {
 }
 
 interface StateChange {
-  type: 'variable_added' | 'variable_updated' | 'variable_merged' | 'context_updated' | 'progress_updated'
+  type:
+    | 'variable_added'
+    | 'variable_updated'
+    | 'variable_merged'
+    | 'context_updated'
+    | 'progress_updated'
   path: string
   value: any
   previousValue?: any
@@ -977,7 +981,12 @@ interface StateConsistencyReport {
 }
 
 interface StateInconsistency {
-  type: 'missing_variable' | 'value_mismatch' | 'type_mismatch' | 'progress_mismatch' | 'data_inconsistency'
+  type:
+    | 'missing_variable'
+    | 'value_mismatch'
+    | 'type_mismatch'
+    | 'progress_mismatch'
+    | 'data_inconsistency'
   path: string
   description: string
   severity: 'critical' | 'error' | 'warning' | 'info'

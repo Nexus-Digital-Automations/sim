@@ -7,15 +7,9 @@
  */
 
 import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
-import {
-  ErrorCategory,
-  ErrorSeverity,
-  RecoveryStrategy,
-  type ErrorClassification
-} from './error-taxonomy'
-import { type BaseToolError } from './error-handler'
-import { parlantErrorTracker } from './error-tracking'
+import type { BaseToolError } from './error-handler'
+import { ErrorCategory, ErrorSeverity, RecoveryStrategy } from './error-taxonomy'
+import type { ParlantLogContext } from './logging'
 
 const logger = createLogger('ErrorRecovery')
 
@@ -39,9 +33,9 @@ export interface RetryConfig {
  * Circuit breaker states
  */
 export enum CircuitBreakerState {
-  CLOSED = 'closed',     // Normal operation
-  OPEN = 'open',         // Failing fast
-  HALF_OPEN = 'half_open' // Testing recovery
+  CLOSED = 'closed', // Normal operation
+  OPEN = 'open', // Failing fast
+  HALF_OPEN = 'half_open', // Testing recovery
 }
 
 /**
@@ -108,7 +102,7 @@ export const DEFAULT_RETRY_CONFIGS: Record<string, RetryConfig> = {
     retryableSubcategories: ['timeout', 'connection_failed', 'service_unavailable'],
     circuitBreakerThreshold: 5,
     circuitBreakerWindowMs: 300000, // 5 minutes
-    adaptiveAdjustment: true
+    adaptiveAdjustment: true,
   },
 
   tool_authentication: {
@@ -121,7 +115,7 @@ export const DEFAULT_RETRY_CONFIGS: Record<string, RetryConfig> = {
     retryableSubcategories: ['token_expired', 'rate_limit_exceeded'],
     circuitBreakerThreshold: 3,
     circuitBreakerWindowMs: 600000, // 10 minutes
-    adaptiveAdjustment: false
+    adaptiveAdjustment: false,
   },
 
   external_service: {
@@ -134,7 +128,7 @@ export const DEFAULT_RETRY_CONFIGS: Record<string, RetryConfig> = {
     retryableSubcategories: ['service_unavailable', 'timeout', 'api_error'],
     circuitBreakerThreshold: 10,
     circuitBreakerWindowMs: 180000, // 3 minutes
-    adaptiveAdjustment: true
+    adaptiveAdjustment: true,
   },
 
   system_resource: {
@@ -147,7 +141,7 @@ export const DEFAULT_RETRY_CONFIGS: Record<string, RetryConfig> = {
     retryableSubcategories: ['connection_pool_full', 'cpu_overload'],
     circuitBreakerThreshold: 3,
     circuitBreakerWindowMs: 120000, // 2 minutes
-    adaptiveAdjustment: true
+    adaptiveAdjustment: true,
   },
 
   default: {
@@ -160,8 +154,8 @@ export const DEFAULT_RETRY_CONFIGS: Record<string, RetryConfig> = {
     retryableSubcategories: [],
     circuitBreakerThreshold: 5,
     circuitBreakerWindowMs: 300000,
-    adaptiveAdjustment: false
-  }
+    adaptiveAdjustment: false,
+  },
 }
 
 /**
@@ -223,7 +217,7 @@ export class ErrorRecoveryService {
         attemptNumber: attempt,
         startTime: attemptStart,
         delayMs,
-        success: false
+        success: false,
       }
 
       try {
@@ -240,11 +234,10 @@ export class ErrorRecoveryService {
         logger.info('Operation succeeded', {
           operationId,
           attempt,
-          totalTime: Date.now() - startTime
+          totalTime: Date.now() - startTime,
         })
 
         return result
-
       } catch (error) {
         retryAttempt.error = error as Error
         retryAttempt.endTime = Date.now()
@@ -259,7 +252,7 @@ export class ErrorRecoveryService {
           attempt,
           shouldRetry,
           shouldCircuitBreak,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
 
         // Record failure
@@ -275,7 +268,10 @@ export class ErrorRecoveryService {
         // If this is the last attempt or we shouldn't retry, try fallback
         if (!shouldRetry || attempt === config.maxAttempts) {
           const fallbackResult = await this.attemptFallback(
-            context, error as Error, attempts, config
+            context,
+            error as Error,
+            attempts,
+            config
           )
 
           if (fallbackResult.success) {
@@ -303,7 +299,7 @@ export class ErrorRecoveryService {
    */
   private calculateDelay(attempt: number, config: RetryConfig): number {
     const exponentialDelay = Math.min(
-      config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt),
+      config.initialDelayMs * config.backoffMultiplier ** attempt,
       config.maxDelayMs
     )
 
@@ -329,8 +325,10 @@ export class ErrorRecoveryService {
     }
 
     // Check if error subcategory is retryable
-    if (config.retryableSubcategories.length > 0 &&
-        !config.retryableSubcategories.includes(error.subcategory)) {
+    if (
+      config.retryableSubcategories.length > 0 &&
+      !config.retryableSubcategories.includes(error.subcategory)
+    ) {
       return false
     }
 
@@ -340,8 +338,10 @@ export class ErrorRecoveryService {
     }
 
     // Check recovery strategy
-    return error.recoveryStrategy === RecoveryStrategy.RETRY ||
-           error.recoveryStrategy === RecoveryStrategy.CIRCUIT_BREAKER
+    return (
+      error.recoveryStrategy === RecoveryStrategy.RETRY ||
+      error.recoveryStrategy === RecoveryStrategy.CIRCUIT_BREAKER
+    )
   }
 
   /**
@@ -389,7 +389,7 @@ export class ErrorRecoveryService {
     logger.warn('Circuit breaker opened', {
       circuitKey,
       failureCount: breaker.failureCount,
-      nextRetryTime: new Date(breaker.nextRetryTime).toISOString()
+      nextRetryTime: new Date(breaker.nextRetryTime).toISOString(),
     })
   }
 
@@ -433,7 +433,7 @@ export class ErrorRecoveryService {
         failureCount: 0,
         failureThreshold: 5,
         successCount: 0,
-        halfOpenMaxAttempts: 3
+        halfOpenMaxAttempts: 3,
       })
     }
     return this.circuitBreakers.get(circuitKey)!
@@ -449,8 +449,8 @@ export class ErrorRecoveryService {
     config: RetryConfig
   ): Promise<{ success: boolean; result?: any }> {
     const fallbackKey = `${context.category}:${context.subcategory}`
-    const fallbackStrategy = this.fallbackStrategies.get(fallbackKey) ||
-                            this.fallbackStrategies.get('default')
+    const fallbackStrategy =
+      this.fallbackStrategies.get(fallbackKey) || this.fallbackStrategies.get('default')
 
     if (!fallbackStrategy) {
       logger.debug('No fallback strategy available', { context: fallbackKey })
@@ -460,23 +460,22 @@ export class ErrorRecoveryService {
     try {
       logger.info('Attempting fallback strategy', {
         operationId: context.operationId,
-        strategy: fallbackStrategy.name
+        strategy: fallbackStrategy.name,
       })
 
       const result = await fallbackStrategy.execute(context, error, attempts)
 
       logger.info('Fallback strategy succeeded', {
         operationId: context.operationId,
-        strategy: fallbackStrategy.name
+        strategy: fallbackStrategy.name,
       })
 
       return { success: true, result }
-
     } catch (fallbackError) {
       logger.warn('Fallback strategy failed', {
         operationId: context.operationId,
         strategy: fallbackStrategy.name,
-        error: fallbackError instanceof Error ? fallbackError.message : fallbackError
+        error: fallbackError instanceof Error ? fallbackError.message : fallbackError,
       })
 
       return { success: false }
@@ -500,8 +499,9 @@ export class ErrorRecoveryService {
 
     // Analyze attempt patterns
     const avgAttempts = attempts.length
-    const totalTime = attempts.reduce((sum, attempt) =>
-      sum + (attempt.endTime! - attempt.startTime), 0
+    const totalTime = attempts.reduce(
+      (sum, attempt) => sum + (attempt.endTime! - attempt.startTime),
+      0
     )
 
     // Adjust retry count based on success patterns
@@ -514,7 +514,7 @@ export class ErrorRecoveryService {
           oldValue: currentConfig.maxAttempts,
           newValue: newMaxAttempts,
           reason: 'Consistently high attempt usage',
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
         currentConfig.maxAttempts = newMaxAttempts
       }
@@ -531,7 +531,7 @@ export class ErrorRecoveryService {
             oldValue: currentConfig.maxDelayMs,
             newValue: newMaxDelay,
             reason: 'High average response time',
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
           currentConfig.maxDelayMs = newMaxDelay
         }
@@ -544,7 +544,7 @@ export class ErrorRecoveryService {
       logger.info('Adaptive configuration updated', {
         configKey,
         adjustments: adjustments.length,
-        success
+        success,
       })
     }
   }
@@ -586,7 +586,7 @@ export class ErrorRecoveryService {
       execute: async (context, error, attempts) => {
         // Implementation would check cache and return cached data
         throw new Error('No cached data available')
-      }
+      },
     })
 
     // Simplified operation fallback
@@ -597,7 +597,7 @@ export class ErrorRecoveryService {
         // Implementation would retry with reduced complexity
         logger.info('Attempting simplified operation fallback')
         throw new Error('Simplified operation not implemented')
-      }
+      },
     })
 
     // Alternative tool fallback
@@ -608,7 +608,7 @@ export class ErrorRecoveryService {
         // Implementation would switch to backup tool
         logger.info('Attempting alternative tool fallback')
         throw new Error('No alternative tool available')
-      }
+      },
     })
   }
 
@@ -616,21 +616,25 @@ export class ErrorRecoveryService {
    * Utility methods
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
    * Get circuit breaker status for monitoring
    */
-  getCircuitBreakerStatus(circuitKey?: string): Map<string, CircuitBreakerStatus> | CircuitBreakerStatus {
+  getCircuitBreakerStatus(
+    circuitKey?: string
+  ): Map<string, CircuitBreakerStatus> | CircuitBreakerStatus {
     if (circuitKey) {
-      return this.circuitBreakers.get(circuitKey) || {
-        state: CircuitBreakerState.CLOSED,
-        failureCount: 0,
-        failureThreshold: 5,
-        successCount: 0,
-        halfOpenMaxAttempts: 3
-      }
+      return (
+        this.circuitBreakers.get(circuitKey) || {
+          state: CircuitBreakerState.CLOSED,
+          failureCount: 0,
+          failureThreshold: 5,
+          successCount: 0,
+          halfOpenMaxAttempts: 3,
+        }
+      )
     }
     return new Map(this.circuitBreakers)
   }
@@ -645,8 +649,8 @@ export class ErrorRecoveryService {
     breaker.state = CircuitBreakerState.CLOSED
     breaker.failureCount = 0
     breaker.successCount = 0
-    delete breaker.lastFailureTime
-    delete breaker.nextRetryTime
+    breaker.lastFailureTime = undefined
+    breaker.nextRetryTime = undefined
 
     logger.info('Circuit breaker manually reset', { circuitKey })
     return true
@@ -655,7 +659,7 @@ export class ErrorRecoveryService {
   /**
    * Get recovery statistics
    */
-  getRecoveryStatistics(timeWindowMs: number = 3600000): {
+  getRecoveryStatistics(timeWindowMs = 3600000): {
     totalOperations: number
     successfulOperations: number
     retriedOperations: number
@@ -664,21 +668,23 @@ export class ErrorRecoveryService {
     adaptiveAdjustments: number
   } {
     const cutoff = Date.now() - timeWindowMs
-    const operations = Array.from(this.retryHistory.values()).flat()
-      .filter(attempt => attempt.startTime >= cutoff)
+    const operations = Array.from(this.retryHistory.values())
+      .flat()
+      .filter((attempt) => attempt.startTime >= cutoff)
 
-    const totalOps = new Set(operations.map(op => op.attemptNumber === 1)).size
-    const retriedOps = operations.filter(op => op.attemptNumber > 1).length
-    const successfulOps = operations.filter(op => op.success).length
+    const totalOps = new Set(operations.map((op) => op.attemptNumber === 1)).size
+    const retriedOps = operations.filter((op) => op.attemptNumber > 1).length
+    const successfulOps = operations.filter((op) => op.success).length
 
     return {
       totalOperations: totalOps,
       successfulOperations: successfulOps,
       retriedOperations: retriedOps,
-      circuitBreakerTrips: Array.from(this.circuitBreakers.values())
-        .filter(cb => cb.lastFailureTime && cb.lastFailureTime >= cutoff).length,
+      circuitBreakerTrips: Array.from(this.circuitBreakers.values()).filter(
+        (cb) => cb.lastFailureTime && cb.lastFailureTime >= cutoff
+      ).length,
       avgAttemptsPerOperation: operations.length / Math.max(totalOps, 1),
-      adaptiveAdjustments: Array.from(this.adaptiveConfigs.values()).length
+      adaptiveAdjustments: Array.from(this.adaptiveConfigs.values()).length,
     }
   }
 }
@@ -722,7 +728,7 @@ export function WithRetry(
   subcategory?: string,
   customConfig?: Partial<RetryConfig>
 ) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
     const method = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
@@ -735,7 +741,7 @@ export function WithRetry(
           component,
           category,
           subcategory,
-          toolName: component
+          toolName: component,
         },
         customConfig
       )

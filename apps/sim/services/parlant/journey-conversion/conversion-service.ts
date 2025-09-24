@@ -7,23 +7,22 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { WorkflowToJourneyConverter } from './conversion-engine'
-import { templateService } from './template-service'
-import { cacheService } from './cache-service'
-import { progressService } from './progress-service'
-import { agentService, sessionService } from '@/services/parlant'
 import { generateId } from '@/lib/utils'
-import {
-  type ConversionService as IConversionService,
-  type ConversionConfig,
-  type ConversionContext,
-  type ConversionProgress,
-  type ConversionSubscription,
-  type JourneyConversionResult,
-  type JourneyCreateFromTemplateRequest,
-  type JourneyCreateFromWorkflowRequest,
-  type CacheStats,
-  type ConversionError,
+import { cacheService } from './cache-service'
+import { WorkflowToJourneyConverter } from './conversion-engine'
+import { progressService } from './progress-service'
+import { templateService } from './template-service'
+import type {
+  CacheStats,
+  ConversionConfig,
+  ConversionContext,
+  ConversionError,
+  ConversionProgress,
+  ConversionSubscription,
+  ConversionService as IConversionService,
+  JourneyConversionResult,
+  JourneyCreateFromTemplateRequest,
+  JourneyCreateFromWorkflowRequest,
 } from './types'
 
 const logger = createLogger('ConversionService')
@@ -136,7 +135,6 @@ export class ConversionService implements IConversionService {
       })
 
       return result
-
     } catch (error) {
       logger.error('Conversion failed', {
         conversionId,
@@ -167,7 +165,9 @@ export class ConversionService implements IConversionService {
   /**
    * Convert template to journey with parameter substitution
    */
-  async convertTemplateToJourney(request: JourneyCreateFromTemplateRequest): Promise<JourneyConversionResult> {
+  async convertTemplateToJourney(
+    request: JourneyCreateFromTemplateRequest
+  ): Promise<JourneyConversionResult> {
     const startTime = Date.now()
     logger.info('Converting template to journey', {
       templateId: request.template_id,
@@ -180,10 +180,15 @@ export class ConversionService implements IConversionService {
       const template = await templateService.getTemplate(request.template_id, request.workspace_id)
 
       // Validate parameters
-      const validation = await templateService.validateParameters(request.template_id, request.parameters)
+      const validation = await templateService.validateParameters(
+        request.template_id,
+        request.parameters
+      )
       if (!validation.valid) {
-        throw this.createError('parameter', 'PARAMETER_VALIDATION_FAILED',
-          `Invalid parameters: ${validation.errors.map(e => e.message).join(', ')}`,
+        throw this.createError(
+          'parameter',
+          'PARAMETER_VALIDATION_FAILED',
+          `Invalid parameters: ${validation.errors.map((e) => e.message).join(', ')}`,
           { validation }
         )
       }
@@ -210,11 +215,7 @@ export class ConversionService implements IConversionService {
       )
 
       // Update template usage stats
-      await templateService.updateUsageStats(
-        request.template_id,
-        true,
-        Date.now() - startTime
-      )
+      await templateService.updateUsageStats(request.template_id, true, Date.now() - startTime)
 
       logger.info('Template conversion completed successfully', {
         templateId: request.template_id,
@@ -226,7 +227,6 @@ export class ConversionService implements IConversionService {
         ...conversionResult,
         journey: journey,
       }
-
     } catch (error) {
       logger.error('Template conversion failed', { error: error.message, request })
 
@@ -244,7 +244,9 @@ export class ConversionService implements IConversionService {
   /**
    * Convert workflow directly to journey (no template)
    */
-  async convertWorkflowDirectlyToJourney(request: JourneyCreateFromWorkflowRequest): Promise<JourneyConversionResult> {
+  async convertWorkflowDirectlyToJourney(
+    request: JourneyCreateFromWorkflowRequest
+  ): Promise<JourneyConversionResult> {
     logger.info('Converting workflow directly to journey', {
       workflowId: request.workflow_id,
       agentId: request.agent_id,
@@ -301,10 +303,10 @@ export class ConversionService implements IConversionService {
 
     // Send current progress immediately
     this.getConversionProgress(subscription.conversion_id)
-      .then(progress => {
+      .then((progress) => {
         subscription.callback(progress)
       })
-      .catch(error => {
+      .catch((error) => {
         logger.warn('Failed to get initial progress for subscription', { error: error.message })
       })
   }
@@ -389,11 +391,11 @@ export class ConversionService implements IConversionService {
         try {
           // Get current progress and merge with update
           this.getConversionProgress(conversionId)
-            .then(currentProgress => {
+            .then((currentProgress) => {
               const updatedProgress = { ...currentProgress, ...progressUpdate }
               subscription.callback(updatedProgress)
             })
-            .catch(error => {
+            .catch((error) => {
               logger.warn('Failed to notify subscriber', {
                 conversionId,
                 userId: subscription.user_id,

@@ -21,9 +21,9 @@ export class AdapterError extends Error {
 
   constructor(
     message: string,
-    code: string = 'ADAPTER_ERROR',
+    code = 'ADAPTER_ERROR',
     context: Record<string, any> = {},
-    recoverable: boolean = false,
+    recoverable = false,
     suggestedFix?: string,
     originalError?: Error
   ) {
@@ -55,11 +55,13 @@ export class AdapterError extends Error {
       recoverable: this.recoverable,
       suggestedFix: this.suggestedFix,
       stack: this.stack,
-      originalError: this.originalError ? {
-        name: this.originalError.name,
-        message: this.originalError.message,
-        stack: this.originalError.stack
-      } : undefined
+      originalError: this.originalError
+        ? {
+            name: this.originalError.name,
+            message: this.originalError.message,
+            stack: this.originalError.stack,
+          }
+        : undefined,
     }
   }
 
@@ -105,7 +107,7 @@ export class ConfigurationError extends AdapterError {
         parameterName,
         expectedType,
         actualValue,
-        actualType: typeof actualValue
+        actualType: typeof actualValue,
       },
       `The parameter '${parameterName}' should be of type '${expectedType}', but received '${typeof actualValue}'.`
     )
@@ -167,57 +169,50 @@ export class ValidationError extends AdapterError {
     )
   }
 
-  static invalidType(
-    fieldName: string,
-    expectedType: string,
-    actualType: string
-  ): ValidationError {
+  static invalidType(fieldName: string, expectedType: string, actualType: string): ValidationError {
     return new ValidationError(
       `Invalid type for field: ${fieldName}`,
-      [{
-        field: fieldName,
-        message: `Expected ${expectedType} but received ${actualType}`,
-        code: 'INVALID_TYPE'
-      }],
+      [
+        {
+          field: fieldName,
+          message: `Expected ${expectedType} but received ${actualType}`,
+          code: 'INVALID_TYPE',
+        },
+      ],
       { fieldName, expectedType, actualType },
       `The field '${fieldName}' should be of type '${expectedType}'.`
     )
   }
 
-  static rangeError(
-    fieldName: string,
-    value: number,
-    min?: number,
-    max?: number
-  ): ValidationError {
+  static rangeError(fieldName: string, value: number, min?: number, max?: number): ValidationError {
     const constraints = []
     if (min !== undefined) constraints.push(`minimum: ${min}`)
     if (max !== undefined) constraints.push(`maximum: ${max}`)
 
     return new ValidationError(
       `Value out of range for field: ${fieldName}`,
-      [{
-        field: fieldName,
-        message: `Value ${value} is outside the allowed range (${constraints.join(', ')})`,
-        code: 'OUT_OF_RANGE'
-      }],
+      [
+        {
+          field: fieldName,
+          message: `Value ${value} is outside the allowed range (${constraints.join(', ')})`,
+          code: 'OUT_OF_RANGE',
+        },
+      ],
       { fieldName, value, min, max },
       `Please provide a value for '${fieldName}' within the allowed range.`
     )
   }
 
-  static patternMismatch(
-    fieldName: string,
-    value: string,
-    pattern: string
-  ): ValidationError {
+  static patternMismatch(fieldName: string, value: string, pattern: string): ValidationError {
     return new ValidationError(
       `Pattern mismatch for field: ${fieldName}`,
-      [{
-        field: fieldName,
-        message: `Value does not match the required pattern: ${pattern}`,
-        code: 'PATTERN_MISMATCH'
-      }],
+      [
+        {
+          field: fieldName,
+          message: `Value does not match the required pattern: ${pattern}`,
+          code: 'PATTERN_MISMATCH',
+        },
+      ],
       { fieldName, value, pattern },
       `The field '${fieldName}' should match the pattern: ${pattern}`
     )
@@ -226,7 +221,7 @@ export class ValidationError extends AdapterError {
   static customValidation(
     fieldName: string,
     message: string,
-    code: string = 'CUSTOM_VALIDATION'
+    code = 'CUSTOM_VALIDATION'
   ): ValidationError {
     return new ValidationError(
       `Custom validation failed for field: ${fieldName}`,
@@ -241,7 +236,12 @@ export class ValidationError extends AdapterError {
  * Tool execution errors
  */
 export class ExecutionError extends AdapterError {
-  public readonly executionPhase: 'initialization' | 'parameter_mapping' | 'validation' | 'execution' | 'result_formatting'
+  public readonly executionPhase:
+    | 'initialization'
+    | 'parameter_mapping'
+    | 'validation'
+    | 'execution'
+    | 'result_formatting'
   public readonly toolName: string
   public readonly executionId?: string
 
@@ -249,7 +249,7 @@ export class ExecutionError extends AdapterError {
     message: string,
     originalError: Error,
     executionPhase: ExecutionError['executionPhase'] = 'execution',
-    toolName: string = 'unknown',
+    toolName = 'unknown',
     executionId?: string,
     context: Record<string, any> = {}
   ) {
@@ -258,7 +258,7 @@ export class ExecutionError extends AdapterError {
       executionPhase,
       toolName,
       executionId,
-      originalErrorType: originalError.name
+      originalErrorType: originalError.name,
     }
 
     super(
@@ -275,10 +275,7 @@ export class ExecutionError extends AdapterError {
     this.executionId = executionId
   }
 
-  static getSuggestedFix(
-    phase: ExecutionError['executionPhase'],
-    originalError: Error
-  ): string {
+  static getSuggestedFix(phase: ExecutionError['executionPhase'], originalError: Error): string {
     switch (phase) {
       case 'initialization':
         return 'Check tool configuration and ensure all required dependencies are available.'
@@ -296,8 +293,10 @@ export class ExecutionError extends AdapterError {
         if (originalError.message.toLowerCase().includes('network')) {
           return 'Network error occurred. Check connectivity and try again.'
         }
-        if (originalError.message.toLowerCase().includes('permission') ||
-            originalError.message.toLowerCase().includes('unauthorized')) {
+        if (
+          originalError.message.toLowerCase().includes('permission') ||
+          originalError.message.toLowerCase().includes('unauthorized')
+        ) {
           return 'Permission denied. Ensure you have the required permissions to perform this operation.'
         }
         return 'An error occurred during tool execution. Check the logs for more details.'
@@ -310,11 +309,7 @@ export class ExecutionError extends AdapterError {
     }
   }
 
-  static timeout(
-    toolName: string,
-    timeoutMs: number,
-    executionId?: string
-  ): ExecutionError {
+  static timeout(toolName: string, timeoutMs: number, executionId?: string): ExecutionError {
     return new ExecutionError(
       `Tool execution timed out after ${timeoutMs}ms`,
       new Error('Execution timeout'),
@@ -366,7 +361,7 @@ export class RegistryError extends AdapterError {
     message: string,
     operation: RegistryError['operation'],
     context: Record<string, any> = {},
-    recoverable: boolean = true,
+    recoverable = true,
     suggestedFix?: string
   ) {
     super(
@@ -399,11 +394,7 @@ export class RegistryError extends AdapterError {
     )
   }
 
-  static registrationFailed(
-    toolId: string,
-    reason: string,
-    originalError?: Error
-  ): RegistryError {
+  static registrationFailed(toolId: string, reason: string, originalError?: Error): RegistryError {
     return new RegistryError(
       `Failed to register tool: ${toolId}`,
       'register',
@@ -450,11 +441,7 @@ export class PluginError extends AdapterError {
     this.pluginVersion = pluginVersion
   }
 
-  static loadFailed(
-    pluginName: string,
-    reason: string,
-    originalError?: Error
-  ): PluginError {
+  static loadFailed(pluginName: string, reason: string, originalError?: Error): PluginError {
     return new PluginError(
       `Failed to load plugin: ${pluginName}`,
       pluginName,
@@ -464,22 +451,13 @@ export class PluginError extends AdapterError {
     )
   }
 
-  static dependencyMissing(
-    pluginName: string,
-    missingDependencies: string[]
-  ): PluginError {
-    return new PluginError(
-      `Plugin dependencies missing: ${pluginName}`,
-      pluginName,
-      undefined,
-      { missingDependencies }
-    )
+  static dependencyMissing(pluginName: string, missingDependencies: string[]): PluginError {
+    return new PluginError(`Plugin dependencies missing: ${pluginName}`, pluginName, undefined, {
+      missingDependencies,
+    })
   }
 
-  static initializationFailed(
-    pluginName: string,
-    originalError: Error
-  ): PluginError {
+  static initializationFailed(pluginName: string, originalError: Error): PluginError {
     return new PluginError(
       `Plugin initialization failed: ${pluginName}`,
       pluginName,
@@ -605,10 +583,7 @@ export class RateLimitError extends AdapterError {
     )
   }
 
-  static concurrentLimitExceeded(
-    currentCount: number,
-    limit: number
-  ): RateLimitError {
+  static concurrentLimitExceeded(currentCount: number, limit: number): RateLimitError {
     return new RateLimitError(
       `Concurrent request limit exceeded: ${currentCount}/${limit}`,
       'concurrent',
@@ -654,16 +629,10 @@ export class SerializationError extends AdapterError {
     )
   }
 
-  static schemaValidationFailed(
-    dataType: string,
-    validationErrors: any[]
-  ): SerializationError {
-    return new SerializationError(
-      'Schema validation failed',
-      dataType,
-      'deserialize',
-      { validationErrors }
-    )
+  static schemaValidationFailed(dataType: string, validationErrors: any[]): SerializationError {
+    return new SerializationError('Schema validation failed', dataType, 'deserialize', {
+      validationErrors,
+    })
   }
 }
 
@@ -680,15 +649,10 @@ export class ErrorUtils {
     }
 
     // Default recovery logic for non-adapter errors
-    const nonRecoverablePatterns = [
-      'ENOTFOUND',
-      'ECONNREFUSED',
-      'ETIMEDOUT',
-      'MODULE_NOT_FOUND'
-    ]
+    const nonRecoverablePatterns = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'MODULE_NOT_FOUND']
 
-    return !nonRecoverablePatterns.some(pattern =>
-      error.message.includes(pattern) || error.name.includes(pattern)
+    return !nonRecoverablePatterns.some(
+      (pattern) => error.message.includes(pattern) || error.name.includes(pattern)
     )
   }
 
@@ -783,19 +747,19 @@ export class ErrorUtils {
 
     if (status === 400) {
       errorClass = ValidationError
-      message = 'Bad request: ' + (body?.message || statusText)
+      message = `Bad request: ${body?.message || statusText}`
     } else if (status === 401) {
       errorClass = AuthenticationError
-      message = 'Unauthorized: ' + (body?.message || statusText)
+      message = `Unauthorized: ${body?.message || statusText}`
     } else if (status === 403) {
       errorClass = AuthenticationError
-      message = 'Forbidden: ' + (body?.message || statusText)
+      message = `Forbidden: ${body?.message || statusText}`
     } else if (status === 404) {
       errorClass = RegistryError
-      message = 'Not found: ' + (body?.message || statusText)
+      message = `Not found: ${body?.message || statusText}`
     } else if (status === 429) {
       errorClass = RateLimitError
-      message = 'Rate limit exceeded: ' + (body?.message || statusText)
+      message = `Rate limit exceeded: ${body?.message || statusText}`
     }
 
     return new errorClass(

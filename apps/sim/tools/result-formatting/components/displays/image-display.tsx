@@ -7,15 +7,20 @@
 
 'use client'
 
-import React, { useState, useRef } from 'react'
-import { ZoomIn, ZoomOut, Download, Info, Copy, Maximize, RotateCw } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Copy, Download, Info, Maximize, RotateCw, ZoomIn, ZoomOut } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-
 import type { ImageContent } from '../../types'
 
 interface ImageDisplayProps {
@@ -33,7 +38,8 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
   const [hasError, setHasError] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
 
-  const imageUrl = content.url || (content.base64 ? `data:${content.mimeType};base64,${content.base64}` : null)
+  const imageUrl =
+    content.url || (content.base64 ? `data:${content.mimeType};base64,${content.base64}` : null)
 
   const handleImageLoad = () => {
     setIsLoading(false)
@@ -121,11 +127,11 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
 
   if (!imageUrl) {
     return (
-      <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center text-red-600 dark:text-red-400">
-            <div className="text-lg font-medium">No Image Data</div>
-            <div className="text-sm mt-1">Neither URL nor base64 data provided</div>
+      <Card className='border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950'>
+        <CardContent className='flex items-center justify-center py-12'>
+          <div className='text-center text-red-600 dark:text-red-400'>
+            <div className='font-medium text-lg'>No Image Data</div>
+            <div className='mt-1 text-sm'>Neither URL nor base64 data provided</div>
           </div>
         </CardContent>
       </Card>
@@ -135,85 +141,82 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
   return (
     <div className={cn('w-full space-y-4', className)}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="min-w-0 flex-1">
+      <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
+        <div className='min-w-0 flex-1'>
           {content.title && (
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className='font-semibold text-gray-900 text-lg dark:text-gray-100'>
               {content.title}
             </h3>
           )}
           {content.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {content.description}
-            </p>
+            <p className='mt-1 text-gray-600 text-sm dark:text-gray-400'>{content.description}</p>
           )}
           {content.caption && (
-            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 italic">
+            <p className='mt-2 text-gray-700 text-sm italic dark:text-gray-300'>
               {content.caption}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className='flex flex-shrink-0 items-center gap-2'>
           {/* Image Info */}
-          <div className="flex gap-1">
-            <Badge variant="secondary" className="text-xs">
+          <div className='flex gap-1'>
+            <Badge variant='secondary' className='text-xs'>
               {content.mimeType.split('/')[1]?.toUpperCase()}
             </Badge>
             {content.dimensions && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant='secondary' className='text-xs'>
                 {content.dimensions.width}×{content.dimensions.height}
               </Badge>
             )}
           </div>
 
           {/* Action buttons */}
-          <Button variant="outline" size="sm" onClick={downloadImage}>
-            <Download className="h-4 w-4" />
+          <Button variant='outline' size='sm' onClick={downloadImage}>
+            <Download className='h-4 w-4' />
           </Button>
 
           {content.url && (
-            <Button variant="outline" size="sm" onClick={copyImageUrl}>
-              <Copy className="h-4 w-4" />
+            <Button variant='outline' size='sm' onClick={copyImageUrl}>
+              <Copy className='h-4 w-4' />
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowMetadata(!showMetadata)}
-          >
-            <Info className="h-4 w-4" />
+          <Button variant='outline' size='sm' onClick={() => setShowMetadata(!showMetadata)}>
+            <Info className='h-4 w-4' />
           </Button>
         </div>
       </div>
 
       {/* Image Container */}
       <Card>
-        <CardContent className="p-0">
-          <div className="relative bg-gray-50 dark:bg-gray-900">
+        <CardContent className='p-0'>
+          <div className='relative bg-gray-50 dark:bg-gray-900'>
             {/* Image Controls */}
-            <div className="absolute top-4 left-4 z-10 flex gap-2">
-              <div className="bg-white/90 dark:bg-gray-900/90 rounded-md p-1 flex gap-1">
-                <Button variant="ghost" size="sm" onClick={handleZoomOut} disabled={zoom <= 0.1}>
-                  <ZoomOut className="h-4 w-4" />
+            <div className='absolute top-4 left-4 z-10 flex gap-2'>
+              <div className='flex gap-1 rounded-md bg-white/90 p-1 dark:bg-gray-900/90'>
+                <Button variant='ghost' size='sm' onClick={handleZoomOut} disabled={zoom <= 0.1}>
+                  <ZoomOut className='h-4 w-4' />
                 </Button>
 
-                <div className="flex items-center px-2">
-                  <span className="text-xs font-medium">
-                    {Math.round(zoom * 100)}%
-                  </span>
+                <div className='flex items-center px-2'>
+                  <span className='font-medium text-xs'>{Math.round(zoom * 100)}%</span>
                 </div>
 
-                <Button variant="ghost" size="sm" onClick={handleZoomIn} disabled={zoom >= 5}>
-                  <ZoomIn className="h-4 w-4" />
+                <Button variant='ghost' size='sm' onClick={handleZoomIn} disabled={zoom >= 5}>
+                  <ZoomIn className='h-4 w-4' />
                 </Button>
 
-                <Button variant="ghost" size="sm" onClick={handleRotate}>
-                  <RotateCw className="h-4 w-4" />
+                <Button variant='ghost' size='sm' onClick={handleRotate}>
+                  <RotateCw className='h-4 w-4' />
                 </Button>
 
-                <Button variant="ghost" size="sm" onClick={resetTransform} disabled={zoom === 1 && rotation === 0}>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={resetTransform}
+                  disabled={zoom === 1 && rotation === 0}
+                >
                   Reset
                 </Button>
               </div>
@@ -221,19 +224,19 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
               {/* Full Screen Button */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="bg-white/90 dark:bg-gray-900/90">
-                    <Maximize className="h-4 w-4" />
+                  <Button variant='ghost' size='sm' className='bg-white/90 dark:bg-gray-900/90'>
+                    <Maximize className='h-4 w-4' />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh]">
+                <DialogContent className='max-h-[90vh] max-w-4xl'>
                   <DialogHeader>
                     <DialogTitle>{content.alt}</DialogTitle>
                   </DialogHeader>
-                  <div className="flex items-center justify-center">
+                  <div className='flex items-center justify-center'>
                     <img
                       src={imageUrl}
                       alt={content.alt}
-                      className="max-w-full max-h-[70vh] object-contain"
+                      className='max-h-[70vh] max-w-full object-contain'
                     />
                   </div>
                 </DialogContent>
@@ -242,22 +245,22 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
 
             {/* Main Image */}
             <div
-              className="overflow-auto flex items-center justify-center min-h-[300px] max-h-[600px]"
+              className='flex max-h-[600px] min-h-[300px] items-center justify-center overflow-auto'
               style={{ height: compact ? '300px' : '500px' }}
             >
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <div className='text-gray-500 dark:text-gray-400'>Loading...</div>
                 </div>
               )}
 
               {hasError ? (
-                <div className="text-center text-red-600 dark:text-red-400 p-8">
-                  <div className="text-lg font-medium">Failed to load image</div>
-                  <div className="text-sm mt-1">The image could not be displayed</div>
+                <div className='p-8 text-center text-red-600 dark:text-red-400'>
+                  <div className='font-medium text-lg'>Failed to load image</div>
+                  <div className='mt-1 text-sm'>The image could not be displayed</div>
                   {content.url && (
-                    <Button variant="link" asChild className="mt-2">
-                      <a href={content.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant='link' asChild className='mt-2'>
+                      <a href={content.url} target='_blank' rel='noopener noreferrer'>
                         Open in new tab
                       </a>
                     </Button>
@@ -269,7 +272,7 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
                   src={imageUrl}
                   alt={content.alt}
                   className={cn(
-                    'transition-transform duration-200 max-w-full max-h-full object-contain',
+                    'max-h-full max-w-full object-contain transition-transform duration-200',
                     isLoading && 'opacity-0'
                   )}
                   style={{
@@ -289,35 +292,37 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
       {showMetadata && (
         <Collapsible open={showMetadata} onOpenChange={setShowMetadata}>
           <CollapsibleContent>
-            <Card className="bg-gray-50 dark:bg-gray-900">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Image Metadata</CardTitle>
+            <Card className='bg-gray-50 dark:bg-gray-900'>
+              <CardHeader className='pb-3'>
+                <CardTitle className='text-base'>Image Metadata</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <CardContent className='pt-0'>
+                <div className='grid grid-cols-1 gap-4 text-sm sm:grid-cols-2'>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Format:</span>
-                    <span className="ml-2">{content.mimeType}</span>
+                    <span className='font-medium text-gray-700 dark:text-gray-300'>Format:</span>
+                    <span className='ml-2'>{content.mimeType}</span>
                   </div>
 
                   {content.dimensions && (
                     <div>
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Dimensions:</span>
-                      <span className="ml-2">
+                      <span className='font-medium text-gray-700 dark:text-gray-300'>
+                        Dimensions:
+                      </span>
+                      <span className='ml-2'>
                         {content.dimensions.width} × {content.dimensions.height} pixels
                       </span>
                     </div>
                   )}
 
                   {content.url && (
-                    <div className="sm:col-span-2">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">URL:</span>
-                      <div className="mt-1">
+                    <div className='sm:col-span-2'>
+                      <span className='font-medium text-gray-700 dark:text-gray-300'>URL:</span>
+                      <div className='mt-1'>
                         <a
                           href={content.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline dark:text-blue-400 break-all text-xs"
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='break-all text-blue-600 text-xs hover:underline dark:text-blue-400'
                         >
                           {content.url}
                         </a>
@@ -327,8 +332,10 @@ export function ImageDisplay({ content, onAction, compact = false, className }: 
 
                   {content.base64 && (
                     <div>
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Data:</span>
-                      <span className="ml-2">Base64 encoded ({formatFileSize(content.base64.length * 0.75)})</span>
+                      <span className='font-medium text-gray-700 dark:text-gray-300'>Data:</span>
+                      <span className='ml-2'>
+                        Base64 encoded ({formatFileSize(content.base64.length * 0.75)})
+                      </span>
                     </div>
                   )}
                 </div>

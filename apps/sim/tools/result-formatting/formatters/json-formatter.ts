@@ -8,11 +8,11 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
   FormatContext,
   FormattedResult,
   JsonContent,
   ResultFormat,
+  ResultFormatter,
 } from '../types'
 
 const logger = createLogger('JsonFormatter')
@@ -37,12 +37,7 @@ export class JsonFormatter implements ResultFormatter {
       'knowledge_search',
     ],
     outputTypes: ['object', 'array'],
-    excludedTools: [
-      'mail_send',
-      'sms_send',
-      'vision',
-      'thinking',
-    ],
+    excludedTools: ['mail_send', 'sms_send', 'vision', 'thinking'],
   }
 
   /**
@@ -120,7 +115,6 @@ export class JsonFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(jsonContent, result.output),
         },
       }
-
     } catch (error) {
       logger.error('JSON formatting failed:', error)
       throw new Error(`JSON formatting failed: ${(error as Error).message}`)
@@ -165,15 +159,18 @@ export class JsonFormatter implements ResultFormatter {
         highlights,
         suggestions,
       }
-
     } catch (error) {
       logger.error('JSON summary generation failed:', error)
 
       return {
         headline: `${context.toolConfig.name || context.toolId} returned structured data`,
-        description: 'The tool returned structured data in JSON format. Use the expandable tree view to explore the details.',
+        description:
+          'The tool returned structured data in JSON format. Use the expandable tree view to explore the details.',
         highlights: [],
-        suggestions: ['Expand sections to view detailed information', 'Use the search function to find specific values'],
+        suggestions: [
+          'Expand sections to view detailed information',
+          'Use the search function to find specific values',
+        ],
       }
     }
   }
@@ -220,13 +217,13 @@ export class JsonFormatter implements ResultFormatter {
         for (const [key, value] of Object.entries(data)) {
           schema.properties[key] = this.generateSchema(value, depth + 1)
         }
-        schema.required = Object.keys(data).filter(key => data[key] !== undefined)
+        schema.required = Object.keys(data).filter((key) => data[key] !== undefined)
         break
 
       case 'array':
         if (data.length > 0) {
           // Analyze first few items to determine array item schema
-          const itemSchemas = data.slice(0, 5).map(item => this.generateSchema(item, depth + 1))
+          const itemSchemas = data.slice(0, 5).map((item) => this.generateSchema(item, depth + 1))
           schema.items = this.mergeSchemas(itemSchemas)
         }
         schema.length = data.length
@@ -249,7 +246,10 @@ export class JsonFormatter implements ResultFormatter {
     return schema
   }
 
-  private generateDisplayHints(data: any, context: FormatContext): {
+  private generateDisplayHints(
+    data: any,
+    context: FormatContext
+  ): {
     maxDepth: number
     expandable: boolean
   } {
@@ -265,7 +265,6 @@ export class JsonFormatter implements ResultFormatter {
       case 'summary':
         maxDepth = Math.min(1, depth)
         break
-      case 'detailed':
       default:
         maxDepth = Math.min(4, depth)
         break
@@ -283,13 +282,27 @@ export class JsonFormatter implements ResultFormatter {
     if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
       // Common important field names
       const importantKeys = [
-        'id', 'name', 'title', 'email', 'status', 'type', 'url',
-        'created', 'updated', 'date', 'time', 'error', 'message',
-        'success', 'total', 'count', 'results'
+        'id',
+        'name',
+        'title',
+        'email',
+        'status',
+        'type',
+        'url',
+        'created',
+        'updated',
+        'date',
+        'time',
+        'error',
+        'message',
+        'success',
+        'total',
+        'count',
+        'results',
       ]
 
       for (const key of Object.keys(data)) {
-        if (importantKeys.some(important => key.toLowerCase().includes(important))) {
+        if (importantKeys.some((important) => key.toLowerCase().includes(important))) {
           importantFields.push(key)
         }
       }
@@ -319,7 +332,7 @@ export class JsonFormatter implements ResultFormatter {
     const type = Array.isArray(data) ? 'array' : typeof data
     const depth = this.getObjectDepth(data)
     let fieldCount = 0
-    let arrayLength = undefined
+    let arrayLength
     let hasNestedObjects = false
     let hasArrays = false
 
@@ -327,10 +340,12 @@ export class JsonFormatter implements ResultFormatter {
       arrayLength = data.length
       fieldCount = data.length
       hasArrays = true
-      hasNestedObjects = data.some(item => typeof item === 'object' && item !== null)
+      hasNestedObjects = data.some((item) => typeof item === 'object' && item !== null)
     } else if (typeof data === 'object' && data !== null) {
       fieldCount = Object.keys(data).length
-      hasNestedObjects = Object.values(data).some(value => typeof value === 'object' && value !== null && !Array.isArray(value))
+      hasNestedObjects = Object.values(data).some(
+        (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
+      )
       hasArrays = Object.values(data).some(Array.isArray)
     }
 
@@ -389,7 +404,8 @@ export class JsonFormatter implements ResultFormatter {
     }
 
     // Add usage suggestions
-    description += 'Use the expandable tree view to explore the structure and find specific information.'
+    description +=
+      'Use the expandable tree view to explore the structure and find specific information.'
 
     return description
   }
@@ -399,9 +415,13 @@ export class JsonFormatter implements ResultFormatter {
 
     // Structure highlights
     if (analysis.type === 'array') {
-      highlights.push(`${analysis.arrayLength} item${analysis.arrayLength === 1 ? '' : 's'} in array`)
+      highlights.push(
+        `${analysis.arrayLength} item${analysis.arrayLength === 1 ? '' : 's'} in array`
+      )
     } else if (analysis.type === 'object') {
-      highlights.push(`${analysis.fieldCount} field${analysis.fieldCount === 1 ? '' : 's'} in object`)
+      highlights.push(
+        `${analysis.fieldCount} field${analysis.fieldCount === 1 ? '' : 's'} in object`
+      )
     }
 
     // Complexity highlights
@@ -550,27 +570,38 @@ export class JsonFormatter implements ResultFormatter {
   private hasMixedDataTypes(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) return false
 
-    const types = new Set(Object.values(obj).map(value => typeof value))
+    const types = new Set(Object.values(obj).map((value) => typeof value))
     return types.size > 2 // More than 2 different types
   }
 
   private looksLikeApiResponse(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) return false
 
-    const apiFields = ['data', 'results', 'items', 'response', 'payload', 'meta', 'pagination', 'status', 'error']
-    const objKeys = Object.keys(obj).map(k => k.toLowerCase())
+    const apiFields = [
+      'data',
+      'results',
+      'items',
+      'response',
+      'payload',
+      'meta',
+      'pagination',
+      'status',
+      'error',
+    ]
+    const objKeys = Object.keys(obj).map((k) => k.toLowerCase())
 
-    return apiFields.some(field => objKeys.includes(field))
+    return apiFields.some((field) => objKeys.includes(field))
   }
 
   private hasConsistentStructure(array: any[]): boolean {
     if (array.length < 2) return true
 
     const firstKeys = Object.keys(array[0] || {}).sort()
-    return array.every(item =>
-      typeof item === 'object' &&
-      item !== null &&
-      Object.keys(item).sort().join(',') === firstKeys.join(',')
+    return array.every(
+      (item) =>
+        typeof item === 'object' &&
+        item !== null &&
+        Object.keys(item).sort().join(',') === firstKeys.join(',')
     )
   }
 
@@ -579,7 +610,7 @@ export class JsonFormatter implements ResultFormatter {
   }
 
   private detectStringFormat(str: string): string {
-    if (!isNaN(Date.parse(str))) return 'date-time'
+    if (!Number.isNaN(Date.parse(str))) return 'date-time'
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str)) return 'email'
     if (/^https?:\/\//.test(str)) return 'url'
     if (/^\d+$/.test(str)) return 'numeric'
@@ -593,7 +624,7 @@ export class JsonFormatter implements ResultFormatter {
     if (schemas.length === 1) return schemas[0]
 
     // Find the most common type
-    const types = schemas.map(s => s.type)
+    const types = schemas.map((s) => s.type)
     const typeCount = types.reduce((acc, type) => {
       acc[type] = (acc[type] || 0) + 1
       return acc
@@ -608,17 +639,17 @@ export class JsonFormatter implements ResultFormatter {
     // Merge properties for objects
     if (mostCommonType === 'object') {
       const allProps = new Set()
-      schemas.forEach(schema => {
+      schemas.forEach((schema) => {
         if (schema.properties) {
-          Object.keys(schema.properties).forEach(prop => allProps.add(prop))
+          Object.keys(schema.properties).forEach((prop) => allProps.add(prop))
         }
       })
 
       baseSchema.properties = {}
       for (const prop of allProps) {
         const propSchemas = schemas
-          .filter(s => s.properties && s.properties[prop])
-          .map(s => s.properties[prop])
+          .filter((s) => s.properties?.[prop])
+          .map((s) => s.properties[prop])
         baseSchema.properties[prop] = this.mergeSchemas(propSchemas)
       }
     }
@@ -661,7 +692,7 @@ export class JsonFormatter implements ResultFormatter {
       return [{ key: 'value', label: 'Value' }]
     }
 
-    return Object.keys(firstItem).map(key => ({
+    return Object.keys(firstItem).map((key) => ({
       key,
       label: key.charAt(0).toUpperCase() + key.slice(1),
     }))
@@ -676,7 +707,9 @@ export class JsonFormatter implements ResultFormatter {
     if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
       const entries = Object.entries(data).slice(0, 10)
       for (const [key, value] of entries) {
-        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+        const formattedKey = key
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (str) => str.toUpperCase())
         const formattedValue = this.formatValueForText(value)
         text += `${formattedKey}: ${formattedValue}\n`
       }
@@ -700,7 +733,8 @@ export class JsonFormatter implements ResultFormatter {
   private formatValueForText(value: any): string {
     if (value === null) return 'null'
     if (value === undefined) return 'undefined'
-    if (typeof value === 'string') return `"${value.length > 50 ? value.substring(0, 50) + '...' : value}"`
+    if (typeof value === 'string')
+      return `"${value.length > 50 ? `${value.substring(0, 50)}...` : value}"`
     if (typeof value === 'number') return value.toString()
     if (typeof value === 'boolean') return value.toString()
     if (Array.isArray(value)) return `Array(${value.length})`
@@ -709,7 +743,10 @@ export class JsonFormatter implements ResultFormatter {
     return String(value)
   }
 
-  private async calculateQualityScore(jsonContent: JsonContent, originalData: any): Promise<number> {
+  private async calculateQualityScore(
+    jsonContent: JsonContent,
+    originalData: any
+  ): Promise<number> {
     let score = 0.8 // Base score for JSON formatting
 
     // Adjust based on content quality

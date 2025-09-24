@@ -21,36 +21,30 @@
 
 import { createLogger } from '../../../apps/sim/lib/logs/console/logger'
 import {
-  BaseToolError,
-  ToolExecutionError,
+  ErrorExplanationService,
+  explainError,
+  UserSkillLevel,
+} from '../../../parlant-server/error-explanations'
+import {
+  type BaseToolError,
   ToolAdapterError,
   ToolAuthenticationError,
+  ToolExecutionError,
   UserInputError,
-  SystemResourceError,
-  ExternalServiceError,
-  universalErrorHandler
 } from '../../../parlant-server/error-handler'
+import { errorRecoveryService } from '../../../parlant-server/error-recovery'
 import {
   ErrorCategory,
-  ErrorSeverity,
   ErrorImpact,
+  ErrorSeverity,
   RecoveryStrategy,
-  errorClassifier
 } from '../../../parlant-server/error-taxonomy'
-import {
-  ErrorExplanationService,
-  UserSkillLevel,
-  ExplanationFormat,
-  explainError
-} from '../../../parlant-server/error-explanations'
-import { errorRecoveryService } from '../../../parlant-server/error-recovery'
-import type {
-  AdapterExecutionContext,
-  AdapterExecutionResult,
-  ErrorHandlingConfig,
-  AdapterConfiguration
-} from '../types/adapter-interfaces'
 import type { ParlantLogContext } from '../../../parlant-server/logging'
+import type {
+  AdapterConfiguration,
+  AdapterExecutionContext,
+  ErrorHandlingConfig,
+} from '../types/adapter-interfaces'
 
 const logger = createLogger('ComprehensiveErrorManager')
 
@@ -67,7 +61,7 @@ export enum ToolErrorCategory {
   TOOL_OUTPUT_VALIDATION = 'tool_output_validation',
   TOOL_VERSION_MISMATCH = 'tool_version_mismatch',
   TOOL_RESOURCE_EXHAUSTION = 'tool_resource_exhaustion',
-  TOOL_NETWORK_ERROR = 'tool_network_error'
+  TOOL_NETWORK_ERROR = 'tool_network_error',
 }
 
 /**
@@ -79,40 +73,40 @@ export const ToolErrorSubcategories = {
     'parameter_type_mismatch',
     'parameter_out_of_range',
     'parameter_format_invalid',
-    'parameter_business_rule_violation'
+    'parameter_business_rule_violation',
   ],
   [ToolErrorCategory.TOOL_CONFIGURATION]: [
     'missing_api_key',
     'invalid_endpoint_url',
     'unsupported_configuration',
     'configuration_conflict',
-    'environment_mismatch'
+    'environment_mismatch',
   ],
   [ToolErrorCategory.TOOL_EXECUTION_TIMEOUT]: [
     'request_timeout',
     'processing_timeout',
     'response_timeout',
-    'operation_cancelled'
+    'operation_cancelled',
   ],
   [ToolErrorCategory.TOOL_AUTHENTICATION_FAILURE]: [
     'invalid_credentials',
     'expired_token',
     'insufficient_permissions',
     'oauth_flow_failure',
-    'api_key_revoked'
+    'api_key_revoked',
   ],
   [ToolErrorCategory.TOOL_RATE_LIMIT]: [
     'requests_per_second_exceeded',
     'daily_quota_exceeded',
     'concurrent_limit_reached',
-    'burst_limit_exceeded'
+    'burst_limit_exceeded',
   ],
   [ToolErrorCategory.TOOL_DEPENDENCY_FAILURE]: [
     'external_service_unavailable',
     'database_connection_failed',
     'third_party_api_error',
-    'network_dependency_failure'
-  ]
+    'network_dependency_failure',
+  ],
 } as const
 
 /**
@@ -215,17 +209,23 @@ export interface ErrorAnalytics {
     severity: ErrorSeverity
     suggestedFix: string
   }>
-  userErrorProfiles: Map<string, {
-    commonErrors: string[]
-    skillLevel: UserSkillLevel
-    preferredResolutions: string[]
-  }>
-  toolReliabilityMetrics: Map<string, {
-    successRate: number
-    averageResponseTime: number
-    commonFailureModes: string[]
-    recommendations: string[]
-  }>
+  userErrorProfiles: Map<
+    string,
+    {
+      commonErrors: string[]
+      skillLevel: UserSkillLevel
+      preferredResolutions: string[]
+    }
+  >
+  toolReliabilityMetrics: Map<
+    string,
+    {
+      successRate: number
+      averageResponseTime: number
+      commonFailureModes: string[]
+      recommendations: string[]
+    }
+  >
 }
 
 /**
@@ -233,7 +233,7 @@ export interface ErrorAnalytics {
  */
 export class ComprehensiveToolErrorManager {
   private errorAnalytics: ErrorAnalytics
-  private proactiveValidation: ProactiveValidationConfig
+  private proactiveValidationConfig: ProactiveValidationConfig
   private errorExplanationService: ErrorExplanationService
   private userSkillProfiles = new Map<string, UserSkillLevel>()
   private errorRecoveryAttempts = new Map<string, number>()
@@ -243,13 +243,13 @@ export class ComprehensiveToolErrorManager {
       errorFrequency: new Map(),
       errorPatterns: [],
       userErrorProfiles: new Map(),
-      toolReliabilityMetrics: new Map()
+      toolReliabilityMetrics: new Map(),
     }
 
-    this.proactiveValidation = {
+    this.proactiveValidationConfig = {
       enabled: true,
       validationRules: [],
-      preExecutionChecks: []
+      preExecutionChecks: [],
     }
 
     this.errorExplanationService = new ErrorExplanationService()
@@ -282,7 +282,7 @@ export class ComprehensiveToolErrorManager {
       toolId: context.toolId,
       executionId: context.executionId,
       errorType: error.constructor.name,
-      message: error.message
+      message: error.message,
     })
 
     try {
@@ -303,11 +303,7 @@ export class ComprehensiveToolErrorManager {
       )
 
       // 5. Attempt intelligent recovery
-      const recoveryResult = await this.attemptIntelligentRecovery(
-        toolError,
-        context,
-        config
-      )
+      const recoveryResult = await this.attemptIntelligentRecovery(toolError, context, config)
 
       // 6. Determine retry strategy
       const retryDecision = this.determineRetryStrategy(toolError, context, config)
@@ -319,9 +315,9 @@ export class ComprehensiveToolErrorManager {
         handled: true,
         recovery: recoveryResult.success,
         explanation,
-        suggestedActions: explanation.immediateActions.map(action => action.action),
+        suggestedActions: explanation.immediateActions.map((action) => action.action),
         shouldRetry: retryDecision.shouldRetry,
-        retryDelay: retryDecision.delay
+        retryDelay: retryDecision.delay,
       }
 
       logger.info('Tool error handling completed', {
@@ -329,16 +325,15 @@ export class ComprehensiveToolErrorManager {
         handled: result.handled,
         recovery: result.recovery,
         shouldRetry: result.shouldRetry,
-        processingTimeMs: Date.now() - startTime
+        processingTimeMs: Date.now() - startTime,
       })
 
       return result
-
     } catch (handlingError) {
       logger.error('Error handling failed', {
         errorId,
         originalError: error.message,
-        handlingError: handlingError instanceof Error ? handlingError.message : handlingError
+        handlingError: handlingError instanceof Error ? handlingError.message : handlingError,
       })
 
       // Fallback to basic error handling
@@ -347,7 +342,7 @@ export class ComprehensiveToolErrorManager {
         recovery: false,
         explanation: this.generateFallbackExplanation(error, context, errorId),
         suggestedActions: ['Try again', 'Contact support if issue persists'],
-        shouldRetry: false
+        shouldRetry: false,
       }
     }
   }
@@ -365,7 +360,7 @@ export class ComprehensiveToolErrorManager {
     blockingIssues: string[]
     suggestions: string[]
   }> {
-    if (!this.proactiveValidation.enabled) {
+    if (!this.proactiveValidationConfig.enabled) {
       return { valid: true, warnings: [], blockingIssues: [], suggestions: [] }
     }
 
@@ -376,11 +371,11 @@ export class ComprehensiveToolErrorManager {
     logger.debug('Running proactive validation', {
       toolId: context.toolId,
       executionId: context.executionId,
-      rulesCount: this.proactiveValidation.validationRules.length
+      rulesCount: this.proactiveValidationConfig.validationRules.length,
     })
 
     // Run pre-execution checks
-    for (const check of this.proactiveValidation.preExecutionChecks) {
+    for (const check of this.proactiveValidationConfig.preExecutionChecks) {
       try {
         const passed = await check.check(context)
         if (!passed) {
@@ -394,7 +389,7 @@ export class ComprehensiveToolErrorManager {
       } catch (checkError) {
         logger.warn('Pre-execution check failed', {
           checkName: check.name,
-          error: checkError instanceof Error ? checkError.message : checkError
+          error: checkError instanceof Error ? checkError.message : checkError,
         })
         warnings.push(`Unable to validate ${check.name}`)
       }
@@ -415,7 +410,7 @@ export class ComprehensiveToolErrorManager {
       } catch (validationError) {
         logger.warn('Validation rule failed', {
           ruleName: rule.name,
-          error: validationError instanceof Error ? validationError.message : validationError
+          error: validationError instanceof Error ? validationError.message : validationError,
         })
         warnings.push(`Unable to validate ${rule.name}`)
       }
@@ -433,7 +428,7 @@ export class ComprehensiveToolErrorManager {
       valid,
       warningsCount: warnings.length,
       blockingIssuesCount: blockingIssues.length,
-      suggestionsCount: suggestions.length
+      suggestionsCount: suggestions.length,
     })
 
     return { valid, warnings, blockingIssues, suggestions }
@@ -483,45 +478,39 @@ export class ComprehensiveToolErrorManager {
           instructions: [
             'Review the error message carefully',
             'Check the tool configuration',
-            'Verify your input parameters'
+            'Verify your input parameters',
           ],
           expectedResult: 'You should have a clear understanding of the error cause',
-          commonMistakes: [
-            'Skipping error message details',
-            'Not checking configuration'
-          ],
-          helpResources: [
-            'Error message documentation',
-            'Configuration guide'
-          ]
-        }
+          commonMistakes: ['Skipping error message details', 'Not checking configuration'],
+          helpResources: ['Error message documentation', 'Configuration guide'],
+        },
       ],
       additionalResources: [
         {
           title: 'Tool Configuration Best Practices',
           type: 'documentation',
           url: '/docs/tool-configuration',
-          estimatedTime: '10 minutes'
-        }
-      ]
+          estimatedTime: '10 minutes',
+        },
+      ],
     }
   }
 
   /**
    * Get error analytics and insights
    */
-  getErrorAnalytics(timeWindowHours: number = 24): {
+  getErrorAnalytics(timeWindowHours = 24): {
     totalErrors: number
     errorsByCategory: Record<string, number>
     topFailingTools: Array<{ toolId: string; errorCount: number; successRate: number }>
     commonPatterns: Array<{ pattern: string; occurrences: number; impact: string }>
     recommendations: string[]
   } {
-    const cutoffTime = Date.now() - (timeWindowHours * 60 * 60 * 1000)
+    const cutoffTime = Date.now() - timeWindowHours * 60 * 60 * 1000
 
     // Filter recent errors
     const recentPatterns = this.errorAnalytics.errorPatterns.filter(
-      pattern => pattern.lastSeen.getTime() >= cutoffTime
+      (pattern) => pattern.lastSeen.getTime() >= cutoffTime
     )
 
     const errorsByCategory: Record<string, number> = {}
@@ -538,26 +527,30 @@ export class ComprehensiveToolErrorManager {
       .map(([toolId, metrics]) => ({
         toolId,
         errorCount: Math.round((1 - metrics.successRate) * 100),
-        successRate: metrics.successRate
+        successRate: metrics.successRate,
       }))
 
     const commonPatterns = recentPatterns
       .sort((a, b) => b.occurrences - a.occurrences)
       .slice(0, 10)
-      .map(pattern => ({
+      .map((pattern) => ({
         pattern: pattern.pattern,
         occurrences: pattern.occurrences,
-        impact: pattern.severity
+        impact: pattern.severity,
       }))
 
-    const recommendations = this.generateRecommendations(errorsByCategory, topFailingTools, commonPatterns)
+    const recommendations = this.generateRecommendations(
+      errorsByCategory,
+      topFailingTools,
+      commonPatterns
+    )
 
     return {
       totalErrors,
       errorsByCategory,
       topFailingTools,
       commonPatterns,
-      recommendations
+      recommendations,
     }
   }
 
@@ -577,7 +570,7 @@ export class ComprehensiveToolErrorManager {
     logger.info('Training error handling system with user feedback', {
       errorId,
       userId,
-      wasHelpful: feedback.wasHelpful
+      wasHelpful: feedback.wasHelpful,
     })
 
     // Update user skill profile
@@ -591,7 +584,7 @@ export class ComprehensiveToolErrorManager {
       userProfile = {
         commonErrors: [],
         skillLevel: feedback.preferredSkillLevel || UserSkillLevel.INTERMEDIATE,
-        preferredResolutions: []
+        preferredResolutions: [],
       }
     }
 
@@ -606,7 +599,7 @@ export class ComprehensiveToolErrorManager {
       // This would feed into the ML system for improving explanations
       logger.info('User suggested improvement recorded', {
         errorId,
-        suggestion: feedback.suggestedImprovement
+        suggestion: feedback.suggestedImprovement,
       })
     }
   }
@@ -626,7 +619,7 @@ export class ComprehensiveToolErrorManager {
       toolName: context.toolId, // Assuming toolId contains tool name
       executionId: context.executionId,
       userId: context.userId,
-      workspaceId: context.workspaceId
+      workspaceId: context.workspaceId,
     }
 
     // Classify based on error type and context
@@ -652,11 +645,7 @@ export class ComprehensiveToolErrorManager {
     }
 
     if (error.message.includes('validation') || error.message.includes('invalid parameter')) {
-      return new UserInputError(
-        error.message,
-        'invalid_format',
-        toolContext
-      )
+      return new UserInputError(error.message, 'invalid_format', toolContext)
     }
 
     if (error.message.includes('rate limit') || error.message.includes('quota')) {
@@ -692,7 +681,7 @@ export class ComprehensiveToolErrorManager {
         successRate: 1.0,
         averageResponseTime: 0,
         commonFailureModes: [],
-        recommendations: []
+        recommendations: [],
       }
     }
 
@@ -728,30 +717,30 @@ export class ComprehensiveToolErrorManager {
       userMessage: baseExplanation.messages[userSkillLevel],
       detailedExplanation: baseExplanation.summary,
       technicalDetails: error.message,
-      immediateActions: baseExplanation.quickActions.map(action => ({
+      immediateActions: baseExplanation.quickActions.map((action) => ({
         action: action.title,
         description: action.description,
         estimatedTime: action.estimatedTime,
-        difficulty: this.mapSkillLevelToDifficulty(action.skillLevel)
+        difficulty: this.mapSkillLevelToDifficulty(action.skillLevel),
       })),
-      preventionTips: baseExplanation.preventionTips.map(tip => ({
+      preventionTips: baseExplanation.preventionTips.map((tip) => ({
         tip: tip.description,
-        category: tip.category
+        category: tip.category,
       })),
       troubleshootingSteps: this.generateTroubleshootingSteps(error, context),
       relatedErrors: baseExplanation.relatedErrors,
-      documentationLinks: baseExplanation.documentationLinks.map(link => ({
+      documentationLinks: baseExplanation.documentationLinks.map((link) => ({
         title: link.title,
         url: link.url,
-        type: link.type as 'tutorial' | 'reference' | 'troubleshooting'
+        type: link.type as 'tutorial' | 'reference' | 'troubleshooting',
       })),
       timestamp: new Date().toISOString(),
       context: {
         ...context,
         toolId: context.toolId,
         toolName: context.toolId,
-        executionId: context.executionId
-      }
+        executionId: context.executionId,
+      },
     }
   }
 
@@ -775,20 +764,20 @@ export class ComprehensiveToolErrorManager {
           category: error.category,
           subcategory: error.subcategory,
           toolName: context.toolId,
-          parlantContext: error.context
+          parlantContext: error.context,
         }
       )
 
       return {
         success: false, // Since we're just simulating
         strategy: error.recoveryStrategy,
-        details: 'Recovery strategy identified but not executed'
+        details: 'Recovery strategy identified but not executed',
       }
     } catch (recoveryError) {
       return {
         success: false,
         strategy: 'failed',
-        details: 'Recovery attempt failed'
+        details: 'Recovery attempt failed',
       }
     }
   }
@@ -809,15 +798,16 @@ export class ComprehensiveToolErrorManager {
     const retryableCategories = [
       ErrorCategory.EXTERNAL_TIMEOUT,
       ErrorCategory.SYSTEM_NETWORK,
-      ErrorCategory.EXTERNAL_SERVICE
+      ErrorCategory.EXTERNAL_SERVICE,
     ]
 
-    const shouldRetry = retryableCategories.includes(error.category) ||
-                       error.recoveryStrategy === RecoveryStrategy.RETRY
+    const shouldRetry =
+      retryableCategories.includes(error.category) ||
+      error.recoveryStrategy === RecoveryStrategy.RETRY
 
     if (shouldRetry) {
       const baseDelay = config?.retry?.backoffMs || 1000
-      const delay = baseDelay * Math.pow(2, retryCount) // Exponential backoff
+      const delay = baseDelay * 2 ** retryCount // Exponential backoff
 
       this.errorRecoveryAttempts.set(context.executionId, retryCount + 1)
 
@@ -843,7 +833,7 @@ export class ComprehensiveToolErrorManager {
       userMessage: explanation.userMessage,
       immediateActionsCount: explanation.immediateActions.length,
       recoveryAttempted: recoveryResult.success,
-      context: error.context
+      context: error.context,
     })
   }
 
@@ -858,27 +848,28 @@ export class ComprehensiveToolErrorManager {
       errorType: ToolErrorCategory.TOOL_EXECUTION_TIMEOUT,
       severity: ErrorSeverity.ERROR,
       impact: ErrorImpact.MEDIUM,
-      userMessage: 'An unexpected error occurred while executing the tool. Please try again or contact support.',
+      userMessage:
+        'An unexpected error occurred while executing the tool. Please try again or contact support.',
       detailedExplanation: error.message,
       immediateActions: [
         {
           action: 'Try Again',
           description: 'Attempt the operation again',
           estimatedTime: '30 seconds',
-          difficulty: 'beginner'
+          difficulty: 'beginner',
         },
         {
           action: 'Check Configuration',
           description: 'Verify tool settings and parameters',
           estimatedTime: '2 minutes',
-          difficulty: 'intermediate'
-        }
+          difficulty: 'intermediate',
+        },
       ],
       preventionTips: [
         {
           tip: 'Verify all required parameters before execution',
-          category: 'usage'
-        }
+          category: 'usage',
+        },
       ],
       troubleshootingSteps: [],
       relatedErrors: [],
@@ -888,8 +879,8 @@ export class ComprehensiveToolErrorManager {
         ...context,
         toolId: context.toolId,
         toolName: context.toolId,
-        executionId: context.executionId
-      }
+        executionId: context.executionId,
+      },
     }
   }
 
@@ -905,7 +896,7 @@ export class ComprehensiveToolErrorManager {
         },
         errorMessage: 'Missing required parameters',
         severity: ErrorSeverity.ERROR,
-        preventionTip: 'Always provide all required parameters before execution'
+        preventionTip: 'Always provide all required parameters before execution',
       },
       {
         name: 'Parameter Type Validation',
@@ -916,7 +907,7 @@ export class ComprehensiveToolErrorManager {
         },
         errorMessage: 'Parameter type mismatch detected',
         severity: ErrorSeverity.WARNING,
-        preventionTip: 'Verify parameter types match tool requirements'
+        preventionTip: 'Verify parameter types match tool requirements',
       }
     )
 
@@ -929,7 +920,7 @@ export class ComprehensiveToolErrorManager {
           return true // Simplified for now
         },
         errorMessage: 'Tool is currently unavailable',
-        suggestedAction: 'Wait a moment and try again, or use an alternative tool'
+        suggestedAction: 'Wait a moment and try again, or use an alternative tool',
       },
       {
         name: 'User Permission Check',
@@ -938,7 +929,7 @@ export class ComprehensiveToolErrorManager {
           return true // Simplified for now
         },
         errorMessage: 'Insufficient permissions to execute this tool',
-        suggestedAction: 'Contact your administrator to request access'
+        suggestedAction: 'Contact your administrator to request access',
       }
     )
   }
@@ -951,14 +942,14 @@ export class ComprehensiveToolErrorManager {
         occurrences: 0,
         lastSeen: new Date(),
         severity: ErrorSeverity.CRITICAL,
-        suggestedFix: 'Check API credentials and token expiration'
+        suggestedFix: 'Check API credentials and token expiration',
       },
       {
         pattern: 'timeout_cascade',
         occurrences: 0,
         lastSeen: new Date(),
         severity: ErrorSeverity.ERROR,
-        suggestedFix: 'Review timeout settings and network connectivity'
+        suggestedFix: 'Review timeout settings and network connectivity',
       }
     )
   }
@@ -980,7 +971,9 @@ export class ComprehensiveToolErrorManager {
     }
   }
 
-  private mapSkillLevelToDifficulty(skillLevel: UserSkillLevel): 'beginner' | 'intermediate' | 'advanced' {
+  private mapSkillLevelToDifficulty(
+    skillLevel: UserSkillLevel
+  ): 'beginner' | 'intermediate' | 'advanced' {
     switch (skillLevel) {
       case UserSkillLevel.BEGINNER:
         return 'beginner'
@@ -1007,20 +1000,20 @@ export class ComprehensiveToolErrorManager {
         step: 'Verify Tool Configuration',
         instruction: 'Check that all tool settings and API keys are correct',
         expectedResult: 'Tool connects successfully without authentication errors',
-        troubleshootIf: 'Still getting authentication errors'
+        troubleshootIf: 'Still getting authentication errors',
       },
       {
         step: 'Test with Simple Parameters',
         instruction: 'Try executing the tool with minimal, basic parameters',
         expectedResult: 'Tool executes successfully with simple inputs',
-        troubleshootIf: 'Simple execution also fails'
+        troubleshootIf: 'Simple execution also fails',
       },
       {
         step: 'Check Network Connectivity',
-        instruction: 'Verify that you can reach the tool\'s service endpoints',
+        instruction: "Verify that you can reach the tool's service endpoints",
         expectedResult: 'Network connection is stable and responsive',
-        troubleshootIf: 'Network connectivity issues persist'
-      }
+        troubleshootIf: 'Network connectivity issues persist',
+      },
     ]
   }
 
@@ -1056,20 +1049,28 @@ export class ComprehensiveToolErrorManager {
     const recommendations: string[] = []
 
     // Generate recommendations based on error patterns
-    if (errorsByCategory['tool_authentication'] > 10) {
-      recommendations.push('Consider implementing automatic token refresh for authentication-related tools')
+    if (errorsByCategory.tool_authentication > 10) {
+      recommendations.push(
+        'Consider implementing automatic token refresh for authentication-related tools'
+      )
     }
 
     if (errorsByCategory['tool_execution:timeout'] > 15) {
-      recommendations.push('Review timeout settings and consider implementing streaming responses for long-running operations')
+      recommendations.push(
+        'Review timeout settings and consider implementing streaming responses for long-running operations'
+      )
     }
 
     if (topFailingTools.length > 0) {
-      recommendations.push(`Review configuration for ${topFailingTools[0].toolId} - it has the highest failure rate`)
+      recommendations.push(
+        `Review configuration for ${topFailingTools[0].toolId} - it has the highest failure rate`
+      )
     }
 
     if (commonPatterns.length > 0) {
-      recommendations.push(`Address the ${commonPatterns[0].pattern} pattern which is occurring frequently`)
+      recommendations.push(
+        `Address the ${commonPatterns[0].pattern} pattern which is occurring frequently`
+      )
     }
 
     return recommendations
@@ -1102,7 +1103,5 @@ export const validateBeforeExecution = (
 /**
  * Convenience function for generating recovery tutorials
  */
-export const generateRecoveryTutorial = (
-  errorId: string,
-  userSkillLevel?: UserSkillLevel
-) => comprehensiveToolErrorManager.generateRecoveryTutorial(errorId, userSkillLevel)
+export const generateRecoveryTutorial = (errorId: string, userSkillLevel?: UserSkillLevel) =>
+  comprehensiveToolErrorManager.generateRecoveryTutorial(errorId, userSkillLevel)

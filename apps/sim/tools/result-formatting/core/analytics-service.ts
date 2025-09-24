@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ResultFormat, ResultAnalytics } from '../types'
+import type { ResultAnalytics, ResultFormat } from '../types'
 
 const logger = createLogger('ResultAnalyticsService')
 
@@ -23,20 +23,26 @@ export interface AnalyticsConfig {
  * Internal analytics data structure
  */
 interface AnalyticsData {
-  toolUsage: Map<string, {
-    count: number
-    totalProcessingTime: number
-    errorCount: number
-    formatUsage: Map<ResultFormat, number>
-    lastUsed: string
-  }>
+  toolUsage: Map<
+    string,
+    {
+      count: number
+      totalProcessingTime: number
+      errorCount: number
+      formatUsage: Map<ResultFormat, number>
+      lastUsed: string
+    }
+  >
 
-  formatUsage: Map<ResultFormat, {
-    count: number
-    totalQualityScore: number
-    userSatisfaction: number
-    satisfactionSamples: number
-  }>
+  formatUsage: Map<
+    ResultFormat,
+    {
+      count: number
+      totalQualityScore: number
+      userSatisfaction: number
+      satisfactionSamples: number
+    }
+  >
 
   performance: {
     totalFormattings: number
@@ -47,12 +53,15 @@ interface AnalyticsData {
   }
 
   userBehavior: {
-    sessionData: Map<string, {
-      preferredFormats: Map<ResultFormat, number>
-      followUpActions: Map<string, number>
-      sessionDuration: number
-      startTime: string
-    }>
+    sessionData: Map<
+      string,
+      {
+        preferredFormats: Map<ResultFormat, number>
+        followUpActions: Map<string, number>
+        sessionDuration: number
+        startTime: string
+      }
+    >
   }
 
   errors: Array<{
@@ -148,7 +157,6 @@ export class ResultAnalyticsService {
         processingTime,
         qualityScore,
       })
-
     } catch (error) {
       logger.error('Failed to record formatting analytics:', error)
     }
@@ -183,7 +191,6 @@ export class ResultAnalyticsService {
       }
 
       logger.debug(`Recorded error analytics for tool: ${toolId}`)
-
     } catch (analyticsError) {
       logger.error('Failed to record error analytics:', analyticsError)
     }
@@ -234,7 +241,6 @@ export class ResultAnalyticsService {
       }
 
       logger.debug(`Recorded user satisfaction: ${rating} for format: ${format}`)
-
     } catch (error) {
       logger.error('Failed to record user satisfaction:', error)
     }
@@ -254,7 +260,6 @@ export class ResultAnalyticsService {
       session.followUpActions.set(action, session.followUpActions.get(action)! + 1)
 
       logger.debug(`Recorded follow-up action: ${action} for user: ${userId}`)
-
     } catch (error) {
       logger.error('Failed to record follow-up action:', error)
     }
@@ -298,17 +303,20 @@ export class ResultAnalyticsService {
     }
 
     // Calculate performance metrics
-    const avgFormattingTime = this.data.performance.totalFormattings > 0
-      ? this.data.performance.totalProcessingTime / this.data.performance.totalFormattings
-      : 0
+    const avgFormattingTime =
+      this.data.performance.totalFormattings > 0
+        ? this.data.performance.totalProcessingTime / this.data.performance.totalFormattings
+        : 0
 
-    const cacheHitRate = this.data.performance.totalCacheRequests > 0
-      ? (this.data.performance.cacheHits / this.data.performance.totalCacheRequests) * 100
-      : 0
+    const cacheHitRate =
+      this.data.performance.totalCacheRequests > 0
+        ? (this.data.performance.cacheHits / this.data.performance.totalCacheRequests) * 100
+        : 0
 
-    const errorRate = this.data.performance.totalFormattings > 0
-      ? (this.data.performance.errorCount / this.data.performance.totalFormattings) * 100
-      : 0
+    const errorRate =
+      this.data.performance.totalFormattings > 0
+        ? (this.data.performance.errorCount / this.data.performance.totalFormattings) * 100
+        : 0
 
     // Calculate user behavior patterns
     const userBehavior = this.calculateUserBehavior()
@@ -494,14 +502,20 @@ export class ResultAnalyticsService {
 
   private startPeriodicTasks(): void {
     // Periodic persistence (every 5 minutes)
-    this.persistenceInterval = setInterval(() => {
-      this.persistData()
-    }, 5 * 60 * 1000)
+    this.persistenceInterval = setInterval(
+      () => {
+        this.persistData()
+      },
+      5 * 60 * 1000
+    )
 
     // Periodic cleanup (daily)
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupOldData()
-    }, 24 * 60 * 60 * 1000)
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupOldData()
+      },
+      24 * 60 * 60 * 1000
+    )
   }
 
   private persistData(): void {
@@ -519,9 +533,7 @@ export class ResultAnalyticsService {
     cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionPeriod)
 
     // Clean up old errors
-    this.data.errors = this.data.errors.filter(
-      error => new Date(error.timestamp) > cutoffDate
-    )
+    this.data.errors = this.data.errors.filter((error) => new Date(error.timestamp) > cutoffDate)
 
     // Clean up old user sessions
     for (const [userId, session] of this.data.userBehavior.sessionData.entries()) {

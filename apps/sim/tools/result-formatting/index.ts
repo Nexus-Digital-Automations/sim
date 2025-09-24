@@ -4,30 +4,27 @@
  * Main export hub for the comprehensive result formatting system
  */
 
-// Core service and registry
-export { ResultFormatterService } from './core/formatter-service'
-export { FormatterRegistry } from './core/formatter-registry'
-export { ResultCache } from './core/result-cache'
-export { ResultAnalyticsService } from './core/analytics-service'
-export { QualityValidator } from './core/quality-validator'
-
-// Formatters
-export * from './formatters'
-
 // Components
 export * from './components'
-
+export { ResultAnalyticsService } from './core/analytics-service'
+export { FormatterRegistry } from './core/formatter-registry'
+// Core service and registry
+export { ResultFormatterService } from './core/formatter-service'
+export { QualityValidator } from './core/quality-validator'
+export { ResultCache } from './core/result-cache'
+// Formatters
+export * from './formatters'
 // Types
 export * from './types'
 
 // Default service instance for easy usage
 import { ResultFormatterService } from './core/formatter-service'
 import {
-  TextFormatter,
-  TableFormatter,
-  ChartFormatter,
   CardFormatter,
+  ChartFormatter,
   ImageFormatter,
+  TableFormatter,
+  TextFormatter,
 } from './formatters'
 
 // Create and configure default service with all formatters
@@ -63,10 +60,6 @@ defaultFormatterService.registerFormatter(new ImageFormatter())
 /**
  * Utility function for quick result formatting
  */
-export async function formatToolResult(
-  result: any,
-  toolConfig: any,
-  context?: Partial<any>
-) {
+export async function formatToolResult(result: any, toolConfig: any, context?: Partial<any>) {
   return await defaultFormatterService.formatResult(result, toolConfig, context)
 }

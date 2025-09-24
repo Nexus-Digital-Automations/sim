@@ -8,12 +8,12 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  NLPProcessingResult,
-  ExtractedEntity,
   ContextualReference,
-  ConversationTurn,
-  WorkflowCommandType,
   ConversationalWorkflowState,
+  ConversationTurn,
+  ExtractedEntity,
+  NLPProcessingResult,
+  WorkflowCommandType,
 } from './types'
 
 const logger = createLogger('ConversationalWorkflowNLP')
@@ -24,52 +24,85 @@ const logger = createLogger('ConversationalWorkflowNLP')
 export class NaturalLanguageProcessor {
   // Command pattern mappings
   private readonly commandPatterns: Map<WorkflowCommandType, RegExp[]> = new Map([
-    ['start-workflow', [
-      /^(start|begin|run|execute|launch)\s*(the\s*)?(workflow|process)/i,
-      /^let'?s\s*(start|begin|get started)/i,
-      /^(go|proceed)/i,
-    ]],
-    ['pause-workflow', [
-      /^(pause|stop|halt|suspend)\s*(the\s*)?(workflow|execution|process)/i,
-      /^(wait|hold)\s*(on|up)/i,
-    ]],
-    ['resume-workflow', [
-      /^(resume|continue|restart)\s*(the\s*)?(workflow|execution|process)/i,
-      /^(keep going|carry on)/i,
-    ]],
-    ['cancel-workflow', [
-      /^(cancel|abort|terminate|quit)\s*(the\s*)?(workflow|execution|process)/i,
-      /^(stop everything|end it)/i,
-    ]],
-    ['get-status', [
-      /^(status|what'?s\s*happening|where are we|progress)/i,
-      /^(how\s*(is|are)\s*we\s*doing|what'?s\s*the\s*progress)/i,
-      /^(show\s*me\s*the\s*status)/i,
-    ]],
-    ['explain-step', [
-      /^(explain|what\s*is|describe|tell\s*me\s*about)\s*(this\s*step|current\s*step|what\s*we'?re\s*doing)/i,
-      /^(what\s*are\s*we\s*doing|what\s*happens\s*here)/i,
-    ]],
-    ['show-progress', [
-      /^(show|display|what'?s)\s*(the\s*)?(progress|status|completion)/i,
-      /^(how\s*much\s*is\s*done|how\s*far\s*along)/i,
-    ]],
-    ['retry-step', [
-      /^(retry|try\s*again|redo)\s*(this\s*step|current\s*step)?/i,
-      /^(run\s*it\s*again|do\s*over)/i,
-    ]],
-    ['skip-step', [
-      /^(skip|bypass|jump\s*over|move\s*past)\s*(this\s*step|current\s*step)?/i,
-      /^(next\s*step|move\s*on)/i,
-    ]],
-    ['modify-input', [
-      /^(change|modify|update|edit|set)\s*(the\s*)?(input|parameter|value)/i,
-      /^(I\s*want\s*to\s*change|let\s*me\s*update)/i,
-    ]],
-    ['list-options', [
-      /^(what\s*can\s*I|what\s*are\s*my|show\s*me)\s*(options|choices|commands)/i,
-      /^(help|what\s*can\s*you\s*do|available\s*actions)/i,
-    ]],
+    [
+      'start-workflow',
+      [
+        /^(start|begin|run|execute|launch)\s*(the\s*)?(workflow|process)/i,
+        /^let'?s\s*(start|begin|get started)/i,
+        /^(go|proceed)/i,
+      ],
+    ],
+    [
+      'pause-workflow',
+      [
+        /^(pause|stop|halt|suspend)\s*(the\s*)?(workflow|execution|process)/i,
+        /^(wait|hold)\s*(on|up)/i,
+      ],
+    ],
+    [
+      'resume-workflow',
+      [
+        /^(resume|continue|restart)\s*(the\s*)?(workflow|execution|process)/i,
+        /^(keep going|carry on)/i,
+      ],
+    ],
+    [
+      'cancel-workflow',
+      [
+        /^(cancel|abort|terminate|quit)\s*(the\s*)?(workflow|execution|process)/i,
+        /^(stop everything|end it)/i,
+      ],
+    ],
+    [
+      'get-status',
+      [
+        /^(status|what'?s\s*happening|where are we|progress)/i,
+        /^(how\s*(is|are)\s*we\s*doing|what'?s\s*the\s*progress)/i,
+        /^(show\s*me\s*the\s*status)/i,
+      ],
+    ],
+    [
+      'explain-step',
+      [
+        /^(explain|what\s*is|describe|tell\s*me\s*about)\s*(this\s*step|current\s*step|what\s*we'?re\s*doing)/i,
+        /^(what\s*are\s*we\s*doing|what\s*happens\s*here)/i,
+      ],
+    ],
+    [
+      'show-progress',
+      [
+        /^(show|display|what'?s)\s*(the\s*)?(progress|status|completion)/i,
+        /^(how\s*much\s*is\s*done|how\s*far\s*along)/i,
+      ],
+    ],
+    [
+      'retry-step',
+      [
+        /^(retry|try\s*again|redo)\s*(this\s*step|current\s*step)?/i,
+        /^(run\s*it\s*again|do\s*over)/i,
+      ],
+    ],
+    [
+      'skip-step',
+      [
+        /^(skip|bypass|jump\s*over|move\s*past)\s*(this\s*step|current\s*step)?/i,
+        /^(next\s*step|move\s*on)/i,
+      ],
+    ],
+    [
+      'modify-input',
+      [
+        /^(change|modify|update|edit|set)\s*(the\s*)?(input|parameter|value)/i,
+        /^(I\s*want\s*to\s*change|let\s*me\s*update)/i,
+      ],
+    ],
+    [
+      'list-options',
+      [
+        /^(what\s*can\s*I|what\s*are\s*my|show\s*me)\s*(options|choices|commands)/i,
+        /^(help|what\s*can\s*you\s*do|available\s*actions)/i,
+      ],
+    ],
   ])
 
   // Entity extraction patterns
@@ -97,7 +130,7 @@ export class NaturalLanguageProcessor {
     {
       type: 'number',
       pattern: /(\d+(?:\.\d+)?)/g,
-      extractor: (match: RegExpMatchArray) => parseFloat(match[1]),
+      extractor: (match: RegExpMatchArray) => Number.parseFloat(match[1]),
     },
     {
       type: 'boolean',
@@ -220,20 +253,22 @@ export class NaturalLanguageProcessor {
    * Normalize input text for better processing
    */
   private normalizeInput(input: string): string {
-    return input
-      .trim()
-      .toLowerCase()
-      // Normalize contractions
-      .replace(/won't/g, 'will not')
-      .replace(/can't/g, 'cannot')
-      .replace(/n't/g, ' not')
-      .replace(/'re/g, ' are')
-      .replace(/'ve/g, ' have')
-      .replace(/'ll/g, ' will')
-      .replace(/'d/g, ' would')
-      // Remove extra whitespace
-      .replace(/\s+/g, ' ')
-      .trim()
+    return (
+      input
+        .trim()
+        .toLowerCase()
+        // Normalize contractions
+        .replace(/won't/g, 'will not')
+        .replace(/can't/g, 'cannot')
+        .replace(/n't/g, ' not')
+        .replace(/'re/g, ' are')
+        .replace(/'ve/g, ' have')
+        .replace(/'ll/g, ' will')
+        .replace(/'d/g, ' would')
+        // Remove extra whitespace
+        .replace(/\s+/g, ' ')
+        .trim()
+    )
   }
 
   /**
@@ -280,7 +315,7 @@ export class NaturalLanguageProcessor {
     const primary = contextAdjustedMatches[0]
     const alternatives = contextAdjustedMatches
       .slice(1, 4)
-      .map(match => ({ intent: match.intent, confidence: match.confidence }))
+      .map((match) => ({ intent: match.intent, confidence: match.confidence }))
 
     return {
       primaryIntent: primary?.intent || 'get-status',
@@ -296,7 +331,7 @@ export class NaturalLanguageProcessor {
     matches: Array<{ intent: WorkflowCommandType; confidence: number }>,
     currentState: ConversationalWorkflowState
   ): Array<{ intent: WorkflowCommandType; confidence: number }> {
-    return matches.map(match => {
+    return matches.map((match) => {
       let adjustedConfidence = match.confidence
 
       // Context-based adjustments

@@ -8,12 +8,12 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
+  CardContent,
   FormatContext,
   FormattedResult,
-  CardContent,
   ImageContent,
   ResultFormat,
+  ResultFormatter,
 } from '../types'
 
 const logger = createLogger('CardFormatter')
@@ -51,7 +51,7 @@ export class CardFormatter implements ResultFormatter {
 
     // Check for card-suitable data
     if (Array.isArray(output)) {
-      return output.length > 0 && output.every(item => this.isCardSuitable(item))
+      return output.length > 0 && output.every((item) => this.isCardSuitable(item))
     }
 
     if (typeof output === 'object' && output !== null) {
@@ -134,7 +134,6 @@ export class CardFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(cardContent, cardData),
         },
       }
-
     } catch (error) {
       logger.error('Card formatting failed:', error)
       throw new Error(`Card formatting failed: ${(error as Error).message}`)
@@ -144,7 +143,10 @@ export class CardFormatter implements ResultFormatter {
   /**
    * Generate natural language summary
    */
-  async generateSummary(result: ToolResponse, context: FormatContext): Promise<{
+  async generateSummary(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<{
     headline: string
     description: string
     highlights: string[]
@@ -162,7 +164,6 @@ export class CardFormatter implements ResultFormatter {
         highlights: this.extractCardHighlights(cardData || []),
         suggestions: this.generateCardSuggestions(cardData || [], context),
       }
-
     } catch (error) {
       logger.error('Card summary generation failed:', error)
 
@@ -192,12 +193,12 @@ export class CardFormatter implements ResultFormatter {
     }
 
     // Check if item has at least a title-like field
-    const hasTitleField = cardPatterns.title.some(pattern =>
-      keys.some(key => key.toLowerCase().includes(pattern.toLowerCase()))
+    const hasTitleField = cardPatterns.title.some((pattern) =>
+      keys.some((key) => key.toLowerCase().includes(pattern.toLowerCase()))
     )
 
     // Check if item has structured fields (not all primitive values)
-    const structuredFieldCount = keys.filter(key => {
+    const structuredFieldCount = keys.filter((key) => {
       const value = item[key]
       return value !== null && value !== undefined && String(value).length > 0
     }).length
@@ -207,7 +208,7 @@ export class CardFormatter implements ResultFormatter {
 
   private extractCardData(output: any): Record<string, any>[] | null {
     if (Array.isArray(output)) {
-      return output.filter(item => this.isCardSuitable(item))
+      return output.filter((item) => this.isCardSuitable(item))
     }
 
     if (typeof output === 'object' && output !== null) {
@@ -229,7 +230,10 @@ export class CardFormatter implements ResultFormatter {
     return null
   }
 
-  private async generateCardContent(data: Record<string, any>[], context: FormatContext): Promise<CardContent> {
+  private async generateCardContent(
+    data: Record<string, any>[],
+    context: FormatContext
+  ): Promise<CardContent> {
     const cards = data.map((item, index) => this.createCard(item, index, context))
     const layout = this.selectOptimalLayout(cards.length, context)
 
@@ -305,7 +309,7 @@ export class CardFormatter implements ResultFormatter {
       const value = this.findFieldValue(item, field)
       if (value && String(value).trim().length > 0) {
         const desc = String(value)
-        return desc.length > 300 ? desc.substring(0, 300) + '...' : desc
+        return desc.length > 300 ? `${desc.substring(0, 300)}...` : desc
       }
     }
 
@@ -333,23 +337,46 @@ export class CardFormatter implements ResultFormatter {
 
   private extractFields(item: Record<string, any>) {
     const excludedFields = new Set([
-      'title', 'name', 'subject', 'headline', 'label',
-      'subtitle', 'category', 'type', 'author', 'source',
-      'description', 'content', 'body', 'text', 'summary',
-      'image', 'photo', 'picture', 'thumbnail', 'avatar',
+      'title',
+      'name',
+      'subject',
+      'headline',
+      'label',
+      'subtitle',
+      'category',
+      'type',
+      'author',
+      'source',
+      'description',
+      'content',
+      'body',
+      'text',
+      'summary',
+      'image',
+      'photo',
+      'picture',
+      'thumbnail',
+      'avatar',
     ])
 
     const fields = Object.entries(item)
-      .filter(([key, value]) =>
-        !excludedFields.has(key.toLowerCase()) &&
-        value !== null &&
-        value !== undefined &&
-        String(value).trim().length > 0
+      .filter(
+        ([key, value]) =>
+          !excludedFields.has(key.toLowerCase()) &&
+          value !== null &&
+          value !== undefined &&
+          String(value).trim().length > 0
       )
       .map(([key, value]) => ({
         label: this.humanizeKey(key),
         value: this.formatFieldValue(value),
-        type: this.determineFieldType(value) as 'text' | 'number' | 'date' | 'url' | 'email' | 'tag',
+        type: this.determineFieldType(value) as
+          | 'text'
+          | 'number'
+          | 'date'
+          | 'url'
+          | 'email'
+          | 'tag',
       }))
       .slice(0, 8) // Limit to 8 fields for readability
 
@@ -411,17 +438,18 @@ export class CardFormatter implements ResultFormatter {
 
   private findFieldValue(item: Record<string, any>, fieldName: string): any {
     // Exact match
-    if (item.hasOwnProperty(fieldName)) return item[fieldName]
+    if (Object.hasOwn(item, fieldName)) return item[fieldName]
 
     // Case-insensitive match
     const keys = Object.keys(item)
-    const matchingKey = keys.find(key => key.toLowerCase() === fieldName.toLowerCase())
+    const matchingKey = keys.find((key) => key.toLowerCase() === fieldName.toLowerCase())
     if (matchingKey) return item[matchingKey]
 
     // Partial match
-    const partialMatchKey = keys.find(key =>
-      key.toLowerCase().includes(fieldName.toLowerCase()) ||
-      fieldName.toLowerCase().includes(key.toLowerCase())
+    const partialMatchKey = keys.find(
+      (key) =>
+        key.toLowerCase().includes(fieldName.toLowerCase()) ||
+        fieldName.toLowerCase().includes(key.toLowerCase())
     )
     if (partialMatchKey) return item[partialMatchKey]
 
@@ -450,15 +478,17 @@ export class CardFormatter implements ResultFormatter {
     if (data.length === 0) return []
 
     const allKeys = new Set<string>()
-    data.forEach(item => Object.keys(item).forEach(key => allKeys.add(key)))
+    data.forEach((item) => Object.keys(item).forEach((key) => allKeys.add(key)))
 
-    return Array.from(allKeys).slice(0, 6).map(key => ({
-      key,
-      label: this.humanizeKey(key),
-      type: this.determineFieldType(data[0][key]),
-      sortable: true,
-      filterable: true,
-    }))
+    return Array.from(allKeys)
+      .slice(0, 6)
+      .map((key) => ({
+        key,
+        label: this.humanizeKey(key),
+        type: this.determineFieldType(data[0][key]),
+        sortable: true,
+        filterable: true,
+      }))
   }
 
   private convertToListItems(data: Record<string, any>[]) {
@@ -477,9 +507,11 @@ export class CardFormatter implements ResultFormatter {
     if (data.length === 0) return 'no fields'
 
     const allKeys = new Set<string>()
-    data.forEach(item => Object.keys(item).forEach(key => allKeys.add(key)))
+    data.forEach((item) => Object.keys(item).forEach((key) => allKeys.add(key)))
 
-    const avgFields = Math.round(data.reduce((sum, item) => sum + Object.keys(item).length, 0) / data.length)
+    const avgFields = Math.round(
+      data.reduce((sum, item) => sum + Object.keys(item).length, 0) / data.length
+    )
 
     return `${allKeys.size} unique fields (avg ${avgFields} per item)`
   }
@@ -488,16 +520,14 @@ export class CardFormatter implements ResultFormatter {
     const insights: string[] = []
 
     // Check for images
-    const itemsWithImages = data.filter(item => this.extractImage(item)).length
+    const itemsWithImages = data.filter((item) => this.extractImage(item)).length
     if (itemsWithImages > 0) {
       insights.push(`${itemsWithImages} items have images`)
     }
 
     // Check for URLs
-    const itemsWithUrls = data.filter(item =>
-      Object.values(item).some(value =>
-        typeof value === 'string' && this.isUrl(value)
-      )
+    const itemsWithUrls = data.filter((item) =>
+      Object.values(item).some((value) => typeof value === 'string' && this.isUrl(value))
     ).length
     if (itemsWithUrls > 0) {
       insights.push(`${itemsWithUrls} items have actionable links`)
@@ -511,12 +541,14 @@ export class CardFormatter implements ResultFormatter {
 
     highlights.push(`${data.length} card${data.length === 1 ? '' : 's'}`)
 
-    const itemsWithImages = data.filter(item => this.extractImage(item)).length
+    const itemsWithImages = data.filter((item) => this.extractImage(item)).length
     if (itemsWithImages > 0) {
       highlights.push(`${itemsWithImages} with images`)
     }
 
-    const itemsWithActions = data.filter(item => this.extractActions(item, {} as FormatContext).length > 0).length
+    const itemsWithActions = data.filter(
+      (item) => this.extractActions(item, {} as FormatContext).length > 0
+    ).length
     if (itemsWithActions > 0) {
       highlights.push(`${itemsWithActions} with actions`)
     }
@@ -530,7 +562,7 @@ export class CardFormatter implements ResultFormatter {
     // Standard card interactions
     suggestions.push('Click on cards to expand details')
 
-    const hasActions = data.some(item => this.extractActions(item, context).length > 0)
+    const hasActions = data.some((item) => this.extractActions(item, context).length > 0)
     if (hasActions) {
       suggestions.push('Use action buttons for quick interactions')
     }
@@ -549,7 +581,7 @@ export class CardFormatter implements ResultFormatter {
     return key
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\b\w/g, (l) => l.toUpperCase())
       .trim()
   }
 
@@ -563,7 +595,9 @@ export class CardFormatter implements ResultFormatter {
     }
 
     if (Array.isArray(value)) {
-      return value.length <= 3 ? value.join(', ') : `${value.slice(0, 3).join(', ')} +${value.length - 3} more`
+      return value.length <= 3
+        ? value.join(', ')
+        : `${value.slice(0, 3).join(', ')} +${value.length - 3} more`
     }
 
     if (typeof value === 'object') {
@@ -571,7 +605,7 @@ export class CardFormatter implements ResultFormatter {
     }
 
     const stringValue = String(value)
-    return stringValue.length > 50 ? stringValue.substring(0, 50) + '...' : stringValue
+    return stringValue.length > 50 ? `${stringValue.substring(0, 50)}...` : stringValue
   }
 
   private determineFieldType(value: any): string {
@@ -582,7 +616,7 @@ export class CardFormatter implements ResultFormatter {
     if (typeof value === 'string') {
       if (this.isEmail(value)) return 'email'
       if (this.isUrl(value)) return 'url'
-      if (!isNaN(Date.parse(value))) return 'date'
+      if (!Number.isNaN(Date.parse(value))) return 'date'
     }
 
     return 'text'
@@ -620,19 +654,25 @@ export class CardFormatter implements ResultFormatter {
     return mimeTypes[extension || ''] || 'image/jpeg'
   }
 
-  private async calculateQualityScore(content: CardContent, data: Record<string, any>[]): Promise<number> {
+  private async calculateQualityScore(
+    content: CardContent,
+    data: Record<string, any>[]
+  ): Promise<number> {
     let score = 0.7 // Base score for card formatting
 
     // Content richness
-    const avgFieldsPerCard = data.reduce((sum, item) => sum + Object.keys(item).length, 0) / data.length
+    const avgFieldsPerCard =
+      data.reduce((sum, item) => sum + Object.keys(item).length, 0) / data.length
     if (avgFieldsPerCard > 3) score += 0.1
 
     // Visual elements
-    const cardsWithImages = content.cards.filter(card => card.image).length
+    const cardsWithImages = content.cards.filter((card) => card.image).length
     if (cardsWithImages > 0) score += 0.1
 
     // Interactivity
-    const cardsWithActions = content.cards.filter(card => card.actions && card.actions.length > 0).length
+    const cardsWithActions = content.cards.filter(
+      (card) => card.actions && card.actions.length > 0
+    ).length
     if (cardsWithActions > 0) score += 0.1
 
     return Math.min(1.0, score)

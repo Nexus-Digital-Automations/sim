@@ -5,11 +5,24 @@
  * Comprehensive tests for the conversational workflow system
  */
 
-import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, jest } from '@jest/globals'
-import type { Mock } from 'jest-mock'
-
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals'
 // Test imports
-import { ConversationalWorkflowService, createConversationalWorkflowService } from '../core'
+import { type ConversationalWorkflowService, createConversationalWorkflowService } from '../core'
+import {
+  CommandProcessingError,
+  ConversationalWorkflowError,
+  SessionManagementError,
+  WorkflowMappingError,
+} from '../errors'
 import { WorkflowJourneyMapper } from '../mapper'
 import { NaturalLanguageProcessor } from '../nlp'
 import { RealtimeStateManager } from '../state-manager'
@@ -17,14 +30,7 @@ import type {
   ConversationalWorkflowState,
   CreateConversationalWorkflowRequest,
   ProcessNaturalLanguageCommandRequest,
-  WorkflowToJourneyMapping,
 } from '../types'
-import {
-  ConversationalWorkflowError,
-  WorkflowMappingError,
-  CommandProcessingError,
-  SessionManagementError,
-} from '../errors'
 
 // Mock external dependencies
 jest.mock('@/lib/logs/console/logger', () => ({
@@ -33,7 +39,7 @@ jest.mock('@/lib/logs/console/logger', () => ({
     warn: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
-  }))
+  })),
 }))
 
 jest.mock('../client', () => ({
@@ -42,7 +48,7 @@ jest.mock('../client', () => ({
     get: jest.fn(),
     put: jest.fn(),
     delete: jest.fn(),
-  }))
+  })),
 }))
 
 // Test data
@@ -338,7 +344,10 @@ describe('Conversational Workflows System', () => {
       })
 
       it('should correctly identify status request intent', async () => {
-        const result = await nlpProcessor.processInput('what is the current status?', mockInitialState)
+        const result = await nlpProcessor.processInput(
+          'what is the current status?',
+          mockInitialState
+        )
 
         expect(result.detectedIntent).toBe('get_status')
         expect(result.mappedCommand).toBe('get-status')
@@ -351,8 +360,10 @@ describe('Conversational Workflows System', () => {
         )
 
         expect(result.extractedEntities.length).toBeGreaterThan(0)
-        const parameterEntity = result.extractedEntities.find(e => e.entityType === 'parameter_name')
-        const valueEntity = result.extractedEntities.find(e => e.entityType === 'value')
+        const parameterEntity = result.extractedEntities.find(
+          (e) => e.entityType === 'parameter_name'
+        )
+        const valueEntity = result.extractedEntities.find((e) => e.entityType === 'value')
 
         expect(parameterEntity).toBeDefined()
         expect(valueEntity).toBeDefined()
@@ -559,7 +570,7 @@ describe('Conversational Workflows System', () => {
       const sessionId = createResult.sessionId
 
       // Start workflow
-      let commandRequest: ProcessNaturalLanguageCommandRequest = {
+      const commandRequest: ProcessNaturalLanguageCommandRequest = {
         sessionId,
         workflowId: mockWorkflowId,
         naturalLanguageInput: 'start the workflow',
@@ -659,7 +670,7 @@ describe('Conversational Workflows System', () => {
       expect(totalTime).toBeLessThan(10000) // Should complete within 10 seconds
 
       // Check that all requests were processed
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toHaveProperty('detectedIntent')
         expect(result).toHaveProperty('mappedCommand')
       })

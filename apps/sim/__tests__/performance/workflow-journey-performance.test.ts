@@ -20,18 +20,17 @@
  * - Concurrent handling: 10+ parallel conversions
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
-import type {
-  WorkflowState,
-  ConversionContext,
-  ConversionConfig,
-  JourneyConversionResult,
-  ConversionMetadata
-} from '@/services/parlant/journey-conversion/types'
-import { WorkflowToJourneyConverter } from '@/services/parlant/journey-conversion/conversion-engine'
-import { createLogger } from '@/lib/logs/console/logger'
-import { performance } from 'perf_hooks'
 import { EventEmitter } from 'events'
+import { performance } from 'perf_hooks'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { createLogger } from '@/lib/logs/console/logger'
+import { WorkflowToJourneyConverter } from '@/services/parlant/journey-conversion/conversion-engine'
+import type {
+  ConversionConfig,
+  ConversionContext,
+  JourneyConversionResult,
+  WorkflowState,
+} from '@/services/parlant/journey-conversion/types'
 
 const logger = createLogger('PerformanceTests')
 
@@ -42,7 +41,7 @@ const PERFORMANCE_TEST_CONFIG: ConversionConfig = {
   enable_parameter_substitution: true,
   include_error_handling: true,
   optimization_level: 'advanced',
-  cache_duration_ms: 300000 // 5 minutes for performance tests
+  cache_duration_ms: 300000, // 5 minutes for performance tests
 }
 
 // Performance thresholds and targets
@@ -53,7 +52,7 @@ const PERFORMANCE_TARGETS = {
   MAX_MEMORY_PER_CONVERSION: 100 * 1024 * 1024, // 100MB
   MIN_CACHE_HIT_RATIO: 0.8,
   MIN_CONCURRENT_CONVERSIONS: 10,
-  MAX_CPU_USAGE_PERCENT: 80
+  MAX_CPU_USAGE_PERCENT: 80,
 }
 
 // Test data generation for performance tests
@@ -70,7 +69,7 @@ class PerformanceTestDataGenerator {
           position: { x: 100, y: 100 },
           data: { label: 'Start' },
           width: 150,
-          height: 100
+          height: 100,
         },
         {
           id: 'agent',
@@ -79,10 +78,10 @@ class PerformanceTestDataGenerator {
           data: {
             label: 'Process',
             model: 'gpt-4',
-            prompt: 'Process: {{input}}'
+            prompt: 'Process: {{input}}',
           },
           width: 200,
-          height: 150
+          height: 150,
         },
         {
           id: 'api',
@@ -91,16 +90,16 @@ class PerformanceTestDataGenerator {
           data: {
             label: 'Output',
             method: 'POST',
-            url: '{{endpoint}}'
+            url: '{{endpoint}}',
           },
           width: 200,
-          height: 150
-        }
+          height: 150,
+        },
       ],
       edges: [
         { id: 'e1', source: 'start', target: 'agent', type: 'default' },
-        { id: 'e2', source: 'agent', target: 'api', type: 'default' }
-      ]
+        { id: 'e2', source: 'agent', target: 'api', type: 'default' },
+      ],
     }
   }
 
@@ -112,7 +111,7 @@ class PerformanceTestDataGenerator {
         position: { x: 50, y: 200 },
         data: { label: 'Start Complex Process' },
         width: 150,
-        height: 100
+        height: 100,
       },
       {
         id: 'condition-1',
@@ -120,10 +119,10 @@ class PerformanceTestDataGenerator {
         position: { x: 250, y: 200 },
         data: {
           label: 'Priority Check',
-          condition: '{{priority}} === "high"'
+          condition: '{{priority}} === "high"',
         },
         width: 200,
-        height: 120
+        height: 120,
       },
       {
         id: 'parallel-1',
@@ -132,10 +131,10 @@ class PerformanceTestDataGenerator {
         data: {
           label: 'High Priority Processing',
           blocks: ['agent-urgent', 'notification'],
-          wait_for_all: true
+          wait_for_all: true,
         },
         width: 250,
-        height: 150
+        height: 150,
       },
       {
         id: 'agent-normal',
@@ -144,10 +143,10 @@ class PerformanceTestDataGenerator {
         data: {
           label: 'Normal Processing',
           model: 'gpt-4',
-          prompt: 'Normal process: {{input}}'
+          prompt: 'Normal process: {{input}}',
         },
         width: 200,
-        height: 150
+        height: 150,
       },
       {
         id: 'router-1',
@@ -157,12 +156,12 @@ class PerformanceTestDataGenerator {
           label: 'Result Router',
           routes: [
             { condition: '{{urgent_complete}}', target: 'urgent-output' },
-            { condition: '{{normal_complete}}', target: 'normal-output' }
-          ]
+            { condition: '{{normal_complete}}', target: 'normal-output' },
+          ],
         },
         width: 200,
-        height: 150
-      }
+        height: 150,
+      },
     ]
 
     // Add nested conditions and loops for complexity
@@ -170,22 +169,34 @@ class PerformanceTestDataGenerator {
       blocks.push({
         id: `nested-condition-${i}`,
         type: 'condition',
-        position: { x: 1050 + (i * 200), y: 150 + (i * 50) },
+        position: { x: 1050 + i * 200, y: 150 + i * 50 },
         data: {
           label: `Nested Check ${i}`,
-          condition: `{{check_${i}}} === true`
+          condition: `{{check_${i}}} === true`,
         },
         width: 180,
-        height: 120
+        height: 120,
       })
     }
 
     const edges = [
       { id: 'e1', source: 'start', target: 'condition-1', type: 'default' },
-      { id: 'e2', source: 'condition-1', target: 'parallel-1', type: 'conditional', data: { condition: 'true' } },
-      { id: 'e3', source: 'condition-1', target: 'agent-normal', type: 'conditional', data: { condition: 'false' } },
+      {
+        id: 'e2',
+        source: 'condition-1',
+        target: 'parallel-1',
+        type: 'conditional',
+        data: { condition: 'true' },
+      },
+      {
+        id: 'e3',
+        source: 'condition-1',
+        target: 'agent-normal',
+        type: 'conditional',
+        data: { condition: 'false' },
+      },
       { id: 'e4', source: 'parallel-1', target: 'router-1', type: 'default' },
-      { id: 'e5', source: 'agent-normal', target: 'router-1', type: 'default' }
+      { id: 'e5', source: 'agent-normal', target: 'router-1', type: 'default' },
     ]
 
     // Add edges for nested conditions
@@ -195,7 +206,7 @@ class PerformanceTestDataGenerator {
         source: `nested-condition-${i}`,
         target: `nested-condition-${i + 1}`,
         type: 'conditional',
-        data: { condition: 'true' }
+        data: { condition: 'true' },
       })
     }
 
@@ -204,11 +215,11 @@ class PerformanceTestDataGenerator {
       name: 'Complex Performance Test Workflow',
       description: 'Complex workflow with nested conditions, parallels, and routing',
       blocks,
-      edges
+      edges,
     }
   }
 
-  static createLargeWorkflow(blockCount: number = 50): WorkflowState {
+  static createLargeWorkflow(blockCount = 50): WorkflowState {
     const blocks = []
     const edges = []
 
@@ -219,7 +230,7 @@ class PerformanceTestDataGenerator {
       position: { x: 50, y: 250 },
       data: { label: 'Large Workflow Start' },
       width: 150,
-      height: 100
+      height: 100,
     })
 
     // Generate many blocks of various types
@@ -234,9 +245,9 @@ class PerformanceTestDataGenerator {
         id: `block-${i}`,
         type: blockType,
         position: { x, y },
-        data: this.generateBlockDataForType(blockType, i),
+        data: PerformanceTestDataGenerator.generateBlockDataForType(blockType, i),
         width: 200,
-        height: 150
+        height: 150,
       })
 
       // Connect to previous block
@@ -245,7 +256,7 @@ class PerformanceTestDataGenerator {
         id: `edge-${i}`,
         source: sourceId,
         target: `block-${i}`,
-        type: 'default'
+        type: 'default',
       })
 
       // Layout management
@@ -261,7 +272,7 @@ class PerformanceTestDataGenerator {
       name: `Large Performance Test Workflow (${blockCount} blocks)`,
       description: `Large workflow with ${blockCount} blocks for scalability testing`,
       blocks,
-      edges
+      edges,
     }
   }
 
@@ -270,26 +281,26 @@ class PerformanceTestDataGenerator {
       agent: {
         label: `Agent ${index}`,
         model: 'gpt-4',
-        prompt: `Process step ${index}: {{input_${index}}}`
+        prompt: `Process step ${index}: {{input_${index}}}`,
       },
       api: {
         label: `API ${index}`,
         method: 'POST',
         url: `{{api_endpoint_${index}}}`,
-        headers: { 'X-Step': index.toString() }
+        headers: { 'X-Step': index.toString() },
       },
       function: {
         label: `Function ${index}`,
-        code: `return { step: ${index}, result: input.value * ${index} };`
+        code: `return { step: ${index}, result: input.value * ${index} };`,
       },
       condition: {
         label: `Condition ${index}`,
-        condition: `{{value_${index}}} > ${index}`
+        condition: `{{value_${index}}} > ${index}`,
       },
       evaluator: {
         label: `Evaluator ${index}`,
-        expression: `{{input_${index}}} * ${index} + 100`
-      }
+        expression: `{{input_${index}}} * ${index} + 100`,
+      },
     }
 
     return dataMap[blockType] || { label: `Block ${index}` }
@@ -337,7 +348,7 @@ class PerformanceMonitor {
     // Take initial memory snapshot
     this.memorySnapshots.push({
       timestamp: Date.now(),
-      usage: process.memoryUsage()
+      usage: process.memoryUsage(),
     })
 
     return monitorId
@@ -347,7 +358,7 @@ class PerformanceMonitor {
     const metrics = this.metrics.get(monitorId) || []
     metrics.push({
       timestamp: Date.now(),
-      ...metric
+      ...metric,
     })
     this.metrics.set(monitorId, metrics)
   }
@@ -360,7 +371,7 @@ class PerformanceMonitor {
     const finalMemory = process.memoryUsage()
     this.memorySnapshots.push({
       timestamp: Date.now(),
-      usage: finalMemory
+      usage: finalMemory,
     })
 
     return this.generateReport(metrics)
@@ -376,12 +387,12 @@ class PerformanceMonitor {
         operations: 0,
         throughput: 0,
         memoryUsage: process.memoryUsage(),
-        errors: 0
+        errors: 0,
       }
     }
 
-    const times = metrics.map(m => m.duration || 0)
-    const errors = metrics.filter(m => m.error).length
+    const times = metrics.map((m) => m.duration || 0)
+    const errors = metrics.filter((m) => m.error).length
 
     return {
       totalTime: times.reduce((sum, time) => sum + time, 0),
@@ -391,7 +402,7 @@ class PerformanceMonitor {
       operations: metrics.length,
       throughput: metrics.length / (Math.max(...times) / 1000), // ops per second
       memoryUsage: process.memoryUsage(),
-      errors
+      errors,
     }
   }
 
@@ -423,7 +434,7 @@ class LoadTestManager extends EventEmitter {
   async runConcurrentConversions(
     converter: WorkflowToJourneyConverter,
     contexts: ConversionContext[],
-    maxConcurrent: number = 10
+    maxConcurrent = 10
   ): Promise<ConcurrentTestResult> {
     const results: JourneyConversionResult[] = []
     const errors: Error[] = []
@@ -446,7 +457,7 @@ class LoadTestManager extends EventEmitter {
         this.emit('conversion-complete', {
           index,
           duration: conversionEnd - conversionStart,
-          success: true
+          success: true,
         })
 
         results.push(result)
@@ -458,7 +469,7 @@ class LoadTestManager extends EventEmitter {
 
         this.emit('conversion-error', {
           index,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
 
         // Release semaphore slot
@@ -479,17 +490,17 @@ class LoadTestManager extends EventEmitter {
       totalTime,
       averageTime: totalTime / contexts.length,
       throughput: contexts.length / (totalTime / 1000),
-      errors: errors.map(e => e.message),
-      results
+      errors: errors.map((e) => e.message),
+      results,
     }
   }
 
   async runProgressiveLoadTest(
     converter: WorkflowToJourneyConverter,
     baseContext: ConversionContext,
-    startLoad: number = 1,
-    maxLoad: number = 20,
-    stepSize: number = 2
+    startLoad = 1,
+    maxLoad = 20,
+    stepSize = 2
   ): Promise<ProgressiveLoadResult> {
     const loadResults: Array<{ load: number; result: ConcurrentTestResult }> = []
 
@@ -497,14 +508,16 @@ class LoadTestManager extends EventEmitter {
       logger.info(`Running load test with ${currentLoad} concurrent conversions`)
 
       // Create contexts for current load level
-      const contexts = Array(currentLoad).fill(null).map((_, i) => ({
-        ...baseContext,
-        workflow_id: `${baseContext.workflow_id}-load-${i}`,
-        parameters: {
-          ...baseContext.parameters,
-          load_test_id: `load-${currentLoad}-${i}`
-        }
-      }))
+      const contexts = Array(currentLoad)
+        .fill(null)
+        .map((_, i) => ({
+          ...baseContext,
+          workflow_id: `${baseContext.workflow_id}-load-${i}`,
+          parameters: {
+            ...baseContext.parameters,
+            load_test_id: `load-${currentLoad}-${i}`,
+          },
+        }))
 
       const result = await this.runConcurrentConversions(converter, contexts, currentLoad)
       loadResults.push({ load: currentLoad, result })
@@ -519,17 +532,19 @@ class LoadTestManager extends EventEmitter {
       }
 
       // Brief pause between load tests
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
     }
 
     return {
       loadTests: loadResults,
       maxSustainableLoad: this.findMaxSustainableLoad(loadResults),
-      performanceDegradationPoint: this.findPerformanceDegradationPoint(loadResults)
+      performanceDegradationPoint: this.findPerformanceDegradationPoint(loadResults),
     }
   }
 
-  private findMaxSustainableLoad(results: Array<{ load: number; result: ConcurrentTestResult }>): number {
+  private findMaxSustainableLoad(
+    results: Array<{ load: number; result: ConcurrentTestResult }>
+  ): number {
     for (const { load, result } of results.reverse()) {
       const errorRate = result.failedConversions / result.totalConversions
       const avgTime = result.averageTime
@@ -542,7 +557,9 @@ class LoadTestManager extends EventEmitter {
     return results.length > 0 ? results[0].load : 0
   }
 
-  private findPerformanceDegradationPoint(results: Array<{ load: number; result: ConcurrentTestResult }>): number | null {
+  private findPerformanceDegradationPoint(
+    results: Array<{ load: number; result: ConcurrentTestResult }>
+  ): number | null {
     if (results.length < 2) return null
 
     const baseline = results[0].result.averageTime
@@ -594,7 +611,7 @@ describe('Workflow to Journey Performance Tests', () => {
       workspace_id: 'test',
       user_id: 'test',
       parameters: {},
-      config: PERFORMANCE_TEST_CONFIG
+      config: PERFORMANCE_TEST_CONFIG,
     }
 
     jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(warmupWorkflow)
@@ -617,7 +634,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
@@ -633,15 +650,19 @@ describe('Workflow to Journey Performance Tests', () => {
       performanceMonitor.recordMetric(monitorId, {
         duration: conversionTime,
         blocks: workflow.blocks.length,
-        steps: result.steps.length
+        steps: result.steps.length,
       })
 
       const report = performanceMonitor.stopMonitoring(monitorId)
 
       // Performance assertions
       expect(conversionTime).toBeLessThan(PERFORMANCE_TARGETS.SIMPLE_WORKFLOW_MAX_TIME)
-      expect(result.metadata.conversion_duration_ms).toBeLessThan(PERFORMANCE_TARGETS.SIMPLE_WORKFLOW_MAX_TIME)
-      expect(report.memoryUsage.heapUsed).toBeLessThan(PERFORMANCE_TARGETS.MAX_MEMORY_PER_CONVERSION)
+      expect(result.metadata.conversion_duration_ms).toBeLessThan(
+        PERFORMANCE_TARGETS.SIMPLE_WORKFLOW_MAX_TIME
+      )
+      expect(report.memoryUsage.heapUsed).toBeLessThan(
+        PERFORMANCE_TARGETS.MAX_MEMORY_PER_CONVERSION
+      )
 
       logger.info(`Simple workflow conversion completed in ${conversionTime.toFixed(2)}ms`)
     })
@@ -655,7 +676,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
@@ -672,15 +693,19 @@ describe('Workflow to Journey Performance Tests', () => {
         duration: conversionTime,
         blocks: workflow.blocks.length,
         steps: result.steps.length,
-        warnings: result.warnings.length
+        warnings: result.warnings.length,
       })
 
       const report = performanceMonitor.stopMonitoring(monitorId)
 
       // Performance assertions
       expect(conversionTime).toBeLessThan(PERFORMANCE_TARGETS.COMPLEX_WORKFLOW_MAX_TIME)
-      expect(result.metadata.conversion_duration_ms).toBeLessThan(PERFORMANCE_TARGETS.COMPLEX_WORKFLOW_MAX_TIME)
-      expect(report.memoryUsage.heapUsed).toBeLessThan(PERFORMANCE_TARGETS.MAX_MEMORY_PER_CONVERSION)
+      expect(result.metadata.conversion_duration_ms).toBeLessThan(
+        PERFORMANCE_TARGETS.COMPLEX_WORKFLOW_MAX_TIME
+      )
+      expect(report.memoryUsage.heapUsed).toBeLessThan(
+        PERFORMANCE_TARGETS.MAX_MEMORY_PER_CONVERSION
+      )
 
       logger.info(`Complex workflow conversion completed in ${conversionTime.toFixed(2)}ms`)
     })
@@ -694,7 +719,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       jest.spyOn(converter as any, 'getWorkflowState').mockResolvedValue(workflow)
@@ -711,20 +736,24 @@ describe('Workflow to Journey Performance Tests', () => {
         duration: conversionTime,
         blocks: workflow.blocks.length,
         steps: result.steps.length,
-        warnings: result.warnings.length
+        warnings: result.warnings.length,
       })
 
       const report = performanceMonitor.stopMonitoring(monitorId)
 
       // Scaled performance assertions
       expect(conversionTime).toBeLessThan(PERFORMANCE_TARGETS.LARGE_WORKFLOW_MAX_TIME)
-      expect(result.metadata.conversion_duration_ms).toBeLessThan(PERFORMANCE_TARGETS.LARGE_WORKFLOW_MAX_TIME)
+      expect(result.metadata.conversion_duration_ms).toBeLessThan(
+        PERFORMANCE_TARGETS.LARGE_WORKFLOW_MAX_TIME
+      )
 
       // Performance should scale roughly linearly with block count
       const timePerBlock = conversionTime / workflow.blocks.length
       expect(timePerBlock).toBeLessThan(50) // 50ms per block max
 
-      logger.info(`Large workflow (${workflow.blocks.length} blocks) conversion completed in ${conversionTime.toFixed(2)}ms`)
+      logger.info(
+        `Large workflow (${workflow.blocks.length} blocks) conversion completed in ${conversionTime.toFixed(2)}ms`
+      )
     })
   })
 
@@ -745,7 +774,7 @@ describe('Workflow to Journey Performance Tests', () => {
           workspace_id: 'test-workspace',
           user_id: 'test-user',
           parameters: { ...baseParameters, iteration: i },
-          config: PERFORMANCE_TEST_CONFIG
+          config: PERFORMANCE_TEST_CONFIG,
         }
 
         const result = await converter.convertWorkflowToJourney(context)
@@ -763,7 +792,9 @@ describe('Workflow to Journey Performance Tests', () => {
       // Memory growth should be reasonable (less than 50MB total)
       expect(memoryGrowth).toBeLessThan(50 * 1024 * 1024)
 
-      logger.info(`Memory growth after 20 conversions: ${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`)
+      logger.info(
+        `Memory growth after 20 conversions: ${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`
+      )
     })
 
     test('should handle garbage collection efficiently', async () => {
@@ -777,7 +808,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       // Measure memory before and after with forced GC
@@ -811,13 +842,15 @@ describe('Workflow to Journey Performance Tests', () => {
 
       // Create contexts for concurrent conversions
       const concurrentCount = 10
-      const contexts: ConversionContext[] = Array(concurrentCount).fill(null).map((_, i) => ({
-        workflow_id: `${workflow.id}-concurrent-${i}`,
-        workspace_id: 'test-workspace',
-        user_id: 'test-user',
-        parameters: { ...baseParameters, concurrent_id: i },
-        config: PERFORMANCE_TEST_CONFIG
-      }))
+      const contexts: ConversionContext[] = Array(concurrentCount)
+        .fill(null)
+        .map((_, i) => ({
+          workflow_id: `${workflow.id}-concurrent-${i}`,
+          workspace_id: 'test-workspace',
+          user_id: 'test-user',
+          parameters: { ...baseParameters, concurrent_id: i },
+          config: PERFORMANCE_TEST_CONFIG,
+        }))
 
       const startTime = Date.now()
       const result = await loadTestManager.runConcurrentConversions(
@@ -833,7 +866,9 @@ describe('Workflow to Journey Performance Tests', () => {
       expect(result.averageTime).toBeLessThan(PERFORMANCE_TARGETS.SIMPLE_WORKFLOW_MAX_TIME * 2) // Allow 2x for concurrency
       expect(result.throughput).toBeGreaterThan(5) // At least 5 conversions per second
 
-      logger.info(`Concurrent test: ${result.successfulConversions}/${result.totalConversions} successful in ${totalTime}ms`)
+      logger.info(
+        `Concurrent test: ${result.successfulConversions}/${result.totalConversions} successful in ${totalTime}ms`
+      )
     })
 
     test('should scale with progressive load increases', async () => {
@@ -847,19 +882,15 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters: baseParameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
-      const result = await loadTestManager.runProgressiveLoadTest(
-        converter,
-        baseContext,
-        1,
-        15,
-        2
-      )
+      const result = await loadTestManager.runProgressiveLoadTest(converter, baseContext, 1, 15, 2)
 
       // Assertions for progressive load
-      expect(result.maxSustainableLoad).toBeGreaterThanOrEqual(PERFORMANCE_TARGETS.MIN_CONCURRENT_CONVERSIONS)
+      expect(result.maxSustainableLoad).toBeGreaterThanOrEqual(
+        PERFORMANCE_TARGETS.MIN_CONCURRENT_CONVERSIONS
+      )
       expect(result.loadTests.length).toBeGreaterThan(3) // Should complete multiple load levels
 
       // Performance should degrade gracefully, not catastrophically
@@ -883,7 +914,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       // First conversion (cache miss)
@@ -903,7 +934,9 @@ describe('Workflow to Journey Performance Tests', () => {
       expect(secondResult.journey.name).toBe(firstResult.journey.name)
       expect(secondResult.steps.length).toBe(firstResult.steps.length)
 
-      logger.info(`Cache effectiveness: first=${firstTime.toFixed(2)}ms, second=${secondTime.toFixed(2)}ms (${((1 - secondTime/firstTime) * 100).toFixed(1)}% faster)`)
+      logger.info(
+        `Cache effectiveness: first=${firstTime.toFixed(2)}ms, second=${secondTime.toFixed(2)}ms (${((1 - secondTime / firstTime) * 100).toFixed(1)}% faster)`
+      )
     })
 
     test('should invalidate cache appropriately when workflow changes', async () => {
@@ -918,19 +951,20 @@ describe('Workflow to Journey Performance Tests', () => {
             position: { x: 800, y: 100 },
             data: { label: 'New Block', code: 'return "modified";' },
             width: 200,
-            height: 150
-          }
-        ]
+            height: 150,
+          },
+        ],
       }
 
-      const parameters = PerformanceTestDataGenerator.generateParametersForWorkflow(originalWorkflow)
+      const parameters =
+        PerformanceTestDataGenerator.generateParametersForWorkflow(originalWorkflow)
 
       const context: ConversionContext = {
         workflow_id: 'cache-invalidation-test',
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       // First conversion with original workflow
@@ -943,9 +977,13 @@ describe('Workflow to Journey Performance Tests', () => {
 
       // Results should be different (cache was invalidated)
       expect(modifiedResult.steps.length).toBeGreaterThan(originalResult.steps.length)
-      expect(modifiedResult.metadata.blocks_converted).toBeGreaterThan(originalResult.metadata.blocks_converted)
+      expect(modifiedResult.metadata.blocks_converted).toBeGreaterThan(
+        originalResult.metadata.blocks_converted
+      )
 
-      logger.info(`Cache invalidation test: original=${originalResult.steps.length} steps, modified=${modifiedResult.steps.length} steps`)
+      logger.info(
+        `Cache invalidation test: original=${originalResult.steps.length} steps, modified=${modifiedResult.steps.length} steps`
+      )
     })
   })
 
@@ -962,7 +1000,7 @@ describe('Workflow to Journey Performance Tests', () => {
           workspace_id: 'test-workspace',
           user_id: 'test-user',
           parameters: i % 3 === 0 ? { ...parameters, invalid_param: undefined } : parameters, // Cause errors every 3rd conversion
-          config: PERFORMANCE_TEST_CONFIG
+          config: PERFORMANCE_TEST_CONFIG,
         })
       }
 
@@ -980,7 +1018,9 @@ describe('Workflow to Journey Performance Tests', () => {
       expect(result.failedConversions).toBeGreaterThan(0)
       expect(result.averageTime).toBeLessThan(PERFORMANCE_TARGETS.COMPLEX_WORKFLOW_MAX_TIME * 3) // Allow more time with errors
 
-      logger.info(`Reliability test: ${result.successfulConversions}/${result.totalConversions} successful with ${result.failedConversions} errors`)
+      logger.info(
+        `Reliability test: ${result.successfulConversions}/${result.totalConversions} successful with ${result.failedConversions} errors`
+      )
     })
 
     test('should recover from temporary failures', async () => {
@@ -992,7 +1032,7 @@ describe('Workflow to Journey Performance Tests', () => {
         workspace_id: 'test-workspace',
         user_id: 'test-user',
         parameters,
-        config: PERFORMANCE_TEST_CONFIG
+        config: PERFORMANCE_TEST_CONFIG,
       }
 
       let callCount = 0
@@ -1020,5 +1060,5 @@ export {
   PerformanceMonitor,
   LoadTestManager,
   PERFORMANCE_TARGETS,
-  PERFORMANCE_TEST_CONFIG
+  PERFORMANCE_TEST_CONFIG,
 }

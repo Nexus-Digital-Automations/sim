@@ -77,9 +77,7 @@ export class ResultCache {
     this.stats.hits++
 
     // Decompress if needed
-    const result = this.config.compressionEnabled
-      ? this.decompress(entry.result)
-      : entry.result
+    const result = this.config.compressionEnabled ? this.decompress(entry.result) : entry.result
 
     logger.debug(`Cache hit for key: ${key.substring(0, 8)}...`)
     return result
@@ -95,9 +93,7 @@ export class ResultCache {
 
     try {
       // Compress if enabled
-      const compressedResult = this.config.compressionEnabled
-        ? this.compress(result)
-        : result
+      const compressedResult = this.config.compressionEnabled ? this.compress(result) : result
 
       // Calculate compression savings
       if (this.config.compressionEnabled) {
@@ -139,7 +135,6 @@ export class ResultCache {
         size: this.estimateSize(compressedResult),
         compressed: this.config.compressionEnabled,
       })
-
     } catch (error) {
       logger.error(`Failed to cache result for key: ${key}`, error)
     }
@@ -204,9 +199,10 @@ export class ResultCache {
     compressionSavings: number
     memoryUsage: number
   } {
-    const hitRate = this.stats.hits + this.stats.misses > 0
-      ? this.stats.hits / (this.stats.hits + this.stats.misses)
-      : 0
+    const hitRate =
+      this.stats.hits + this.stats.misses > 0
+        ? this.stats.hits / (this.stats.hits + this.stats.misses)
+        : 0
 
     return {
       size: this.cache.size,
@@ -228,9 +224,7 @@ export class ResultCache {
 
     for (const entry of this.cache.values()) {
       if (entry.metadata.tags.includes(tag) && !this.isExpired(entry)) {
-        const result = this.config.compressionEnabled
-          ? this.decompress(entry.result)
-          : entry.result
+        const result = this.config.compressionEnabled ? this.decompress(entry.result) : entry.result
         results.push(result)
       }
     }
@@ -333,8 +327,12 @@ export class ResultCache {
 
     // Quality-based tag
     if (result.metadata.qualityScore) {
-      const qualityBucket = result.metadata.qualityScore >= 0.8 ? 'high' :
-                           result.metadata.qualityScore >= 0.6 ? 'medium' : 'low'
+      const qualityBucket =
+        result.metadata.qualityScore >= 0.8
+          ? 'high'
+          : result.metadata.qualityScore >= 0.6
+            ? 'medium'
+            : 'low'
       tags.push(`quality:${qualityBucket}`)
     }
 

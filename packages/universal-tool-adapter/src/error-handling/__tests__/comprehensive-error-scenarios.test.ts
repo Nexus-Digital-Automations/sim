@@ -8,35 +8,22 @@
  * @version 1.0.0
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals'
+import { beforeEach, describe, expect, jest, test } from '@jest/globals'
+import { UserSkillLevel } from '../../../../parlant-server/error-explanations'
+import { ErrorSeverity } from '../../../../parlant-server/error-taxonomy'
+import type { AdapterConfiguration, AdapterExecutionContext } from '../../types/adapter-interfaces'
 import {
-  ComprehensiveToolErrorManager,
-  comprehensiveToolErrorManager,
-  ToolErrorCategory,
-  handleToolError,
-  validateBeforeExecution
-} from '../comprehensive-error-manager'
-import {
+  ErrorAwareExecutionWrapper,
   ErrorAwareParameterMapper,
   ErrorAwareResultFormatter,
-  ErrorAwareExecutionWrapper,
-  withErrorHandling
+  withErrorHandling,
 } from '../adapter-error-integration'
 import {
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorImpact,
-  RecoveryStrategy
-} from '../../../../parlant-server/error-taxonomy'
-import {
-  UserSkillLevel,
-  ExplanationFormat
-} from '../../../../parlant-server/error-explanations'
-import type {
-  AdapterExecutionContext,
-  AdapterConfiguration,
-  ErrorHandlingConfig
-} from '../../types/adapter-interfaces'
+  ComprehensiveToolErrorManager,
+  handleToolError,
+  ToolErrorCategory,
+  validateBeforeExecution,
+} from '../comprehensive-error-manager'
 
 // Mock logger to prevent console output during tests
 jest.mock('../../../../apps/sim/lib/logs/console/logger', () => ({
@@ -44,8 +31,8 @@ jest.mock('../../../../apps/sim/lib/logs/console/logger', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
-    debug: jest.fn()
-  })
+    debug: jest.fn(),
+  }),
 }))
 
 describe('Comprehensive Error Handling System', () => {
@@ -63,7 +50,7 @@ describe('Comprehensive Error Handling System', () => {
       workspaceId: 'workspace-456',
       requestSource: 'api',
       logger: jest.fn(),
-      metrics: jest.fn()
+      metrics: jest.fn(),
     }
 
     mockConfig = {
@@ -74,19 +61,19 @@ describe('Comprehensive Error Handling System', () => {
         strategies: {
           validation: 'strict',
           execution: 'retry',
-          timeout: 'partial'
+          timeout: 'partial',
         },
         retry: {
           maxAttempts: 3,
           backoffMs: 1000,
-          retryableErrorCodes: [408, 429, 500, 502, 503]
+          retryableErrorCodes: [408, 429, 500, 502, 503],
         },
         userFriendlyMessages: {
-          'timeout': 'The operation took too long to complete',
-          'authentication': 'Please check your credentials',
-          'validation': 'The provided parameters are not valid'
-        }
-      }
+          timeout: 'The operation took too long to complete',
+          authentication: 'Please check your credentials',
+          validation: 'The provided parameters are not valid',
+        },
+      },
     }
 
     errorManager = new ComprehensiveToolErrorManager()
@@ -118,8 +105,8 @@ describe('Comprehensive Error Handling System', () => {
       expect(result.explanation.immediateActions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            action: expect.stringContaining('credential')
-          })
+            action: expect.stringContaining('credential'),
+          }),
         ])
       )
     })
@@ -134,8 +121,8 @@ describe('Comprehensive Error Handling System', () => {
       expect(result.explanation.immediateActions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            action: expect.stringContaining('parameter')
-          })
+            action: expect.stringContaining('parameter'),
+          }),
         ])
       )
     })
@@ -146,7 +133,7 @@ describe('Comprehensive Error Handling System', () => {
       // Test different skill levels
       const contexts = [
         { ...mockContext, userId: 'beginner-user' },
-        { ...mockContext, userId: 'advanced-user' }
+        { ...mockContext, userId: 'advanced-user' },
       ]
 
       for (const context of contexts) {
@@ -173,7 +160,7 @@ describe('Comprehensive Error Handling System', () => {
     test('should detect parameter type mismatches', async () => {
       const invalidParams = {
         email: 123, // Should be string
-        age: 'not-a-number' // Should be number
+        age: 'not-a-number', // Should be number
       }
 
       const result = await validateBeforeExecution(mockContext, invalidParams, mockConfig)
@@ -184,15 +171,13 @@ describe('Comprehensive Error Handling System', () => {
 
     test('should validate large parameter payloads', async () => {
       const largeParams = {
-        data: 'x'.repeat(20000) // Very large parameter
+        data: 'x'.repeat(20000), // Very large parameter
       }
 
       const result = await validateBeforeExecution(mockContext, largeParams, mockConfig)
 
       expect(result.warnings).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('Large parameter size')
-        ])
+        expect.arrayContaining([expect.stringContaining('Large parameter size')])
       )
     })
   })
@@ -212,7 +197,11 @@ describe('Comprehensive Error Handling System', () => {
     test('should not retry non-recoverable errors', async () => {
       const nonRecoverableError = new Error('Invalid API endpoint')
 
-      const result = await handleToolError(nonRecoverableError, mockContext, mockConfig.errorHandling)
+      const result = await handleToolError(
+        nonRecoverableError,
+        mockContext,
+        mockConfig.errorHandling
+      )
 
       expect(result.handled).toBe(true)
       expect(result.shouldRetry).toBe(false)
@@ -244,7 +233,7 @@ describe('Comprehensive Error Handling System', () => {
         errorsByCategory: expect.any(Object),
         topFailingTools: expect.any(Array),
         commonPatterns: expect.any(Array),
-        recommendations: expect.any(Array)
+        recommendations: expect.any(Array),
       })
     })
 
@@ -252,7 +241,7 @@ describe('Comprehensive Error Handling System', () => {
       await errorManager.trainWithFeedback('error-123', 'user-456', {
         wasHelpful: true,
         preferredSkillLevel: UserSkillLevel.ADVANCED,
-        successfulResolution: 'Updated API credentials'
+        successfulResolution: 'Updated API credentials',
       })
 
       // Verify feedback was processed (implementation details may vary)
@@ -263,7 +252,7 @@ describe('Comprehensive Error Handling System', () => {
       const analytics = errorManager.getErrorAnalytics(24)
 
       expect(analytics.recommendations).toBeDefined()
-      analytics.recommendations.forEach(recommendation => {
+      analytics.recommendations.forEach((recommendation) => {
         expect(typeof recommendation).toBe('string')
         expect(recommendation.length).toBeGreaterThan(0)
       })
@@ -288,10 +277,10 @@ describe('Comprehensive Error Handling System', () => {
             title: expect.any(String),
             description: expect.any(String),
             instructions: expect.any(Array),
-            expectedResult: expect.any(String)
-          })
+            expectedResult: expect.any(String),
+          }),
         ]),
-        additionalResources: expect.any(Array)
+        additionalResources: expect.any(Array),
       })
     })
 
@@ -302,12 +291,12 @@ describe('Comprehensive Error Handling System', () => {
       )
 
       expect(tutorial.additionalResources.length).toBeGreaterThan(0)
-      tutorial.additionalResources.forEach(resource => {
+      tutorial.additionalResources.forEach((resource) => {
         expect(resource).toMatchObject({
           title: expect.any(String),
           type: expect.stringMatching(/video|article|documentation|forum/),
           url: expect.any(String),
-          estimatedTime: expect.any(String)
+          estimatedTime: expect.any(String),
         })
       })
     })
@@ -329,7 +318,7 @@ describe('Error-Aware Integration Components', () => {
     test('should successfully map valid parameters', async () => {
       const parlantParams = {
         userEmail: 'test@example.com',
-        userName: 'Test User'
+        userName: 'Test User',
       }
 
       const config: AdapterConfiguration = {
@@ -337,21 +326,21 @@ describe('Error-Aware Integration Components', () => {
           {
             parlantParameter: 'userEmail',
             simParameter: 'email',
-            required: true
+            required: true,
           },
           {
             parlantParameter: 'userName',
             simParameter: 'name',
-            required: false
-          }
-        ]
+            required: false,
+          },
+        ],
       }
 
       const result = await parameterMapper.mapParameters(parlantParams, config, mockContext)
 
       expect(result.mappedParams).toEqual({
         email: 'test@example.com',
-        name: 'Test User'
+        name: 'Test User',
       })
       expect(result.validationResult.valid).toBe(true)
     })
@@ -364,19 +353,19 @@ describe('Error-Aware Integration Components', () => {
           {
             parlantParameter: 'userEmail',
             simParameter: 'email',
-            required: true
-          }
-        ]
+            required: true,
+          },
+        ],
       }
 
-      await expect(parameterMapper.mapParameters(parlantParams, config, mockContext))
-        .rejects
-        .toThrow(/Required parameter/)
+      await expect(
+        parameterMapper.mapParameters(parlantParams, config, mockContext)
+      ).rejects.toThrow(/Required parameter/)
     })
 
     test('should apply parameter transformations', async () => {
       const parlantParams = {
-        count: '42' // String that should be converted to number
+        count: '42', // String that should be converted to number
       }
 
       const config: AdapterConfiguration = {
@@ -387,11 +376,11 @@ describe('Error-Aware Integration Components', () => {
             transformations: [
               {
                 type: 'number_format',
-                config: {}
-              }
-            ]
-          }
-        ]
+                config: {},
+              },
+            ],
+          },
+        ],
       }
 
       const result = await parameterMapper.mapParameters(parlantParams, config, mockContext)
@@ -405,13 +394,13 @@ describe('Error-Aware Integration Components', () => {
     test('should format successful results', async () => {
       const simResult = {
         success: true,
-        data: { message: 'Operation completed' }
+        data: { message: 'Operation completed' },
       }
 
       const config: AdapterConfiguration = {
         resultFormatting: {
-          enableConversationalFormatting: true
-        }
+          enableConversationalFormatting: true,
+        },
       }
 
       const result = await resultFormatter.formatResult(simResult, config, mockContext)
@@ -422,8 +411,8 @@ describe('Error-Aware Integration Components', () => {
         conversational: expect.objectContaining({
           summary: expect.stringContaining('Successfully'),
           suggestion: expect.any(String),
-          nextActions: expect.any(Array)
-        })
+          nextActions: expect.any(Array),
+        }),
       })
     })
 
@@ -432,8 +421,8 @@ describe('Error-Aware Integration Components', () => {
 
       const config: AdapterConfiguration = {
         resultFormatting: {
-          enableConversationalFormatting: true
-        }
+          enableConversationalFormatting: true,
+        },
       }
 
       const result = await resultFormatter.formatResult(simResult, config, mockContext)
@@ -441,7 +430,7 @@ describe('Error-Aware Integration Components', () => {
       expect(result.warnings.length).toBeGreaterThan(0)
       expect(result.formattedResult).toMatchObject({
         error: true,
-        message: expect.any(String)
+        message: expect.any(String),
       })
     })
   })
@@ -474,14 +463,14 @@ describe('Error-Aware Integration Components', () => {
       expect(result.error).toMatchObject({
         type: expect.any(String),
         message: expect.any(String),
-        recoverable: expect.any(Boolean)
+        recoverable: expect.any(Boolean),
       })
       expect(result.suggestions?.length).toBeGreaterThan(0)
     })
 
     test('should execute full pipeline with all components', async () => {
       const mockSimTool = {
-        execute: jest.fn().mockResolvedValue({ success: true, data: 'result' })
+        execute: jest.fn().mockResolvedValue({ success: true, data: 'result' }),
       }
 
       const parlantParams = { input: 'test' }
@@ -517,34 +506,30 @@ describe('Error-Aware Integration Components', () => {
       expect(successResult).toEqual({ success: true, input: 'success' })
 
       // Test error handling
-      await expect(testInstance.testMethod(mockContext, 'error'))
-        .rejects
-        .toThrow(/Test error/)
+      await expect(testInstance.testMethod(mockContext, 'error')).rejects.toThrow(/Test error/)
     })
   })
 })
 
 describe('Edge Cases and Stress Testing', () => {
   test('should handle concurrent error scenarios', async () => {
-    const errors = Array.from({ length: 10 }, (_, i) =>
-      new Error(`Concurrent error ${i}`)
-    )
+    const errors = Array.from({ length: 10 }, (_, i) => new Error(`Concurrent error ${i}`))
 
-    const promises = errors.map(error =>
+    const promises = errors.map((error) =>
       handleToolError(error, mockContext, mockConfig.errorHandling)
     )
 
     const results = await Promise.all(promises)
 
     expect(results).toHaveLength(10)
-    results.forEach(result => {
+    results.forEach((result) => {
       expect(result.handled).toBe(true)
       expect(result.explanation).toBeDefined()
     })
   })
 
   test('should handle very large error messages', async () => {
-    const largeMessage = 'Error: ' + 'x'.repeat(10000)
+    const largeMessage = `Error: ${'x'.repeat(10000)}`
     const largeError = new Error(largeMessage)
 
     const result = await handleToolError(largeError, mockContext, mockConfig.errorHandling)
@@ -571,13 +556,13 @@ describe('Edge Cases and Stress Testing', () => {
     const undefinedError = undefined as any
 
     // These should be handled gracefully without crashing
-    await expect(handleToolError(nullError, mockContext, mockConfig.errorHandling))
-      .resolves
-      .toMatchObject({ handled: expect.any(Boolean) })
+    await expect(
+      handleToolError(nullError, mockContext, mockConfig.errorHandling)
+    ).resolves.toMatchObject({ handled: expect.any(Boolean) })
 
-    await expect(handleToolError(undefinedError, mockContext, mockConfig.errorHandling))
-      .resolves
-      .toMatchObject({ handled: expect.any(Boolean) })
+    await expect(
+      handleToolError(undefinedError, mockContext, mockConfig.errorHandling)
+    ).resolves.toMatchObject({ handled: expect.any(Boolean) })
   })
 })
 

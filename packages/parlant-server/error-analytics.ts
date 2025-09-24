@@ -7,18 +7,11 @@
  * proactive error management and system optimization.
  */
 
-import { createLogger } from '../../apps/sim/lib/logs/console/logger'
-import { type ParlantLogContext } from './logging'
-import {
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorImpact,
-  type ErrorClassification
-} from './error-taxonomy'
-import { type BaseToolError } from './error-handler'
-import { parlantErrorTracker, type ErrorDetails } from './error-tracking'
-import { errorMonitoringService, type MonitoringMetric, MetricType } from './error-monitoring'
 import { EventEmitter } from 'events'
+import { createLogger } from '../../apps/sim/lib/logs/console/logger'
+import { errorMonitoringService, type MonitoringMetric } from './error-monitoring'
+import { type ErrorCategory, ErrorImpact } from './error-taxonomy'
+import type { ErrorDetails } from './error-tracking'
 
 const logger = createLogger('ErrorAnalytics')
 
@@ -226,7 +219,8 @@ export class ErrorAnalyticsService extends EventEmitter {
   ): TrendAnalysis {
     const cacheKey = `trend_${metric}_${timeRange.start}_${timeRange.end}_${granularity}`
     const cached = this.analysisCache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < 300000) { // 5 minute cache
+    if (cached && Date.now() - cached.timestamp < 300000) {
+      // 5 minute cache
       return cached.result
     }
 
@@ -259,20 +253,20 @@ export class ErrorAnalyticsService extends EventEmitter {
       confidence: this.calculateConfidence(dataPoints),
       seasonality,
       anomalies,
-      forecast
+      forecast,
     }
 
     // Cache result
     this.analysisCache.set(cacheKey, {
       result: analysis,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     logger.info('Trend analysis completed', {
       metric,
       trend,
       changeRate: changeRate.toFixed(2),
-      anomalies: anomalies.length
+      anomalies: anomalies.length,
     })
 
     return analysis
@@ -283,25 +277,28 @@ export class ErrorAnalyticsService extends EventEmitter {
    */
   identifyErrorPatterns(
     timeRange: { start: number; end: number },
-    minFrequency: number = 3
+    minFrequency = 3
   ): ErrorPattern[] {
     logger.debug('Identifying error patterns', { timeRange, minFrequency })
 
     const errors = this.getErrorsInTimeRange(timeRange)
 
     // Group errors by various factors
-    const patterns = new Map<string, {
-      errors: ErrorDetails[]
-      factors: Map<string, any>
-    }>()
+    const patterns = new Map<
+      string,
+      {
+        errors: ErrorDetails[]
+        factors: Map<string, any>
+      }
+    >()
 
     // Group by error category and component
-    errors.forEach(error => {
+    errors.forEach((error) => {
       const key = `${error.category}:${error.service}`
       if (!patterns.has(key)) {
         patterns.set(key, {
           errors: [],
-          factors: new Map()
+          factors: new Map(),
         })
       }
       patterns.get(key)!.errors.push(error)
@@ -322,11 +319,11 @@ export class ErrorAnalyticsService extends EventEmitter {
         description: this.generatePatternDescription(key, patternData.errors),
         frequency: patternData.errors.length,
         impact: this.assessPatternImpact(patternData.errors),
-        categories: [...new Set(patternData.errors.map(e => e.category as ErrorCategory))],
+        categories: [...new Set(patternData.errors.map((e) => e.category as ErrorCategory))],
         commonFactors,
         correlations,
         recommendations: this.generatePatternRecommendations(key, patternData.errors),
-        confidence: this.calculatePatternConfidence(patternData.errors)
+        confidence: this.calculatePatternConfidence(patternData.errors),
       }
 
       identifiedPatterns.push(pattern)
@@ -340,7 +337,7 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     logger.info('Error patterns identified', {
       totalPatterns: identifiedPatterns.length,
-      highImpactPatterns: identifiedPatterns.filter(p => p.impact === ErrorImpact.HIGH).length
+      highImpactPatterns: identifiedPatterns.filter((p) => p.impact === ErrorImpact.HIGH).length,
     })
 
     return identifiedPatterns
@@ -351,7 +348,7 @@ export class ErrorAnalyticsService extends EventEmitter {
    */
   async performRootCauseAnalysis(
     errorId: string,
-    contextWindow: number = 3600000 // 1 hour
+    contextWindow = 3600000 // 1 hour
   ): Promise<RootCauseAnalysis> {
     logger.debug('Performing root cause analysis', { errorId, contextWindow })
 
@@ -366,8 +363,8 @@ export class ErrorAnalyticsService extends EventEmitter {
     // Gather related errors
     const relatedErrors = this.getErrorsInTimeRange({
       start: contextStart,
-      end: contextEnd
-    }).filter(e => e.id !== errorId)
+      end: contextEnd,
+    }).filter((e) => e.id !== errorId)
 
     // Analyze system state at time of error
     const systemState = await this.analyzeSystemState(error.timestamp)
@@ -387,13 +384,13 @@ export class ErrorAnalyticsService extends EventEmitter {
       confidence: this.calculateRootCauseConfidence(rootCauses),
       analysisDepth: this.calculateAnalysisDepth(rootCauses),
       recommendations,
-      preventionStrategies
+      preventionStrategies,
     }
 
     logger.info('Root cause analysis completed', {
       errorId,
       rootCauses: rootCauses.length,
-      confidence: analysis.confidence.toFixed(2)
+      confidence: analysis.confidence.toFixed(2),
     })
 
     return analysis
@@ -419,7 +416,7 @@ export class ErrorAnalyticsService extends EventEmitter {
       // Find periods of significant deviation
       const impactPeriods = this.identifyImpactPeriods(actualValues, baselineValue)
 
-      impactPeriods.forEach(period => {
+      impactPeriods.forEach((period) => {
         const impact: PerformanceImpact = {
           metric,
           baselineValue,
@@ -427,7 +424,7 @@ export class ErrorAnalyticsService extends EventEmitter {
           impactPercentage: ((period.value - baselineValue) / baselineValue) * 100,
           duration: period.duration,
           affectedOperations: period.affectedOperations,
-          recoveryTime: period.recoveryTime
+          recoveryTime: period.recoveryTime,
         }
 
         impacts.push(impact)
@@ -436,7 +433,7 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     logger.info('Performance impact analysis completed', {
       totalImpacts: impacts.length,
-      significantImpacts: impacts.filter(i => Math.abs(i.impactPercentage) > 20).length
+      significantImpacts: impacts.filter((i) => Math.abs(i.impactPercentage) > 20).length,
     })
 
     return impacts.sort((a, b) => Math.abs(b.impactPercentage) - Math.abs(a.impactPercentage))
@@ -445,10 +442,7 @@ export class ErrorAnalyticsService extends EventEmitter {
   /**
    * Predict potential issues using ML models
    */
-  async predictPotentialIssues(
-    lookAheadHours: number = 24,
-    confidence: number = 0.7
-  ): Promise<PredictionResult[]> {
+  async predictPotentialIssues(lookAheadHours = 24, confidence = 0.7): Promise<PredictionResult[]> {
     logger.debug('Predicting potential issues', { lookAheadHours, confidence })
 
     const predictions: PredictionResult[] = []
@@ -470,7 +464,7 @@ export class ErrorAnalyticsService extends EventEmitter {
             confidence: prediction.confidence,
             timeHorizon: lookAheadHours,
             risk: this.assessRisk(metric, prediction.value),
-            recommendations: this.generatePredictiveRecommendations(metric, prediction)
+            recommendations: this.generatePredictiveRecommendations(metric, prediction),
           })
         }
       } catch (error) {
@@ -480,7 +474,7 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     logger.info('Issue prediction completed', {
       predictions: predictions.length,
-      highConfidence: predictions.filter(p => p.confidence > 0.8).length
+      highConfidence: predictions.filter((p) => p.confidence > 0.8).length,
     })
 
     return predictions.sort((a, b) => b.confidence - a.confidence)
@@ -489,9 +483,7 @@ export class ErrorAnalyticsService extends EventEmitter {
   /**
    * Generate comprehensive analytics report
    */
-  generateAnalyticsReport(
-    timeRange: { start: number; end: number }
-  ): AnalyticsReport {
+  generateAnalyticsReport(timeRange: { start: number; end: number }): AnalyticsReport {
     logger.debug('Generating analytics report', { timeRange })
 
     const report: AnalyticsReport = {
@@ -503,14 +495,14 @@ export class ErrorAnalyticsService extends EventEmitter {
       performanceImpacts: this.analyzePerformanceImpact(timeRange),
       topIssues: this.identifyTopIssues(timeRange),
       recommendations: this.generateGlobalRecommendations(timeRange),
-      healthScore: this.calculateHealthScore(timeRange)
+      healthScore: this.calculateHealthScore(timeRange),
     }
 
     logger.info('Analytics report generated', {
       timeRange,
       patterns: report.errorPatterns.length,
       impacts: report.performanceImpacts.length,
-      healthScore: report.healthScore
+      healthScore: report.healthScore,
     })
 
     return report
@@ -541,7 +533,7 @@ export class ErrorAnalyticsService extends EventEmitter {
     setInterval(() => {
       const timeRange = {
         start: Date.now() - 86400000, // Last 24 hours
-        end: Date.now()
+        end: Date.now(),
       }
       this.identifyErrorPatterns(timeRange)
     }, 3600000)
@@ -561,12 +553,15 @@ export class ErrorAnalyticsService extends EventEmitter {
     data.push({
       timestamp: metric.timestamp,
       value: metric.value,
-      metadata: { tags: metric.tags, ...metric.metadata }
+      metadata: { tags: metric.tags, ...metric.metadata },
     })
 
     // Keep only recent data (last 7 days)
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
-    this.timeSeriesData.set(metric.name, data.filter(d => d.timestamp >= cutoff))
+    this.timeSeriesData.set(
+      metric.name,
+      data.filter((d) => d.timestamp >= cutoff)
+    )
   }
 
   private getTimeSeriesData(
@@ -575,13 +570,13 @@ export class ErrorAnalyticsService extends EventEmitter {
     granularity: string
   ): TimeSeriesDataPoint[] {
     const data = this.timeSeriesData.get(metric) || []
-    return data.filter(d => d.timestamp >= timeRange.start && d.timestamp <= timeRange.end)
+    return data.filter((d) => d.timestamp >= timeRange.start && d.timestamp <= timeRange.end)
   }
 
   private detectTrend(dataPoints: TimeSeriesDataPoint[]): TrendAnalysis['trend'] {
     if (dataPoints.length < 2) return 'stable'
 
-    const values = dataPoints.map(d => d.value)
+    const values = dataPoints.map((d) => d.value)
     const n = values.length
 
     // Simple linear regression slope
@@ -629,7 +624,7 @@ export class ErrorAnalyticsService extends EventEmitter {
     // Group data by period
     const periods: number[][] = []
     for (let i = 0; i < dataPoints.length; i += periodSize) {
-      const period = dataPoints.slice(i, i + periodSize).map(d => d.value)
+      const period = dataPoints.slice(i, i + periodSize).map((d) => d.value)
       if (period.length === periodSize) {
         periods.push(period)
       }
@@ -639,7 +634,7 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     // Calculate average pattern
     const pattern = new Array(periodSize).fill(0)
-    periods.forEach(period => {
+    periods.forEach((period) => {
       period.forEach((value, index) => {
         pattern[index] += value / periods.length
       })
@@ -655,7 +650,7 @@ export class ErrorAnalyticsService extends EventEmitter {
       pattern,
       strength,
       peaks: this.findPeaks(pattern),
-      valleys: this.findValleys(pattern)
+      valleys: this.findValleys(pattern),
     }
   }
 
@@ -664,7 +659,7 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     if (dataPoints.length < 10) return anomalies
 
-    const values = dataPoints.map(d => d.value)
+    const values = dataPoints.map((d) => d.value)
     const mean = values.reduce((a, b) => a + b, 0) / values.length
     const stdDev = Math.sqrt(this.calculateVariance(values))
 
@@ -681,7 +676,7 @@ export class ErrorAnalyticsService extends EventEmitter {
           expectedValue: mean,
           severity: zScore > 3 ? 'high' : zScore > 2.5 ? 'medium' : 'low',
           type: point.value > mean ? 'spike' : 'drop',
-          metadata: { zScore, ...point.metadata }
+          metadata: { zScore, ...point.metadata },
         })
       }
     })
@@ -689,12 +684,9 @@ export class ErrorAnalyticsService extends EventEmitter {
     return anomalies
   }
 
-  private generateForecast(
-    dataPoints: TimeSeriesDataPoint[],
-    granularity: string
-  ): ForecastResult {
+  private generateForecast(dataPoints: TimeSeriesDataPoint[], granularity: string): ForecastResult {
     // Simple linear regression forecast
-    const values = dataPoints.map(d => d.value)
+    const values = dataPoints.map((d) => d.value)
     const n = values.length
 
     if (n < 3) {
@@ -702,7 +694,7 @@ export class ErrorAnalyticsService extends EventEmitter {
         algorithm: 'linear',
         predictions: [],
         accuracy: 0,
-        nextPeriods: 0
+        nextPeriods: 0,
       }
     }
 
@@ -723,14 +715,14 @@ export class ErrorAnalyticsService extends EventEmitter {
 
     for (let i = 1; i <= periodsToForecast; i++) {
       const predicted = intercept + slope * (n + i - 1)
-      const confidence = Math.max(0.1, 1 - (i * 0.1)) // Decreasing confidence
+      const confidence = Math.max(0.1, 1 - i * 0.1) // Decreasing confidence
 
       predictions.push({
         timestamp: lastTimestamp + i * granularityMs,
         predicted,
         confidence,
         upperBound: predicted * (1 + 0.2 * i),
-        lowerBound: predicted * (1 - 0.2 * i)
+        lowerBound: predicted * (1 - 0.2 * i),
       })
     }
 
@@ -738,27 +730,27 @@ export class ErrorAnalyticsService extends EventEmitter {
       algorithm: 'linear',
       predictions,
       accuracy: this.calculateForecastAccuracy(values, slope, intercept),
-      nextPeriods: periodsToForecast
+      nextPeriods: periodsToForecast,
     }
   }
 
   private calculateConfidence(dataPoints: TimeSeriesDataPoint[]): number {
     if (dataPoints.length < 3) return 0.1
 
-    const values = dataPoints.map(d => d.value)
+    const values = dataPoints.map((d) => d.value)
     const variance = this.calculateVariance(values)
     const mean = values.reduce((a, b) => a + b, 0) / values.length
 
     // Confidence based on data quality and variance
     const dataQuality = Math.min(1, dataPoints.length / 100) // Better with more data
-    const stability = Math.max(0, 1 - (Math.sqrt(variance) / mean)) // Better with lower variance
+    const stability = Math.max(0, 1 - Math.sqrt(variance) / mean) // Better with lower variance
 
     return Math.min(1, (dataQuality + stability) / 2)
   }
 
   private calculateVariance(values: number[]): number {
     const mean = values.reduce((a, b) => a + b, 0) / values.length
-    return values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / values.length
+    return values.reduce((acc, val) => acc + (val - mean) ** 2, 0) / values.length
   }
 
   // Additional helper methods would be implemented here...
@@ -774,7 +766,10 @@ export class ErrorAnalyticsService extends EventEmitter {
     return [] // Simplified implementation
   }
 
-  private findCorrelations(patternErrors: ErrorDetails[], allErrors: ErrorDetails[]): ErrorCorrelation[] {
+  private findCorrelations(
+    patternErrors: ErrorDetails[],
+    allErrors: ErrorDetails[]
+  ): ErrorCorrelation[] {
     return [] // Simplified implementation
   }
 
@@ -800,11 +795,16 @@ export class ErrorAnalyticsService extends EventEmitter {
 
   private getImpactScore(impact: ErrorImpact): number {
     switch (impact) {
-      case ErrorImpact.CRITICAL: return 4
-      case ErrorImpact.HIGH: return 3
-      case ErrorImpact.MEDIUM: return 2
-      case ErrorImpact.LOW: return 1
-      case ErrorImpact.NONE: return 0
+      case ErrorImpact.CRITICAL:
+        return 4
+      case ErrorImpact.HIGH:
+        return 3
+      case ErrorImpact.MEDIUM:
+        return 2
+      case ErrorImpact.LOW:
+        return 1
+      case ErrorImpact.NONE:
+        return 0
     }
   }
 
@@ -824,7 +824,10 @@ export class ErrorAnalyticsService extends EventEmitter {
     return [] // Simplified implementation
   }
 
-  private generatePreventionStrategies(error: ErrorDetails, rootCauses: RootCause[]): PreventionStrategy[] {
+  private generatePreventionStrategies(
+    error: ErrorDetails,
+    rootCauses: RootCause[]
+  ): PreventionStrategy[] {
     return [] // Simplified implementation
   }
 
@@ -879,21 +882,31 @@ export class ErrorAnalyticsService extends EventEmitter {
 
   private getPeriodSize(granularity: string): number {
     switch (granularity) {
-      case 'minute': return 60
-      case 'hour': return 24
-      case 'day': return 7
-      case 'week': return 52
-      default: return 24
+      case 'minute':
+        return 60
+      case 'hour':
+        return 24
+      case 'day':
+        return 7
+      case 'week':
+        return 52
+      default:
+        return 24
     }
   }
 
   private getSeasonalityType(granularity: string): SeasonalityPattern['type'] {
     switch (granularity) {
-      case 'minute': return 'hourly'
-      case 'hour': return 'daily'
-      case 'day': return 'weekly'
-      case 'week': return 'monthly'
-      default: return 'daily'
+      case 'minute':
+        return 'hourly'
+      case 'hour':
+        return 'daily'
+      case 'day':
+        return 'weekly'
+      case 'week':
+        return 'monthly'
+      default:
+        return 'daily'
     }
   }
 
@@ -911,11 +924,16 @@ export class ErrorAnalyticsService extends EventEmitter {
 
   private getGranularityMs(granularity: string): number {
     switch (granularity) {
-      case 'minute': return 60000
-      case 'hour': return 3600000
-      case 'day': return 86400000
-      case 'week': return 604800000
-      default: return 3600000
+      case 'minute':
+        return 60000
+      case 'hour':
+        return 3600000
+      case 'day':
+        return 86400000
+      case 'week':
+        return 604800000
+      default:
+        return 3600000
     }
   }
 
@@ -941,7 +959,7 @@ class LinearRegressionModel implements MLModel {
     // Simplified prediction
     return {
       value: 100 + Math.random() * 20,
-      confidence: 0.75
+      confidence: 0.75,
     }
   }
 }

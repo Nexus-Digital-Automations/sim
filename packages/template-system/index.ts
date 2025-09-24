@@ -15,27 +15,22 @@
  * - Template analytics and usage tracking
  */
 
-export * from './core/template-engine'
-export * from './core/template-registry'
-export * from './core/parameter-system'
-export * from './core/inheritance-system'
-
-export * from './generators/journey-generator'
-export * from './generators/workflow-converter'
-export * from './generators/optimization-engine'
-
-export * from './library/template-library'
-export * from './library/pattern-matcher'
-export * from './library/template-discovery'
-
-export * from './api/template-api'
 export * from './api/generation-api'
 export * from './api/management-api'
-
-export * from './types/template-types'
+export * from './api/template-api'
+export * from './core/inheritance-system'
+export * from './core/parameter-system'
+export * from './core/template-engine'
+export * from './core/template-registry'
+export * from './generators/journey-generator'
+export * from './generators/optimization-engine'
+export * from './generators/workflow-converter'
+export * from './library/pattern-matcher'
+export * from './library/template-discovery'
+export * from './library/template-library'
 export * from './types/journey-types'
+export * from './types/template-types'
 export * from './types/workflow-types'
-
-export * from './utils/template-validator'
-export * from './utils/cache-manager'
 export * from './utils/analytics-tracker'
+export * from './utils/cache-manager'
+export * from './utils/template-validator'

@@ -6,8 +6,6 @@
  * that bridges existing Sim ReactFlow workflows with Parlant agents.
  */
 
-import type { Node, Edge } from 'reactflow'
-
 /**
  * Workflow to Journey Mapping Configuration
  */

@@ -13,62 +13,59 @@
  */
 
 export {
+  // Coexistence Manager
+  CoexistenceManager,
+  type CoexistenceState,
+  type ConversationalContext,
+  coexistenceManager,
+  type ModeActivity,
+  type ModeRestriction,
+  type ModeState,
+  type ModeSwitchResult,
+  type PendingChange,
+  type SyncStatus,
+  type UserModePreferences,
+  type WorkflowMode,
+} from './coexistence-manager'
+export {
+  COMPATIBILITY_BASELINE,
+  type CompatibilityVersion,
+  type FunctionValidationResult,
+  type MigrationRecord,
+  type PreservationState,
+  type RollbackResult,
+  type ValidationResult,
   // Compatibility Layer
   WorkflowPreservationSystem,
   workflowPreservationSystem,
-  COMPATIBILITY_BASELINE,
-  type CompatibilityVersion,
-  type PreservationState,
-  type MigrationRecord,
-  type ValidationResult,
-  type FunctionValidationResult,
-  type RollbackResult
 } from './compatibility-layer'
-
 export {
-  // Coexistence Manager
-  CoexistenceManager,
-  coexistenceManager,
-  type WorkflowMode,
-  type ModeState,
-  type UserModePreferences,
-  type ModeRestriction,
-  type CoexistenceState,
-  type ConversationalContext,
-  type SyncStatus,
-  type PendingChange,
-  type ModeActivity,
-  type ModeSwitchResult
-} from './coexistence-manager'
-
-export {
-  // Regression Testing
-  RegressionTestingFramework,
-  regressionTestingFramework,
-  type TestSuite,
-  type TestCase,
-  type TestOperation,
-  type ExpectedResult,
-  type TestCategory,
-  type TestPriority,
-  type OperationType,
-  type TestResult,
-  type OperationResult,
-  type AssertionResult,
-  type TestExecutionSummary
-} from './regression-testing'
-
-export {
+  type MigrationOperation,
+  type MigrationPlan,
+  type MigrationResult,
   // Migration Utilities
   MigrationUtilities,
   migrationUtilities,
-  type MigrationPlan,
-  type MigrationOperation,
-  type ValidationCheck,
-  type RollbackStrategy,
   type RollbackCheckpoint,
-  type MigrationResult
+  type RollbackStrategy,
+  type ValidationCheck,
 } from './migration-utilities'
+export {
+  type AssertionResult,
+  type ExpectedResult,
+  type OperationResult,
+  type OperationType,
+  // Regression Testing
+  RegressionTestingFramework,
+  regressionTestingFramework,
+  type TestCase,
+  type TestCategory,
+  type TestExecutionSummary,
+  type TestOperation,
+  type TestPriority,
+  type TestResult,
+  type TestSuite,
+} from './regression-testing'
 
 /**
  * Main Workflow Preservation API
@@ -79,7 +76,10 @@ export class WorkflowPreservationAPI {
   /**
    * Initialize preservation for a workflow
    */
-  static async initializePreservation(workflowId: string, workflow: any): Promise<{
+  static async initializePreservation(
+    workflowId: string,
+    workflow: any
+  ): Promise<{
     preservationState: any
     coexistenceState: any
   }> {
@@ -90,14 +90,11 @@ export class WorkflowPreservationAPI {
     )
 
     // Initialize coexistence
-    const coexistenceState = coexistenceManager.initializeCoexistence(
-      workflowId,
-      workflow
-    )
+    const coexistenceState = coexistenceManager.initializeCoexistence(workflowId, workflow)
 
     return {
       preservationState,
-      coexistenceState
+      coexistenceState,
     }
   }
 
@@ -111,7 +108,11 @@ export class WorkflowPreservationAPI {
   /**
    * Switch between visual and conversational modes
    */
-  static async switchMode(workflowId: string, targetMode: WorkflowMode, userId?: string): Promise<any> {
+  static async switchMode(
+    workflowId: string,
+    targetMode: WorkflowMode,
+    userId?: string
+  ): Promise<any> {
     return await coexistenceManager.switchMode(workflowId, targetMode, userId)
   }
 
@@ -156,7 +157,7 @@ export class WorkflowPreservationAPI {
       preservationState: workflowPreservationSystem.getPreservationState(workflowId),
       coexistenceState: coexistenceManager.getCoexistenceState(workflowId),
       migrationHistory: migrationUtilities.getMigrationHistory(workflowId),
-      testResults: regressionTestingFramework.getTestResults(workflowId)
+      testResults: regressionTestingFramework.getTestResults(workflowId),
     }
   }
 
@@ -191,8 +192,10 @@ export class WorkflowPreservationAPI {
 
     // Check for ongoing migrations
     const migrationHistory = migrationUtilities.getMigrationHistory(workflowId)
-    const hasRecentFailedMigration = migrationHistory.some(m =>
-      !m.success && (Date.now() - new Date(m.details.checkpoints[0]?.timestamp || 0).getTime()) < 300000 // 5 minutes
+    const hasRecentFailedMigration = migrationHistory.some(
+      (m) =>
+        !m.success &&
+        Date.now() - new Date(m.details.checkpoints[0]?.timestamp || 0).getTime() < 300000 // 5 minutes
     )
 
     if (hasRecentFailedMigration) {
@@ -205,7 +208,7 @@ export class WorkflowPreservationAPI {
     return {
       safe,
       reasons,
-      recommendations
+      recommendations,
     }
   }
 
@@ -236,8 +239,8 @@ export class WorkflowPreservationAPI {
         totalWorkflows: 0,
         preservedWorkflows: 0,
         migratedWorkflows: 0,
-        testCoverage: 100
-      }
+        testCoverage: 100,
+      },
     }
   }
 }

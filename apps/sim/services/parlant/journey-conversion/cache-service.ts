@@ -6,17 +6,13 @@
  * Implements intelligent cache invalidation and memory management.
  */
 
+import { and, eq, lt, sql } from 'drizzle-orm'
 import { createLogger } from '@/lib/logs/console/logger'
-import { db } from '@/db'
-import { parlantConversionCache } from '@/db/parlant-schema'
-import { eq, and, lt, desc, asc, sql } from 'drizzle-orm'
 import { generateId } from '@/lib/utils'
 import { createHash } from '@/lib/utils/hash'
-import {
-  type JourneyConversionResult,
-  type ConversionCacheEntry,
-  type CacheStats,
-} from './types'
+import { db } from '@/db'
+import { parlantConversionCache } from '@/db/parlant-schema'
+import type { CacheStats, ConversionCacheEntry, JourneyConversionResult } from './types'
 
 const logger = createLogger('CacheService')
 
@@ -99,7 +95,6 @@ export class CacheService {
 
       logger.debug('Cache miss', { cacheKey, workspaceId })
       return null
-
     } catch (error) {
       logger.error('Cache retrieval failed', { error: error.message, cacheKey, workspaceId })
       return null
@@ -171,7 +166,6 @@ export class CacheService {
         durationMs,
         storageDuration: Date.now() - startTime,
       })
-
     } catch (error) {
       logger.error('Cache storage failed', { error: error.message, cacheKey })
     }
@@ -225,7 +219,6 @@ export class CacheService {
         deletedCount,
         duration: Date.now() - startTime,
       })
-
     } catch (error) {
       logger.error('Cache clear failed', { error: error.message, workspaceId, templateId })
     }
@@ -236,12 +229,7 @@ export class CacheService {
    */
   async getStats(workspaceId: string): Promise<CacheStats> {
     try {
-      const [
-        totalEntries,
-        hitStats,
-        sizeStats,
-        ageStats
-      ] = await Promise.all([
+      const [totalEntries, hitStats, sizeStats, ageStats] = await Promise.all([
         // Total entries count
         db
           .select({ count: sql`count(*)` })
@@ -289,7 +277,6 @@ export class CacheService {
         oldest_entry: ageStats[0]?.oldest?.toISOString() || '',
         newest_entry: ageStats[0]?.newest?.toISOString() || '',
       }
-
     } catch (error) {
       logger.error('Failed to get cache stats', { error: error.message, workspaceId })
 
@@ -335,7 +322,6 @@ export class CacheService {
           duration: Date.now() - startTime,
         })
       }
-
     } catch (error) {
       logger.error('Cache cleanup failed', { error: error.message })
     }
@@ -398,9 +384,12 @@ export class CacheService {
 }
 
 // Start cleanup interval
-const cacheCleanupInterval = setInterval(async () => {
-  await cacheService.cleanup()
-}, 5 * 60 * 1000) // Run every 5 minutes
+const cacheCleanupInterval = setInterval(
+  async () => {
+    await cacheService.cleanup()
+  },
+  5 * 60 * 1000
+) // Run every 5 minutes
 
 // Cleanup on process exit
 process.on('SIGTERM', () => {

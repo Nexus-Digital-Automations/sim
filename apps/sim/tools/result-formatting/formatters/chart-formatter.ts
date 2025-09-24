@@ -8,11 +8,11 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
+  ChartContent,
   FormatContext,
   FormattedResult,
-  ChartContent,
   ResultFormat,
+  ResultFormatter,
 } from '../types'
 
 const logger = createLogger('ChartFormatter')
@@ -115,7 +115,6 @@ export class ChartFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(chartContent, numericalData),
         },
       }
-
     } catch (error) {
       logger.error('Chart formatting failed:', error)
       throw new Error(`Chart formatting failed: ${(error as Error).message}`)
@@ -125,7 +124,10 @@ export class ChartFormatter implements ResultFormatter {
   /**
    * Generate natural language summary
    */
-  async generateSummary(result: ToolResponse, context: FormatContext): Promise<{
+  async generateSummary(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<{
     headline: string
     description: string
     highlights: string[]
@@ -144,7 +146,6 @@ export class ChartFormatter implements ResultFormatter {
         highlights: this.extractDataHighlights(stats),
         suggestions: this.generateChartSuggestions(chartType, stats, context),
       }
-
     } catch (error) {
       logger.error('Chart summary generation failed:', error)
 
@@ -152,7 +153,10 @@ export class ChartFormatter implements ResultFormatter {
         headline: `${context.toolConfig.name || context.toolId} data visualization`,
         description: 'The tool returned numerical data that has been visualized as a chart.',
         highlights: [],
-        suggestions: ['Analyze the chart patterns', 'Switch between different chart types for different perspectives'],
+        suggestions: [
+          'Analyze the chart patterns',
+          'Switch between different chart types for different perspectives',
+        ],
       }
     }
   }
@@ -186,14 +190,14 @@ export class ChartFormatter implements ResultFormatter {
     if (data.length < 2) return null
 
     // Check if items are objects with numerical fields
-    const objectItems = data.filter(item => typeof item === 'object' && item !== null)
+    const objectItems = data.filter((item) => typeof item === 'object' && item !== null)
     if (objectItems.length >= data.length * 0.8) {
       const processed = this.extractNumericalFields(objectItems)
       return processed.length >= 2 ? processed : null
     }
 
     // Check if items are numbers with implicit x-axis
-    const numericalItems = data.filter(item => typeof item === 'number')
+    const numericalItems = data.filter((item) => typeof item === 'number')
     if (numericalItems.length >= data.length * 0.8) {
       return numericalItems.map((value, index) => ({
         x: index + 1,
@@ -203,10 +207,10 @@ export class ChartFormatter implements ResultFormatter {
     }
 
     // Check for key-value pairs
-    if (data.every(item => Array.isArray(item) && item.length === 2)) {
+    if (data.every((item) => Array.isArray(item) && item.length === 2)) {
       return data.map(([key, value]) => ({
         x: key,
-        y: typeof value === 'number' ? value : parseFloat(String(value)) || 0,
+        y: typeof value === 'number' ? value : Number.parseFloat(String(value)) || 0,
         label: String(key),
       }))
     }
@@ -216,15 +220,15 @@ export class ChartFormatter implements ResultFormatter {
 
   private processObjectData(data: Record<string, any>): Record<string, any>[] | null {
     const entries = Object.entries(data)
-    const numericalEntries = entries.filter(([_, value]) =>
-      typeof value === 'number' || !isNaN(parseFloat(String(value)))
+    const numericalEntries = entries.filter(
+      ([_, value]) => typeof value === 'number' || !Number.isNaN(Number.parseFloat(String(value)))
     )
 
     if (numericalEntries.length < 2) return null
 
     return numericalEntries.map(([key, value]) => ({
       x: key,
-      y: typeof value === 'number' ? value : parseFloat(String(value)),
+      y: typeof value === 'number' ? value : Number.parseFloat(String(value)),
       label: this.humanizeKey(key),
     }))
   }
@@ -234,16 +238,17 @@ export class ChartFormatter implements ResultFormatter {
 
     // Find numerical fields
     const firstItem = items[0]
-    const numericalFields = Object.keys(firstItem).filter(key =>
-      items.some(item => typeof item[key] === 'number')
+    const numericalFields = Object.keys(firstItem).filter((key) =>
+      items.some((item) => typeof item[key] === 'number')
     )
 
     if (numericalFields.length === 0) return []
 
     // Find categorical field for x-axis
-    const categoricalFields = Object.keys(firstItem).filter(key =>
-      !numericalFields.includes(key) &&
-      items.every(item => item[key] !== null && item[key] !== undefined)
+    const categoricalFields = Object.keys(firstItem).filter(
+      (key) =>
+        !numericalFields.includes(key) &&
+        items.every((item) => item[key] !== null && item[key] !== undefined)
     )
 
     const xField = categoricalFields[0] || 'index'
@@ -251,13 +256,20 @@ export class ChartFormatter implements ResultFormatter {
 
     return items.map((item, index) => ({
       x: xField === 'index' ? index + 1 : item[xField],
-      y: typeof item[yField] === 'number' ? item[yField] : parseFloat(String(item[yField])) || 0,
+      y:
+        typeof item[yField] === 'number'
+          ? item[yField]
+          : Number.parseFloat(String(item[yField])) || 0,
       label: String(xField === 'index' ? `Item ${index + 1}` : item[xField]),
       ...Object.fromEntries(
-        numericalFields.slice(1, 4).map(field => [
-          field,
-          typeof item[field] === 'number' ? item[field] : parseFloat(String(item[field])) || 0
-        ])
+        numericalFields
+          .slice(1, 4)
+          .map((field) => [
+            field,
+            typeof item[field] === 'number'
+              ? item[field]
+              : Number.parseFloat(String(item[field])) || 0,
+          ])
       ),
     }))
   }
@@ -292,7 +304,10 @@ export class ChartFormatter implements ResultFormatter {
     return 'bar'
   }
 
-  private async generateChartContent(data: Record<string, any>[], context: FormatContext): Promise<ChartContent> {
+  private async generateChartContent(
+    data: Record<string, any>[],
+    context: FormatContext
+  ): Promise<ChartContent> {
     const chartType = this.selectOptimalChartType(data)
     const config = this.generateChartConfig(data, chartType, context)
 
@@ -310,7 +325,11 @@ export class ChartFormatter implements ResultFormatter {
     }
   }
 
-  private generateChartConfig(data: Record<string, any>[], chartType: ChartContent['chartType'], context: FormatContext) {
+  private generateChartConfig(
+    data: Record<string, any>[],
+    chartType: ChartContent['chartType'],
+    context: FormatContext
+  ) {
     const numericalFields = this.getNumericalFields(data)
     const hasMultipleSeries = numericalFields.length > 1
 
@@ -339,7 +358,7 @@ export class ChartFormatter implements ResultFormatter {
     if (data.length === 0) return []
 
     const keys = Object.keys(data[0])
-    return keys.map(key => ({
+    return keys.map((key) => ({
       key,
       label: this.humanizeKey(key),
       type: this.determineColumnType(data, key),
@@ -354,8 +373,8 @@ export class ChartFormatter implements ResultFormatter {
     const numericalFields = this.getNumericalFields(data)
     const stats: Record<string, any> = {}
 
-    numericalFields.forEach(field => {
-      const values = data.map(item => item[field]).filter(v => typeof v === 'number')
+    numericalFields.forEach((field) => {
+      const values = data.map((item) => item[field]).filter((v) => typeof v === 'number')
       if (values.length > 0) {
         stats[field] = {
           min: Math.min(...values),
@@ -382,7 +401,7 @@ export class ChartFormatter implements ResultFormatter {
       }
     })
 
-    return descriptions.slice(0, 2).join(', ') + '.'
+    return `${descriptions.slice(0, 2).join(', ')}.`
   }
 
   private extractDataHighlights(stats: Record<string, any>): string[] {
@@ -413,7 +432,11 @@ export class ChartFormatter implements ResultFormatter {
     return highlights.slice(0, 3)
   }
 
-  private generateChartSuggestions(chartType: string, stats: Record<string, any>, context: FormatContext): string[] {
+  private generateChartSuggestions(
+    chartType: string,
+    stats: Record<string, any>,
+    context: FormatContext
+  ): string[] {
     const suggestions: string[] = []
 
     // Chart type specific suggestions
@@ -474,18 +497,18 @@ export class ChartFormatter implements ResultFormatter {
   private hasTimeSeriesData(data: Record<string, any>[]): boolean {
     if (data.length === 0) return false
 
-    return data.some(item => {
+    return data.some((item) => {
       const xValue = item.x || item.date || item.time || item.timestamp
-      return xValue && !isNaN(Date.parse(String(xValue)))
+      return xValue && !Number.isNaN(Date.parse(String(xValue)))
     })
   }
 
   private hasCategoricalXAxis(data: Record<string, any>[]): boolean {
     if (data.length === 0) return false
 
-    return data.some(item => {
+    return data.some((item) => {
       const xValue = item.x
-      return typeof xValue === 'string' && isNaN(parseFloat(xValue))
+      return typeof xValue === 'string' && Number.isNaN(Number.parseFloat(xValue))
     })
   }
 
@@ -500,18 +523,17 @@ export class ChartFormatter implements ResultFormatter {
     if (data.length === 0) return []
 
     const firstItem = data[0]
-    return Object.keys(firstItem).filter(key =>
-      key !== 'x' && key !== 'label' &&
-      data.some(item => typeof item[key] === 'number')
+    return Object.keys(firstItem).filter(
+      (key) => key !== 'x' && key !== 'label' && data.some((item) => typeof item[key] === 'number')
     )
   }
 
   private determineColumnType(data: Record<string, any>[], key: string): string {
-    const values = data.map(item => item[key]).filter(v => v !== null && v !== undefined)
+    const values = data.map((item) => item[key]).filter((v) => v !== null && v !== undefined)
 
-    if (values.every(v => typeof v === 'number')) return 'number'
-    if (values.every(v => typeof v === 'boolean')) return 'boolean'
-    if (values.some(v => !isNaN(Date.parse(String(v))))) return 'date'
+    if (values.every((v) => typeof v === 'number')) return 'number'
+    if (values.every((v) => typeof v === 'boolean')) return 'boolean'
+    if (values.some((v) => !Number.isNaN(Date.parse(String(v))))) return 'date'
 
     return 'string'
   }
@@ -520,7 +542,7 @@ export class ChartFormatter implements ResultFormatter {
     return key
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\b\w/g, (l) => l.toUpperCase())
       .trim()
   }
 
@@ -539,7 +561,10 @@ export class ChartFormatter implements ResultFormatter {
     return colors.slice(0, Math.max(count, 8))
   }
 
-  private async calculateQualityScore(content: ChartContent, data: Record<string, any>[]): Promise<number> {
+  private async calculateQualityScore(
+    content: ChartContent,
+    data: Record<string, any>[]
+  ): Promise<number> {
     let score = 0.7 // Base score for chart formatting
 
     // Data quality factors

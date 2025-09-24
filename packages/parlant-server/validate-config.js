@@ -8,11 +8,11 @@
  * Ensures all required configuration is present and valid
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { existsSync, readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Configuration validation rules
 const CONFIG_RULES = {
@@ -38,190 +38,189 @@ const CONFIG_RULES = {
   ],
   validation: {
     PARLANT_PORT: (value) => {
-      const port = parseInt(value);
-      return port >= 1000 && port <= 65535;
+      const port = Number.parseInt(value)
+      return port >= 1000 && port <= 65535
     },
     DATABASE_URL: (value) => {
-      return value.startsWith('postgresql://') || value.startsWith('postgres://');
+      return value.startsWith('postgresql://') || value.startsWith('postgres://')
     },
     SIM_API_URL: (value) => {
-      return value.startsWith('http://') || value.startsWith('https://');
+      return value.startsWith('http://') || value.startsWith('https://')
     },
     AI_PROVIDER: (value) => {
-      return ['openai', 'anthropic', 'cerebras', 'ollama'].includes(value.toLowerCase());
+      return ['openai', 'anthropic', 'cerebras', 'ollama'].includes(value.toLowerCase())
     },
     LOG_LEVEL: (value) => {
-      return ['DEBUG', 'INFO', 'WARN', 'ERROR'].includes(value.toUpperCase());
+      return ['DEBUG', 'INFO', 'WARN', 'ERROR'].includes(value.toUpperCase())
     },
     SESSION_TIMEOUT: (value) => {
-      const timeout = parseInt(value);
-      return timeout >= 300 && timeout <= 86400; // 5 minutes to 24 hours
+      const timeout = Number.parseInt(value)
+      return timeout >= 300 && timeout <= 86400 // 5 minutes to 24 hours
     },
     MAX_CONCURRENT_SESSIONS: (value) => {
-      const sessions = parseInt(value);
-      return sessions >= 1 && sessions <= 10000;
+      const sessions = Number.parseInt(value)
+      return sessions >= 1 && sessions <= 10000
     },
     CACHE_TTL: (value) => {
-      const ttl = parseInt(value);
-      return ttl >= 60 && ttl <= 3600; // 1 minute to 1 hour
-    }
-  }
-};
+      const ttl = Number.parseInt(value)
+      return ttl >= 60 && ttl <= 3600 // 1 minute to 1 hour
+    },
+  },
+}
 
 /**
  * Load environment variables from file
  */
 function loadEnvFile(envPath) {
   if (!existsSync(envPath)) {
-    throw new Error(`Environment file not found: ${envPath}`);
+    throw new Error(`Environment file not found: ${envPath}`)
   }
 
-  const envContent = readFileSync(envPath, 'utf8');
-  const envVars = {};
+  const envContent = readFileSync(envPath, 'utf8')
+  const envVars = {}
 
-  envContent.split('\n').forEach(line => {
-    line = line.trim();
+  envContent.split('\n').forEach((line) => {
+    line = line.trim()
     if (line && !line.startsWith('#')) {
-      const [key, ...valueParts] = line.split('=');
+      const [key, ...valueParts] = line.split('=')
       if (key && valueParts.length > 0) {
-        envVars[key.trim()] = valueParts.join('=').trim();
+        envVars[key.trim()] = valueParts.join('=').trim()
       }
     }
-  });
+  })
 
-  return envVars;
+  return envVars
 }
 
 /**
  * Validate configuration
  */
 function validateConfig(config, environment = 'development') {
-  const errors = [];
-  const warnings = [];
+  const errors = []
+  const warnings = []
 
-  console.log(`\n🔍 Validating Parlant ${environment} configuration...\n`);
+  console.log(`\n🔍 Validating Parlant ${environment} configuration...\n`)
 
   // Check required variables
-  CONFIG_RULES.required.forEach(key => {
+  CONFIG_RULES.required.forEach((key) => {
     if (!config[key]) {
-      errors.push(`❌ Missing required variable: ${key}`);
+      errors.push(`❌ Missing required variable: ${key}`)
     } else {
-      console.log(`✅ ${key}: Present`);
+      console.log(`✅ ${key}: Present`)
     }
-  });
+  })
 
   // Validate variable formats
   Object.entries(CONFIG_RULES.validation).forEach(([key, validator]) => {
     if (config[key]) {
       try {
         if (!validator(config[key])) {
-          errors.push(`❌ Invalid format for ${key}: ${config[key]}`);
+          errors.push(`❌ Invalid format for ${key}: ${config[key]}`)
         } else {
-          console.log(`✅ ${key}: Valid format`);
+          console.log(`✅ ${key}: Valid format`)
         }
       } catch (error) {
-        errors.push(`❌ Validation error for ${key}: ${error.message}`);
+        errors.push(`❌ Validation error for ${key}: ${error.message}`)
       }
     }
-  });
+  })
 
   // Environment-specific validations
   if (environment === 'production') {
     if (config.DEBUG === 'true') {
-      warnings.push(`⚠️  DEBUG is enabled in production`);
+      warnings.push(`⚠️  DEBUG is enabled in production`)
     }
     if (config.LOG_LEVEL === 'DEBUG') {
-      warnings.push(`⚠️  LOG_LEVEL is DEBUG in production`);
+      warnings.push(`⚠️  LOG_LEVEL is DEBUG in production`)
     }
   }
 
   // AI Provider specific checks
   if (config.AI_PROVIDER === 'openai' && !config.OPENAI_API_KEY) {
-    errors.push(`❌ OPENAI_API_KEY required when AI_PROVIDER is openai`);
+    errors.push(`❌ OPENAI_API_KEY required when AI_PROVIDER is openai`)
   }
 
   if (config.AI_PROVIDER === 'anthropic' && !config.ANTHROPIC_API_KEY) {
-    errors.push(`❌ ANTHROPIC_API_KEY required when AI_PROVIDER is anthropic`);
+    errors.push(`❌ ANTHROPIC_API_KEY required when AI_PROVIDER is anthropic`)
   }
 
   // Database connectivity check (basic format validation)
   if (config.DATABASE_URL) {
     try {
-      const url = new URL(config.DATABASE_URL);
+      const url = new URL(config.DATABASE_URL)
       if (!url.hostname || !url.port) {
-        warnings.push(`⚠️  DATABASE_URL missing hostname or port`);
+        warnings.push(`⚠️  DATABASE_URL missing hostname or port`)
       }
     } catch (error) {
-      errors.push(`❌ Invalid DATABASE_URL format: ${error.message}`);
+      errors.push(`❌ Invalid DATABASE_URL format: ${error.message}`)
     }
   }
 
-  return { errors, warnings };
+  return { errors, warnings }
 }
 
 /**
  * Main validation function
  */
 function main() {
-  const args = process.argv.slice(2);
-  const environment = args[0] || 'development';
+  const args = process.argv.slice(2)
+  const environment = args[0] || 'development'
 
   try {
-    console.log(`\n🚀 Parlant Server Configuration Validator`);
-    console.log(`📋 Environment: ${environment}`);
+    console.log(`\n🚀 Parlant Server Configuration Validator`)
+    console.log(`📋 Environment: ${environment}`)
 
     // Determine env file path
-    let envFile;
+    let envFile
     if (environment === 'example') {
-      envFile = join(__dirname, '.env.example');
+      envFile = join(__dirname, '.env.example')
     } else {
-      envFile = join(__dirname, `.env.${environment}`);
+      envFile = join(__dirname, `.env.${environment}`)
     }
 
     // Check if specific env file exists, fallback to .env
     if (!existsSync(envFile)) {
-      envFile = join(__dirname, '.env');
+      envFile = join(__dirname, '.env')
       if (!existsSync(envFile)) {
-        throw new Error(`No environment file found for '${environment}' environment`);
+        throw new Error(`No environment file found for '${environment}' environment`)
       }
     }
 
-    console.log(`📄 Loading: ${envFile}`);
+    console.log(`📄 Loading: ${envFile}`)
 
     // Load and validate configuration
-    const config = loadEnvFile(envFile);
-    const { errors, warnings } = validateConfig(config, environment);
+    const config = loadEnvFile(envFile)
+    const { errors, warnings } = validateConfig(config, environment)
 
     // Display results
-    console.log(`\n📊 Validation Results:`);
-    console.log(`   • Variables loaded: ${Object.keys(config).length}`);
-    console.log(`   • Errors: ${errors.length}`);
-    console.log(`   • Warnings: ${warnings.length}`);
+    console.log(`\n📊 Validation Results:`)
+    console.log(`   • Variables loaded: ${Object.keys(config).length}`)
+    console.log(`   • Errors: ${errors.length}`)
+    console.log(`   • Warnings: ${warnings.length}`)
 
     if (warnings.length > 0) {
-      console.log(`\n⚠️  Warnings:`);
-      warnings.forEach(warning => console.log(`   ${warning}`));
+      console.log(`\n⚠️  Warnings:`)
+      warnings.forEach((warning) => console.log(`   ${warning}`))
     }
 
     if (errors.length > 0) {
-      console.log(`\n❌ Errors:`);
-      errors.forEach(error => console.log(`   ${error}`));
-      console.log(`\n💡 Fix these errors before starting Parlant server`);
-      process.exit(1);
+      console.log(`\n❌ Errors:`)
+      errors.forEach((error) => console.log(`   ${error}`))
+      console.log(`\n💡 Fix these errors before starting Parlant server`)
+      process.exit(1)
     } else {
-      console.log(`\n✨ Configuration validation passed!`);
-      console.log(`🎉 Parlant server is ready to start with ${environment} configuration\n`);
+      console.log(`\n✨ Configuration validation passed!`)
+      console.log(`🎉 Parlant server is ready to start with ${environment} configuration\n`)
     }
-
   } catch (error) {
-    console.error(`\n💥 Validation failed: ${error.message}\n`);
-    process.exit(1);
+    console.error(`\n💥 Validation failed: ${error.message}\n`)
+    process.exit(1)
   }
 }
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main()
 }
 
-export { validateConfig, loadEnvFile };
+export { validateConfig, loadEnvFile }

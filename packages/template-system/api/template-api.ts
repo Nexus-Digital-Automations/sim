@@ -6,18 +6,16 @@
  * including CRUD operations, search, analytics, and template lifecycle management.
  */
 
-import { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
-import {
-  WorkflowTemplate,
-  TemplateSearchFilters,
-  TemplateAnalytics,
+import { JourneyGenerator } from '../generators/journey-generator'
+import { TemplateLibrary } from '../library/template-library'
+import type { JourneyGenerationRequest } from '../types/journey-types'
+import type {
   TemplateExportData,
   TemplateImportOptions,
+  WorkflowTemplate,
 } from '../types/template-types'
-import { TemplateLibrary } from '../library/template-library'
-import { JourneyGenerator } from '../generators/journey-generator'
-import { JourneyGenerationRequest } from '../types/journey-types'
 
 // ============================================================================
 // Validation Schemas
@@ -32,20 +30,36 @@ const CreateTemplateSchema = z.object({
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
   tags: z.array(z.string()).default([]),
   isPublic: z.boolean().default(false),
-  parameters: z.array(z.object({
-    name: z.string().min(1),
-    type: z.enum(['string', 'number', 'boolean', 'array', 'object', 'json', 'enum', 'date', 'reference']),
-    description: z.string(),
-    required: z.boolean().default(false),
-    defaultValue: z.any().optional(),
-    validation: z.object({}).optional(),
-    displayOrder: z.number().default(0),
-  })).default([]),
-  workflowData: z.object({
-    blocks: z.array(z.any()).default([]),
-    edges: z.array(z.any()).default([]),
-    variables: z.record(z.any()).default({}),
-  }).optional(),
+  parameters: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        type: z.enum([
+          'string',
+          'number',
+          'boolean',
+          'array',
+          'object',
+          'json',
+          'enum',
+          'date',
+          'reference',
+        ]),
+        description: z.string(),
+        required: z.boolean().default(false),
+        defaultValue: z.any().optional(),
+        validation: z.object({}).optional(),
+        displayOrder: z.number().default(0),
+      })
+    )
+    .default([]),
+  workflowData: z
+    .object({
+      blocks: z.array(z.any()).default([]),
+      edges: z.array(z.any()).default([]),
+      variables: z.record(z.any()).default({}),
+    })
+    .optional(),
 })
 
 const UpdateTemplateSchema = CreateTemplateSchema.partial()
@@ -56,10 +70,12 @@ const SearchTemplatesSchema = z.object({
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   author: z.string().optional(),
   rating: z.number().min(0).max(5).optional(),
-  usageCount: z.object({
-    min: z.number().optional(),
-    max: z.number().optional(),
-  }).optional(),
+  usageCount: z
+    .object({
+      min: z.number().optional(),
+      max: z.number().optional(),
+    })
+    .optional(),
   isPublic: z.boolean().optional(),
   isVerified: z.boolean().optional(),
   hasParameters: z.boolean().optional(),
@@ -72,14 +88,27 @@ const GenerateJourneySchema = z.object({
   templateId: z.string().min(1),
   agentId: z.string().min(1),
   parameters: z.record(z.any()).default({}),
-  options: z.object({
-    optimizationLevel: z.enum(['minimal', 'standard', 'aggressive']).default('standard'),
-    optimizationTargets: z.array(z.enum(['performance', 'memory', 'user_experience', 'completion_rate', 'error_reduction', 'accessibility'])).default(['performance', 'user_experience']),
-    maxStates: z.number().min(1).max(100).default(50),
-    maxTransitions: z.number().min(1).max(200).default(100),
-    validateGeneration: z.boolean().default(true),
-    useCache: z.boolean().default(true),
-  }).default({}),
+  options: z
+    .object({
+      optimizationLevel: z.enum(['minimal', 'standard', 'aggressive']).default('standard'),
+      optimizationTargets: z
+        .array(
+          z.enum([
+            'performance',
+            'memory',
+            'user_experience',
+            'completion_rate',
+            'error_reduction',
+            'accessibility',
+          ])
+        )
+        .default(['performance', 'user_experience']),
+      maxStates: z.number().min(1).max(100).default(50),
+      maxTransitions: z.number().min(1).max(200).default(100),
+      validateGeneration: z.boolean().default(true),
+      useCache: z.boolean().default(true),
+    })
+    .default({}),
 })
 
 // ============================================================================
@@ -118,11 +147,11 @@ export class TemplateAPIController {
       const paginatedTemplates = result.templates.slice(offset, offset + limit)
 
       res.json({
-        templates: paginatedTemplates.map(t => this.sanitizeTemplateForResponse(t)),
+        templates: paginatedTemplates.map((t) => this.sanitizeTemplateForResponse(t)),
         totalCount: result.totalCount,
         facets: result.facets,
         suggestions: result.suggestions,
-        relatedTemplates: result.relatedTemplates.map(t => this.sanitizeTemplateForResponse(t)),
+        relatedTemplates: result.relatedTemplates.map((t) => this.sanitizeTemplateForResponse(t)),
         pagination: {
           limit,
           offset,
@@ -183,7 +212,7 @@ export class TemplateAPIController {
       const templateData = validation.data
 
       // Check permissions
-      if (!await this.hasCreatePermission(userId, workspaceId)) {
+      if (!(await this.hasCreatePermission(userId, workspaceId))) {
         res.status(403).json({ error: 'Insufficient permissions to create templates' })
         return
       }
@@ -233,7 +262,7 @@ export class TemplateAPIController {
       }
 
       // Check permissions
-      if (!await this.hasUpdatePermission(userId, workspaceId, existingTemplate)) {
+      if (!(await this.hasUpdatePermission(userId, workspaceId, existingTemplate))) {
         res.status(403).json({ error: 'Insufficient permissions to update this template' })
         return
       }
@@ -276,7 +305,7 @@ export class TemplateAPIController {
       }
 
       // Check permissions
-      if (!await this.hasDeletePermission(userId, workspaceId, existingTemplate)) {
+      if (!(await this.hasDeletePermission(userId, workspaceId, existingTemplate))) {
         res.status(403).json({ error: 'Insufficient permissions to delete this template' })
         return
       }
@@ -325,7 +354,7 @@ export class TemplateAPIController {
     try {
       const workspaceId = this.extractWorkspaceId(req)
       const templateId = req.params.id
-      const limit = parseInt(req.query.limit as string) || 10
+      const limit = Number.parseInt(req.query.limit as string) || 10
 
       if (!templateId) {
         res.status(400).json({ error: 'Template ID is required' })
@@ -339,7 +368,7 @@ export class TemplateAPIController {
       )
 
       res.json({
-        similarTemplates: similarTemplates.map(t => this.sanitizeTemplateForResponse(t)),
+        similarTemplates: similarTemplates.map((t) => this.sanitizeTemplateForResponse(t)),
       })
     } catch (error) {
       next(error)
@@ -361,7 +390,7 @@ export class TemplateAPIController {
       )
 
       res.json({
-        recommendations: recommendations.map(t => this.sanitizeTemplateForResponse(t)),
+        recommendations: recommendations.map((t) => this.sanitizeTemplateForResponse(t)),
       })
     } catch (error) {
       next(error)
@@ -498,7 +527,7 @@ export class TemplateAPIController {
       }
 
       // Check permissions
-      if (!await this.hasCreatePermission(userId, workspaceId)) {
+      if (!(await this.hasCreatePermission(userId, workspaceId))) {
         res.status(403).json({ error: 'Insufficient permissions to import templates' })
         return
       }
@@ -541,7 +570,7 @@ export class TemplateAPIController {
       }
 
       // Check permissions
-      if (!await this.hasReadPermission(userId, workspaceId, template)) {
+      if (!(await this.hasReadPermission(userId, workspaceId, template))) {
         res.status(403).json({ error: 'Insufficient permissions to export this template' })
         return
       }
@@ -563,7 +592,10 @@ export class TemplateAPIController {
 
       // Set response headers for file download
       res.setHeader('Content-Type', 'application/json')
-      res.setHeader('Content-Disposition', `attachment; filename="${template.name}-${template.version}.json"`)
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${template.name}-${template.version}.json"`
+      )
 
       res.json(exportData)
     } catch (error) {
@@ -577,31 +609,30 @@ export class TemplateAPIController {
 
   private extractWorkspaceId(req: Request): string {
     // In a real implementation, this would extract from JWT token, headers, or URL
-    return req.headers['x-workspace-id'] as string || 'default-workspace'
+    return (req.headers['x-workspace-id'] as string) || 'default-workspace'
   }
 
   private extractUserId(req: Request): string {
     // In a real implementation, this would extract from JWT token
-    return req.headers['x-user-id'] as string || 'anonymous'
+    return (req.headers['x-user-id'] as string) || 'anonymous'
   }
 
   private sanitizeTemplateForResponse(template: WorkflowTemplate): Partial<WorkflowTemplate> {
     // Remove sensitive or internal data
-    const {
-      workflowData,
-      ...sanitized
-    } = template
+    const { workflowData, ...sanitized } = template
 
     return {
       ...sanitized,
       // Only include basic workflow data structure
-      workflowData: workflowData ? {
-        blocks: workflowData.blocks?.length || 0,
-        edges: workflowData.edges?.length || 0,
-        hasParameters: (workflowData.parameterMappings?.length || 0) > 0,
-        hasConditionals: (workflowData.conditionalBlocks?.length || 0) > 0,
-        hasDynamicContent: (workflowData.dynamicContent?.length || 0) > 0,
-      } : undefined,
+      workflowData: workflowData
+        ? {
+            blocks: workflowData.blocks?.length || 0,
+            edges: workflowData.edges?.length || 0,
+            hasParameters: (workflowData.parameterMappings?.length || 0) > 0,
+            hasConditionals: (workflowData.conditionalBlocks?.length || 0) > 0,
+            hasDynamicContent: (workflowData.dynamicContent?.length || 0) > 0,
+          }
+        : undefined,
     }
   }
 
@@ -610,17 +641,29 @@ export class TemplateAPIController {
     return true
   }
 
-  private async hasReadPermission(userId: string, workspaceId: string, template: WorkflowTemplate): Promise<boolean> {
+  private async hasReadPermission(
+    userId: string,
+    workspaceId: string,
+    template: WorkflowTemplate
+  ): Promise<boolean> {
     // Implementation would check user permissions
     return template.isPublic || template.createdBy === userId
   }
 
-  private async hasUpdatePermission(userId: string, workspaceId: string, template: WorkflowTemplate): Promise<boolean> {
+  private async hasUpdatePermission(
+    userId: string,
+    workspaceId: string,
+    template: WorkflowTemplate
+  ): Promise<boolean> {
     // Implementation would check user permissions
     return template.createdBy === userId
   }
 
-  private async hasDeletePermission(userId: string, workspaceId: string, template: WorkflowTemplate): Promise<boolean> {
+  private async hasDeletePermission(
+    userId: string,
+    workspaceId: string,
+    template: WorkflowTemplate
+  ): Promise<boolean> {
     // Implementation would check user permissions
     return template.createdBy === userId
   }

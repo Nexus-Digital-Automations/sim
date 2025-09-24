@@ -9,85 +9,74 @@
  * @version 1.0.0
  */
 
-// Main service
-export { toolRecommendationService, ToolRecommendationService } from './recommendation-service'
-
+export { BehaviorTracker, behaviorTracker } from './behavior-tracker'
 // Core engines
-export { contextAnalyzer, ContextAnalyzer } from './context-analyzer'
-export { mlEngine, MLRecommendationEngine } from './ml-engine'
-export { behaviorTracker, BehaviorTracker } from './behavior-tracker'
-export { workspaceAnalyzer, WorkspaceAnalyzer } from './workspace-analyzer'
-export { realtimeSuggester, RealtimeSuggester } from './realtime-suggester'
-export { personalizationEngine, PersonalizationEngine } from './personalization-engine'
-
+export { ContextAnalyzer, contextAnalyzer } from './context-analyzer'
+export { MLRecommendationEngine, mlEngine } from './ml-engine'
+export { PersonalizationEngine, personalizationEngine } from './personalization-engine'
+export { RealtimeSuggester, realtimeSuggester } from './realtime-suggester'
+// Main service
+export { ToolRecommendationService, toolRecommendationService } from './recommendation-service'
 // Type definitions
 export type {
+  AnalyticsInsight,
+  AnalyticsPeriod,
+  AnalyticsTrend,
+  CollaborationStyle,
+  ComponentHealth,
+  ContextMessage,
   // Core types
   ConversationContext,
-  ContextMessage,
-  UserBehaviorProfile,
-  WorkspacePattern,
-  ToolRecommendation,
-  RecommendationSet,
-  RecommendationRequest,
-
+  EntityType,
+  ExtractedEntity,
+  FeatureVector,
+  IntegrationPattern,
   // Context analysis types
   IntentClassification,
-  ExtractedEntity,
-  EntityType,
-  TaskType,
-  SentimentAnalysis,
-
-  // User behavior types
-  UserPreferences,
-  UsagePattern,
-  ToolSequence,
-  ToolFamiliarityScore,
-  ToolSuccessRate,
-  CollaborationStyle,
-
-  // Workspace analysis types
-  WorkflowPattern,
-  WorkspaceToolStats,
-  IntegrationPattern,
-  SeasonalityPattern,
-
+  LearningEvent,
+  LearningEventType,
   // ML types
   MLModelConfig,
   MLModelType,
   ModelPerformance,
-  FeatureVector,
-  TrainingData,
-
-  // Real-time suggestion types
-  RealTimeSuggestion,
-  SuggestionTrigger,
-  TriggerType,
-  SuggestionFeedback,
-
+  PersonalizationAction,
   // Personalization types
   PersonalizationConfig,
   PersonalizationRule,
-  PersonalizationAction,
   PrivacySettings,
-  LearningEvent,
-  LearningEventType,
-
+  // Real-time suggestion types
+  RealTimeSuggestion,
   // Analytics types
   RecommendationAnalytics,
-  AnalyticsPeriod,
-  RecommendationMetrics,
-  AnalyticsTrend,
-  AnalyticsInsight,
-
   // API types
   RecommendationAPI,
-  RecommendationSystemHealth,
-  ComponentHealth,
-
   // Error types
   RecommendationError,
+  RecommendationMetrics,
+  RecommendationRequest,
+  RecommendationSet,
+  RecommendationSystemHealth,
+  SeasonalityPattern,
+  SentimentAnalysis,
+  SuggestionFeedback,
+  SuggestionTrigger,
+  TaskType,
+  ToolFamiliarityScore,
+  ToolRecommendation,
+  ToolSequence,
+  ToolSuccessRate,
+  TrainingData,
+  TriggerType,
+  UsagePattern,
+  UserBehaviorProfile,
+  // User behavior types
+  UserPreferences,
+  // Workspace analysis types
+  WorkflowPattern,
+  WorkspacePattern,
+  WorkspaceToolStats,
 } from './types'
+export { WorkspaceAnalyzer, workspaceAnalyzer } from './workspace-analyzer'
 
 /**
  * Quick start helper for basic recommendation usage
@@ -185,7 +174,7 @@ export const healthCheck = async (): Promise<{
 
     return {
       status: health.status,
-      components: health.components.map(c => `${c.name}: ${c.status}`),
+      components: health.components.map((c) => `${c.name}: ${c.status}`),
       timestamp: health.lastCheck,
     }
   } catch (error) {
@@ -204,11 +193,9 @@ export const devUtils = {
   /**
    * Generate sample conversation context for testing
    */
-  createSampleContext: (options: {
-    userId?: string
-    workspaceId?: string
-    messages?: any[]
-  } = {}) => ({
+  createSampleContext: (
+    options: { userId?: string; workspaceId?: string; messages?: any[] } = {}
+  ) => ({
     id: `conv-${Date.now()}`,
     agentId: 'test-agent',
     workspaceId: options.workspaceId || 'test-workspace',

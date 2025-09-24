@@ -6,9 +6,12 @@
  * Provides common patterns for authentication, parameter handling, and result transformation
  */
 
-import { UniversalToolAdapter, ParlantTool, ParlantToolParameter, ToolExecutionContext } from '../adapter-framework'
 import type { BlockConfig, SubBlockConfig } from '@/blocks/types'
-import type { ToolResponse } from '@/tools/types'
+import {
+  type ParlantTool,
+  type ParlantToolParameter,
+  UniversalToolAdapter,
+} from '../adapter-framework'
 
 // ================================
 // Common Parameter Templates
@@ -25,7 +28,7 @@ export const createApiKeyParameter = (
   description: `Your ${serviceName} API key for authentication`,
   type: 'string',
   required: true,
-  examples: examples.length > 0 ? examples : [`your-${serviceName.toLowerCase()}-api-key`]
+  examples: examples.length > 0 ? examples : [`your-${serviceName.toLowerCase()}-api-key`],
 })
 
 /**
@@ -39,15 +42,15 @@ export const createOAuthParameter = (
   description: `OAuth credentials for ${serviceName} access`,
   type: 'object',
   required: true,
-  examples: [{ access_token: 'token', refresh_token: 'refresh' }]
+  examples: [{ access_token: 'token', refresh_token: 'refresh' }],
 })
 
 /**
  * Standard timeout parameter template
  */
 export const createTimeoutParameter = (
-  defaultTimeout: number = 30,
-  maxTimeout: number = 300
+  defaultTimeout = 30,
+  maxTimeout = 300
 ): ParlantToolParameter => ({
   name: 'timeout',
   description: 'Operation timeout in seconds',
@@ -56,8 +59,8 @@ export const createTimeoutParameter = (
   default: defaultTimeout,
   constraints: {
     min: 1,
-    max: maxTimeout
-  }
+    max: maxTimeout,
+  },
 })
 
 /**
@@ -72,7 +75,7 @@ export const createOperationParameter = (
   type: 'string',
   required: true,
   constraints: { enum: operations },
-  examples: operations.slice(0, 3)
+  examples: operations.slice(0, 3),
 })
 
 // ================================
@@ -95,15 +98,19 @@ export abstract class ApiKeyAdapter extends UniversalToolAdapter {
   /**
    * Standard API key authentication headers
    */
-  protected getAuthHeaders(apiKey: string, headerFormat: 'bearer' | 'key' | 'custom' = 'bearer', customHeader?: string): Record<string, string> {
+  protected getAuthHeaders(
+    apiKey: string,
+    headerFormat: 'bearer' | 'key' | 'custom' = 'bearer',
+    customHeader?: string
+  ): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Sim-Parlant-Integration/1.0'
+      'User-Agent': 'Sim-Parlant-Integration/1.0',
     }
 
     switch (headerFormat) {
       case 'bearer':
-        headers['Authorization'] = `Bearer ${apiKey}`
+        headers.Authorization = `Bearer ${apiKey}`
         break
       case 'key':
         headers['X-API-Key'] = apiKey
@@ -123,7 +130,7 @@ export abstract class ApiKeyAdapter extends UniversalToolAdapter {
    */
   protected async makeApiRequest(
     endpoint: string,
-    method: string = 'GET',
+    method = 'GET',
     body?: any,
     headers?: Record<string, string>
   ): Promise<any> {
@@ -133,14 +140,16 @@ export abstract class ApiKeyAdapter extends UniversalToolAdapter {
       method,
       headers: {
         ...headers,
-        ...body && method !== 'GET' ? { 'Content-Type': 'application/json' } : {}
+        ...(body && method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
       },
-      body: body && method !== 'GET' ? JSON.stringify(body) : undefined
+      body: body && method !== 'GET' ? JSON.stringify(body) : undefined,
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(`${this.serviceName} API error (${response.status}): ${errorData.message || response.statusText}`)
+      throw new Error(
+        `${this.serviceName} API error (${response.status}): ${errorData.message || response.statusText}`
+      )
     }
 
     return await response.json()
@@ -155,7 +164,12 @@ export abstract class OAuthAdapter extends UniversalToolAdapter {
   protected baseUrl: string
   protected requiredScopes: string[]
 
-  constructor(blockConfig: BlockConfig, serviceName: string, baseUrl: string, requiredScopes: string[] = []) {
+  constructor(
+    blockConfig: BlockConfig,
+    serviceName: string,
+    baseUrl: string,
+    requiredScopes: string[] = []
+  ) {
     super(blockConfig)
     this.serviceName = serviceName
     this.baseUrl = baseUrl
@@ -167,9 +181,9 @@ export abstract class OAuthAdapter extends UniversalToolAdapter {
    */
   protected getOAuthHeaders(accessToken: string): Record<string, string> {
     return {
-      'Authorization': `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'Sim-Parlant-Integration/1.0'
+      'User-Agent': 'Sim-Parlant-Integration/1.0',
     }
   }
 
@@ -203,7 +217,7 @@ export const createSuccessResponse = (data: any, metadata?: any): any => ({
   success: true,
   data,
   metadata,
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 })
 
 /**
@@ -213,7 +227,7 @@ export const createErrorResponse = (error: string, details?: any): any => ({
   success: false,
   error,
   details,
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 })
 
 // ================================
@@ -250,7 +264,7 @@ export const transformSubBlockToParameter = (subBlock: SubBlockConfig): ParlantT
     name: subBlock.id,
     description: subBlock.description || subBlock.title || `${subBlock.id} parameter`,
     type: mapSubBlockTypeToParlantType(subBlock.type),
-    required: subBlock.required || false
+    required: subBlock.required || false,
   }
 
   // Add default value
@@ -262,9 +276,9 @@ export const transformSubBlockToParameter = (subBlock: SubBlockConfig): ParlantT
   if (subBlock.options) {
     const options = typeof subBlock.options === 'function' ? subBlock.options() : subBlock.options
     parameter.constraints = {
-      enum: options.map(opt => opt.id)
+      enum: options.map((opt) => opt.id),
     }
-    parameter.examples = options.slice(0, 3).map(opt => opt.id)
+    parameter.examples = options.slice(0, 3).map((opt) => opt.id)
   }
 
   // Add constraints from slider/number inputs
@@ -272,16 +286,17 @@ export const transformSubBlockToParameter = (subBlock: SubBlockConfig): ParlantT
     parameter.constraints = {
       ...parameter.constraints,
       min: subBlock.min,
-      max: subBlock.max
+      max: subBlock.max,
     }
   }
 
   // Add dependency conditions
   if (subBlock.condition) {
-    const condition = typeof subBlock.condition === 'function' ? subBlock.condition() : subBlock.condition
+    const condition =
+      typeof subBlock.condition === 'function' ? subBlock.condition() : subBlock.condition
     parameter.dependsOn = {
       parameter: condition.field,
-      value: condition.value
+      value: condition.value,
     }
   }
 
@@ -291,7 +306,9 @@ export const transformSubBlockToParameter = (subBlock: SubBlockConfig): ParlantT
 /**
  * Map Sim SubBlock types to Parlant parameter types
  */
-export const mapSubBlockTypeToParlantType = (subBlockType: string): 'string' | 'number' | 'boolean' | 'array' | 'object' => {
+export const mapSubBlockTypeToParlantType = (
+  subBlockType: string
+): 'string' | 'number' | 'boolean' | 'array' | 'object' => {
   switch (subBlockType) {
     case 'short-input':
     case 'long-input':
@@ -323,40 +340,78 @@ export const mapSubBlockTypeToParlantType = (subBlockType: string): 'string' | '
  */
 export const classifyTool = (blockConfig: BlockConfig): ParlantTool['category'] => {
   const type = blockConfig.type.toLowerCase()
-  const description = (blockConfig.description + ' ' + (blockConfig.longDescription || '')).toLowerCase()
+  const description =
+    `${blockConfig.description} ${blockConfig.longDescription || ''}`.toLowerCase()
 
   // Communication tools
-  if (isMatchingCategory(type, description, [
-    'slack', 'discord', 'telegram', 'whatsapp', 'sms', 'mail', 'gmail', 'outlook', 'teams'
-  ])) {
+  if (
+    isMatchingCategory(type, description, [
+      'slack',
+      'discord',
+      'telegram',
+      'whatsapp',
+      'sms',
+      'mail',
+      'gmail',
+      'outlook',
+      'teams',
+    ])
+  ) {
     return 'communication'
   }
 
   // Productivity tools
-  if (isMatchingCategory(type, description, [
-    'notion', 'airtable', 'google_sheets', 'excel', 'jira', 'linear', 'github', 'trello'
-  ])) {
+  if (
+    isMatchingCategory(type, description, [
+      'notion',
+      'airtable',
+      'google_sheets',
+      'excel',
+      'jira',
+      'linear',
+      'github',
+      'trello',
+    ])
+  ) {
     return 'productivity'
   }
 
   // Data tools
-  if (isMatchingCategory(type, description, [
-    'postgresql', 'mysql', 'mongodb', 'supabase', 'pinecone', 'qdrant', 'database', 'storage'
-  ])) {
+  if (
+    isMatchingCategory(type, description, [
+      'postgresql',
+      'mysql',
+      'mongodb',
+      'supabase',
+      'pinecone',
+      'qdrant',
+      'database',
+      'storage',
+    ])
+  ) {
     return 'data'
   }
 
   // AI tools
-  if (isMatchingCategory(type, description, [
-    'openai', 'huggingface', 'elevenlabs', 'image_generator', 'vision', 'ai', 'ml', 'embedding'
-  ])) {
+  if (
+    isMatchingCategory(type, description, [
+      'openai',
+      'huggingface',
+      'elevenlabs',
+      'image_generator',
+      'vision',
+      'ai',
+      'ml',
+      'embedding',
+    ])
+  ) {
     return 'ai'
   }
 
   // Integration tools
-  if (isMatchingCategory(type, description, [
-    'webhook', 'api', 'oauth', 'http', 'rest', 'graphql'
-  ])) {
+  if (
+    isMatchingCategory(type, description, ['webhook', 'api', 'oauth', 'http', 'rest', 'graphql'])
+  ) {
     return 'integration'
   }
 
@@ -369,7 +424,7 @@ export const classifyTool = (blockConfig: BlockConfig): ParlantTool['category'] 
  */
 const isMatchingCategory = (type: string, description: string, keywords: string[]): boolean => {
   const text = `${type} ${description}`.toLowerCase()
-  return keywords.some(keyword => text.includes(keyword))
+  return keywords.some((keyword) => text.includes(keyword))
 }
 
 // ================================
@@ -383,8 +438,10 @@ export const generateUsageHints = (blockConfig: BlockConfig): string[] => {
   const hints: string[] = []
 
   // Authentication hints
-  const hasOAuth = blockConfig.subBlocks.some(sub => sub.type === 'oauth-input')
-  const hasApiKey = blockConfig.subBlocks.some(sub => sub.password && (sub.id.includes('key') || sub.id.includes('token')))
+  const hasOAuth = blockConfig.subBlocks.some((sub) => sub.type === 'oauth-input')
+  const hasApiKey = blockConfig.subBlocks.some(
+    (sub) => sub.password && (sub.id.includes('key') || sub.id.includes('token'))
+  )
 
   if (hasOAuth) {
     hints.push('OAuth authentication required - ensure proper scopes are configured')
@@ -394,12 +451,16 @@ export const generateUsageHints = (blockConfig: BlockConfig): string[] => {
   }
 
   // Parameter hints
-  const hasFileInputs = blockConfig.subBlocks.some(sub => sub.type === 'file-upload' || sub.type === 'file-selector')
+  const hasFileInputs = blockConfig.subBlocks.some(
+    (sub) => sub.type === 'file-upload' || sub.type === 'file-selector'
+  )
   if (hasFileInputs) {
     hints.push('File operations supported - check file size limits and supported formats')
   }
 
-  const hasComplexInputs = blockConfig.subBlocks.some(sub => sub.type === 'code' || sub.type === 'table')
+  const hasComplexInputs = blockConfig.subBlocks.some(
+    (sub) => sub.type === 'code' || sub.type === 'table'
+  )
   if (hasComplexInputs) {
     hints.push('Complex data structures supported - use proper JSON formatting')
   }
@@ -426,12 +487,13 @@ export const generateAdapterFromBlock = (
   serviceName: string,
   baseUrl?: string
 ): string => {
-  const className = `${blockConfig.type.split('_').map(word =>
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join('')}Adapter`
+  const className = `${blockConfig.type
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')}Adapter`
 
   const category = classifyTool(blockConfig)
-  const hasApiKey = blockConfig.subBlocks.some(sub => sub.password)
+  const hasApiKey = blockConfig.subBlocks.some((sub) => sub.password)
   const baseClass = hasApiKey && baseUrl ? 'ApiKeyAdapter' : 'UniversalToolAdapter'
 
   return `/**
@@ -445,9 +507,10 @@ import type { ToolResponse } from '@/tools/types'
 
 export class ${className} extends ${baseClass} {
   constructor(blockConfig: BlockConfig) {
-    ${baseClass === 'ApiKeyAdapter' && baseUrl
-      ? `super(blockConfig, '${serviceName}', '${baseUrl}')`
-      : 'super(blockConfig)'
+    ${
+      baseClass === 'ApiKeyAdapter' && baseUrl
+        ? `super(blockConfig, '${serviceName}', '${baseUrl}')`
+        : 'super(blockConfig)'
     }
   }
 
@@ -459,27 +522,39 @@ export class ${className} extends ${baseClass} {
       longDescription: '${blockConfig.longDescription || blockConfig.description}',
       category: '${category}',
       parameters: [
-        ${blockConfig.subBlocks.map(sub => `
+        ${blockConfig.subBlocks
+          .map(
+            (sub) => `
         {
           name: '${sub.id}',
           description: '${sub.description || sub.title || sub.id}',
           type: '${mapSubBlockTypeToParlantType(sub.type)}',
           required: ${sub.required || false}${sub.defaultValue ? `,\n          default: ${JSON.stringify(sub.defaultValue)}` : ''}
-        }`).join(',\n        ')}
+        }`
+          )
+          .join(',\n        ')}
       ],
       outputs: [
-        ${Object.entries(blockConfig.outputs).map(([key, output]) => `
+        ${Object.entries(blockConfig.outputs)
+          .map(
+            ([key, output]) => `
         {
           name: '${key}',
           description: '${typeof output === 'object' && 'description' in output ? output.description : key}',
           type: '${typeof output === 'object' && 'type' in output ? output.type : 'string'}'
-        }`).join(',\n        ')}
+        }`
+          )
+          .join(',\n        ')}
       ],
       usageHints: ${JSON.stringify(generateUsageHints(blockConfig), null, 8).replace(/\n/g, '\n      ')},
-      ${hasApiKey ? `requiresAuth: {
+      ${
+        hasApiKey
+          ? `requiresAuth: {
         type: 'api_key',
         provider: '${serviceName.toLowerCase()}'
-      }` : ''}
+      }`
+          : ''
+      }
     }
   }
 
@@ -531,5 +606,5 @@ export const AdapterTemplates = {
   mapSubBlockTypeToParlantType,
   classifyTool,
   generateUsageHints,
-  generateAdapterFromBlock
+  generateAdapterFromBlock,
 }

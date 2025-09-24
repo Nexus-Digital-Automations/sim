@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+
 /**
  * Parlant Migration Monitoring and Logging Utilities
  *
@@ -10,11 +11,11 @@
  * @created 2025-09-24
  */
 
-import { Pool } from 'pg'
-import { config } from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
+import { config } from 'dotenv'
+import { Pool } from 'pg'
 
 // Load environment variables
 config()
@@ -55,13 +56,13 @@ class ParlantMigrationMonitor {
   private logFile: string
   private metricsFile: string
   private alertThresholds: AlertThreshold[]
-  private isMonitoring: boolean = false
+  private isMonitoring = false
   private startTime: Date
 
   constructor() {
     this.pool = new Pool({
       connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-      max: 5 // Limit connections for monitoring
+      max: 5, // Limit connections for monitoring
     })
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -84,38 +85,38 @@ class ParlantMigrationMonitor {
         metric: 'activeConnections',
         threshold: 80,
         severity: 'warning',
-        message: 'High number of active database connections'
+        message: 'High number of active database connections',
       },
       {
         metric: 'activeConnections',
         threshold: 100,
         severity: 'critical',
-        message: 'Critical number of active database connections'
+        message: 'Critical number of active database connections',
       },
       {
         metric: 'locksHeld',
         threshold: 50,
         severity: 'warning',
-        message: 'High number of database locks held'
+        message: 'High number of database locks held',
       },
       {
         metric: 'locksHeld',
         threshold: 100,
         severity: 'critical',
-        message: 'Critical number of database locks held'
+        message: 'Critical number of database locks held',
       },
       {
         metric: 'queryExecutionTime',
         threshold: 30000, // 30 seconds
         severity: 'warning',
-        message: 'Long-running query detected'
+        message: 'Long-running query detected',
       },
       {
         metric: 'queryExecutionTime',
         threshold: 60000, // 60 seconds
         severity: 'critical',
-        message: 'Critical long-running query detected'
-      }
+        message: 'Critical long-running query detected',
+      },
     ]
   }
 
@@ -126,7 +127,7 @@ class ParlantMigrationMonitor {
     console.log(logMessage)
 
     // Write to log file
-    fs.appendFileSync(this.logFile, logMessage + '\n')
+    fs.appendFileSync(this.logFile, `${logMessage}\n`)
   }
 
   private async executeQuery(query: string): Promise<any> {
@@ -136,7 +137,8 @@ class ParlantMigrationMonitor {
       const executionTime = Date.now() - startTime
 
       // Log slow queries
-      if (executionTime > 5000) { // 5 seconds
+      if (executionTime > 5000) {
+        // 5 seconds
         this.log(`Slow query detected (${executionTime}ms): ${query.substring(0, 100)}...`, 'WARN')
       }
 
@@ -160,7 +162,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -175,7 +177,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -191,7 +193,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -205,7 +207,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -235,7 +237,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -249,7 +251,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count)
+    return Number.parseInt(result.rows[0].count)
   }
 
   /**
@@ -270,10 +272,10 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       query: row.query.substring(0, 200),
-      executionTime: parseFloat(row.execution_time_ms),
-      rowsAffected: 0 // Not available in pg_stat_activity
+      executionTime: Number.parseFloat(row.execution_time_ms),
+      rowsAffected: 0, // Not available in pg_stat_activity
     }))
   }
 
@@ -290,7 +292,7 @@ class ParlantMigrationMonitor {
     `
 
     const { result } = await this.executeQuery(query)
-    return parseInt(result.rows[0].count) > 0
+    return Number.parseInt(result.rows[0].count) > 0
   }
 
   /**
@@ -307,7 +309,7 @@ class ParlantMigrationMonitor {
       totalSize,
       activeConnections,
       locksHeld,
-      queryPerformance
+      queryPerformance,
     ] = await Promise.all([
       this.checkParlantTables(),
       this.checkParlantIndexes(),
@@ -316,7 +318,7 @@ class ParlantMigrationMonitor {
       this.getParlantTableSize(),
       this.getActiveConnections(),
       this.getLocksHeld(),
-      this.getLongRunningQueries()
+      this.getLongRunningQueries(),
     ])
 
     const now = new Date()
@@ -333,7 +335,7 @@ class ParlantMigrationMonitor {
       duration,
       activeConnections,
       locksHeld,
-      queryPerformance
+      queryPerformance,
     }
   }
 
@@ -352,7 +354,7 @@ class ParlantMigrationMonitor {
           value = metrics.locksHeld
           break
         case 'queryExecutionTime':
-          value = Math.max(...metrics.queryPerformance.map(q => q.executionTime))
+          value = Math.max(...metrics.queryPerformance.map((q) => q.executionTime))
           break
         default:
           continue
@@ -367,7 +369,12 @@ class ParlantMigrationMonitor {
   /**
    * Send alert (log for now, could be extended to send to monitoring systems)
    */
-  private sendAlert(severity: 'warning' | 'critical', message: string, value: number, metrics: MigrationMetrics): void {
+  private sendAlert(
+    severity: 'warning' | 'critical',
+    message: string,
+    value: number,
+    metrics: MigrationMetrics
+  ): void {
     const alertMessage = `ALERT [${severity.toUpperCase()}]: ${message} (Value: ${value})`
     this.log(alertMessage, severity === 'critical' ? 'ERROR' : 'WARN')
 
@@ -387,7 +394,7 @@ class ParlantMigrationMonitor {
       startTime: this.startTime,
       endTime: new Date(),
       totalDuration: Date.now() - this.startTime.getTime(),
-      metrics
+      metrics,
     }
 
     fs.writeFileSync(this.metricsFile, JSON.stringify(metricsData, null, 2))
@@ -412,16 +419,16 @@ class ParlantMigrationMonitor {
     this.log(`Constraints Added: ${lastMetric.constraintsAdded}`)
     this.log(`Triggers Created: ${lastMetric.triggersCreated}`)
     this.log(`Final Size: ${lastMetric.totalSize}`)
-    this.log(`Peak Connections: ${Math.max(...metrics.map(m => m.activeConnections))}`)
-    this.log(`Peak Locks: ${Math.max(...metrics.map(m => m.locksHeld))}`)
+    this.log(`Peak Connections: ${Math.max(...metrics.map((m) => m.activeConnections))}`)
+    this.log(`Peak Locks: ${Math.max(...metrics.map((m) => m.locksHeld))}`)
 
     // Query performance summary
-    const allQueries = metrics.flatMap(m => m.queryPerformance)
-    const slowQueries = allQueries.filter(q => q.executionTime > 10000) // 10+ seconds
+    const allQueries = metrics.flatMap((m) => m.queryPerformance)
+    const slowQueries = allQueries.filter((q) => q.executionTime > 10000) // 10+ seconds
 
     if (slowQueries.length > 0) {
       this.log(`Slow Queries Detected: ${slowQueries.length}`)
-      slowQueries.slice(0, 5).forEach(q => {
+      slowQueries.slice(0, 5).forEach((q) => {
         this.log(`  - ${(q.executionTime / 1000).toFixed(2)}s: ${q.query.substring(0, 80)}...`)
       })
     }
@@ -443,7 +450,9 @@ class ParlantMigrationMonitor {
 
     // Collect initial metrics
     const metrics = await this.collectMetrics('pre-migration')
-    this.log(`Initial state - Tables: ${metrics.tablesCreated}, Active connections: ${metrics.activeConnections}`)
+    this.log(
+      `Initial state - Tables: ${metrics.tablesCreated}, Active connections: ${metrics.activeConnections}`
+    )
 
     // Check alerts
     this.checkAlerts(metrics)
@@ -468,8 +477,13 @@ class ParlantMigrationMonitor {
         metrics.push(currentMetrics)
 
         // Log progress if changes detected
-        if (currentMetrics.tablesCreated !== previousTables || currentMetrics.indexesCreated !== previousIndexes) {
-          this.log(`Progress - Tables: ${currentMetrics.tablesCreated}, Indexes: ${currentMetrics.indexesCreated}, Size: ${currentMetrics.totalSize}`)
+        if (
+          currentMetrics.tablesCreated !== previousTables ||
+          currentMetrics.indexesCreated !== previousIndexes
+        ) {
+          this.log(
+            `Progress - Tables: ${currentMetrics.tablesCreated}, Indexes: ${currentMetrics.indexesCreated}, Size: ${currentMetrics.totalSize}`
+          )
           previousTables = currentMetrics.tablesCreated
           previousIndexes = currentMetrics.indexesCreated
         }
@@ -488,7 +502,6 @@ class ParlantMigrationMonitor {
         if (this.isMonitoring) {
           await sleep(5000) // Check every 5 seconds
         }
-
       } catch (error) {
         this.log(`Error during monitoring: ${error.message}`, 'ERROR')
         await sleep(10000) // Wait longer on error
@@ -508,7 +521,9 @@ class ParlantMigrationMonitor {
 
     const metrics = await this.collectMetrics('post-migration')
 
-    this.log(`Final state - Tables: ${metrics.tablesCreated}, Indexes: ${metrics.indexesCreated}, Triggers: ${metrics.triggersCreated}`)
+    this.log(
+      `Final state - Tables: ${metrics.tablesCreated}, Indexes: ${metrics.indexesCreated}, Triggers: ${metrics.triggersCreated}`
+    )
     this.log(`Total size: ${metrics.totalSize}`)
 
     // Validation checks
@@ -532,7 +547,7 @@ class ParlantMigrationMonitor {
 
     // Check for any long-running queries
     if (metrics.queryPerformance.length > 0) {
-      const longQueries = metrics.queryPerformance.filter(q => q.executionTime > 30000)
+      const longQueries = metrics.queryPerformance.filter((q) => q.executionTime > 30000)
       if (longQueries.length > 0) {
         this.log(`WARNING: ${longQueries.length} long-running queries still active`, 'WARN')
       }
@@ -597,8 +612,6 @@ async function main() {
         console.log('✅ Running post-migration monitoring...')
         await monitor.monitorPostMigration()
         break
-
-      case 'full':
       default:
         console.log('🔄 Running full migration monitoring cycle...')
         console.log('   Phase 1: Pre-migration check')
@@ -613,7 +626,6 @@ async function main() {
     }
 
     console.log('✅ Migration monitoring completed successfully')
-
   } catch (error) {
     console.error('❌ Migration monitoring failed:', error.message)
     process.exit(1)

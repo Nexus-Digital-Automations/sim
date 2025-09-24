@@ -6,153 +6,134 @@
  * Adapter Error Handling System for the Parlant server integration.
  */
 
+// Alert management
+export {
+  type Alert,
+  type AlertCategory,
+  AlertManager,
+  type AlertRule,
+  type AlertSeverity,
+  alertManager,
+  alerts,
+  type ErrorClassification,
+  type Incident,
+} from './alerts'
+// Universal Tool Adapter Error Handling System
+export {
+  AlertLevel,
+  // Analytics functions
+  analyzeTrends,
+  // Error classes
+  BaseToolError,
+  CircuitBreakerState,
+  classifyError,
+  createExternalServiceError,
+  createSystemResourceError,
+  // Error creation functions
+  createToolAdapterError,
+  createToolAuthenticationError,
+  createToolExecutionError,
+  createUserInputError,
+  DEFAULT_ALERT_RULES,
+  DEFAULT_ERROR_PATTERNS,
+  DEFAULT_ERROR_SYSTEM_CONFIG,
+  DEFAULT_RETRY_CONFIGS,
+  // Core types and enums
+  ErrorCategory,
+  ErrorDashboardData,
+  ErrorHandlingResult,
+  ErrorImpact,
+  ErrorSeverity,
+  ErrorSubcategories,
+  // Configuration types
+  ErrorSystemConfig,
+  ExplanationFormat,
+  ExternalServiceError,
+  // Error analytics services
+  errorAnalyticsService,
+  // Error taxonomy and classification
+  errorClassifier,
+  // Error explanations
+  errorExplanationService,
+  // Error monitoring services
+  errorMonitoringService,
+  // Error recovery services
+  errorRecoveryService,
+  // Main error system
+  errorSystem,
+  errorTracker,
+  executeWithRecovery,
+  explainError,
+  generateAnalyticsReport,
+  getErrorStats,
+  getSystemHealth as getToolSystemHealth,
+  // Main handling functions
+  handleError as handleToolError,
+  identifyErrorPatterns,
+  initializeErrorSystem,
+  MetricType,
+  MonitorPerformance as MonitorToolPerformance,
+  // Error tracking and alerting
+  parlantErrorTracker,
+  performRootCauseAnalysis,
+  RecoveryStrategy,
+  // Monitoring functions
+  recordError as recordToolError,
+  recordMetric,
+  recordSuccess as recordToolSuccess,
+  SystemHealthWithErrors,
+  SystemResourceError,
+  setupBasicErrorHandling,
+  setupFullErrorHandling,
+  ToolAdapterError,
+  ToolAuthenticationError,
+  ToolExecutionError,
+  UniversalErrorSystem,
+  UserInputError,
+  UserSkillLevel,
+  // Decorators
+  WithRetry,
+} from './error-system'
 // Core monitoring components
 export {
-  ParlantHealthChecker,
-  parlantHealthChecker,
-  healthChecks,
-  type HealthCheckResult,
-  type ServiceMetrics,
   type DatabaseHealthDetails,
-  type ParlantHealthDetails
+  type HealthCheckResult,
+  healthChecks,
+  ParlantHealthChecker,
+  type ParlantHealthDetails,
+  parlantHealthChecker,
+  type ServiceMetrics,
 } from './health'
-
-// Monitoring and metrics
-export {
-  ParlantMonitoringService,
-  parlantMonitoring,
-  monitoring,
-  DEFAULT_ALERT_THRESHOLDS,
-  type AgentPerformanceMetrics,
-  type SystemMetrics,
-  type UsageMetrics,
-  type AlertThresholds
-} from './monitoring'
-
 // Structured logging
 export {
-  ParlantLogger,
   createParlantLogger,
-  parlantLoggers,
+  type LogAggregation,
   logUtils,
   type ParlantLogContext,
   type ParlantLogEntry,
-  type LogAggregation
+  ParlantLogger,
+  parlantLoggers,
 } from './logging'
-
 // Performance metrics
 export {
+  type AgentMetrics,
   AgentMetricsTracker,
+  metricsUtils,
   SystemMetricsCollector,
   systemMetrics,
-  metricsUtils,
-  type AgentMetrics,
-  type WorkspaceMetrics
+  type WorkspaceMetrics,
 } from './metrics'
-
-// Alert management
+// Monitoring and metrics
 export {
-  AlertManager,
-  alertManager,
-  alerts,
-  type Alert,
-  type AlertRule,
-  type Incident,
-  type AlertSeverity,
-  type AlertCategory,
-  type ErrorClassification
-} from './alerts'
-
-// Universal Tool Adapter Error Handling System
-export {
-  // Main error system
-  errorSystem,
-  UniversalErrorSystem,
-  initializeErrorSystem,
-  setupBasicErrorHandling,
-  setupFullErrorHandling,
-
-  // Core types and enums
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorImpact,
-  RecoveryStrategy,
-  UserSkillLevel,
-  ExplanationFormat,
-
-  // Error classes
-  BaseToolError,
-  ToolAdapterError,
-  ToolExecutionError,
-  ToolAuthenticationError,
-  UserInputError,
-  SystemResourceError,
-  ExternalServiceError,
-
-  // Error creation functions
-  createToolAdapterError,
-  createToolExecutionError,
-  createToolAuthenticationError,
-  createUserInputError,
-  createSystemResourceError,
-  createExternalServiceError,
-
-  // Main handling functions
-  handleError as handleToolError,
-  explainError,
-  executeWithRecovery,
-
-  // Monitoring functions
-  recordError as recordToolError,
-  recordSuccess as recordToolSuccess,
-  recordMetric,
-  getSystemHealth as getToolSystemHealth,
-
-  // Analytics functions
-  analyzeTrends,
-  identifyErrorPatterns,
-  performRootCauseAnalysis,
-  generateAnalyticsReport,
-
-  // Decorators
-  WithRetry,
-  MonitorPerformance as MonitorToolPerformance,
-
-  // Configuration types
-  ErrorSystemConfig,
-  DEFAULT_ERROR_SYSTEM_CONFIG,
-  ErrorHandlingResult,
-  SystemHealthWithErrors,
-  ErrorDashboardData,
-
-  // Error taxonomy and classification
-  errorClassifier,
-  classifyError,
-  getErrorStats,
-  ErrorSubcategories,
-  DEFAULT_ERROR_PATTERNS,
-
-  // Error tracking and alerting
-  parlantErrorTracker,
-  errorTracker,
-  DEFAULT_ALERT_RULES,
-
-  // Error recovery services
-  errorRecoveryService,
-  DEFAULT_RETRY_CONFIGS,
-  CircuitBreakerState,
-
-  // Error monitoring services
-  errorMonitoringService,
-  AlertLevel,
-  MetricType,
-
-  // Error analytics services
-  errorAnalyticsService,
-
-  // Error explanations
-  errorExplanationService
-} from './error-system'
+  type AgentPerformanceMetrics,
+  type AlertThresholds,
+  DEFAULT_ALERT_THRESHOLDS,
+  monitoring,
+  ParlantMonitoringService,
+  parlantMonitoring,
+  type SystemMetrics,
+  type UsageMetrics,
+} from './monitoring'
 
 /**
  * Initialize all monitoring systems
@@ -167,7 +148,7 @@ export async function initializeParlantMonitoring(): Promise<{
   const logger = createParlantLogger('Initialization')
 
   logger.info('Initializing Parlant monitoring systems', {
-    operation: 'system_init'
+    operation: 'system_init',
   })
 
   try {
@@ -180,15 +161,19 @@ export async function initializeParlantMonitoring(): Promise<{
     // Check for any initialization alerts
     const alertCheck = await parlantMonitoring.checkAlertConditions()
 
-    const overallStatus = healthStatus.status === 'unhealthy' ? 'unhealthy' :
-                         alertCheck.systemHealth === 'degraded' ? 'degraded' : 'healthy'
+    const overallStatus =
+      healthStatus.status === 'unhealthy'
+        ? 'unhealthy'
+        : alertCheck.systemHealth === 'degraded'
+          ? 'degraded'
+          : 'healthy'
 
     logger.info('Parlant monitoring initialization complete', {
       operation: 'system_init',
       status: overallStatus,
       healthStatus: healthStatus.status,
       alertCount: alertCheck.alerts.length,
-      agentCount: metricsStatus.agents.total
+      agentCount: metricsStatus.agents.total,
     })
 
     return {
@@ -196,12 +181,12 @@ export async function initializeParlantMonitoring(): Promise<{
       monitoring: parlantMonitoring,
       metrics: systemMetrics,
       alerts: alertManager,
-      status: overallStatus
+      status: overallStatus,
     }
   } catch (error) {
     logger.error('Failed to initialize Parlant monitoring', {
       operation: 'system_init',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
 
     // Create initialization failure alert
@@ -244,12 +229,17 @@ export async function getSystemStatus(): Promise<{
   const [healthStatus, metricsData, alertData] = await Promise.all([
     parlantHealthChecker.checkHealth(),
     systemMetrics.generateMetricsDashboard(),
-    alertManager.getAlertMetrics()
+    alertManager.getAlertMetrics(),
   ])
 
-  const overallStatus = healthStatus.status === 'unhealthy' ? 'unhealthy' :
-                       alertData.critical > 0 ? 'degraded' :
-                       healthStatus.status === 'degraded' ? 'degraded' : 'healthy'
+  const overallStatus =
+    healthStatus.status === 'unhealthy'
+      ? 'unhealthy'
+      : alertData.critical > 0
+        ? 'degraded'
+        : healthStatus.status === 'degraded'
+          ? 'degraded'
+          : 'healthy'
 
   return {
     timestamp: new Date().toISOString(),
@@ -266,9 +256,9 @@ export async function getSystemStatus(): Promise<{
       systemLoad: {
         cpu: metricsData.systemMetrics.performance.resourceUtilization.cpu,
         memory: metricsData.systemMetrics.performance.resourceUtilization.memory,
-        database: metricsData.systemMetrics.performance.resourceUtilization.database.connections
-      }
-    }
+        database: metricsData.systemMetrics.performance.resourceUtilization.database.connections,
+      },
+    },
   }
 }
 
@@ -292,28 +282,39 @@ export function trackAgentSession(
   sessionId: string
 ): {
   start: () => void
-  recordMessage: (responseTime: number, tokenCount?: number, toolCalls?: number, hasError?: boolean) => void
+  recordMessage: (
+    responseTime: number,
+    tokenCount?: number,
+    toolCalls?: number,
+    hasError?: boolean
+  ) => void
   recordTool: (toolName: string, executionTime: number, success: boolean) => void
   end: (status?: 'completed' | 'failed') => void
 } {
   return {
     start: () => metricsUtils.startSession(agentId, workspaceId, sessionId),
     recordMessage: (responseTime, tokenCount, toolCalls, hasError) =>
-      metricsUtils.recordMessage(agentId, workspaceId, sessionId, responseTime, tokenCount, toolCalls, hasError),
+      metricsUtils.recordMessage(
+        agentId,
+        workspaceId,
+        sessionId,
+        responseTime,
+        tokenCount,
+        toolCalls,
+        hasError
+      ),
     recordTool: (toolName, executionTime, success) =>
-      systemMetrics.getAgentTracker(agentId, workspaceId)
+      systemMetrics
+        .getAgentTracker(agentId, workspaceId)
         .recordToolExecution(sessionId, toolName, executionTime, success),
-    end: (status) => metricsUtils.endSession(agentId, workspaceId, sessionId, status)
+    end: (status) => metricsUtils.endSession(agentId, workspaceId, sessionId, status),
   }
 }
 
 /**
  * Create standardized error handler for Parlant operations
  */
-export function createErrorHandler(
-  source: string,
-  context: ParlantLogContext = {}
-) {
+export function createErrorHandler(source: string, context: ParlantLogContext = {}) {
   return async (error: Error, additionalContext?: ParlantLogContext) => {
     const fullContext = { ...context, ...additionalContext }
 
@@ -347,7 +348,7 @@ export function monitorPerformance<T extends (...args: any[]) => Promise<any>>(
 
       logger.logPerformance(operationName, startTime, {
         ...context,
-        success: true
+        success: true,
       })
 
       return result
@@ -357,7 +358,7 @@ export function monitorPerformance<T extends (...args: any[]) => Promise<any>>(
       logger.logPerformance(operationName, startTime, {
         ...context,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       throw error
@@ -386,6 +387,6 @@ export default {
   logger: createParlantLogger,
   utils: {
     logging: logUtils,
-    metrics: metricsUtils
-  }
+    metrics: metricsUtils,
+  },
 }

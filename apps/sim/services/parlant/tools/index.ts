@@ -67,7 +67,7 @@ export async function initializeUniversalToolAdapterSystem(
     autoRegisterAdapters = true,
     enableTesting = true,
     enableMonitoring = true,
-    adaptersToRegister = []
+    adaptersToRegister = [],
   } = config
 
   // Track registered adapters
@@ -105,9 +105,14 @@ export async function initializeUniversalToolAdapterSystem(
         try {
           const testCases = testingFramework.createStandardTestSuite(adapterId)
           testingFramework.registerTestSuite(`${adapterId}_standard`, testCases)
-          console.log(`[UniversalToolAdapter] Registered ${testCases.length} test cases for ${adapterId}`)
+          console.log(
+            `[UniversalToolAdapter] Registered ${testCases.length} test cases for ${adapterId}`
+          )
         } catch (error) {
-          console.warn(`[UniversalToolAdapter] Failed to create test suite for ${adapterId}:`, error.message)
+          console.warn(
+            `[UniversalToolAdapter] Failed to create test suite for ${adapterId}:`,
+            error.message
+          )
         }
       }
     }
@@ -123,14 +128,14 @@ export async function initializeUniversalToolAdapterSystem(
             metric: 'latency',
             operator: 'gt',
             threshold: 10000, // 10 seconds
-            duration: 300 // 5 minutes
+            duration: 300, // 5 minutes
           },
           severity: 'medium',
           actions: [
             { type: 'log', config: {} },
-            { type: 'auto_recover', config: {} }
+            { type: 'auto_recover', config: {} },
           ],
-          enabled: true
+          enabled: true,
         })
 
         globalAdapterMonitoring.registerAlert({
@@ -140,21 +145,23 @@ export async function initializeUniversalToolAdapterSystem(
             metric: 'error_rate',
             operator: 'gt',
             threshold: 0.1, // 10%
-            duration: 180 // 3 minutes
+            duration: 180, // 3 minutes
           },
           severity: 'high',
           actions: [
             { type: 'log', config: {} },
-            { type: 'auto_recover', config: {} }
+            { type: 'auto_recover', config: {} },
           ],
-          enabled: true
+          enabled: true,
         })
       }
     }
 
     // 4. Log initialization success
-    console.log(`[UniversalToolAdapter] Successfully initialized with ${registeredAdapters.length} adapters:`)
-    registeredAdapters.forEach(adapterId => {
+    console.log(
+      `[UniversalToolAdapter] Successfully initialized with ${registeredAdapters.length} adapters:`
+    )
+    registeredAdapters.forEach((adapterId) => {
       console.log(`[UniversalToolAdapter] - ${adapterId}`)
     })
 
@@ -163,9 +170,8 @@ export async function initializeUniversalToolAdapterSystem(
       registry: globalAdapterRegistry,
       monitoring: globalAdapterMonitoring,
       testing: testingFramework!,
-      registeredAdapters
+      registeredAdapters,
     }
-
   } catch (error) {
     console.error('[UniversalToolAdapter] Failed to initialize system:', error)
     throw new Error(`Universal Tool Adapter System initialization failed: ${error.message}`)
@@ -195,7 +201,9 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
     const registryHealth = globalAdapterRegistry.getHealthSummary()
     if (registryHealth.totalAdapters === 0) {
       issues.push('No adapters registered in the system')
-      recommendations.push('Register at least one adapter using initializeUniversalToolAdapterSystem()')
+      recommendations.push(
+        'Register at least one adapter using initializeUniversalToolAdapterSystem()'
+      )
     }
 
     if (registryHealth.unhealthyAdapters > 0) {
@@ -207,7 +215,8 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
     const adapters = globalAdapterRegistry.listAdapters()
     const testResults = []
 
-    for (const adapterId of adapters.slice(0, 3)) { // Test first 3 adapters
+    for (const adapterId of adapters.slice(0, 3)) {
+      // Test first 3 adapters
       try {
         // Get adapter tool definition
         const adapter = globalAdapterRegistry.getAdapter(adapterId)
@@ -220,7 +229,9 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
           }
 
           if (!parlantTool.parameters || parlantTool.parameters.length === 0) {
-            recommendations.push(`Adapter '${adapterId}' should define parameters for better usability`)
+            recommendations.push(
+              `Adapter '${adapterId}' should define parameters for better usability`
+            )
           }
 
           testResults.push({ adapterId, status: 'valid' })
@@ -245,7 +256,9 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
 
     // 5. Performance check
     if (registryHealth.overallSuccessRate < 0.95) {
-      issues.push(`System success rate is low: ${(registryHealth.overallSuccessRate * 100).toFixed(1)}%`)
+      issues.push(
+        `System success rate is low: ${(registryHealth.overallSuccessRate * 100).toFixed(1)}%`
+      )
       recommendations.push('Investigate adapter error patterns and implement fixes')
     }
 
@@ -261,7 +274,7 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
     console.log(`[UniversalToolAdapter] Validation complete: ${isValid ? 'PASSED' : 'FAILED'}`)
     if (issues.length > 0) {
       console.log(`[UniversalToolAdapter] Issues found: ${issues.length}`)
-      issues.forEach(issue => console.log(`[UniversalToolAdapter] - ${issue}`))
+      issues.forEach((issue) => console.log(`[UniversalToolAdapter] - ${issue}`))
     }
 
     return {
@@ -271,17 +284,16 @@ export async function validateUniversalToolAdapterSystem(): Promise<{
       systemHealth: {
         registryHealth,
         testResults,
-        monitoringHealth
-      }
+        monitoringHealth,
+      },
     }
-
   } catch (error) {
     issues.push(`Validation failed with error: ${error.message}`)
     return {
       isValid: false,
       issues,
       recommendations: ['Check system initialization and configuration'],
-      systemHealth: null
+      systemHealth: null,
     }
   }
 }
@@ -335,26 +347,25 @@ export async function runComprehensiveSystemTest(): Promise<{
           mocking: {
             enabled: true,
             mockApiResponses: true,
-            mockAuthCredentials: true
-          }
+            mockAuthCredentials: true,
+          },
         }
       )
 
       results.push({
         adapterId,
         suiteResult,
-        status: suiteResult.summary.passRate >= 0.8 ? 'passed' : 'failed'
+        status: suiteResult.summary.passRate >= 0.8 ? 'passed' : 'failed',
       })
 
       totalTests += suiteResult.summary.total
       passedTests += suiteResult.summary.passed
-
     } catch (error) {
       console.error(`[UniversalToolAdapter] Test failed for ${adapterId}:`, error.message)
       results.push({
         adapterId,
         status: 'error',
-        error: error.message
+        error: error.message,
       })
       totalTests += 1 // Count as one failed test
     }
@@ -362,25 +373,27 @@ export async function runComprehensiveSystemTest(): Promise<{
 
   const duration = Date.now() - startTime
   const passRate = totalTests > 0 ? passedTests / totalTests : 0
-  const passed = passRate >= 0.8 && results.every(r => r.status !== 'error')
+  const passed = passRate >= 0.8 && results.every((r) => r.status !== 'error')
 
   const summary = {
     totalTests,
     passedTests,
     failedTests: totalTests - passedTests,
     passRate,
-    duration
+    duration,
   }
 
   console.log(`[UniversalToolAdapter] Comprehensive test complete:`)
-  console.log(`[UniversalToolAdapter] - Tests: ${passedTests}/${totalTests} passed (${(passRate * 100).toFixed(1)}%)`)
+  console.log(
+    `[UniversalToolAdapter] - Tests: ${passedTests}/${totalTests} passed (${(passRate * 100).toFixed(1)}%)`
+  )
   console.log(`[UniversalToolAdapter] - Duration: ${duration}ms`)
   console.log(`[UniversalToolAdapter] - Overall: ${passed ? 'PASSED' : 'FAILED'}`)
 
   return {
     passed,
     results,
-    summary
+    summary,
   }
 }
 
@@ -403,7 +416,7 @@ export function getSystemHealthDashboard(): {
   const aggregatedMetrics = globalAdapterMonitoring.getAggregatedMetrics()
 
   // Individual adapter health
-  const adapters = globalAdapterRegistry.listAdapters().map(adapterId => {
+  const adapters = globalAdapterRegistry.listAdapters().map((adapterId) => {
     const adapter = globalAdapterRegistry.getAdapter(adapterId)
     const metadata = globalAdapterRegistry.getAdapterMetadata(adapterId)
     const healthStatus = globalAdapterMonitoring.getHealthStatus(adapterId)
@@ -415,23 +428,23 @@ export function getSystemHealthDashboard(): {
       health: metadata?.health || 'unknown',
       metrics: metadata?.metrics || {},
       lastExecuted: metadata?.metrics.lastExecuted,
-      healthScore: healthStatus?.score || 0
+      healthScore: healthStatus?.score || 0,
     }
   })
 
   // Recent activity
   const recentLogs = globalAdapterMonitoring.searchLogs({
     limit: 50,
-    startTime: new Date(Date.now() - 3600000).toISOString() // Last hour
+    startTime: new Date(Date.now() - 3600000).toISOString(), // Last hour
   })
 
-  const recentActivity = recentLogs.map(log => ({
+  const recentActivity = recentLogs.map((log) => ({
     timestamp: log.timestamp,
     adapterId: log.adapterId,
     operation: log.operation,
     level: log.level,
     message: log.message,
-    duration: log.performance?.duration
+    duration: log.performance?.duration,
   }))
 
   return {
@@ -442,12 +455,12 @@ export function getSystemHealthDashboard(): {
       overallSuccessRate: registryHealth.overallSuccessRate,
       averageLatency: aggregatedMetrics.averageLatency,
       totalRequests: aggregatedMetrics.totalRequests,
-      totalErrors: aggregatedMetrics.totalErrors
+      totalErrors: aggregatedMetrics.totalErrors,
     },
     adapters,
     performance: aggregatedMetrics,
     alerts: [], // Would include active alerts
-    recentActivity
+    recentActivity,
   }
 }
 
@@ -460,23 +473,19 @@ export {
   UniversalToolAdapter,
   UniversalToolAdapterRegistry,
   globalAdapterRegistry,
-
   // Testing
   AdapterTestingFramework,
-
   // Monitoring
   AdapterMonitoringSystem,
   globalAdapterMonitoring,
-
   // Templates and Utilities
   AdapterTemplates,
-
   // Specific Adapters
   OpenAIAdapter,
   GitHubAdapter,
   PostgreSQLAdapter,
   SlackAdapter,
-  GoogleSheetsAdapter
+  GoogleSheetsAdapter,
 }
 
 // ================================
@@ -489,5 +498,5 @@ export default {
   test: runComprehensiveSystemTest,
   getDashboardData: getSystemHealthDashboard,
   registry: globalAdapterRegistry,
-  monitoring: globalAdapterMonitoring
+  monitoring: globalAdapterMonitoring,
 }

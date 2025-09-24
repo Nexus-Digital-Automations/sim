@@ -6,82 +6,79 @@
  * ReactFlow workflows with Parlant conversational agents.
  */
 
-// Core service and types
-export { ConversationalWorkflowService, getConversationalWorkflowService, createConversationalWorkflowService } from './core'
-export { WorkflowJourneyMapper } from './mapper'
-export { NaturalLanguageProcessor } from './nlp'
-export { RealtimeStateManager } from './state-manager'
-
+// Socket.io integration
+export {
+  broadcastToSessionRoom,
+  setupConversationalWorkflowHandlers,
+} from '../../../socket-server/handlers/conversational-workflows'
 // API handlers
 export {
   createConversationalWorkflowHandler,
-  processNaturalLanguageCommandHandler,
-  getWorkflowStateHandler,
-  terminateWorkflowSessionHandler,
-  getSessionMetricsHandler,
   formatErrorResponse,
+  getSessionMetricsHandler,
+  getWorkflowStateHandler,
+  processNaturalLanguageCommandHandler,
+  terminateWorkflowSessionHandler,
 } from './api'
-
-// Socket.io integration
-export { setupConversationalWorkflowHandlers, broadcastToSessionRoom } from '../../../socket-server/handlers/conversational-workflows'
-
+// Core service and types
+export {
+  ConversationalWorkflowService,
+  createConversationalWorkflowService,
+  getConversationalWorkflowService,
+} from './core'
 // Error classes
 export {
-  ConversationalWorkflowError,
-  WorkflowMappingError,
-  NLPProcessingError,
   CommandProcessingError,
-  SessionManagementError,
+  ConversationalWorkflowError,
+  NLPProcessingError,
   RealtimeCommunicationError,
+  SessionManagementError,
+  WorkflowMappingError,
 } from './errors'
-
+export { WorkflowJourneyMapper } from './mapper'
+export { NaturalLanguageProcessor } from './nlp'
+export { RealtimeStateManager } from './state-manager'
 // Type definitions
 export type {
-  // Core workflow types
-  WorkflowToJourneyMapping,
-  NodeStateMapping,
-  EdgeTransitionMapping,
+  AvailableAction,
+  ContextualReference,
   ContextVariableMapping,
-  ConversationalWorkflowState,
-  ConversationalWorkflowCommand,
-  ConversationalWorkflowUpdate,
-
-  // Configuration types
-  WorkflowExecutionConfig,
   ConversationalConfig,
-  ExecutionTrigger,
-  ValidationRule,
-  TransitionCondition,
   ConversationalTrigger,
-  RetryPolicy,
-
+  ConversationalWorkflowCommand,
+  ConversationalWorkflowState,
+  ConversationalWorkflowUpdate,
+  ConversationTurn,
   // API types
   CreateConversationalWorkflowRequest,
   CreateConversationalWorkflowResponse,
-  ProcessNaturalLanguageCommandRequest,
-  ProcessNaturalLanguageCommandResponse,
+  EdgeTransitionMapping,
+  ExecutionTrigger,
+  ExtractedEntity,
   GetWorkflowStateRequest,
   GetWorkflowStateResponse,
-
+  // Helper types
+  InputFieldRequirement,
   // NLP types
   NLPProcessingResult,
-  ExtractedEntity,
-  ContextualReference,
-  ConversationTurn,
-
-  // State management types
-  WorkflowExecutionStatus,
-  WorkflowUpdateType,
-  AvailableAction,
-  WorkflowExecutionError,
-  WorkflowCommandType,
-
+  NodeStateMapping,
   // Parlant integration types
   ParlantJourneyState,
   ParlantJourneyTransition,
-
-  // Helper types
-  InputFieldRequirement,
+  ProcessNaturalLanguageCommandRequest,
+  ProcessNaturalLanguageCommandResponse,
+  RetryPolicy,
+  TransitionCondition,
+  ValidationRule,
+  WorkflowCommandType,
+  // Configuration types
+  WorkflowExecutionConfig,
+  WorkflowExecutionError,
+  // State management types
+  WorkflowExecutionStatus,
+  // Core workflow types
+  WorkflowToJourneyMapping,
+  WorkflowUpdateType,
 } from './types'
 
 /**
@@ -257,7 +254,9 @@ export const ConversationalWorkflowDev = {
   /**
    * Create a mock workflow state for testing
    */
-  createMockWorkflowState(overrides: Partial<ConversationalWorkflowState> = {}): ConversationalWorkflowState {
+  createMockWorkflowState(
+    overrides: Partial<ConversationalWorkflowState> = {}
+  ): ConversationalWorkflowState {
     return {
       workflowId: 'test-workflow',
       journeyId: 'test-journey',

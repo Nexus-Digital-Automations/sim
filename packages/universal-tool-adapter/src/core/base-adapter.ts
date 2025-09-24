@@ -10,29 +10,26 @@
  */
 
 import { z } from 'zod'
-import type {
-  ParlantTool,
-  ParlantToolResult,
-  ParlantExecutionContext,
-  ToolMetadata as ParlantToolMetadata,
-  ParameterDefinition,
-  ValidationResult
-} from '../types/parlant-interfaces'
-import type {
-  SimToolDefinition,
-  ToolExecutionContext as SimExecutionContext,
-  ToolRunResult as SimToolResult,
-  AdapterConfiguration,
-  ParameterMapping,
-  ValidationConfig,
-  ErrorHandlingConfig,
-  NaturalLanguageConfig
-} from '../types/adapter-interfaces'
-import { AdapterError, ValidationError, ExecutionError } from '../errors/adapter-errors'
-import { ParameterMapper } from '../mapping/parameter-mapper'
+import { ExecutionError, ValidationError } from '../errors/adapter-errors'
 import { ResultFormatter } from '../formatting/result-formatter'
-import { ValidationEngine } from '../validation/validation-engine'
+import { ParameterMapper } from '../mapping/parameter-mapper'
+import type {
+  AdapterConfiguration,
+  NaturalLanguageConfig,
+  ToolExecutionContext as SimExecutionContext,
+  SimToolDefinition,
+  ToolRunResult as SimToolResult,
+} from '../types/adapter-interfaces'
+import type {
+  ParameterDefinition,
+  ParlantExecutionContext,
+  ParlantTool,
+  ToolMetadata as ParlantToolMetadata,
+  ParlantToolResult,
+  ValidationResult,
+} from '../types/parlant-interfaces'
 import { createLogger } from '../utils/logger'
+import { ValidationEngine } from '../validation/validation-engine'
 
 const logger = createLogger('BaseAdapter')
 
@@ -42,8 +39,9 @@ const logger = createLogger('BaseAdapter')
  * Transforms any Sim tool into a Parlant-compatible tool while preserving
  * all original functionality and adding conversational enhancements.
  */
-export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs = any> implements ParlantTool {
-
+export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs = any>
+  implements ParlantTool
+{
   // Parlant tool interface properties
   public readonly id: string
   public readonly name: string
@@ -65,10 +63,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
   protected readonly inputSchema: z.ZodSchema<TParlantArgs>
   protected readonly outputSchema: z.ZodSchema<ParlantToolResult>
 
-  constructor(
-    simTool: SimToolDefinition<TSimArgs>,
-    config: AdapterConfiguration
-  ) {
+  constructor(simTool: SimToolDefinition<TSimArgs>, config: AdapterConfiguration) {
     // Initialize core properties
     this.simTool = simTool
     this.config = config
@@ -95,7 +90,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
     logger.info(`Initialized adapter for tool: ${this.name}`, {
       simToolName: simTool.name,
       parlantId: this.id,
-      parameterCount: this.parameters.length
+      parameterCount: this.parameters.length,
     })
   }
 
@@ -109,10 +104,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
    * 4. Format results for conversational context
    * 5. Return Parlant-compatible result
    */
-  async execute(
-    context: ParlantExecutionContext,
-    args: TParlantArgs
-  ): Promise<ParlantToolResult> {
+  async execute(context: ParlantExecutionContext, args: TParlantArgs): Promise<ParlantToolResult> {
     const executionId = `${this.id}_${Date.now()}`
     const startTime = Date.now()
 
@@ -121,7 +113,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       toolId: this.id,
       contextType: context.type,
       agentId: context.agentId,
-      sessionId: context.sessionId
+      sessionId: context.sessionId,
     })
 
     try {
@@ -148,28 +140,27 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
         executionId,
         duration,
         resultType: finalResult.type,
-        hasData: !!finalResult.data
+        hasData: !!finalResult.data,
       })
 
       return finalResult
-
     } catch (error) {
       const duration = Date.now() - startTime
       logger.error(`Tool execution failed`, {
         executionId,
         duration,
         error: error.message,
-        errorType: error.constructor.name
+        errorType: error.constructor.name,
       })
 
       // Handle different error types appropriately
       if (error instanceof ValidationError) {
         return this.handleValidationError(error, context)
-      } else if (error instanceof ExecutionError) {
-        return this.handleExecutionError(error, context)
-      } else {
-        return this.handleUnknownError(error, context)
       }
+      if (error instanceof ExecutionError) {
+        return this.handleExecutionError(error, context)
+      }
+      return this.handleUnknownError(error, context)
     }
   }
 
@@ -183,10 +174,10 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       if (error instanceof z.ZodError) {
         throw new ValidationError(
           'Parameter validation failed',
-          error.errors.map(e => ({
+          error.errors.map((e) => ({
             field: e.path.join('.'),
             message: e.message,
-            code: e.code
+            code: e.code,
           }))
         )
       }
@@ -209,8 +200,8 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
         data: null,
         conversational: {
           summary: 'The tool completed but there was an issue formatting the response.',
-          suggestion: 'Please try again or contact support if the issue persists.'
-        }
+          suggestion: 'Please try again or contact support if the issue persists.',
+        },
       }
     }
   }
@@ -252,7 +243,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
         } else {
           logger[level](message, { toolName: this.simTool.name, ...extra })
         }
-      }
+      },
     }
   }
 
@@ -270,10 +261,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       }
       return result
     } catch (error) {
-      throw new ExecutionError(
-        `Sim tool execution failed: ${error.message}`,
-        error
-      )
+      throw new ExecutionError(`Sim tool execution failed: ${error.message}`, error)
     }
   }
 
@@ -319,13 +307,15 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       type: z.enum(['success', 'error', 'partial']),
       message: z.string().optional(),
       data: z.any().optional(),
-      conversational: z.object({
-        summary: z.string(),
-        details: z.string().optional(),
-        suggestion: z.string().optional(),
-        actions: z.array(z.string()).optional()
-      }).optional(),
-      metadata: z.record(z.any()).optional()
+      conversational: z
+        .object({
+          summary: z.string(),
+          details: z.string().optional(),
+          suggestion: z.string().optional(),
+          actions: z.array(z.string()).optional(),
+        })
+        .optional(),
+      metadata: z.record(z.any()).optional(),
     })
   }
 
@@ -365,7 +355,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
     // Generate from tool name
     const humanName = this.simTool.name
       .replace(/[_-]/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\b\w/g, (l) => l.toUpperCase())
 
     return `Execute ${humanName} functionality`
   }
@@ -376,14 +366,12 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
   protected buildDefaultNaturalLanguage(): NaturalLanguageConfig {
     return {
       usageDescription: `Use this tool to ${this.simTool.name.replace(/[_-]/g, ' ').toLowerCase()}`,
-      exampleUsage: [
-        `When you need to ${this.simTool.name.replace(/[_-]/g, ' ').toLowerCase()}`
-      ],
+      exampleUsage: [`When you need to ${this.simTool.name.replace(/[_-]/g, ' ').toLowerCase()}`],
       conversationalHints: {
         whenToUse: `This tool is helpful when you need to ${this.simTool.name.replace(/[_-]/g, ' ').toLowerCase()}`,
-        parameters: 'I\'ll help you provide the right parameters for this tool',
-        results: 'I\'ll explain the results in a clear and helpful way'
-      }
+        parameters: "I'll help you provide the right parameters for this tool",
+        results: "I'll explain the results in a clear and helpful way",
+      },
     }
   }
 
@@ -399,7 +387,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       lastUpdated: new Date().toISOString(),
       capabilities: this.buildCapabilities(),
       requirements: this.buildRequirements(),
-      naturalLanguage: this.naturalLanguage
+      naturalLanguage: this.naturalLanguage,
     }
   }
 
@@ -499,9 +487,10 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
     context: ParlantExecutionContext
   ): ParlantToolResult {
     const fieldErrors = error.validationErrors || []
-    const errorSummary = fieldErrors.length > 0
-      ? `Parameter validation failed: ${fieldErrors.map(e => `${e.field}: ${e.message}`).join(', ')}`
-      : error.message
+    const errorSummary =
+      fieldErrors.length > 0
+        ? `Parameter validation failed: ${fieldErrors.map((e) => `${e.field}: ${e.message}`).join(', ')}`
+        : error.message
 
     return {
       type: 'error',
@@ -509,11 +498,12 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       data: { validationErrors: fieldErrors },
       conversational: {
         summary: 'I need some help with the parameters for this tool.',
-        details: fieldErrors.length > 0
-          ? `These parameters need attention: ${fieldErrors.map(e => e.field).join(', ')}`
-          : 'There was an issue with the provided parameters.',
-        suggestion: 'Please check the parameter values and try again.'
-      }
+        details:
+          fieldErrors.length > 0
+            ? `These parameters need attention: ${fieldErrors.map((e) => e.field).join(', ')}`
+            : 'There was an issue with the provided parameters.',
+        suggestion: 'Please check the parameter values and try again.',
+      },
     }
   }
 
@@ -531,26 +521,23 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
       conversational: {
         summary: 'The tool encountered an issue during execution.',
         details: error.message,
-        suggestion: 'Please try again or check if all required conditions are met.'
-      }
+        suggestion: 'Please try again or check if all required conditions are met.',
+      },
     }
   }
 
   /**
    * Handle unknown errors safely
    */
-  protected handleUnknownError(
-    error: Error,
-    context: ParlantExecutionContext
-  ): ParlantToolResult {
+  protected handleUnknownError(error: Error, context: ParlantExecutionContext): ParlantToolResult {
     return {
       type: 'error',
       message: 'An unexpected error occurred',
       data: { error: error.message },
       conversational: {
         summary: 'Something unexpected happened while using this tool.',
-        suggestion: 'Please try again or contact support if the problem persists.'
-      }
+        suggestion: 'Please try again or contact support if the problem persists.',
+      },
     }
   }
 
@@ -583,7 +570,7 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
 
       return {
         simArgs,
-        validationResult: { valid: true, errors: [] }
+        validationResult: { valid: true, errors: [] },
       }
     } catch (error) {
       if (error instanceof ValidationError) {
@@ -591,8 +578,10 @@ export abstract class BaseAdapter<TSimArgs = any, TSimResult = any, TParlantArgs
           simArgs: {} as TSimArgs,
           validationResult: {
             valid: false,
-            errors: error.validationErrors || [{ field: 'unknown', message: error.message, code: 'unknown' }]
-          }
+            errors: error.validationErrors || [
+              { field: 'unknown', message: error.message, code: 'unknown' },
+            ],
+          },
         }
       }
       throw error

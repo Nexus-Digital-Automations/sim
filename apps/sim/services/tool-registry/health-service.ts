@@ -5,17 +5,12 @@
  * automated health checks for different types of tools.
  */
 
-import { eq, and, desc, sql, gte, lte } from 'drizzle-orm'
+import { EventEmitter } from 'events'
+import { eq, sql } from 'drizzle-orm'
+import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/packages/db'
 import { toolRegistry } from '@/packages/db/schema'
-import { createLogger } from '@/lib/logs/console/logger'
-import { EventEmitter } from 'events'
-
-import type {
-  ToolHealth,
-  ToolDependencyHealth,
-  EnrichedTool,
-} from './types'
+import type { ToolHealth } from './types'
 
 const logger = createLogger('ToolHealthService')
 
@@ -25,10 +20,6 @@ const logger = createLogger('ToolHealthService')
 export class ToolHealthService extends EventEmitter {
   private healthCheckIntervals: Map<string, NodeJS.Timeout> = new Map()
   private defaultCheckInterval = 5 * 60 * 1000 // 5 minutes
-
-  constructor() {
-    super()
-  }
 
   /**
    * Start health monitoring for all active tools
@@ -433,10 +424,11 @@ export class ToolHealthService extends EventEmitter {
   private async simulateServerCheck(toolId: string): Promise<void> {
     // In a real implementation, this would make actual HTTP requests or service calls
     const delay = Math.random() * 100 + 50 // 50-150ms random delay
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await new Promise((resolve) => setTimeout(resolve, delay))
 
     // Randomly simulate failures for testing
-    if (Math.random() < 0.05) { // 5% failure rate
+    if (Math.random() < 0.05) {
+      // 5% failure rate
       throw new Error(`Server check failed for ${toolId}`)
     }
   }

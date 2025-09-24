@@ -8,13 +8,13 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ConversationContext,
   ContextMessage,
-  IntentClassification,
-  ExtractedEntity,
+  ConversationContext,
   EntityType,
-  TaskType,
+  ExtractedEntity,
+  IntentClassification,
   SentimentAnalysis,
+  TaskType,
 } from './types'
 
 const logger = createLogger('ContextAnalyzer')
@@ -162,12 +162,36 @@ export class ContextAnalyzer {
    */
   private analyzeSentiment(content: string): SentimentAnalysis {
     const positiveWords = [
-      'good', 'great', 'excellent', 'perfect', 'amazing', 'love', 'like',
-      'helpful', 'useful', 'efficient', 'fast', 'easy', 'simple', 'clear',
+      'good',
+      'great',
+      'excellent',
+      'perfect',
+      'amazing',
+      'love',
+      'like',
+      'helpful',
+      'useful',
+      'efficient',
+      'fast',
+      'easy',
+      'simple',
+      'clear',
     ]
     const negativeWords = [
-      'bad', 'terrible', 'awful', 'hate', 'dislike', 'slow', 'difficult',
-      'hard', 'confusing', 'broken', 'error', 'problem', 'issue', 'fail',
+      'bad',
+      'terrible',
+      'awful',
+      'hate',
+      'dislike',
+      'slow',
+      'difficult',
+      'hard',
+      'confusing',
+      'broken',
+      'error',
+      'problem',
+      'issue',
+      'fail',
     ]
 
     const words = content.toLowerCase().split(/\s+/)
@@ -180,13 +204,13 @@ export class ContextAnalyzer {
     }
 
     const totalSentimentWords = positiveCount + negativeCount
-    const polarity = totalSentimentWords > 0
-      ? (positiveCount - negativeCount) / totalSentimentWords
-      : 0
+    const polarity =
+      totalSentimentWords > 0 ? (positiveCount - negativeCount) / totalSentimentWords : 0
 
     return {
       polarity,
-      confidence: totalSentimentWords > 0 ? Math.min(totalSentimentWords / words.length * 10, 1) : 0.1,
+      confidence:
+        totalSentimentWords > 0 ? Math.min((totalSentimentWords / words.length) * 10, 1) : 0.1,
       emotions: this.extractEmotions(content),
     }
   }
@@ -290,9 +314,8 @@ export class ContextAnalyzer {
     }
 
     // Calculate sentiment trend
-    const sentimentTrend = sentiments.length > 1
-      ? sentiments[sentiments.length - 1] - sentiments[0]
-      : 0
+    const sentimentTrend =
+      sentiments.length > 1 ? sentiments[sentiments.length - 1] - sentiments[0] : 0
 
     // Get dominant intents
     const dominantIntents = Array.from(intents.entries())
@@ -302,13 +325,14 @@ export class ContextAnalyzer {
 
     // Get common entities
     const commonEntities = Array.from(entities.values())
-      .filter(entityList => entityList.length > 1)
-      .map(entityList => entityList[0])
+      .filter((entityList) => entityList.length > 1)
+      .map((entityList) => entityList[0])
 
     // Identify recommendation triggers
     const triggers: string[] = []
-    if (sentiments.some(s => s < -0.5)) triggers.push('user_frustration')
-    if (intents.has('data_query') && intents.has('integration_request')) triggers.push('workflow_opportunity')
+    if (sentiments.some((s) => s < -0.5)) triggers.push('user_frustration')
+    if (intents.has('data_query') && intents.has('integration_request'))
+      triggers.push('workflow_opportunity')
     if (flow.includes('help_request')) triggers.push('guidance_needed')
 
     return {

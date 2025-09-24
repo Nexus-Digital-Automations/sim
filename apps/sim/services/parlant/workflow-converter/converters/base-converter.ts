@@ -7,16 +7,15 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  NodeConverter,
-  ReactFlowNode,
   ConversionContext,
-  NodeConversionResult,
-  ValidationResult,
-  ParlantState,
-  ParlantTransition,
-  ParlantVariable,
   ConversionError,
-  ConversionWarning
+  ConversionWarning,
+  NodeConversionResult,
+  NodeConverter,
+  ParlantState,
+  ParlantVariable,
+  ReactFlowNode,
+  ValidationResult,
 } from '../types'
 
 const logger = createLogger('BaseConverter')
@@ -63,7 +62,7 @@ export abstract class BaseNodeConverter implements NodeConverter {
         message: 'Node must have an ID',
         nodeId: node.id,
         severity: 'critical',
-        suggestions: ['Ensure node has a valid ID']
+        suggestions: ['Ensure node has a valid ID'],
       })
     }
 
@@ -73,7 +72,7 @@ export abstract class BaseNodeConverter implements NodeConverter {
         message: 'Node has no data object',
         nodeId: node.id,
         impact: 'low',
-        suggestions: ['Add data object to node if needed']
+        suggestions: ['Add data object to node if needed'],
       })
     }
 
@@ -83,9 +82,9 @@ export abstract class BaseNodeConverter implements NodeConverter {
     warnings.push(...customValidation.warnings)
 
     return {
-      valid: errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0,
+      valid: errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 
@@ -112,13 +111,13 @@ export abstract class BaseNodeConverter implements NodeConverter {
       name: node.data?.name || `State for ${node.id}`,
       description: node.data?.description || `Generated from ${this.nodeType} node`,
       position: node.position,
-      ...overrides
+      ...overrides,
     }
 
     logger.debug('Created base state', {
       nodeId: node.id,
       stateId: baseState.id,
-      stateType: type
+      stateType: type,
     })
 
     return baseState
@@ -151,7 +150,7 @@ export abstract class BaseNodeConverter implements NodeConverter {
         variables.push({
           name: key,
           type: this.mapTypeToPariant(config.type || 'string'),
-          description: config.description || `Input variable from ${node.id}`
+          description: config.description || `Input variable from ${node.id}`,
         })
       })
     }
@@ -161,7 +160,7 @@ export abstract class BaseNodeConverter implements NodeConverter {
         variables.push({
           name: key,
           type: this.mapTypeToPariant(config.type || 'string'),
-          description: config.description || `Output variable from ${node.id}`
+          description: config.description || `Output variable from ${node.id}`,
         })
       })
     }
@@ -172,19 +171,21 @@ export abstract class BaseNodeConverter implements NodeConverter {
   /**
    * Map workflow types to Parlant variable types
    */
-  protected mapTypeToPariant(workflowType: string): 'string' | 'number' | 'boolean' | 'json' | 'array' {
+  protected mapTypeToPariant(
+    workflowType: string
+  ): 'string' | 'number' | 'boolean' | 'json' | 'array' {
     const typeMap: Record<string, 'string' | 'number' | 'boolean' | 'json' | 'array'> = {
-      'string': 'string',
-      'text': 'string',
-      'number': 'number',
-      'integer': 'number',
-      'float': 'number',
-      'boolean': 'boolean',
-      'bool': 'boolean',
-      'object': 'json',
-      'json': 'json',
-      'array': 'array',
-      'list': 'array'
+      string: 'string',
+      text: 'string',
+      number: 'number',
+      integer: 'number',
+      float: 'number',
+      boolean: 'boolean',
+      bool: 'boolean',
+      object: 'json',
+      json: 'json',
+      array: 'array',
+      list: 'array',
     }
 
     return typeMap[workflowType.toLowerCase()] || 'string'
@@ -252,11 +253,14 @@ export abstract class BaseNodeConverter implements NodeConverter {
       message,
       nodeId: node.id,
       severity,
-      suggestions: suggestions.length > 0 ? suggestions : [
-        'Check node configuration',
-        'Review converter implementation',
-        'Contact support if issue persists'
-      ]
+      suggestions:
+        suggestions.length > 0
+          ? suggestions
+          : [
+              'Check node configuration',
+              'Review converter implementation',
+              'Contact support if issue persists',
+            ],
     }
   }
 
@@ -275,10 +279,10 @@ export abstract class BaseNodeConverter implements NodeConverter {
       message,
       nodeId: node.id,
       impact,
-      suggestions: suggestions.length > 0 ? suggestions : [
-        'Review node configuration',
-        'Consider alternative approaches'
-      ]
+      suggestions:
+        suggestions.length > 0
+          ? suggestions
+          : ['Review node configuration', 'Consider alternative approaches'],
     }
   }
 
@@ -293,7 +297,7 @@ export abstract class BaseNodeConverter implements NodeConverter {
     logger.debug(`${this.constructor.name}: ${action}`, {
       nodeId: node.id,
       nodeType: this.nodeType,
-      ...details
+      ...details,
     })
   }
 

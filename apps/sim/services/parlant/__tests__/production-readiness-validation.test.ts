@@ -10,10 +10,10 @@
  * - Disaster recovery capabilities
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
-import { performance } from 'perf_hooks'
 import * as crypto from 'crypto'
 import * as os from 'os'
+import { performance } from 'perf_hooks'
+import { beforeAll, describe, expect, test } from '@jest/globals'
 
 interface SecurityAuditResult {
   vulnerabilities: SecurityVulnerability[]
@@ -97,7 +97,7 @@ class SecurityScanner {
       vulnerabilities,
       securityScore,
       complianceChecks,
-      recommendations
+      recommendations,
     }
   }
 
@@ -105,7 +105,7 @@ class SecurityScanner {
     const vulnerabilities: SecurityVulnerability[] = []
 
     // Simulate security scanning
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Check for common security issues
     vulnerabilities.push(...this.checkInputValidation())
@@ -119,60 +119,74 @@ class SecurityScanner {
 
   private checkInputValidation(): SecurityVulnerability[] {
     // Mock input validation security check
-    return [{
-      id: 'INPUT_001',
-      severity: 'medium' as const,
-      category: 'Input Validation',
-      description: 'Workflow input parameters should be sanitized and validated',
-      location: 'WorkflowToJourneyConverter.convertWorkflowToJourney',
-      remediation: 'Implement comprehensive input sanitization and validation for all workflow parameters'
-    }]
+    return [
+      {
+        id: 'INPUT_001',
+        severity: 'medium' as const,
+        category: 'Input Validation',
+        description: 'Workflow input parameters should be sanitized and validated',
+        location: 'WorkflowToJourneyConverter.convertWorkflowToJourney',
+        remediation:
+          'Implement comprehensive input sanitization and validation for all workflow parameters',
+      },
+    ]
   }
 
   private checkAuthenticationSecurity(): SecurityVulnerability[] {
     // Mock authentication security check
-    return [{
-      id: 'AUTH_001',
-      severity: 'high' as const,
-      category: 'Authentication',
-      description: 'Journey execution should require proper authentication',
-      location: 'JourneyExecutor.executeJourney',
-      remediation: 'Implement robust authentication and authorization checks for journey execution'
-    }]
+    return [
+      {
+        id: 'AUTH_001',
+        severity: 'high' as const,
+        category: 'Authentication',
+        description: 'Journey execution should require proper authentication',
+        location: 'JourneyExecutor.executeJourney',
+        remediation:
+          'Implement robust authentication and authorization checks for journey execution',
+      },
+    ]
   }
 
   private checkDataEncryption(): SecurityVulnerability[] {
     // Mock data encryption check
-    return [{
-      id: 'CRYPTO_001',
-      severity: 'high' as const,
-      category: 'Data Encryption',
-      description: 'Sensitive workflow data should be encrypted at rest and in transit',
-      location: 'Database storage and API communications',
-      remediation: 'Implement AES-256 encryption for sensitive data and use TLS 1.3 for all communications'
-    }]
+    return [
+      {
+        id: 'CRYPTO_001',
+        severity: 'high' as const,
+        category: 'Data Encryption',
+        description: 'Sensitive workflow data should be encrypted at rest and in transit',
+        location: 'Database storage and API communications',
+        remediation:
+          'Implement AES-256 encryption for sensitive data and use TLS 1.3 for all communications',
+      },
+    ]
   }
 
   private checkAPISecurityHeaders(): SecurityVulnerability[] {
-    return [{
-      id: 'API_001',
-      severity: 'medium' as const,
-      category: 'API Security',
-      description: 'Missing security headers in API responses',
-      location: 'All API endpoints',
-      remediation: 'Add security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, HSTS'
-    }]
+    return [
+      {
+        id: 'API_001',
+        severity: 'medium' as const,
+        category: 'API Security',
+        description: 'Missing security headers in API responses',
+        location: 'All API endpoints',
+        remediation:
+          'Add security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, HSTS',
+      },
+    ]
   }
 
   private checkDependencyVulnerabilities(): SecurityVulnerability[] {
-    return [{
-      id: 'DEP_001',
-      severity: 'low' as const,
-      category: 'Dependency Security',
-      description: 'Some dependencies may have known vulnerabilities',
-      location: 'package.json dependencies',
-      remediation: 'Regularly update dependencies and use vulnerability scanning tools'
-    }]
+    return [
+      {
+        id: 'DEP_001',
+        severity: 'low' as const,
+        category: 'Dependency Security',
+        description: 'Some dependencies may have known vulnerabilities',
+        location: 'package.json dependencies',
+        remediation: 'Regularly update dependencies and use vulnerability scanning tools',
+      },
+    ]
   }
 
   private async performComplianceChecks(): Promise<ComplianceCheck[]> {
@@ -181,44 +195,55 @@ class SecurityScanner {
         standard: 'GDPR',
         requirement: 'Data minimization and purpose limitation',
         status: 'pass',
-        details: 'Workflow conversion only processes necessary data for the intended purpose'
+        details: 'Workflow conversion only processes necessary data for the intended purpose',
       },
       {
         standard: 'SOC 2',
         requirement: 'Access controls and monitoring',
         status: 'warning',
-        details: 'Access controls implemented but monitoring could be enhanced'
+        details: 'Access controls implemented but monitoring could be enhanced',
       },
       {
         standard: 'ISO 27001',
         requirement: 'Information security management',
         status: 'pass',
-        details: 'Security controls and procedures are documented and implemented'
+        details: 'Security controls and procedures are documented and implemented',
       },
       {
         standard: 'OWASP',
         requirement: 'Top 10 security risks mitigation',
         status: 'warning',
-        details: 'Most OWASP Top 10 risks are addressed, but input validation needs improvement'
-      }
+        details: 'Most OWASP Top 10 risks are addressed, but input validation needs improvement',
+      },
     ]
   }
 
-  private calculateSecurityScore(vulnerabilities: SecurityVulnerability[], compliance: ComplianceCheck[]): number {
+  private calculateSecurityScore(
+    vulnerabilities: SecurityVulnerability[],
+    compliance: ComplianceCheck[]
+  ): number {
     let score = 100
 
     // Deduct points for vulnerabilities based on severity
-    vulnerabilities.forEach(vuln => {
+    vulnerabilities.forEach((vuln) => {
       switch (vuln.severity) {
-        case 'critical': score -= 25; break
-        case 'high': score -= 15; break
-        case 'medium': score -= 8; break
-        case 'low': score -= 3; break
+        case 'critical':
+          score -= 25
+          break
+        case 'high':
+          score -= 15
+          break
+        case 'medium':
+          score -= 8
+          break
+        case 'low':
+          score -= 3
+          break
       }
     })
 
     // Deduct points for compliance failures
-    compliance.forEach(check => {
+    compliance.forEach((check) => {
       if (check.status === 'fail') score -= 10
       if (check.status === 'warning') score -= 5
     })
@@ -235,7 +260,7 @@ class SecurityScanner {
       'Regular security audits and penetration testing',
       'Keep all dependencies updated and scan for vulnerabilities',
       'Implement comprehensive logging and monitoring',
-      'Use secure coding practices and conduct code reviews'
+      'Use secure coding practices and conduct code reviews',
     ]
   }
 }
@@ -257,13 +282,13 @@ class ReliabilityTester {
       meanTimeToRecovery: mttr,
       failureToleranceScore,
       circuitBreakerTests,
-      gracefulDegradationTests
+      gracefulDegradationTests,
     }
   }
 
   private async measureUptime(): Promise<number> {
     // Simulate uptime measurement over time period
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     return 99.95 // Mock 99.95% uptime
   }
 
@@ -286,55 +311,55 @@ class ReliabilityTester {
       this.testNetworkPartition(),
       this.testMemoryPressure(),
       this.testCPUStarvation(),
-      this.testDiskFullure()
+      this.testDiskFullure(),
     ]
 
     const results = await Promise.all(tests)
-    const passedTests = results.filter(result => result).length
+    const passedTests = results.filter((result) => result).length
     return (passedTests / tests.length) * 100
   }
 
   private async testDatabaseFailure(): Promise<boolean> {
     // Mock database failure test
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     return true // System should gracefully handle database failures
   }
 
   private async testNetworkPartition(): Promise<boolean> {
     // Mock network partition test
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     return true // System should handle network partitions
   }
 
   private async testMemoryPressure(): Promise<boolean> {
     // Mock memory pressure test
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     return true // System should handle memory pressure
   }
 
   private async testCPUStarvation(): Promise<boolean> {
     // Mock CPU starvation test
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     return true // System should handle CPU starvation
   }
 
   private async testDiskFullure(): Promise<boolean> {
     // Mock disk full test
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     return true // System should handle disk full scenarios
   }
 
   private async testCircuitBreakers(): Promise<boolean> {
     // Test circuit breaker functionality
     console.log('Testing circuit breakers...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // Circuit breakers should prevent cascading failures
   }
 
   private async testGracefulDegradation(): Promise<boolean> {
     // Test graceful degradation under stress
     console.log('Testing graceful degradation...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // System should degrade gracefully under load
   }
 }
@@ -348,7 +373,7 @@ class ScalabilityTester {
       this.testThroughputAtScale(),
       this.testResponseTimeUnderLoad(),
       this.testResourceUsageAtScale(),
-      this.testScalingTimes()
+      this.testScalingTimes(),
     ])
 
     return {
@@ -358,7 +383,7 @@ class ScalabilityTester {
       memoryUsageAtScale: results[3].memory,
       cpuUsageAtScale: results[3].cpu,
       scaleUpTime: results[4].scaleUp,
-      scaleDownTime: results[4].scaleDown
+      scaleDownTime: results[4].scaleDown,
     }
   }
 
@@ -396,7 +421,7 @@ class ScalabilityTester {
 
   private async simulateUserSession(): Promise<void> {
     // Simulate a user session with workflow conversion
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50))
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50))
   }
 
   private async testThroughputAtScale(): Promise<{ throughput: number }> {
@@ -406,7 +431,7 @@ class ScalabilityTester {
     const startTime = performance.now()
     let operationsCompleted = 0
 
-    while ((performance.now() - startTime) < testDuration) {
+    while (performance.now() - startTime < testDuration) {
       await this.simulateWorkflowConversion()
       operationsCompleted++
     }
@@ -417,7 +442,7 @@ class ScalabilityTester {
 
   private async simulateWorkflowConversion(): Promise<void> {
     // Simulate workflow to journey conversion
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 20 + 10))
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 20 + 10))
   }
 
   private async testResponseTimeUnderLoad(): Promise<{ responseTime: number }> {
@@ -440,14 +465,15 @@ class ScalabilityTester {
     // Wait for load to complete
     await Promise.all(loadPromises)
 
-    const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+    const avgResponseTime =
+      responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
     return { responseTime: avgResponseTime }
   }
 
   private async simulateBackgroundLoad(): Promise<void> {
     // Simulate background system load
     for (let i = 0; i < 10; i++) {
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 100))
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 100))
     }
   }
 
@@ -489,12 +515,12 @@ class ScalabilityTester {
 
   private async simulateScaleUp(): Promise<void> {
     // Simulate provisioning additional resources
-    await new Promise(resolve => setTimeout(resolve, 2000)) // 2 seconds scale-up
+    await new Promise((resolve) => setTimeout(resolve, 2000)) // 2 seconds scale-up
   }
 
   private async simulateScaleDown(): Promise<void> {
     // Simulate decommissioning resources
-    await new Promise(resolve => setTimeout(resolve, 1000)) // 1 second scale-down
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // 1 second scale-down
   }
 }
 
@@ -508,7 +534,7 @@ class DataIntegrityValidator {
       this.testBackupIntegrity(),
       this.testDataValidation(),
       this.testCorruptionDetection(),
-      this.testRecoveryValidation()
+      this.testRecoveryValidation(),
     ])
 
     return {
@@ -517,49 +543,49 @@ class DataIntegrityValidator {
       backupIntegrity: results[2],
       dataValidationTests: results[3],
       corruptionDetection: results[4],
-      recoveryValidation: results[5]
+      recoveryValidation: results[5],
     }
   }
 
   private async testConsistencyChecks(): Promise<boolean> {
     // Test data consistency across conversions
     console.log('Testing data consistency...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Data consistency maintained
   }
 
   private async testTransactionIntegrity(): Promise<boolean> {
     // Test ACID properties of conversions
     console.log('Testing transaction integrity...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Transactions are atomic and consistent
   }
 
   private async testBackupIntegrity(): Promise<boolean> {
     // Test backup and restore procedures
     console.log('Testing backup integrity...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Backups are valid and restorable
   }
 
   private async testDataValidation(): Promise<boolean> {
     // Test data validation rules
     console.log('Testing data validation...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Data validation rules are enforced
   }
 
   private async testCorruptionDetection(): Promise<boolean> {
     // Test corruption detection mechanisms
     console.log('Testing corruption detection...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Corruption is detected and handled
   }
 
   private async testRecoveryValidation(): Promise<boolean> {
     // Test recovery procedures
     console.log('Testing recovery validation...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return true // Mock: Recovery procedures work correctly
   }
 }
@@ -575,7 +601,11 @@ class MonitoringValidator {
     const dashboardFunctionality = await this.testDashboards()
 
     const observabilityGrade = this.calculateObservabilityGrade(
-      metricsCollection, alertingSystem, loggingCompleteness, traceabilityScore, dashboardFunctionality
+      metricsCollection,
+      alertingSystem,
+      loggingCompleteness,
+      traceabilityScore,
+      dashboardFunctionality
     )
 
     return {
@@ -584,37 +614,37 @@ class MonitoringValidator {
       loggingCompleteness,
       traceabilityScore,
       observabilityGrade,
-      dashboardFunctionality
+      dashboardFunctionality,
     }
   }
 
   private async testMetricsCollection(): Promise<boolean> {
     console.log('Testing metrics collection...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // Mock: Metrics are collected properly
   }
 
   private async testAlertingSystem(): Promise<boolean> {
     console.log('Testing alerting system...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // Mock: Alerts are configured and working
   }
 
   private async testLoggingCompleteness(): Promise<boolean> {
     console.log('Testing logging completeness...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // Mock: Comprehensive logging is in place
   }
 
   private async calculateTraceabilityScore(): Promise<number> {
     console.log('Calculating traceability score...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return 85 // Mock: 85% traceability score
   }
 
   private async testDashboards(): Promise<boolean> {
     console.log('Testing dashboard functionality...')
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     return true // Mock: Dashboards are functional
   }
 
@@ -625,13 +655,12 @@ class MonitoringValidator {
     traceability: number,
     dashboards: boolean
   ): string {
-    const score = (
+    const score =
       (metrics ? 20 : 0) +
       (alerting ? 20 : 0) +
       (logging ? 20 : 0) +
-      (traceability / 5) + // Max 20 points
+      traceability / 5 + // Max 20 points
       (dashboards ? 20 : 0)
-    )
 
     if (score >= 90) return 'A'
     if (score >= 80) return 'B'
@@ -658,45 +687,45 @@ class DisasterRecoveryTester {
       failoverTime,
       dataLossAssessment,
       serviceRecoveryTime,
-      businessContinuityScore
+      businessContinuityScore,
     }
   }
 
   private async testBackupCreation(): Promise<boolean> {
     console.log('Testing backup creation...')
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     return true // Mock: Backups can be created successfully
   }
 
   private async testBackupRestoration(): Promise<boolean> {
     console.log('Testing backup restoration...')
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     return true // Mock: Backups can be restored successfully
   }
 
   private async testFailover(): Promise<number> {
     console.log('Testing failover time...')
     const startTime = performance.now()
-    await new Promise(resolve => setTimeout(resolve, 3000)) // Simulate failover
+    await new Promise((resolve) => setTimeout(resolve, 3000)) // Simulate failover
     return performance.now() - startTime
   }
 
   private async assessDataLoss(): Promise<number> {
     console.log('Assessing potential data loss...')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     return 0 // Mock: No data loss in disaster scenarios
   }
 
   private async testServiceRecovery(): Promise<number> {
     console.log('Testing service recovery time...')
     const startTime = performance.now()
-    await new Promise(resolve => setTimeout(resolve, 5000)) // Simulate service recovery
+    await new Promise((resolve) => setTimeout(resolve, 5000)) // Simulate service recovery
     return performance.now() - startTime
   }
 
   private async calculateBusinessContinuityScore(): Promise<number> {
     console.log('Calculating business continuity score...')
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     return 92 // Mock: 92% business continuity score
   }
 }
@@ -729,12 +758,14 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
       const auditResult = await securityScanner.performSecurityAudit()
 
       expect(auditResult.securityScore).toBeGreaterThanOrEqual(75) // Minimum acceptable security score
-      expect(auditResult.vulnerabilities.filter(v => v.severity === 'critical')).toHaveLength(0) // No critical vulnerabilities
-      expect(auditResult.complianceChecks.filter(c => c.status === 'fail')).toHaveLength(0) // No compliance failures
+      expect(auditResult.vulnerabilities.filter((v) => v.severity === 'critical')).toHaveLength(0) // No critical vulnerabilities
+      expect(auditResult.complianceChecks.filter((c) => c.status === 'fail')).toHaveLength(0) // No compliance failures
 
       console.log(`🔒 Security Score: ${auditResult.securityScore}/100`)
       console.log(`📋 Vulnerabilities: ${auditResult.vulnerabilities.length} found`)
-      console.log(`✅ Compliance: ${auditResult.complianceChecks.filter(c => c.status === 'pass').length}/${auditResult.complianceChecks.length} passed`)
+      console.log(
+        `✅ Compliance: ${auditResult.complianceChecks.filter((c) => c.status === 'pass').length}/${auditResult.complianceChecks.length} passed`
+      )
 
       // Log recommendations for improvement
       if (auditResult.recommendations.length > 0) {
@@ -800,7 +831,7 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
       const scaleUpStart = performance.now()
 
       // Simulate increased load triggering scale-up
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const scaleUpTime = performance.now() - scaleUpStart
       expect(scaleUpTime).toBeLessThan(10000) // Should scale up within 10 seconds
@@ -855,8 +886,12 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
       expect(monitoringResult.observabilityGrade).toMatch(/^[AB]$/) // Grade A or B
       expect(monitoringResult.dashboardFunctionality).toBe(true)
 
-      console.log(`📊 Metrics Collection: ${monitoringResult.metricsCollection ? 'Active' : 'Inactive'}`)
-      console.log(`🚨 Alerting System: ${monitoringResult.alertingSystem ? 'Functional' : 'Non-functional'}`)
+      console.log(
+        `📊 Metrics Collection: ${monitoringResult.metricsCollection ? 'Active' : 'Inactive'}`
+      )
+      console.log(
+        `🚨 Alerting System: ${monitoringResult.alertingSystem ? 'Functional' : 'Non-functional'}`
+      )
       console.log(`📝 Logging: ${monitoringResult.loggingCompleteness ? 'Complete' : 'Incomplete'}`)
       console.log(`🔍 Traceability Score: ${monitoringResult.traceabilityScore}%`)
       console.log(`📈 Observability Grade: ${monitoringResult.observabilityGrade}`)
@@ -868,12 +903,12 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
         { condition: 'High Error Rate', threshold: '> 5%', expected: true },
         { condition: 'Memory Usage', threshold: '> 90%', expected: true },
         { condition: 'Response Time', threshold: '> 5s', expected: true },
-        { condition: 'Service Unavailable', threshold: 'Down', expected: true }
+        { condition: 'Service Unavailable', threshold: 'Down', expected: true },
       ]
 
       for (const test of alertingTests) {
         // Mock alert condition testing
-        const alertGenerated = await new Promise(resolve => {
+        const alertGenerated = await new Promise((resolve) => {
           setTimeout(() => resolve(test.expected), 100)
         })
 
@@ -895,7 +930,9 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
       expect(recoveryResult.businessContinuityScore).toBeGreaterThanOrEqual(90) // 90% business continuity
 
       console.log(`💾 Backup Creation: ${recoveryResult.backupCreation ? 'Success' : 'Failed'}`)
-      console.log(`🔄 Backup Restoration: ${recoveryResult.backupRestoration ? 'Success' : 'Failed'}`)
+      console.log(
+        `🔄 Backup Restoration: ${recoveryResult.backupRestoration ? 'Success' : 'Failed'}`
+      )
       console.log(`⚡ Failover Time: ${Math.round(recoveryResult.failoverTime)}ms`)
       console.log(`📊 Data Loss: ${recoveryResult.dataLossAssessment}%`)
       console.log(`🔧 Service Recovery: ${Math.round(recoveryResult.serviceRecoveryTime)}ms`)
@@ -909,17 +946,19 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
         'API service unavailability',
         'Cache service failure',
         'External dependency timeout',
-        'Network partition'
+        'Network partition',
       ]
 
       for (const scenario of continuityTests) {
         // Mock failure scenario testing
-        const continuityMaintained = await new Promise(resolve => {
+        const continuityMaintained = await new Promise((resolve) => {
           setTimeout(() => resolve(true), 200) // Mock: Business continuity maintained
         })
 
         expect(continuityMaintained).toBe(true)
-        console.log(`🛡️  Business continuity during "${scenario}": ${continuityMaintained ? 'MAINTAINED' : 'COMPROMISED'}`)
+        console.log(
+          `🛡️  Business continuity during "${scenario}": ${continuityMaintained ? 'MAINTAINED' : 'COMPROMISED'}`
+        )
       }
     })
   })
@@ -927,7 +966,7 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
   describe('Production Deployment Readiness', () => {
     test('should meet all production readiness criteria', async () => {
       console.log('\n🎯 FINAL PRODUCTION READINESS ASSESSMENT')
-      console.log('=' .repeat(50))
+      console.log('='.repeat(50))
 
       // Collect all validation results
       const securityResult = await securityScanner.performSecurityAudit()
@@ -938,28 +977,35 @@ describe('Production Readiness Validation for Workflow to Journey Mapping System
       const recoveryResult = await disasterRecoveryTester.testDisasterRecovery()
 
       // Calculate overall production readiness score
-      const productionReadinessScore = (
-        (securityResult.securityScore * 0.2) +
-        (reliabilityResult.uptime * 0.2) +
-        (scalabilityResult.maxConcurrentUsers > 5000 ? 100 : 50 * 0.15) +
-        (Object.values(integrityResult).every(Boolean) ? 100 : 0 * 0.15) +
-        (monitoringResult.observabilityGrade === 'A' ? 100 : 80 * 0.15) +
-        (recoveryResult.businessContinuityScore * 0.15)
-      ) / 100 * 100
+      const productionReadinessScore =
+        ((securityResult.securityScore * 0.2 +
+          reliabilityResult.uptime * 0.2 +
+          (scalabilityResult.maxConcurrentUsers > 5000 ? 100 : 50 * 0.15) +
+          (Object.values(integrityResult).every(Boolean) ? 100 : 0 * 0.15) +
+          (monitoringResult.observabilityGrade === 'A' ? 100 : 80 * 0.15) +
+          recoveryResult.businessContinuityScore * 0.15) /
+          100) *
+        100
 
       expect(productionReadinessScore).toBeGreaterThanOrEqual(85) // 85% minimum for production
 
       console.log(`🔒 Security Score: ${securityResult.securityScore}%`)
       console.log(`⚡ Reliability Score: ${reliabilityResult.uptime}%`)
       console.log(`📈 Scalability: ${scalabilityResult.maxConcurrentUsers} users`)
-      console.log(`🗄️  Data Integrity: ${Object.values(integrityResult).every(Boolean) ? 'PASS' : 'FAIL'}`)
+      console.log(
+        `🗄️  Data Integrity: ${Object.values(integrityResult).every(Boolean) ? 'PASS' : 'FAIL'}`
+      )
       console.log(`📊 Observability: Grade ${monitoringResult.observabilityGrade}`)
       console.log(`🚨 Disaster Recovery: ${recoveryResult.businessContinuityScore}%`)
-      console.log('=' .repeat(50))
+      console.log('='.repeat(50))
       console.log(`🏆 OVERALL PRODUCTION READINESS: ${Math.round(productionReadinessScore)}%`)
-      console.log(productionReadinessScore >= 95 ? '✅ EXCELLENT - Ready for Production' :
-                  productionReadinessScore >= 85 ? '✅ GOOD - Production Ready with Monitoring' :
-                  '❌ NEEDS IMPROVEMENT - Not Ready for Production')
+      console.log(
+        productionReadinessScore >= 95
+          ? '✅ EXCELLENT - Ready for Production'
+          : productionReadinessScore >= 85
+            ? '✅ GOOD - Production Ready with Monitoring'
+            : '❌ NEEDS IMPROVEMENT - Not Ready for Production'
+      )
     }, 300000) // 5 minute timeout for comprehensive assessment
   })
 })

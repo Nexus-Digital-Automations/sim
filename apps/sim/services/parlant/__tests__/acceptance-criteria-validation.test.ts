@@ -8,7 +8,7 @@
  * 4. Original ReactFlow editor remains functional
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
+import { beforeAll, describe, expect, test } from '@jest/globals'
 
 // Test interfaces for type safety
 interface WorkflowDefinition {
@@ -119,8 +119,8 @@ class WorkflowToJourneyConverter {
             isValid: false,
             issues: ['Missing required workflow properties'],
             warnings: [],
-            preservationScore: 0
-          }
+            preservationScore: 0,
+          },
         }
       }
 
@@ -132,7 +132,7 @@ class WorkflowToJourneyConverter {
         conditions: [
           `User wants to execute ${workflow.name}`,
           `User asks about ${workflow.name}`,
-          `User needs help with ${workflow.name.toLowerCase()}`
+          `User needs help with ${workflow.name.toLowerCase()}`,
         ],
         states: this.convertNodesToStates(workflow.nodes),
         transitions: this.convertEdgesToTransitions(workflow.edges),
@@ -141,8 +141,8 @@ class WorkflowToJourneyConverter {
           conversionTimestamp: new Date().toISOString(),
           preservedNodeCount: workflow.nodes.length,
           preservedEdgeCount: workflow.edges.length,
-          workflowMetadata: workflow.metadata
-        }
+          workflowMetadata: workflow.metadata,
+        },
       }
 
       // Calculate preservation score
@@ -152,13 +152,13 @@ class WorkflowToJourneyConverter {
         isValid: journey.states.length > 0 && journey.transitions.length >= 0,
         issues: this.validateJourney(journey),
         warnings: this.generateWarnings(workflow, journey),
-        preservationScore
+        preservationScore,
       }
 
       return {
         success: true,
         journey,
-        validationReport
+        validationReport,
       }
     } catch (error) {
       return {
@@ -168,49 +168,49 @@ class WorkflowToJourneyConverter {
           isValid: false,
           issues: ['Conversion process failed'],
           warnings: [],
-          preservationScore: 0
-        }
+          preservationScore: 0,
+        },
       }
     }
   }
 
   private convertNodesToStates(nodes: WorkflowNode[]): JourneyState[] {
-    return nodes.map(node => ({
+    return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
       name: node.data.label || node.id,
       config: {
         ...node.data,
         originalPosition: node.position,
-        conversationalPrompts: this.generateConversationalPrompts(node)
+        conversationalPrompts: this.generateConversationalPrompts(node),
       },
-      originalNodeId: node.id
+      originalNodeId: node.id,
     }))
   }
 
   private convertEdgesToTransitions(edges: WorkflowEdge[]): JourneyTransition[] {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       id: `transition_${edge.id}`,
       from: `state_${edge.source}`,
       to: `state_${edge.target}`,
       condition: edge.condition ? this.adaptConditionForConversation(edge.condition) : undefined,
-      originalEdgeId: edge.id
+      originalEdgeId: edge.id,
     }))
   }
 
   private mapNodeTypeToStateType(nodeType: string): string {
     const mapping: Record<string, string> = {
-      'start': 'initial',
-      'end': 'final',
-      'tool': 'tool_state',
-      'condition': 'chat_state',
-      'form': 'chat_state',
-      'delay': 'tool_state',
-      'webhook': 'tool_state',
-      'api': 'tool_state',
-      'database': 'tool_state',
-      'email': 'tool_state',
-      'notification': 'tool_state'
+      start: 'initial',
+      end: 'final',
+      tool: 'tool_state',
+      condition: 'chat_state',
+      form: 'chat_state',
+      delay: 'tool_state',
+      webhook: 'tool_state',
+      api: 'tool_state',
+      database: 'tool_state',
+      email: 'tool_state',
+      notification: 'tool_state',
     }
     return mapping[nodeType] || 'chat_state'
   }
@@ -229,36 +229,36 @@ class WorkflowToJourneyConverter {
       case 'form':
         prompts.push(
           `I need to collect some information for ${node.data.label || 'this step'}.`,
-          "Let me ask you a few questions.",
+          'Let me ask you a few questions.',
           "I'll walk you through the required information."
         )
         break
       case 'tool':
         prompts.push(
           `I'm now executing ${node.data.label || 'this action'}.`,
-          "Let me handle this step for you.",
-          "Processing your request..."
+          'Let me handle this step for you.',
+          'Processing your request...'
         )
         break
       case 'condition':
         prompts.push(
-          "Let me check something for you.",
-          "I need to evaluate the current situation.",
-          "Determining the next step..."
+          'Let me check something for you.',
+          'I need to evaluate the current situation.',
+          'Determining the next step...'
         )
         break
       case 'end':
         prompts.push(
           "Great! We've completed the process.",
-          "All done! Is there anything else you need?",
-          "Process completed successfully!"
+          'All done! Is there anything else you need?',
+          'Process completed successfully!'
         )
         break
       default:
         prompts.push(
           `Processing ${node.data.label || node.type}...`,
-          "Working on the next step...",
-          "Let me handle this for you..."
+          'Working on the next step...',
+          'Let me handle this for you...'
         )
     }
 
@@ -275,17 +275,22 @@ class WorkflowToJourneyConverter {
       .replace(/\./g, '_')
   }
 
-  private calculatePreservationScore(workflow: WorkflowDefinition, journey: JourneyDefinition): number {
+  private calculatePreservationScore(
+    workflow: WorkflowDefinition,
+    journey: JourneyDefinition
+  ): number {
     const nodePreservation = (journey.states.length / workflow.nodes.length) * 100
-    const edgePreservation = workflow.edges.length > 0 ? (journey.transitions.length / workflow.edges.length) * 100 : 100
+    const edgePreservation =
+      workflow.edges.length > 0 ? (journey.transitions.length / workflow.edges.length) * 100 : 100
 
     // Check for critical node types preservation
-    const startNodes = workflow.nodes.filter(n => n.type === 'start').length
-    const endNodes = workflow.nodes.filter(n => n.type === 'end').length
-    const initialStates = journey.states.filter(s => s.type === 'initial').length
-    const finalStates = journey.states.filter(s => s.type === 'final').length
+    const startNodes = workflow.nodes.filter((n) => n.type === 'start').length
+    const endNodes = workflow.nodes.filter((n) => n.type === 'end').length
+    const initialStates = journey.states.filter((s) => s.type === 'initial').length
+    const finalStates = journey.states.filter((s) => s.type === 'final').length
 
-    const criticalNodePreservation = ((startNodes === initialStates ? 50 : 0) + (endNodes === finalStates ? 50 : 0))
+    const criticalNodePreservation =
+      (startNodes === initialStates ? 50 : 0) + (endNodes === finalStates ? 50 : 0)
 
     return Math.round((nodePreservation + edgePreservation + criticalNodePreservation) / 3)
   }
@@ -297,11 +302,11 @@ class WorkflowToJourneyConverter {
       issues.push('Journey has no states')
     }
 
-    if (!journey.states.some(s => s.type === 'initial')) {
+    if (!journey.states.some((s) => s.type === 'initial')) {
       issues.push('Journey missing initial state')
     }
 
-    if (!journey.states.some(s => s.type === 'final')) {
+    if (!journey.states.some((s) => s.type === 'final')) {
       issues.push('Journey missing final state')
     }
 
@@ -316,14 +321,18 @@ class WorkflowToJourneyConverter {
     const warnings = []
 
     if (journey.states.length !== workflow.nodes.length) {
-      warnings.push(`State count differs from node count: ${journey.states.length} vs ${workflow.nodes.length}`)
+      warnings.push(
+        `State count differs from node count: ${journey.states.length} vs ${workflow.nodes.length}`
+      )
     }
 
     if (journey.transitions.length !== workflow.edges.length) {
-      warnings.push(`Transition count differs from edge count: ${journey.transitions.length} vs ${workflow.edges.length}`)
+      warnings.push(
+        `Transition count differs from edge count: ${journey.transitions.length} vs ${workflow.edges.length}`
+      )
     }
 
-    const complexNodes = workflow.nodes.filter(n =>
+    const complexNodes = workflow.nodes.filter((n) =>
       ['condition', 'loop', 'parallel', 'merge'].includes(n.type)
     ).length
 
@@ -341,7 +350,7 @@ class MockWorkflowExecutor {
     const steps: ExecutionStep[] = [
       { id: 'step1', name: 'Initialize', status: 'completed', executionTime: 100 },
       { id: 'step2', name: 'Process Data', status: 'completed', executionTime: 250 },
-      { id: 'step3', name: 'Generate Output', status: 'completed', executionTime: 150 }
+      { id: 'step3', name: 'Generate Output', status: 'completed', executionTime: 150 },
     ]
 
     return {
@@ -350,22 +359,25 @@ class MockWorkflowExecutor {
       status: 'completed',
       outputs: {
         result: 'success',
-        data: { processed: true, inputCount: Object.keys(inputs).length }
+        data: { processed: true, inputCount: Object.keys(inputs).length },
       },
       executionTime: 500,
-      steps
+      steps,
     }
   }
 }
 
 class MockJourneyExecutor {
-  async executeJourney(journeyId: string, conversationalInputs: any = {}): Promise<ExecutionResult> {
+  async executeJourney(
+    journeyId: string,
+    conversationalInputs: any = {}
+  ): Promise<ExecutionResult> {
     // Simulate journey execution with conversational context
     const steps: ExecutionStep[] = [
       { id: 'step1', name: 'Start Conversation', status: 'completed', executionTime: 50 },
       { id: 'step2', name: 'Process User Intent', status: 'completed', executionTime: 200 },
       { id: 'step3', name: 'Execute Business Logic', status: 'completed', executionTime: 250 },
-      { id: 'step4', name: 'Generate Response', status: 'completed', executionTime: 100 }
+      { id: 'step4', name: 'Generate Response', status: 'completed', executionTime: 100 },
     ]
 
     return {
@@ -375,10 +387,10 @@ class MockJourneyExecutor {
       outputs: {
         result: 'success',
         data: { processed: true, conversational: true },
-        userExperience: 'enhanced'
+        userExperience: 'enhanced',
       },
       executionTime: 600,
-      steps
+      steps,
     }
   }
 }
@@ -396,8 +408,8 @@ class MockConversationalInterface {
       context: {
         startTime: new Date().toISOString(),
         userPreferences: {},
-        workflowProgress: {}
-      }
+        workflowProgress: {},
+      },
     }
 
     this.sessions.set(session.id, session)
@@ -412,13 +424,13 @@ class MockConversationalInterface {
       id: `msg_${Date.now()}`,
       type: 'user',
       content,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     session.messages.push(userMessage)
 
     // Simulate agent response
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     const agentResponse: ConversationalMessage = {
       id: `msg_${Date.now()}_response`,
@@ -427,8 +439,8 @@ class MockConversationalInterface {
       timestamp: new Date().toISOString(),
       metadata: {
         journeyState: 'processing',
-        confidence: 0.95
-      }
+        confidence: 0.95,
+      },
     }
 
     session.messages.push(agentResponse)
@@ -452,7 +464,7 @@ class MockConversationalInterface {
       return "Excellent! We've successfully completed the workflow. Is there anything else you'd like to know about the results?"
     }
 
-    return "I understand. Let me process that for you and move to the next step."
+    return 'I understand. Let me process that for you and move to the next step.'
   }
 
   async getSession(sessionId: string): Promise<ConversationalSession | undefined> {
@@ -499,16 +511,31 @@ class MockReactFlowEditor {
         description: 'Standard customer onboarding process',
         version: '1.0',
         nodes: [
-          { id: 'start', type: 'start', position: { x: 0, y: 100 }, data: { label: 'Start' }},
-          { id: 'collect_info', type: 'form', position: { x: 150, y: 100 }, data: { label: 'Collect Info' }},
-          { id: 'verify', type: 'tool', position: { x: 300, y: 100 }, data: { label: 'Verify Data' }},
-          { id: 'complete', type: 'end', position: { x: 450, y: 100 }, data: { label: 'Complete' }}
+          { id: 'start', type: 'start', position: { x: 0, y: 100 }, data: { label: 'Start' } },
+          {
+            id: 'collect_info',
+            type: 'form',
+            position: { x: 150, y: 100 },
+            data: { label: 'Collect Info' },
+          },
+          {
+            id: 'verify',
+            type: 'tool',
+            position: { x: 300, y: 100 },
+            data: { label: 'Verify Data' },
+          },
+          {
+            id: 'complete',
+            type: 'end',
+            position: { x: 450, y: 100 },
+            data: { label: 'Complete' },
+          },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'collect_info' },
           { id: 'e2', source: 'collect_info', target: 'verify' },
-          { id: 'e3', source: 'verify', target: 'complete' }
-        ]
+          { id: 'e3', source: 'verify', target: 'complete' },
+        ],
       },
       {
         id: 'test_workflow_2',
@@ -516,25 +543,60 @@ class MockReactFlowEditor {
         description: 'E-commerce order processing workflow',
         version: '1.0',
         nodes: [
-          { id: 'start', type: 'start', position: { x: 0, y: 150 }, data: { label: 'Start' }},
-          { id: 'validate_order', type: 'tool', position: { x: 150, y: 150 }, data: { label: 'Validate Order' }},
-          { id: 'check_inventory', type: 'condition', position: { x: 300, y: 150 }, data: { label: 'Check Inventory' }},
-          { id: 'process_payment', type: 'tool', position: { x: 450, y: 100 }, data: { label: 'Process Payment' }},
-          { id: 'out_of_stock', type: 'tool', position: { x: 450, y: 200 }, data: { label: 'Handle Out of Stock' }},
-          { id: 'complete', type: 'end', position: { x: 600, y: 150 }, data: { label: 'Complete' }}
+          { id: 'start', type: 'start', position: { x: 0, y: 150 }, data: { label: 'Start' } },
+          {
+            id: 'validate_order',
+            type: 'tool',
+            position: { x: 150, y: 150 },
+            data: { label: 'Validate Order' },
+          },
+          {
+            id: 'check_inventory',
+            type: 'condition',
+            position: { x: 300, y: 150 },
+            data: { label: 'Check Inventory' },
+          },
+          {
+            id: 'process_payment',
+            type: 'tool',
+            position: { x: 450, y: 100 },
+            data: { label: 'Process Payment' },
+          },
+          {
+            id: 'out_of_stock',
+            type: 'tool',
+            position: { x: 450, y: 200 },
+            data: { label: 'Handle Out of Stock' },
+          },
+          {
+            id: 'complete',
+            type: 'end',
+            position: { x: 600, y: 150 },
+            data: { label: 'Complete' },
+          },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'validate_order' },
           { id: 'e2', source: 'validate_order', target: 'check_inventory' },
-          { id: 'e3', source: 'check_inventory', target: 'process_payment', condition: 'inventory.available === true' },
-          { id: 'e4', source: 'check_inventory', target: 'out_of_stock', condition: 'inventory.available === false' },
+          {
+            id: 'e3',
+            source: 'check_inventory',
+            target: 'process_payment',
+            condition: 'inventory.available === true',
+          },
+          {
+            id: 'e4',
+            source: 'check_inventory',
+            target: 'out_of_stock',
+            condition: 'inventory.available === false',
+          },
           { id: 'e5', source: 'process_payment', target: 'complete' },
-          { id: 'e6', source: 'out_of_stock', target: 'complete' }
-        ]
-      }
+          { id: 'e6', source: 'out_of_stock', target: 'complete' },
+        ],
+      },
     ]
 
-    testWorkflows.forEach(workflow => {
+    testWorkflows.forEach((workflow) => {
       this.workflows.set(workflow.id, workflow)
     })
   }
@@ -577,7 +639,9 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
         expect(conversionResult.validationReport.isValid).toBe(true)
         expect(conversionResult.validationReport.preservationScore).toBeGreaterThanOrEqual(80)
 
-        console.log(`✅ Converted "${workflow!.name}" with ${conversionResult.validationReport.preservationScore}% preservation`)
+        console.log(
+          `✅ Converted "${workflow!.name}" with ${conversionResult.validationReport.preservationScore}% preservation`
+        )
       }
     })
 
@@ -593,20 +657,22 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       expect(journey.transitions.length).toBe(workflow!.edges.length)
 
       // Verify critical states are present
-      expect(journey.states.some(s => s.type === 'initial')).toBe(true)
-      expect(journey.states.some(s => s.type === 'final')).toBe(true)
+      expect(journey.states.some((s) => s.type === 'initial')).toBe(true)
+      expect(journey.states.some((s) => s.type === 'final')).toBe(true)
 
       // Verify tool states are preserved
-      const workflowTools = workflow!.nodes.filter(n => n.type === 'tool')
-      const journeyToolStates = journey.states.filter(s => s.type === 'tool_state')
+      const workflowTools = workflow!.nodes.filter((n) => n.type === 'tool')
+      const journeyToolStates = journey.states.filter((s) => s.type === 'tool_state')
       expect(journeyToolStates.length).toBe(workflowTools.length)
 
       // Verify conditional logic is preserved
-      const workflowConditions = workflow!.edges.filter(e => e.condition)
-      const journeyConditions = journey.transitions.filter(t => t.condition)
+      const workflowConditions = workflow!.edges.filter((e) => e.condition)
+      const journeyConditions = journey.transitions.filter((t) => t.condition)
       expect(journeyConditions.length).toBe(workflowConditions.length)
 
-      console.log(`✅ Preserved structure: ${journey.states.length} states, ${journey.transitions.length} transitions`)
+      console.log(
+        `✅ Preserved structure: ${journey.states.length} states, ${journey.transitions.length} transitions`
+      )
     })
 
     test('should handle complex workflows with branching and conditions', async () => {
@@ -616,14 +682,44 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
         description: 'Workflow with multiple branches and conditions',
         version: '1.0',
         nodes: [
-          { id: 'start', type: 'start', position: { x: 0, y: 200 }, data: { label: 'Start' }},
-          { id: 'input', type: 'form', position: { x: 150, y: 200 }, data: { label: 'Collect Input' }},
-          { id: 'classify', type: 'condition', position: { x: 300, y: 200 }, data: { label: 'Classify Request' }},
-          { id: 'path_a', type: 'tool', position: { x: 450, y: 150 }, data: { label: 'Path A Processing' }},
-          { id: 'path_b', type: 'tool', position: { x: 450, y: 250 }, data: { label: 'Path B Processing' }},
-          { id: 'merge', type: 'condition', position: { x: 600, y: 200 }, data: { label: 'Merge Results' }},
-          { id: 'output', type: 'tool', position: { x: 750, y: 200 }, data: { label: 'Generate Output' }},
-          { id: 'end', type: 'end', position: { x: 900, y: 200 }, data: { label: 'End' }}
+          { id: 'start', type: 'start', position: { x: 0, y: 200 }, data: { label: 'Start' } },
+          {
+            id: 'input',
+            type: 'form',
+            position: { x: 150, y: 200 },
+            data: { label: 'Collect Input' },
+          },
+          {
+            id: 'classify',
+            type: 'condition',
+            position: { x: 300, y: 200 },
+            data: { label: 'Classify Request' },
+          },
+          {
+            id: 'path_a',
+            type: 'tool',
+            position: { x: 450, y: 150 },
+            data: { label: 'Path A Processing' },
+          },
+          {
+            id: 'path_b',
+            type: 'tool',
+            position: { x: 450, y: 250 },
+            data: { label: 'Path B Processing' },
+          },
+          {
+            id: 'merge',
+            type: 'condition',
+            position: { x: 600, y: 200 },
+            data: { label: 'Merge Results' },
+          },
+          {
+            id: 'output',
+            type: 'tool',
+            position: { x: 750, y: 200 },
+            data: { label: 'Generate Output' },
+          },
+          { id: 'end', type: 'end', position: { x: 900, y: 200 }, data: { label: 'End' } },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'input' },
@@ -633,8 +729,8 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
           { id: 'e5', source: 'path_a', target: 'merge' },
           { id: 'e6', source: 'path_b', target: 'merge' },
           { id: 'e7', source: 'merge', target: 'output' },
-          { id: 'e8', source: 'output', target: 'end' }
-        ]
+          { id: 'e8', source: 'output', target: 'end' },
+        ],
       }
 
       const conversionResult = await converter.convertWorkflowToJourney(complexWorkflow)
@@ -648,7 +744,9 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       expect(journey.states.length).toBe(8)
       expect(journey.transitions.length).toBe(7)
 
-      console.log(`✅ Complex workflow conversion: ${conversionResult.validationReport.preservationScore}% preservation`)
+      console.log(
+        `✅ Complex workflow conversion: ${conversionResult.validationReport.preservationScore}% preservation`
+      )
     })
   })
 
@@ -661,10 +759,16 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       const journey = conversionResult.journey!
 
       // Execute original workflow
-      const workflowResult = await workflowExecutor.executeWorkflow(workflow!.id, { userId: '123', type: 'premium' })
+      const workflowResult = await workflowExecutor.executeWorkflow(workflow!.id, {
+        userId: '123',
+        type: 'premium',
+      })
 
       // Execute converted journey
-      const journeyResult = await journeyExecutor.executeJourney(journey.id, { userId: '123', type: 'premium' })
+      const journeyResult = await journeyExecutor.executeJourney(journey.id, {
+        userId: '123',
+        type: 'premium',
+      })
 
       // Compare results
       expect(workflowResult.status).toBe('completed')
@@ -677,17 +781,22 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       // Journey may have additional conversational enhancements
       expect(journeyResult.outputs.userExperience).toBeDefined()
 
-      console.log(`✅ Execution equivalence verified: Workflow(${workflowResult.executionTime}ms) vs Journey(${journeyResult.executionTime}ms)`)
+      console.log(
+        `✅ Execution equivalence verified: Workflow(${workflowResult.executionTime}ms) vs Journey(${journeyResult.executionTime}ms)`
+      )
     })
 
     test('should maintain data flow and transformations', async () => {
       const workflow = await reactFlowEditor.loadWorkflow('test_workflow_2')
       const conversionResult = await converter.convertWorkflowToJourney(workflow!)
 
-      const testInputs = { orderId: 'ORD-123', amount: 99.99, inventory: { available: true }}
+      const testInputs = { orderId: 'ORD-123', amount: 99.99, inventory: { available: true } }
 
       const workflowResult = await workflowExecutor.executeWorkflow(workflow!.id, testInputs)
-      const journeyResult = await journeyExecutor.executeJourney(conversionResult.journey!.id, testInputs)
+      const journeyResult = await journeyExecutor.executeJourney(
+        conversionResult.journey!.id,
+        testInputs
+      )
 
       // Verify data transformations are preserved
       expect(workflowResult.outputs.data.inputCount).toBe(Object.keys(testInputs).length)
@@ -701,11 +810,14 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       const workflow = await reactFlowEditor.loadWorkflow('test_workflow_1')
       const conversionResult = await converter.convertWorkflowToJourney(workflow!)
 
-      const invalidInputs = { }  // Empty inputs to trigger validation errors
+      const invalidInputs = {} // Empty inputs to trigger validation errors
 
       try {
         const workflowResult = await workflowExecutor.executeWorkflow(workflow!.id, invalidInputs)
-        const journeyResult = await journeyExecutor.executeJourney(conversionResult.journey!.id, invalidInputs)
+        const journeyResult = await journeyExecutor.executeJourney(
+          conversionResult.journey!.id,
+          invalidInputs
+        )
 
         // Both should handle errors gracefully
         // In this mock, they both complete successfully, but in real implementation
@@ -727,7 +839,10 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       const conversionResult = await converter.convertWorkflowToJourney(workflow!)
 
       // Create conversational session
-      const session = await conversationalInterface.createSession('agent_123', conversionResult.journey!.id)
+      const session = await conversationalInterface.createSession(
+        'agent_123',
+        conversionResult.journey!.id
+      )
       expect(session).toBeDefined()
       expect(session.status).toBe('active')
 
@@ -735,20 +850,31 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       const responses = []
 
       // User initiates conversation
-      responses.push(await conversationalInterface.sendMessage(session.id, "Hi, I'd like to start the onboarding process"))
+      responses.push(
+        await conversationalInterface.sendMessage(
+          session.id,
+          "Hi, I'd like to start the onboarding process"
+        )
+      )
       expect(responses[0].type).toBe('agent')
       expect(responses[0].content).toContain('help')
 
       // User asks for status
-      responses.push(await conversationalInterface.sendMessage(session.id, "What's our current status?"))
+      responses.push(
+        await conversationalInterface.sendMessage(session.id, "What's our current status?")
+      )
       expect(responses[1].content).toContain('step')
 
       // User asks for help
-      responses.push(await conversationalInterface.sendMessage(session.id, "I need help with the next step"))
+      responses.push(
+        await conversationalInterface.sendMessage(session.id, 'I need help with the next step')
+      )
       expect(responses[2].content).toContain('help')
 
       // User indicates completion
-      responses.push(await conversationalInterface.sendMessage(session.id, "I think we're all done now"))
+      responses.push(
+        await conversationalInterface.sendMessage(session.id, "I think we're all done now")
+      )
       expect(responses[3].content).toContain('completed')
 
       // Verify session context is maintained
@@ -756,20 +882,31 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       expect(finalSession?.messages.length).toBeGreaterThan(6) // User + agent messages
       expect(finalSession?.status).toBe('completed')
 
-      console.log(`✅ Conversational interaction successful with ${responses.length} agent responses`)
+      console.log(
+        `✅ Conversational interaction successful with ${responses.length} agent responses`
+      )
     })
 
     test('should provide contextually appropriate responses based on workflow state', async () => {
       const workflow = await reactFlowEditor.loadWorkflow('test_workflow_2') // Order processing workflow
       const conversionResult = await converter.convertWorkflowToJourney(workflow!)
 
-      const session = await conversationalInterface.createSession('agent_456', conversionResult.journey!.id)
+      const session = await conversationalInterface.createSession(
+        'agent_456',
+        conversionResult.journey!.id
+      )
 
       // Test context-aware responses
-      const startResponse = await conversationalInterface.sendMessage(session.id, "Let's begin processing my order")
+      const startResponse = await conversationalInterface.sendMessage(
+        session.id,
+        "Let's begin processing my order"
+      )
       expect(startResponse.content).toContain('started')
 
-      const progressResponse = await conversationalInterface.sendMessage(session.id, "How is my order progressing?")
+      const progressResponse = await conversationalInterface.sendMessage(
+        session.id,
+        'How is my order progressing?'
+      )
       expect(progressResponse.content).toContain('step')
       expect(progressResponse.metadata?.journeyState).toBeDefined()
 
@@ -783,18 +920,20 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       // Verify that conversational prompts are generated for each workflow step
       const journey = conversionResult.journey!
 
-      journey.states.forEach(state => {
+      journey.states.forEach((state) => {
         expect(state.config?.conversationalPrompts).toBeDefined()
         expect(state.config.conversationalPrompts.length).toBeGreaterThan(0)
       })
 
       // Verify conditional logic is adapted for conversation
-      const conditionalTransitions = journey.transitions.filter(t => t.condition)
-      conditionalTransitions.forEach(transition => {
+      const conditionalTransitions = journey.transitions.filter((t) => t.condition)
+      conditionalTransitions.forEach((transition) => {
         expect(transition.condition).not.toContain('===') // Should be adapted from technical syntax
       })
 
-      console.log(`✅ Business rules preserved with ${conditionalTransitions.length} conversational conditions`)
+      console.log(
+        `✅ Business rules preserved with ${conditionalTransitions.length} conversational conditions`
+      )
     })
   })
 
@@ -813,7 +952,7 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
 
       // Verify original workflow is still editable
       const editSuccess = await reactFlowEditor.editWorkflow('test_workflow_1', {
-        description: 'Updated description after conversion'
+        description: 'Updated description after conversion',
       })
       expect(editSuccess).toBe(true)
 
@@ -832,8 +971,13 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       await reactFlowEditor.editWorkflow('test_workflow_2', {
         nodes: [
           ...workflow!.nodes,
-          { id: 'new_step', type: 'tool', position: { x: 750, y: 150 }, data: { label: 'New Step' }}
-        ]
+          {
+            id: 'new_step',
+            type: 'tool',
+            position: { x: 750, y: 150 },
+            data: { label: 'New Step' },
+          },
+        ],
       })
 
       // Verify original journey is unaffected
@@ -856,14 +1000,14 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
         description: 'Created after journey system implementation',
         version: '1.0',
         nodes: [
-          { id: 'start', type: 'start', position: { x: 0, y: 100 }, data: { label: 'Start' }},
-          { id: 'action', type: 'tool', position: { x: 150, y: 100 }, data: { label: 'Action' }},
-          { id: 'end', type: 'end', position: { x: 300, y: 100 }, data: { label: 'End' }}
+          { id: 'start', type: 'start', position: { x: 0, y: 100 }, data: { label: 'Start' } },
+          { id: 'action', type: 'tool', position: { x: 150, y: 100 }, data: { label: 'Action' } },
+          { id: 'end', type: 'end', position: { x: 300, y: 100 }, data: { label: 'End' } },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'action' },
-          { id: 'e2', source: 'action', target: 'end' }
-        ]
+          { id: 'e2', source: 'action', target: 'end' },
+        ],
       }
 
       // Save new workflow
@@ -893,13 +1037,18 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
 
       // 2. Execute both workflow and journey and compare (Criteria 2)
       const workflowExecution = await workflowExecutor.executeWorkflow(workflow!.id, { test: true })
-      const journeyExecution = await journeyExecutor.executeJourney(conversionResult.journey!.id, { test: true })
+      const journeyExecution = await journeyExecutor.executeJourney(conversionResult.journey!.id, {
+        test: true,
+      })
       expect(workflowExecution.status).toBe('completed')
       expect(journeyExecution.status).toBe('completed')
 
       // 3. Create conversational session for journey (Criteria 3)
-      const session = await conversationalInterface.createSession('agent_integration', conversionResult.journey!.id)
-      const response = await conversationalInterface.sendMessage(session.id, "Start the process")
+      const session = await conversationalInterface.createSession(
+        'agent_integration',
+        conversionResult.journey!.id
+      )
+      const response = await conversationalInterface.sendMessage(session.id, 'Start the process')
       expect(response.type).toBe('agent')
 
       // 4. Verify ReactFlow editor still works (Criteria 4)
@@ -907,7 +1056,9 @@ describe('Acceptance Criteria Validation for Workflow to Journey Mapping System'
       const editSuccess = await reactFlowEditor.editWorkflow(workflow!.id, { version: '1.1' })
       expect(editSuccess).toBe(true)
 
-      console.log('✅ Complete system integration validated - all 4 acceptance criteria working together')
+      console.log(
+        '✅ Complete system integration validated - all 4 acceptance criteria working together'
+      )
     })
   })
 })

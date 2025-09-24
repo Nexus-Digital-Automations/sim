@@ -2,13 +2,13 @@
  * Type definitions for the Universal Tool Registry System
  */
 
-import { z } from 'zod'
+import type { z } from 'zod'
 import type {
-  toolRegistry,
   toolCategories,
   toolConfigurations,
-  toolUsageAnalytics,
   toolRecommendations,
+  toolRegistry,
+  toolUsageAnalytics,
 } from '@/packages/db/schema'
 
 // Database schema types
@@ -274,7 +274,9 @@ export interface IToolRegistryService {
   listTools(query?: ToolSearchQuery): Promise<ToolSearchResult>
 
   // Categories
-  createCategory(category: Omit<ToolCategoryRow, 'id' | 'createdAt' | 'updatedAt'>): Promise<ToolCategoryRow>
+  createCategory(
+    category: Omit<ToolCategoryRow, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ToolCategoryRow>
   getCategories(): Promise<ToolCategoryRow[]>
 
   // Health monitoring
@@ -294,18 +296,37 @@ export interface IToolDiscoveryService {
 export interface IToolConfigurationService {
   createConfiguration(config: Omit<ToolConfiguration, 'id'>): Promise<ToolConfiguration>
   getConfiguration(configId: string): Promise<ToolConfiguration | null>
-  updateConfiguration(configId: string, updates: Partial<ToolConfiguration>): Promise<ToolConfiguration>
+  updateConfiguration(
+    configId: string,
+    updates: Partial<ToolConfiguration>
+  ): Promise<ToolConfiguration>
   deleteConfiguration(configId: string): Promise<void>
-  listConfigurations(toolId: string, workspaceId?: string, userId?: string): Promise<ToolConfiguration[]>
-  validateConfiguration(toolId: string, config: Record<string, any>): Promise<{ isValid: boolean; errors: string[] }>
+  listConfigurations(
+    toolId: string,
+    workspaceId?: string,
+    userId?: string
+  ): Promise<ToolConfiguration[]>
+  validateConfiguration(
+    toolId: string,
+    config: Record<string, any>
+  ): Promise<{ isValid: boolean; errors: string[] }>
 }
 
 export interface IToolAnalyticsService {
   recordUsage(usage: ToolUsageAnalyticsInsert): Promise<void>
   getToolAnalytics(toolId: string, timeRange?: { start: Date; end: Date }): Promise<ToolAnalytics>
-  getWorkspaceAnalytics(workspaceId: string, timeRange?: { start: Date; end: Date }): Promise<Record<string, ToolAnalytics>>
-  getUserAnalytics(userId: string, timeRange?: { start: Date; end: Date }): Promise<Record<string, ToolAnalytics>>
-  getPopularityTrends(timeRange?: { start: Date; end: Date }): Promise<Array<{ toolId: string; trend: number }>>
+  getWorkspaceAnalytics(
+    workspaceId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<Record<string, ToolAnalytics>>
+  getUserAnalytics(
+    userId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<Record<string, ToolAnalytics>>
+  getPopularityTrends(timeRange?: {
+    start: Date
+    end: Date
+  }): Promise<Array<{ toolId: string; trend: number }>>
 }
 
 // Event system for tool registry

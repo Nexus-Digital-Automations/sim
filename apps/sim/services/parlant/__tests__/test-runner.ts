@@ -12,8 +12,7 @@
  *   npm run test:workflow-journey
  */
 
-import { spawn } from 'child_process'
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { join } from 'path'
 
 interface TestRunConfiguration {

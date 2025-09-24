@@ -1,9 +1,7 @@
-import { type SQL, sql } from 'drizzle-orm'
 import {
   boolean,
   index,
   integer,
-  json,
   jsonb,
   pgEnum,
   pgTable,
@@ -12,7 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { user, workspace, knowledgeBase, customTools, workflowBlocks, mcpServers, workflow, apiKey } from './schema'
+import { apiKey, knowledgeBase, user, workflow, workspace } from './schema'
 
 /**
  * Parlant Database Schema Extension
@@ -38,9 +36,14 @@ export const eventTypeEnum = pgEnum('event_type', [
   'tool_result',
   'status_update',
   'journey_transition',
-  'variable_update'
+  'variable_update',
 ])
-export const journeyStateTypeEnum = pgEnum('journey_state_type', ['chat', 'tool', 'decision', 'final'])
+export const journeyStateTypeEnum = pgEnum('journey_state_type', [
+  'chat',
+  'tool',
+  'decision',
+  'final',
+])
 export const compositionModeEnum = pgEnum('composition_mode', ['fluid', 'strict'])
 
 /**
@@ -108,13 +111,19 @@ export const parlantAgent = pgTable(
     workspaceIdIdx: index('parlant_agent_workspace_id_idx').on(table.workspaceId),
     createdByIdx: index('parlant_agent_created_by_idx').on(table.createdBy),
     statusIdx: index('parlant_agent_status_idx').on(table.status),
-    workspaceStatusIdx: index('parlant_agent_workspace_status_idx').on(table.workspaceId, table.status),
+    workspaceStatusIdx: index('parlant_agent_workspace_status_idx').on(
+      table.workspaceId,
+      table.status
+    ),
     deletedAtIdx: index('parlant_agent_deleted_at_idx').on(table.deletedAt),
     lastActiveIdx: index('parlant_agent_last_active_idx').on(table.lastActiveAt),
     compositionModeIdx: index('parlant_agent_composition_mode_idx').on(table.compositionMode),
     modelProviderIdx: index('parlant_agent_model_provider_idx').on(table.modelProvider),
     conversationStyleIdx: index('parlant_agent_conversation_style_idx').on(table.conversationStyle),
-    workspaceActiveIdx: index('parlant_agent_workspace_active_idx').on(table.workspaceId, table.lastActiveAt),
+    workspaceActiveIdx: index('parlant_agent_workspace_active_idx').on(
+      table.workspaceId,
+      table.lastActiveAt
+    ),
   })
 )
 
@@ -190,8 +199,14 @@ export const parlantSession = pgTable(
     sessionTypeIdx: index('parlant_session_type_idx').on(table.sessionType),
     localeIdx: index('parlant_session_locale_idx').on(table.locale),
     satisfactionIdx: index('parlant_session_satisfaction_idx').on(table.satisfactionScore),
-    workspaceTypeIdx: index('parlant_session_workspace_type_idx').on(table.workspaceId, table.sessionType),
-    agentActiveIdx: index('parlant_session_agent_active_idx').on(table.agentId, table.lastActivityAt),
+    workspaceTypeIdx: index('parlant_session_workspace_type_idx').on(
+      table.workspaceId,
+      table.sessionType
+    ),
+    agentActiveIdx: index('parlant_session_agent_active_idx').on(
+      table.agentId,
+      table.lastActivityAt
+    ),
   })
 )
 
@@ -224,7 +239,10 @@ export const parlantEvent = pgTable(
   },
   (table) => ({
     sessionIdIdx: index('parlant_event_session_id_idx').on(table.sessionId),
-    sessionOffsetIdx: uniqueIndex('parlant_event_session_offset_idx').on(table.sessionId, table.offset),
+    sessionOffsetIdx: uniqueIndex('parlant_event_session_offset_idx').on(
+      table.sessionId,
+      table.offset
+    ),
     eventTypeIdx: index('parlant_event_type_idx').on(table.eventType),
     sessionTypeIdx: index('parlant_event_session_type_idx').on(table.sessionId, table.eventType),
     toolCallIdIdx: index('parlant_event_tool_call_idx').on(table.toolCallId),
@@ -348,7 +366,10 @@ export const parlantJourneyState = pgTable(
   (table) => ({
     journeyIdIdx: index('parlant_journey_state_journey_id_idx').on(table.journeyId),
     stateTypeIdx: index('parlant_journey_state_type_idx').on(table.stateType),
-    journeyTypeIdx: index('parlant_journey_state_journey_type_idx').on(table.journeyId, table.stateType),
+    journeyTypeIdx: index('parlant_journey_state_journey_type_idx').on(
+      table.journeyId,
+      table.stateType
+    ),
     isInitialIdx: index('parlant_journey_state_initial_idx').on(table.isInitial),
     isFinalIdx: index('parlant_journey_state_final_idx').on(table.isFinal),
   })
@@ -386,7 +407,10 @@ export const parlantJourneyTransition = pgTable(
     journeyIdIdx: index('parlant_journey_transition_journey_id_idx').on(table.journeyId),
     fromStateIdx: index('parlant_journey_transition_from_state_idx').on(table.fromStateId),
     toStateIdx: index('parlant_journey_transition_to_state_idx').on(table.toStateId),
-    journeyFromIdx: index('parlant_journey_transition_journey_from_idx').on(table.journeyId, table.fromStateId),
+    journeyFromIdx: index('parlant_journey_transition_journey_from_idx').on(
+      table.journeyId,
+      table.fromStateId
+    ),
     priorityIdx: index('parlant_journey_transition_priority_idx').on(table.priority),
   })
 )
@@ -402,8 +426,7 @@ export const parlantVariable = pgTable(
     agentId: uuid('agent_id')
       .notNull()
       .references(() => parlantAgent.id, { onDelete: 'cascade' }),
-    sessionId: uuid('session_id')
-      .references(() => parlantSession.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').references(() => parlantSession.id, { onDelete: 'cascade' }),
 
     // Variable identification
     key: text('key').notNull(),
@@ -486,7 +509,10 @@ export const parlantTool = pgTable(
   (table) => ({
     workspaceIdIdx: index('parlant_tool_workspace_id_idx').on(table.workspaceId),
     nameIdx: index('parlant_tool_name_idx').on(table.name),
-    workspaceNameIdx: uniqueIndex('parlant_tool_workspace_name_idx').on(table.workspaceId, table.name),
+    workspaceNameIdx: uniqueIndex('parlant_tool_workspace_name_idx').on(
+      table.workspaceId,
+      table.name
+    ),
     simToolIdIdx: index('parlant_tool_sim_tool_idx').on(table.simToolId),
     toolTypeIdx: index('parlant_tool_type_idx').on(table.toolType),
     enabledIdx: index('parlant_tool_enabled_idx').on(table.enabled),
@@ -566,7 +592,10 @@ export const parlantCannedResponse = pgTable(
   (table) => ({
     agentIdIdx: index('parlant_canned_response_agent_id_idx').on(table.agentId),
     categoryIdx: index('parlant_canned_response_category_idx').on(table.category),
-    agentCategoryIdx: index('parlant_canned_response_agent_category_idx').on(table.agentId, table.category),
+    agentCategoryIdx: index('parlant_canned_response_agent_category_idx').on(
+      table.agentId,
+      table.category
+    ),
     enabledIdx: index('parlant_canned_response_enabled_idx').on(table.enabled),
     priorityIdx: index('parlant_canned_response_priority_idx').on(table.priority),
     lastUsedIdx: index('parlant_canned_response_last_used_idx').on(table.lastUsedAt),
@@ -619,9 +648,15 @@ export const parlantAgentWorkflow = pgTable(
     agentIdIdx: index('parlant_agent_workflow_agent_id_idx').on(table.agentId),
     workflowIdIdx: index('parlant_agent_workflow_workflow_id_idx').on(table.workflowId),
     workspaceIdIdx: index('parlant_agent_workflow_workspace_id_idx').on(table.workspaceId),
-    agentWorkflowUnique: uniqueIndex('parlant_agent_workflow_unique').on(table.agentId, table.workflowId),
+    agentWorkflowUnique: uniqueIndex('parlant_agent_workflow_unique').on(
+      table.agentId,
+      table.workflowId
+    ),
     integrationTypeIdx: index('parlant_agent_workflow_type_idx').on(table.integrationType),
-    agentEnabledIdx: index('parlant_agent_workflow_agent_enabled_idx').on(table.agentId, table.enabled),
+    agentEnabledIdx: index('parlant_agent_workflow_agent_enabled_idx').on(
+      table.agentId,
+      table.enabled
+    ),
   })
 )
 
@@ -659,9 +694,15 @@ export const parlantAgentApiKey = pgTable(
     agentIdIdx: index('parlant_agent_api_key_agent_id_idx').on(table.agentId),
     apiKeyIdIdx: index('parlant_agent_api_key_api_key_id_idx').on(table.apiKeyId),
     workspaceIdIdx: index('parlant_agent_api_key_workspace_id_idx').on(table.workspaceId),
-    agentApiKeyUnique: uniqueIndex('parlant_agent_api_key_unique').on(table.agentId, table.apiKeyId),
+    agentApiKeyUnique: uniqueIndex('parlant_agent_api_key_unique').on(
+      table.agentId,
+      table.apiKeyId
+    ),
     purposeIdx: index('parlant_agent_api_key_purpose_idx').on(table.purpose),
-    agentEnabledIdx: index('parlant_agent_api_key_agent_enabled_idx').on(table.agentId, table.enabled),
+    agentEnabledIdx: index('parlant_agent_api_key_agent_enabled_idx').on(
+      table.agentId,
+      table.enabled
+    ),
   })
 )
 
@@ -700,7 +741,10 @@ export const parlantSessionWorkflow = pgTable(
     workflowIdIdx: index('parlant_session_workflow_workflow_id_idx').on(table.workflowId),
     executionIdIdx: index('parlant_session_workflow_execution_id_idx').on(table.executionId),
     statusIdx: index('parlant_session_workflow_status_idx').on(table.status),
-    sessionStatusIdx: index('parlant_session_workflow_session_status_idx').on(table.sessionId, table.status),
+    sessionStatusIdx: index('parlant_session_workflow_session_status_idx').on(
+      table.sessionId,
+      table.status
+    ),
     startedAtIdx: index('parlant_session_workflow_started_at_idx').on(table.startedAt),
   })
 )
@@ -775,9 +819,17 @@ export const parlantJourneyGuideline = pgTable(
   (table) => ({
     journeyIdIdx: index('parlant_journey_guideline_journey_id_idx').on(table.journeyId),
     guidelineIdIdx: index('parlant_journey_guideline_guideline_id_idx').on(table.guidelineId),
-    journeyGuidelineUnique: uniqueIndex('parlant_journey_guideline_unique').on(table.journeyId, table.guidelineId),
-    journeyEnabledIdx: index('parlant_journey_guideline_journey_enabled_idx').on(table.journeyId, table.enabled),
-    priorityOverrideIdx: index('parlant_journey_guideline_priority_override_idx').on(table.priorityOverride),
+    journeyGuidelineUnique: uniqueIndex('parlant_journey_guideline_unique').on(
+      table.journeyId,
+      table.guidelineId
+    ),
+    journeyEnabledIdx: index('parlant_journey_guideline_journey_enabled_idx').on(
+      table.journeyId,
+      table.enabled
+    ),
+    priorityOverrideIdx: index('parlant_journey_guideline_priority_override_idx').on(
+      table.priorityOverride
+    ),
   })
 )
 
@@ -855,9 +907,16 @@ export const parlantToolIntegration = pgTable(
     parlantToolIdIdx: index('parlant_tool_integration_parlant_tool_idx').on(table.parlantToolId),
     integrationTypeIdx: index('parlant_tool_integration_type_idx').on(table.integrationType),
     targetIdIdx: index('parlant_tool_integration_target_idx').on(table.targetId),
-    typeTargetIdx: index('parlant_tool_integration_type_target_idx').on(table.integrationType, table.targetId),
+    typeTargetIdx: index('parlant_tool_integration_type_target_idx').on(
+      table.integrationType,
+      table.targetId
+    ),
     healthStatusIdx: index('parlant_tool_integration_health_idx').on(table.healthStatus),
-    parlantToolUniqueTarget: uniqueIndex('parlant_tool_integration_unique').on(table.parlantToolId, table.integrationType, table.targetId),
+    parlantToolUniqueTarget: uniqueIndex('parlant_tool_integration_unique').on(
+      table.parlantToolId,
+      table.integrationType,
+      table.targetId
+    ),
   })
 )
 
@@ -899,8 +958,11 @@ export const parlantWorkflowTemplate = pgTable(
     nameIdx: index('parlant_workflow_template_name_idx').on(table.name),
     tagsIdx: index('parlant_workflow_template_tags_idx').on(table.tags),
     usageCountIdx: index('parlant_workflow_template_usage_count_idx').on(table.usageCount),
-    uniqueWorkspaceWorkflowName: uniqueIndex('parlant_workflow_template_unique')
-      .on(table.workspaceId, table.workflowId, table.name),
+    uniqueWorkspaceWorkflowName: uniqueIndex('parlant_workflow_template_unique').on(
+      table.workspaceId,
+      table.workflowId,
+      table.name
+    ),
   })
 )
 
@@ -928,8 +990,10 @@ export const parlantTemplateParameter = pgTable(
   (table) => ({
     templateIdIdx: index('parlant_template_parameter_template_idx').on(table.templateId),
     orderIdx: index('parlant_template_parameter_order_idx').on(table.displayOrder),
-    uniqueTemplateName: uniqueIndex('parlant_template_parameter_unique')
-      .on(table.templateId, table.name),
+    uniqueTemplateName: uniqueIndex('parlant_template_parameter_unique').on(
+      table.templateId,
+      table.name
+    ),
   })
 )
 
@@ -940,7 +1004,9 @@ export const parlantConversionCache = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     cacheKey: text('cache_key').notNull(),
     workflowId: text('workflow_id').notNull(),
-    templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id, { onDelete: 'cascade' }),
+    templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id, {
+      onDelete: 'cascade',
+    }),
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspace.id, { onDelete: 'cascade' }),
@@ -1000,7 +1066,9 @@ export const parlantConversionHistory = pgTable(
     completedAt: timestamp('completed_at'),
   },
   (table) => ({
-    conversionIdIdx: uniqueIndex('parlant_conversion_history_conversion_id_unique').on(table.conversionId),
+    conversionIdIdx: uniqueIndex('parlant_conversion_history_conversion_id_unique').on(
+      table.conversionId
+    ),
     workflowIdx: index('parlant_conversion_history_workflow_idx').on(table.workflowId),
     templateIdx: index('parlant_conversion_history_template_idx').on(table.templateId),
     workspaceIdx: index('parlant_conversion_history_workspace_idx').on(table.workspaceId),
@@ -1015,8 +1083,9 @@ export const parlantJourneyGenerationHistory = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     journeyId: uuid('journey_id').notNull(),
-    conversionId: uuid('conversion_id')
-      .references(() => parlantConversionHistory.id, { onDelete: 'set null' }),
+    conversionId: uuid('conversion_id').references(() => parlantConversionHistory.id, {
+      onDelete: 'set null',
+    }),
     templateId: uuid('template_id').references(() => parlantWorkflowTemplate.id),
     workflowId: text('workflow_id').notNull(),
     agentId: uuid('agent_id')

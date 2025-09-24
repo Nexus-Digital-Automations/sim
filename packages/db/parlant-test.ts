@@ -6,67 +6,50 @@
  * documentation of proper usage patterns.
  */
 
+import { and, eq } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import { eq, and } from 'drizzle-orm'
-
 // Import all Parlant types and utilities
 import type {
-  // Core types
-  ParlantAgent,
-  ParlantSession,
-  ParlantEvent,
-  CreateAgentParams,
-  CreateSessionParams,
-  CreateEventParams,
   AgentFilters,
-  SessionFilters,
-
-  // Union types
-  TypedParlantEvent,
-  CustomerMessageContent,
   AgentMessageContent,
-  ParlantEventContent,
-  SessionContext,
   AnonymousSessionContext,
   AuthenticatedSessionContext,
-
+  CreateAgentParams,
+  CreateSessionParams,
+  CustomerMessageContent,
+  // Core types
+  ParlantAgent,
   // Query types
   ParlantQueries,
-  AgentWithRelations,
-  SessionWithRelations,
-
+  SessionContext,
+  // Union types
+  TypedParlantEvent,
   // Validation types
   ValidatedCreateAgent,
   ValidatedCreateSession,
 } from './parlant-exports'
-
 import {
-  // Schema and tables
-  parlantAgent,
-  parlantSession,
-  parlantEvent,
-
   // Query helpers
   createParlantQueries,
-  withErrorHandling,
-  batchInsert,
-
-  // Type guards
-  isCustomerMessageContent,
+  formatValidationErrors,
   isAgentMessageContent,
   isAnonymousSession,
   isAuthenticatedSession,
-
-  // Validation
-  validateCreateAgent,
-  validateCreateSession,
-  safeValidate,
-  parlantSchemas,
-  formatValidationErrors,
-
+  // Type guards
+  isCustomerMessageContent,
   // Constants
   PARLANT_FEATURES,
   PARLANT_INTEGRATIONS,
+  // Schema and tables
+  parlantAgent,
+  parlantEvent,
+  parlantSchemas,
+  parlantSession,
+  safeValidate,
+  // Validation
+  validateCreateAgent,
+  validateCreateSession,
+  withErrorHandling,
 } from './parlant-exports'
 
 // Mock database type for testing
@@ -353,7 +336,7 @@ function testValidationSchemas() {
   } else {
     const formattedErrors = formatValidationErrors(validationResult.errors)
     console.log('✓ Invalid agent data correctly failed validation')
-    console.log('  Errors:', formattedErrors.map(e => `${e.field}: ${e.message}`).join(', '))
+    console.log('  Errors:', formattedErrors.map((e) => `${e.field}: ${e.message}`).join(', '))
   }
 
   // Test session validation
@@ -425,7 +408,7 @@ function testFeatureFlagsAndIntegrations() {
     'POLYMORPHIC_RELATIONSHIPS',
   ]
 
-  const missingFeatures = requiredFeatures.filter(feature => !PARLANT_FEATURES[feature])
+  const missingFeatures = requiredFeatures.filter((feature) => !PARLANT_FEATURES[feature])
 
   if (missingFeatures.length === 0) {
     console.log('✓ All required features are enabled')
@@ -442,7 +425,7 @@ function testFeatureFlagsAndIntegrations() {
   ]
 
   const missingIntegrations = requiredIntegrations.filter(
-    integration => !PARLANT_INTEGRATIONS[integration]
+    (integration) => !PARLANT_INTEGRATIONS[integration]
   )
 
   if (missingIntegrations.length === 0) {
@@ -465,9 +448,11 @@ function testDatabaseSchemaCompatibility() {
   const eventTable = parlantEvent
 
   // Verify table names
-  if (agentTable._.name === 'parlant_agent' &&
-      sessionTable._.name === 'parlant_session' &&
-      eventTable._.name === 'parlant_event') {
+  if (
+    agentTable._.name === 'parlant_agent' &&
+    sessionTable._.name === 'parlant_session' &&
+    eventTable._.name === 'parlant_event'
+  ) {
     console.log('✓ Table names are correct')
   } else {
     console.error('✗ Table names are incorrect')
@@ -545,7 +530,6 @@ export async function runParlantTypeTests(mockDb?: MockDatabase) {
         schema: test7,
       },
     }
-
   } catch (error) {
     console.error('❌ Parlant type tests failed:', error)
     return {

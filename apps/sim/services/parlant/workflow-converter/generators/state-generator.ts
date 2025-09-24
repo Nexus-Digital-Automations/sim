@@ -7,14 +7,14 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ReactFlowNode,
+  ConnectionPreservation,
   ConversionContext,
+  LayoutPreservation,
+  MetadataPreservation,
   ParlantState,
   ParlantVariable,
+  ReactFlowNode,
   StatePreservation,
-  LayoutPreservation,
-  ConnectionPreservation,
-  MetadataPreservation
 } from '../types'
 
 const logger = createLogger('StateGenerator')
@@ -33,13 +33,22 @@ export class StateGenerator {
   async generateState(
     node: ReactFlowNode,
     context: ConversionContext,
-    stateType: 'initial' | 'chat' | 'tool' | 'condition' | 'loop_start' | 'loop_end' | 'parallel_start' | 'parallel_end' | 'final',
+    stateType:
+      | 'initial'
+      | 'chat'
+      | 'tool'
+      | 'condition'
+      | 'loop_start'
+      | 'loop_end'
+      | 'parallel_start'
+      | 'parallel_end'
+      | 'final',
     overrides: Partial<ParlantState> = {}
   ): Promise<ParlantState> {
     logger.debug('Generating state', {
       nodeId: node.id,
       stateType,
-      preserveLayout: context.options.preserveLayout
+      preserveLayout: context.options.preserveLayout,
     })
 
     // Create base state structure
@@ -49,7 +58,7 @@ export class StateGenerator {
       name: overrides.name || node.data?.name || this.generateStateName(node, stateType),
       description: overrides.description || this.generateStateDescription(node, stateType),
       position: context.options.preserveLayout ? node.position : { x: 0, y: 0 },
-      ...overrides
+      ...overrides,
     }
 
     // Add preserved data if layout preservation is enabled
@@ -60,7 +69,7 @@ export class StateGenerator {
     logger.debug('State generated successfully', {
       nodeId: node.id,
       stateId: baseState.id,
-      stateType
+      stateType,
     })
 
     return baseState
@@ -80,7 +89,7 @@ export class StateGenerator {
   ): Promise<ParlantState[]> {
     logger.debug('Generating multiple states', {
       nodeId: node.id,
-      stateCount: stateConfigs.length
+      stateCount: stateConfigs.length,
     })
 
     const states: ParlantState[] = []
@@ -89,22 +98,17 @@ export class StateGenerator {
       const config = stateConfigs[i]
       const suffix = config.suffix || `_${i + 1}`
 
-      const state = await this.generateState(
-        node,
-        context,
-        config.type,
-        {
-          id: `${this.generateStateId(node)}${suffix}`,
-          ...config.overrides
-        }
-      )
+      const state = await this.generateState(node, context, config.type, {
+        id: `${this.generateStateId(node)}${suffix}`,
+        ...config.overrides,
+      })
 
       states.push(state)
     }
 
     logger.debug('Multiple states generated', {
       nodeId: node.id,
-      generatedStates: states.length
+      generatedStates: states.length,
     })
 
     return states
@@ -123,7 +127,7 @@ export class StateGenerator {
       originalNodeData: this.preserveOriginalNodeData(node),
       layoutPreservation: this.preserveLayoutData(node, context),
       connectionPreservation: this.preserveConnectionData(node, context),
-      metadataPreservation: this.preserveMetadata(node)
+      metadataPreservation: this.preserveMetadata(node),
     }
   }
 
@@ -140,7 +144,7 @@ export class StateGenerator {
           name: `${node.id}_input_${key}`,
           type: this.mapTypeToPariant(config.type || 'string'),
           description: config.description || `Input ${key} from node ${node.id}`,
-          defaultValue: config.defaultValue
+          defaultValue: config.defaultValue,
         })
       })
     }
@@ -152,7 +156,7 @@ export class StateGenerator {
           name: `${node.id}_output_${key}`,
           type: this.mapTypeToPariant(config.type || 'string'),
           description: config.description || `Output ${key} from node ${node.id}`,
-          defaultValue: config.defaultValue
+          defaultValue: config.defaultValue,
         })
       })
     }
@@ -165,7 +169,7 @@ export class StateGenerator {
             name: `${node.id}_${subBlock.id}`,
             type: this.inferVariableType(subBlock.value),
             description: subBlock.title || `Configuration ${subBlock.id} from node ${node.id}`,
-            defaultValue: subBlock.value
+            defaultValue: subBlock.value,
           })
         }
       })
@@ -195,7 +199,7 @@ export class StateGenerator {
       loop_end: 'Loop End',
       parallel_start: 'Parallel Start',
       parallel_end: 'Parallel End',
-      final: 'Journey End'
+      final: 'Journey End',
     }
 
     return typeMap[stateType] || `${stateType} State`
@@ -233,8 +237,8 @@ export class StateGenerator {
         originalType: node.type,
         originalData: node.data,
         originalPosition: node.position,
-        preservedAt: new Date().toISOString()
-      }
+        preservedAt: new Date().toISOString(),
+      },
     })
   }
 
@@ -247,14 +251,11 @@ export class StateGenerator {
       parentId: node.parentId,
       measured: (node as any).measured,
       selected: (node as any).selected,
-      dragging: (node as any).dragging
+      dragging: (node as any).dragging,
     }
   }
 
-  private preserveLayoutData(
-    node: ReactFlowNode,
-    context: ConversionContext
-  ): LayoutPreservation {
+  private preserveLayoutData(node: ReactFlowNode, context: ConversionContext): LayoutPreservation {
     const nodePositions: Record<string, { x: number; y: number }> = {}
     const containerHierarchy: Record<string, string[]> = {}
     const visualProperties: Record<string, any> = {}
@@ -276,13 +277,13 @@ export class StateGenerator {
       height: (node as any).height,
       zIndex: (node as any).zIndex,
       style: (node as any).style,
-      className: (node as any).className
+      className: (node as any).className,
     }
 
     return {
       nodePositions,
       containerHierarchy,
-      visualProperties
+      visualProperties,
     }
   }
 
@@ -291,14 +292,14 @@ export class StateGenerator {
     context: ConversionContext
   ): ConnectionPreservation {
     const originalEdges = context.workflow.edges.filter(
-      edge => edge.source === node.id || edge.target === node.id
+      (edge) => edge.source === node.id || edge.target === node.id
     )
 
     const handleMappings: Record<string, string> = {}
     const conditionalLogic: Record<string, string> = {}
 
     // Map handles and conditions
-    originalEdges.forEach(edge => {
+    originalEdges.forEach((edge) => {
       if (edge.sourceHandle) {
         handleMappings[`${edge.source}_${edge.sourceHandle}`] = edge.sourceHandle
       }
@@ -313,9 +314,9 @@ export class StateGenerator {
     })
 
     return {
-      originalEdges: originalEdges.map(edge => ({ ...edge })), // Clone edges
+      originalEdges: originalEdges.map((edge) => ({ ...edge })), // Clone edges
       handleMappings,
-      conditionalLogic
+      conditionalLogic,
     }
   }
 
@@ -346,23 +347,25 @@ export class StateGenerator {
     return {
       originalTypes,
       blockConfigurations,
-      customProperties
+      customProperties,
     }
   }
 
-  private mapTypeToPariant(workflowType: string): 'string' | 'number' | 'boolean' | 'json' | 'array' {
+  private mapTypeToPariant(
+    workflowType: string
+  ): 'string' | 'number' | 'boolean' | 'json' | 'array' {
     const typeMap: Record<string, 'string' | 'number' | 'boolean' | 'json' | 'array'> = {
-      'string': 'string',
-      'text': 'string',
-      'number': 'number',
-      'integer': 'number',
-      'float': 'number',
-      'boolean': 'boolean',
-      'bool': 'boolean',
-      'object': 'json',
-      'json': 'json',
-      'array': 'array',
-      'list': 'array'
+      string: 'string',
+      text: 'string',
+      number: 'number',
+      integer: 'number',
+      float: 'number',
+      boolean: 'boolean',
+      bool: 'boolean',
+      object: 'json',
+      json: 'json',
+      array: 'array',
+      list: 'array',
     }
 
     return typeMap[workflowType.toLowerCase()] || 'string'

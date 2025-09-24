@@ -5,25 +5,23 @@
  * workspace context, and machine learning models.
  */
 
-import { eq, and, desc, sql, count, avg, inArray, gte, lte } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import { createLogger } from '@/lib/logs/console/logger'
 import { db } from '@/packages/db'
 import {
+  toolCategories,
   toolRecommendations,
   toolRegistry,
   toolUsageAnalytics,
-  toolCategories,
 } from '@/packages/db/schema'
-import { createLogger } from '@/lib/logs/console/logger'
-
-import type {
-  RecommendationContext,
-  ToolRecommendationData,
-  EnrichedTool,
-  UserToolPreferences,
-  ToolRecommendationInsert,
-} from './types'
-import { ToolDiscoveryService } from './discovery-service'
 import { ToolAnalyticsService } from './analytics-service'
+import { ToolDiscoveryService } from './discovery-service'
+import type {
+  EnrichedTool,
+  RecommendationContext,
+  ToolRecommendationInsert,
+  UserToolPreferences,
+} from './types'
 
 const logger = createLogger('ToolRecommendationService')
 
@@ -66,7 +64,7 @@ export class ToolRecommendationService {
       const allRecommendations = new Map<string, EnrichedTool>()
 
       // Add contextual recommendations (highest priority)
-      contextualRecommendations.forEach(tool => {
+      contextualRecommendations.forEach((tool) => {
         if (tool.recommendation) {
           tool.recommendation.score *= 1.2 // Boost contextual recommendations
         }
@@ -74,14 +72,14 @@ export class ToolRecommendationService {
       })
 
       // Add popular recommendations
-      popularRecommendations.forEach(tool => {
+      popularRecommendations.forEach((tool) => {
         if (!allRecommendations.has(tool.id)) {
           allRecommendations.set(tool.id, tool)
         }
       })
 
       // Add similar tool recommendations
-      similarRecommendations.forEach(tool => {
+      similarRecommendations.forEach((tool) => {
         if (!allRecommendations.has(tool.id)) {
           if (tool.recommendation) {
             tool.recommendation.score *= 0.8 // Slight penalty for similar tools
@@ -91,7 +89,7 @@ export class ToolRecommendationService {
       })
 
       // Add workflow-based recommendations
-      workflowRecommendations.forEach(tool => {
+      workflowRecommendations.forEach((tool) => {
         if (!allRecommendations.has(tool.id)) {
           allRecommendations.set(tool.id, tool)
         }
@@ -122,10 +120,7 @@ export class ToolRecommendationService {
     limit = 10
   ): Promise<EnrichedTool[]> {
     try {
-      const conditions = [
-        eq(toolRegistry.status, 'active'),
-        eq(toolRegistry.isPublic, true),
-      ]
+      const conditions = [eq(toolRegistry.status, 'active'), eq(toolRegistry.isPublic, true)]
 
       // Apply user preferences if available
       if (context.userPreferences) {
@@ -140,7 +135,9 @@ export class ToolRecommendationService {
         }
 
         if (dismissed.length > 0) {
-          conditions.push(sql`${toolRegistry.id} NOT IN (${dismissed.map(id => `'${id}'`).join(',')})`)
+          conditions.push(
+            sql`${toolRegistry.id} NOT IN (${dismissed.map((id) => `'${id}'`).join(',')})`
+          )
         }
       }
 
@@ -183,7 +180,9 @@ export class ToolRecommendationService {
         })
       )
 
-      return recommendations.sort((a, b) => (b.recommendation?.score || 0) - (a.recommendation?.score || 0))
+      return recommendations.sort(
+        (a, b) => (b.recommendation?.score || 0) - (a.recommendation?.score || 0)
+      )
     } catch (error) {
       logger.error('Failed to get contextual recommendations', { context, error })
       return []
@@ -201,7 +200,7 @@ export class ToolRecommendationService {
       const popularTools = await this.discoveryService.getPopularTools(context.workspaceId, limit)
 
       // Add recommendation data
-      return popularTools.map(tool => {
+      return popularTools.map((tool) => {
         tool.recommendation = {
           score: this.calculatePopularityScore(tool),
           confidence: 0.9,
@@ -235,7 +234,7 @@ export class ToolRecommendationService {
       for (const recentToolId of context.recentTools.slice(0, 3)) {
         try {
           const similar = await this.discoveryService.getSimilarTools(recentToolId, limit)
-          similar.forEach(tool => {
+          similar.forEach((tool) => {
             if (!similarTools.has(tool.id)) {
               tool.recommendation = {
                 score: this.calculateSimilarityScore(tool, context),
@@ -359,35 +358,22 @@ export class ToolRecommendationService {
       const favoriteCategories = Array.from(
         new Set(
           usageHistory
-            .filter(h => h.categoryId)
+            .filter((h) => h.categoryId)
             .slice(0, 5)
-            .map(h => h.categoryId!)
+            .map((h) => h.categoryId!)
         )
       )
 
-      const preferredTypes = Array.from(
-        new Set(
-          usageHistory
-            .slice(0, 10)
-            .map(h => h.toolType)
-        )
-      )
+      const preferredTypes = Array.from(new Set(usageHistory.slice(0, 10).map((h) => h.toolType)))
 
-      const recentlyUsed = usageHistory
-        .slice(0, 10)
-        .map(h => h.toolId)
+      const recentlyUsed = usageHistory.slice(0, 10).map((h) => h.toolId)
 
       // Get dismissed tools (from recommendation feedback)
       const dismissed = await db
         .select({ toolId: toolRecommendations.recommendedToolId })
         .from(toolRecommendations)
-        .where(
-          and(
-            eq(toolRecommendations.userId, userId),
-            eq(toolRecommendations.dismissed, true)
-          )
-        )
-        .then(results => results.map(r => r.toolId))
+        .where(and(eq(toolRecommendations.userId, userId), eq(toolRecommendations.dismissed, true)))
+        .then((results) => results.map((r) => r.toolId))
 
       return {
         favoriteCategories,
@@ -450,7 +436,7 @@ export class ToolRecommendationService {
     context: RecommendationContext
   ): Promise<void> {
     try {
-      const recommendationRecords: ToolRecommendationInsert[] = recommendations.map(tool => ({
+      const recommendationRecords: ToolRecommendationInsert[] = recommendations.map((tool) => ({
         id: `rec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId: context.userId || null,
         workspaceId: context.workspaceId || null,
@@ -505,7 +491,7 @@ export class ToolRecommendationService {
       // Simple keyword matching - in practice, this would use NLP
       const taskWords = context.currentTask.toLowerCase().split(' ')
       const descWords = tool.naturalLanguageDescription.toLowerCase().split(' ')
-      const matches = taskWords.filter(word => descWords.includes(word)).length
+      const matches = taskWords.filter((word) => descWords.includes(word)).length
       score += Math.min(matches / taskWords.length, 0.2)
     }
 
@@ -566,11 +552,7 @@ export class ToolRecommendationService {
   /**
    * Enrich tool with analytics data (helper method)
    */
-  private async enrichTool(
-    tool: any,
-    category: any,
-    analytics: any
-  ): Promise<EnrichedTool> {
+  private async enrichTool(tool: any, category: any, analytics: any): Promise<EnrichedTool> {
     return {
       id: tool.id,
       name: tool.name,

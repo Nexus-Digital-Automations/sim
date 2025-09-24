@@ -8,11 +8,11 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
   FormatContext,
   FormattedResult,
   ImageContent,
   ResultFormat,
+  ResultFormatter,
 } from '../types'
 
 const logger = createLogger('ImageFormatter')
@@ -56,17 +56,20 @@ export class ImageFormatter implements ResultFormatter {
     if (typeof output === 'object' && output !== null) {
       // Check for common image fields
       const imageFields = ['url', 'image_url', 'src', 'href', 'path', 'base64', 'data']
-      const hasImageField = imageFields.some(field =>
-        output.hasOwnProperty(field) &&
-        (this.isImageUrl(String(output[field])) || this.isBase64Image(String(output[field])))
+      const hasImageField = imageFields.some(
+        (field) =>
+          Object.hasOwn(output, field) &&
+          (this.isImageUrl(String(output[field])) || this.isBase64Image(String(output[field])))
       )
 
       if (hasImageField) return true
 
       // Check for image generator output patterns
-      if (output.hasOwnProperty('generated_image') ||
-          output.hasOwnProperty('image_data') ||
-          output.hasOwnProperty('screenshot_data')) {
+      if (
+        Object.hasOwn(output, 'generated_image') ||
+        Object.hasOwn(output, 'image_data') ||
+        Object.hasOwn(output, 'screenshot_data')
+      ) {
         return true
       }
 
@@ -74,8 +77,9 @@ export class ImageFormatter implements ResultFormatter {
       if (Array.isArray(output.images) || Array.isArray(output.results)) {
         const images = output.images || output.results
         return images.some((item: any) =>
-          typeof item === 'string' ? this.isImageUrl(item) :
-          typeof item === 'object' && item && this.hasImageData(item)
+          typeof item === 'string'
+            ? this.isImageUrl(item)
+            : typeof item === 'object' && item && this.hasImageData(item)
         )
       }
     }
@@ -149,7 +153,6 @@ export class ImageFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(imageContent, imageData),
         },
       }
-
     } catch (error) {
       logger.error('Image formatting failed:', error)
       throw new Error(`Image formatting failed: ${(error as Error).message}`)
@@ -159,7 +162,10 @@ export class ImageFormatter implements ResultFormatter {
   /**
    * Generate natural language summary
    */
-  async generateSummary(result: ToolResponse, context: FormatContext): Promise<{
+  async generateSummary(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<{
     headline: string
     description: string
     highlights: string[]
@@ -187,7 +193,6 @@ export class ImageFormatter implements ResultFormatter {
         highlights: this.extractImageHighlights(imageData),
         suggestions: this.generateImageSuggestions(imageData, context),
       }
-
     } catch (error) {
       logger.error('Image summary generation failed:', error)
 
@@ -263,7 +268,16 @@ export class ImageFormatter implements ResultFormatter {
       }
 
       // Extract metadata
-      const excludeFields = new Set(['url', 'image_url', 'src', 'href', 'path', 'base64', 'data', 'image_data'])
+      const excludeFields = new Set([
+        'url',
+        'image_url',
+        'src',
+        'href',
+        'path',
+        'base64',
+        'data',
+        'image_data',
+      ])
       metadata = Object.fromEntries(
         Object.entries(output).filter(([key]) => !excludeFields.has(key))
       )
@@ -282,7 +296,10 @@ export class ImageFormatter implements ResultFormatter {
     return null
   }
 
-  private async generateImageContent(imageData: any, context: FormatContext): Promise<ImageContent> {
+  private async generateImageContent(
+    imageData: any,
+    context: FormatContext
+  ): Promise<ImageContent> {
     return {
       type: 'image',
       title: `${context.toolConfig.name || context.toolId} Image`,
@@ -342,7 +359,7 @@ export class ImageFormatter implements ResultFormatter {
       insights.push('AI-generated content')
     }
 
-    return insights.length > 0 ? insights.join(', ') + '.' : ''
+    return insights.length > 0 ? `${insights.join(', ')}.` : ''
   }
 
   private extractImageHighlights(imageData: any): string[] {
@@ -417,7 +434,7 @@ export class ImageFormatter implements ResultFormatter {
         /unsplash\.com/i,
       ]
 
-      return imageHostPatterns.some(pattern => pattern.test(url))
+      return imageHostPatterns.some((pattern) => pattern.test(url))
     } catch {
       return false
     }
@@ -441,8 +458,10 @@ export class ImageFormatter implements ResultFormatter {
     if (typeof obj !== 'object' || !obj) return false
 
     const imageFields = ['url', 'image_url', 'src', 'href', 'base64', 'data']
-    return imageFields.some(field =>
-      obj[field] && (this.isImageUrl(String(obj[field])) || this.isBase64Image(String(obj[field])))
+    return imageFields.some(
+      (field) =>
+        obj[field] &&
+        (this.isImageUrl(String(obj[field])) || this.isBase64Image(String(obj[field])))
     )
   }
 
@@ -506,7 +525,7 @@ export class ImageFormatter implements ResultFormatter {
       if (typeof obj[field] === 'string') {
         const match = obj[field].match(/(\d+)x(\d+)/i)
         if (match) {
-          return { width: parseInt(match[1]), height: parseInt(match[2]) }
+          return { width: Number.parseInt(match[1]), height: Number.parseInt(match[2]) }
         }
       }
     }
@@ -532,7 +551,7 @@ export class ImageFormatter implements ResultFormatter {
     for (const field of captionFields) {
       if (obj[field] && typeof obj[field] === 'string' && obj[field].trim()) {
         const caption = obj[field].trim()
-        return caption.length > 200 ? caption.substring(0, 200) + '...' : caption
+        return caption.length > 200 ? `${caption.substring(0, 200)}...` : caption
       }
     }
 
@@ -565,7 +584,7 @@ export class ImageFormatter implements ResultFormatter {
     return key
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\b\w/g, (l) => l.toUpperCase())
       .trim()
   }
 
@@ -574,7 +593,7 @@ export class ImageFormatter implements ResultFormatter {
     if (typeof value === 'object') return JSON.stringify(value)
 
     const str = String(value)
-    return str.length > 50 ? str.substring(0, 50) + '...' : str
+    return str.length > 50 ? `${str.substring(0, 50)}...` : str
   }
 
   private formatFileSize(bytes: number): string {

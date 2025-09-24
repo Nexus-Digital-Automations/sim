@@ -1,24 +1,17 @@
 import type {
   ParlantAgent,
-  ParlantSession,
+  ParlantAgentKnowledgeBase,
+  ParlantAgentTool,
   ParlantEvent,
   ParlantGuideline,
   ParlantJourney,
+  ParlantJourneyGuideline,
   ParlantJourneyState,
   ParlantJourneyTransition,
-  ParlantVariable,
+  ParlantSession,
   ParlantTool,
-  ParlantTerm,
-  ParlantCannedResponse,
-  ParlantAgentTool,
-  ParlantJourneyGuideline,
-  ParlantAgentKnowledgeBase,
   ParlantToolIntegration,
-  EventType,
-  JourneyStateType,
-  AgentStatus,
-  SessionStatus,
-  SessionMode,
+  ParlantVariable,
 } from './parlant-types'
 
 /**
@@ -566,8 +559,9 @@ export interface TypedJourneyState<T extends JourneyStateConfiguration = Journey
 /**
  * Tool with typed integration
  */
-export interface TypedParlantTool<T extends ToolIntegrationConfiguration = ToolIntegrationConfiguration>
-  extends ParlantTool {
+export interface TypedParlantTool<
+  T extends ToolIntegrationConfiguration = ToolIntegrationConfiguration,
+> extends ParlantTool {
   integrations: Array<ParlantToolIntegration & { configuration: T }>
 }
 
@@ -626,9 +620,11 @@ export type SessionQueryResult = TypedParlantSession & {
 export type JourneyQueryResult = ParlantJourney & {
   _relations?: {
     agent?: ParlantAgent
-    states?: Array<TypedJourneyState & {
-      transitions?: Array<ParlantJourneyTransition & { toState?: TypedJourneyState }>
-    }>
+    states?: Array<
+      TypedJourneyState & {
+        transitions?: Array<ParlantJourneyTransition & { toState?: TypedJourneyState }>
+      }
+    >
     guidelines?: (ParlantJourneyGuideline & { guideline: ParlantGuideline })[]
     analytics?: {
       totalSessions: number
@@ -721,11 +717,15 @@ export interface StateFactory {
 /**
  * Event content type guards
  */
-export function isCustomerMessageContent(content: ParlantEventContent): content is CustomerMessageContent {
+export function isCustomerMessageContent(
+  content: ParlantEventContent
+): content is CustomerMessageContent {
   return content.type === 'customer_message'
 }
 
-export function isAgentMessageContent(content: ParlantEventContent): content is AgentMessageContent {
+export function isAgentMessageContent(
+  content: ParlantEventContent
+): content is AgentMessageContent {
   return content.type === 'agent_message'
 }
 
@@ -737,7 +737,9 @@ export function isToolResultContent(content: ParlantEventContent): content is To
   return content.type === 'tool_result'
 }
 
-export function isJourneyTransitionContent(content: ParlantEventContent): content is JourneyTransitionContent {
+export function isJourneyTransitionContent(
+  content: ParlantEventContent
+): content is JourneyTransitionContent {
   return content.type === 'journey_transition'
 }
 
@@ -752,7 +754,9 @@ export function isToolStateConfig(config: JourneyStateConfiguration): config is 
   return config.stateType === 'tool'
 }
 
-export function isDecisionStateConfig(config: JourneyStateConfiguration): config is DecisionStateConfig {
+export function isDecisionStateConfig(
+  config: JourneyStateConfiguration
+): config is DecisionStateConfig {
   return config.stateType === 'decision'
 }
 
@@ -763,15 +767,21 @@ export function isFinalStateConfig(config: JourneyStateConfiguration): config is
 /**
  * Tool integration type guards
  */
-export function isCustomToolIntegration(config: ToolIntegrationConfiguration): config is CustomToolIntegration {
+export function isCustomToolIntegration(
+  config: ToolIntegrationConfiguration
+): config is CustomToolIntegration {
   return config.integrationType === 'custom_tool'
 }
 
-export function isWorkflowBlockIntegration(config: ToolIntegrationConfiguration): config is WorkflowBlockIntegration {
+export function isWorkflowBlockIntegration(
+  config: ToolIntegrationConfiguration
+): config is WorkflowBlockIntegration {
   return config.integrationType === 'workflow_block'
 }
 
-export function isMcpServerIntegration(config: ToolIntegrationConfiguration): config is McpServerIntegration {
+export function isMcpServerIntegration(
+  config: ToolIntegrationConfiguration
+): config is McpServerIntegration {
   return config.integrationType === 'mcp_server'
 }
 
@@ -782,7 +792,9 @@ export function isAnonymousSession(context: SessionContext): context is Anonymou
   return context.userType === 'anonymous'
 }
 
-export function isAuthenticatedSession(context: SessionContext): context is AuthenticatedSessionContext {
+export function isAuthenticatedSession(
+  context: SessionContext
+): context is AuthenticatedSessionContext {
   return context.userType === 'authenticated'
 }
 

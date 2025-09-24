@@ -8,24 +8,23 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import { getBlock } from '@/blocks'
-import type { Node, Edge } from 'reactflow'
+import { Serializer } from '@/serializer'
 import type { SerializedWorkflow } from '@/serializer/types'
+import { getParlantClient } from '../client'
 import type {
-  WorkflowToJourneyMapping,
-  NodeStateMapping,
-  EdgeTransitionMapping,
   ContextVariableMapping,
-  WorkflowExecutionConfig,
   ConversationalConfig,
+  ConversationalTrigger,
+  EdgeTransitionMapping,
+  ExecutionTrigger,
+  NodeStateMapping,
   ParlantJourneyState,
   ParlantJourneyTransition,
-  ExecutionTrigger,
-  ValidationRule,
   TransitionCondition,
-  ConversationalTrigger,
+  ValidationRule,
+  WorkflowExecutionConfig,
+  WorkflowToJourneyMapping,
 } from './types'
-import { Serializer } from '@/serializer'
-import { getParlantClient } from '../client'
 
 const logger = createLogger('WorkflowJourneyMapper')
 
@@ -92,14 +91,10 @@ export class WorkflowJourneyMapper {
       )
 
       // Map context variables
-      const contextVariableMappings = await this.generateContextVariableMappings(
-        workflowAnalysis
-      )
+      const contextVariableMappings = await this.generateContextVariableMappings(workflowAnalysis)
 
       // Create default configurations
-      const executionConfig = this.createDefaultExecutionConfig(
-        options.executionConfig || {}
-      )
+      const executionConfig = this.createDefaultExecutionConfig(options.executionConfig || {})
       const conversationalConfig = this.createDefaultConversationalConfig(
         options.conversationalConfig || {}
       )
@@ -229,16 +224,12 @@ export class WorkflowJourneyMapper {
     }))
 
     // Find entry points (nodes with no incoming edges)
-    const targetNodeIds = new Set(edges.map(e => e.target))
-    const entryPoints = nodes
-      .filter(node => !targetNodeIds.has(node.id))
-      .map(node => node.id)
+    const targetNodeIds = new Set(edges.map((e) => e.target))
+    const entryPoints = nodes.filter((node) => !targetNodeIds.has(node.id)).map((node) => node.id)
 
     // Find exit points (nodes with no outgoing edges)
-    const sourceNodeIds = new Set(edges.map(e => e.source))
-    const exitPoints = nodes
-      .filter(node => !sourceNodeIds.has(node.id))
-      .map(node => node.id)
+    const sourceNodeIds = new Set(edges.map((e) => e.source))
+    const exitPoints = nodes.filter((node) => !sourceNodeIds.has(node.id)).map((node) => node.id)
 
     // Extract variables (would be implemented based on workflow structure)
     const variables = this.extractWorkflowVariables(workflow)
@@ -295,7 +286,7 @@ export class WorkflowJourneyMapper {
         displayName: this.generateDisplayName(node, blockConfig),
         description: this.generateDescription(node, blockConfig),
         isStartState: false, // Will be updated based on workflow analysis
-        isEndState: false,   // Will be updated based on workflow analysis
+        isEndState: false, // Will be updated based on workflow analysis
         conversationTemplate,
         userPrompts,
         agentResponses,
@@ -320,9 +311,7 @@ export class WorkflowJourneyMapper {
     nodeStateMappings: NodeStateMapping[]
   ): Promise<EdgeTransitionMapping[]> {
     const mappings: EdgeTransitionMapping[] = []
-    const nodeStateMap = new Map(
-      nodeStateMappings.map(mapping => [mapping.nodeId, mapping])
-    )
+    const nodeStateMap = new Map(nodeStateMappings.map((mapping) => [mapping.nodeId, mapping]))
 
     for (const edge of edges) {
       const sourceMapping = nodeStateMap.get(edge.source)
@@ -418,7 +407,7 @@ export class WorkflowJourneyMapper {
 
     try {
       // Create Parlant journey states
-      const journeyStates: ParlantJourneyState[] = nodeStateMappings.map(mapping => ({
+      const journeyStates: ParlantJourneyState[] = nodeStateMappings.map((mapping) => ({
         stateId: mapping.journeyStateId,
         stateName: mapping.displayName,
         description: mapping.description,
@@ -465,7 +454,7 @@ export class WorkflowJourneyMapper {
     // Agent/LLM nodes
     this.stateTemplates.set('agent', {
       stateType: 'processing',
-      entryMessage: 'I\'m thinking about this...',
+      entryMessage: "I'm thinking about this...",
       allowedUserActions: ['continue', 'modify-input', 'explain'],
     })
 
@@ -510,7 +499,8 @@ export class WorkflowJourneyMapper {
     conversationalConfig: Partial<ConversationalConfig>
   ): Promise<string> {
     const template = this.stateTemplates.get(node.type)
-    const baseMessage = template?.entryMessage || `Executing ${blockConfig.name || node.type} step...`
+    const baseMessage =
+      template?.entryMessage || `Executing ${blockConfig.name || node.type} step...`
 
     // Customize based on conversational config
     if (conversationalConfig.explainSteps) {
@@ -541,7 +531,7 @@ export class WorkflowJourneyMapper {
   private async generateAgentResponses(node: any, blockConfig: any): Promise<string[]> {
     return [
       `This ${blockConfig.name || node.type} step is designed to ${blockConfig.description || 'process data'}.`,
-      'I can help you understand what\'s happening at each step.',
+      "I can help you understand what's happening at each step.",
       'Feel free to ask me to explain anything or modify the execution.',
     ]
   }
@@ -602,9 +592,9 @@ export class WorkflowJourneyMapper {
     nodes: Array<{ id: string; type: string; data: any; position: any }>
   ): void {
     // Find start nodes (would be based on actual workflow analysis)
-    const startNode = nodes.find(n => n.type === 'starter' || n.id.includes('start'))
+    const startNode = nodes.find((n) => n.type === 'starter' || n.id.includes('start'))
     if (startNode) {
-      const mapping = mappings.find(m => m.nodeId === startNode.id)
+      const mapping = mappings.find((m) => m.nodeId === startNode.id)
       if (mapping) mapping.isStartState = true
     } else if (mappings.length > 0) {
       // Default to first node if no explicit start
@@ -613,9 +603,9 @@ export class WorkflowJourneyMapper {
 
     // Find end nodes
     nodes
-      .filter(n => n.type === 'output' || n.id.includes('end'))
-      .forEach(endNode => {
-        const mapping = mappings.find(m => m.nodeId === endNode.id)
+      .filter((n) => n.type === 'output' || n.id.includes('end'))
+      .forEach((endNode) => {
+        const mapping = mappings.find((m) => m.nodeId === endNode.id)
         if (mapping) mapping.isEndState = true
       })
   }
@@ -623,16 +613,20 @@ export class WorkflowJourneyMapper {
   private createTransitionConditions(edge: any): TransitionCondition[] {
     // Default conditions based on edge data
     if (edge.data?.condition) {
-      return [{
-        type: 'value-based',
-        expression: edge.data.condition,
-      }]
+      return [
+        {
+          type: 'value-based',
+          expression: edge.data.condition,
+        },
+      ]
     }
 
-    return [{
-      type: 'system-state',
-      expression: 'previous_step_completed === true',
-    }]
+    return [
+      {
+        type: 'system-state',
+        expression: 'previous_step_completed === true',
+      },
+    ]
   }
 
   private createConversationalTriggers(edge: any): ConversationalTrigger[] {
@@ -685,7 +679,9 @@ export class WorkflowJourneyMapper {
     }
   }
 
-  private mapToJourneyStateType(nodeType: string): 'input' | 'processing' | 'confirmation' | 'output' | 'decision' {
+  private mapToJourneyStateType(
+    nodeType: string
+  ): 'input' | 'processing' | 'confirmation' | 'output' | 'decision' {
     switch (nodeType) {
       case 'input':
         return 'input'
@@ -706,14 +702,14 @@ export class WorkflowJourneyMapper {
     edgeTransitionMappings: EdgeTransitionMapping[]
   ): ParlantJourneyTransition[] {
     return edgeTransitionMappings
-      .filter(edge => edge.sourceNodeId === mapping.nodeId)
-      .map(edge => ({
+      .filter((edge) => edge.sourceNodeId === mapping.nodeId)
+      .map((edge) => ({
         transitionId: edge.journeyTransitionId,
         targetStateId: edge.targetNodeId,
-        triggerConditions: edge.conditions.map(c => c.expression),
+        triggerConditions: edge.conditions.map((c) => c.expression),
         userCommands: edge.conversationalTriggers
-          .filter(t => t.type === 'user-command')
-          .map(t => t.pattern),
+          .filter((t) => t.type === 'user-command')
+          .map((t) => t.pattern),
         systemEvents: ['step_completed'],
         requiresConfirmation: edge.requiresConfirmation,
         confirmationMessage: edge.confirmationMessage,
@@ -764,7 +760,9 @@ export class WorkflowJourneyMapper {
     return instructions
   }
 
-  private extractWorkflowVariables(workflow: SerializedWorkflow): Array<{ name: string; type: string; defaultValue?: any }> {
+  private extractWorkflowVariables(
+    workflow: SerializedWorkflow
+  ): Array<{ name: string; type: string; defaultValue?: any }> {
     // Extract variables from workflow structure
     const variables: Array<{ name: string; type: string; defaultValue?: any }> = []
 
@@ -780,7 +778,15 @@ export class WorkflowJourneyMapper {
     return variables
   }
 
-  private extractInputFields(node: any): Array<{ fieldName: string; displayName: string; description: string; dataType: string; required: boolean }> {
+  private extractInputFields(
+    node: any
+  ): Array<{
+    fieldName: string
+    displayName: string
+    description: string
+    dataType: string
+    required: boolean
+  }> {
     // Extract input field requirements from node configuration
     return [
       {
@@ -789,7 +795,7 @@ export class WorkflowJourneyMapper {
         description: 'Input required to proceed',
         dataType: 'string',
         required: true,
-      }
+      },
     ]
   }
 
@@ -799,7 +805,7 @@ export class WorkflowJourneyMapper {
         type: 'required',
         configuration: { field: 'user_input' },
         errorMessage: 'Input is required to proceed',
-      }
+      },
     ]
   }
 
@@ -807,7 +813,9 @@ export class WorkflowJourneyMapper {
     return ['user_input']
   }
 
-  private createDefaultExecutionConfig(overrides: Partial<WorkflowExecutionConfig>): WorkflowExecutionConfig {
+  private createDefaultExecutionConfig(
+    overrides: Partial<WorkflowExecutionConfig>
+  ): WorkflowExecutionConfig {
     return {
       mode: 'step-by-step',
       pausePoints: [],
@@ -823,7 +831,9 @@ export class WorkflowJourneyMapper {
     }
   }
 
-  private createDefaultConversationalConfig(overrides: Partial<ConversationalConfig>): ConversationalConfig {
+  private createDefaultConversationalConfig(
+    overrides: Partial<ConversationalConfig>
+  ): ConversationalConfig {
     return {
       personalityProfile: 'helpful-assistant',
       communicationStyle: 'friendly',
@@ -838,7 +848,10 @@ export class WorkflowJourneyMapper {
     }
   }
 
-  private async saveMappingToDatabase(mapping: WorkflowToJourneyMapping, workspaceId: string): Promise<void> {
+  private async saveMappingToDatabase(
+    mapping: WorkflowToJourneyMapping,
+    workspaceId: string
+  ): Promise<void> {
     // This would save the mapping to the database
     // Implementation would depend on the actual database setup
     logger.info('Mapping saved to database', {

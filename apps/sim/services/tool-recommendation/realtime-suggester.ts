@@ -6,21 +6,21 @@
  * and delivers timely recommendations with appropriate urgency and timing.
  */
 
-import { createLogger } from '@/lib/logs/console/logger'
 import { EventEmitter } from 'events'
+import { createLogger } from '@/lib/logs/console/logger'
+import { behaviorTracker } from './behavior-tracker'
+import { contextAnalyzer } from './context-analyzer'
+import { mlEngine } from './ml-engine'
 import type {
   ConversationContext,
   RealTimeSuggestion,
-  SuggestionTrigger,
-  TriggerType,
-  ToolRecommendation,
   SuggestionFeedback,
+  SuggestionTrigger,
+  ToolRecommendation,
+  TriggerType,
   UserBehaviorProfile,
   WorkspacePattern,
 } from './types'
-import { contextAnalyzer } from './context-analyzer'
-import { mlEngine } from './ml-engine'
-import { behaviorTracker } from './behavior-tracker'
 
 const logger = createLogger('RealtimeSuggester')
 
@@ -95,7 +95,7 @@ export class RealtimeSuggester extends EventEmitter {
 
     // Clean up cooldowns
     const keys = Array.from(this.cooldowns.keys())
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (key.startsWith(conversationId)) {
         this.cooldowns.delete(key)
       }
@@ -138,14 +138,14 @@ export class RealtimeSuggester extends EventEmitter {
    */
   dismissSuggestion(conversationId: string, suggestionId: string): void {
     const suggestions = this.suggestionQueue.get(conversationId) || []
-    const suggestion = suggestions.find(s => s.id === suggestionId)
+    const suggestion = suggestions.find((s) => s.id === suggestionId)
 
     if (suggestion) {
       suggestion.dismissed = true
       this.emit('suggestionDismissed', suggestion)
 
       // Remove from active queue
-      const updatedSuggestions = suggestions.filter(s => s.id !== suggestionId)
+      const updatedSuggestions = suggestions.filter((s) => s.id !== suggestionId)
       this.suggestionQueue.set(conversationId, updatedSuggestions)
 
       logger.debug(`Suggestion ${suggestionId} dismissed`)
@@ -157,7 +157,7 @@ export class RealtimeSuggester extends EventEmitter {
    */
   acceptSuggestion(conversationId: string, suggestionId: string): void {
     const suggestions = this.suggestionQueue.get(conversationId) || []
-    const suggestion = suggestions.find(s => s.id === suggestionId)
+    const suggestion = suggestions.find((s) => s.id === suggestionId)
 
     if (suggestion) {
       suggestion.accepted = true
@@ -189,7 +189,7 @@ export class RealtimeSuggester extends EventEmitter {
   provideFeedback(suggestionId: string, feedback: SuggestionFeedback): void {
     // Find suggestion across all conversations
     for (const [conversationId, suggestions] of this.suggestionQueue.entries()) {
-      const suggestion = suggestions.find(s => s.id === suggestionId)
+      const suggestion = suggestions.find((s) => s.id === suggestionId)
       if (suggestion) {
         suggestion.feedback = feedback
         this.emit('feedbackProvided', { suggestion, feedback })
@@ -240,18 +240,11 @@ export class RealtimeSuggester extends EventEmitter {
 
     try {
       // Generate recommendations
-      const recommendations = await this.generateTriggeredRecommendations(
-        conversation,
-        rule.type
-      )
+      const recommendations = await this.generateTriggeredRecommendations(conversation, rule.type)
 
       // Create suggestions
       for (const recommendation of recommendations) {
-        const suggestion = await this.createSuggestion(
-          conversation,
-          rule.type,
-          recommendation
-        )
+        const suggestion = await this.createSuggestion(conversation, rule.type, recommendation)
 
         // Add to queue
         const queue = this.suggestionQueue.get(conversation.id) || []
@@ -374,11 +367,12 @@ export class RealtimeSuggester extends EventEmitter {
 
   private detectError(context: ConversationContext): boolean {
     const recentMessages = context.messages.slice(-3)
-    return recentMessages.some(msg =>
-      msg.content.toLowerCase().includes('error') ||
-      msg.content.toLowerCase().includes('problem') ||
-      msg.content.toLowerCase().includes('not working') ||
-      msg.content.toLowerCase().includes('failed')
+    return recentMessages.some(
+      (msg) =>
+        msg.content.toLowerCase().includes('error') ||
+        msg.content.toLowerCase().includes('problem') ||
+        msg.content.toLowerCase().includes('not working') ||
+        msg.content.toLowerCase().includes('failed')
     )
   }
 
@@ -387,15 +381,15 @@ export class RealtimeSuggester extends EventEmitter {
     if (context.messages.length < 4) return false
 
     const recentMessages = context.messages.slice(-4)
-    const queries = recentMessages.filter(msg => msg.role === 'user')
+    const queries = recentMessages.filter((msg) => msg.role === 'user')
 
     if (queries.length < 3) return false
 
     // Simple similarity check
     const similar = queries.some((msg, i) =>
-      queries.slice(i + 1).some(other =>
-        this.calculateStringSimilarity(msg.content, other.content) > 0.7
-      )
+      queries
+        .slice(i + 1)
+        .some((other) => this.calculateStringSimilarity(msg.content, other.content) > 0.7)
     )
 
     return similar
@@ -417,11 +411,12 @@ export class RealtimeSuggester extends EventEmitter {
 
   private detectWorkflowCompletion(context: ConversationContext): boolean {
     const recentMessages = context.messages.slice(-2)
-    return recentMessages.some(msg =>
-      msg.content.toLowerCase().includes('done') ||
-      msg.content.toLowerCase().includes('finished') ||
-      msg.content.toLowerCase().includes('complete') ||
-      msg.content.toLowerCase().includes('success')
+    return recentMessages.some(
+      (msg) =>
+        msg.content.toLowerCase().includes('done') ||
+        msg.content.toLowerCase().includes('finished') ||
+        msg.content.toLowerCase().includes('complete') ||
+        msg.content.toLowerCase().includes('success')
     )
   }
 
@@ -432,7 +427,7 @@ export class RealtimeSuggester extends EventEmitter {
 
     for (const message of recentMessages) {
       if (message.metadata?.toolsUsed) {
-        message.metadata.toolsUsed.forEach(tool => toolMentions.add(tool))
+        message.metadata.toolsUsed.forEach((tool) => toolMentions.add(tool))
       }
     }
 
@@ -443,7 +438,7 @@ export class RealtimeSuggester extends EventEmitter {
    * Helper methods
    */
   private isTriggerEnabled(conversation: ActiveConversation, triggerType: TriggerType): boolean {
-    return conversation.triggers.some(t => t.type === triggerType && t.enabled)
+    return conversation.triggers.some((t) => t.type === triggerType && t.enabled)
   }
 
   private isInCooldown(conversationId: string, triggerType: TriggerType): boolean {
@@ -487,13 +482,13 @@ export class RealtimeSuggester extends EventEmitter {
     // Apply trigger-specific filtering
     switch (triggerType) {
       case 'error_detected':
-        return recommendations.filter(r => r.category === 'highly_relevant')
+        return recommendations.filter((r) => r.category === 'highly_relevant')
       case 'inefficient_pattern':
-        return recommendations.filter(r =>
-          r.category === 'workflow_enhancement' || r.category === 'alternative_approach'
+        return recommendations.filter(
+          (r) => r.category === 'workflow_enhancement' || r.category === 'alternative_approach'
         )
       case 'new_capability':
-        return recommendations.filter(r => r.category === 'learning_opportunity')
+        return recommendations.filter((r) => r.category === 'learning_opportunity')
       default:
         return recommendations
     }
@@ -545,7 +540,7 @@ export class RealtimeSuggester extends EventEmitter {
     const words1 = str1.toLowerCase().split(/\s+/)
     const words2 = str2.toLowerCase().split(/\s+/)
 
-    const intersection = words1.filter(word => words2.includes(word))
+    const intersection = words1.filter((word) => words2.includes(word))
     const union = [...new Set([...words1, ...words2])]
 
     return union.length > 0 ? intersection.length / union.length : 0
@@ -573,19 +568,21 @@ export class RealtimeSuggester extends EventEmitter {
     acceptanceRate: number
     triggerStats: Record<TriggerType, number>
   } {
-    const totalSuggestions = Array.from(this.suggestionQueue.values())
-      .reduce((sum, queue) => sum + queue.length, 0)
+    const totalSuggestions = Array.from(this.suggestionQueue.values()).reduce(
+      (sum, queue) => sum + queue.length,
+      0
+    )
 
     const acceptedSuggestions = Array.from(this.suggestionQueue.values())
       .flat()
-      .filter(s => s.accepted).length
+      .filter((s) => s.accepted).length
 
     const acceptanceRate = totalSuggestions > 0 ? acceptedSuggestions / totalSuggestions : 0
 
     const triggerStats: Record<string, number> = {}
     Array.from(this.suggestionQueue.values())
       .flat()
-      .forEach(s => {
+      .forEach((s) => {
         triggerStats[s.trigger] = (triggerStats[s.trigger] || 0) + 1
       })
 

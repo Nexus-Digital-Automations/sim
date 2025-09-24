@@ -7,25 +7,23 @@
 
 import type {
   AgentCommunicationProtocol,
-  JourneyStartParams,
-  JourneySession,
   AgentResponse,
-  ExecutionSummary,
+  CompletionUpdate,
   ConversationalInterface,
   ConversationMessage,
-  ProgressTracker,
+  ErrorUpdate,
   ExecutionError,
   ExecutionResult,
+  ExecutionSummary,
+  JourneySession,
+  JourneyStartParams,
+  ProgressTracker,
+  ProgressUpdate,
+  RealTimeUpdateHandler,
   RecommendedAction,
   SessionStatus,
-  RealTimeUpdateHandler,
-  StateChangeUpdate,
-  ProgressUpdate,
-  ErrorUpdate,
-  CompletionUpdate
 } from '../types/journey-execution-types'
-
-import { JourneyExecutionEngine } from './journey-execution-engine'
+import type { JourneyExecutionEngine } from './journey-execution-engine'
 
 /**
  * Agent session management for tracking active journey executions
@@ -113,7 +111,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         lastActivity: new Date(),
         executionContext,
         conversationHistory: [],
-        preferences: params.preferences
+        preferences: params.preferences,
       }
 
       // Store session
@@ -134,9 +132,9 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
               id: 'start',
               label: 'Start',
               description: 'Begin workflow execution',
-              type: 'continue'
-            }
-          ]
+              type: 'continue',
+            },
+          ],
         }
       )
 
@@ -147,11 +145,13 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         journeyId: params.journeyId,
         status: 'active',
         startTime: agentSession.startTime,
-        estimatedDuration: this.estimateExecutionDuration(journeyDefinition)
+        estimatedDuration: this.estimateExecutionDuration(journeyDefinition),
       }
     } catch (error) {
       console.error('Failed to start journey session:', error)
-      throw new Error(`Failed to start journey session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to start journey session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -173,7 +173,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         id: `msg_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         role: 'user',
         content: message,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
 
       session.conversationHistory.push(userMessage)
@@ -204,7 +204,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         message: executionResult.response || 'Processing...',
         requiresInput: executionResult.userInputRequired || false,
         progress: executionResult.progress,
-        actions: this.generateRecommendedActions(executionResult)
+        actions: this.generateRecommendedActions(executionResult),
       }
 
       // Log agent response
@@ -214,8 +214,8 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         content: agentResponse.message,
         timestamp: new Date(),
         metadata: {
-          progressUpdate: true
-        }
+          progressUpdate: true,
+        },
       }
 
       session.conversationHistory.push(agentMessage)
@@ -243,15 +243,15 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
             id: 'retry',
             label: 'Retry',
             description: 'Try the last action again',
-            type: 'continue'
+            type: 'continue',
           },
           {
             id: 'restart',
             label: 'Restart',
             description: 'Start the workflow from the beginning',
-            type: 'restart'
-          }
-        ]
+            type: 'restart',
+          },
+        ],
       }
     }
   }
@@ -265,7 +265,9 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       throw new Error(`Session not found: ${sessionId}`)
     }
 
-    const executionStatus = this.executionEngine.getExecutionStatus(session.executionContext.journeyId)
+    const executionStatus = this.executionEngine.getExecutionStatus(
+      session.executionContext.journeyId
+    )
     if (!executionStatus) {
       throw new Error(`Execution context not found for session: ${sessionId}`)
     }
@@ -295,9 +297,9 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
             id: 'resume',
             label: 'Resume',
             description: 'Continue execution from where we left off',
-            type: 'continue'
-          }
-        ]
+            type: 'continue',
+          },
+        ],
       }
     )
 
@@ -322,7 +324,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
 
     await this.sendAgentMessage(
       sessionId,
-      '▶️ Execution resumed. Let\'s continue where we left off!',
+      "▶️ Execution resumed. Let's continue where we left off!",
       { requiresInput: false }
     )
 
@@ -355,7 +357,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       statesExecuted: this.countExecutedStates(session),
       toolExecutions: this.countToolExecutions(session),
       userInteractions: this.countUserInteractions(session),
-      results: this.extractResults(session)
+      results: this.extractResults(session),
     }
 
     // Clean up session data
@@ -407,7 +409,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       role: 'agent',
       content,
       timestamp: new Date(),
-      metadata
+      metadata,
     }
 
     await conversationInterface.sendMessage(message)
@@ -416,7 +418,10 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
   /**
    * Handle session completion
    */
-  private async handleSessionCompletion(session: AgentSession, result: ExecutionResult): Promise<void> {
+  private async handleSessionCompletion(
+    session: AgentSession,
+    result: ExecutionResult
+  ): Promise<void> {
     session.status = 'completed'
 
     await this.sendAgentMessage(
@@ -429,15 +434,15 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
             id: 'view_results',
             label: 'View Results',
             description: 'See detailed execution results',
-            type: 'continue'
+            type: 'continue',
           },
           {
             id: 'start_new',
             label: 'Start New Workflow',
             description: 'Begin another workflow execution',
-            type: 'continue'
-          }
-        ]
+            type: 'continue',
+          },
+        ],
       }
     )
 
@@ -446,7 +451,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       journeyId: session.journeyId,
       sessionId: session.sessionId,
       summary: await this.generateExecutionSummary(session),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     await this.sendCompletionUpdate(session.sessionId, completionUpdate.summary)
@@ -468,34 +473,34 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
             id: 'retry',
             label: 'Retry',
             description: 'Try the last action again',
-            type: 'continue'
+            type: 'continue',
           },
           {
             id: 'skip',
             label: 'Skip',
             description: 'Skip this step and continue',
-            type: 'skip'
+            type: 'skip',
           },
           {
             id: 'restart',
             label: 'Restart',
             description: 'Start over from the beginning',
-            type: 'restart'
-          }
+            type: 'restart',
+          },
         ]
       : [
           {
             id: 'restart',
             label: 'Restart',
             description: 'Start a new execution',
-            type: 'restart'
+            type: 'restart',
           },
           {
             id: 'cancel',
             label: 'Cancel',
             description: 'End this session',
-            type: 'cancel'
-          }
+            type: 'cancel',
+          },
         ]
 
     await this.sendAgentMessage(session.sessionId, errorMessage, { requiresInput: false, actions })
@@ -506,7 +511,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       sessionId: session.sessionId,
       error,
       recoveryActions: actions,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     const updateHandler = this.updateHandlers.get(session.sessionId)
@@ -525,7 +530,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         journeyId: '',
         sessionId,
         progress,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
       await updateHandler.onProgressUpdate(progressUpdate)
     }
@@ -541,7 +546,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         journeyId: summary.journeyId,
         sessionId,
         summary,
-        timestamp: new Date()
+        timestamp: new Date(),
       }
       await updateHandler.onCompletion(completionUpdate)
     }
@@ -558,14 +563,14 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         id: 'continue',
         label: 'Continue',
         description: 'Provide the requested input to continue',
-        type: 'continue'
+        type: 'continue',
       })
     } else if (!result.completed) {
       actions.push({
         id: 'next',
         label: 'Next Step',
         description: 'Continue to the next step',
-        type: 'continue'
+        type: 'continue',
       })
     }
 
@@ -573,7 +578,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       id: 'pause',
       label: 'Pause',
       description: 'Pause execution temporarily',
-      type: 'modify'
+      type: 'modify',
     })
 
     return actions
@@ -584,9 +589,12 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
    */
   private initializeMessageProcessing(): void {
     // Set up periodic cleanup of inactive sessions
-    setInterval(() => {
-      this.cleanupInactiveSessions()
-    }, 5 * 60 * 1000) // Every 5 minutes
+    setInterval(
+      () => {
+        this.cleanupInactiveSessions()
+      },
+      5 * 60 * 1000
+    ) // Every 5 minutes
   }
 
   /**
@@ -616,9 +624,9 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       conditions: ['User wants to execute this workflow'],
       states: [
         { id: 'start', type: 'initial', name: 'Start' },
-        { id: 'end', type: 'final', name: 'Complete' }
+        { id: 'end', type: 'final', name: 'Complete' },
       ],
-      transitions: [{ id: 't1', from: 'start', to: 'end' }]
+      transitions: [{ id: 't1', from: 'start', to: 'end' }],
     }
   }
 
@@ -636,7 +644,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
   }
 
   private countUserInteractions(session: AgentSession): number {
-    return session.conversationHistory.filter(msg => msg.role === 'user').length
+    return session.conversationHistory.filter((msg) => msg.role === 'user').length
   }
 
   private extractResults(session: AgentSession): any {
@@ -649,8 +657,8 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
         toolExecutionTime: 0,
         userWaitTime: 0,
         errorCount: 0,
-        retryCount: 0
-      }
+        retryCount: 0,
+      },
     }
   }
 
@@ -668,7 +676,7 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
       statesExecuted: this.countExecutedStates(session),
       toolExecutions: this.countToolExecutions(session),
       userInteractions: this.countUserInteractions(session),
-      results: this.extractResults(session)
+      results: this.extractResults(session),
     }
   }
 
@@ -679,11 +687,11 @@ export class AgentCommunicationService implements AgentCommunicationProtocol {
 
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m ${seconds % 60}s`
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`
-    } else {
-      return `${seconds}s`
     }
+    if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`
+    }
+    return `${seconds}s`
   }
 }
 

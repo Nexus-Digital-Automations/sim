@@ -6,57 +6,49 @@
  * into Parlant journeys with real-time conversion and intelligent caching.
  */
 
+export { cacheService } from './cache-service'
 // Core services
 export { WorkflowToJourneyConverter } from './conversion-engine'
-export { TemplateService, templateService } from './template-service'
 export { ConversionService, conversionService } from './conversion-service'
-export { cacheService } from './cache-service'
 export { progressService } from './progress-service'
-
+export { TemplateService, templateService } from './template-service'
 // Type definitions
 export type {
-  // Core conversion types
-  WorkflowTemplate,
-  TemplateParameter,
-  ParameterValidation,
-  ConversionConfig,
-  ConversionContext,
-  JourneyConversionResult,
-  ConversionMetadata,
-  ConversionWarning,
-  ConversionError,
-
+  AnalyticsService,
   // Block mapping types
   BlockJourneyMapping,
+  CacheStats,
+  ConversionAnalytics,
+  // Caching types
+  ConversionCacheEntry,
+  ConversionConfig,
+  ConversionContext,
+  ConversionError,
+  ConversionEvent,
+  // Utility types
+  ConversionEventType,
+  ConversionMetadata,
+  // Progress tracking types
+  ConversionProgress,
+  ConversionService as IConversionService,
+  ConversionSubscription,
+  ConversionWarning,
   EdgeJourneyMapping,
-  ToolCall,
-
-  // Template management types
-  TemplateCreateRequest,
-  TemplateUpdateRequest,
-  TemplateListQuery,
-
+  JourneyConversionResult,
   // Journey creation types
   JourneyCreateFromTemplateRequest,
   JourneyCreateFromWorkflowRequest,
-
-  // Caching types
-  ConversionCacheEntry,
-  CacheStats,
-
-  // Progress tracking types
-  ConversionProgress,
-  ConversionSubscription,
-
+  ParameterValidation,
+  // Template management types
+  TemplateCreateRequest,
+  TemplateListQuery,
+  TemplateParameter,
   // Service interfaces
   TemplateService as ITemplateService,
-  ConversionService as IConversionService,
-  AnalyticsService,
-
-  // Utility types
-  ConversionEventType,
-  ConversionEvent,
-  ConversionAnalytics,
+  TemplateUpdateRequest,
+  ToolCall,
+  // Core conversion types
+  WorkflowTemplate,
 } from './types'
 
 /**

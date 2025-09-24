@@ -9,41 +9,37 @@
  * @version 2.0.0
  */
 
-// Core framework components
-export { EnhancedAdapterFramework, BlockConfigAdapter } from './core/enhanced-adapter-framework'
+export {
+  AutoDiscoverySystem,
+  createAutoDiscoverySystem,
+  extractBlockConfigFromFile,
+  validateBlockConfig,
+} from './config/auto-discovery-system'
 export { BaseAdapter } from './core/base-adapter'
-
-// Registry and discovery
-export { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
-export { AutoDiscoverySystem, createAutoDiscoverySystem, validateBlockConfig, extractBlockConfigFromFile } from './config/auto-discovery-system'
-
-// Validation and parameter processing
-export { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
-export { ValidationEngine } from './validation/validation-engine'
-export { ParameterMapper } from './mapping/parameter-mapper'
+// Core framework components
+export { BlockConfigAdapter, EnhancedAdapterFramework } from './core/enhanced-adapter-framework'
+// Error types
+export { AdapterError, ExecutionError, ValidationError } from './errors/adapter-errors'
 export { ResultFormatter } from './formatting/result-formatter'
-
-// Performance optimization
-export { PerformanceOptimizationEngine } from './performance/optimization-engine'
-
-// Plugin system
-export { PluginSystem } from './plugins/plugin-system'
-
+export { ParameterMapper } from './mapping/parameter-mapper'
 // Monitoring and analytics
 export { AnalyticsSystem } from './monitoring/analytics-system'
-
+// Performance optimization
+export { PerformanceOptimizationEngine } from './performance/optimization-engine'
+// Plugin system
+export { PluginSystem } from './plugins/plugin-system'
+// Registry and discovery
+export { EnhancedAdapterRegistry } from './registry/enhanced-adapter-registry'
 // Testing framework
 export { AdapterTestFramework } from './testing/test-framework'
-
 // Types and interfaces
 export type * from './types/adapter-interfaces'
 export type * from './types/parlant-interfaces'
-
 // Utilities
 export { createLogger } from './utils/logger'
-
-// Error types
-export { AdapterError, ValidationError, ExecutionError } from './errors/adapter-errors'
+// Validation and parameter processing
+export { EnhancedValidationEngine } from './validation/enhanced-validation-engine'
+export { ValidationEngine } from './validation/validation-engine'
 
 /**
  * Complete Universal Tool Adapter System
@@ -116,19 +112,19 @@ export class UniversalToolAdapterSystem {
         version: '2.0.0',
         source: 'api',
         category: blockConfig.category || 'utility',
-        tags: [blockConfig.type, blockConfig.category]
+        tags: [blockConfig.type, blockConfig.category],
       },
       statistics: {
         executionCount: 0,
         averageExecutionTimeMs: 0,
         successRate: 1.0,
-        errorCount: 0
+        errorCount: 0,
       },
       health: {
         status: 'healthy' as const,
         lastCheckAt: new Date(),
-        issues: []
-      }
+        issues: [],
+      },
     })
 
     return adapter
@@ -137,11 +133,7 @@ export class UniversalToolAdapterSystem {
   /**
    * Execute adapter with full monitoring and optimization
    */
-  async executeAdapter(
-    adapterId: string,
-    context: any,
-    args: any
-  ): Promise<any> {
+  async executeAdapter(adapterId: string, context: any, args: any): Promise<any> {
     // Execute with performance optimization
     const result = await this.performance.optimizedExecute(
       adapterId,
@@ -173,7 +165,7 @@ export class UniversalToolAdapterSystem {
       analytics: this.analytics.getRealTimeMetrics(),
       plugins: this.plugins.getSystemStats(),
       testing: this.testing.getTestStatistics(),
-      discovery: this.discovery.getDiscoveryStats()
+      discovery: this.discovery.getDiscoveryStats(),
     }
   }
 
@@ -199,38 +191,42 @@ export class UniversalToolAdapterSystem {
 /**
  * Factory function to create a pre-configured system
  */
-export function createUniversalAdapterSystem(config?: UniversalAdapterConfig): UniversalToolAdapterSystem {
+export function createUniversalAdapterSystem(
+  config?: UniversalAdapterConfig
+): UniversalToolAdapterSystem {
   return new UniversalToolAdapterSystem(config)
 }
 
 /**
  * Quick setup function for common use cases
  */
-export async function quickSetup(options: QuickSetupOptions = {}): Promise<UniversalToolAdapterSystem> {
+export async function quickSetup(
+  options: QuickSetupOptions = {}
+): Promise<UniversalToolAdapterSystem> {
   const system = new UniversalToolAdapterSystem({
     framework: {
       enableCaching: options.enableCaching ?? true,
       enableMonitoring: options.enableMonitoring ?? true,
-      enableAutoDiscovery: options.enableAutoDiscovery ?? true
+      enableAutoDiscovery: options.enableAutoDiscovery ?? true,
     },
     registry: {
-      healthCheckIntervalMs: options.healthCheckInterval ?? 60000
+      healthCheckIntervalMs: options.healthCheckInterval ?? 60000,
     },
     performance: {
       caching: {
-        execution: { enabled: options.enableCaching ?? true }
-      }
+        execution: { enabled: options.enableCaching ?? true },
+      },
     },
     plugins: {
-      autoLoadPlugins: options.enablePlugins ?? true
+      autoLoadPlugins: options.enablePlugins ?? true,
     },
     analytics: {
-      enableAlerting: options.enableAlerting ?? true
+      enableAlerting: options.enableAlerting ?? true,
     },
     discovery: {
       enabled: options.enableAutoDiscovery ?? true,
-      scanPaths: options.scanPaths || ['./blocks', './adapters']
-    }
+      scanPaths: options.scanPaths || ['./blocks', './adapters'],
+    },
   })
 
   if (options.initialize !== false) {

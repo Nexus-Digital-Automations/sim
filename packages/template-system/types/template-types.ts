@@ -6,7 +6,7 @@
  * inheritance patterns, validation rules, and template configurations.
  */
 
-import { z } from 'zod'
+import type { z } from 'zod'
 
 // ============================================================================
 // Base Template Types
@@ -262,7 +262,19 @@ export interface MixinTransformation {
 // ============================================================================
 
 export interface ConditionalExpression {
-  operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains' | 'matches' | 'and' | 'or' | 'not'
+  operator:
+    | 'eq'
+    | 'ne'
+    | 'gt'
+    | 'gte'
+    | 'lt'
+    | 'lte'
+    | 'in'
+    | 'contains'
+    | 'matches'
+    | 'and'
+    | 'or'
+    | 'not'
   operands: Array<ConditionalOperand>
   metadata?: Record<string, any>
 }

@@ -8,15 +8,15 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import type {
-  ReactFlowWorkflow,
-  ParlantJourney,
-  ValidationResult,
   ConversionError,
   ConversionWarning,
   NodeConverter,
-  ReactFlowNode,
+  ParlantJourney,
   ParlantState,
-  ParlantTransition
+  ParlantTransition,
+  ReactFlowNode,
+  ReactFlowWorkflow,
+  ValidationResult,
 } from '../types'
 
 const logger = createLogger('ValidationEngine')
@@ -39,7 +39,7 @@ export class ValidationEngine {
     logger.info('Validating workflow', {
       workflowId: workflow.id,
       nodeCount: workflow.nodes.length,
-      edgeCount: workflow.edges.length
+      edgeCount: workflow.edges.length,
     })
 
     const errors: ConversionError[] = []
@@ -61,21 +61,21 @@ export class ValidationEngine {
       // Data integrity validation
       await this.validateDataIntegrity(workflow, errors, warnings)
 
-      const isValid = errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0
+      const isValid =
+        errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length === 0
 
       logger.info('Workflow validation completed', {
         workflowId: workflow.id,
         isValid,
         errorCount: errors.length,
-        warningCount: warnings.length
+        warningCount: warnings.length,
       })
 
       return { valid: isValid, errors, warnings }
-
     } catch (error) {
       logger.error('Workflow validation failed', {
         workflowId: workflow.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       errors.push({
@@ -85,8 +85,8 @@ export class ValidationEngine {
         suggestions: [
           'Check workflow structure',
           'Verify validation system integrity',
-          'Contact support if issue persists'
-        ]
+          'Contact support if issue persists',
+        ],
       })
 
       return { valid: false, errors, warnings }
@@ -100,7 +100,7 @@ export class ValidationEngine {
     logger.info('Validating journey', {
       journeyId: journey.id,
       stateCount: journey.states.length,
-      transitionCount: journey.transitions.length
+      transitionCount: journey.transitions.length,
     })
 
     const errors: ConversionError[] = []
@@ -122,21 +122,21 @@ export class ValidationEngine {
       // Semantic validation
       await this.validateJourneySemantics(journey, errors, warnings)
 
-      const isValid = errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0
+      const isValid =
+        errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length === 0
 
       logger.info('Journey validation completed', {
         journeyId: journey.id,
         isValid,
         errorCount: errors.length,
-        warningCount: warnings.length
+        warningCount: warnings.length,
       })
 
       return { valid: isValid, errors, warnings }
-
     } catch (error) {
       logger.error('Journey validation failed', {
         journeyId: journey.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       errors.push({
@@ -146,8 +146,8 @@ export class ValidationEngine {
         suggestions: [
           'Check journey structure',
           'Verify conversion output',
-          'Review validation logic'
-        ]
+          'Review validation logic',
+        ],
       })
 
       return { valid: false, errors, warnings }
@@ -163,7 +163,7 @@ export class ValidationEngine {
   ): Promise<ValidationResult> {
     logger.info('Validating conversion result integrity', {
       workflowId: originalWorkflow.id,
-      journeyId: convertedJourney.id
+      journeyId: convertedJourney.id,
     })
 
     const errors: ConversionError[] = []
@@ -179,26 +179,26 @@ export class ValidationEngine {
       // Validate metadata integrity
       await this.validateMetadataIntegrity(originalWorkflow, convertedJourney, errors, warnings)
 
-      const isValid = errors.filter(e => e.severity === 'critical' || e.severity === 'error').length === 0
+      const isValid =
+        errors.filter((e) => e.severity === 'critical' || e.severity === 'error').length === 0
 
       logger.info('Conversion result validation completed', {
         isValid,
         errorCount: errors.length,
-        warningCount: warnings.length
+        warningCount: warnings.length,
       })
 
       return { valid: isValid, errors, warnings }
-
     } catch (error) {
       logger.error('Conversion result validation failed', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       errors.push({
         code: 'CONVERSION_VALIDATION_ERROR',
         message: `Conversion validation error: ${error instanceof Error ? error.message : String(error)}`,
         severity: 'critical',
-        suggestions: ['Review conversion process', 'Check data integrity']
+        suggestions: ['Review conversion process', 'Check data integrity'],
       })
 
       return { valid: false, errors, warnings }
@@ -220,7 +220,7 @@ export class ValidationEngine {
         code: 'MISSING_WORKFLOW_ID',
         message: 'Workflow must have an ID',
         severity: 'critical',
-        suggestions: ['Add unique ID to workflow']
+        suggestions: ['Add unique ID to workflow'],
       })
     }
 
@@ -229,7 +229,7 @@ export class ValidationEngine {
         code: 'MISSING_WORKFLOW_NAME',
         message: 'Workflow should have a descriptive name',
         impact: 'low',
-        suggestions: ['Add meaningful name to workflow']
+        suggestions: ['Add meaningful name to workflow'],
       })
     }
 
@@ -239,7 +239,7 @@ export class ValidationEngine {
         code: 'INVALID_NODES_STRUCTURE',
         message: 'Workflow nodes must be an array',
         severity: 'critical',
-        suggestions: ['Ensure nodes is a valid array']
+        suggestions: ['Ensure nodes is a valid array'],
       })
     }
 
@@ -248,7 +248,7 @@ export class ValidationEngine {
         code: 'INVALID_EDGES_STRUCTURE',
         message: 'Workflow edges must be an array',
         severity: 'critical',
-        suggestions: ['Ensure edges is a valid array']
+        suggestions: ['Ensure edges is a valid array'],
       })
     }
 
@@ -258,7 +258,7 @@ export class ValidationEngine {
         code: 'EMPTY_WORKFLOW',
         message: 'Workflow has no nodes',
         impact: 'high',
-        suggestions: ['Add nodes to create a meaningful workflow']
+        suggestions: ['Add nodes to create a meaningful workflow'],
       })
     }
   }
@@ -280,7 +280,7 @@ export class ValidationEngine {
           message: `Duplicate node ID found: ${node.id}`,
           nodeId: node.id,
           severity: 'critical',
-          suggestions: ['Ensure all node IDs are unique']
+          suggestions: ['Ensure all node IDs are unique'],
         })
       }
       nodeIds.add(node.id)
@@ -291,7 +291,7 @@ export class ValidationEngine {
           code: 'MISSING_NODE_ID',
           message: 'Node is missing required ID',
           severity: 'critical',
-          suggestions: ['Add unique ID to all nodes']
+          suggestions: ['Add unique ID to all nodes'],
         })
       }
 
@@ -301,7 +301,7 @@ export class ValidationEngine {
           message: `Node ${node.id} is missing type`,
           nodeId: node.id,
           severity: 'error',
-          suggestions: ['Specify node type']
+          suggestions: ['Specify node type'],
         })
       }
 
@@ -322,19 +322,23 @@ export class ValidationEngine {
           suggestions: [
             'Register a converter for this node type',
             'Use generic converter',
-            'Convert node to supported type'
-          ]
+            'Convert node to supported type',
+          ],
         })
       }
 
       // Validate node position
-      if (!node.position || typeof node.position.x !== 'number' || typeof node.position.y !== 'number') {
+      if (
+        !node.position ||
+        typeof node.position.x !== 'number' ||
+        typeof node.position.y !== 'number'
+      ) {
         warnings.push({
           code: 'INVALID_NODE_POSITION',
           message: `Node ${node.id} has invalid position`,
           nodeId: node.id,
           impact: 'low',
-          suggestions: ['Set valid x,y coordinates for node position']
+          suggestions: ['Set valid x,y coordinates for node position'],
         })
       }
     }
@@ -347,8 +351,8 @@ export class ValidationEngine {
         impact: 'high',
         suggestions: [
           'Add a starter node to define workflow entry point',
-          'Add trigger conditions for workflow activation'
-        ]
+          'Add trigger conditions for workflow activation',
+        ],
       })
     }
   }
@@ -359,7 +363,7 @@ export class ValidationEngine {
     errors: ConversionError[],
     warnings: ConversionWarning[]
   ): Promise<void> {
-    const nodeIds = new Set(nodes.map(n => n.id))
+    const nodeIds = new Set(nodes.map((n) => n.id))
     const edgeIds = new Set<string>()
 
     for (const edge of edges) {
@@ -369,7 +373,7 @@ export class ValidationEngine {
           code: 'DUPLICATE_EDGE_ID',
           message: `Duplicate edge ID found: ${edge.id}`,
           severity: 'error',
-          suggestions: ['Ensure all edge IDs are unique']
+          suggestions: ['Ensure all edge IDs are unique'],
         })
       }
       edgeIds.add(edge.id)
@@ -380,7 +384,7 @@ export class ValidationEngine {
           code: 'MISSING_EDGE_SOURCE',
           message: `Edge ${edge.id} is missing source`,
           severity: 'critical',
-          suggestions: ['Specify source node for edge']
+          suggestions: ['Specify source node for edge'],
         })
       }
 
@@ -389,7 +393,7 @@ export class ValidationEngine {
           code: 'MISSING_EDGE_TARGET',
           message: `Edge ${edge.id} is missing target`,
           severity: 'critical',
-          suggestions: ['Specify target node for edge']
+          suggestions: ['Specify target node for edge'],
         })
       }
 
@@ -399,7 +403,7 @@ export class ValidationEngine {
           code: 'INVALID_EDGE_SOURCE',
           message: `Edge ${edge.id} references non-existent source node: ${edge.source}`,
           severity: 'error',
-          suggestions: ['Ensure edge source references existing node']
+          suggestions: ['Ensure edge source references existing node'],
         })
       }
 
@@ -408,7 +412,7 @@ export class ValidationEngine {
           code: 'INVALID_EDGE_TARGET',
           message: `Edge ${edge.id} references non-existent target node: ${edge.target}`,
           severity: 'error',
-          suggestions: ['Ensure edge target references existing node']
+          suggestions: ['Ensure edge target references existing node'],
         })
       }
 
@@ -420,8 +424,8 @@ export class ValidationEngine {
           impact: 'medium',
           suggestions: [
             'Review if self-loop is intentional',
-            'Consider workflow logic implications'
-          ]
+            'Consider workflow logic implications',
+          ],
         })
       }
     }
@@ -434,12 +438,12 @@ export class ValidationEngine {
   ): Promise<void> {
     // Check for disconnected nodes
     const connectedNodes = new Set<string>()
-    workflow.edges.forEach(edge => {
+    workflow.edges.forEach((edge) => {
       connectedNodes.add(edge.source)
       connectedNodes.add(edge.target)
     })
 
-    const disconnectedNodes = workflow.nodes.filter(node => !connectedNodes.has(node.id))
+    const disconnectedNodes = workflow.nodes.filter((node) => !connectedNodes.has(node.id))
     if (disconnectedNodes.length > 0) {
       warnings.push({
         code: 'DISCONNECTED_NODES',
@@ -448,8 +452,8 @@ export class ValidationEngine {
         suggestions: [
           'Connect all nodes to workflow flow',
           'Remove unused nodes',
-          'Review workflow logic'
-        ]
+          'Review workflow logic',
+        ],
       })
     }
 
@@ -463,8 +467,8 @@ export class ValidationEngine {
         suggestions: [
           'Review workflow loops for termination conditions',
           'Add proper exit conditions',
-          'Verify loop logic is correct'
-        ]
+          'Verify loop logic is correct',
+        ],
       })
     }
   }
@@ -475,14 +479,14 @@ export class ValidationEngine {
     warnings: ConversionWarning[]
   ): Promise<void> {
     // Check for data consistency
-    workflow.nodes.forEach(node => {
+    workflow.nodes.forEach((node) => {
       if (node.data && typeof node.data !== 'object') {
         errors.push({
           code: 'INVALID_NODE_DATA',
           message: `Node ${node.id} has invalid data structure`,
           nodeId: node.id,
           severity: 'error',
-          suggestions: ['Ensure node data is a valid object']
+          suggestions: ['Ensure node data is a valid object'],
         })
       }
 
@@ -506,7 +510,7 @@ export class ValidationEngine {
         code: 'MISSING_JOURNEY_ID',
         message: 'Journey must have an ID',
         severity: 'critical',
-        suggestions: ['Add unique ID to journey']
+        suggestions: ['Add unique ID to journey'],
       })
     }
 
@@ -515,7 +519,7 @@ export class ValidationEngine {
         code: 'MISSING_JOURNEY_TITLE',
         message: 'Journey should have a descriptive title',
         impact: 'low',
-        suggestions: ['Add meaningful title to journey']
+        suggestions: ['Add meaningful title to journey'],
       })
     }
 
@@ -525,7 +529,7 @@ export class ValidationEngine {
         code: 'INVALID_STATES_STRUCTURE',
         message: 'Journey states must be an array',
         severity: 'critical',
-        suggestions: ['Ensure states is a valid array']
+        suggestions: ['Ensure states is a valid array'],
       })
     }
 
@@ -534,7 +538,7 @@ export class ValidationEngine {
         code: 'INVALID_TRANSITIONS_STRUCTURE',
         message: 'Journey transitions must be an array',
         severity: 'critical',
-        suggestions: ['Ensure transitions is a valid array']
+        suggestions: ['Ensure transitions is a valid array'],
       })
     }
   }
@@ -554,7 +558,7 @@ export class ValidationEngine {
           code: 'DUPLICATE_STATE_ID',
           message: `Duplicate state ID found: ${state.id}`,
           severity: 'critical',
-          suggestions: ['Ensure all state IDs are unique']
+          suggestions: ['Ensure all state IDs are unique'],
         })
       }
       stateIds.add(state.id)
@@ -565,7 +569,7 @@ export class ValidationEngine {
           code: 'MISSING_STATE_ID',
           message: 'State is missing required ID',
           severity: 'critical',
-          suggestions: ['Add unique ID to all states']
+          suggestions: ['Add unique ID to all states'],
         })
       }
 
@@ -574,7 +578,7 @@ export class ValidationEngine {
           code: 'MISSING_STATE_TYPE',
           message: `State ${state.id} is missing type`,
           severity: 'error',
-          suggestions: ['Specify state type']
+          suggestions: ['Specify state type'],
         })
       }
 
@@ -593,7 +597,7 @@ export class ValidationEngine {
         code: 'NO_INITIAL_STATE',
         message: 'Journey must have an initial state',
         severity: 'critical',
-        suggestions: ['Add an initial state to define journey entry point']
+        suggestions: ['Add an initial state to define journey entry point'],
       })
     }
   }
@@ -604,7 +608,7 @@ export class ValidationEngine {
     errors: ConversionError[],
     warnings: ConversionWarning[]
   ): Promise<void> {
-    const stateIds = new Set(states.map(s => s.id))
+    const stateIds = new Set(states.map((s) => s.id))
     const transitionIds = new Set<string>()
 
     for (const transition of transitions) {
@@ -614,7 +618,7 @@ export class ValidationEngine {
           code: 'DUPLICATE_TRANSITION_ID',
           message: `Duplicate transition ID found: ${transition.id}`,
           severity: 'error',
-          suggestions: ['Ensure all transition IDs are unique']
+          suggestions: ['Ensure all transition IDs are unique'],
         })
       }
       transitionIds.add(transition.id)
@@ -625,7 +629,7 @@ export class ValidationEngine {
           code: 'MISSING_TRANSITION_SOURCE',
           message: `Transition ${transition.id} is missing source state`,
           severity: 'critical',
-          suggestions: ['Specify source state for transition']
+          suggestions: ['Specify source state for transition'],
         })
       }
 
@@ -634,7 +638,7 @@ export class ValidationEngine {
           code: 'MISSING_TRANSITION_TARGET',
           message: `Transition ${transition.id} is missing target state`,
           severity: 'critical',
-          suggestions: ['Specify target state for transition']
+          suggestions: ['Specify target state for transition'],
         })
       }
 
@@ -644,7 +648,7 @@ export class ValidationEngine {
           code: 'INVALID_TRANSITION_SOURCE',
           message: `Transition ${transition.id} references non-existent source state: ${transition.sourceStateId}`,
           severity: 'error',
-          suggestions: ['Ensure transition source references existing state']
+          suggestions: ['Ensure transition source references existing state'],
         })
       }
 
@@ -653,7 +657,7 @@ export class ValidationEngine {
           code: 'INVALID_TRANSITION_TARGET',
           message: `Transition ${transition.id} references non-existent target state: ${transition.targetStateId}`,
           severity: 'error',
-          suggestions: ['Ensure transition target references existing state']
+          suggestions: ['Ensure transition target references existing state'],
         })
       }
     }
@@ -666,11 +670,11 @@ export class ValidationEngine {
   ): Promise<void> {
     // Check for unreachable states
     const reachableStates = new Set<string>()
-    const initialStates = journey.states.filter(s => s.type === 'initial')
+    const initialStates = journey.states.filter((s) => s.type === 'initial')
 
     if (initialStates.length > 0) {
       // Start from initial states and follow transitions
-      const queue = [...initialStates.map(s => s.id)]
+      const queue = [...initialStates.map((s) => s.id)]
 
       while (queue.length > 0) {
         const currentStateId = queue.shift()!
@@ -679,8 +683,10 @@ export class ValidationEngine {
         reachableStates.add(currentStateId)
 
         // Find outgoing transitions
-        const outgoingTransitions = journey.transitions.filter(t => t.sourceStateId === currentStateId)
-        outgoingTransitions.forEach(t => {
+        const outgoingTransitions = journey.transitions.filter(
+          (t) => t.sourceStateId === currentStateId
+        )
+        outgoingTransitions.forEach((t) => {
           if (!reachableStates.has(t.targetStateId)) {
             queue.push(t.targetStateId)
           }
@@ -688,7 +694,7 @@ export class ValidationEngine {
       }
     }
 
-    const unreachableStates = journey.states.filter(s => !reachableStates.has(s.id))
+    const unreachableStates = journey.states.filter((s) => !reachableStates.has(s.id))
     if (unreachableStates.length > 0) {
       warnings.push({
         code: 'UNREACHABLE_STATES',
@@ -697,8 +703,8 @@ export class ValidationEngine {
         suggestions: [
           'Connect unreachable states to journey flow',
           'Remove unused states',
-          'Review journey logic'
-        ]
+          'Review journey logic',
+        ],
       })
     }
   }
@@ -709,14 +715,14 @@ export class ValidationEngine {
     warnings: ConversionWarning[]
   ): Promise<void> {
     // Check for semantic consistency
-    journey.states.forEach(state => {
+    journey.states.forEach((state) => {
       // Tool states should have tools
       if (state.type === 'tool' && (!state.tools || state.tools.length === 0)) {
         warnings.push({
           code: 'TOOL_STATE_NO_TOOLS',
           message: `Tool state ${state.id} has no tools configured`,
           impact: 'high',
-          suggestions: ['Add tools to tool state', 'Change state type if tools not needed']
+          suggestions: ['Add tools to tool state', 'Change state type if tools not needed'],
         })
       }
 
@@ -726,7 +732,7 @@ export class ValidationEngine {
           code: 'CHAT_STATE_NO_CONTENT',
           message: `Chat state ${state.id} has no content`,
           impact: 'medium',
-          suggestions: ['Add content to chat state', 'Define what the agent should say']
+          suggestions: ['Add content to chat state', 'Define what the agent should say'],
         })
       }
     })
@@ -748,7 +754,7 @@ export class ValidationEngine {
         code: 'WORKFLOW_ID_NOT_PRESERVED',
         message: 'Original workflow ID not preserved in journey metadata',
         severity: 'error',
-        suggestions: ['Ensure workflow ID is preserved during conversion']
+        suggestions: ['Ensure workflow ID is preserved during conversion'],
       })
     }
 
@@ -762,8 +768,8 @@ export class ValidationEngine {
         suggestions: [
           'Review node conversion process',
           'Check for unsupported node types',
-          'Verify all nodes are being processed'
-        ]
+          'Verify all nodes are being processed',
+        ],
       })
     }
   }
@@ -775,7 +781,8 @@ export class ValidationEngine {
     warnings: ConversionWarning[]
   ): Promise<void> {
     // Check edge to transition conversion
-    const significantTransitionLoss = originalWorkflow.edges.length - convertedJourney.transitions.length
+    const significantTransitionLoss =
+      originalWorkflow.edges.length - convertedJourney.transitions.length
     if (significantTransitionLoss > originalWorkflow.edges.length * 0.3) {
       warnings.push({
         code: 'SIGNIFICANT_TRANSITION_LOSS',
@@ -784,8 +791,8 @@ export class ValidationEngine {
         suggestions: [
           'Review edge conversion process',
           'Check for unsupported edge types',
-          'Verify all edges are being processed'
-        ]
+          'Verify all edges are being processed',
+        ],
       })
     }
   }
@@ -802,7 +809,7 @@ export class ValidationEngine {
         code: 'MISSING_CONVERSION_METADATA',
         message: 'Converted journey missing metadata',
         severity: 'error',
-        suggestions: ['Add conversion metadata to journey']
+        suggestions: ['Add conversion metadata to journey'],
       })
       return
     }
@@ -813,7 +820,7 @@ export class ValidationEngine {
         code: 'MISSING_CONVERSION_TIMESTAMP',
         message: 'Conversion timestamp missing from metadata',
         impact: 'low',
-        suggestions: ['Add conversion timestamp to metadata']
+        suggestions: ['Add conversion timestamp to metadata'],
       })
     }
 
@@ -822,7 +829,7 @@ export class ValidationEngine {
         code: 'MISSING_CONVERSION_VERSION',
         message: 'Conversion version missing from metadata',
         impact: 'low',
-        suggestions: ['Add conversion version to metadata']
+        suggestions: ['Add conversion version to metadata'],
       })
     }
   }
@@ -831,7 +838,10 @@ export class ValidationEngine {
   // HELPER METHODS
   // ========================================
 
-  private findConverterForNode(node: ReactFlowNode, availableConverters: Map<string, NodeConverter>): boolean {
+  private findConverterForNode(
+    node: ReactFlowNode,
+    availableConverters: Map<string, NodeConverter>
+  ): boolean {
     // Check exact type match
     if (availableConverters.has(node.type)) {
       const converter = availableConverters.get(node.type)
@@ -860,8 +870,8 @@ export class ValidationEngine {
 
     const buildAdjacencyList = () => {
       const adj = new Map<string, string[]>()
-      nodes.forEach(node => adj.set(node.id, []))
-      edges.forEach(edge => {
+      nodes.forEach((node) => adj.set(node.id, []))
+      edges.forEach((edge) => {
         if (adj.has(edge.source)) {
           adj.get(edge.source)!.push(edge.target)
         }
@@ -917,7 +927,7 @@ export class ValidationEngine {
             message: `API node ${node.id} missing URL configuration`,
             nodeId: node.id,
             impact: 'high',
-            suggestions: ['Add URL or endpoint to API node configuration']
+            suggestions: ['Add URL or endpoint to API node configuration'],
           })
         }
         break
@@ -929,7 +939,7 @@ export class ValidationEngine {
             message: `Condition node ${node.id} missing condition logic`,
             nodeId: node.id,
             impact: 'high',
-            suggestions: ['Add condition logic to condition node']
+            suggestions: ['Add condition logic to condition node'],
           })
         }
         break
@@ -942,7 +952,7 @@ export class ValidationEngine {
             message: `Agent node ${node.id} missing prompt configuration`,
             nodeId: node.id,
             impact: 'medium',
-            suggestions: ['Add prompt or system prompt to agent node']
+            suggestions: ['Add prompt or system prompt to agent node'],
           })
         }
         break
@@ -961,7 +971,7 @@ export class ValidationEngine {
             code: 'TOOL_STATE_NO_TOOLS',
             message: `Tool state ${state.id} has no tools configured`,
             impact: 'high',
-            suggestions: ['Add tools to tool state configuration']
+            suggestions: ['Add tools to tool state configuration'],
           })
         }
         break
@@ -972,7 +982,7 @@ export class ValidationEngine {
             code: 'CHAT_STATE_NO_CONTENT',
             message: `Chat state ${state.id} has no content`,
             impact: 'medium',
-            suggestions: ['Add content to define what the agent should communicate']
+            suggestions: ['Add content to define what the agent should communicate'],
           })
         }
         break

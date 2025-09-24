@@ -8,11 +8,11 @@
 import { createLogger } from '@/lib/logs/console/logger'
 import type { ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
   FormatContext,
   FormattedResult,
-  TextContent,
   ResultFormat,
+  ResultFormatter,
+  TextContent,
 } from '../types'
 
 const logger = createLogger('TextFormatter')
@@ -28,14 +28,7 @@ export class TextFormatter implements ResultFormatter {
   priority = 100 // High priority as a fundamental formatter
 
   toolCompatibility = {
-    preferredTools: [
-      'thinking',
-      'mail_send',
-      'sms_send',
-      'vision',
-      'http_request',
-      'file_parse',
-    ],
+    preferredTools: ['thinking', 'mail_send', 'sms_send', 'vision', 'http_request', 'file_parse'],
     outputTypes: ['string', 'object', 'error'],
   }
 
@@ -107,7 +100,6 @@ export class TextFormatter implements ResultFormatter {
           qualityScore: await this.calculateQualityScore(textContent, result),
         },
       }
-
     } catch (error) {
       logger.error('Text formatting failed:', error)
       throw new Error(`Text formatting failed: ${(error as Error).message}`)
@@ -117,7 +109,10 @@ export class TextFormatter implements ResultFormatter {
   /**
    * Generate natural language summary
    */
-  async generateSummary(result: ToolResponse, context: FormatContext): Promise<{
+  async generateSummary(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<{
     headline: string
     description: string
     highlights: string[]
@@ -144,7 +139,6 @@ export class TextFormatter implements ResultFormatter {
         highlights,
         suggestions,
       }
-
     } catch (error) {
       logger.error('Summary generation failed:', error)
 
@@ -157,14 +151,19 @@ export class TextFormatter implements ResultFormatter {
           ? 'The tool executed and returned results.'
           : result.error || 'An error occurred during execution.',
         highlights: [],
-        suggestions: result.success ? ['Review the results below'] : ['Check the error and try again'],
+        suggestions: result.success
+          ? ['Review the results below']
+          : ['Check the error and try again'],
       }
     }
   }
 
   // Private methods
 
-  private async generateTextContent(result: ToolResponse, context: FormatContext): Promise<TextContent> {
+  private async generateTextContent(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<TextContent> {
     const toolName = context.toolConfig.name || context.toolId
 
     if (!result.success) {
@@ -213,7 +212,11 @@ export class TextFormatter implements ResultFormatter {
     return text
   }
 
-  private async formatByOutputType(output: any, outputType: string, context: FormatContext): Promise<string> {
+  private async formatByOutputType(
+    output: any,
+    outputType: string,
+    context: FormatContext
+  ): Promise<string> {
     switch (outputType) {
       case 'string':
         return this.formatStringOutput(output, context)
@@ -351,23 +354,23 @@ export class TextFormatter implements ResultFormatter {
 
   private isSearchResult(output: any): boolean {
     return (
-      output.hasOwnProperty('results') ||
-      output.hasOwnProperty('items') ||
-      output.hasOwnProperty('hits') ||
-      output.hasOwnProperty('data')
+      Object.hasOwn(output, 'results') ||
+      Object.hasOwn(output, 'items') ||
+      Object.hasOwn(output, 'hits') ||
+      Object.hasOwn(output, 'data')
     )
   }
 
   private isListResult(output: any): boolean {
     const listKeys = ['list', 'items', 'entries', 'records']
-    return listKeys.some(key => output.hasOwnProperty(key))
+    return listKeys.some((key) => Object.hasOwn(output, key))
   }
 
   private isStatusResult(output: any): boolean {
     return (
-      output.hasOwnProperty('status') ||
-      output.hasOwnProperty('success') ||
-      output.hasOwnProperty('message')
+      Object.hasOwn(output, 'status') ||
+      Object.hasOwn(output, 'success') ||
+      Object.hasOwn(output, 'message')
     )
   }
 
@@ -392,7 +395,9 @@ export class TextFormatter implements ResultFormatter {
   }
 
   private formatListResult(output: any): string {
-    const listKey = ['list', 'items', 'entries', 'records'].find(key => output.hasOwnProperty(key))
+    const listKey = ['list', 'items', 'entries', 'records'].find((key) =>
+      Object.hasOwn(output, key)
+    )
     if (!listKey) return this.formatGenericObject(output, {} as FormatContext)
 
     const items = output[listKey]
@@ -420,7 +425,7 @@ export class TextFormatter implements ResultFormatter {
 
     // Add other fields
     const excludedKeys = new Set(['message', 'status', 'success'])
-    const otherKeys = Object.keys(output).filter(key => !excludedKeys.has(key))
+    const otherKeys = Object.keys(output).filter((key) => !excludedKeys.has(key))
 
     if (otherKeys.length > 0) {
       text += '\nAdditional details:\n'
@@ -456,7 +461,7 @@ export class TextFormatter implements ResultFormatter {
     return key
       .replace(/([A-Z])/g, ' $1') // Add space before capital letters
       .replace(/[_-]/g, ' ') // Replace underscores and dashes with spaces
-      .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize first letter of each word
+      .replace(/\b\w/g, (l) => l.toUpperCase()) // Capitalize first letter of each word
       .trim()
   }
 
@@ -466,7 +471,7 @@ export class TextFormatter implements ResultFormatter {
     }
 
     if (typeof value === 'string') {
-      return value.length > 100 ? value.substring(0, 100) + '...' : value
+      return value.length > 100 ? `${value.substring(0, 100)}...` : value
     }
 
     if (typeof value === 'object') {
@@ -591,7 +596,9 @@ export class TextFormatter implements ResultFormatter {
 
       // Extract from search results
       if (output.results && Array.isArray(output.results)) {
-        highlights.push(`${output.results.length} result${output.results.length === 1 ? '' : 's'} found`)
+        highlights.push(
+          `${output.results.length} result${output.results.length === 1 ? '' : 's'} found`
+        )
       }
     }
 
@@ -603,7 +610,10 @@ export class TextFormatter implements ResultFormatter {
     return highlights.slice(0, 3) // Limit to 3 highlights
   }
 
-  private async generateSuggestions(result: ToolResponse, context: FormatContext): Promise<string[]> {
+  private async generateSuggestions(
+    result: ToolResponse,
+    context: FormatContext
+  ): Promise<string[]> {
     const suggestions: string[] = []
 
     if (!result.success) {
@@ -726,16 +736,10 @@ export class TextFormatter implements ResultFormatter {
     let markdown = text
 
     // Convert URLs to links
-    markdown = markdown.replace(
-      /(https?:\/\/[^\s]+)/g,
-      '[$1]($1)'
-    )
+    markdown = markdown.replace(/(https?:\/\/[^\s]+)/g, '[$1]($1)')
 
     // Convert simple lists
-    markdown = markdown.replace(
-      /^(\d+)\. /gm,
-      '$1. '
-    )
+    markdown = markdown.replace(/^(\d+)\. /gm, '$1. ')
 
     return markdown
   }

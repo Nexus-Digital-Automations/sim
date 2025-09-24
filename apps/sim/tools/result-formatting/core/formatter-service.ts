@@ -6,21 +6,20 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { ToolResponse, ToolConfig } from '@/tools/types'
+import type { ToolConfig, ToolResponse } from '@/tools/types'
 import type {
-  ResultFormatter,
-  ResultProcessor,
   FormatContext,
   FormattedResult,
-  ResultFormat,
-  ResultFormattingConfig,
-  ResultCacheEntry,
   ResultAnalytics,
+  ResultFormat,
+  ResultFormatter,
+  ResultFormattingConfig,
+  ResultProcessor,
 } from '../types'
-import { ResultCache } from './result-cache'
 import { ResultAnalyticsService } from './analytics-service'
 import { FormatterRegistry } from './formatter-registry'
 import { QualityValidator } from './quality-validator'
+import { ResultCache } from './result-cache'
 
 const logger = createLogger('ResultFormatterService')
 
@@ -112,7 +111,8 @@ export class ResultFormatterService {
                 formatContext,
                 requestId
               )
-              fallbackResult.metadata.qualityScore = await this.validator.validateQuality(fallbackResult)
+              fallbackResult.metadata.qualityScore =
+                await this.validator.validateQuality(fallbackResult)
               return fallbackResult
             }
           }
@@ -138,7 +138,6 @@ export class ResultFormatterService {
 
       logger.info(`[${requestId}] Result formatting completed in ${processingTime}ms`)
       return processedResult
-
     } catch (error) {
       const processingTime = Date.now() - startTime
       logger.error(`[${requestId}] Result formatting failed:`, error)
@@ -155,7 +154,11 @@ export class ResultFormatterService {
    * Format multiple results in batch
    */
   async formatResults(
-    results: Array<{ result: ToolResponse; toolConfig: ToolConfig; context?: Partial<FormatContext> }>
+    results: Array<{
+      result: ToolResponse
+      toolConfig: ToolConfig
+      context?: Partial<FormatContext>
+    }>
   ): Promise<FormattedResult[]> {
     const startTime = Date.now()
     logger.info(`Starting batch formatting for ${results.length} results`)
@@ -196,11 +199,13 @@ export class ResultFormatterService {
     const formatContext = this.buildFormatContext(result, toolConfig, context)
     const formatters = this.registry.getCompatibleFormatters(result, formatContext)
 
-    return formatters.map(formatter => ({
-      format: formatter.supportedFormats[0], // Primary format
-      formatter: formatter.name,
-      priority: formatter.priority,
-    })).sort((a, b) => b.priority - a.priority)
+    return formatters
+      .map((formatter) => ({
+        format: formatter.supportedFormats[0], // Primary format
+        formatter: formatter.name,
+        priority: formatter.priority,
+      }))
+      .sort((a, b) => b.priority - a.priority)
   }
 
   /**
@@ -395,7 +400,7 @@ export class ResultFormatterService {
     const formatters = this.registry.getCompatibleFormatters(result, context)
 
     // Find a simple text formatter as fallback
-    const textFormatter = formatters.find(f => f.supportedFormats.includes('text'))
+    const textFormatter = formatters.find((f) => f.supportedFormats.includes('text'))
     return textFormatter || null
   }
 
@@ -487,7 +492,9 @@ export class ResultFormatterService {
       format: 'text',
       content: {
         type: 'text',
-        text: result.success ? JSON.stringify(result.output, null, 2) : result.error || 'Unknown error',
+        text: result.success
+          ? JSON.stringify(result.output, null, 2)
+          : result.error || 'Unknown error',
         format: 'plain',
       },
       summary: {
@@ -496,7 +503,9 @@ export class ResultFormatterService {
           ? 'The tool executed successfully but result formatting failed'
           : result.error || 'The tool execution failed',
         highlights: [],
-        suggestions: result.success ? ['Review the raw output below'] : ['Check the error message and try again'],
+        suggestions: result.success
+          ? ['Review the raw output below']
+          : ['Check the error message and try again'],
       },
       representations: [],
       metadata: {

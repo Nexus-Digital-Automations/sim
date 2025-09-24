@@ -6,23 +6,23 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
-import type { RoomManager } from '@/socket-server/rooms/manager'
 import {
   createConversationalWorkflowHandler,
-  processNaturalLanguageCommandHandler,
-  getWorkflowStateHandler,
-  terminateWorkflowSessionHandler,
-  getSessionMetricsHandler,
   formatErrorResponse,
+  getSessionMetricsHandler,
+  getWorkflowStateHandler,
+  processNaturalLanguageCommandHandler,
+  terminateWorkflowSessionHandler,
 } from '@/services/parlant/conversational-workflows/api'
 import { getConversationalWorkflowService } from '@/services/parlant/conversational-workflows/core'
 import type {
-  CreateConversationalWorkflowRequest,
-  ProcessNaturalLanguageCommandRequest,
-  GetWorkflowStateRequest,
   ConversationalWorkflowUpdate,
+  CreateConversationalWorkflowRequest,
+  GetWorkflowStateRequest,
+  ProcessNaturalLanguageCommandRequest,
 } from '@/services/parlant/conversational-workflows/types'
+import type { AuthenticatedSocket } from '@/socket-server/middleware/auth'
+import type { RoomManager } from '@/socket-server/rooms/manager'
 
 const logger = createLogger('ConversationalWorkflowSocketHandlers')
 
@@ -84,13 +84,12 @@ export function setupConversationalWorkflowHandlers(
 
       // Subscribe to session updates
       const service = getConversationalWorkflowService()
-      const unsubscribe = service.getStateManager().subscribeToSession(
-        response.sessionId,
-        (update: ConversationalWorkflowUpdate) => {
+      const unsubscribe = service
+        .getStateManager()
+        .subscribeToSession(response.sessionId, (update: ConversationalWorkflowUpdate) => {
           // Broadcast update to session room
           socket.to(sessionRoom).emit('conversational-workflow-update', update)
-        }
-      )
+        })
 
       // Store unsubscribe function for cleanup
       socket.data.conversationalWorkflowUnsubscribe = unsubscribe
@@ -154,7 +153,9 @@ export function setupConversationalWorkflowHandlers(
 
       // Validate request data
       if (!data?.sessionId || !data?.workflowId || !data?.naturalLanguageInput) {
-        const error = new Error('Missing required fields: sessionId, workflowId, naturalLanguageInput')
+        const error = new Error(
+          'Missing required fields: sessionId, workflowId, naturalLanguageInput'
+        )
         callback?.(formatErrorResponse(error))
         return
       }
@@ -321,8 +322,8 @@ export function setupConversationalWorkflowHandlers(
 
       if (socket.data.conversationalWorkflowUnsubscribe) {
         socket.data.conversationalWorkflowUnsubscribe()
-        delete socket.data.conversationalWorkflowUnsubscribe
-        delete socket.data.conversationalWorkflowSessionId
+        socket.data.conversationalWorkflowUnsubscribe = undefined
+        socket.data.conversationalWorkflowSessionId = undefined
       }
 
       const executionTime = Date.now() - startTime
@@ -506,8 +507,8 @@ export function setupConversationalWorkflowHandlers(
         if (socket.data.conversationalWorkflowSessionId === data.sessionId) {
           if (socket.data.conversationalWorkflowUnsubscribe) {
             socket.data.conversationalWorkflowUnsubscribe()
-            delete socket.data.conversationalWorkflowUnsubscribe
-            delete socket.data.conversationalWorkflowSessionId
+            socket.data.conversationalWorkflowUnsubscribe = undefined
+            socket.data.conversationalWorkflowSessionId = undefined
           }
         }
 
@@ -548,7 +549,7 @@ export function setupConversationalWorkflowHandlers(
     // Cleanup subscription if exists
     if (socket.data.conversationalWorkflowUnsubscribe) {
       socket.data.conversationalWorkflowUnsubscribe()
-      delete socket.data.conversationalWorkflowUnsubscribe
+      socket.data.conversationalWorkflowUnsubscribe = undefined
 
       if (socket.data.conversationalWorkflowSessionId) {
         const sessionRoom = `conversational-workflow:${socket.data.conversationalWorkflowSessionId}`
@@ -561,7 +562,7 @@ export function setupConversationalWorkflowHandlers(
           disconnectedAt: new Date().toISOString(),
         })
 
-        delete socket.data.conversationalWorkflowSessionId
+        socket.data.conversationalWorkflowSessionId = undefined
       }
     }
   })

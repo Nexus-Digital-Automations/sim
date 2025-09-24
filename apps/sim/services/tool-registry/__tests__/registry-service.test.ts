@@ -2,10 +2,10 @@
  * Tests for ToolRegistryService
  */
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { z } from 'zod'
 import { ToolRegistryService } from '../registry-service'
 import type { ToolDefinition } from '../types'
-import { z } from 'zod'
 
 // Mock database
 vi.mock('@/packages/db', () => ({
@@ -209,7 +209,9 @@ describe('ToolRegistryService', () => {
         throw new Error('Database error')
       })
 
-      await expect(registryService.registerTool(mockToolDefinition)).rejects.toThrow('Database error')
+      await expect(registryService.registerTool(mockToolDefinition)).rejects.toThrow(
+        'Database error'
+      )
     })
   })
 })

@@ -7,46 +7,44 @@
  */
 
 import type {
-  SimWorkflowDefinition,
-  ReactFlowNode,
-  ReactFlowEdge,
-  WorkflowAnalysisResult,
-  WorkflowStructure,
+  AccessControlSecurity,
+  AlternativePath,
+  CircularDependency,
+  ComplexityAnalysis,
+  ComplianceCheck,
+  ConditionalNode,
+  ConversionContext,
+  DataFlowSecurity,
+  DependencyEdge,
   DependencyGraph,
   DependencyNode,
-  DependencyEdge,
-  CircularDependency,
-  ExecutionPath,
-  ConditionalNode,
-  ParallelSection,
-  ParallelBranch,
-  LoopStructure,
-  AlternativePath,
-  ComplexityAnalysis,
-  ToolAnalysis,
-  ToolCompatibilityReport,
-  VariableAnalysis,
-  VariableUsagePattern,
-  VariableIssue,
-  VariableOptimization,
   ErrorHandlingAnalysis,
-  UnhandledError,
   ErrorPath,
-  RecoveryMechanism,
+  ExecutionPath,
+  LoopStructure,
+  ParallelSection,
   PerformanceAnalysis,
   PerformanceBottleneck,
+  PerformanceOptimization,
+  ReactFlowEdge,
+  ReactFlowNode,
+  RecoveryMechanism,
+  ResourceRequirement,
   ResourceUtilization,
   ScalabilityMetrics,
-  PerformanceOptimization,
   SecurityAnalysis,
-  SecurityVulnerability,
-  DataFlowSecurity,
-  AccessControlSecurity,
-  ComplianceCheck,
   SecurityRecommendation,
-  ConversionContext,
-  SimBlockType,
-  ResourceRequirement
+  SecurityVulnerability,
+  SimWorkflowDefinition,
+  ToolAnalysis,
+  ToolCompatibilityReport,
+  UnhandledError,
+  VariableAnalysis,
+  VariableIssue,
+  VariableOptimization,
+  VariableUsagePattern,
+  WorkflowAnalysisResult,
+  WorkflowStructure,
 } from './types'
 
 /**
@@ -87,7 +85,7 @@ export class WorkflowAnalysisEngine {
         variableAnalysis,
         errorHandlingAnalysis,
         performanceAnalysis,
-        securityAnalysis
+        securityAnalysis,
       ] = await Promise.all([
         this.analyzeWorkflowStructure(workflow),
         this.analyzeDependencies(workflow),
@@ -97,7 +95,7 @@ export class WorkflowAnalysisEngine {
         this.analyzeVariables(workflow),
         this.analyzeErrorHandling(workflow),
         this.analyzePerformance(workflow),
-        this.analyzeSecurityRisks(workflow)
+        this.analyzeSecurityRisks(workflow),
       ])
 
       const result: WorkflowAnalysisResult = {
@@ -110,7 +108,7 @@ export class WorkflowAnalysisEngine {
         variableAnalysis,
         errorHandlingAnalysis,
         performanceAnalysis,
-        securityAnalysis
+        securityAnalysis,
       }
 
       // Cache the result
@@ -120,17 +118,16 @@ export class WorkflowAnalysisEngine {
       this.log('info', 'Workflow analysis completed', {
         workflowId: workflow.id,
         analysisTimeMs: analysisTime,
-        complexity: complexityAnalysis.overall
+        complexity: complexityAnalysis.overall,
       })
 
       return result
-
     } catch (error) {
       const analysisTime = Date.now() - startTime
       this.log('error', 'Workflow analysis failed', {
         workflowId: workflow.id,
         error: error instanceof Error ? error.message : 'Unknown error',
-        analysisTimeMs: analysisTime
+        analysisTimeMs: analysisTime,
       })
       throw error
     }
@@ -139,7 +136,9 @@ export class WorkflowAnalysisEngine {
   /**
    * Analyzes the structural properties of the workflow graph
    */
-  private async analyzeWorkflowStructure(workflow: SimWorkflowDefinition): Promise<WorkflowStructure> {
+  private async analyzeWorkflowStructure(
+    workflow: SimWorkflowDefinition
+  ): Promise<WorkflowStructure> {
     const { nodes, edges } = workflow
 
     // Find entry and exit points
@@ -168,7 +167,7 @@ export class WorkflowAnalysisEngine {
       criticalPath,
       alternativePaths,
       unreachableNodes,
-      orphanedNodes
+      orphanedNodes,
     }
   }
 
@@ -183,9 +182,15 @@ export class WorkflowAnalysisEngine {
     const dependencyEdges = this.buildDependencyEdges(edges)
 
     // Analyze graph properties
-    const stronglyConnectedComponents = this.findStronglyConnectedComponents(dependencyNodes, dependencyEdges)
+    const stronglyConnectedComponents = this.findStronglyConnectedComponents(
+      dependencyNodes,
+      dependencyEdges
+    )
     const topologicalOrder = this.calculateTopologicalOrder(dependencyNodes, dependencyEdges)
-    const circularDependencies = this.findCircularDependencies(stronglyConnectedComponents, dependencyNodes)
+    const circularDependencies = this.findCircularDependencies(
+      stronglyConnectedComponents,
+      dependencyNodes
+    )
     const dependencyLevels = this.calculateDependencyLevels(dependencyNodes, dependencyEdges)
 
     return {
@@ -194,7 +199,7 @@ export class WorkflowAnalysisEngine {
       stronglyConnectedComponents,
       topologicalOrder,
       circularDependencies,
-      dependencyLevels
+      dependencyLevels,
     }
   }
 
@@ -218,7 +223,7 @@ export class WorkflowAnalysisEngine {
       estimatedDuration: this.estimatePathDuration(path, workflow),
       resourceRequirements: this.calculatePathResourceRequirements(path, workflow),
       errorProbability: this.calculatePathErrorProbability(path, workflow),
-      criticalPath: this.isCriticalPath(path, workflow)
+      criticalPath: this.isCriticalPath(path, workflow),
     }))
   }
 
@@ -251,7 +256,7 @@ export class WorkflowAnalysisEngine {
       maintainability,
       testability,
       categories,
-      recommendations
+      recommendations,
     }
   }
 
@@ -261,18 +266,24 @@ export class WorkflowAnalysisEngine {
   private async analyzeTools(workflow: SimWorkflowDefinition): Promise<ToolAnalysis> {
     const { nodes } = workflow
 
-    const toolNodes = nodes.filter(node => node.type === 'tool' || node.data?.toolId)
+    const toolNodes = nodes.filter((node) => node.type === 'tool' || node.data?.toolId)
     const totalTools = toolNodes.length
-    const uniqueTools = new Set(toolNodes.map(node => node.data?.toolId)).size
+    const uniqueTools = new Set(toolNodes.map((node) => node.data?.toolId)).size
 
     // Categorize tools
     const toolCategories = this.categorizeTools(toolNodes)
 
     // Check tool compatibility with Parlant
     const toolCompatibility = await this.checkToolCompatibility(toolNodes)
-    const migrationRequired = toolCompatibility.filter(t => t.compatibility === 'partial' || t.compatibility === 'none').map(t => t.toolId)
-    const deprecatedTools = toolCompatibility.filter(t => t.issues.some(issue => issue.includes('deprecated'))).map(t => t.toolId)
-    const securityRisks = toolCompatibility.filter(t => t.issues.some(issue => issue.includes('security'))).map(t => t.toolId)
+    const migrationRequired = toolCompatibility
+      .filter((t) => t.compatibility === 'partial' || t.compatibility === 'none')
+      .map((t) => t.toolId)
+    const deprecatedTools = toolCompatibility
+      .filter((t) => t.issues.some((issue) => issue.includes('deprecated')))
+      .map((t) => t.toolId)
+    const securityRisks = toolCompatibility
+      .filter((t) => t.issues.some((issue) => issue.includes('security')))
+      .map((t) => t.toolId)
 
     // Calculate performance impact
     const performanceImpact = this.calculateToolPerformanceImpact(toolNodes)
@@ -285,7 +296,7 @@ export class WorkflowAnalysisEngine {
       migrationRequired,
       deprecatedTools,
       securityRisks,
-      performanceImpact
+      performanceImpact,
     }
   }
 
@@ -315,14 +326,16 @@ export class WorkflowAnalysisEngine {
       typeDistribution,
       usagePatterns,
       potentialIssues,
-      optimizations
+      optimizations,
     }
   }
 
   /**
    * Analyzes error handling coverage and strategies
    */
-  private async analyzeErrorHandling(workflow: SimWorkflowDefinition): Promise<ErrorHandlingAnalysis> {
+  private async analyzeErrorHandling(
+    workflow: SimWorkflowDefinition
+  ): Promise<ErrorHandlingAnalysis> {
     const { nodes, edges } = workflow
 
     // Calculate error handling coverage
@@ -349,7 +362,7 @@ export class WorkflowAnalysisEngine {
       unhandledErrors,
       errorPaths,
       recoveryMechanisms,
-      recommendations
+      recommendations,
     }
   }
 
@@ -383,7 +396,7 @@ export class WorkflowAnalysisEngine {
       bottlenecks,
       resourceUtilization,
       scalabilityMetrics,
-      optimizations
+      optimizations,
     }
   }
 
@@ -417,7 +430,7 @@ export class WorkflowAnalysisEngine {
       dataFlowAnalysis,
       accessControlAnalysis,
       compliance,
-      recommendations
+      recommendations,
     }
   }
 
@@ -426,30 +439,32 @@ export class WorkflowAnalysisEngine {
   // =============================================================================
 
   private findEntryPoints(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
-    const targets = new Set(edges.map(edge => edge.target))
+    const targets = new Set(edges.map((edge) => edge.target))
     const entryPoints = nodes
-      .filter(node => !targets.has(node.id) || node.type === 'start')
-      .map(node => node.id)
+      .filter((node) => !targets.has(node.id) || node.type === 'start')
+      .map((node) => node.id)
 
     // If no explicit entry points found, look for start nodes
     if (entryPoints.length === 0) {
-      const startNodes = nodes.filter(node => node.type === 'start')
-      return startNodes.length > 0 ? startNodes.map(n => n.id) : [nodes[0]?.id].filter(Boolean)
+      const startNodes = nodes.filter((node) => node.type === 'start')
+      return startNodes.length > 0 ? startNodes.map((n) => n.id) : [nodes[0]?.id].filter(Boolean)
     }
 
     return entryPoints
   }
 
   private findExitPoints(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
-    const sources = new Set(edges.map(edge => edge.source))
+    const sources = new Set(edges.map((edge) => edge.source))
     const exitPoints = nodes
-      .filter(node => !sources.has(node.id) || node.type === 'end')
-      .map(node => node.id)
+      .filter((node) => !sources.has(node.id) || node.type === 'end')
+      .map((node) => node.id)
 
     // If no explicit exit points found, look for end nodes
     if (exitPoints.length === 0) {
-      const endNodes = nodes.filter(node => node.type === 'end')
-      return endNodes.length > 0 ? endNodes.map(n => n.id) : [nodes[nodes.length - 1]?.id].filter(Boolean)
+      const endNodes = nodes.filter((node) => node.type === 'end')
+      return endNodes.length > 0
+        ? endNodes.map((n) => n.id)
+        : [nodes[nodes.length - 1]?.id].filter(Boolean)
     }
 
     return exitPoints
@@ -457,14 +472,20 @@ export class WorkflowAnalysisEngine {
 
   private findConditionalNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ConditionalNode[] {
     return nodes
-      .filter(node => node.type === 'condition' || node.data?.condition)
-      .map(node => {
-        const outgoingEdges = edges.filter(edge => edge.source === node.id)
-        const trueEdge = outgoingEdges.find(edge => edge.data?.condition === 'true' || !edge.data?.condition)
-        const falseEdge = outgoingEdges.find(edge => edge.data?.condition === 'false')
+      .filter((node) => node.type === 'condition' || node.data?.condition)
+      .map((node) => {
+        const outgoingEdges = edges.filter((edge) => edge.source === node.id)
+        const trueEdge = outgoingEdges.find(
+          (edge) => edge.data?.condition === 'true' || !edge.data?.condition
+        )
+        const falseEdge = outgoingEdges.find((edge) => edge.data?.condition === 'false')
 
-        const truePath = trueEdge ? this.getPathFromNode(trueEdge.target, nodes, edges, new Set()) : []
-        const falsePath = falseEdge ? this.getPathFromNode(falseEdge.target, nodes, edges, new Set()) : []
+        const truePath = trueEdge
+          ? this.getPathFromNode(trueEdge.target, nodes, edges, new Set())
+          : []
+        const falsePath = falseEdge
+          ? this.getPathFromNode(falseEdge.target, nodes, edges, new Set())
+          : []
 
         const condition = node.data?.condition || 'true'
         const variables = this.extractVariablesFromExpression(condition)
@@ -475,17 +496,19 @@ export class WorkflowAnalysisEngine {
           truePath,
           falsePath,
           variables,
-          complexity: this.calculateConditionComplexity(condition)
+          complexity: this.calculateConditionComplexity(condition),
         }
       })
   }
 
   private findParallelSections(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ParallelSection[] {
     const parallelSections: ParallelSection[] = []
-    const splitNodes = nodes.filter(node => node.type === 'parallel_split' || node.type === 'split')
+    const splitNodes = nodes.filter(
+      (node) => node.type === 'parallel_split' || node.type === 'split'
+    )
 
     for (const splitNode of splitNodes) {
-      const outgoingEdges = edges.filter(edge => edge.source === splitNode.id)
+      const outgoingEdges = edges.filter((edge) => edge.source === splitNode.id)
 
       if (outgoingEdges.length > 1) {
         // Find the corresponding join node
@@ -500,7 +523,7 @@ export class WorkflowAnalysisEngine {
               estimatedDuration: this.estimateBranchDuration(branchNodes, nodes),
               priority: edge.data?.priority || 1,
               resources: this.calculateBranchResources(branchNodes, nodes),
-              canFail: edge.data?.canFail !== false
+              canFail: edge.data?.canFail !== false,
             }
           })
 
@@ -511,7 +534,7 @@ export class WorkflowAnalysisEngine {
             branches,
             synchronizationType: splitNode.data?.synchronizationType || 'all',
             timeout: splitNode.data?.timeout,
-            errorHandling: splitNode.data?.errorHandling || 'fail_fast'
+            errorHandling: splitNode.data?.errorHandling || 'fail_fast',
           })
         }
       }
@@ -529,7 +552,7 @@ export class WorkflowAnalysisEngine {
       if (visited.has(nodeId)) return
       visited.add(nodeId)
 
-      const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+      const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
 
       for (const edge of outgoingEdges) {
         const target = edge.target
@@ -541,8 +564,12 @@ export class WorkflowAnalysisEngine {
           const entryNode = target
           const exitNode = nodeId
 
-          const loopCondition = edge.data?.condition || nodes.find(n => n.id === entryNode)?.data?.condition || 'true'
-          const loopType = this.determineLoopType(loopCondition, nodes.find(n => n.id === entryNode))
+          const loopCondition =
+            edge.data?.condition || nodes.find((n) => n.id === entryNode)?.data?.condition || 'true'
+          const loopType = this.determineLoopType(
+            loopCondition,
+            nodes.find((n) => n.id === entryNode)
+          )
 
           loopStructures.push({
             id: `loop_${entryNode}_${exitNode}`,
@@ -551,9 +578,9 @@ export class WorkflowAnalysisEngine {
             bodyNodes: loopNodes,
             condition: loopCondition,
             loopType,
-            maxIterations: nodes.find(n => n.id === entryNode)?.data?.maxIterations,
-            iterationVariable: nodes.find(n => n.id === entryNode)?.data?.iterationVariable,
-            exitConditions: this.findLoopExitConditions(loopNodes, edges)
+            maxIterations: nodes.find((n) => n.id === entryNode)?.data?.maxIterations,
+            iterationVariable: nodes.find((n) => n.id === entryNode)?.data?.iterationVariable,
+            exitConditions: this.findLoopExitConditions(loopNodes, edges),
           })
         } else {
           findBackEdges(target, [...path, nodeId], visited)
@@ -588,7 +615,7 @@ export class WorkflowAnalysisEngine {
 
     // Calculate longest paths using dynamic programming
     for (const nodeId of sorted) {
-      const incomingEdges = edges.filter(edge => edge.target === nodeId)
+      const incomingEdges = edges.filter((edge) => edge.target === nodeId)
 
       if (incomingEdges.length === 0) {
         predecessors.set(nodeId, null)
@@ -629,7 +656,7 @@ export class WorkflowAnalysisEngine {
           alternativePath: conditionalNode.falsePath,
           condition: conditionalNode.condition,
           trigger: 'condition',
-          probability: 0.5 // Default, would be refined with actual data
+          probability: 0.5, // Default, would be refined with actual data
         })
       }
     }
@@ -641,7 +668,11 @@ export class WorkflowAnalysisEngine {
     return alternativePaths
   }
 
-  private findUnreachableNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[], entryPoints: string[]): string[] {
+  private findUnreachableNodes(
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[],
+    entryPoints: string[]
+  ): string[] {
     const reachable = new Set<string>()
     const queue = [...entryPoints]
 
@@ -651,21 +682,21 @@ export class WorkflowAnalysisEngine {
       if (reachable.has(current)) continue
 
       reachable.add(current)
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
-    return nodes.filter(node => !reachable.has(node.id)).map(node => node.id)
+    return nodes.filter((node) => !reachable.has(node.id)).map((node) => node.id)
   }
 
   private findOrphanedNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
     const connected = new Set<string>()
-    edges.forEach(edge => {
+    edges.forEach((edge) => {
       connected.add(edge.source)
       connected.add(edge.target)
     })
 
-    return nodes.filter(node => !connected.has(node.id)).map(node => node.id)
+    return nodes.filter((node) => !connected.has(node.id)).map((node) => node.id)
   }
 
   // =============================================================================
@@ -673,31 +704,34 @@ export class WorkflowAnalysisEngine {
   // =============================================================================
 
   private buildDependencyNodes(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): DependencyNode[] {
-    return nodes.map(node => {
-      const incoming = edges.filter(edge => edge.target === node.id)
-      const outgoing = edges.filter(edge => edge.source === node.id)
+    return nodes.map((node) => {
+      const incoming = edges.filter((edge) => edge.target === node.id)
+      const outgoing = edges.filter((edge) => edge.source === node.id)
 
       return {
         nodeId: node.id,
-        dependencies: incoming.map(edge => edge.source),
-        dependents: outgoing.map(edge => edge.target),
+        dependencies: incoming.map((edge) => edge.source),
+        dependents: outgoing.map((edge) => edge.target),
         level: 0, // Will be calculated later
-        criticalPath: false // Will be calculated later
+        criticalPath: false, // Will be calculated later
       }
     })
   }
 
   private buildDependencyEdges(edges: ReactFlowEdge[]): DependencyEdge[] {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       from: edge.source,
       to: edge.target,
       type: this.determineDependencyType(edge),
       strength: this.determineDependencyStrength(edge),
-      condition: edge.data?.condition
+      condition: edge.data?.condition,
     }))
   }
 
-  private findStronglyConnectedComponents(nodes: DependencyNode[], edges: DependencyEdge[]): string[][] {
+  private findStronglyConnectedComponents(
+    nodes: DependencyNode[],
+    edges: DependencyEdge[]
+  ): string[][] {
     // Tarjan's algorithm for finding strongly connected components
     const components: string[][] = []
     const stack: string[] = []
@@ -713,7 +747,7 @@ export class WorkflowAnalysisEngine {
       stack.push(nodeId)
       onStack.add(nodeId)
 
-      const outgoing = edges.filter(edge => edge.from === nodeId)
+      const outgoing = edges.filter((edge) => edge.from === nodeId)
       for (const edge of outgoing) {
         const w = edge.to
         if (!indices.has(w)) {
@@ -742,7 +776,7 @@ export class WorkflowAnalysisEngine {
       }
     }
 
-    return components.filter(component => component.length > 1)
+    return components.filter((component) => component.length > 1)
   }
 
   private calculateTopologicalOrder(nodes: DependencyNode[], edges: DependencyEdge[]): string[] {
@@ -770,7 +804,7 @@ export class WorkflowAnalysisEngine {
       const current = queue.shift()!
       result.push(current)
 
-      const outgoing = edges.filter(edge => edge.from === current)
+      const outgoing = edges.filter((edge) => edge.from === current)
       for (const edge of outgoing) {
         const degree = inDegree.get(edge.to)! - 1
         inDegree.set(edge.to, degree)
@@ -783,24 +817,29 @@ export class WorkflowAnalysisEngine {
     return result
   }
 
-  private findCircularDependencies(components: string[][], nodes: DependencyNode[]): CircularDependency[] {
-    return components.map(component => ({
+  private findCircularDependencies(
+    components: string[][],
+    nodes: DependencyNode[]
+  ): CircularDependency[] {
+    return components.map((component) => ({
       nodes: component,
       type: 'control', // Simplified - would analyze actual dependency types
       severity: component.length > 2 ? 'error' : 'warning',
-      resolution: `Consider breaking the circular dependency in nodes: ${component.join(', ')}`
+      resolution: `Consider breaking the circular dependency in nodes: ${component.join(', ')}`,
     }))
   }
 
-  private calculateDependencyLevels(nodes: DependencyNode[], edges: DependencyEdge[]): Record<string, number> {
+  private calculateDependencyLevels(
+    nodes: DependencyNode[],
+    edges: DependencyEdge[]
+  ): Record<string, number> {
     const levels: Record<string, number> = {}
     const topologicalOrder = this.calculateTopologicalOrder(nodes, edges)
 
     for (const nodeId of topologicalOrder) {
-      const incoming = edges.filter(edge => edge.to === nodeId)
-      const maxLevel = incoming.length > 0
-        ? Math.max(...incoming.map(edge => levels[edge.from] || 0))
-        : 0
+      const incoming = edges.filter((edge) => edge.to === nodeId)
+      const maxLevel =
+        incoming.length > 0 ? Math.max(...incoming.map((edge) => levels[edge.from] || 0)) : 0
       levels[nodeId] = maxLevel + 1
     }
 
@@ -811,7 +850,9 @@ export class WorkflowAnalysisEngine {
   // Additional helper methods would continue here...
   // =============================================================================
 
-  private determineDependencyType(edge: ReactFlowEdge): 'data' | 'control' | 'resource' | 'temporal' {
+  private determineDependencyType(
+    edge: ReactFlowEdge
+  ): 'data' | 'control' | 'resource' | 'temporal' {
     // Analyze edge type based on its properties
     if (edge.data?.type) return edge.data.type
     if (edge.data?.condition) return 'control'
@@ -828,17 +869,17 @@ export class WorkflowAnalysisEngine {
   private estimateNodeDuration(node: ReactFlowNode): number {
     // Estimate based on node type and configuration
     const baseDurations: Record<string, number> = {
-      'start': 0,
-      'end': 0,
-      'tool': 1000,
-      'condition': 100,
-      'merge': 50,
-      'loop': 500,
-      'parallel_split': 100,
-      'parallel_join': 100,
-      'user_input': 30000, // 30 seconds for user interaction
-      'api_call': 2000,
-      'database_operation': 500
+      start: 0,
+      end: 0,
+      tool: 1000,
+      condition: 100,
+      merge: 50,
+      loop: 500,
+      parallel_split: 100,
+      parallel_join: 100,
+      user_input: 30000, // 30 seconds for user interaction
+      api_call: 2000,
+      database_operation: 500,
     }
 
     const baseDuration = baseDurations[node.type] || 500
@@ -875,7 +916,7 @@ export class WorkflowAnalysisEngine {
     const variables = (condition.match(/\w+/g) || []).length
     const functions = (condition.match(/\w+\(/g) || []).length
 
-    return (operators * 0.1) + (variables * 0.05) + (functions * 0.2)
+    return operators * 0.1 + variables * 0.05 + functions * 0.2
   }
 
   private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, meta?: any): void {
@@ -885,11 +926,16 @@ export class WorkflowAnalysisEngine {
   }
 
   // Placeholder implementations for complex methods that would require full implementation
-  private getPathFromNode(nodeId: string, nodes: ReactFlowNode[], edges: ReactFlowEdge[], visited: Set<string>): string[] {
+  private getPathFromNode(
+    nodeId: string,
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[],
+    visited: Set<string>
+  ): string[] {
     if (visited.has(nodeId)) return []
     visited.add(nodeId)
 
-    const outgoing = edges.filter(edge => edge.source === nodeId)
+    const outgoing = edges.filter((edge) => edge.source === nodeId)
     if (outgoing.length === 0) return [nodeId]
 
     const paths: string[][] = []
@@ -905,23 +951,32 @@ export class WorkflowAnalysisEngine {
 
   private extractVariablesFromExpression(expression: string): string[] {
     // Simple variable extraction - would be more sophisticated in real implementation
-    const matches = expression.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
-    return [...new Set(matches.filter(match => !['true', 'false', 'null', 'undefined'].includes(match)))]
+    const matches =
+      expression.match(/\b[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*\b/g) || []
+    return [
+      ...new Set(
+        matches.filter((match) => !['true', 'false', 'null', 'undefined'].includes(match))
+      ),
+    ]
   }
 
-  private findParallelJoinNode(splitNodeId: string, nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ReactFlowNode | null {
+  private findParallelJoinNode(
+    splitNodeId: string,
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): ReactFlowNode | null {
     // Find the corresponding join node for a parallel split
     // This is a simplified implementation
-    const joinNodes = nodes.filter(node => node.type === 'parallel_join' || node.type === 'merge')
+    const joinNodes = nodes.filter((node) => node.type === 'parallel_join' || node.type === 'merge')
 
     // Find the join node that all branches from the split converge to
-    const splitEdges = edges.filter(edge => edge.source === splitNodeId)
+    const splitEdges = edges.filter((edge) => edge.source === splitNodeId)
     for (const joinNode of joinNodes) {
-      const convergingPaths = splitEdges.map(edge =>
+      const convergingPaths = splitEdges.map((edge) =>
         this.hasPathBetweenNodes(edge.target, joinNode.id, nodes, edges)
       )
 
-      if (convergingPaths.every(hasPath => hasPath)) {
+      if (convergingPaths.every((hasPath) => hasPath)) {
         return joinNode
       }
     }
@@ -929,7 +984,12 @@ export class WorkflowAnalysisEngine {
     return null
   }
 
-  private hasPathBetweenNodes(fromId: string, toId: string, nodes: ReactFlowNode[], edges: ReactFlowEdge[]): boolean {
+  private hasPathBetweenNodes(
+    fromId: string,
+    toId: string,
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): boolean {
     if (fromId === toId) return true
 
     const visited = new Set<string>()
@@ -942,14 +1002,19 @@ export class WorkflowAnalysisEngine {
       visited.add(current)
       if (current === toId) return true
 
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
     return false
   }
 
-  private getBranchNodes(startId: string, endId: string, nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
+  private getBranchNodes(
+    startId: string,
+    endId: string,
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): string[] {
     // Get all nodes in a branch between start and end
     const branchNodes: string[] = []
     const visited = new Set<string>()
@@ -962,8 +1027,8 @@ export class WorkflowAnalysisEngine {
       visited.add(current)
       branchNodes.push(current)
 
-      const outgoing = edges.filter(edge => edge.source === current)
-      queue.push(...outgoing.map(edge => edge.target))
+      const outgoing = edges.filter((edge) => edge.source === current)
+      queue.push(...outgoing.map((edge) => edge.target))
     }
 
     return branchNodes
@@ -971,17 +1036,20 @@ export class WorkflowAnalysisEngine {
 
   private estimateBranchDuration(branchNodes: string[], nodes: ReactFlowNode[]): number {
     return branchNodes.reduce((total, nodeId) => {
-      const node = nodes.find(n => n.id === nodeId)
+      const node = nodes.find((n) => n.id === nodeId)
       return total + (node ? this.estimateNodeDuration(node) : 0)
     }, 0)
   }
 
-  private calculateBranchResources(branchNodes: string[], nodes: ReactFlowNode[]): ResourceRequirement[] {
+  private calculateBranchResources(
+    branchNodes: string[],
+    nodes: ReactFlowNode[]
+  ): ResourceRequirement[] {
     // Simplified resource calculation
     const resources: ResourceRequirement[] = []
 
     for (const nodeId of branchNodes) {
-      const node = nodes.find(n => n.id === nodeId)
+      const node = nodes.find((n) => n.id === nodeId)
       if (node?.data?.resources) {
         resources.push({
           type: 'cpu',
@@ -989,7 +1057,7 @@ export class WorkflowAnalysisEngine {
           unit: 'cores',
           duration: this.estimateNodeDuration(node),
           shared: false,
-          critical: node.data.critical || false
+          critical: node.data.critical || false,
         })
       }
     }
@@ -997,7 +1065,10 @@ export class WorkflowAnalysisEngine {
     return resources
   }
 
-  private determineLoopType(condition: string, node?: ReactFlowNode): 'while' | 'for' | 'do_while' | 'foreach' {
+  private determineLoopType(
+    condition: string,
+    node?: ReactFlowNode
+  ): 'while' | 'for' | 'do_while' | 'foreach' {
     // Analyze condition and node properties to determine loop type
     if (node?.data?.loopType) return node.data.loopType
     if (condition.includes('forEach') || condition.includes('for each')) return 'foreach'
@@ -1011,7 +1082,7 @@ export class WorkflowAnalysisEngine {
     const exitConditions: string[] = []
 
     for (const nodeId of bodyNodes) {
-      const outgoingEdges = edges.filter(edge => edge.source === nodeId)
+      const outgoingEdges = edges.filter((edge) => edge.source === nodeId)
       for (const edge of outgoingEdges) {
         if (!bodyNodes.includes(edge.target) && edge.data?.condition) {
           exitConditions.push(edge.data.condition)
@@ -1047,7 +1118,7 @@ export class WorkflowAnalysisEngine {
       const current = queue.shift()!
       result.push(current)
 
-      const outgoing = edges.filter(edge => edge.source === current)
+      const outgoing = edges.filter((edge) => edge.source === current)
       for (const edge of outgoing) {
         const newDegree = inDegree.get(edge.target)! - 1
         inDegree.set(edge.target, newDegree)
@@ -1075,17 +1146,23 @@ export class WorkflowAnalysisEngine {
   // Additional helper methods would be implemented here...
   // For brevity, I'm providing simplified implementations of the remaining methods
 
-  private traceExecutionPaths(entryPoint: string, nodes: ReactFlowNode[], edges: ReactFlowEdge[]): ExecutionPath[] {
+  private traceExecutionPaths(
+    entryPoint: string,
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): ExecutionPath[] {
     // Simplified implementation - would be more comprehensive in reality
-    return [{
-      id: `path_${entryPoint}`,
-      path: [entryPoint],
-      probability: 1.0,
-      estimatedDuration: 1000,
-      resourceRequirements: [],
-      errorProbability: 0.1,
-      criticalPath: true
-    }]
+    return [
+      {
+        id: `path_${entryPoint}`,
+        path: [entryPoint],
+        probability: 1.0,
+        estimatedDuration: 1000,
+        resourceRequirements: [],
+        errorProbability: 0.1,
+        criticalPath: true,
+      },
+    ]
   }
 
   private calculatePathProbability(path: ExecutionPath, workflow: SimWorkflowDefinition): number {
@@ -1095,16 +1172,22 @@ export class WorkflowAnalysisEngine {
 
   private estimatePathDuration(path: ExecutionPath, workflow: SimWorkflowDefinition): number {
     return path.path.reduce((total, nodeId) => {
-      const node = workflow.nodes.find(n => n.id === nodeId)
+      const node = workflow.nodes.find((n) => n.id === nodeId)
       return total + (node ? this.estimateNodeDuration(node) : 0)
     }, 0)
   }
 
-  private calculatePathResourceRequirements(path: ExecutionPath, workflow: SimWorkflowDefinition): ResourceRequirement[] {
+  private calculatePathResourceRequirements(
+    path: ExecutionPath,
+    workflow: SimWorkflowDefinition
+  ): ResourceRequirement[] {
     return [] // Simplified
   }
 
-  private calculatePathErrorProbability(path: ExecutionPath, workflow: SimWorkflowDefinition): number {
+  private calculatePathErrorProbability(
+    path: ExecutionPath,
+    workflow: SimWorkflowDefinition
+  ): number {
     return 0.1 // Simplified
   }
 
@@ -1151,7 +1234,10 @@ export class WorkflowAnalysisEngine {
     return Math.max(0, baseScore - complexity * 2)
   }
 
-  private categorizeNodesByComplexity(nodes: ReactFlowNode[], workflow: SimWorkflowDefinition): {
+  private categorizeNodesByComplexity(
+    nodes: ReactFlowNode[],
+    workflow: SimWorkflowDefinition
+  ): {
     simple: string[]
     moderate: string[]
     complex: string[]
@@ -1174,7 +1260,9 @@ export class WorkflowAnalysisEngine {
     const recommendations = []
 
     if (overall > 10) {
-      recommendations.push('Consider breaking down complex workflows into smaller, manageable pieces')
+      recommendations.push(
+        'Consider breaking down complex workflows into smaller, manageable pieces'
+      )
     }
 
     if (categories.veryComplex.length > 0) {
@@ -1193,7 +1281,9 @@ export class WorkflowAnalysisEngine {
     return {} // Simplified
   }
 
-  private async checkToolCompatibility(toolNodes: ReactFlowNode[]): Promise<ToolCompatibilityReport[]> {
+  private async checkToolCompatibility(
+    toolNodes: ReactFlowNode[]
+  ): Promise<ToolCompatibilityReport[]> {
     return [] // Simplified
   }
 
@@ -1213,15 +1303,24 @@ export class WorkflowAnalysisEngine {
     return {} // Simplified
   }
 
-  private identifyVariableUsagePatterns(variables: any[], workflow: SimWorkflowDefinition): VariableUsagePattern[] {
+  private identifyVariableUsagePatterns(
+    variables: any[],
+    workflow: SimWorkflowDefinition
+  ): VariableUsagePattern[] {
     return [] // Simplified
   }
 
-  private identifyVariableIssues(variables: any[], workflow: SimWorkflowDefinition): VariableIssue[] {
+  private identifyVariableIssues(
+    variables: any[],
+    workflow: SimWorkflowDefinition
+  ): VariableIssue[] {
     return [] // Simplified
   }
 
-  private suggestVariableOptimizations(variables: any[], patterns: VariableUsagePattern[]): VariableOptimization[] {
+  private suggestVariableOptimizations(
+    variables: any[],
+    patterns: VariableUsagePattern[]
+  ): VariableOptimization[] {
     return [] // Simplified
   }
 
@@ -1233,7 +1332,10 @@ export class WorkflowAnalysisEngine {
     return {} // Simplified
   }
 
-  private findUnhandledErrors(nodes: ReactFlowNode[], workflow: SimWorkflowDefinition): UnhandledError[] {
+  private findUnhandledErrors(
+    nodes: ReactFlowNode[],
+    workflow: SimWorkflowDefinition
+  ): UnhandledError[] {
     return [] // Simplified
   }
 
@@ -1241,11 +1343,17 @@ export class WorkflowAnalysisEngine {
     return [] // Simplified
   }
 
-  private identifyRecoveryMechanisms(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): RecoveryMechanism[] {
+  private identifyRecoveryMechanisms(
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): RecoveryMechanism[] {
     return [] // Simplified
   }
 
-  private generateErrorHandlingRecommendations(coverage: number, unhandledErrors: UnhandledError[]): string[] {
+  private generateErrorHandlingRecommendations(
+    coverage: number,
+    unhandledErrors: UnhandledError[]
+  ): string[] {
     return [] // Simplified
   }
 
@@ -1257,11 +1365,17 @@ export class WorkflowAnalysisEngine {
     return 3000 // Simplified
   }
 
-  private identifyParallelizationOpportunities(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): string[] {
+  private identifyParallelizationOpportunities(
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): string[] {
     return [] // Simplified
   }
 
-  private identifyPerformanceBottlenecks(nodes: ReactFlowNode[], workflow: SimWorkflowDefinition): PerformanceBottleneck[] {
+  private identifyPerformanceBottlenecks(
+    nodes: ReactFlowNode[],
+    workflow: SimWorkflowDefinition
+  ): PerformanceBottleneck[] {
     return [] // Simplified
   }
 
@@ -1270,7 +1384,7 @@ export class WorkflowAnalysisEngine {
       cpu: { peak: 50, average: 30, distribution: {} },
       memory: { peak: 100, average: 60, allocation: {} },
       network: { bandwidth: 10, latency: 100, requests: 5 },
-      disk: { reads: 3, writes: 2, space: 50 }
+      disk: { reads: 3, writes: 2, space: 50 },
     }
   }
 
@@ -1280,19 +1394,27 @@ export class WorkflowAnalysisEngine {
       throughput: 50,
       responseTime: { p50: 1000, p95: 2000, p99: 3000 },
       errorRate: 0.01,
-      degradationPoints: []
+      degradationPoints: [],
     }
   }
 
-  private suggestPerformanceOptimizations(workflow: SimWorkflowDefinition, bottlenecks: PerformanceBottleneck[]): PerformanceOptimization[] {
+  private suggestPerformanceOptimizations(
+    workflow: SimWorkflowDefinition,
+    bottlenecks: PerformanceBottleneck[]
+  ): PerformanceOptimization[] {
     return [] // Simplified
   }
 
-  private identifySecurityVulnerabilities(nodes: ReactFlowNode[], workflow: SimWorkflowDefinition): SecurityVulnerability[] {
+  private identifySecurityVulnerabilities(
+    nodes: ReactFlowNode[],
+    workflow: SimWorkflowDefinition
+  ): SecurityVulnerability[] {
     return [] // Simplified
   }
 
-  private calculateSecurityRiskLevel(vulnerabilities: SecurityVulnerability[]): 'low' | 'medium' | 'high' | 'critical' {
+  private calculateSecurityRiskLevel(
+    vulnerabilities: SecurityVulnerability[]
+  ): 'low' | 'medium' | 'high' | 'critical' {
     return 'low' // Simplified
   }
 
@@ -1301,7 +1423,7 @@ export class WorkflowAnalysisEngine {
       sensitiveDataPaths: [],
       encryptionCoverage: 0.8,
       exposurePoints: [],
-      dataClassification: {}
+      dataClassification: {},
     }
   }
 
@@ -1311,7 +1433,7 @@ export class WorkflowAnalysisEngine {
       authorizationGranularity: 'role_based',
       privilegeEscalation: [],
       bypasses: [],
-      sessionSecurity: 'secure'
+      sessionSecurity: 'secure',
     }
   }
 
@@ -1319,11 +1441,17 @@ export class WorkflowAnalysisEngine {
     return [] // Simplified
   }
 
-  private generateSecurityRecommendations(vulnerabilities: SecurityVulnerability[], dataFlow: DataFlowSecurity): SecurityRecommendation[] {
+  private generateSecurityRecommendations(
+    vulnerabilities: SecurityVulnerability[],
+    dataFlow: DataFlowSecurity
+  ): SecurityRecommendation[] {
     return [] // Simplified
   }
 
-  private findErrorHandlingPaths(nodes: ReactFlowNode[], edges: ReactFlowEdge[]): AlternativePath[] {
+  private findErrorHandlingPaths(
+    nodes: ReactFlowNode[],
+    edges: ReactFlowEdge[]
+  ): AlternativePath[] {
     return [] // Simplified
   }
 }

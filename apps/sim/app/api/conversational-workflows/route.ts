@@ -5,15 +5,15 @@
  * Main API endpoints for creating and managing conversational workflow sessions.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 import { createLogger } from '@/lib/logs/console/logger'
 import { getConversationalWorkflowService } from '@/services/parlant/conversational-workflows/core'
+import { ConversationalWorkflowError } from '@/services/parlant/conversational-workflows/errors'
 import type {
   CreateConversationalWorkflowRequest,
   CreateConversationalWorkflowResponse,
 } from '@/services/parlant/conversational-workflows/types'
-import { ConversationalWorkflowError } from '@/services/parlant/conversational-workflows/errors'
-import { auth } from '@/lib/auth'
 
 const logger = createLogger('ConversationalWorkflowsAPI')
 
@@ -27,10 +27,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Parse request body
@@ -132,18 +129,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Authenticate user
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Extract query parameters
     const { searchParams } = new URL(request.url)
     const workspaceId = searchParams.get('workspaceId')
     const status = searchParams.get('status') // active, completed, failed, etc.
-    const limit = parseInt(searchParams.get('limit') || '20', 10)
-    const offset = parseInt(searchParams.get('offset') || '0', 10)
+    const limit = Number.parseInt(searchParams.get('limit') || '20', 10)
+    const offset = Number.parseInt(searchParams.get('offset') || '0', 10)
 
     // Validate workspace access if specified
     if (workspaceId) {
@@ -190,9 +184,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       error: error.message,
     })
 
-    return NextResponse.json(
-      { error: 'Failed to retrieve sessions' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to retrieve sessions' }, { status: 500 })
   }
 }

@@ -7,20 +7,20 @@
 
 import { createLogger } from '@/lib/logs/console/logger'
 import { getConversationalWorkflowService } from './core'
-import type {
-  CreateConversationalWorkflowRequest,
-  CreateConversationalWorkflowResponse,
-  ProcessNaturalLanguageCommandRequest,
-  ProcessNaturalLanguageCommandResponse,
-  GetWorkflowStateRequest,
-  GetWorkflowStateResponse,
-  ConversationalWorkflowState,
-} from './types'
 import {
-  ConversationalWorkflowError,
   CommandProcessingError,
+  ConversationalWorkflowError,
   SessionManagementError,
 } from './errors'
+import type {
+  ConversationalWorkflowState,
+  CreateConversationalWorkflowRequest,
+  CreateConversationalWorkflowResponse,
+  GetWorkflowStateRequest,
+  GetWorkflowStateResponse,
+  ProcessNaturalLanguageCommandRequest,
+  ProcessNaturalLanguageCommandResponse,
+} from './types'
 
 const logger = createLogger('ConversationalWorkflowAPI')
 
@@ -237,7 +237,9 @@ export async function getWorkflowStateHandler(
     logger.info('Workflow state retrieved successfully', {
       sessionId: request.sessionId,
       executionStatus: currentState.executionStatus,
-      progressPercentage: Math.round((currentState.completedNodes.length / currentState.totalNodes) * 100),
+      progressPercentage: Math.round(
+        (currentState.completedNodes.length / currentState.totalNodes) * 100
+      ),
       executionTime,
       requestId,
     })
@@ -399,7 +401,9 @@ export async function getSessionMetricsHandler(
     }
 
     const totalDurationMs = Date.now() - currentState.startedAt.getTime()
-    const progressPercentage = Math.round((currentState.completedNodes.length / currentState.totalNodes) * 100)
+    const progressPercentage = Math.round(
+      (currentState.completedNodes.length / currentState.totalNodes) * 100
+    )
 
     const metrics = {
       sessionId,
@@ -638,7 +642,7 @@ function generateProgressSummary(state: ConversationalWorkflowState): string {
 /**
  * Get recent conversation history
  */
-async function getRecentConversationHistory(sessionId: string, limit: number = 10): Promise<any[]> {
+async function getRecentConversationHistory(sessionId: string, limit = 10): Promise<any[]> {
   // This would integrate with the conversation storage system
   // For now, returning empty array
   return []
@@ -663,7 +667,8 @@ export function formatErrorResponse(error: any): {
       error: {
         code: error.errorCode,
         message: error.message,
-        userMessage: error instanceof CommandProcessingError ? error.userFriendlyMessage : undefined,
+        userMessage:
+          error instanceof CommandProcessingError ? error.userFriendlyMessage : undefined,
         retryable: error.retryable,
         context: error.context,
       },

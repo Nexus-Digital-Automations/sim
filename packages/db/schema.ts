@@ -597,7 +597,12 @@ export const toolCategories = pgTable('tool_categories', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
-export const toolStatusEnum = pgEnum('tool_status', ['active', 'inactive', 'deprecated', 'maintenance'])
+export const toolStatusEnum = pgEnum('tool_status', [
+  'active',
+  'inactive',
+  'deprecated',
+  'maintenance',
+])
 export const toolScopeEnum = pgEnum('tool_scope', ['global', 'workspace', 'user'])
 export const toolTypeEnum = pgEnum('tool_type', ['builtin', 'custom', 'integration', 'plugin'])
 
@@ -676,7 +681,10 @@ export const toolRegistry = pgTable(
     categoryTypeIdx: index('tool_registry_category_type_idx').on(table.categoryId, table.toolType),
 
     // Full-text search preparation
-    nameDisplayNameIdx: index('tool_registry_name_display_name_idx').on(table.name, table.displayName),
+    nameDisplayNameIdx: index('tool_registry_name_display_name_idx').on(
+      table.name,
+      table.displayName
+    ),
   })
 )
 
@@ -724,9 +732,15 @@ export const toolConfigurations = pgTable(
     userIdIdx: index('tool_configurations_user_id_idx').on(table.userId),
 
     // Composite queries
-    toolWorkspaceIdx: index('tool_configurations_tool_workspace_idx').on(table.toolId, table.workspaceId),
+    toolWorkspaceIdx: index('tool_configurations_tool_workspace_idx').on(
+      table.toolId,
+      table.workspaceId
+    ),
     toolUserIdx: index('tool_configurations_tool_user_idx').on(table.toolId, table.userId),
-    workspaceActiveIdx: index('tool_configurations_workspace_active_idx').on(table.workspaceId, table.isActive),
+    workspaceActiveIdx: index('tool_configurations_workspace_active_idx').on(
+      table.workspaceId,
+      table.isActive
+    ),
 
     // Constraint: Either workspace OR user scoped, not both
     scopeConstraint: check(
@@ -743,7 +757,9 @@ export const toolUsageAnalytics = pgTable(
     toolId: text('tool_id')
       .notNull()
       .references(() => toolRegistry.id, { onDelete: 'cascade' }),
-    configurationId: text('configuration_id').references(() => toolConfigurations.id, { onDelete: 'cascade' }),
+    configurationId: text('configuration_id').references(() => toolConfigurations.id, {
+      onDelete: 'cascade',
+    }),
 
     // Context
     userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
@@ -776,7 +792,10 @@ export const toolUsageAnalytics = pgTable(
   (table) => ({
     // Analytics queries
     toolIdTimeIdx: index('tool_usage_analytics_tool_time_idx').on(table.toolId, table.startTime),
-    workspaceTimeIdx: index('tool_usage_analytics_workspace_time_idx').on(table.workspaceId, table.startTime),
+    workspaceTimeIdx: index('tool_usage_analytics_workspace_time_idx').on(
+      table.workspaceId,
+      table.startTime
+    ),
     userTimeIdx: index('tool_usage_analytics_user_time_idx').on(table.userId, table.startTime),
     successIdx: index('tool_usage_analytics_success_idx').on(table.success),
 
@@ -838,7 +857,10 @@ export const toolRecommendations = pgTable(
     toolIdx: index('tool_recommendations_tool_idx').on(table.recommendedToolId),
 
     // Performance analysis
-    typeScoreIdx: index('tool_recommendations_type_score_idx').on(table.recommendationType, table.score),
+    typeScoreIdx: index('tool_recommendations_type_score_idx').on(
+      table.recommendationType,
+      table.score
+    ),
     presentedIdx: index('tool_recommendations_presented_idx').on(table.presented),
     usedIdx: index('tool_recommendations_used_idx').on(table.used),
 
