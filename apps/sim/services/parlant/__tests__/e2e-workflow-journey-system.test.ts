@@ -20,7 +20,7 @@ class MockParlantServer {
     this.isRunning = true
 
     // Simulate server startup time
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     console.log('✅ Mock Parlant server started')
   }
 
@@ -40,7 +40,7 @@ class MockParlantServer {
       description: config.description,
       created_at: new Date().toISOString(),
       guidelines: [],
-      journeys: []
+      journeys: [],
     }
 
     this.agents.set(agent.id, agent)
@@ -57,7 +57,7 @@ class MockParlantServer {
       states: journeyDef.states,
       transitions: journeyDef.transitions,
       created_at: new Date().toISOString(),
-      active: true
+      active: true,
     }
 
     this.journeys.set(journey.id, journey)
@@ -79,7 +79,7 @@ class MockParlantServer {
       events: [],
       status: 'active',
       current_journey_id: null,
-      current_state_id: null
+      current_state_id: null,
     }
 
     this.sessions.set(session.id, session)
@@ -96,13 +96,13 @@ class MockParlantServer {
       type: 'customer_message',
       content: message,
       timestamp: new Date().toISOString(),
-      offset: session.events.length
+      offset: session.events.length,
     }
 
     session.events.push(event)
 
     // Simulate agent response
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const agentResponse = {
       id: `event_${Date.now()}_response`,
@@ -110,7 +110,7 @@ class MockParlantServer {
       type: 'agent_message',
       content: this.generateAgentResponse(message, session),
       timestamp: new Date().toISOString(),
-      offset: session.events.length
+      offset: session.events.length,
     }
 
     session.events.push(agentResponse)
@@ -120,12 +120,12 @@ class MockParlantServer {
   private generateAgentResponse(message: string, session: any): string {
     // Simple mock response generation
     if (message.toLowerCase().includes('workflow')) {
-      return "I can help you with workflow execution. What workflow would you like to run?"
+      return 'I can help you with workflow execution. What workflow would you like to run?'
     }
     if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
       return "Hello! I'm your workflow assistant. How can I help you today?"
     }
-    return "I understand. Let me help you with that."
+    return 'I understand. Let me help you with that.'
   }
 
   async getSessionEvents(sessionId: string): Promise<any[]> {
@@ -153,59 +153,105 @@ class MockSimWorkflowService {
         name: 'Customer Onboarding',
         description: 'Complete customer onboarding process',
         nodes: [
-          { id: 'start', type: 'start', data: { label: 'Start' }},
-          { id: 'collect_info', type: 'form', data: { label: 'Collect Information', fields: ['name', 'email', 'phone'] }},
-          { id: 'verify_email', type: 'tool', data: { label: 'Verify Email', toolId: 'email_verifier' }},
-          { id: 'create_account', type: 'tool', data: { label: 'Create Account', toolId: 'account_creator' }},
-          { id: 'send_welcome', type: 'tool', data: { label: 'Send Welcome Email', toolId: 'email_sender' }},
-          { id: 'end', type: 'end', data: { label: 'End' }}
+          { id: 'start', type: 'start', data: { label: 'Start' } },
+          {
+            id: 'collect_info',
+            type: 'form',
+            data: { label: 'Collect Information', fields: ['name', 'email', 'phone'] },
+          },
+          {
+            id: 'verify_email',
+            type: 'tool',
+            data: { label: 'Verify Email', toolId: 'email_verifier' },
+          },
+          {
+            id: 'create_account',
+            type: 'tool',
+            data: { label: 'Create Account', toolId: 'account_creator' },
+          },
+          {
+            id: 'send_welcome',
+            type: 'tool',
+            data: { label: 'Send Welcome Email', toolId: 'email_sender' },
+          },
+          { id: 'end', type: 'end', data: { label: 'End' } },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'collect_info' },
           { id: 'e2', source: 'collect_info', target: 'verify_email' },
           { id: 'e3', source: 'verify_email', target: 'create_account', condition: 'email_valid' },
           { id: 'e4', source: 'create_account', target: 'send_welcome' },
-          { id: 'e5', source: 'send_welcome', target: 'end' }
+          { id: 'e5', source: 'send_welcome', target: 'end' },
         ],
         metadata: {
           category: 'customer_management',
           tags: ['onboarding', 'automation'],
           created_by: 'admin',
-          created_at: '2024-01-01T00:00:00Z'
-        }
+          created_at: '2024-01-01T00:00:00Z',
+        },
       },
       {
         id: 'wf_support_ticket',
         name: 'Support Ticket Processing',
         description: 'Automated support ticket processing and routing',
         nodes: [
-          { id: 'start', type: 'start', data: { label: 'Start' }},
-          { id: 'categorize', type: 'tool', data: { label: 'Categorize Ticket', toolId: 'ticket_categorizer' }},
-          { id: 'route_decision', type: 'condition', data: { label: 'Route Decision', condition: 'category' }},
-          { id: 'high_priority', type: 'tool', data: { label: 'High Priority Handler', toolId: 'priority_handler' }},
-          { id: 'standard_flow', type: 'tool', data: { label: 'Standard Flow', toolId: 'standard_handler' }},
-          { id: 'notify_user', type: 'tool', data: { label: 'Notify User', toolId: 'notification_sender' }},
-          { id: 'end', type: 'end', data: { label: 'End' }}
+          { id: 'start', type: 'start', data: { label: 'Start' } },
+          {
+            id: 'categorize',
+            type: 'tool',
+            data: { label: 'Categorize Ticket', toolId: 'ticket_categorizer' },
+          },
+          {
+            id: 'route_decision',
+            type: 'condition',
+            data: { label: 'Route Decision', condition: 'category' },
+          },
+          {
+            id: 'high_priority',
+            type: 'tool',
+            data: { label: 'High Priority Handler', toolId: 'priority_handler' },
+          },
+          {
+            id: 'standard_flow',
+            type: 'tool',
+            data: { label: 'Standard Flow', toolId: 'standard_handler' },
+          },
+          {
+            id: 'notify_user',
+            type: 'tool',
+            data: { label: 'Notify User', toolId: 'notification_sender' },
+          },
+          { id: 'end', type: 'end', data: { label: 'End' } },
         ],
         edges: [
           { id: 'e1', source: 'start', target: 'categorize' },
           { id: 'e2', source: 'categorize', target: 'route_decision' },
-          { id: 'e3', source: 'route_decision', target: 'high_priority', condition: 'priority === "high"' },
-          { id: 'e4', source: 'route_decision', target: 'standard_flow', condition: 'priority !== "high"' },
+          {
+            id: 'e3',
+            source: 'route_decision',
+            target: 'high_priority',
+            condition: 'priority === "high"',
+          },
+          {
+            id: 'e4',
+            source: 'route_decision',
+            target: 'standard_flow',
+            condition: 'priority !== "high"',
+          },
           { id: 'e5', source: 'high_priority', target: 'notify_user' },
           { id: 'e6', source: 'standard_flow', target: 'notify_user' },
-          { id: 'e7', source: 'notify_user', target: 'end' }
+          { id: 'e7', source: 'notify_user', target: 'end' },
         ],
         metadata: {
           category: 'customer_support',
           tags: ['support', 'automation', 'routing'],
           created_by: 'support_team',
-          created_at: '2024-01-15T00:00:00Z'
-        }
-      }
+          created_at: '2024-01-15T00:00:00Z',
+        },
+      },
     ]
 
-    testWorkflows.forEach(workflow => {
+    testWorkflows.forEach((workflow) => {
       this.workflows.set(workflow.id, workflow)
     })
   }
@@ -229,7 +275,7 @@ class MockSimWorkflowService {
       inputs,
       started_at: new Date().toISOString(),
       steps_completed: 0,
-      total_steps: workflow.nodes.length
+      total_steps: workflow.nodes.length,
     }
   }
 }
@@ -245,39 +291,39 @@ class WorkflowToJourneyConverter {
       transitions: this.convertEdgesToTransitions(workflow.edges),
       metadata: {
         originalWorkflowId: workflow.id,
-        conversionTimestamp: new Date().toISOString()
-      }
+        conversionTimestamp: new Date().toISOString(),
+      },
     }
 
     return { success: true, journey }
   }
 
   private convertNodesToStates(nodes: any[]): any[] {
-    return nodes.map(node => ({
+    return nodes.map((node) => ({
       id: `state_${node.id}`,
       type: this.mapNodeTypeToStateType(node.type),
       name: node.data.label,
       config: node.data,
-      originalNodeId: node.id
+      originalNodeId: node.id,
     }))
   }
 
   private convertEdgesToTransitions(edges: any[]): any[] {
-    return edges.map(edge => ({
+    return edges.map((edge) => ({
       id: `transition_${edge.id}`,
       from: `state_${edge.source}`,
       to: `state_${edge.target}`,
-      condition: edge.condition || null
+      condition: edge.condition || null,
     }))
   }
 
   private mapNodeTypeToStateType(nodeType: string): string {
     const mapping: Record<string, string> = {
-      'start': 'initial',
-      'end': 'final',
-      'tool': 'tool_state',
-      'form': 'chat_state',
-      'condition': 'chat_state'
+      start: 'initial',
+      end: 'final',
+      tool: 'tool_state',
+      form: 'chat_state',
+      condition: 'chat_state',
     }
     return mapping[nodeType] || 'chat_state'
   }
@@ -322,7 +368,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       // Step 3: Create agent in Parlant
       const agent = await parlantServer.createAgent({
         name: `${testWorkflow.name} Assistant`,
-        description: `Conversational assistant for ${testWorkflow.description}`
+        description: `Conversational assistant for ${testWorkflow.description}`,
       })
       expect(agent).toBeDefined()
       expect(agent.id).toBeDefined()
@@ -343,7 +389,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
 
       const agent = await parlantServer.createAgent({
         name: 'Customer Onboarding Assistant',
-        description: 'Helps customers through the onboarding process'
+        description: 'Helps customers through the onboarding process',
       })
 
       await parlantServer.createJourney(agent.id, conversionResult.journey)
@@ -353,7 +399,10 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       expect(session).toBeDefined()
 
       // User initiates conversation
-      const response1 = await parlantServer.sendMessage(session.id, "Hi, I'd like to get started with onboarding")
+      const response1 = await parlantServer.sendMessage(
+        session.id,
+        "Hi, I'd like to get started with onboarding"
+      )
       expect(response1.type).toBe('agent_message')
       expect(response1.content).toBeDefined()
 
@@ -375,7 +424,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       const execution = await workflowService.executeWorkflow(workflow.id, {
         ticket_id: 'test_123',
         description: 'Test ticket',
-        priority: 'high'
+        priority: 'high',
       })
       expect(execution.execution_id).toBeDefined()
       expect(execution.status).toBe('running')
@@ -386,7 +435,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
 
       const agent = await parlantServer.createAgent({
         name: 'Support Ticket Assistant',
-        description: 'Helps process support tickets conversationally'
+        description: 'Helps process support tickets conversationally',
       })
 
       const journey = await parlantServer.createJourney(agent.id, conversionResult.journey)
@@ -429,7 +478,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       const startTime = Date.now()
 
       // Convert all workflows concurrently
-      const conversionPromises = workflows.map(workflow =>
+      const conversionPromises = workflows.map((workflow) =>
         converter.convertWorkflowToJourney(workflow)
       )
 
@@ -437,7 +486,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       const totalTime = Date.now() - startTime
 
       // Verify all conversions succeeded
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.success).toBe(true)
         expect(result.journey).toBeDefined()
       })
@@ -471,7 +520,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
         id: 'malformed',
         name: 'Malformed Workflow',
         nodes: null, // Invalid
-        edges: undefined // Invalid
+        edges: undefined, // Invalid
       }
 
       const result = await converter.convertWorkflowToJourney(malformedWorkflow)
@@ -509,7 +558,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       const conversionResult = await converter.convertWorkflowToJourney(workflow)
       const agent = await parlantServer.createAgent({
         name: 'Onboarding Assistant',
-        description: 'Helps with customer onboarding'
+        description: 'Helps with customer onboarding',
       })
 
       const journey = await parlantServer.createJourney(agent.id, conversionResult.journey)
@@ -517,7 +566,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
 
       const response = await parlantServer.sendMessage(
         session.id,
-        "I want to start the onboarding process"
+        'I want to start the onboarding process'
       )
 
       expect(response.content).toContain('help')
@@ -528,7 +577,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
   })
 
   // Helper method to create large synthetic workflows for testing
-  private createLargeWorkflow(nodeCount: number): any {
+  function createLargeWorkflow(nodeCount: number): any {
     const nodes = []
     const edges = []
 
@@ -536,7 +585,7 @@ describe('End-to-End Workflow to Journey System Tests', () => {
     nodes.push({
       id: 'start',
       type: 'start',
-      data: { label: 'Start' }
+      data: { label: 'Start' },
     })
 
     // Create intermediate nodes
@@ -546,14 +595,14 @@ describe('End-to-End Workflow to Journey System Tests', () => {
         type: i % 3 === 0 ? 'condition' : 'tool',
         data: {
           label: `Step ${i}`,
-          toolId: `tool_${i}`
-        }
+          toolId: `tool_${i}`,
+        },
       })
 
       edges.push({
         id: `edge_${i}`,
-        source: i === 1 ? 'start' : `node_${i-1}`,
-        target: `node_${i}`
+        source: i === 1 ? 'start' : `node_${i - 1}`,
+        target: `node_${i}`,
       })
     }
 
@@ -561,13 +610,13 @@ describe('End-to-End Workflow to Journey System Tests', () => {
     nodes.push({
       id: 'end',
       type: 'end',
-      data: { label: 'End' }
+      data: { label: 'End' },
     })
 
     edges.push({
       id: `edge_${nodeCount}`,
-      source: `node_${nodeCount-2}`,
-      target: 'end'
+      source: `node_${nodeCount - 2}`,
+      target: 'end',
     })
 
     return {
@@ -579,8 +628,8 @@ describe('End-to-End Workflow to Journey System Tests', () => {
       metadata: {
         category: 'testing',
         generated: true,
-        nodeCount
-      }
+        nodeCount,
+      },
     }
   }
 })

@@ -8,25 +8,23 @@
  */
 
 import { createLogger } from '@/lib/logs/console/logger'
-import { ResultCompatibilityEngine } from './result-compatibility-engine'
-import { ExecutionBehaviorPreservationSystem } from './execution-behavior-preservation'
-import { StateManagementCompatibilityLayer } from './state-management-compatibility'
-import { IntegrationCompatibilityValidator } from './integration-compatibility-validation'
+import type { ExecutionBehaviorPreservationSystem } from './execution-behavior-preservation'
+import type { IntegrationCompatibilityValidator } from './integration-compatibility-validation'
+import type { ResultCompatibilityEngine } from './result-compatibility-engine'
+import type { StateManagementCompatibilityLayer } from './state-management-compatibility'
 import type {
-  CompatibilityTestSuite,
-  CompatibilityTest,
-  TestResult,
-  TestAssertion,
   AssertionResult,
-  TestConfiguration,
-  TestError,
-  TestWarning,
-  ExecutionContext,
-  WorkflowExecutionResult,
-  JourneyExecutionResult,
-  ExpectedBehavior,
   CompatibilityEvent,
-  CompatibilityEventBus
+  CompatibilityEventBus,
+  CompatibilityTest,
+  CompatibilityTestSuite,
+  ExecutionContext,
+  ExpectedBehavior,
+  JourneyExecutionResult,
+  TestAssertion,
+  TestConfiguration,
+  TestResult,
+  WorkflowExecutionResult,
 } from './types'
 
 const logger = createLogger('CompatibilityTestingSuite')
@@ -80,8 +78,8 @@ export class CompatibilityTestingSuite {
         createdBy: 'system',
         version: '1.0.0',
         totalTests: 0,
-        passRate: 0
-      }
+        passRate: 0,
+      },
     }
 
     this.testSuites.set(name, testSuite)
@@ -93,7 +91,7 @@ export class CompatibilityTestingSuite {
       source: 'workflow',
       executionId: name,
       timestamp: new Date().toISOString(),
-      data: { testSuite: { name, description, testsCount: 0 } }
+      data: { testSuite: { name, description, testsCount: 0 } },
     })
 
     return testSuite
@@ -113,7 +111,7 @@ export class CompatibilityTestingSuite {
 
     const fullTest: CompatibilityTest = {
       ...test,
-      id: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      id: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }
 
     testSuite.tests.push(fullTest)
@@ -122,7 +120,7 @@ export class CompatibilityTestingSuite {
     logger.info('Test added to suite', {
       suiteName,
       testId: fullTest.id,
-      testName: fullTest.name
+      testName: fullTest.name,
     })
 
     return fullTest
@@ -141,31 +139,31 @@ export class CompatibilityTestingSuite {
     const tests: CompatibilityTest[] = []
 
     // Generate basic execution tests
-    tests.push(...await this.generateBasicExecutionTests(workflowId, options))
+    tests.push(...(await this.generateBasicExecutionTests(workflowId, options)))
 
     // Generate result comparison tests
-    tests.push(...await this.generateResultComparisonTests(workflowId, options))
+    tests.push(...(await this.generateResultComparisonTests(workflowId, options)))
 
     // Generate behavior preservation tests
-    tests.push(...await this.generateBehaviorTests(workflowId, options))
+    tests.push(...(await this.generateBehaviorTests(workflowId, options)))
 
     // Generate state synchronization tests
-    tests.push(...await this.generateStateSyncTests(workflowId, options))
+    tests.push(...(await this.generateStateSyncTests(workflowId, options)))
 
     // Generate integration compatibility tests
-    tests.push(...await this.generateIntegrationTests(workflowId, options))
+    tests.push(...(await this.generateIntegrationTests(workflowId, options)))
 
     // Generate error handling tests
-    tests.push(...await this.generateErrorHandlingTests(workflowId, options))
+    tests.push(...(await this.generateErrorHandlingTests(workflowId, options)))
 
     // Generate performance comparison tests
     if (options.enablePerformanceTesting) {
-      tests.push(...await this.generatePerformanceTests(workflowId, options))
+      tests.push(...(await this.generatePerformanceTests(workflowId, options)))
     }
 
     logger.info('Automated test generation completed', {
       workflowId,
-      generatedTests: tests.length
+      generatedTests: tests.length,
     })
 
     return tests
@@ -191,7 +189,7 @@ export class CompatibilityTestingSuite {
       startTime,
       context: context || {},
       results: [],
-      status: 'running'
+      status: 'running',
     }
 
     try {
@@ -215,10 +213,10 @@ export class CompatibilityTestingSuite {
 
       // Calculate results
       const totalTests = suiteExecution.results.length
-      const passedTests = suiteExecution.results.filter(r => r.status === 'passed').length
-      const failedTests = suiteExecution.results.filter(r => r.status === 'failed').length
-      const skippedTests = suiteExecution.results.filter(r => r.status === 'skipped').length
-      const errorTests = suiteExecution.results.filter(r => r.status === 'error').length
+      const passedTests = suiteExecution.results.filter((r) => r.status === 'passed').length
+      const failedTests = suiteExecution.results.filter((r) => r.status === 'failed').length
+      const skippedTests = suiteExecution.results.filter((r) => r.status === 'skipped').length
+      const errorTests = suiteExecution.results.filter((r) => r.status === 'error').length
 
       const result: TestSuiteResult = {
         suiteId: suiteName,
@@ -233,7 +231,7 @@ export class CompatibilityTestingSuite {
         passRate: totalTests > 0 ? (passedTests / totalTests) * 100 : 0,
         results: suiteExecution.results,
         summary: await this.generateTestSummary(suiteExecution.results),
-        recommendations: await this.generateTestRecommendations(suiteExecution.results)
+        recommendations: await this.generateTestRecommendations(suiteExecution.results),
       }
 
       // Update test suite metadata
@@ -250,23 +248,22 @@ export class CompatibilityTestingSuite {
         source: 'workflow',
         executionId: suiteName,
         timestamp: new Date().toISOString(),
-        data: { result }
+        data: { result },
       })
 
       logger.info('Test suite execution completed', {
         suiteName,
         duration: result.duration,
         passRate: result.passRate,
-        totalTests: result.totalTests
+        totalTests: result.totalTests,
       })
 
       return result
-
     } catch (error) {
       suiteExecution.status = 'error'
       logger.error('Test suite execution failed', {
         suiteName,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -303,12 +300,12 @@ export class CompatibilityTestingSuite {
           totalDifferences: 0,
           criticalDifferences: 0,
           errorDifferences: 0,
-          warningDifferences: 0
-        }
+          warningDifferences: 0,
+        },
       },
       assertions: [],
       errors: [],
-      warnings: []
+      warnings: [],
     }
 
     try {
@@ -325,7 +322,7 @@ export class CompatibilityTestingSuite {
           enforceIdenticalResults: true,
           timeoutMs: test.timeout || configuration.defaultTimeout,
           maxRetries: test.retries || 1,
-          debugMode: false
+          debugMode: false,
         },
         environment: {
           platform: 'test',
@@ -334,7 +331,7 @@ export class CompatibilityTestingSuite {
           memoryLimit: 512,
           cpuLimit: 1,
           networkAccess: true,
-          externalServices: []
+          externalServices: [],
         },
         requestMetadata: {
           traceId: `trace_${test.id}`,
@@ -342,8 +339,8 @@ export class CompatibilityTestingSuite {
           requestId: `req_${test.id}`,
           sourceIp: '127.0.0.1',
           userAgent: 'CompatibilityTestingSuite/1.0.0',
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       }
 
       // Execute workflow
@@ -354,9 +351,9 @@ export class CompatibilityTestingSuite {
       )
 
       // Execute journey (if journeyId provided) or convert workflow to journey
-      const journeyResult = test.journeyId ?
-        await this.executeJourney(test.journeyId, test.inputData, executionContext) :
-        await this.executeConvertedJourney(test.workflowId, test.inputData, executionContext)
+      const journeyResult = test.journeyId
+        ? await this.executeJourney(test.journeyId, test.inputData, executionContext)
+        : await this.executeConvertedJourney(test.workflowId, test.inputData, executionContext)
 
       // Compare results
       testResult.comparison = await this.resultEngine.compareExecutionResults(
@@ -374,14 +371,14 @@ export class CompatibilityTestingSuite {
       )
 
       // Determine test status based on assertions and expected behavior
-      const failedAssertions = testResult.assertions.filter(a => !a.passed)
+      const failedAssertions = testResult.assertions.filter((a) => !a.passed)
       if (failedAssertions.length > 0) {
         testResult.status = 'failed'
       } else if (!this.meetsBehaviorExpectations(testResult.comparison, test.expectedBehavior)) {
         testResult.status = 'failed'
         testResult.errors.push({
           code: 'BEHAVIOR_EXPECTATION_FAILED',
-          message: 'Test result does not meet expected behavior criteria'
+          message: 'Test result does not meet expected behavior criteria',
         })
       }
 
@@ -393,11 +390,10 @@ export class CompatibilityTestingSuite {
         testId: test.id,
         status: testResult.status,
         duration: testResult.duration,
-        compatible: testResult.comparison.compatible
+        compatible: testResult.comparison.compatible,
       })
 
       return testResult
-
     } catch (error) {
       const endTime = Date.now()
       testResult.status = 'error'
@@ -406,12 +402,12 @@ export class CompatibilityTestingSuite {
       testResult.errors.push({
         code: 'TEST_EXECUTION_ERROR',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       })
 
       logger.error('Test execution failed', {
         testId: test.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       return testResult
@@ -444,19 +440,19 @@ export class CompatibilityTestingSuite {
         skippedTests: totalSkipped,
         errorTests: totalErrors,
         overallPassRate: totalTests > 0 ? (totalPassed / totalTests) * 100 : 0,
-        totalDuration: suiteResults.reduce((sum, suite) => sum + suite.duration, 0)
+        totalDuration: suiteResults.reduce((sum, suite) => sum + suite.duration, 0),
       },
       suiteResults,
       compatibilityAnalysis: await this.analyzeCompatibilityTrends(suiteResults),
       recommendations: await this.generateOverallRecommendations(suiteResults),
-      detailedFindings: await this.generateDetailedFindings(suiteResults)
+      detailedFindings: await this.generateDetailedFindings(suiteResults),
     }
 
     logger.info('Test report generated', {
       format,
       totalSuites: report.summary.totalTestSuites,
       totalTests: report.summary.totalTests,
-      passRate: report.summary.overallPassRate
+      passRate: report.summary.overallPassRate,
     })
 
     return report
@@ -498,18 +494,18 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['status', 'outputs'],
         shouldDiffer: [],
         tolerances: {},
-        allowedDifferences: []
+        allowedDifferences: [],
       },
       assertions: [
         {
           type: 'equals',
           path: 'status',
           expected: 'completed',
-          description: 'Both executions should complete successfully'
-        }
+          description: 'Both executions should complete successfully',
+        },
       ],
       timeout: 30000,
-      retries: 1
+      retries: 1,
     })
 
     return tests
@@ -532,18 +528,18 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['outputs'],
         shouldDiffer: [],
         tolerances: { duration: 1000 },
-        allowedDifferences: ['timing_difference']
+        allowedDifferences: ['timing_difference'],
       },
       assertions: [
         {
           type: 'equals',
           path: 'outputs',
           expected: 'identical',
-          description: 'Outputs should be identical between execution modes'
-        }
+          description: 'Outputs should be identical between execution modes',
+        },
       ],
       timeout: 30000,
-      retries: 1
+      retries: 1,
     })
 
     return tests
@@ -566,18 +562,18 @@ export class CompatibilityTestingSuite {
           shouldMatch: ['sideEffects'],
           shouldDiffer: [],
           tolerances: {},
-          allowedDifferences: ['timing_difference']
+          allowedDifferences: ['timing_difference'],
         },
         assertions: [
           {
             type: 'side_effects',
             path: 'sideEffects.apiCalls',
             expected: 'preserved',
-            description: 'API calls should be identical'
-          }
+            description: 'API calls should be identical',
+          },
         ],
         timeout: 45000,
-        retries: 1
+        retries: 1,
       })
     }
 
@@ -600,18 +596,18 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['variables', 'context'],
         shouldDiffer: [],
         tolerances: {},
-        allowedDifferences: []
+        allowedDifferences: [],
       },
       assertions: [
         {
           type: 'equals',
           path: 'variables',
           expected: 'synchronized',
-          description: 'Variables should be synchronized between modes'
-        }
+          description: 'Variables should be synchronized between modes',
+        },
       ],
       timeout: 30000,
-      retries: 1
+      retries: 1,
     })
 
     return tests
@@ -633,18 +629,18 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['integrations'],
         shouldDiffer: [],
         tolerances: { duration: 2000 },
-        allowedDifferences: ['timing_difference']
+        allowedDifferences: ['timing_difference'],
       },
       assertions: [
         {
           type: 'equals',
           path: 'integrations',
           expected: 'identical',
-          description: 'Integration calls should be identical'
-        }
+          description: 'Integration calls should be identical',
+        },
       ],
       timeout: 60000,
-      retries: 2
+      retries: 2,
     })
 
     return tests
@@ -667,18 +663,18 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['errors', 'status'],
         shouldDiffer: [],
         tolerances: {},
-        allowedDifferences: []
+        allowedDifferences: [],
       },
       assertions: [
         {
           type: 'equals',
           path: 'errors',
           expected: 'identical',
-          description: 'Error handling should be identical'
-        }
+          description: 'Error handling should be identical',
+        },
       ],
       timeout: 30000,
-      retries: 1
+      retries: 1,
     })
 
     return tests
@@ -700,7 +696,7 @@ export class CompatibilityTestingSuite {
         shouldMatch: ['outputs'],
         shouldDiffer: ['duration'],
         tolerances: { duration: 5000 }, // 5 second tolerance
-        allowedDifferences: ['performance_variation', 'timing_difference']
+        allowedDifferences: ['performance_variation', 'timing_difference'],
       },
       assertions: [
         {
@@ -708,11 +704,11 @@ export class CompatibilityTestingSuite {
           path: 'duration',
           expected: 'reasonable',
           tolerance: 5000,
-          description: 'Performance should be within reasonable bounds'
-        }
+          description: 'Performance should be within reasonable bounds',
+        },
       ],
       timeout: 120000,
-      retries: 1
+      retries: 1,
     })
 
     return tests
@@ -740,7 +736,7 @@ export class CompatibilityTestingSuite {
     // Execute chunks sequentially, tests within chunk in parallel
     for (const chunk of chunks) {
       const chunkResults = await Promise.all(
-        chunk.map(test => this.runTest(test, configuration, context))
+        chunk.map((test) => this.runTest(test, configuration, context))
       )
       results.push(...chunkResults)
     }
@@ -777,7 +773,11 @@ export class CompatibilityTestingSuite {
     await this.stateLayer.initializeExecutionState(context.executionId, 'workflow', context)
 
     // Start integration tracking
-    await this.integrationValidator.startIntegrationTracking(context.executionId, 'workflow', context)
+    await this.integrationValidator.startIntegrationTracking(
+      context.executionId,
+      'workflow',
+      context
+    )
 
     try {
       // Mock workflow execution for testing
@@ -801,7 +801,7 @@ export class CompatibilityTestingSuite {
           tags: ['test'],
           correlationId: context.requestMetadata.correlationId,
           traceId: context.requestMetadata.traceId,
-          customProperties: {}
+          customProperties: {},
         },
         blockResults: [],
         executionPath: ['start', 'block1', 'end'],
@@ -812,12 +812,11 @@ export class CompatibilityTestingSuite {
           networkIoMb: 0,
           executionTimeMs: 1000,
           apiCalls: 0,
-          databaseQueries: 0
-        }
+          databaseQueries: 0,
+        },
       }
 
       return mockResult
-
     } finally {
       // Stop tracking
       await this.behaviorSystem.stopExecutionTracking(context.executionId)
@@ -834,11 +833,27 @@ export class CompatibilityTestingSuite {
     logger.debug('Executing journey for test', { journeyId })
 
     // Start tracking for journey execution
-    const journeyContext = { ...context, executionId: `${context.executionId}_journey`, mode: 'journey' as const }
+    const journeyContext = {
+      ...context,
+      executionId: `${context.executionId}_journey`,
+      mode: 'journey' as const,
+    }
 
-    await this.behaviorSystem.startExecutionTracking(journeyContext.executionId, 'journey', journeyContext)
-    await this.stateLayer.initializeExecutionState(journeyContext.executionId, 'journey', journeyContext)
-    await this.integrationValidator.startIntegrationTracking(journeyContext.executionId, 'journey', journeyContext)
+    await this.behaviorSystem.startExecutionTracking(
+      journeyContext.executionId,
+      'journey',
+      journeyContext
+    )
+    await this.stateLayer.initializeExecutionState(
+      journeyContext.executionId,
+      'journey',
+      journeyContext
+    )
+    await this.integrationValidator.startIntegrationTracking(
+      journeyContext.executionId,
+      'journey',
+      journeyContext
+    )
 
     try {
       // Mock journey execution
@@ -863,13 +878,13 @@ export class CompatibilityTestingSuite {
           tags: ['test', 'journey'],
           correlationId: journeyContext.requestMetadata.correlationId,
           traceId: journeyContext.requestMetadata.traceId,
-          customProperties: {}
+          customProperties: {},
         },
         stepResults: [],
         conversationContext: {
           turns: [],
           intentHistory: [],
-          entityTracking: {}
+          entityTracking: {},
         },
         sessionState: {
           sessionId: journeyContext.executionId,
@@ -879,12 +894,11 @@ export class CompatibilityTestingSuite {
           userId: journeyContext.userId,
           permissions: [],
           preferences: {},
-          temporaryData: {}
-        }
+          temporaryData: {},
+        },
       }
 
       return mockResult
-
     } finally {
       // Stop tracking
       await this.behaviorSystem.stopExecutionTracking(journeyContext.executionId)
@@ -917,29 +931,56 @@ export class CompatibilityTestingSuite {
         passed: false,
         actual: undefined,
         expected: assertion.expected,
-        message: ''
+        message: '',
       }
 
       try {
         switch (assertion.type) {
           case 'equals':
-            result.passed = await this.assertEquals(assertion, workflowResult, journeyResult, comparison)
+            result.passed = await this.assertEquals(
+              assertion,
+              workflowResult,
+              journeyResult,
+              comparison
+            )
             break
           case 'contains':
-            result.passed = await this.assertContains(assertion, workflowResult, journeyResult, comparison)
+            result.passed = await this.assertContains(
+              assertion,
+              workflowResult,
+              journeyResult,
+              comparison
+            )
             break
           case 'matches':
-            result.passed = await this.assertMatches(assertion, workflowResult, journeyResult, comparison)
+            result.passed = await this.assertMatches(
+              assertion,
+              workflowResult,
+              journeyResult,
+              comparison
+            )
             break
           case 'performance':
-            result.passed = await this.assertPerformance(assertion, workflowResult, journeyResult, comparison)
+            result.passed = await this.assertPerformance(
+              assertion,
+              workflowResult,
+              journeyResult,
+              comparison
+            )
             break
           case 'side_effects':
-            result.passed = await this.assertSideEffects(assertion, workflowResult, journeyResult, comparison)
+            result.passed = await this.assertSideEffects(
+              assertion,
+              workflowResult,
+              journeyResult,
+              comparison
+            )
             break
         }
 
-        result.message = result.passed ? 'Assertion passed' : `Assertion failed: ${assertion.description}`
+        result.message = result.passed
+          ? 'Assertion passed'
+          : `Assertion failed: ${assertion.description}`
       } catch (error) {
         result.passed = false
         result.message = `Assertion error: ${error instanceof Error ? error.message : String(error)}`
@@ -1012,14 +1053,14 @@ export class CompatibilityTestingSuite {
 
   private meetsBehaviorExpectations(comparison: any, expectedBehavior: ExpectedBehavior): boolean {
     // Check if comparison meets expected behavior criteria
-    const criticalDifferences = comparison.differences.filter((d: any) =>
-      d.severity === 'critical' || d.severity === 'error'
+    const criticalDifferences = comparison.differences.filter(
+      (d: any) => d.severity === 'critical' || d.severity === 'error'
     )
 
     // If there are critical differences but none are in allowedDifferences, fail
     if (criticalDifferences.length > 0) {
-      const hasUnallowedDifferences = criticalDifferences.some((diff: any) =>
-        !expectedBehavior.allowedDifferences.includes(diff.difference)
+      const hasUnallowedDifferences = criticalDifferences.some(
+        (diff: any) => !expectedBehavior.allowedDifferences.includes(diff.difference)
       )
       if (hasUnallowedDifferences) return false
     }
@@ -1033,8 +1074,8 @@ export class CompatibilityTestingSuite {
 
   private async generateTestSummary(results: TestResult[]): Promise<TestSummary> {
     const totalTests = results.length
-    const passedTests = results.filter(r => r.status === 'passed').length
-    const failedTests = results.filter(r => r.status === 'failed').length
+    const passedTests = results.filter((r) => r.status === 'passed').length
+    const failedTests = results.filter((r) => r.status === 'failed').length
 
     return {
       executedAt: new Date().toISOString(),
@@ -1043,7 +1084,7 @@ export class CompatibilityTestingSuite {
       failedTests,
       passRate: totalTests > 0 ? (passedTests / totalTests) * 100 : 0,
       averageDuration: results.reduce((sum, r) => sum + r.duration, 0) / totalTests,
-      compatibilityScore: this.calculateOverallCompatibilityScore(results)
+      compatibilityScore: this.calculateOverallCompatibilityScore(results),
     }
   }
 
@@ -1067,13 +1108,16 @@ export class CompatibilityTestingSuite {
     return Array.from(recommendations)
   }
 
-  private async analyzeCompatibilityTrends(suiteResults: TestSuiteResult[]): Promise<CompatibilityTrends> {
+  private async analyzeCompatibilityTrends(
+    suiteResults: TestSuiteResult[]
+  ): Promise<CompatibilityTrends> {
     // Analyze trends across test suite results
     return {
-      overallCompatibility: suiteResults.reduce((sum, s) => sum + s.passRate, 0) / suiteResults.length,
+      overallCompatibility:
+        suiteResults.reduce((sum, s) => sum + s.passRate, 0) / suiteResults.length,
       improvementAreas: ['result_formatting', 'state_synchronization', 'integration_compatibility'],
       riskAreas: [],
-      trendDirection: 'stable'
+      trendDirection: 'stable',
     }
   }
 
@@ -1093,7 +1137,9 @@ export class CompatibilityTestingSuite {
     return Array.from(recommendations)
   }
 
-  private async generateDetailedFindings(suiteResults: TestSuiteResult[]): Promise<DetailedFindings> {
+  private async generateDetailedFindings(
+    suiteResults: TestSuiteResult[]
+  ): Promise<DetailedFindings> {
     return {
       criticalIssues: [],
       commonFailurePatterns: [],
@@ -1102,15 +1148,15 @@ export class CompatibilityTestingSuite {
       recommendations: {
         immediate: [],
         shortTerm: [],
-        longTerm: []
-      }
+        longTerm: [],
+      },
     }
   }
 
   private calculateOverallCompatibilityScore(results: TestResult[]): number {
     if (results.length === 0) return 100
 
-    const scores = results.map(r => r.comparison?.similarityScore || 0)
+    const scores = results.map((r) => r.comparison?.similarityScore || 0)
     return scores.reduce((sum, score) => sum + score, 0) / scores.length
   }
 
@@ -1135,7 +1181,7 @@ export class CompatibilityTestingSuite {
       const keys2 = Object.keys(obj2)
       if (keys1.length !== keys2.length) return false
 
-      return keys1.every(key => this.deepEqual(obj1[key], obj2[key]))
+      return keys1.every((key) => this.deepEqual(obj1[key], obj2[key]))
     }
 
     return false

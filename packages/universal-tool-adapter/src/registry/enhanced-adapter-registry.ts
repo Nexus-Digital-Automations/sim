@@ -20,10 +20,7 @@ import type {
   PerformanceConfig,
 } from '../types/adapter-interfaces'
 
-import type {
-  ParlantTool,
-  ParlantExecutionContext,
-} from '../types/parlant-interfaces'
+import type { ParlantTool, ParlantExecutionContext } from '../types/parlant-interfaces'
 
 import { createLogger } from '../utils/logger'
 import { BaseAdapter } from '../core/base-adapter'
@@ -34,7 +31,6 @@ const logger = createLogger('EnhancedAdapterRegistry')
  * Enhanced registry with comprehensive adapter management capabilities
  */
 export class EnhancedAdapterRegistry extends EventEmitter {
-
   // Core registry storage
   private readonly adapters = new Map<string, AdapterRegistryEntry>()
   private readonly categories = new Map<string, Set<string>>()
@@ -74,28 +70,28 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       discoveryCache: {
         enabled: true,
         ttlMs: 60000, // 1 minute
-        maxSize: 100
+        maxSize: 100,
       },
       executionCache: {
         enabled: true,
         ttlMs: 300000, // 5 minutes
-        maxSize: 500
+        maxSize: 500,
       },
       failover: {
         enabled: true,
         maxRetries: 3,
         backoffMs: 1000,
-        circuitBreakerThreshold: 0.5
+        circuitBreakerThreshold: 0.5,
       },
       metrics: {
         enabled: true,
-        retentionDays: 30
+        retentionDays: 30,
       },
       loadBalancing: {
         enabled: true,
-        strategy: 'round_robin'
+        strategy: 'round_robin',
       },
-      ...config
+      ...config,
     }
 
     // Initialize subsystems
@@ -113,14 +109,17 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     logger.info('Enhanced Adapter Registry initialized', {
       maxAdapters: this.config.maxAdapters,
       healthCheckInterval: this.config.healthCheckIntervalMs,
-      caching: this.config.discoveryCache.enabled
+      caching: this.config.discoveryCache.enabled,
     })
   }
 
   /**
    * Register a new adapter with comprehensive configuration
    */
-  async register(adapter: BaseAdapter, metadata: Partial<AdapterRegistryEntry['metadata']> = {}): Promise<void> {
+  async register(
+    adapter: BaseAdapter,
+    metadata: Partial<AdapterRegistryEntry['metadata']> = {}
+  ): Promise<void> {
     if (this.adapters.size >= this.config.maxAdapters) {
       throw new Error(`Registry capacity exceeded: ${this.config.maxAdapters}`)
     }
@@ -144,20 +143,20 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         source: 'enhanced_registry',
         category: adapter.metadata.category || 'utility',
         tags: adapter.metadata.tags || [],
-        ...metadata
+        ...metadata,
       },
       statistics: {
         executionCount: 0,
         averageExecutionTimeMs: 0,
         successRate: 1.0,
         errorCount: 0,
-        lastUsed: new Date()
+        lastUsed: new Date(),
       },
       health: {
         status: 'healthy',
         lastCheckAt: new Date(),
-        issues: []
-      }
+        issues: [],
+      },
     }
 
     // Store in registry
@@ -183,7 +182,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       adapterId,
       category: entry.metadata.category,
       tags: entry.metadata.tags,
-      totalAdapters: this.adapters.size
+      totalAdapters: this.adapters.size,
     })
 
     // Update metrics
@@ -209,7 +208,11 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       await this.pluginExecutor.onAdapterUnregistered(entry)
 
       // Cleanup adapter if supported
-      if (entry.adapter && 'cleanup' in entry.adapter && typeof entry.adapter.cleanup === 'function') {
+      if (
+        entry.adapter &&
+        'cleanup' in entry.adapter &&
+        typeof entry.adapter.cleanup === 'function'
+      ) {
         await entry.adapter.cleanup()
       }
 
@@ -229,15 +232,14 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
       logger.info('Adapter unregistered successfully', {
         adapterId,
-        remainingAdapters: this.adapters.size
+        remainingAdapters: this.adapters.size,
       })
 
       return true
-
     } catch (error) {
       logger.error('Error during adapter unregistration', {
         adapterId,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -259,7 +261,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       if (alternative) {
         logger.warn('Using healthy alternative for unhealthy adapter', {
           originalId: adapterId,
-          alternativeId: alternative.id
+          alternativeId: alternative.id,
         })
         return alternative.adapter
       }
@@ -285,7 +287,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     logger.debug('Starting adapter execution', {
       executionId,
       adapterId,
-      contextType: context.type
+      contextType: context.type,
     })
 
     try {
@@ -343,11 +345,10 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         executionId,
         adapterId,
         success: result.success,
-        duration
+        duration,
       })
 
       return result
-
     } catch (error) {
       const duration = Date.now() - startTime
       const entry = this.adapters.get(adapterId)
@@ -363,7 +364,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         executionId,
         adapterId,
         duration,
-        error: error.message
+        error: error.message,
       })
 
       // Emit error event
@@ -380,8 +381,8 @@ export class EnhancedAdapterRegistry extends EventEmitter {
         error: {
           type: error.constructor.name,
           message: error.message,
-          recoverable: this.isRecoverableError(error)
-        }
+          recoverable: this.isRecoverableError(error),
+        },
       }
     }
   }
@@ -423,16 +424,16 @@ export class EnhancedAdapterRegistry extends EventEmitter {
           usageStats: {
             executionCount: entry.statistics.executionCount,
             successRate: entry.statistics.successRate,
-            averageRating: this.analytics.getAverageRating(id)
+            averageRating: this.analytics.getAverageRating(id),
           },
           capabilities: this.extractCapabilities(entry),
           requirements: this.extractRequirements(entry),
           performance: {
             averageExecutionTimeMs: entry.statistics.averageExecutionTimeMs,
             healthStatus: entry.health.status,
-            lastUsed: entry.statistics.lastUsed
+            lastUsed: entry.statistics.lastUsed,
           },
-          popularity: this.analytics.getPopularityScore(id)
+          popularity: this.analytics.getPopularityScore(id),
         }
 
         results.push(discovered)
@@ -454,7 +455,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     logger.debug('Discovery completed', {
       query: query.query,
       totalFound: results.length,
-      returned: paginatedResults.length
+      returned: paginatedResults.length,
     })
 
     return paginatedResults
@@ -470,9 +471,9 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     const stats: EnhancedRegistryStats = {
       // Basic counts
       totalAdapters: entries.length,
-      healthyAdapters: entries.filter(e => e.health.status === 'healthy').length,
-      degradedAdapters: entries.filter(e => e.health.status === 'degraded').length,
-      unhealthyAdapters: entries.filter(e => e.health.status === 'unhealthy').length,
+      healthyAdapters: entries.filter((e) => e.health.status === 'healthy').length,
+      degradedAdapters: entries.filter((e) => e.health.status === 'degraded').length,
+      unhealthyAdapters: entries.filter((e) => e.health.status === 'unhealthy').length,
 
       // Performance metrics
       totalExecutions: entries.reduce((sum, e) => sum + e.statistics.executionCount, 0),
@@ -498,7 +499,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       recentActivity: this.getRecentActivity(),
 
       // Health summary
-      healthSummary: this.getHealthSummary(entries)
+      healthSummary: this.getHealthSummary(entries),
     }
 
     return stats
@@ -538,7 +539,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
           logger.warn('Failed to initialize plugin for existing adapter', {
             plugin: plugin.name,
             adapterId: entry.id,
-            error: error.message
+            error: error.message,
           })
         }
       }
@@ -547,7 +548,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     logger.info('Plugin registered successfully', {
       name: plugin.name,
       version: plugin.version,
-      dependencies: plugin.dependencies?.length || 0
+      dependencies: plugin.dependencies?.length || 0,
     })
   }
 
@@ -555,8 +556,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
    * Get adapters by health status
    */
   getAdaptersByHealth(status: 'healthy' | 'degraded' | 'unhealthy'): AdapterRegistryEntry[] {
-    return Array.from(this.adapters.values())
-      .filter(entry => entry.health.status === status)
+    return Array.from(this.adapters.values()).filter((entry) => entry.health.status === status)
   }
 
   /**
@@ -591,8 +591,8 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
       // Cleanup all adapters
       const cleanupPromises = Array.from(this.adapters.values())
-        .filter(entry => entry.adapter && 'cleanup' in entry.adapter)
-        .map(entry => entry.adapter.cleanup!())
+        .filter((entry) => entry.adapter && 'cleanup' in entry.adapter)
+        .map((entry) => entry.adapter.cleanup!())
 
       await Promise.allSettled(cleanupPromises)
 
@@ -604,7 +604,6 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       await this.analytics.flush()
 
       logger.info('Registry shutdown completed')
-
     } catch (error) {
       logger.error('Error during shutdown', { error: error.message })
       throw error
@@ -699,14 +698,16 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     return JSON.stringify(query)
   }
 
-  private async findHealthyAlternative(entry: AdapterRegistryEntry): Promise<AdapterRegistryEntry | undefined> {
+  private async findHealthyAlternative(
+    entry: AdapterRegistryEntry
+  ): Promise<AdapterRegistryEntry | undefined> {
     // Find adapters with similar capabilities
-    const candidates = Array.from(this.adapters.values())
-      .filter(candidate =>
+    const candidates = Array.from(this.adapters.values()).filter(
+      (candidate) =>
         candidate.id !== entry.id &&
         candidate.health.status === 'healthy' &&
         candidate.metadata.category === entry.metadata.category
-      )
+    )
 
     if (candidates.length === 0) {
       return undefined
@@ -718,7 +719,11 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     )
   }
 
-  private updateExecutionStatistics(entry: AdapterRegistryEntry, duration: number, success: boolean): void {
+  private updateExecutionStatistics(
+    entry: AdapterRegistryEntry,
+    duration: number,
+    success: boolean
+  ): void {
     const stats = entry.statistics
 
     // Update execution count
@@ -745,7 +750,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       currentTime: Date.now(),
       userPreferences: await this.analytics.getUserPreferences(query.userId),
       workspaceContext: await this.analytics.getWorkspaceContext(query.workspaceId),
-      trendingTools: await this.analytics.getTrendingTools()
+      trendingTools: await this.analytics.getTrendingTools(),
     }
   }
 
@@ -768,13 +773,13 @@ export class EnhancedAdapterRegistry extends EventEmitter {
 
     // Tag matching
     if (query.tags) {
-      const matchingTags = query.tags.filter(tag => entry.metadata.tags.includes(tag))
+      const matchingTags = query.tags.filter((tag) => entry.metadata.tags.includes(tag))
       score += matchingTags.length * 5
     }
 
     // Performance scoring
     score += entry.statistics.successRate * 10
-    score += Math.max(0, 10 - (entry.statistics.averageExecutionTimeMs / 1000)) // Faster = better
+    score += Math.max(0, 10 - entry.statistics.averageExecutionTimeMs / 1000) // Faster = better
 
     // Health status penalty
     if (entry.health.status === 'degraded') score *= 0.8
@@ -851,7 +856,7 @@ export class EnhancedAdapterRegistry extends EventEmitter {
       'NetworkError',
       'TimeoutError',
       'RateLimitError',
-      'TemporaryServiceUnavailable'
+      'TemporaryServiceUnavailable',
     ]
 
     return recoverableErrors.includes(error.constructor.name)
@@ -894,18 +899,22 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     // Clean expired execution cache entries
     // This would be more sophisticated with TTL tracking
     if (this.executionCache.size > this.config.executionCache.maxSize) {
-      const keysToDelete = Array.from(this.executionCache.keys())
-        .slice(0, Math.floor(this.executionCache.size * 0.1))
+      const keysToDelete = Array.from(this.executionCache.keys()).slice(
+        0,
+        Math.floor(this.executionCache.size * 0.1)
+      )
 
-      keysToDelete.forEach(key => this.executionCache.delete(key))
+      keysToDelete.forEach((key) => this.executionCache.delete(key))
     }
 
     // Clean discovery cache
     if (this.discoveryCache.size > this.config.discoveryCache.maxSize) {
-      const keysToDelete = Array.from(this.discoveryCache.keys())
-        .slice(0, Math.floor(this.discoveryCache.size * 0.1))
+      const keysToDelete = Array.from(this.discoveryCache.keys()).slice(
+        0,
+        Math.floor(this.discoveryCache.size * 0.1)
+      )
 
-      keysToDelete.forEach(key => this.discoveryCache.delete(key))
+      keysToDelete.forEach((key) => this.discoveryCache.delete(key))
     }
   }
 
@@ -946,32 +955,32 @@ export class EnhancedAdapterRegistry extends EventEmitter {
     const now = Date.now()
     const oneHourAgo = now - 3600000
 
-    const recentExecutions = Array.from(this.adapters.values())
-      .filter(e => e.statistics.lastUsed && e.statistics.lastUsed.getTime() > oneHourAgo)
-      .length
+    const recentExecutions = Array.from(this.adapters.values()).filter(
+      (e) => e.statistics.lastUsed && e.statistics.lastUsed.getTime() > oneHourAgo
+    ).length
 
     return {
       executionsLastHour: recentExecutions,
-      newAdaptersLast24h: Array.from(this.adapters.values())
-        .filter(e => e.metadata.registeredAt.getTime() > now - 86400000)
-        .length
+      newAdaptersLast24h: Array.from(this.adapters.values()).filter(
+        (e) => e.metadata.registeredAt.getTime() > now - 86400000
+      ).length,
     }
   }
 
   private getHealthSummary(entries: AdapterRegistryEntry[]): HealthSummary {
     const healthIssues = entries
-      .filter(e => e.health.issues && e.health.issues.length > 0)
-      .map(e => ({
+      .filter((e) => e.health.issues && e.health.issues.length > 0)
+      .map((e) => ({
         adapterId: e.id,
-        issues: e.health.issues || []
+        issues: e.health.issues || [],
       }))
 
     return {
       totalIssues: healthIssues.reduce((sum, h) => sum + h.issues.length, 0),
       adaptersWithIssues: healthIssues.length,
-      criticalIssues: healthIssues
-        .filter(h => h.issues.some(issue => issue.includes('critical')))
-        .length
+      criticalIssues: healthIssues.filter((h) =>
+        h.issues.some((issue) => issue.includes('critical'))
+      ).length,
     }
   }
 }
@@ -1018,7 +1027,8 @@ class HealthMonitor {
 
       // Check if adapter is being used
       const lastUsed = entry.statistics.lastUsed
-      if (lastUsed && Date.now() - lastUsed.getTime() > 86400000) { // 24 hours
+      if (lastUsed && Date.now() - lastUsed.getTime() > 86400000) {
+        // 24 hours
         issues.push('Adapter not used in 24 hours')
       }
 
@@ -1026,7 +1036,7 @@ class HealthMonitor {
       let status: 'healthy' | 'degraded' | 'unhealthy'
       if (issues.length === 0) {
         status = 'healthy'
-      } else if (issues.length <= 2 && !issues.some(i => i.includes('critical'))) {
+      } else if (issues.length <= 2 && !issues.some((i) => i.includes('critical'))) {
         status = 'degraded'
       } else {
         status = 'unhealthy'
@@ -1036,7 +1046,7 @@ class HealthMonitor {
       entry.health = {
         status,
         lastCheckAt: new Date(),
-        issues: issues.length > 0 ? issues : []
+        issues: issues.length > 0 ? issues : [],
       }
 
       const duration = Date.now() - startTime
@@ -1044,19 +1054,18 @@ class HealthMonitor {
         adapterId: entry.id,
         status,
         issuesCount: issues.length,
-        duration
+        duration,
       })
-
     } catch (error) {
       entry.health = {
         status: 'unhealthy',
         lastCheckAt: new Date(),
-        issues: ['Health check failed: ' + error.message]
+        issues: ['Health check failed: ' + error.message],
       }
 
       logger.warn('Health check error', {
         adapterId: entry.id,
-        error: error.message
+        error: error.message,
       })
     }
   }
@@ -1095,14 +1104,14 @@ class PerformanceTracker {
     const record: ExecutionRecord = {
       timestamp: Date.now(),
       duration,
-      success
+      success,
     }
 
     history.push(record)
 
     // Keep only records within the performance window
     const cutoff = Date.now() - this.config.performanceWindowMs
-    const filtered = history.filter(r => r.timestamp > cutoff)
+    const filtered = history.filter((r) => r.timestamp > cutoff)
     this.executionHistory.set(adapterId, filtered)
   }
 
@@ -1115,19 +1124,19 @@ class PerformanceTracker {
         successRate: 0,
         executionCount: 0,
         p95Duration: 0,
-        p99Duration: 0
+        p99Duration: 0,
       }
     }
 
-    const durations = history.map(r => r.duration).sort((a, b) => a - b)
-    const successes = history.filter(r => r.success).length
+    const durations = history.map((r) => r.duration).sort((a, b) => a - b)
+    const successes = history.filter((r) => r.success).length
 
     return {
       averageDuration: durations.reduce((sum, d) => sum + d, 0) / durations.length,
       successRate: successes / history.length,
       executionCount: history.length,
       p95Duration: durations[Math.floor(durations.length * 0.95)] || 0,
-      p99Duration: durations[Math.floor(durations.length * 0.99)] || 0
+      p99Duration: durations[Math.floor(durations.length * 0.99)] || 0,
     }
   }
 
@@ -1160,7 +1169,7 @@ class FailoverManager {
           ...context,
           executionId,
           attempt: attempt + 1,
-          maxAttempts: maxRetries + 1
+          maxAttempts: maxRetries + 1,
         }
 
         const result = await adapter.execute(enhancedContext, args)
@@ -1175,10 +1184,9 @@ class FailoverManager {
           data: result.data,
           metadata: {
             attempts: attempt + 1,
-            ...result.metadata
-          }
+            ...result.metadata,
+          },
         }
-
       } catch (error) {
         lastError = error
 
@@ -1187,13 +1195,11 @@ class FailoverManager {
             executionId,
             adapterId: adapter.id,
             attempt: attempt + 1,
-            error: error.message
+            error: error.message,
           })
 
           // Exponential backoff
-          await new Promise(resolve =>
-            setTimeout(resolve, backoffMs * Math.pow(2, attempt))
-          )
+          await new Promise((resolve) => setTimeout(resolve, backoffMs * Math.pow(2, attempt)))
         }
       }
     }
@@ -1214,7 +1220,7 @@ class PluginExecutor {
           logger.warn('Plugin initialization failed', {
             plugin: plugin.name,
             adapterId: entry.id,
-            error: error.message
+            error: error.message,
           })
         }
       }
@@ -1238,7 +1244,7 @@ class PluginExecutor {
           logger.warn('Plugin pre-execution failed', {
             plugin: plugin.name,
             adapterId: entry.id,
-            error: error.message
+            error: error.message,
           })
         }
       }
@@ -1258,7 +1264,7 @@ class PluginExecutor {
           logger.warn('Plugin post-execution failed', {
             plugin: plugin.name,
             adapterId: entry.id,
-            error: error.message
+            error: error.message,
           })
         }
       }
@@ -1278,7 +1284,7 @@ class PluginExecutor {
           logger.warn('Plugin error handler failed', {
             plugin: plugin.name,
             adapterId: entry.id,
-            error: pluginError.message
+            error: pluginError.message,
           })
         }
       }

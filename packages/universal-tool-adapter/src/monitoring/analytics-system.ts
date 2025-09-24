@@ -14,12 +14,10 @@ import type {
   AdapterRegistryEntry,
   AdapterExecutionResult,
   AdapterExecutionContext,
-  MonitoringConfig
+  MonitoringConfig,
 } from '../types/adapter-interfaces'
 
-import type {
-  ParlantExecutionContext
-} from '../types/parlant-interfaces'
+import type { ParlantExecutionContext } from '../types/parlant-interfaces'
 
 import { createLogger } from '../utils/logger'
 
@@ -29,7 +27,6 @@ const logger = createLogger('AnalyticsSystem')
  * Comprehensive analytics and monitoring system
  */
 export class AnalyticsSystem extends EventEmitter {
-
   // Core data stores
   private readonly executionHistory = new Map<string, ExecutionRecord[]>()
   private readonly performanceMetrics = new Map<string, PerformanceMetrics>()
@@ -46,7 +43,7 @@ export class AnalyticsSystem extends EventEmitter {
     requestsPerSecond: 0,
     errorsPerSecond: 0,
     activeAdapters: 0,
-    systemHealth: 'healthy'
+    systemHealth: 'healthy',
   }
 
   // Alerting system
@@ -96,7 +93,7 @@ export class AnalyticsSystem extends EventEmitter {
       enablePredictiveAlerts: true,
       enableDetailedTracing: false,
 
-      ...config
+      ...config,
     }
 
     // Initialize subsystems
@@ -112,7 +109,7 @@ export class AnalyticsSystem extends EventEmitter {
     logger.info('Analytics System initialized', {
       retentionDays: this.config.retentionDays,
       alerting: this.config.enableAlerting,
-      trendAnalysis: this.config.enableTrendAnalysis
+      trendAnalysis: this.config.enableTrendAnalysis,
     })
   }
 
@@ -135,18 +132,20 @@ export class AnalyticsSystem extends EventEmitter {
         agentId: context.agentId,
         sessionId: context.sessionId,
         userId: context.userId,
-        workspaceId: context.workspaceId
+        workspaceId: context.workspaceId,
       },
-      error: result.error ? {
-        type: result.error.type,
-        message: result.error.message,
-        recoverable: result.error.recoverable
-      } : undefined,
+      error: result.error
+        ? {
+            type: result.error.type,
+            message: result.error.message,
+            recoverable: result.error.recoverable,
+          }
+        : undefined,
       metadata: {
         parameterCount: Object.keys(args).length,
         resultSize: this.estimateObjectSize(result.data),
-        executionId: result.executionId
-      }
+        executionId: result.executionId,
+      },
     }
 
     // Store execution record
@@ -168,13 +167,13 @@ export class AnalyticsSystem extends EventEmitter {
     this.emit('execution:recorded', {
       adapterId,
       record,
-      realTimeMetrics: this.getRealTimeMetrics()
+      realTimeMetrics: this.getRealTimeMetrics(),
     })
 
     logger.debug('Execution recorded', {
       adapterId,
       success: record.success,
-      duration: record.duration
+      duration: record.duration,
     })
   }
 
@@ -188,7 +187,7 @@ export class AnalyticsSystem extends EventEmitter {
       category: entry.metadata.category,
       tags: entry.metadata.tags,
       version: entry.metadata.version,
-      source: entry.metadata.source
+      source: entry.metadata.source,
     }
 
     this.realTimeMetrics.activeAdapters++
@@ -197,7 +196,7 @@ export class AnalyticsSystem extends EventEmitter {
 
     logger.info('Adapter registration recorded', {
       adapterId: entry.id,
-      category: entry.metadata.category
+      category: entry.metadata.category,
     })
   }
 
@@ -247,7 +246,7 @@ export class AnalyticsSystem extends EventEmitter {
    */
   getErrorAnalysis(adapterId?: string, timeRange?: TimeRange): ErrorAnalysis {
     const now = Date.now()
-    const startTime = timeRange?.start || (now - 86400000) // Default: last 24 hours
+    const startTime = timeRange?.start || now - 86400000 // Default: last 24 hours
     const endTime = timeRange?.end || now
 
     if (adapterId) {
@@ -275,7 +274,7 @@ export class AnalyticsSystem extends EventEmitter {
       performanceMetrics: this.performanceMetrics,
       errorTracking: this.errorTracking,
       usagePatterns: this.usagePatterns,
-      realTimeMetrics: this.realTimeMetrics
+      realTimeMetrics: this.realTimeMetrics,
     })
 
     this.emit('report:generated', { type, adapterId, report })
@@ -299,7 +298,7 @@ export class AnalyticsSystem extends EventEmitter {
         trends: [],
         predictions: [],
         confidence: 0,
-        recommendations: []
+        recommendations: [],
       }
     }
 
@@ -335,7 +334,7 @@ export class AnalyticsSystem extends EventEmitter {
       adapterId,
       includeExecutions: true,
       includeErrors: true,
-      includeMetrics: true
+      includeMetrics: true,
     })
 
     // Format data based on requested format
@@ -363,7 +362,7 @@ export class AnalyticsSystem extends EventEmitter {
       data: formattedData,
       mimeType,
       filename: this.generateExportFilename(format, timeRange, adapterId),
-      size: formattedData.length || 0
+      size: formattedData.length || 0,
     }
   }
 
@@ -373,12 +372,12 @@ export class AnalyticsSystem extends EventEmitter {
   async cleanup(): Promise<CleanupResult> {
     logger.info('Starting analytics data cleanup')
 
-    const cutoffTime = Date.now() - (this.config.retentionDays * 86400000)
+    const cutoffTime = Date.now() - this.config.retentionDays * 86400000
     let removedRecords = 0
 
     // Clean up execution history
     for (const [adapterId, records] of this.executionHistory) {
-      const filteredRecords = records.filter(r => r.timestamp.getTime() > cutoffTime)
+      const filteredRecords = records.filter((r) => r.timestamp.getTime() > cutoffTime)
       const removedCount = records.length - filteredRecords.length
 
       if (removedCount > 0) {
@@ -389,7 +388,7 @@ export class AnalyticsSystem extends EventEmitter {
 
     // Clean up error tracking
     for (const [adapterId, errors] of this.errorTracking) {
-      const filteredErrors = errors.filter(e => e.timestamp.getTime() > cutoffTime)
+      const filteredErrors = errors.filter((e) => e.timestamp.getTime() > cutoffTime)
       const removedCount = errors.length - filteredErrors.length
 
       if (removedCount > 0) {
@@ -404,7 +403,7 @@ export class AnalyticsSystem extends EventEmitter {
     const result: CleanupResult = {
       removedRecords,
       retainedRecords: this.getTotalRecordCount(),
-      freedMemoryMB: this.estimateMemoryFreed(removedRecords)
+      freedMemoryMB: this.estimateMemoryFreed(removedRecords),
     }
 
     logger.info('Analytics cleanup completed', result)
@@ -441,10 +440,9 @@ export class AnalyticsSystem extends EventEmitter {
       await this.reportGenerator.shutdown()
 
       logger.info('Analytics System shutdown complete')
-
     } catch (error) {
       logger.error('Error during analytics system shutdown', {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -454,34 +452,49 @@ export class AnalyticsSystem extends EventEmitter {
 
   private startMonitoring(): void {
     // Real-time metrics updates
-    this.timers.set('realtime', setInterval(() => {
-      this.updateRealtimeCalculations()
-    }, this.config.realTimeIntervalMs))
+    this.timers.set(
+      'realtime',
+      setInterval(() => {
+        this.updateRealtimeCalculations()
+      }, this.config.realTimeIntervalMs)
+    )
 
     // Performance metrics aggregation
-    this.timers.set('metrics', setInterval(() => {
-      this.aggregatePerformanceMetrics()
-    }, this.config.metricsIntervalMs))
+    this.timers.set(
+      'metrics',
+      setInterval(() => {
+        this.aggregatePerformanceMetrics()
+      }, this.config.metricsIntervalMs)
+    )
 
     // Health checks
-    this.timers.set('health', setInterval(() => {
-      this.performHealthChecks()
-    }, this.config.healthCheckIntervalMs))
+    this.timers.set(
+      'health',
+      setInterval(() => {
+        this.performHealthChecks()
+      }, this.config.healthCheckIntervalMs)
+    )
 
     // Data cleanup
-    this.timers.set('cleanup', setInterval(() => {
-      this.cleanup().catch(error => {
-        logger.error('Scheduled cleanup failed', { error: error.message })
-      })
-    }, 86400000)) // Daily cleanup
+    this.timers.set(
+      'cleanup',
+      setInterval(() => {
+        this.cleanup().catch((error) => {
+          logger.error('Scheduled cleanup failed', { error: error.message })
+        })
+      }, 86400000)
+    ) // Daily cleanup
 
     // Data persistence
     if (this.config.enablePersistence) {
-      this.timers.set('persistence', setInterval(() => {
-        this.persistData().catch(error => {
-          logger.error('Data persistence failed', { error: error.message })
-        })
-      }, this.config.persistenceInterval))
+      this.timers.set(
+        'persistence',
+        setInterval(() => {
+          this.persistData().catch((error) => {
+            logger.error('Data persistence failed', { error: error.message })
+          })
+        }, this.config.persistenceInterval)
+      )
     }
   }
 
@@ -517,7 +530,7 @@ export class AnalyticsSystem extends EventEmitter {
       recoverable: executionRecord.error!.recoverable || false,
       context: executionRecord.context,
       executionDuration: executionRecord.duration,
-      stackTrace: undefined // Would include if available
+      stackTrace: undefined, // Would include if available
     }
 
     this.errorTracking.get(adapterId)!.push(errorRecord)
@@ -613,12 +626,14 @@ export class AnalyticsSystem extends EventEmitter {
     const hour = new Date(record.timestamp).getHours()
 
     if (!metrics.hourlyStats) {
-      metrics.hourlyStats = Array(24).fill(null).map(() => ({
-        executions: 0,
-        errors: 0,
-        averageResponseTime: 0,
-        totalResponseTime: 0
-      }))
+      metrics.hourlyStats = Array(24)
+        .fill(null)
+        .map(() => ({
+          executions: 0,
+          errors: 0,
+          averageResponseTime: 0,
+          totalResponseTime: 0,
+        }))
     }
 
     const hourStats = metrics.hourlyStats[hour]
@@ -670,10 +685,7 @@ export class AnalyticsSystem extends EventEmitter {
     // Update common parameter patterns
     if (record.metadata.parameterCount) {
       const key = `params_${record.metadata.parameterCount}`
-      pattern.commonParameterPatterns.set(
-        key,
-        (pattern.commonParameterPatterns.get(key) || 0) + 1
-      )
+      pattern.commonParameterPatterns.set(key, (pattern.commonParameterPatterns.get(key) || 0) + 1)
     }
   }
 
@@ -693,8 +705,8 @@ export class AnalyticsSystem extends EventEmitter {
   }
 
   private determineSystemHealth(): 'healthy' | 'degraded' | 'unhealthy' {
-    const errorRate = this.realTimeMetrics.failedExecutions /
-                     Math.max(1, this.realTimeMetrics.totalExecutions)
+    const errorRate =
+      this.realTimeMetrics.failedExecutions / Math.max(1, this.realTimeMetrics.totalExecutions)
 
     if (errorRate > 0.1) return 'unhealthy' // > 10% error rate
     if (errorRate > 0.05) return 'degraded' // > 5% error rate
@@ -711,7 +723,7 @@ export class AnalyticsSystem extends EventEmitter {
     endTime: number
   ): ErrorAnalysis {
     const errors = this.errorTracking.get(adapterId) || []
-    const relevantErrors = errors.filter(e => {
+    const relevantErrors = errors.filter((e) => {
       const time = e.timestamp.getTime()
       return time >= startTime && time <= endTime
     })
@@ -735,12 +747,13 @@ export class AnalyticsSystem extends EventEmitter {
 
     return {
       totalErrors,
-      errorRate: totalErrors / Math.max(1, this.getExecutionCountForPeriod(adapterId, startTime, endTime)),
+      errorRate:
+        totalErrors / Math.max(1, this.getExecutionCountForPeriod(adapterId, startTime, endTime)),
       recoverableErrors,
       errorsByType: Object.fromEntries(errorsByType),
       errorsByHour,
       topErrors: this.getTopErrors(relevantErrors, 5),
-      trends: this.calculateErrorTrends(relevantErrors)
+      trends: this.calculateErrorTrends(relevantErrors),
     }
   }
 
@@ -752,7 +765,7 @@ export class AnalyticsSystem extends EventEmitter {
       errorsByType: {},
       errorsByHour: new Array(24).fill(0),
       topErrors: [],
-      trends: []
+      trends: [],
     }
 
     for (const adapterId of this.errorTracking.keys()) {
@@ -788,9 +801,13 @@ export class AnalyticsSystem extends EventEmitter {
     return combinedAnalysis
   }
 
-  private getExecutionCountForPeriod(adapterId: string, startTime: number, endTime: number): number {
+  private getExecutionCountForPeriod(
+    adapterId: string,
+    startTime: number,
+    endTime: number
+  ): number {
     const records = this.executionHistory.get(adapterId) || []
-    return records.filter(r => {
+    return records.filter((r) => {
       const time = r.timestamp.getTime()
       return time >= startTime && time <= endTime
     }).length
@@ -804,8 +821,11 @@ export class AnalyticsSystem extends EventEmitter {
     return total
   }
 
-  private getTopErrors(errors: ErrorRecord[], limit: number): Array<{type: string, message: string, count: number}> {
-    const errorCounts = new Map<string, {type: string, message: string, count: number}>()
+  private getTopErrors(
+    errors: ErrorRecord[],
+    limit: number
+  ): Array<{ type: string; message: string; count: number }> {
+    const errorCounts = new Map<string, { type: string; message: string; count: number }>()
 
     for (const error of errors) {
       const key = `${error.errorType}:${error.errorMessage}`
@@ -815,7 +835,7 @@ export class AnalyticsSystem extends EventEmitter {
         errorCounts.set(key, {
           type: error.errorType,
           message: error.errorMessage,
-          count: 1
+          count: 1,
         })
       }
     }
@@ -849,7 +869,7 @@ export class AnalyticsSystem extends EventEmitter {
       maxResponseTime: 0,
       totalResponseTime: 0,
       slowExecutions: 0,
-      lastExecution: new Date()
+      lastExecution: new Date(),
     }
   }
 
@@ -860,7 +880,7 @@ export class AnalyticsSystem extends EventEmitter {
       peakHours: {},
       weeklyPattern: {},
       commonParameterPatterns: new Map(),
-      seasonalTrends: []
+      seasonalTrends: [],
     }
   }
 
@@ -868,7 +888,7 @@ export class AnalyticsSystem extends EventEmitter {
     const now = Date.now()
     return {
       start: now - 86400000, // Last 24 hours
-      end: now
+      end: now,
     }
   }
 
@@ -924,7 +944,10 @@ class AlertManager {
   private alerts: Alert[] = []
   private rules: AlertRule[] = []
 
-  constructor(private config: AnalyticsConfig, private analytics: AnalyticsSystem) {}
+  constructor(
+    private config: AnalyticsConfig,
+    private analytics: AnalyticsSystem
+  ) {}
 
   checkExecutionRecord(adapterId: string, record: ExecutionRecord): void {
     // Check for alert conditions
@@ -940,7 +963,7 @@ class AlertManager {
   }
 
   getActiveAlerts(): Alert[] {
-    return this.alerts.filter(a => a.status === 'active')
+    return this.alerts.filter((a) => a.status === 'active')
   }
 
   private evaluateRule(rule: AlertRule, adapterId: string, record: ExecutionRecord): boolean {
@@ -960,8 +983,8 @@ class AlertManager {
       status: 'active',
       metadata: {
         rule: rule.name,
-        executionRecord: record
-      }
+        executionRecord: record,
+      },
     }
 
     this.alerts.push(alert)
@@ -972,7 +995,10 @@ class AlertManager {
 }
 
 class HealthChecker {
-  constructor(private config: AnalyticsConfig, private analytics: AnalyticsSystem) {}
+  constructor(
+    private config: AnalyticsConfig,
+    private analytics: AnalyticsSystem
+  ) {}
 
   performSystemCheck(): void {
     // System health check logic
@@ -983,7 +1009,7 @@ class HealthChecker {
       overall: 'healthy',
       components: {},
       lastCheck: new Date(),
-      uptime: Date.now() - 0 // Would track actual uptime
+      uptime: Date.now() - 0, // Would track actual uptime
     }
   }
 
@@ -991,7 +1017,10 @@ class HealthChecker {
 }
 
 class TrendAnalyzer {
-  constructor(private config: AnalyticsConfig, private analytics: AnalyticsSystem) {}
+  constructor(
+    private config: AnalyticsConfig,
+    private analytics: AnalyticsSystem
+  ) {}
 
   analyze(adapterId?: string): TrendAnalysis {
     // Trend analysis logic would go here
@@ -999,7 +1028,7 @@ class TrendAnalyzer {
       trends: [],
       predictions: [],
       confidence: 0,
-      recommendations: []
+      recommendations: [],
     }
   }
 
@@ -1007,7 +1036,10 @@ class TrendAnalyzer {
 }
 
 class AggregationEngine {
-  constructor(private config: AnalyticsConfig, private analytics: AnalyticsSystem) {}
+  constructor(
+    private config: AnalyticsConfig,
+    private analytics: AnalyticsSystem
+  ) {}
 
   async aggregateData(options: AggregationOptions): Promise<any> {
     // Data aggregation logic
@@ -1022,7 +1054,10 @@ class AggregationEngine {
 }
 
 class ReportGenerator {
-  constructor(private config: AnalyticsConfig, private analytics: AnalyticsSystem) {}
+  constructor(
+    private config: AnalyticsConfig,
+    private analytics: AnalyticsSystem
+  ) {}
 
   async generate(options: ReportOptions): Promise<AnalyticsReport> {
     // Report generation logic
@@ -1033,7 +1068,7 @@ class ReportGenerator {
       timeRange: options.timeRange,
       data: {},
       summary: {},
-      charts: []
+      charts: [],
     }
   }
 
@@ -1151,7 +1186,7 @@ interface ErrorAnalysis {
   recoverableErrors: number
   errorsByType: Record<string, number>
   errorsByHour: number[]
-  topErrors: Array<{type: string, message: string, count: number}>
+  topErrors: Array<{ type: string; message: string; count: number }>
   trends: ErrorTrend[]
 }
 

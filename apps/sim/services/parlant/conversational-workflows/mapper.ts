@@ -778,9 +778,7 @@ export class WorkflowJourneyMapper {
     return variables
   }
 
-  private extractInputFields(
-    node: any
-  ): Array<{
+  private extractInputFields(node: any): Array<{
     fieldName: string
     displayName: string
     description: string

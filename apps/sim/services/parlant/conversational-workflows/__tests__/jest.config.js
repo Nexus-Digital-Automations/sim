@@ -11,10 +11,7 @@ const config = {
   testEnvironment: 'node',
 
   // Test file patterns
-  testMatch: [
-    '**/__tests__/**/*.test.ts',
-    '**/__tests__/**/*.test.js'
-  ],
+  testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.js'],
 
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/__tests__/jest.setup.ts'],
@@ -29,29 +26,32 @@ const config = {
 
   // Transform configuration
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        compilerOptions: {
-          module: 'commonjs',
-          target: 'es2020',
-          lib: ['es2020'],
-          allowSyntheticDefaultImports: true,
-          esModuleInterop: true,
-          skipLibCheck: true,
-          strict: true,
-          forceConsistentCasingInFileNames: true,
-          moduleResolution: 'node',
-          resolveJsonModule: true,
-          isolatedModules: true,
-          noEmit: true,
-          incremental: true,
-          baseUrl: '.',
-          paths: {
-            '@/*': ['../../*']
-          }
-        }
-      }
-    }]
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          compilerOptions: {
+            module: 'commonjs',
+            target: 'es2020',
+            lib: ['es2020'],
+            allowSyntheticDefaultImports: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            strict: true,
+            forceConsistentCasingInFileNames: true,
+            moduleResolution: 'node',
+            resolveJsonModule: true,
+            isolatedModules: true,
+            noEmit: true,
+            incremental: true,
+            baseUrl: '.',
+            paths: {
+              '@/*': ['../../*'],
+            },
+          },
+        },
+      },
+    ],
   },
 
   // File extensions to handle
@@ -65,7 +65,7 @@ const config = {
     '../**/*.ts',
     '!../**/*.d.ts',
     '!../**/__tests__/**',
-    '!../**/node_modules/**'
+    '!../**/node_modules/**',
   ],
 
   // Coverage thresholds
@@ -74,8 +74,8 @@ const config = {
       branches: 70,
       functions: 80,
       lines: 80,
-      statements: 80
-    }
+      statements: 80,
+    },
   },
 
   // Test timeout
@@ -103,7 +103,7 @@ const config = {
   errorOnDeprecated: true,
 
   // Concurrent tests
-  maxWorkers: '50%'
+  maxWorkers: '50%',
 }
 
 module.exports = config

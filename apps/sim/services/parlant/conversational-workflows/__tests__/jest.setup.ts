@@ -37,14 +37,15 @@ expect.extend({
       'lastUpdatedAt',
       'awaitingUserInput',
       'availableActions',
-      'errorCount'
+      'errorCount',
     ]
 
-    const missingFields = requiredFields.filter(field => !(field in received))
+    const missingFields = requiredFields.filter((field) => !(field in received))
 
     if (missingFields.length > 0) {
       return {
-        message: () => `Expected valid ConversationalWorkflowState but missing fields: ${missingFields.join(', ')}`,
+        message: () =>
+          `Expected valid ConversationalWorkflowState but missing fields: ${missingFields.join(', ')}`,
         pass: false,
       }
     }
@@ -66,13 +67,16 @@ expect.extend({
       ['lastUpdatedAt', 'date'],
       ['awaitingUserInput', 'boolean'],
       ['availableActions', 'array'],
-      ['errorCount', 'number']
+      ['errorCount', 'number'],
     ]
 
     for (const [field, expectedType] of validations) {
-      const actualType = expectedType === 'array' ? 'array' :
-                        expectedType === 'date' ? 'date' :
-                        typeof received[field]
+      const actualType =
+        expectedType === 'array'
+          ? 'array'
+          : expectedType === 'date'
+            ? 'date'
+            : typeof received[field]
 
       if (expectedType === 'array' && !Array.isArray(received[field])) {
         return {
@@ -113,36 +117,44 @@ expect.extend({
       'mappedCommand',
       'commandParameters',
       'contextualReferences',
-      'conversationHistory'
+      'conversationHistory',
     ]
 
-    const missingFields = requiredFields.filter(field => !(field in received))
+    const missingFields = requiredFields.filter((field) => !(field in received))
 
     if (missingFields.length > 0) {
       return {
-        message: () => `Expected valid NLPProcessingResult but missing fields: ${missingFields.join(', ')}`,
+        message: () =>
+          `Expected valid NLPProcessingResult but missing fields: ${missingFields.join(', ')}`,
         pass: false,
       }
     }
 
     // Validate specific constraints
-    if (typeof received.intentConfidence !== 'number' || received.intentConfidence < 0 || received.intentConfidence > 1) {
+    if (
+      typeof received.intentConfidence !== 'number' ||
+      received.intentConfidence < 0 ||
+      received.intentConfidence > 1
+    ) {
       return {
-        message: () => `Expected intentConfidence to be a number between 0 and 1 but got ${received.intentConfidence}`,
+        message: () =>
+          `Expected intentConfidence to be a number between 0 and 1 but got ${received.intentConfidence}`,
         pass: false,
       }
     }
 
     if (!Array.isArray(received.alternativeIntents)) {
       return {
-        message: () => `Expected alternativeIntents to be an array but got ${typeof received.alternativeIntents}`,
+        message: () =>
+          `Expected alternativeIntents to be an array but got ${typeof received.alternativeIntents}`,
         pass: false,
       }
     }
 
     if (!Array.isArray(received.extractedEntities)) {
       return {
-        message: () => `Expected extractedEntities to be an array but got ${typeof received.extractedEntities}`,
+        message: () =>
+          `Expected extractedEntities to be an array but got ${typeof received.extractedEntities}`,
         pass: false,
       }
     }
@@ -165,14 +177,15 @@ expect.extend({
       'edgeTransitionMappings',
       'contextVariableMappings',
       'executionConfig',
-      'conversationalConfig'
+      'conversationalConfig',
     ]
 
-    const missingFields = requiredFields.filter(field => !(field in received))
+    const missingFields = requiredFields.filter((field) => !(field in received))
 
     if (missingFields.length > 0) {
       return {
-        message: () => `Expected valid WorkflowToJourneyMapping but missing fields: ${missingFields.join(', ')}`,
+        message: () =>
+          `Expected valid WorkflowToJourneyMapping but missing fields: ${missingFields.join(', ')}`,
         pass: false,
       }
     }
@@ -245,11 +258,9 @@ beforeAll(() => {
     const message = args[0]
     if (
       typeof message === 'string' &&
-      (
-        message.includes('Socket.io') ||
+      (message.includes('Socket.io') ||
         message.includes('Parlant client') ||
-        message.includes('Warning: ReactDOM.render')
-      )
+        message.includes('Warning: ReactDOM.render'))
     ) {
       return
     }
@@ -261,10 +272,8 @@ beforeAll(() => {
     const message = args[0]
     if (
       typeof message === 'string' &&
-      (
-        message.includes('Warning: Can\'t perform a React state update') ||
-        message.includes('Warning: Each child in a list should have a unique "key" prop')
-      )
+      (message.includes("Warning: Can't perform a React state update") ||
+        message.includes('Warning: Each child in a list should have a unique "key" prop'))
     ) {
       return
     }

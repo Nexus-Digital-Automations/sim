@@ -7,16 +7,14 @@
  * and complex parameter validation.
  */
 
-import {
-  WorkflowTemplate,
-  TemplateMixin,
+import { TemplateLibrary } from '../library/template-library'
+import type {
   ConditionalExpression,
-  ParameterValidation,
+  TemplateMixin,
   ValidationContext,
   ValidationResult,
+  WorkflowTemplate,
 } from '../types/template-types'
-import { TemplateLibrary } from '../library/template-library'
-import { JourneyGenerator } from '../generators/journey-generator'
 
 // ============================================================================
 // Advanced Pattern 1: Template Inheritance
@@ -185,7 +183,8 @@ async function demonstrateTemplateInheritance() {
           operation: 'update',
           newValue: {
             data: {
-              prompt: 'Hello {{customerName}}! I\'m here to help with your technical issue. What seems to be the problem?',
+              prompt:
+                "Hello {{customerName}}! I'm here to help with your technical issue. What seems to be the problem?",
             },
           },
         },
@@ -400,7 +399,9 @@ async function demonstrateTemplateMixins() {
   console.log(`   - Base parameters: 1`)
   console.log(`   - Satisfaction mixin parameters: ${satisfactionMixin.parametersToAdd.length}`)
   console.log(`   - Escalation mixin parameters: ${escalationMixin.parametersToAdd.length}`)
-  console.log(`   - Total parameters: ${1 + satisfactionMixin.parametersToAdd.length + escalationMixin.parametersToAdd.length}`)
+  console.log(
+    `   - Total parameters: ${1 + satisfactionMixin.parametersToAdd.length + escalationMixin.parametersToAdd.length}`
+  )
 }
 
 // ============================================================================

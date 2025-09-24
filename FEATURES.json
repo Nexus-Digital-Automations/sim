@@ -44,9 +44,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -85,9 +83,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": [
-        "parlant-server-setup"
-      ],
+      "dependencies": ["parlant-server-setup"],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -126,9 +122,7 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -166,9 +160,7 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -207,9 +199,7 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "universal-tool-adapter"
-      ],
+      "dependencies": ["universal-tool-adapter"],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -235,9 +225,7 @@
       "priority": "high",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "sim-parlant-bridge"
-      ],
+      "dependencies": ["sim-parlant-bridge"],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -263,10 +251,7 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface",
-        "workflow-journey-mapping"
-      ],
+      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -292,9 +277,7 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "parlant-chat-interface"
-      ],
+      "dependencies": ["parlant-chat-interface"],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -320,9 +303,7 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": [
-        "agent-management-ui"
-      ],
+      "dependencies": ["agent-management-ui"],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -348,9 +329,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "knowledge-integration"
-      ],
+      "dependencies": ["knowledge-integration"],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -376,9 +355,7 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": [
-        "multi-agent-orchestration"
-      ],
+      "dependencies": ["multi-agent-orchestration"],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -523,161 +500,12 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "claude-code-agent": {
-      "lastHeartbeat": "2025-09-24T05:45:10.121Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:45:10.121Z",
-      "sessionId": "98c054fc4283c2a3",
-      "previousSessions": [
-        "d6ccb4edf09ffee8",
-        "ac54e63f90c940a7",
-        "e1e37b837972fd46",
-        "232172551fdc7293"
-      ]
-    },
-    "TESTING_VALIDATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:29:25.716Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:29:25.716Z",
-      "sessionId": "caeca7edb236761f",
-      "previousSessions": [
-        "f56b457808e87edd"
-      ]
-    },
-    "adapter-pattern-design-agent": {
-      "lastHeartbeat": "2025-09-24T05:37:22.363Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:22.363Z",
-      "sessionId": "ac11a32c9e7b512f",
-      "previousSessions": []
-    },
-    "core_tool_implementation_agent": {
-      "lastHeartbeat": "2025-09-24T05:37:22.436Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:22.436Z",
-      "sessionId": "53059b18d7c20418",
-      "previousSessions": []
-    },
-    "extended-tool-agent": {
-      "lastHeartbeat": "2025-09-24T05:37:22.661Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:22.661Z",
-      "sessionId": "0700b482a489892d",
-      "previousSessions": []
-    },
-    "NATURAL_LANGUAGE_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:37:22.741Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:22.741Z",
-      "sessionId": "49b77376f2508541",
-      "previousSessions": []
-    },
-    "integration-testing-agent": {
-      "lastHeartbeat": "2025-09-24T05:37:23.282Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:23.282Z",
-      "sessionId": "279b70e33b9299bc",
-      "previousSessions": []
-    },
-    "tool-registry-agent": {
-      "lastHeartbeat": "2025-09-24T05:37:44.985Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:37:44.985Z",
-      "sessionId": "195b5ebdd6956293",
-      "previousSessions": []
-    },
-    "tool-recommendation-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:34.220Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:38:34.220Z",
-      "sessionId": "a9012c9644058547",
-      "previousSessions": []
-    },
-    "realtime-suggestion-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.500Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.500Z",
-      "sessionId": "d37bfeb3e601fcbe"
-    },
-    "recommendation-testing-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.504Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.504Z",
-      "sessionId": "b355fbbb09d7bae2"
-    },
-    "user-behavior-tracking-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.510Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.510Z",
-      "sessionId": "5aee5fe2367d68d1"
-    },
-    "natural-language-integration-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.512Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.512Z",
-      "sessionId": "e110e679d2177087"
-    },
-    "personalization-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.516Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.516Z",
-      "sessionId": "62b7a8ddc079864d"
-    },
-    "ml-recommendation-engine-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.522Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.522Z",
-      "sessionId": "acf2602bf7ea5023"
-    },
-    "workspace-pattern-agent": {
-      "lastHeartbeat": "2025-09-24T05:38:51.529Z",
-      "status": "active",
-      "initialized": "2025-09-24T05:38:51.529Z",
-      "sessionId": "2361e1aeed694df3"
-    },
-    "TOOL_DISCOVERY_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:47:33.232Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:47:33.232Z",
-      "sessionId": "a8e8c8567b467d91",
-      "previousSessions": []
-    },
-    "PERFORMANCE_MONITORING_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:47:34.261Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:47:34.261Z",
-      "sessionId": "505c3eb23b884b90",
-      "previousSessions": []
-    },
     "integration_testing_agent": {
       "lastHeartbeat": "2025-09-24T06:13:24.803Z",
       "status": "active",
       "reinitialized": "2025-09-24T06:13:24.803Z",
       "sessionId": "8b3f7297d278725b",
-      "previousSessions": [
-        "6627803908838b81"
-      ]
-    },
-    "RESULT_FORMATTING_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:47:41.700Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:47:41.700Z",
-      "sessionId": "c6f2fdbee977daed",
-      "previousSessions": []
-    },
-    "SPECIFIC_TOOL_ADAPTERS_AGENT": {
-      "lastHeartbeat": "2025-09-24T05:47:47.577Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T05:47:47.577Z",
-      "sessionId": "b88ff2e6f3d8e483",
-      "previousSessions": []
-    },
-    "result-formatting-agent": {
-      "lastHeartbeat": "2025-09-24T06:04:27.313Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:04:27.313Z",
-      "sessionId": "9f776837322dc084",
-      "previousSessions": []
+      "previousSessions": ["6627803908838b81"]
     },
     "agent_continue_001": {
       "lastHeartbeat": "2025-09-24T06:10:51.347Z",
@@ -691,9 +519,7 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:37:32.738Z",
       "sessionId": "d952d457db032b8f",
-      "previousSessions": [
-        "0045194efdffd125"
-      ]
+      "previousSessions": ["0045194efdffd125"]
     },
     "conversion-engine-agent": {
       "lastHeartbeat": "2025-09-24T06:12:33.428Z",
@@ -735,9 +561,7 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:36:46.447Z",
       "sessionId": "62b71471ab325801",
-      "previousSessions": [
-        "4134dc1f437dbed5"
-      ]
+      "previousSessions": ["4134dc1f437dbed5"]
     },
     "Documentation-Agent": {
       "lastHeartbeat": "2025-09-24T06:19:01.039Z",
@@ -751,9 +575,7 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:37:33.415Z",
       "sessionId": "c9dd2e10e5c5c47e",
-      "previousSessions": [
-        "a5f87d210c9f770a"
-      ]
+      "previousSessions": ["a5f87d210c9f770a"]
     },
     "workflow-preservation-agent": {
       "lastHeartbeat": "2025-09-24T06:19:05.634Z",

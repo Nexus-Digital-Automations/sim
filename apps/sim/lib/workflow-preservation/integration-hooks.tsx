@@ -43,26 +43,30 @@ export function useWorkflowPreservation(workflowId: string) {
     }
   }, [workflowId])
 
-  const initializePreservation = useCallback(async (workflow: WorkflowState) => {
-    try {
-      setError(null)
-      const result = await WorkflowPreservationAPI.initializePreservation(workflowId, workflow)
-      setPreservationState(result.preservationState)
-      setIsInitialized(true)
+  const initializePreservation = useCallback(
+    async (workflow: WorkflowState) => {
+      try {
+        setError(null)
+        const result = await WorkflowPreservationAPI.initializePreservation(workflowId, workflow)
+        setPreservationState(result.preservationState)
+        setIsInitialized(true)
 
-      logger.info('Preservation initialized', { workflowId })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize preservation'
-      setError(errorMessage)
-      logger.error('Failed to initialize preservation', { workflowId, error: err })
-    }
-  }, [workflowId])
+        logger.info('Preservation initialized', { workflowId })
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to initialize preservation'
+        setError(errorMessage)
+        logger.error('Failed to initialize preservation', { workflowId, error: err })
+      }
+    },
+    [workflowId]
+  )
 
   return {
     preservationState,
     isInitialized,
     error,
-    initializePreservation
+    initializePreservation,
   }
 }
 
@@ -82,47 +86,54 @@ export function useModeSwitch(workflowId: string) {
     }
   }, [workflowId])
 
-  const switchMode = useCallback(async (targetMode: WorkflowMode, userId?: string) => {
-    if (isSwitching) return
+  const switchMode = useCallback(
+    async (targetMode: WorkflowMode, userId?: string) => {
+      if (isSwitching) return
 
-    setIsSwitching(true)
-    setSwitchError(null)
+      setIsSwitching(true)
+      setSwitchError(null)
 
-    try {
-      const result = await WorkflowPreservationAPI.switchMode(workflowId, targetMode, userId)
+      try {
+        const result = await WorkflowPreservationAPI.switchMode(workflowId, targetMode, userId)
 
-      if (result.success) {
-        setCurrentMode(targetMode)
-        logger.info('Mode switched successfully', {
-          workflowId,
-          fromMode: result.details.fromMode,
-          toMode: targetMode
-        })
-      } else {
-        setSwitchError(result.error || 'Mode switch failed')
-        logger.error('Mode switch failed', { workflowId, targetMode, error: result.error })
+        if (result.success) {
+          setCurrentMode(targetMode)
+          logger.info('Mode switched successfully', {
+            workflowId,
+            fromMode: result.details.fromMode,
+            toMode: targetMode,
+          })
+        } else {
+          setSwitchError(result.error || 'Mode switch failed')
+          logger.error('Mode switch failed', { workflowId, targetMode, error: result.error })
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Mode switch failed'
+        setSwitchError(errorMessage)
+        logger.error('Mode switch error', { workflowId, targetMode, error: err })
+      } finally {
+        setIsSwitching(false)
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Mode switch failed'
-      setSwitchError(errorMessage)
-      logger.error('Mode switch error', { workflowId, targetMode, error: err })
-    } finally {
-      setIsSwitching(false)
-    }
-  }, [workflowId, isSwitching])
+    },
+    [workflowId, isSwitching]
+  )
 
   return {
     currentMode,
     isSwitching,
     switchError,
-    switchMode
+    switchMode,
   }
 }
 
 /**
  * Hook for continuous preservation validation
  */
-export function usePreservationValidation(workflowId: string, workflow: WorkflowState | null, enabled = true) {
+export function usePreservationValidation(
+  workflowId: string,
+  workflow: WorkflowState | null,
+  enabled = true
+) {
   const [validationResult, setValidationResult] = useState<any>(null)
   const [isValidating, setIsValidating] = useState(false)
   const [lastValidated, setLastValidated] = useState<Date | null>(null)
@@ -139,7 +150,7 @@ export function usePreservationValidation(workflowId: string, workflow: Workflow
       if (!result.success) {
         logger.warn('Preservation validation failed', {
           workflowId,
-          error: result.error
+          error: result.error,
         })
       }
     } catch (err) {
@@ -162,7 +173,7 @@ export function usePreservationValidation(workflowId: string, workflow: Workflow
     validationResult,
     isValidating,
     lastValidated,
-    validatePreservation
+    validatePreservation,
   }
 }
 
@@ -184,46 +195,52 @@ export function useRollback(workflowId: string) {
     // Get available checkpoints
     if (status.migrationHistory) {
       const checkpointIds = status.migrationHistory
-        .flatMap(m => m.details.checkpoints)
-        .map(cp => cp.id)
+        .flatMap((m) => m.details.checkpoints)
+        .map((cp) => cp.id)
       setCheckpoints(checkpointIds)
     }
   }, [workflowId])
 
-  const createCheckpoint = useCallback(async (description: string) => {
-    try {
-      const checkpointId = await WorkflowPreservationAPI.createCheckpoint(workflowId, description)
-      setCheckpoints(prev => [...prev, checkpointId])
-      return checkpointId
-    } catch (err) {
-      logger.error('Failed to create checkpoint', { workflowId, error: err })
-      throw err
-    }
-  }, [workflowId])
-
-  const rollback = useCallback(async (checkpointId: string) => {
-    if (isRollingBack) return
-
-    setIsRollingBack(true)
-    setRollbackError(null)
-
-    try {
-      const result = await WorkflowPreservationAPI.rollback(workflowId, checkpointId)
-
-      if (result.success) {
-        logger.info('Rollback successful', { workflowId, checkpointId })
-      } else {
-        setRollbackError(result.error || 'Rollback failed')
-        logger.error('Rollback failed', { workflowId, checkpointId, error: result.error })
+  const createCheckpoint = useCallback(
+    async (description: string) => {
+      try {
+        const checkpointId = await WorkflowPreservationAPI.createCheckpoint(workflowId, description)
+        setCheckpoints((prev) => [...prev, checkpointId])
+        return checkpointId
+      } catch (err) {
+        logger.error('Failed to create checkpoint', { workflowId, error: err })
+        throw err
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Rollback failed'
-      setRollbackError(errorMessage)
-      logger.error('Rollback error', { workflowId, checkpointId, error: err })
-    } finally {
-      setIsRollingBack(false)
-    }
-  }, [workflowId, isRollingBack])
+    },
+    [workflowId]
+  )
+
+  const rollback = useCallback(
+    async (checkpointId: string) => {
+      if (isRollingBack) return
+
+      setIsRollingBack(true)
+      setRollbackError(null)
+
+      try {
+        const result = await WorkflowPreservationAPI.rollback(workflowId, checkpointId)
+
+        if (result.success) {
+          logger.info('Rollback successful', { workflowId, checkpointId })
+        } else {
+          setRollbackError(result.error || 'Rollback failed')
+          logger.error('Rollback failed', { workflowId, checkpointId, error: result.error })
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Rollback failed'
+        setRollbackError(errorMessage)
+        logger.error('Rollback error', { workflowId, checkpointId, error: err })
+      } finally {
+        setIsRollingBack(false)
+      }
+    },
+    [workflowId, isRollingBack]
+  )
 
   return {
     isRollbackAvailable,
@@ -231,7 +248,7 @@ export function useRollback(workflowId: string) {
     rollbackError,
     checkpoints,
     createCheckpoint,
-    rollback
+    rollback,
   }
 }
 
@@ -256,7 +273,7 @@ export function useSafetyCheck(workflowId: string) {
       setSafetyStatus({
         safe: false,
         reasons: ['Safety check failed'],
-        recommendations: ['Contact support']
+        recommendations: ['Contact support'],
       })
     } finally {
       setIsChecking(false)
@@ -266,7 +283,7 @@ export function useSafetyCheck(workflowId: string) {
   return {
     safetyStatus,
     isChecking,
-    checkSafety
+    checkSafety,
   }
 }
 
@@ -291,7 +308,7 @@ export function usePreservationStatus(workflowId: string) {
       preservationState: preservationStatus.preservationState,
       coexistenceState: preservationStatus.coexistenceState,
       migrationHistory: preservationStatus.migrationHistory,
-      testResults: preservationStatus.testResults
+      testResults: preservationStatus.testResults,
     }
   }, [
     workflowId,
@@ -301,7 +318,7 @@ export function usePreservationStatus(workflowId: string) {
     modeSwitch.switchError,
     rollback.isRollbackAvailable,
     rollback.rollbackError,
-    safety.safetyStatus.safe
+    safety.safetyStatus.safe,
   ])
 
   return {
@@ -309,7 +326,7 @@ export function usePreservationStatus(workflowId: string) {
     preservation,
     modeSwitch,
     rollback,
-    safety
+    safety,
   }
 }
 
@@ -319,7 +336,9 @@ export function usePreservationStatus(workflowId: string) {
 export function withWorkflowPreservation<P extends object>(
   WrappedComponent: React.ComponentType<P>
 ) {
-  return function PreservationWrappedComponent(props: P & { workflowId: string; workflow?: WorkflowState }) {
+  return function PreservationWrappedComponent(
+    props: P & { workflowId: string; workflow?: WorkflowState }
+  ) {
     const { preservation } = usePreservationStatus(props.workflowId)
 
     // Auto-initialize preservation if not already initialized
@@ -340,7 +359,7 @@ export const PreservationContext = React.createContext<{
   workflowId?: string
   preservationAPI: typeof WorkflowPreservationAPI
 }>({
-  preservationAPI: WorkflowPreservationAPI
+  preservationAPI: WorkflowPreservationAPI,
 })
 
 /**
@@ -348,20 +367,21 @@ export const PreservationContext = React.createContext<{
  */
 export function PreservationProvider({
   children,
-  workflowId
+  workflowId,
 }: {
   children: React.ReactNode
   workflowId?: string
 }) {
-  const contextValue = useMemo(() => ({
-    workflowId,
-    preservationAPI: WorkflowPreservationAPI
-  }), [workflowId])
+  const contextValue = useMemo(
+    () => ({
+      workflowId,
+      preservationAPI: WorkflowPreservationAPI,
+    }),
+    [workflowId]
+  )
 
   return (
-    <PreservationContext.Provider value={contextValue}>
-      {children}
-    </PreservationContext.Provider>
+    <PreservationContext.Provider value={contextValue}>{children}</PreservationContext.Provider>
   )
 }
 

@@ -14,13 +14,10 @@ import type {
   CachingConfig,
   PerformanceConfig,
   AdapterExecutionResult,
-  AdapterExecutionContext
+  AdapterExecutionContext,
 } from '../types/adapter-interfaces'
 
-import type {
-  ParlantExecutionContext,
-  ParlantToolResult
-} from '../types/parlant-interfaces'
+import type { ParlantExecutionContext, ParlantToolResult } from '../types/parlant-interfaces'
 
 import { createLogger } from '../utils/logger'
 
@@ -30,7 +27,6 @@ const logger = createLogger('PerformanceOptimizationEngine')
  * Comprehensive performance optimization engine
  */
 export class PerformanceOptimizationEngine extends EventEmitter {
-
   // Core caching systems
   private readonly executionCache: IntelligentCache<AdapterExecutionResult>
   private readonly parameterCache: IntelligentCache<Record<string, any>>
@@ -59,7 +55,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     connectionsReused: 0,
     averageResponseTime: 0,
     memoryUsage: 0,
-    optimizationsApplied: 0
+    optimizationsApplied: 0,
   }
 
   constructor(config: PerformanceEngineConfig = {}) {
@@ -72,20 +68,20 @@ export class PerformanceOptimizationEngine extends EventEmitter {
           enabled: true,
           maxSize: 1000,
           ttlMs: 300000, // 5 minutes
-          strategy: 'lru'
+          strategy: 'lru',
         },
         parameter: {
           enabled: true,
           maxSize: 500,
           ttlMs: 600000, // 10 minutes
-          strategy: 'lfu'
+          strategy: 'lfu',
         },
         result: {
           enabled: true,
           maxSize: 2000,
           ttlMs: 180000, // 3 minutes
-          strategy: 'adaptive'
-        }
+          strategy: 'adaptive',
+        },
       },
 
       // Connection pooling
@@ -95,7 +91,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         maxConnections: 20,
         idleTimeoutMs: 300000, // 5 minutes
         connectionTimeoutMs: 10000,
-        validateOnBorrow: true
+        validateOnBorrow: true,
       },
 
       // Request batching
@@ -103,7 +99,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         enabled: true,
         maxBatchSize: 10,
         batchTimeoutMs: 100,
-        intelligentBatching: true
+        intelligentBatching: true,
       },
 
       // Adaptive optimization
@@ -112,7 +108,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         monitoringWindowMs: 60000, // 1 minute
         optimizationThreshold: 0.8, // 80% cache hit rate
         memoryThresholdMB: 100,
-        autoTuning: true
+        autoTuning: true,
       },
 
       // Memory management
@@ -121,33 +117,33 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         maxMemoryMB: 256,
         gcThresholdMB: 200,
         compressionEnabled: true,
-        swapToDisk: false
+        swapToDisk: false,
       },
 
-      ...config
+      ...config,
     }
 
     // Initialize caching systems
     this.executionCache = new IntelligentCache<AdapterExecutionResult>({
       name: 'execution',
-      ...this.config.caching.execution
+      ...this.config.caching.execution,
     })
 
     this.parameterCache = new IntelligentCache<Record<string, any>>({
       name: 'parameter',
-      ...this.config.caching.parameter
+      ...this.config.caching.parameter,
     })
 
     this.resultCache = new IntelligentCache<ParlantToolResult>({
       name: 'result',
-      ...this.config.caching.result
+      ...this.config.caching.result,
     })
 
     this.metadataCache = new IntelligentCache<any>({
       name: 'metadata',
       maxSize: 100,
       ttlMs: 900000, // 15 minutes
-      strategy: 'lru'
+      strategy: 'lru',
     })
 
     // Initialize connection management
@@ -166,7 +162,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
       caching: this.config.caching.execution.enabled,
       connectionPooling: this.config.connectionPooling.enabled,
       batching: this.config.batching.enabled,
-      adaptation: this.config.adaptation.enabled
+      adaptation: this.config.adaptation.enabled,
     })
   }
 
@@ -177,7 +173,11 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     adapterId: string,
     context: ParlantExecutionContext,
     args: any,
-    executor: (adapterId: string, context: ParlantExecutionContext, args: any) => Promise<AdapterExecutionResult>
+    executor: (
+      adapterId: string,
+      context: ParlantExecutionContext,
+      args: any
+    ) => Promise<AdapterExecutionResult>
   ): Promise<AdapterExecutionResult> {
     const startTime = Date.now()
     const executionId = this.generateExecutionId()
@@ -187,7 +187,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     logger.debug('Starting optimized execution', {
       executionId,
       adapterId,
-      hasCache: this.config.caching.execution.enabled
+      hasCache: this.config.caching.execution.enabled,
     })
 
     try {
@@ -204,14 +204,14 @@ export class PerformanceOptimizationEngine extends EventEmitter {
           logger.debug('Returning cached execution result', {
             executionId,
             adapterId,
-            duration
+            duration,
           })
 
           this.emit('cache:hit', {
             type: 'execution',
             adapterId,
             executionId,
-            duration
+            duration,
           })
 
           return cached
@@ -265,7 +265,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
           adapterId,
           success: result.success,
           duration,
-          cached: false
+          cached: false,
         })
 
         this.emit('execution:completed', {
@@ -273,18 +273,16 @@ export class PerformanceOptimizationEngine extends EventEmitter {
           executionId,
           duration,
           success: result.success,
-          cached: false
+          cached: false,
         })
 
         return result
-
       } finally {
         // Release connection back to pool
         if (connection) {
           await this.connectionPool.release(connection)
         }
       }
-
     } catch (error) {
       const duration = Date.now() - startTime
       this.updateAverageResponseTime(duration)
@@ -293,14 +291,14 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         executionId,
         adapterId,
         duration,
-        error: error.message
+        error: error.message,
       })
 
       this.emit('execution:error', {
         adapterId,
         executionId,
         duration,
-        error: error.message
+        error: error.message,
       })
 
       throw error
@@ -322,7 +320,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
     logger.debug('Cached parameter transformation', {
       parameterId,
-      cacheKey: cacheKey.substring(0, 20) + '...'
+      cacheKey: cacheKey.substring(0, 20) + '...',
     })
   }
 
@@ -341,7 +339,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     if (cached) {
       logger.debug('Retrieved cached parameter transformation', {
         parameterId,
-        cacheKey: cacheKey.substring(0, 20) + '...'
+        cacheKey: cacheKey.substring(0, 20) + '...',
       })
     }
 
@@ -351,16 +349,14 @@ export class PerformanceOptimizationEngine extends EventEmitter {
   /**
    * Batch multiple adapter executions for efficiency
    */
-  async batchExecutions(
-    requests: BatchExecutionRequest[]
-  ): Promise<BatchExecutionResult[]> {
+  async batchExecutions(requests: BatchExecutionRequest[]): Promise<BatchExecutionResult[]> {
     if (!this.config.batching.enabled || requests.length === 0) {
       return []
     }
 
     const startTime = Date.now()
     logger.info('Starting batch execution', {
-      requestCount: requests.length
+      requestCount: requests.length,
     })
 
     try {
@@ -370,10 +366,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
       // Process each adapter group
       for (const [adapterId, adapterRequests] of groupedRequests) {
-        const adapterResults = await this.processBatchForAdapter(
-          adapterId,
-          adapterRequests
-        )
+        const adapterResults = await this.processBatchForAdapter(adapterId, adapterRequests)
         results.push(...adapterResults)
       }
 
@@ -383,15 +376,14 @@ export class PerformanceOptimizationEngine extends EventEmitter {
       logger.info('Batch execution completed', {
         requestCount: requests.length,
         duration,
-        successCount: results.filter(r => r.success).length
+        successCount: results.filter((r) => r.success).length,
       })
 
       return results
-
     } catch (error) {
       logger.error('Batch execution failed', {
         requestCount: requests.length,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -408,7 +400,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
     logger.info('Pre-warming cache', {
       adapterId,
-      parameterSets: commonParameters.length
+      parameterSets: commonParameters.length,
     })
 
     for (const { context, args } of commonParameters) {
@@ -423,7 +415,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         } catch (error) {
           logger.warn('Failed to pre-warm cache entry', {
             adapterId,
-            error: error.message
+            error: error.message,
           })
         }
       }
@@ -458,12 +450,12 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
     logger.info('Memory optimization completed', {
       memoryFreed: beforeStats.used - afterStats.used,
-      cacheEntriesRemoved: beforeStats.cacheEntries - afterStats.cacheEntries
+      cacheEntriesRemoved: beforeStats.cacheEntries - afterStats.cacheEntries,
     })
 
     this.emit('memory:optimized', {
       before: beforeStats,
-      after: afterStats
+      after: afterStats,
     })
   }
 
@@ -477,12 +469,12 @@ export class PerformanceOptimizationEngine extends EventEmitter {
         execution: this.executionCache.getStats(),
         parameter: this.parameterCache.getStats(),
         result: this.resultCache.getStats(),
-        metadata: this.metadataCache.getStats()
+        metadata: this.metadataCache.getStats(),
       },
       connectionPoolStats: this.connectionPool.getStats(),
       memoryStats: this.getMemoryStats(),
       adaptiveStats: this.adaptiveOptimizer.getStats(),
-      batchingStats: this.requestBatcher.getStats()
+      batchingStats: this.requestBatcher.getStats(),
     }
   }
 
@@ -545,10 +537,9 @@ export class PerformanceOptimizationEngine extends EventEmitter {
       await this.requestBatcher.shutdown()
 
       logger.info('Performance Optimization Engine shutdown complete')
-
     } catch (error) {
       logger.error('Error during performance engine shutdown', {
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -583,14 +574,14 @@ export class PerformanceOptimizationEngine extends EventEmitter {
       this.emit('performance:degradation', {
         type: 'cache_hit_rate',
         current: hitRate,
-        threshold: this.config.adaptation.optimizationThreshold
+        threshold: this.config.adaptation.optimizationThreshold,
       })
     }
 
     this.emit('performance:metrics', {
       cacheHitRate: hitRate,
       cacheSize: executionStats.size,
-      memoryUsage: this.getMemoryUsage()
+      memoryUsage: this.getMemoryUsage(),
     })
   }
 
@@ -599,9 +590,9 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     this.stats.memoryUsage = memoryMB
 
     if (memoryMB > this.config.memoryManagement.gcThresholdMB) {
-      this.optimizeMemory().catch(error => {
+      this.optimizeMemory().catch((error) => {
         logger.error('Automatic memory optimization failed', {
-          error: error.message
+          error: error.message,
         })
       })
     }
@@ -620,16 +611,13 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     const contextKey = JSON.stringify({
       type: context.type,
       agentId: context.agentId,
-      sessionId: context.sessionId
+      sessionId: context.sessionId,
     })
     const argsKey = JSON.stringify(args)
     return `${adapterId}:${this.hashString(contextKey)}:${this.hashString(argsKey)}`
   }
 
-  private generateParameterCacheKey(
-    parameterId: string,
-    params: Record<string, any>
-  ): string {
+  private generateParameterCacheKey(parameterId: string, params: Record<string, any>): string {
     const paramsKey = JSON.stringify(params)
     return `${parameterId}:${this.hashString(paramsKey)}`
   }
@@ -638,7 +626,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32bit integer
     }
     return hash.toString(36)
@@ -647,8 +635,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
   private updateAverageResponseTime(duration: number): void {
     // Exponential moving average
     const alpha = 0.1
-    this.stats.averageResponseTime =
-      this.stats.averageResponseTime * (1 - alpha) + duration * alpha
+    this.stats.averageResponseTime = this.stats.averageResponseTime * (1 - alpha) + duration * alpha
   }
 
   private calculateHitRate(): number {
@@ -674,7 +661,7 @@ export class PerformanceOptimizationEngine extends EventEmitter {
     return {
       used: memoryUsage,
       cacheEntries,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 
@@ -707,25 +694,20 @@ export class PerformanceOptimizationEngine extends EventEmitter {
 
     for (const request of requests) {
       try {
-        const result = await request.executor(
-          request.adapterId,
-          request.context,
-          request.args
-        )
+        const result = await request.executor(request.adapterId, request.context, request.args)
 
         results.push({
           requestId: request.requestId,
           success: result.success,
           result,
-          duration: result.durationMs
+          duration: result.durationMs,
         })
-
       } catch (error) {
         results.push({
           requestId: request.requestId,
           success: false,
           error: error.message,
-          duration: 0
+          duration: 0,
         })
       }
     }
@@ -745,7 +727,7 @@ class IntelligentCache<T> {
     hits: 0,
     misses: 0,
     evictions: 0,
-    hitRate: 0
+    hitRate: 0,
   }
 
   constructor(config: CacheConfig) {
@@ -791,7 +773,7 @@ class IntelligentCache<T> {
       value,
       createdAt: Date.now(),
       expiresAt,
-      accessCount: 1
+      accessCount: 1,
     })
 
     this.updateAccessTracking(key)
@@ -817,7 +799,7 @@ class IntelligentCache<T> {
     this.stats.size = this.data.size
     logger.debug('Cache cleanup completed', {
       cache: this.config.name,
-      removedCount
+      removedCount,
     })
   }
 
@@ -872,32 +854,29 @@ class IntelligentCache<T> {
     this.stats.evictions += toEvict.length
   }
 
-  private selectLRUEntries(
-    entries: [string, CacheEntry<T>][],
-    count: number
-  ): string[] {
+  private selectLRUEntries(entries: [string, CacheEntry<T>][], count: number): string[] {
     return entries
-      .sort((a, b) => (this.accessTracker.get(a[0])?.lastAccess || 0) -
-                     (this.accessTracker.get(b[0])?.lastAccess || 0))
+      .sort(
+        (a, b) =>
+          (this.accessTracker.get(a[0])?.lastAccess || 0) -
+          (this.accessTracker.get(b[0])?.lastAccess || 0)
+      )
       .slice(0, count)
       .map(([key]) => key)
   }
 
-  private selectLFUEntries(
-    entries: [string, CacheEntry<T>][],
-    count: number
-  ): string[] {
+  private selectLFUEntries(entries: [string, CacheEntry<T>][], count: number): string[] {
     return entries
-      .sort((a, b) => (this.accessTracker.get(a[0])?.accessCount || 0) -
-                     (this.accessTracker.get(b[0])?.accessCount || 0))
+      .sort(
+        (a, b) =>
+          (this.accessTracker.get(a[0])?.accessCount || 0) -
+          (this.accessTracker.get(b[0])?.accessCount || 0)
+      )
       .slice(0, count)
       .map(([key]) => key)
   }
 
-  private selectAdaptiveEntries(
-    entries: [string, CacheEntry<T>][],
-    count: number
-  ): string[] {
+  private selectAdaptiveEntries(entries: [string, CacheEntry<T>][], count: number): string[] {
     // Adaptive strategy: combination of LRU and LFU with aging
     const scoredEntries = entries.map(([key, entry]) => {
       const access = this.accessTracker.get(key)
@@ -914,7 +893,7 @@ class IntelligentCache<T> {
     return scoredEntries
       .sort((a, b) => a.score - b.score)
       .slice(0, count)
-      .map(item => item.key)
+      .map((item) => item.key)
   }
 
   private updateAccessTracking(key: string): void {
@@ -925,7 +904,7 @@ class IntelligentCache<T> {
     } else {
       this.accessTracker.set(key, {
         accessCount: 1,
-        lastAccess: Date.now()
+        lastAccess: Date.now(),
       })
     }
   }
@@ -944,7 +923,7 @@ class AdapterConnectionPool {
     activeConnections: 0,
     idleConnections: 0,
     connectionsCreated: 0,
-    connectionsDestroyed: 0
+    connectionsDestroyed: 0,
   }
 
   constructor(config: ConnectionPoolingConfig) {
@@ -955,7 +934,7 @@ class AdapterConnectionPool {
     const poolEntry = this.connections.get(adapterId) || {
       active: [],
       idle: [],
-      created: 0
+      created: 0,
     }
 
     // Try to reuse idle connection
@@ -1004,7 +983,7 @@ class AdapterConnectionPool {
     if (!poolEntry) return
 
     // Remove from active
-    const activeIndex = poolEntry.active.findIndex(c => c.id === connection.id)
+    const activeIndex = poolEntry.active.findIndex((c) => c.id === connection.id)
     if (activeIndex >= 0) {
       poolEntry.active.splice(activeIndex, 1)
     }
@@ -1048,7 +1027,7 @@ class AdapterConnectionPool {
       adapterId,
       createdAt: Date.now(),
       lastUsed: Date.now(),
-      isValid: true
+      isValid: true,
     }
 
     poolEntry.active.push(connection)
@@ -1098,7 +1077,7 @@ class RequestBatcher {
     totalRequests: 0,
     batchedRequests: 0,
     batchesSent: 0,
-    averageBatchSize: 0
+    averageBatchSize: 0,
   }
 
   constructor(
@@ -1112,7 +1091,11 @@ class RequestBatcher {
     adapterId: string,
     context: ParlantExecutionContext,
     args: any,
-    executor: (adapterId: string, context: ParlantExecutionContext, args: any) => Promise<AdapterExecutionResult>,
+    executor: (
+      adapterId: string,
+      context: ParlantExecutionContext,
+      args: any
+    ) => Promise<AdapterExecutionResult>,
     executionId: string
   ): Promise<AdapterExecutionResult | null> {
     if (!this.config.enabled || !this.isBatchable(adapterId, context, args)) {
@@ -1128,7 +1111,7 @@ class RequestBatcher {
         requests: [],
         timeout: setTimeout(() => {
           this.processBatch(batchKey)
-        }, this.config.batchTimeoutMs)
+        }, this.config.batchTimeoutMs),
       }
       this.batches.set(batchKey, batch)
     }
@@ -1142,7 +1125,7 @@ class RequestBatcher {
         args,
         executor,
         resolve,
-        reject
+        reject,
       })
 
       // Process batch if it's full
@@ -1182,9 +1165,7 @@ class RequestBatcher {
     // Process requests in batch
     try {
       const results = await Promise.allSettled(
-        batch.requests.map(req =>
-          req.executor(req.adapterId, req.context, req.args)
-        )
+        batch.requests.map((req) => req.executor(req.adapterId, req.context, req.args))
       )
 
       // Resolve individual promises
@@ -1198,7 +1179,6 @@ class RequestBatcher {
           request.reject(result.reason)
         }
       }
-
     } catch (error) {
       // Reject all requests in case of batch failure
       for (const request of batch.requests) {
@@ -1207,11 +1187,7 @@ class RequestBatcher {
     }
   }
 
-  private isBatchable(
-    adapterId: string,
-    context: ParlantExecutionContext,
-    args: any
-  ): boolean {
+  private isBatchable(adapterId: string, context: ParlantExecutionContext, args: any): boolean {
     if (!this.config.intelligentBatching) return true
 
     // Smart batching logic - only batch similar requests
@@ -1219,10 +1195,7 @@ class RequestBatcher {
     return true
   }
 
-  private generateBatchKey(
-    adapterId: string,
-    context: ParlantExecutionContext
-  ): string {
+  private generateBatchKey(adapterId: string, context: ParlantExecutionContext): string {
     return `${adapterId}:${context.type}:${context.agentId || 'unknown'}`
   }
 
@@ -1252,7 +1225,6 @@ class PerformanceMonitor {
 
       this.recordExecution(adapterId, duration, true)
       return result
-
     } catch (error) {
       const duration = Date.now() - startTime
       this.recordExecution(adapterId, duration, false)
@@ -1260,17 +1232,13 @@ class PerformanceMonitor {
     }
   }
 
-  private recordExecution(
-    adapterId: string,
-    duration: number,
-    success: boolean
-  ): void {
+  private recordExecution(adapterId: string, duration: number, success: boolean): void {
     // Record execution metrics
     this.engine.emit('execution:monitored', {
       adapterId,
       duration,
       success,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1298,7 +1266,10 @@ class AdaptiveOptimizer {
     }
 
     // Optimize connection pool based on usage
-    if (stats.connectionPoolStats.activeConnections > stats.connectionPoolStats.totalConnections * 0.8) {
+    if (
+      stats.connectionPoolStats.activeConnections >
+      stats.connectionPoolStats.totalConnections * 0.8
+    ) {
       // Increase pool size
       optimizations.push('increase_connection_pool')
     }
@@ -1312,7 +1283,7 @@ class AdaptiveOptimizer {
     return {
       optimizationsApplied: 0,
       lastOptimization: Date.now(),
-      averageHitRate: 0.8
+      averageHitRate: 0.8,
     }
   }
 
@@ -1471,7 +1442,11 @@ interface BatchExecutionRequest {
   adapterId: string
   context: ParlantExecutionContext
   args: any
-  executor: (adapterId: string, context: ParlantExecutionContext, args: any) => Promise<AdapterExecutionResult>
+  executor: (
+    adapterId: string,
+    context: ParlantExecutionContext,
+    args: any
+  ) => Promise<AdapterExecutionResult>
   resolve: (result: AdapterExecutionResult) => void
   reject: (error: Error) => void
 }
