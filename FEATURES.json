@@ -434,13 +434,13 @@
     "version": "1.0.0",
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
-      "total_initializations": 32,
-      "total_reinitializations": 96,
+      "total_initializations": 42,
+      "total_reinitializations": 107,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
-          "init": 25,
-          "reinit": 43
+          "init": 35,
+          "reinit": 54
         },
         "13:00-17:59": {
           "init": 0,
@@ -461,7 +461,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T16:55:06.341Z"
+      "last_updated": "2025-09-24T17:18:18.444Z"
     },
     "approval_history": [
       {
@@ -561,33 +561,6 @@
         "85599a25ad541457"
       ]
     },
-    "agent_selection_interface": {
-      "lastHeartbeat": "2025-09-24T16:39:28.731Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T16:39:28.731Z",
-      "sessionId": "662a7d39411cddab",
-      "previousSessions": [
-        "829ab9734d2f6023"
-      ]
-    },
-    "parlant-chat-widget-agent": {
-      "lastHeartbeat": "2025-09-24T16:39:28.021Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T16:39:28.021Z",
-      "sessionId": "6fcad61fc9963cfd",
-      "previousSessions": [
-        "2c0a7edee7bb35f3"
-      ]
-    },
-    "chat-routes-agent": {
-      "lastHeartbeat": "2025-09-24T16:39:27.818Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T16:39:27.818Z",
-      "sessionId": "fcc8942ca9c34740",
-      "previousSessions": [
-        "c8540e9507e3bea1"
-      ]
-    },
     "agent-lifecycle-mgmt": {
       "lastHeartbeat": "2025-09-24T16:52:46.568Z",
       "status": "active",
@@ -617,113 +590,6 @@
         "003647555964bd85"
       ]
     },
-    "multitenant-messaging-agent": {
-      "lastHeartbeat": "2025-09-24T16:39:28.695Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:50.584Z",
-      "sessionId": "20c73ec133b09404",
-      "reinitialized": "2025-09-24T16:39:28.695Z",
-      "previousSessions": [
-        "5d228ab2c4031f2d"
-      ]
-    },
-    "workspace-integration-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.300Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.300Z",
-      "sessionId": "e59a9fa45f1098e8"
-    },
-    "encryption-security-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.329Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.329Z",
-      "sessionId": "07a135d3988ec13f"
-    },
-    "workspace-infrastructure-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.290Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.290Z",
-      "sessionId": "f243aa13ce22f4c9"
-    },
-    "message-routing-security-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.307Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.307Z",
-      "sessionId": "4cef5baec48260a1"
-    },
-    "security-testing-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.336Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.336Z",
-      "sessionId": "2442f1047f000a21"
-    },
-    "admin-controls-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.320Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.320Z",
-      "sessionId": "401cc7e93a40d98b"
-    },
-    "audit-compliance-agent": {
-      "lastHeartbeat": "2025-09-24T16:38:08.315Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:38:08.315Z",
-      "sessionId": "cb9e7d0f14ddf390"
-    },
-    "agent-config-framework": {
-      "lastHeartbeat": "2025-09-24T16:37:29.572Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.572Z",
-      "sessionId": "932e0ca85726aca0"
-    },
-    "agent-session-lifecycle": {
-      "lastHeartbeat": "2025-09-24T16:37:29.587Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.587Z",
-      "sessionId": "3fb31e7e9db700c7"
-    },
-    "agent-performance-monitoring": {
-      "lastHeartbeat": "2025-09-24T16:37:29.596Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.596Z",
-      "sessionId": "7873ed408ab1bc62"
-    },
-    "agent-resource-management": {
-      "lastHeartbeat": "2025-09-24T16:37:29.605Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.605Z",
-      "sessionId": "a2260c64dba2e9ec"
-    },
-    "multi-agent-coordination": {
-      "lastHeartbeat": "2025-09-24T16:37:29.616Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.616Z",
-      "sessionId": "4097c154164a1131"
-    },
-    "lifecycle-docs-agent": {
-      "lastHeartbeat": "2025-09-24T16:37:29.629Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.629Z",
-      "sessionId": "a6c4f5534328836d"
-    },
-    "realtime-integration-agent": {
-      "lastHeartbeat": "2025-09-24T16:37:29.650Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.650Z",
-      "sessionId": "6cf3f4013c6bc9ed"
-    },
-    "lifecycle-testing-agent": {
-      "lastHeartbeat": "2025-09-24T16:37:29.682Z",
-      "status": "active",
-      "initialized": "2025-09-24T16:37:29.682Z",
-      "sessionId": "366ed3a9ddd411a4"
-    },
-    "frontend-architecture-agent": {
-      "lastHeartbeat": "2025-09-24T16:39:26.856Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T16:39:26.856Z",
-      "sessionId": "da935a3ae2a8c5f8",
-      "previousSessions": []
-    },
     "socketio-integration-agent": {
       "lastHeartbeat": "2025-09-24T16:52:40.633Z",
       "status": "active",
@@ -739,6 +605,138 @@
       "reinitialized": "2025-09-24T16:51:21.565Z",
       "sessionId": "8ef71c301bdcddcf",
       "previousSessions": []
+    },
+    "ReactFlow-Integration-Analysis-Agent": {
+      "lastHeartbeat": "2025-09-24T17:10:22.462Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:22.462Z",
+      "sessionId": "af0efca8ef65784f",
+      "previousSessions": []
+    },
+    "mode-switching-agent": {
+      "lastHeartbeat": "2025-09-24T17:10:23.021Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:23.021Z",
+      "sessionId": "5d286b521aff4e09",
+      "previousSessions": []
+    },
+    "CHAT_BUTTON_UI_AGENT": {
+      "lastHeartbeat": "2025-09-24T17:10:23.954Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:23.954Z",
+      "sessionId": "467e02332f3f7e70",
+      "previousSessions": []
+    },
+    "workflow-state-chat-sync-agent": {
+      "lastHeartbeat": "2025-09-24T17:10:24.170Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:24.170Z",
+      "sessionId": "9b5be5859ad5623c",
+      "previousSessions": []
+    },
+    "bidirectional-sync-agent": {
+      "lastHeartbeat": "2025-09-24T17:10:24.324Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:24.324Z",
+      "sessionId": "b5ae91657a815115",
+      "previousSessions": []
+    },
+    "ReactFlowPreservationAgent": {
+      "lastHeartbeat": "2025-09-24T17:10:24.641Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:24.641Z",
+      "sessionId": "dd848c2b827b2754",
+      "previousSessions": []
+    },
+    "ConversationalWorkflowVisualizationAgent": {
+      "lastHeartbeat": "2025-09-24T17:10:24.991Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:24.991Z",
+      "sessionId": "acaf942a7462ca1d",
+      "previousSessions": []
+    },
+    "DOC_AGENT": {
+      "lastHeartbeat": "2025-09-24T17:10:25.757Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:25.757Z",
+      "sessionId": "7b14d18a3c9393de",
+      "previousSessions": []
+    },
+    "workflow-chat-viz-agent": {
+      "lastHeartbeat": "2025-09-24T17:10:32.878Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:10:32.878Z",
+      "sessionId": "ac76b3ddf83c6caf",
+      "previousSessions": []
+    },
+    "workflow-execution-visualization-agent": {
+      "lastHeartbeat": "2025-09-24T17:12:51.671Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:12:51.671Z",
+      "sessionId": "e1bcf4d3ba697ec3"
+    },
+    "conversational-workflow-interface-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:02.580Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:02.580Z",
+      "sessionId": "f331f952e71504bd"
+    },
+    "workflow-progress-streaming-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:13.668Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:13.668Z",
+      "sessionId": "1c7cb59c4974528d"
+    },
+    "chat-workflow-commands-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:25.633Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:25.633Z",
+      "sessionId": "d3ccade6e5217bf5"
+    },
+    "CLAUDE-MAIN": {
+      "lastHeartbeat": "2025-09-24T17:18:18.435Z",
+      "status": "active",
+      "reinitialized": "2025-09-24T17:18:18.435Z",
+      "sessionId": "f29dc156b67ddd3f",
+      "previousSessions": [
+        "b0c2e611d1353713"
+      ]
+    },
+    "workflow-debugging-chat-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:36.607Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:36.607Z",
+      "sessionId": "2564eb2db24c5c81"
+    },
+    "journey-state-chat-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:47.664Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:47.664Z",
+      "sessionId": "cbeca03c42999699"
+    },
+    "workflow-optimization-suggestions-agent": {
+      "lastHeartbeat": "2025-09-24T17:13:58.618Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:13:58.618Z",
+      "sessionId": "e11fcb88416f9a03"
+    },
+    "workflow-context-integration-agent": {
+      "lastHeartbeat": "2025-09-24T17:14:11.516Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:14:11.516Z",
+      "sessionId": "484192a2f8c71a1c"
+    },
+    "workflow-chat-testing-agent": {
+      "lastHeartbeat": "2025-09-24T17:14:21.684Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:14:21.684Z",
+      "sessionId": "83816c2296aef692"
+    },
+    "workflow-chat-documentation-agent": {
+      "lastHeartbeat": "2025-09-24T17:14:33.164Z",
+      "status": "active",
+      "initialized": "2025-09-24T17:14:33.164Z",
+      "sessionId": "c48a0eab2bd03cf7"
     }
   },
   "settings": {

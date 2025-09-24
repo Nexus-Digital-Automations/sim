@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSession } from '@/lib/auth-client'
 import type { WorkflowMetadata } from '@/stores/workflows/registry/types'
+import { ChatWithWorkflowButton, useChatWithWorkflow } from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 
 interface WorkflowItemProps {
   workflow: WorkflowMetadata
@@ -15,26 +16,46 @@ interface WorkflowItemProps {
 }
 
 function WorkflowItem({ workflow, active, isMarketplace }: WorkflowItemProps) {
+  const [isHovered, setIsHovered] = useState(false)
   const params = useParams()
   const workspaceId = params.workspaceId as string
+  const { startChat } = useChatWithWorkflow()
 
   return (
-    <Link
-      href={`/workspace/${workspaceId}/w/${workflow.id}`}
-      className={clsx(
-        'flex items-center rounded-md px-2 py-1.5 font-medium text-sm',
-        active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/50'
-      )}
+    <div
+      className='group relative'
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className='mr-2 h-[14px] w-[14px] flex-shrink-0 rounded'
-        style={{ backgroundColor: workflow.color }}
-      />
-      <span className='truncate'>
-        {workflow.name}
-        {isMarketplace && ' (Preview)'}
-      </span>
-    </Link>
+      <Link
+        href={`/workspace/${workspaceId}/w/${workflow.id}`}
+        className={clsx(
+          'flex items-center rounded-md px-2 py-1.5 pr-8 font-medium text-sm transition-colors',
+          active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/50'
+        )}
+      >
+        <div
+          className='mr-2 h-[14px] w-[14px] flex-shrink-0 rounded'
+          style={{ backgroundColor: workflow.color }}
+        />
+        <span className='truncate'>
+          {workflow.name}
+          {isMarketplace && ' (Preview)'}
+        </span>
+      </Link>
+      {!isMarketplace && isHovered && (
+        <div className='absolute right-1 top-1/2 -translate-y-1/2 flex items-center'>
+          <ChatWithWorkflowButton
+            workflowId={workflow.id}
+            workflowName={workflow.name}
+            onChatClick={startChat}
+            variant="icon-only"
+            size="sm"
+            className='h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity'
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

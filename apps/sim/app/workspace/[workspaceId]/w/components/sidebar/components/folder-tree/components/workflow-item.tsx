@@ -12,6 +12,7 @@ import { useUserPermissionsContext } from '@/app/workspace/[workspaceId]/provide
 import { useFolderStore, useIsWorkflowSelected } from '@/stores/folders/store'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
 import type { WorkflowMetadata } from '@/stores/workflows/registry/types'
+import { ChatWithWorkflowButton, useChatWithWorkflow } from '@/app/workspace/[workspaceId]/w/components/chat-with-workflow-button'
 
 const logger = createLogger('WorkflowItem')
 
@@ -49,6 +50,7 @@ export function WorkflowItem({
   isDragOver = false,
   isFirstItem = false,
 }: WorkflowItemProps) {
+  const { startChat } = useChatWithWorkflow()
   const [isDragging, setIsDragging] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(workflow.name)
@@ -267,20 +269,30 @@ export function WorkflowItem({
           )}
         </Link>
 
-        {!isMarketplace && !isEditing && isHovered && userPermissions.canEdit && (
-          <div className='flex items-center justify-center' onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant='ghost'
-              size='icon'
+        {!isMarketplace && !isEditing && isHovered && (
+          <div className='flex items-center gap-1' onClick={(e) => e.stopPropagation()}>
+            <ChatWithWorkflowButton
+              workflowId={workflow.id}
+              workflowName={workflow.name}
+              onChatClick={startChat}
+              variant="icon-only"
+              size="sm"
               className='h-4 w-4 p-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground'
-              onClick={(e) => {
-                e.stopPropagation()
-                handleStartEdit()
-              }}
-            >
-              <Pencil className='!h-3.5 !w-3.5' />
-              <span className='sr-only'>Rename workflow</span>
-            </Button>
+            />
+            {userPermissions.canEdit && (
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-4 w-4 p-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleStartEdit()
+                }}
+              >
+                <Pencil className='!h-3.5 !w-3.5' />
+                <span className='sr-only'>Rename workflow</span>
+              </Button>
+            )}
           </div>
         )}
       </div>
