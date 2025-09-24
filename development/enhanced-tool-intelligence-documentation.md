@@ -3087,4 +3087,477 @@ class OptimizedDatabaseLayer {
 }
 ```
 
-This completes the comprehensive Enhanced Tool Intelligence System documentation. The system provides natural language capabilities, contextual recommendations, intelligent error handling, and comprehensive monitoring for all tool integrations within the Sim platform.
+## Machine Learning and Advanced Features Documentation
+
+### ML-Powered Recommendation System
+
+The Enhanced Tool Intelligence System includes advanced machine learning capabilities that learn from user behavior and provide increasingly sophisticated recommendations.
+
+#### Key ML Features
+
+1. **Collaborative Filtering**: Learns from similar user behaviors
+2. **Content-Based Filtering**: Matches tools based on feature similarity
+3. **Sequential Pattern Mining**: Learns tool usage sequences
+4. **Contextual Adaptation**: Adapts to different situational contexts
+5. **Real-time Learning**: Updates models with each interaction
+
+#### ML Recommendation Engine Usage
+
+```typescript
+import { createMLRecommendationEngine, createProductionMLEngine } from '@/enhanced-intelligence'
+
+// Create ML engine with custom configuration
+const mlEngine = createMLRecommendationEngine({
+  enableCollaborativeFiltering: true,
+  enableContentBasedFiltering: true,
+  enableSequentialModeling: true,
+  collaborativeConfig: {
+    numFactors: 50,
+    learningRate: 0.01,
+    neighborhoodSize: 20,
+    coldStartStrategy: 'hybrid'
+  },
+  contentBasedConfig: {
+    textFeatures: true,
+    categoryFeatures: true,
+    usageFeatures: true,
+    similarityMetric: 'cosine'
+  }
+})
+
+// Record user interactions for learning
+const interaction: InteractionData = {
+  userId: 'user123',
+  toolId: 'build_workflow',
+  timestamp: new Date(),
+  context: {
+    workflowStage: 'creation',
+    intent: 'automation_setup',
+    urgency: 'medium',
+    collaborators: ['user456', 'user789'],
+    timeOfDay: 'morning',
+    deviceType: 'desktop'
+  },
+  outcome: {
+    successful: true,
+    satisfactionScore: 4.5,
+    completionTime: 1200000, // 20 minutes
+    errorOccurred: false,
+    userEngagement: 0.85,
+    followUpActions: ['run_workflow', 'test_workflow']
+  },
+  rating: 5,
+  feedback: 'Perfect tool for creating complex workflows'
+}
+
+await mlEngine.recordInteraction(interaction)
+
+// Generate ML-powered recommendations
+const mlRecommendations = await mlEngine.generateRecommendations(
+  {
+    userMessage: "I need to set up an automated customer onboarding process",
+    currentContext: {
+      userId: 'user123',
+      userProfile: {
+        skillLevel: 'intermediate',
+        preferences: {
+          toolCategories: ['workflow', 'automation', 'communication'],
+          complexityPreference: 'moderate',
+          interactionStyle: 'guided'
+        }
+      },
+      timeContext: {
+        timeOfDay: 'afternoon',
+        workingHours: true,
+        urgency: 'medium'
+      }
+    },
+    conversationHistory: [],
+    userSkillLevel: 'intermediate'
+  },
+  ['build_workflow', 'send_notification', 'query_database', 'validate_data'],
+  5 // max recommendations
+)
+
+// View recommendation details
+mlRecommendations.forEach(rec => {
+  console.log(`Tool: ${rec.toolId}`)
+  console.log(`Score: ${rec.score}`)
+  console.log(`Algorithm Scores:`)
+  console.log(`  - Collaborative: ${rec.algorithmScores.collaborative}`)
+  console.log(`  - Content: ${rec.algorithmScores.contentBased}`)
+  console.log(`  - Sequential: ${rec.algorithmScores.sequential}`)
+  console.log(`  - Combined: ${rec.algorithmScores.hybrid}`)
+  console.log(`Explanation: ${JSON.stringify(rec.explanationFeatures)}`)
+})
+```
+
+#### Training and Performance Monitoring
+
+```typescript
+// Train models with accumulated feedback
+const trainingResult = await mlEngine.trainModels(false) // incremental training
+
+console.log('Training Results:', {
+  modelsUpdated: trainingResult.modelsUpdated,
+  trainingTime: trainingResult.trainingTime,
+  dataProcessed: trainingResult.dataProcessed,
+  performanceImprovements: trainingResult.performanceImprovements
+})
+
+// Get performance analytics
+const analytics = mlEngine.getPerformanceAnalytics()
+
+console.log('ML Performance:', {
+  currentPerformance: {
+    precision: analytics.currentPerformance.precision,
+    recall: analytics.currentPerformance.recall,
+    f1Score: analytics.currentPerformance.f1Score,
+    userSatisfaction: analytics.currentPerformance.userSatisfaction
+  },
+  modelHealth: {
+    overall: analytics.modelHealth.overall,
+    collaborative: analytics.modelHealth.collaborative,
+    contentBased: analytics.modelHealth.contentBased,
+    sequential: analytics.modelHealth.sequential
+  },
+  recommendationQuality: {
+    relevance: analytics.recommendationQuality.relevance,
+    diversity: analytics.recommendationQuality.diversity,
+    novelty: analytics.recommendationQuality.novelty
+  }
+})
+```
+
+### Contextual Intelligence Examples
+
+#### Multi-Algorithm Contextual Recommendations
+
+```typescript
+import { ContextualRecommendationEngine } from '@/enhanced-intelligence'
+
+const contextEngine = new ContextualRecommendationEngine({
+  cache: {
+    recommendationTTL: 900000, // 15 minutes
+    contextTTL: 300000,        // 5 minutes
+    maxCacheSize: 2000
+  },
+  abTesting: {
+    enabled: true,
+    testId: 'contextual_optimization_v2',
+    variants: [
+      {
+        variantId: 'control',
+        name: 'Standard Context Weighting',
+        algorithmWeights: {
+          collaborative: 0.3,
+          contentBased: 0.25,
+          contextual: 0.25,
+          temporal: 0.1,
+          behavioral: 0.1
+        }
+      },
+      {
+        variantId: 'context_heavy',
+        name: 'Context-Focused Weighting',
+        algorithmWeights: {
+          collaborative: 0.2,
+          contentBased: 0.2,
+          contextual: 0.4,
+          temporal: 0.1,
+          behavioral: 0.1
+        }
+      }
+    ]
+  }
+})
+
+// Context-aware recommendations for different scenarios
+const morningPlanningContext = {
+  userId: 'user123',
+  userProfile: { skillLevel: 'intermediate', role: 'project-manager' },
+  timeContext: {
+    timeOfDay: 'morning',
+    workingHours: true,
+    urgency: 'low'
+  },
+  workflowState: {
+    currentWorkflowId: 'planning_workflow',
+    activeNodes: ['planning', 'resource_allocation'],
+    pendingActions: ['team_assignment', 'timeline_creation']
+  },
+  businessContext: {
+    industry: 'software',
+    companySize: 'medium',
+    businessFunction: 'project_management'
+  }
+}
+
+const recommendations = await contextEngine.getRecommendations({
+  userMessage: "I need to handle the current situation efficiently",
+  conversationHistory: [],
+  currentContext: morningPlanningContext,
+  maxRecommendations: 3
+})
+
+recommendations.forEach(rec => {
+  console.log(`Tool: ${rec.toolId}`)
+  console.log(`Context Explanation: ${rec.contextualExplanation.primaryContext}`)
+  console.log(`Why Recommended: ${rec.whyRecommended.map(r => r.reason).join(', ')}`)
+  console.log(`Temporal Relevance: ${rec.temporalRelevance}`)
+  console.log(`Behavioral Fit: ${rec.behavioralFit}`)
+  console.log(`Confidence Details:`)
+  console.log(`  Overall: ${rec.confidenceDetails.overallConfidence}`)
+  console.log(`  Strengths: ${rec.confidenceDetails.strengthIndicators.join(', ')}`)
+  if (rec.confidenceDetails.uncertaintyFactors.length > 0) {
+    console.log(`  Uncertainties: ${rec.confidenceDetails.uncertaintyFactors.join(', ')}`)
+  }
+})
+```
+
+#### Intelligent Error Handling Examples
+
+```typescript
+// Error scenarios with skill-level adaptation
+const errorScenarios = [
+  {
+    error: new Error('YAML validation failed: Invalid indentation at line 15'),
+    toolId: 'build_workflow',
+    userSkillLevel: 'beginner' as UserSkillLevel,
+    context: {
+      userId: 'beginner_user',
+      userProfile: { skillLevel: 'beginner' },
+      currentIntent: 'workflow_creation'
+    }
+  },
+  {
+    error: new Error('Database connection timeout after 30 seconds'),
+    toolId: 'query_database',
+    userSkillLevel: 'advanced' as UserSkillLevel,
+    context: {
+      userId: 'advanced_user',
+      userProfile: { skillLevel: 'advanced' },
+      currentIntent: 'data_analysis'
+    }
+  }
+]
+
+for (const scenario of errorScenarios) {
+  const explanation = await intelligenceEngine.explainErrorIntelligently(
+    scenario.error,
+    scenario.toolId,
+    scenario.context,
+    scenario.userSkillLevel
+  )
+
+  console.log(`\nError Explanation for ${scenario.userSkillLevel} user:`)
+  console.log(`Context: ${explanation.contextualMessage}`)
+  console.log(`User Level: ${explanation.userLevelExplanation[scenario.userSkillLevel]}`)
+
+  console.log('\nResolution Steps:')
+  explanation.stepByStepResolution.forEach(step => {
+    console.log(`${step.step}. ${step.action}: ${step.explanation}`)
+    console.log(`   Expected: ${step.expectedResult}`)
+  })
+
+  console.log('\nPrevention Tips:')
+  explanation.preventionTips.forEach(tip => console.log(`- ${tip}`))
+
+  console.log('\nLearning Opportunities:')
+  explanation.learningMoments.forEach(moment => console.log(`- ${moment}`))
+
+  console.log('\nRecovery Options:')
+  explanation.recoveryOptions.forEach(option => {
+    console.log(`- ${option.option}: ${option.description} (${option.difficulty})`)
+  })
+}
+```
+
+### Advanced Usage Patterns
+
+#### Sequential Pattern Learning
+
+```typescript
+// Example of sequential pattern recognition
+const behaviorHistory: UserBehaviorHistory = {
+  toolUsagePatterns: [
+    {
+      pattern: 'workflow_creation_sequence',
+      frequency: 15,
+      context: ['morning', 'planning_phase'],
+      success_rate: 0.92,
+      time_pattern: 'weekday_morning',
+      sequence_position: 1
+    }
+  ],
+  successfulSequences: [
+    {
+      tools: ['get_blocks_and_tools', 'build_workflow', 'validate_workflow', 'run_workflow'],
+      context: 'new_workflow_creation',
+      success_rate: 0.89,
+      average_duration: 1800,
+      user_satisfaction: 4.2,
+      frequency: 12
+    },
+    {
+      tools: ['query_database', 'analyze_data', 'generate_report', 'send_notification'],
+      context: 'data_reporting',
+      success_rate: 0.94,
+      average_duration: 2400,
+      user_satisfaction: 4.5,
+      frequency: 18
+    }
+  ],
+  commonMistakes: [
+    {
+      tool: 'build_workflow',
+      mistake_type: 'yaml_formatting',
+      description: 'Incorrect YAML indentation',
+      frequency: 5,
+      impact: 'medium',
+      prevention: ['Use YAML validator', 'Follow templates', 'Check examples']
+    }
+  ],
+  learningProgression: [
+    {
+      skill_area: 'workflow_creation',
+      start_level: 'beginner',
+      current_level: 'intermediate',
+      progression_rate: 0.15,
+      mastery_indicators: ['consistent_success', 'reduced_errors', 'complex_workflows'],
+      next_challenges: ['advanced_conditional_logic', 'error_handling', 'optimization']
+    }
+  ]
+}
+
+// System uses this data for improved recommendations
+const behaviorAnalysis = await contextEngine.analyzeBehaviorPatterns('user123', behaviorHistory)
+console.log('Behavior Analysis:', behaviorAnalysis)
+```
+
+### Production Configuration Examples
+
+#### High-Performance Setup
+
+```typescript
+// Production-ready ML engine configuration
+const productionMLEngine = createProductionMLEngine()
+
+// Configure for high-throughput scenarios
+const highThroughputConfig: Partial<MLRecommendationConfig> = {
+  batchSize: 10000,
+  maxTrainingTime: 60000, // 1 minute
+  modelUpdateFrequency: 1800000, // 30 minutes
+  collaborativeConfig: {
+    numFactors: 100,
+    learningRate: 0.005,
+    regularization: 0.05,
+    iterations: 200,
+    userSimilarityThreshold: 0.2,
+    itemSimilarityThreshold: 0.2,
+    neighborhoodSize: 50,
+    coldStartStrategy: 'hybrid',
+    minInteractions: 3
+  },
+  hybridConfig: {
+    ensembleMethod: 'stacking',
+    modelWeights: { collaborative: 0.4, content: 0.35, sequential: 0.25 },
+    metaLearningEnabled: true,
+    contextualWeighting: true,
+    dynamicWeightAdjustment: true
+  }
+}
+
+const highThroughputEngine = createMLRecommendationEngine(highThroughputConfig)
+```
+
+#### Enterprise Multi-Tenant Setup
+
+```typescript
+// Multi-tenant contextual engine setup
+class MultiTenantIntelligenceSystem {
+  private engines = new Map<string, ContextualRecommendationEngine>()
+  private tenantConfigs = new Map<string, TenantConfiguration>()
+
+  async initializeTenant(tenantId: string, config: TenantConfiguration): Promise<void> {
+    const engine = new ContextualRecommendationEngine({
+      cache: {
+        recommendationTTL: config.cacheSettings.recommendationTTL,
+        contextTTL: config.cacheSettings.contextTTL,
+        maxCacheSize: config.cacheSettings.maxCacheSize
+      },
+      abTesting: config.abTestingConfig,
+      performanceTracking: true
+    })
+
+    this.engines.set(tenantId, engine)
+    this.tenantConfigs.set(tenantId, config)
+
+    console.log(`Initialized tenant ${tenantId} with enhanced intelligence`)
+  }
+
+  async processRequest(tenantId: string, userId: string, request: string): Promise<TenantResponse> {
+    const engine = this.engines.get(tenantId)
+    const config = this.tenantConfigs.get(tenantId)
+
+    if (!engine || !config) {
+      throw new Error(`Tenant ${tenantId} not found`)
+    }
+
+    const enhancedContext: AdvancedUsageContext = {
+      userId,
+      tenantId,
+      userProfile: await this.getUserProfile(tenantId, userId),
+      availableTools: config.availableTools,
+      customSettings: config.customSettings,
+      timeContext: {
+        timeOfDay: this.getCurrentTimeOfDay(),
+        workingHours: this.isWorkingHours(),
+        urgency: this.inferUrgency(request)
+      }
+    }
+
+    const recommendations = await engine.getRecommendations({
+      userMessage: request,
+      conversationHistory: [],
+      currentContext: enhancedContext,
+      maxRecommendations: 5
+    })
+
+    return this.applyTenantPostProcessing(tenantId, recommendations)
+  }
+
+  private async applyTenantPostProcessing(
+    tenantId: string,
+    recommendations: ContextualRecommendation[]
+  ): Promise<TenantResponse> {
+    const config = this.tenantConfigs.get(tenantId)!
+
+    return {
+      recommendations: recommendations.map(rec => ({
+        ...rec,
+        tenantBranding: config.branding,
+        complianceInfo: config.complianceRequirements
+      })),
+      tenantMetadata: {
+        tenantId,
+        customizations: config.customizations,
+        supportedFeatures: config.enabledFeatures
+      }
+    }
+  }
+}
+```
+
+## Conclusion
+
+This completes the comprehensive Enhanced Tool Intelligence System documentation, including advanced ML capabilities, contextual intelligence features, and production-ready configurations. The system provides:
+
+- **Natural Language Processing**: Human-friendly tool interactions
+- **Contextual Recommendations**: Situational awareness and adaptation
+- **Machine Learning**: Continuous improvement through user behavior analysis
+- **Intelligent Error Handling**: Skill-level appropriate guidance and recovery
+- **Performance Monitoring**: Comprehensive analytics and optimization
+- **Enterprise Features**: Multi-tenant support and scalability
+
+The Enhanced Tool Intelligence System transforms the tool interaction experience from technical command execution to natural, intelligent assistance that adapts to each user's needs, context, and skill level.

@@ -160,7 +160,12 @@ export class UniversalToolAdapterSystem {
   /**
    * Execute adapter with full monitoring and optimization
    */
-  async executeAdapter(adapterId: string, context: any, args: any): Promise<any> {
+  async executeAdapter(adapterId: string, context: any, args: any, userContext?: any): Promise<any> {
+    // Use intelligence-enhanced execution if available
+    if (this.intelligence) {
+      return this.intelligence.executeWithIntelligence(adapterId, context, args, userContext)
+    }
+
     // Execute with performance optimization
     const result = await this.performance.optimizedExecute(
       adapterId,
@@ -179,6 +184,48 @@ export class UniversalToolAdapterSystem {
     this.analytics.recordExecution(adapterId, context, args, result)
 
     return result
+  }
+
+  /**
+   * Discover tools with intelligence enhancement
+   */
+  async discoverTools(query: any, userContext?: any): Promise<any> {
+    if (this.intelligence) {
+      return this.intelligence.discoverWithIntelligence(query, userContext)
+    }
+
+    return this.registry.discover(query)
+  }
+
+  /**
+   * Get intelligent tool description
+   */
+  async getToolDescription(toolId: string, userContext?: any, complexityLevel?: 'brief' | 'detailed' | 'expert'): Promise<any> {
+    if (this.intelligence) {
+      return this.intelligence.getToolDescription(toolId, userContext, complexityLevel)
+    }
+
+    return null
+  }
+
+  /**
+   * Get contextual recommendations
+   */
+  async getRecommendations(request: any): Promise<any> {
+    if (this.intelligence) {
+      return this.intelligence.getContextualRecommendations(request)
+    }
+
+    return []
+  }
+
+  /**
+   * Record feedback for intelligence improvement
+   */
+  async recordFeedback(toolId: string, feedback: any): Promise<void> {
+    if (this.intelligence) {
+      await this.intelligence.recordIntelligenceFeedback(toolId, feedback)
+    }
   }
 
   /**

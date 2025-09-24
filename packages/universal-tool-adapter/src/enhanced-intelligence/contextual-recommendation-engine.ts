@@ -707,19 +707,341 @@ export class ContextualRecommendationEngine {
     ]
   }
 
-  // Additional helper methods would be implemented here...
-  private generateRecommendationReasons(scores: AlgorithmScores, contextInsights: any): RecommendationReason[] { return [] }
-  private generateContextualExplanation(toolId: string, contextInsights: any): ContextualExplanation { return {} as any }
-  private calculateConfidenceDetails(scores: AlgorithmScores, contextInsights: any): ConfidenceDetails { return {} as any }
-  private generatePersonalizedInstructions(toolId: string, request: ContextualRecommendationRequest): PersonalizedInstruction[] { return [] }
-  private calculateAdaptiveComplexity(toolId: string, request: ContextualRecommendationRequest): AdaptiveComplexity { return {} as any }
-  private generateInteractionGuidance(toolId: string, request: ContextualRecommendationRequest): InteractionGuidance { return {} as any }
-  private calculateOptimizationMetrics(toolId: string, scores: AlgorithmScores): OptimizationMetrics { return {} as any }
-  private generateFeedbackOpportunities(toolId: string): FeedbackOpportunity[] { return [] }
-  private getToolTimePreferences(toolId: string): Record<string, boolean> { return {} }
-  private isToolQuickExecution(toolId: string): boolean { return false }
-  private isBusinessTool(toolId: string): boolean { return true }
-  private isPersonalTool(toolId: string): boolean { return false }
+  // Additional helper methods implemented
+  private generateRecommendationReasons(scores: AlgorithmScores, contextInsights: any): RecommendationReason[] {
+    const reasons: RecommendationReason[] = []
+
+    // Add collaborative reasoning
+    if (scores.collaborative > 0.7) {
+      reasons.push({
+        type: 'collaborative',
+        reason: 'Similar users with your preferences frequently use this tool',
+        confidence: scores.collaborative,
+        evidence: ['user_similarity_analysis', 'usage_patterns']
+      })
+    }
+
+    // Add content-based reasoning
+    if (scores.contentBased > 0.7) {
+      reasons.push({
+        type: 'intent_match',
+        reason: 'This tool matches your current workflow and skill level',
+        confidence: scores.contentBased,
+        evidence: ['skill_level_match', 'category_alignment']
+      })
+    }
+
+    // Add contextual reasoning
+    if (scores.contextual > 0.7) {
+      reasons.push({
+        type: 'context_fit',
+        reason: 'Perfect fit for your current situation and environment',
+        confidence: scores.contextual,
+        evidence: ['workflow_stage_match', 'environmental_factors']
+      })
+    }
+
+    // Add temporal reasoning
+    if (scores.temporal > 0.6) {
+      reasons.push({
+        type: 'temporal',
+        reason: 'Optimal timing and urgency alignment',
+        confidence: scores.temporal,
+        evidence: ['time_based_patterns', 'urgency_match']
+      })
+    }
+
+    return reasons
+  }
+
+  private generateContextualExplanation(toolId: string, contextInsights: any): ContextualExplanation {
+    return {
+      primaryContext: contextInsights.summary || 'Current workflow context',
+      supportingContexts: [
+        contextInsights.workflowStage,
+        contextInsights.primaryIntent,
+        contextInsights.urgencyLevel
+      ].filter(Boolean),
+      situationalFactors: contextInsights.environmentalFactors || [],
+      userSpecificFactors: [
+        `Expertise level: ${contextInsights.userExpertiseLevel}`,
+        `Conversation depth: ${contextInsights.conversationDepth} messages`,
+        `Context stability: ${((contextInsights.contextStability || 0) * 100).toFixed(0)}%`
+      ]
+    }
+  }
+
+  private calculateConfidenceDetails(scores: AlgorithmScores, contextInsights: any): ConfidenceDetails {
+    const overallConfidence = scores.combined
+
+    const factorConfidences: Record<string, number> = {
+      'Collaborative filtering': scores.collaborative,
+      'Content matching': scores.contentBased,
+      'Context alignment': scores.contextual,
+      'Timing suitability': scores.temporal,
+      'Behavioral fit': scores.behavioral
+    }
+
+    const uncertaintyFactors: string[] = []
+    const strengthIndicators: string[] = []
+
+    // Identify uncertainty factors
+    if (scores.collaborative < 0.3) uncertaintyFactors.push('Limited user similarity data')
+    if (scores.behavioral < 0.3) uncertaintyFactors.push('Insufficient behavioral history')
+    if (contextInsights.intentConfidence < 0.5) uncertaintyFactors.push('Unclear user intent')
+
+    // Identify strength indicators
+    if (scores.contextual > 0.8) strengthIndicators.push('Strong contextual match')
+    if (scores.contentBased > 0.8) strengthIndicators.push('Excellent content relevance')
+    if (contextInsights.contextStability > 0.8) strengthIndicators.push('Stable context')
+
+    return {
+      overallConfidence,
+      factorConfidences,
+      uncertaintyFactors,
+      strengthIndicators
+    }
+  }
+
+  private generatePersonalizedInstructions(toolId: string, request: ContextualRecommendationRequest): PersonalizedInstruction[] {
+    const userLevel = request.currentContext.userSkillLevel
+    const instructions: PersonalizedInstruction[] = []
+
+    // Basic instruction for tool usage
+    instructions.push({
+      step: `Execute ${toolId} with your current context`,
+      explanation: `This tool is recommended based on your ${userLevel} level and current workflow`,
+      skillLevelAdaptation: this.adaptInstructionForSkillLevel(toolId, userLevel),
+      tips: this.generateTipsForTool(toolId, userLevel),
+      commonPitfalls: this.getCommonPitfalls(toolId, userLevel)
+    })
+
+    return instructions
+  }
+
+  private calculateAdaptiveComplexity(toolId: string, request: ContextualRecommendationRequest): AdaptiveComplexity {
+    const userLevel = request.currentContext.userSkillLevel
+    const toolComplexity = this.inferToolComplexity(toolId)
+
+    return {
+      userLevel,
+      toolComplexity,
+      adaptedApproach: this.getAdaptedApproach(toolId, userLevel, toolComplexity),
+      simplificationSuggestions: this.getSimplificationSuggestions(toolId, userLevel),
+      growthOpportunities: this.getGrowthOpportunities(toolId, userLevel)
+    }
+  }
+
+  private generateInteractionGuidance(toolId: string, request: ContextualRecommendationRequest): InteractionGuidance {
+    const userPrefs = request.currentContext.userPreferences
+
+    return {
+      communicationStyle: userPrefs?.communicationStyle || 'conversational',
+      expectedInteractions: this.getExpectedInteractions(toolId),
+      clarificationQuestions: this.getClarificationQuestions(toolId, request),
+      confirmationSteps: this.getConfirmationSteps(toolId)
+    }
+  }
+
+  private calculateOptimizationMetrics(toolId: string, scores: AlgorithmScores): OptimizationMetrics {
+    return {
+      algorithmVariant: 'hybrid_v2',
+      expectedPerformance: scores.combined,
+      learningOpportunity: 1 - scores.behavioral, // More learning needed if behavioral score is low
+      improvementPotential: Math.max(0, 1 - scores.combined)
+    }
+  }
+
+  private generateFeedbackOpportunities(toolId: string): FeedbackOpportunity[] {
+    return [
+      {
+        type: 'rating',
+        question: `How helpful was the ${toolId} tool for your current task?`,
+        importance: 0.8,
+        timing: 'after_use'
+      },
+      {
+        type: 'usage',
+        question: 'Did this tool help you achieve your goal?',
+        importance: 0.9,
+        timing: 'follow_up'
+      },
+      {
+        type: 'outcome',
+        question: 'Would you use this tool again in similar situations?',
+        importance: 0.7,
+        timing: 'immediate'
+      }
+    ]
+  }
+
+  private getToolTimePreferences(toolId: string): Record<string, boolean> {
+    // Simple heuristics for time-based tool preferences
+    const preferences: Record<string, boolean> = {
+      'morning': true,
+      'afternoon': true,
+      'evening': false,
+      'night': false
+    }
+
+    // Adjust based on tool type
+    if (toolId.includes('report') || toolId.includes('analysis')) {
+      preferences['morning'] = true
+      preferences['afternoon'] = true
+    }
+
+    if (toolId.includes('deploy') || toolId.includes('build')) {
+      preferences['evening'] = true // Less disruptive during off-hours
+    }
+
+    return preferences
+  }
+
+  private isToolQuickExecution(toolId: string): boolean {
+    const quickPatterns = ['get', 'list', 'show', 'display', 'quick', 'fast', 'simple']
+    return quickPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+  }
+
+  private isBusinessTool(toolId: string): boolean {
+    const businessPatterns = ['workflow', 'project', 'task', 'document', 'report', 'meeting', 'team']
+    return businessPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+  }
+
+  private isPersonalTool(toolId: string): boolean {
+    const personalPatterns = ['personal', 'private', 'individual', 'my', 'self']
+    return personalPatterns.some(pattern => toolId.toLowerCase().includes(pattern))
+  }
+
+  // Helper methods for personalized instructions
+  private adaptInstructionForSkillLevel(toolId: string, userLevel: UserSkillLevel): string {
+    switch (userLevel) {
+      case 'beginner':
+        return `Start with the basic ${toolId} functionality and follow guided steps`
+      case 'intermediate':
+        return `Use ${toolId} with standard parameters and options`
+      case 'advanced':
+        return `Leverage advanced ${toolId} features and customization options`
+      case 'expert':
+        return `Optimize ${toolId} usage with expert-level configurations`
+      default:
+        return `Use ${toolId} according to your comfort level`
+    }
+  }
+
+  private generateTipsForTool(toolId: string, userLevel: UserSkillLevel): string[] {
+    const tips = [
+      `Review the ${toolId} documentation if you encounter issues`,
+      'Start with default settings and customize as needed',
+      'Keep track of successful configurations for future use'
+    ]
+
+    if (userLevel === 'beginner') {
+      tips.unshift('Take your time and don\'t hesitate to ask for help')
+    }
+
+    if (userLevel === 'advanced' || userLevel === 'expert') {
+      tips.push('Consider automating repetitive patterns with this tool')
+    }
+
+    return tips
+  }
+
+  private getCommonPitfalls(toolId: string, userLevel: UserSkillLevel): string[] {
+    const pitfalls = ['Not reading error messages carefully']
+
+    if (toolId.includes('deploy') || toolId.includes('build')) {
+      pitfalls.push('Deploying without proper testing')
+    }
+
+    if (toolId.includes('data') || toolId.includes('analysis')) {
+      pitfalls.push('Not validating data quality before processing')
+    }
+
+    return pitfalls
+  }
+
+  private inferToolComplexity(toolId: string): number {
+    // Simple complexity inference based on tool name
+    if (toolId.includes('advanced') || toolId.includes('expert')) return 0.9
+    if (toolId.includes('deploy') || toolId.includes('build')) return 0.8
+    if (toolId.includes('analyze') || toolId.includes('process')) return 0.7
+    if (toolId.includes('get') || toolId.includes('show')) return 0.3
+    return 0.5 // Default medium complexity
+  }
+
+  private getAdaptedApproach(toolId: string, userLevel: UserSkillLevel, toolComplexity: number): string {
+    if (userLevel === 'beginner' && toolComplexity > 0.7) {
+      return 'Guided step-by-step approach with safety checks'
+    }
+    if (userLevel === 'expert' && toolComplexity < 0.5) {
+      return 'Direct execution with minimal confirmations'
+    }
+    return 'Standard approach with appropriate guidance level'
+  }
+
+  private getSimplificationSuggestions(toolId: string, userLevel: UserSkillLevel): string[] {
+    if (userLevel === 'beginner') {
+      return [
+        'Use default parameters initially',
+        'Break complex operations into smaller steps',
+        'Review each step before proceeding'
+      ]
+    }
+    return []
+  }
+
+  private getGrowthOpportunities(toolId: string, userLevel: UserSkillLevel): string[] {
+    if (userLevel === 'beginner') {
+      return [
+        'Learn about advanced parameters',
+        'Explore automation options',
+        'Study successful usage patterns'
+      ]
+    }
+    if (userLevel === 'intermediate') {
+      return [
+        'Experiment with advanced configurations',
+        'Learn integration patterns',
+        'Optimize for performance'
+      ]
+    }
+    return ['Share expertise with other users', 'Contribute to tool improvements']
+  }
+
+  private getExpectedInteractions(toolId: string): string[] {
+    return [
+      'Initial parameter confirmation',
+      'Progress updates during execution',
+      'Results presentation',
+      'Follow-up suggestions'
+    ]
+  }
+
+  private getClarificationQuestions(toolId: string, request: ContextualRecommendationRequest): string[] {
+    const questions = []
+
+    if (request.userMessage.includes('?')) {
+      questions.push('Would you like more details about the expected outcome?')
+    }
+
+    if (toolId.includes('deploy') || toolId.includes('build')) {
+      questions.push('Should I proceed with safety checks enabled?')
+    }
+
+    return questions
+  }
+
+  private getConfirmationSteps(toolId: string): string[] {
+    if (toolId.includes('delete') || toolId.includes('remove')) {
+      return ['Confirm destructive operation', 'Verify backup exists', 'Proceed with deletion']
+    }
+
+    if (toolId.includes('deploy')) {
+      return ['Verify target environment', 'Confirm deployment parameters', 'Execute deployment']
+    }
+
+    return ['Confirm parameters', 'Execute operation']
+  }
 }
 
 // =============================================================================
