@@ -1534,8 +1534,6 @@ export class ParlantTestDataSeeder {
     return isCustomer
       ? customerMessages[Math.floor(eventIndex / 2)] || 'Thanks for the guidance!'
       : agentMessages[Math.floor(eventIndex / 2)] || "You're doing great!"
-
-    return isCustomer ? 'Thank you for your help!' : 'Happy to assist you!'
   }
 
   private generateSessionVariables(sessionIndex: number, sessionId: string): any[] {

@@ -44,7 +44,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": ["parlant-server-setup"],
+      "dependencies": [
+        "parlant-server-setup"
+      ],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -83,7 +85,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": ["parlant-server-setup"],
+      "dependencies": [
+        "parlant-server-setup"
+      ],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -122,7 +126,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": ["sim-parlant-bridge"],
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -160,7 +166,9 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": ["universal-tool-adapter"],
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -199,7 +207,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["universal-tool-adapter"],
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -225,7 +235,9 @@
       "priority": "high",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["sim-parlant-bridge"],
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -251,7 +263,10 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
+      "dependencies": [
+        "parlant-chat-interface",
+        "workflow-journey-mapping"
+      ],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -277,7 +292,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["parlant-chat-interface"],
+      "dependencies": [
+        "parlant-chat-interface"
+      ],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -303,7 +320,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["agent-management-ui"],
+      "dependencies": [
+        "agent-management-ui"
+      ],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -329,7 +348,9 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": ["knowledge-integration"],
+      "dependencies": [
+        "knowledge-integration"
+      ],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -355,7 +376,9 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": ["multi-agent-orchestration"],
+      "dependencies": [
+        "multi-agent-orchestration"
+      ],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -383,7 +406,7 @@
     "description": "Comprehensive Parlant integration plan for transforming Sim into a conversational AI workflow platform",
     "initialization_stats": {
       "total_initializations": 7,
-      "total_reinitializations": 50,
+      "total_reinitializations": 51,
       "current_day": "2025-09-24",
       "time_buckets": {
         "08:00-12:59": {
@@ -400,7 +423,7 @@
         },
         "23:00-03:59": {
           "init": 7,
-          "reinit": 36
+          "reinit": 37
         },
         "04:00-08:59": {
           "init": 0,
@@ -409,7 +432,7 @@
       },
       "daily_history": [],
       "last_reset": "2025-09-24T05:07:19.658Z",
-      "last_updated": "2025-09-24T06:19:07.246Z"
+      "last_updated": "2025-09-24T06:36:46.450Z"
     },
     "approval_history": [
       {
@@ -517,7 +540,9 @@
       "status": "active",
       "reinitialized": "2025-09-24T05:29:25.716Z",
       "sessionId": "caeca7edb236761f",
-      "previousSessions": ["f56b457808e87edd"]
+      "previousSessions": [
+        "f56b457808e87edd"
+      ]
     },
     "adapter-pattern-design-agent": {
       "lastHeartbeat": "2025-09-24T05:37:22.363Z",
@@ -629,7 +654,9 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:13:24.803Z",
       "sessionId": "8b3f7297d278725b",
-      "previousSessions": ["6627803908838b81"]
+      "previousSessions": [
+        "6627803908838b81"
+      ]
     },
     "RESULT_FORMATTING_AGENT": {
       "lastHeartbeat": "2025-09-24T05:47:41.700Z",
@@ -702,11 +729,13 @@
       "previousSessions": []
     },
     "CONVERSION_ENGINE_AGENT": {
-      "lastHeartbeat": "2025-09-24T06:18:59.675Z",
+      "lastHeartbeat": "2025-09-24T06:36:46.447Z",
       "status": "active",
-      "reinitialized": "2025-09-24T06:18:59.675Z",
-      "sessionId": "4134dc1f437dbed5",
-      "previousSessions": []
+      "reinitialized": "2025-09-24T06:36:46.447Z",
+      "sessionId": "62b71471ab325801",
+      "previousSessions": [
+        "4134dc1f437dbed5"
+      ]
     },
     "Documentation-Agent": {
       "lastHeartbeat": "2025-09-24T06:19:01.039Z",

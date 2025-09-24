@@ -906,7 +906,7 @@ export class PluginSystem extends EventEmitter {
 
   private async executeInSandbox(
     sandbox: PluginSandbox,
-    hook: Function,
+    hook: (...args: any[]) => any,
     args: any[]
   ): Promise<any> {
     // Execute plugin hook in sandboxed environment

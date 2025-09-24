@@ -195,7 +195,7 @@ export class PluginManager {
   /**
    * Get hook method from plugin
    */
-  private getHookMethod(plugin: AdapterPlugin, extensionPoint: string): Function | undefined {
+  private getHookMethod(plugin: AdapterPlugin, extensionPoint: string): ((...args: any[]) => any) | undefined {
     const hookMap: Record<string, string> = {
       before_execution: 'onBeforeExecution',
       after_execution: 'onAfterExecution',

@@ -396,7 +396,7 @@ export class ComprehensiveToolErrorManager {
     }
 
     // Run parameter validation rules
-    for (const rule of this.proactiveValidation.validationRules) {
+    for (const rule of this.proactiveValidationConfig.validationRules) {
       try {
         const passed = await rule.validate(context, parameters)
         if (!passed) {
@@ -886,7 +886,7 @@ export class ComprehensiveToolErrorManager {
 
   private initializeProactiveValidation(): void {
     // Add common validation rules
-    this.proactiveValidation.validationRules.push(
+    this.proactiveValidationConfig.validationRules.push(
       {
         name: 'Required Parameters Check',
         description: 'Verify all required parameters are provided',
@@ -912,7 +912,7 @@ export class ComprehensiveToolErrorManager {
     )
 
     // Add pre-execution checks
-    this.proactiveValidation.preExecutionChecks.push(
+    this.proactiveValidationConfig.preExecutionChecks.push(
       {
         name: 'Tool Availability Check',
         check: async (context) => {
