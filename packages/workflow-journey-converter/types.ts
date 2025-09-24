@@ -1193,6 +1193,193 @@ export interface ConversionNotification {
 }
 
 // =============================================================================
+// Context Management and Preservation Types
+// =============================================================================
+
+export interface VariableDefinition {
+  id: string
+  name: string
+  type: string
+  value?: any
+  description?: string
+  scope?: 'global' | 'workflow' | 'local' | 'session' | 'user'
+  required?: boolean
+  validation?: {
+    required?: boolean
+    minLength?: number
+    maxLength?: number
+    pattern?: string
+    min?: number
+    max?: number
+    [key: string]: any
+  }
+  metadata?: {
+    [key: string]: any
+  }
+}
+
+export interface ContextMapping {
+  workflowId: string
+  journeyId: string
+  variableMapping: VariableMapping
+  sessionStateMapping: SessionStateMapping
+  executionContextMapping: ExecutionContextMapping
+  dynamicResolution: DynamicVariableResolution
+  contextInheritance: ContextInheritance
+  validation: ContextValidation
+  timestamp: string
+  version: string
+}
+
+export interface VariableMapping {
+  mappings: Array<{
+    workflowVariable: VariableDefinition
+    journeyVariable: VariableDefinition
+    conversionType: 'direct' | 'converted' | 'complex'
+    transformationRules: any
+    validation: ValidationResult
+  }>
+  journeyVariables: VariableDefinition[]
+  statistics: {
+    totalMappings: number
+    typePreservations: number
+    typeConversions: number
+    complexMappings: number
+  }
+  validation: ValidationResult
+}
+
+export interface SessionStateMapping {
+  states: Array<{
+    stateId: string
+    nodeName: string
+    requirements: {
+      persistent: boolean
+      shared: boolean
+      encrypted: boolean
+      ttl?: number
+    }
+    context: any
+  }>
+  configuration: {
+    sessionPersistence: boolean
+    stateSync: boolean
+    contextPreservation: boolean
+    variableSync: boolean
+  }
+  statistics: {
+    totalStates: number
+    persistentStates: number
+    sharedStates: number
+  }
+}
+
+export interface ExecutionContextMapping {
+  contexts: Array<{
+    stateId: string
+    context: {
+      nodeId: string
+      nodeType: string
+      executionOrder: number
+      dependencies: string[]
+      conditions: any[]
+      timeout: number
+      retryPolicy: any
+      errorHandling: any
+    }
+    options: {
+      async: boolean
+      parallel: boolean
+      cached: boolean
+      errorHandling: boolean
+      monitoring: boolean
+    }
+  }>
+  configuration: {
+    preserveExecutionOrder: boolean
+    maintainState: boolean
+    errorHandling: boolean
+    parallelExecution: boolean
+  }
+  statistics: {
+    totalContexts: number
+    asyncContexts: number
+    errorHandledContexts: number
+  }
+}
+
+export interface DynamicVariableResolution {
+  resolutions: Array<{
+    stateId: string
+    resolution: {
+      variables: Array<{
+        name: string
+        type: string
+        source: string
+        dependencies: string[]
+        resolutionStrategy: string
+        caching: boolean
+      }>
+      complexity: 'simple' | 'moderate' | 'complex'
+      timing: 'immediate' | 'lazy' | 'on-demand'
+    }
+    rules: any
+  }>
+  configuration: {
+    enableDynamicResolution: boolean
+    lazyEvaluation: boolean
+    cacheResolutions: boolean
+    errorRecovery: boolean
+  }
+  statistics: {
+    totalResolutions: number
+    dynamicVariables: number
+    complexResolutions: number
+  }
+}
+
+export interface ContextInheritance {
+  hierarchy: Array<{
+    stateId: string
+    parentContext?: string
+    childContexts?: string[]
+    rules: any
+  }>
+  configuration: {
+    enableInheritance: boolean
+    inheritanceDepth: number
+    overrideAllowed: boolean
+    cascadeUpdates: boolean
+  }
+  statistics: {
+    totalNodes: number
+    inheritanceDepth: number
+    isolatedNodes: number
+  }
+}
+
+export interface ContextValidation {
+  isValid: boolean
+  errors: string[]
+  warnings: string[]
+  details?: {
+    variableMapping?: ValidationResult
+    sessionStateMapping?: ValidationResult
+    executionContextMapping?: ValidationResult
+    dynamicResolution?: ValidationResult
+    contextInheritance?: ValidationResult
+    crossValidation?: ValidationResult
+  }
+}
+
+export interface StatePreservation {
+  originalState: any
+  preservedState: any
+  transformationRules: any[]
+  validationResults: ValidationResult[]
+}
+
+// =============================================================================
 // Export All Types
 // =============================================================================
 
@@ -1226,8 +1413,14 @@ export type {
   RecoveryStrategy,
   // Context and variable types
   VariableUsage,
+  VariableDefinition,
   ContextMapping,
   VariableMapping,
+  SessionStateMapping,
+  ExecutionContextMapping,
+  DynamicVariableResolution,
+  ContextInheritance,
+  ContextValidation,
   SessionPreservation,
   StatePreservation,
   // Result types

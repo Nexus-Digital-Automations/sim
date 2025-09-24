@@ -44,7 +44,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": ["parlant-server-setup"],
+      "dependencies": [
+        "parlant-server-setup"
+      ],
       "components": [
         "Create apps/sim/services/parlant/ integration layer",
         "Bridge authentication between Sim users and Parlant agents",
@@ -83,7 +85,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 1,
-      "dependencies": ["parlant-server-setup"],
+      "dependencies": [
+        "parlant-server-setup"
+      ],
       "components": [
         "Add Parlant agent tables (agents, guidelines, journeys, sessions)",
         "Link agents to Sim workspaces and users",
@@ -122,7 +126,9 @@
       "priority": "high",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": ["sim-parlant-bridge"],
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
       "components": [
         "Create adapter pattern for Sim tools → Parlant format",
         "Wrap existing tools with Parlant-compatible interfaces",
@@ -160,7 +166,9 @@
       "priority": "medium",
       "status": "implemented",
       "estimatedWeeks": 2,
-      "dependencies": ["universal-tool-adapter"],
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
       "components": [
         "Map ReactFlow nodes to Parlant journey states",
         "Enable dynamic journey creation from workflow templates",
@@ -199,7 +207,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["universal-tool-adapter"],
+      "dependencies": [
+        "universal-tool-adapter"
+      ],
       "components": [
         "Add natural language descriptions to all tools",
         "Create usage guidelines for each integration",
@@ -225,7 +235,9 @@
       "priority": "high",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["sim-parlant-bridge"],
+      "dependencies": [
+        "sim-parlant-bridge"
+      ],
       "components": [
         "Install and configure parlant-chat-react widget",
         "Create new /chat routes with agent selection",
@@ -251,7 +263,10 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["parlant-chat-interface", "workflow-journey-mapping"],
+      "dependencies": [
+        "parlant-chat-interface",
+        "workflow-journey-mapping"
+      ],
       "components": [
         "Add 'Chat with Workflow' buttons to workflow cards",
         "Enable switching between visual editor and chat mode",
@@ -277,7 +292,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["parlant-chat-interface"],
+      "dependencies": [
+        "parlant-chat-interface"
+      ],
       "components": [
         "Create agent configuration panels in workspace settings",
         "Build visual guideline builder integrated with tool registry",
@@ -303,7 +320,9 @@
       "priority": "medium",
       "status": "approved",
       "estimatedWeeks": 2,
-      "dependencies": ["agent-management-ui"],
+      "dependencies": [
+        "agent-management-ui"
+      ],
       "components": [
         "Connect existing knowledge bases to Parlant retrievers",
         "Implement RAG for workflow documentation and help",
@@ -329,7 +348,9 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": ["knowledge-integration"],
+      "dependencies": [
+        "knowledge-integration"
+      ],
       "components": [
         "Create agent teams for complex workflows",
         "Implement handoff between specialized agents",
@@ -355,7 +376,9 @@
       "priority": "low",
       "status": "approved",
       "estimatedWeeks": 3,
-      "dependencies": ["multi-agent-orchestration"],
+      "dependencies": [
+        "multi-agent-orchestration"
+      ],
       "components": [
         "Implement canned responses for compliance and branding",
         "Add advanced security scanning for conversations",
@@ -500,54 +523,14 @@
     "updated": "2025-09-24T04:24:12.431Z"
   },
   "agents": {
-    "integration_testing_agent": {
-      "lastHeartbeat": "2025-09-24T06:13:24.803Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:13:24.803Z",
-      "sessionId": "8b3f7297d278725b",
-      "previousSessions": ["6627803908838b81"]
-    },
-    "agent_continue_001": {
-      "lastHeartbeat": "2025-09-24T06:10:51.347Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:10:51.347Z",
-      "sessionId": "176b2987d432cffb",
-      "previousSessions": []
-    },
     "conversational-interface-agent": {
       "lastHeartbeat": "2025-09-24T06:37:32.738Z",
       "status": "active",
       "reinitialized": "2025-09-24T06:37:32.738Z",
       "sessionId": "d952d457db032b8f",
-      "previousSessions": ["0045194efdffd125"]
-    },
-    "conversion-engine-agent": {
-      "lastHeartbeat": "2025-09-24T06:12:33.428Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:12:33.428Z",
-      "sessionId": "d209171aaa255fc6",
-      "previousSessions": []
-    },
-    "WORKFLOW_PRESERVATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T06:12:33.766Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:12:33.766Z",
-      "sessionId": "f75f1302c7f952b2",
-      "previousSessions": []
-    },
-    "parlant-journey-agent": {
-      "lastHeartbeat": "2025-09-24T06:12:34.067Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:12:34.067Z",
-      "sessionId": "d64ab90b1f60311b",
-      "previousSessions": []
-    },
-    "DOCUMENTATION_AGENT": {
-      "lastHeartbeat": "2025-09-24T06:13:13.063Z",
-      "status": "active",
-      "reinitialized": "2025-09-24T06:13:13.063Z",
-      "sessionId": "1b8471e02cd1c456",
-      "previousSessions": []
+      "previousSessions": [
+        "0045194efdffd125"
+      ]
     },
     "AGENT_MAIN_001": {
       "lastHeartbeat": "2025-09-24T06:15:40.932Z",
@@ -561,7 +544,9 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:36:46.447Z",
       "sessionId": "62b71471ab325801",
-      "previousSessions": ["4134dc1f437dbed5"]
+      "previousSessions": [
+        "4134dc1f437dbed5"
+      ]
     },
     "Documentation-Agent": {
       "lastHeartbeat": "2025-09-24T06:19:01.039Z",
@@ -575,7 +560,9 @@
       "status": "active",
       "reinitialized": "2025-09-24T06:37:33.415Z",
       "sessionId": "c9dd2e10e5c5c47e",
-      "previousSessions": ["a5f87d210c9f770a"]
+      "previousSessions": [
+        "a5f87d210c9f770a"
+      ]
     },
     "workflow-preservation-agent": {
       "lastHeartbeat": "2025-09-24T06:19:05.634Z",
